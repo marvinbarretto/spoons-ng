@@ -1,48 +1,57 @@
-import { Injectable, signal, computed, effect } from '@angular/core';
+// auth.store.ts
+import { inject, Injectable, signal, computed } from '@angular/core';
+import { AuthService } from './auth.service';
+import { MinimalUser } from '../utils/auth.model';
 import { CookieService } from '../../shared/data-access/cookie.service';
-import { inject } from '@angular/core';
-
-export type MinimalUser = {
-  uid: string;
-  email?: string;
-  displayName?: string;
-};
 
 @Injectable({ providedIn: 'root' })
 export class AuthStore {
+  private authService = inject(AuthService);
   private cookieService = inject(CookieService);
 
   readonly user$$ = signal<MinimalUser | null>(null);
   readonly token$$ = signal<string | null>(null);
   readonly ready$$ = signal(false);
-
   readonly isAuthenticated$$ = computed(() => !!this.token$$());
 
   constructor() {
-    this.hydrateFromCookies();
-  }
-
-  private hydrateFromCookies() {
-    const token = this.cookieService.getCookie('authToken');
-    if (token) {
-      // Eventually: validate token, fetch user profile if needed
-      this.token$$.set(token);
-      // Optionally hydrate user info from localStorage
-      const cachedUser = localStorage.getItem('user');
-      if (cachedUser) {
-        this.user$$.set(JSON.parse(cachedUser));
+    this.authService.onAuthChange(async (user) => {
+      if (!user) {
+        this.logout();
+        this.ready$$.set(true);
+        return;
       }
-    }
-    this.ready$$.set(true);
-    console.log('[NewAuthStore] 🧠 Bootstrapped auth state from cookies');
+
+      const token = await user.getIdToken();
+
+      const minimalUser: MinimalUser = {
+        uid: user.uid,
+        email: user.email ?? undefined,
+        displayName: user.displayName ?? undefined,
+        photoURL: user.photoURL ?? undefined,
+        emailVerified: user.emailVerified,
+        isAnonymous: user.isAnonymous,
+      };
+
+      this.token$$.set(token);
+      this.user$$.set(minimalUser);
+      this.cookieService.setCookie('authToken', token);
+      localStorage.setItem('user', JSON.stringify(minimalUser));
+      this.ready$$.set(true);
+      console.log('[AuthStore] ✅ Firebase user bootstrapped:', minimalUser);
+    });
+
+    console.log('[AuthStore] 🔁 Listening for auth changes...');
   }
 
-  login(token: string, user: MinimalUser) {
-    this.token$$.set(token);
-    this.user$$.set(user);
-    this.cookieService.setCookie('authToken', token);
-    localStorage.setItem('user', JSON.stringify(user));
-    console.log('[NewAuthStore] ✅ Login succeeded');
+  async loginWithEmail(email: string, password: string) {
+    const user = await this.authService.loginWithEmail(email, password);
+    console.log('[AuthStore] 🔐 Email login success:', user.uid);
+  }
+
+  async loginWithGoogle() {
+    const user = await this.authService.loginWithGoogle();
+    console.log('[AuthStore] 🔐 Google login success:', user.uid);
   }
 
   logout() {
@@ -50,6 +59,7 @@ export class AuthStore {
     this.user$$.set(null);
     this.cookieService.deleteCookie('authToken');
     localStorage.removeItem('user');
-    console.log('[NewAuthStore] 👋 Logged out');
+    this.authService.logout();
+    console.log('[AuthStore] 👋 Logged out');
   }
 }

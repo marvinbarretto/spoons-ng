@@ -18,6 +18,7 @@ import { PageStore } from '../../../pages/data-access/page.store';
 import { PanelStore, PanelType } from '../../ui/panel/panel.store';
 import { ViewportService } from '../../data-access/viewport.service';
 import { NavComponent } from '../nav/nav.component';
+import { UserInfoComponent } from "../user-info/user-info.component";
 
 @Component({
   selector: 'app-header',
@@ -28,7 +29,8 @@ import { NavComponent } from '../nav/nav.component';
     CommonModule,
     FeatureFlagPipe,
     NavComponent,
-  ],
+    UserInfoComponent
+],
 })
 export class HeaderComponent implements OnInit, AfterViewInit {
   private readonly router = inject(Router);

@@ -1,23 +1,42 @@
-import { Component, inject, isDevMode } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-
+// login.component.ts
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ButtonComponent } from '../../../shared/ui/button/button.component';
-import { NotificationService } from '../../../shared/data-access/notification.service';
+import { FormsModule } from '@angular/forms';
 import { AuthStore } from '../../data-access/auth.store';
 
 @Component({
   selector: 'app-login',
-  imports: [FormsModule, CommonModule, ButtonComponent],
-  templateUrl: './login.component.html',
-  styleUrl: './login.component.scss',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  template: `
+    <!-- <form (submit)="onLogin($event)">
+      <label>Email: <input [(ngModel)]="email" name="email" /></label>
+      <label>Password: <input [(ngModel)]="password" name="password" type="password" /></label>
+      <button type="submit">Login</button>
+    </form> -->
+    <button (click)="onGoogleLogin()">Login with Google</button>
+  `,
 })
 export class LoginComponent {
-  readonly authStore = inject(AuthStore);
-  readonly notificationService = inject(NotificationService);
-
-  identifier = '';
+  email = '';
   password = '';
 
-  readonly isDev = true; // isDevMode();
+  private authStore = inject(AuthStore);
+
+  async onLogin(event: Event) {
+    event.preventDefault();
+    try {
+      await this.authStore.loginWithEmail(this.email, this.password);
+    } catch (err) {
+      console.error('[LoginComponent] ❌ Login failed', err);
+    }
+  }
+
+  async onGoogleLogin() {
+    try {
+      await this.authStore.loginWithGoogle();
+    } catch (err) {
+      console.error('[LoginComponent] ❌ Google login failed', err);
+    }
+  }
 }
