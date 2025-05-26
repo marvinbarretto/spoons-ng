@@ -1,0 +1,12 @@
+<section class="notifications" role="alert" aria-live="assertive">
+  <div
+    class="notification"
+    *ngFor="let message of messages(); trackBy: trackById"
+    [ngClass]="message.type"
+  >
+    <p class="message">{{ message.message }}</p>
+    <button aria-label="Dismiss notification" (click)="dismiss(message.id)">
+      Dismiss
+    </button>
+  </div>
+</section>

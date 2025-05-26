@@ -1,0 +1,20 @@
+export const environment = {
+  production: false,
+  enableAllFeaturesForDev: true,
+  strapiUrl: 'http://127.0.0.1:1337',
+  strapiToken: 'STRAPI_TOKEN',
+  featureFlags: {
+    homepageHero: false,
+    homepageNewsWidget: false,
+    homepageEventsWidget: false,
+    theme: false,
+    search: false,
+    login: true,
+    register: true,
+    news: false,
+    events: true,
+    research: false,
+    siteMap: false,
+    accessibility: false,
+  },
+};

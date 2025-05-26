@@ -1,0 +1,21 @@
+<div class="search-results">
+  <ul>
+    <!-- Iterate through results -->
+    <li *ngFor="let result of results">
+      <!-- Display result type (e.g., Event, Page) -->
+      <!-- <p><strong>{{ result.type }}:</strong></p> -->
+
+      <!-- Display highlighted title -->
+      <h2 class="result-title" [innerHTML]="sanitize(result.title)"></h2>
+
+      <!-- Render content if available -->
+      <div *ngIf="result.content?.length">
+        <ng-container *ngFor="let block of result.content">
+          <!-- Render headings -->
+
+          <!-- {{ block | json }} -->
+        </ng-container>
+      </div>
+    </li>
+  </ul>
+</div>

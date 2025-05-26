@@ -1,0 +1,12 @@
+// theme-selector.component.scss
+a.active {
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+button {
+  color: var(--color-text);
+  &:hover {
+    color: var(--color-text);
+  }
+}

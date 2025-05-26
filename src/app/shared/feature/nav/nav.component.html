@@ -1,0 +1,17 @@
+<ul
+  class="menu__list"
+  [class.mobile]="isMobile$$()"
+  [class.desktop]="!isMobile$$()"
+>
+  <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+    <a routerLink="/">Home</a>
+  </li>
+
+  <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+    <a routerLink="/news">News</a>
+  </li>
+
+  <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+    <a routerLink="/events">Events</a>
+  </li>
+</ul>

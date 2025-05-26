@@ -1,0 +1,39 @@
+@use 'styles/index' as *;
+
+h1 {
+  @include heading(2);
+}
+
+div {
+  padding: 1rem;
+}
+
+input,
+textarea {
+  border: 1px solid #ccc;
+  display: block;
+  font-size: 16px;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  width: 100%;
+}
+
+textarea {
+  height: 100px;
+}
+
+label {
+  display: block;
+}
+
+button {
+  border: solid 1px #ccc;
+  font-size: 20px;
+  margin-top: 1rem;
+  padding: 1rem;
+}
+
+form {
+  margin: 1rem auto;
+  width: 500px;
+}

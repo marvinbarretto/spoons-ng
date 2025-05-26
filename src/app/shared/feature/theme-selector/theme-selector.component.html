@@ -1,0 +1,14 @@
+<nav aria-label="Theme selector">
+  <ul>
+    <li *ngFor="let theme of themeOptions">
+      <button
+        type="button"
+        (click)="setTheme(theme)"
+        [attr.aria-pressed]="currentTheme() === theme"
+        [class.active]="currentTheme() === theme"
+      >
+        {{ theme }}
+      </button>
+    </li>
+  </ul>
+</nav>

@@ -1,0 +1,35 @@
+@use 'styles/index' as *;
+
+.events-nav {
+  ul {
+    display: flex;
+    flex-direction: row;
+    list-style: none;
+    background-color: var(--color-background);
+    padding: 0.25rem;
+    overflow-x: auto;
+  }
+
+  li {
+    margin-right: 0.5rem;
+  }
+
+  a {
+    display: inline-block;
+    padding: 0.4rem 0.75rem;
+    text-decoration: none;
+    color: var(--color-text);
+    transition: background-color 0.2s ease, color 0.2s ease;
+
+    &:hover,
+    &:focus-visible {
+      background-color: var(--color-overlay);
+      color: var(--color-onPrimary);
+    }
+
+    &.active {
+      background-color: var(--color-text);
+      color: var(--color-onPrimary);
+    }
+  }
+}

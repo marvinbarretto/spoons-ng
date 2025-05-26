@@ -1,0 +1,23 @@
+.sections {
+  margin: 1rem;
+  display: grid;
+  gap: 1rem;
+  z-index: 10; // TODO: Handle these centrally
+  position: relative;
+  // border: dashed 1px red;
+
+  margin-top: calc(-1rem - 1vw);
+
+  @media (min-width: 700px) {
+    // border: dashed 1px green;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+
+  }
+}
+
+section {
+  background-color: rgba(black, 0.1);
+  padding: 1rem;
+}

@@ -1,0 +1,190 @@
+@use 'styles/index' as *;
+
+// Cool colour scheme to adopt
+$black: #181C14;
+$grey: #181C14;
+$accent: #697565;
+$white: #ECDFCC;
+
+// TODO: Brand colours need to be centralised:
+
+
+:host {
+    display: block;
+}
+
+nav {
+  display: flex;
+}
+
+.header {
+
+
+  text-align: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: column-reverse;
+  color: var(--color-text);
+}
+
+.header__title {
+  @include heading(1);
+  text-align: center;
+  text-decoration: none;
+  padding: 1rem 2rem;
+
+  background-color: $black;
+  color: $white;
+
+  // color: var(--color-onPrimary);
+  // background-color: var(--color-text);
+
+  line-height: 1.2;
+}
+
+.header__title h1 {
+  line-height: 1.2;
+}
+
+.label {
+  display: none;
+
+  @media (min-width: $breakpoint-tablet) {
+    display: block;
+  }
+}
+
+// === Navigation ===
+
+.main-nav {
+  background-color: var(--brand-medium);
+
+  align-items: center;
+
+  justify-content: space-between;
+  flex-direction: row-reverse;
+
+  @media (min-width: $nav-breakpoint) {
+    flex-direction: row;
+  }
+}
+
+.main-nav__actions {
+  display: flex;
+}
+
+.menu {
+  display: flex;
+  gap: 0.75rem;
+  position: relative;
+  z-index: 100;
+  background-color: var(--color-background);
+  color: var(--color-text);
+}
+
+.menu__list {
+  @media (min-width: $breakpoint-tablet) {
+    display: flex;
+  }
+}
+
+a,
+button {
+  display: block;
+  padding: 0.5rem;
+  font-size: var(--font-size);
+  color: white;
+  background: transparent;
+  border: none;
+
+  &:hover {
+    background-color: var(--color-accent);
+  }
+}
+
+.nav-link {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  align-self: center;
+  overflow: hidden;
+  text-decoration: none;
+  color: white;
+
+  .label {
+    @include underline-style;
+  }
+}
+
+nav ul {
+  flex: 1;
+  align-items: center;
+}
+
+.selected {
+  background-color: var(--color-accent);
+  color: var(--color-onAccent);
+}
+
+// === Toggle ===
+
+.menu__toggle {
+  padding: 0.5rem;
+  cursor: pointer;
+  font-size: 1rem;
+  flex: 1;
+  text-align: left;
+  display: flex;
+  gap: 0.25rem;
+  align-items: center;
+  justify-content: flex-start;
+  background: none;
+  color: var(--color-text);
+
+  @media (min-width: $breakpoint-tablet) {
+    display: none;
+  }
+
+  &:hover {
+    background-color: var(--color-background);
+    color: var(--color-accent);
+  }
+}
+
+.menu__toggle__label {
+  @include underline-style;
+}
+
+.menu--mobile .menu__toggle {
+  display: flex;
+}
+
+// === Responsive ===
+
+@include respond-above($nav-breakpoint) {
+  .menu__list {
+    display: flex;
+  }
+
+  .menu__toggle {
+    display: none;
+  }
+}
+
+.menu--open {
+  position: fixed;
+  width: 100%;
+  flex-direction: column;
+  gap: 0;
+
+  .a11y-link {
+    width: 100%;
+  }
+}

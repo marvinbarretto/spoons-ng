@@ -1,0 +1,17 @@
+<ng-container *ngIf="ready()">
+  <section *ngIf="isLoggedIn(); else unauthenticatedBlock" class="user-info">
+    <div class="user-info__details">
+      <span class="material-symbols-outlined">person</span>
+      <span class="username">{{ username() }}</span>
+      <span *ngIf="role()" class="role">{{ role() }}</span>
+    </div>
+    <app-button (onClick)="logout()">Logout</app-button>
+  </section>
+</ng-container>
+
+<ng-template #unauthenticatedBlock>
+  <nav class="authenticate">
+    <a *ngIf="'login' | featureFlag" routerLink="/login">Login</a>
+    <a *ngIf="'register' | featureFlag" routerLink="/register">Register</a>
+  </nav>
+</ng-template>

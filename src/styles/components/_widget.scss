@@ -1,0 +1,64 @@
+@use '../index' as *;
+
+@mixin widget-style {
+  background-color: var(--color-subtleLighter);
+  color: var(--color-onSubtleLighter);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px var(--color-shadow, rgba(0, 0, 0, 0.05));
+  transition: background-color 0.3s ease;
+  width: 100%;
+
+  .eyebrow {
+    @include eyebrow;
+  }
+
+  .date {
+    @include date-text;
+  }
+
+  footer {
+    margin-top: 1rem;
+    .btn {
+      @include button-primary;
+    }
+  }
+
+  h2 {
+    @include heading(2);
+  }
+
+  // Optional container query tinting
+  // @container (min-width: 400px) {
+  //   background-color: color-mix(
+  //     in srgb,
+  //     var(--color-background) 90%,
+  //     var(--color-secondary) 10%
+  //   );
+  // }
+
+  // @container (min-width: 700px) {
+  //   background-color: color-mix(
+  //     in srgb,
+  //     var(--color-background) 85%,
+  //     var(--color-text) 15%
+  //   );
+  // }
+}
+
+@mixin blank-widget {
+  background-color: color-mix(
+    in srgb,
+    var(--color-background) 85%,
+    var(--color-secondary) 15%
+  );
+  border-radius: 0.5rem;
+  min-height: 150px;
+  padding: .5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  h2 {
+    @include heading(2);
+  }
+}

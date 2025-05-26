@@ -1,0 +1,3 @@
+@function rgba-token($css-var, $alpha) {
+  @return rgba(var(#{$css-var}-rgb), $alpha);
+}

@@ -1,0 +1,54 @@
+// TODO: Change
+
+// For toast
+// :host {
+//     position: fixed;
+//     top: 1rem;
+//     right: 1rem;
+//     z-index: 1000;
+//     display: flex;
+//     flex-direction: column;
+//     gap: 0.5rem;
+//   }
+
+.notification {
+  padding: 0.5rem;
+  margin: 0.5rem;
+  background-color: rgba(white, 0.5);
+  padding: 0.75rem 1rem;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 240px;
+}
+
+.notification .dismiss {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-size: 1rem;
+  cursor: pointer;
+  padding: 0 0.25rem;
+}
+
+.notification.error {
+  background-color: #c62828;
+}
+
+.notification.success {
+  background-color: #2e7d32;
+}
+
+.notification.info {
+  background-color: #1565c0;
+}
+
+button {
+  background-color: rgba(black, 0.8);
+  color: white;
+  padding: 0.5rem 1rem;
+  &:hover {
+    background-color: black;
+  }
+}

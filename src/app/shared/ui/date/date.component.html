@@ -1,0 +1,17 @@
+<div class="date">
+  <!-- Day of the week -->
+  <span class="date__day-of-week">{{
+    date.toLocaleString('default', { weekday: 'long' })
+  }}</span>
+
+  <!-- Day of the month -->
+  <span class="date__day">{{ date.getDate() }}</span>
+
+  <span class="date__month">{{
+    date.toLocaleString('default', { month: 'long' })
+  }}</span>
+
+  <span class="date__year" *ngIf="isNextYear()">
+    {{ date.getFullYear() }}
+  </span>
+</div>

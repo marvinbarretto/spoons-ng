@@ -1,0 +1,30 @@
+<!-- eslint-disable-next-line -->
+<div
+  *ngIf="isVisible()"
+  class="panel-backdrop"
+  [style.top.px]="panelStore.originY()"
+  (click)="close()"
+></div>
+
+<!-- eslint-disable-next-line -->
+<div
+  *ngIf="isVisible()"
+  class="panel-wrapper"
+  role="dialog"
+  aria-modal="true"
+  [style.top.px]="panelStore.originY()"
+>
+  <!-- eslint-disable-next-line -->
+  <div
+    class="panel-content"
+    cdkTrapFocus
+    cdkTrapFocusAutoCapture
+    tabindex="-1"
+    (keydown.escape)="close()"
+  >
+    <button class="close-button" (click)="close()" aria-label="Close panel">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+    <ng-content />
+  </div>
+</div>

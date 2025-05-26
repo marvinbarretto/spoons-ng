@@ -1,0 +1,15 @@
+<!-- TODO: Apply feature flag -->
+
+
+<app-wait></app-wait>
+<app-hero></app-hero>
+
+<div class="sections">
+
+  @if (!authStore.isAuthenticated$$()) {
+    <app-register-widget></app-register-widget>
+  }
+
+  <app-advert-widget></app-advert-widget>
+  <app-feedback-widget></app-feedback-widget>
+</div>

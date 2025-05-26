@@ -1,0 +1,16 @@
+<div *ngIf="loading; else eventList">Loading events...</div>
+
+<ng-template #eventList>
+  <p>Loaded {{ events.length }} events:</p>
+
+  <ul class="event-list" *ngIf="events.length; else noEvents">
+    <li *ngFor="let event of events">
+      <app-event-list-item [event]="event"></app-event-list-item>
+    </li>
+  </ul>
+  <ng-template #noEvents>
+    <p>No events available.</p>
+  </ng-template>
+</ng-template>
+
+<div *ngIf="error">{{ error }}</div>

@@ -1,0 +1,40 @@
+<div class="container">
+  <h1>Create new event</h1>
+
+  <app-events-nav />
+</div>
+
+<!-- <form [formGroup]="eventForm" (ngSubmit)="onSubmit()">
+
+
+  <div>
+    <label for="title">Title:</label>
+    <input id="title" formControlName="title" />
+    <div *ngIf="title!.invalid && title!.touched">Title is required</div>
+  </div>
+
+  <div>
+    <label for="description">Description:</label>
+    <textarea id="description" formControlName="description"></textarea>
+    <div *ngIf="description!.invalid && description!.touched">Description is required</div>
+  </div>
+
+  <div>
+    <label for="date">Date:</label>
+    <input type="date" id="date" formControlName="date" />
+    <div *ngIf="date!.invalid && date!.touched">Date is required</div>
+  </div>
+
+  <div>
+    <label for="location">Location:</label>
+    <input id="location" formControlName="location" />
+    <div *ngIf="location!.invalid && location!.touched">Location is required</div>
+  </div>
+
+
+
+  <button type="submit" [disabled]="eventForm.invalid || eventStore.loading$$()">Create Event</button>
+
+  <div *ngIf="eventStore.loading$$()">Creating event, please wait...</div>
+  <div *ngIf="eventStore.error$$()">{{ eventStore.error$$() }}</div>
+</form> -->

@@ -1,0 +1,36 @@
+@use 'styles/base/reset';
+@use 'styles/layout/container';
+@use 'styles/utilities/helpers';
+@use 'styles/base/typography';
+
+body {
+  font-family: 'Atkinson Hyperlegible', sans-serif;
+  font-size: var(--font-size);
+
+  background-color: var(--color-background, var(--brand-light));
+  color: var(--color-text, var(--brand-darkest));
+  min-height: 100vh;
+}
+
+// TODO: Sort this
+// Brand colours
+:root {
+  --brand-darkest: #181C14;
+  --brand-dark: #3C3D37;
+  --brand-medium: #697565;
+  --brand-light: #ECDFCC;
+
+  --color-success-500: #4CAF50; /* Green */
+  --color-error-500: #F44336;   /* Red */
+  --color-warning-500: #FF9800; /* Orange */
+  --color-info-500: #2196F3;    /* Blue */
+  --color-white: #FFFFFF;
+  --color-black: #000000;
+}
+
+
+:root {
+  --font-size: clamp(1rem, 0.75rem + 1vw, 1.125rem); // scales 16px → ~18px
+  --line-height: 1.5;
+  --letter-spacing: 0.015em;
+}

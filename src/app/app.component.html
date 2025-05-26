@@ -1,0 +1,17 @@
+<div class="app-wrapper">
+  <div class="site-container">
+    <app-header />
+    <main class="main-content">
+      <app-notifications />
+      <router-outlet></router-outlet>
+      <app-panel>
+        <app-theme-selector *ngIf="panelStore.activePanel() === 'theme'"></app-theme-selector>
+        <app-nav *ngIf="panelStore.activePanel() === 'nav'"></app-nav>
+        <app-search *ngIf="panelStore.activePanel() === 'search'"></app-search>
+      </app-panel>
+    </main>
+
+    <app-footer />
+  </div>
+  <app-toast></app-toast>
+</div>

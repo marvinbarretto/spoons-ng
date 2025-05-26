@@ -1,0 +1,7 @@
+@use 'styles/index' as *;
+@use 'styles/components/widget' as *;
+
+.widget--register {
+  @include widget-style;
+  // @include blank-widget;
+}

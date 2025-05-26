@@ -1,0 +1,51 @@
+<div class="site-header" #headerRef>
+  <!-- TODO: Extract this to UI ? -->
+
+  <ng-container *ngIf="!isHomepage$$(); else titleWithoutLink">
+    <a routerLink="/" class="header__title">
+      <h1>Spoons</h1>
+    </a>
+  </ng-container>
+  <ng-template #titleWithoutLink>
+    <h1 class="header__title">Spoons</h1>
+  </ng-template>
+
+  <app-user-info></app-user-info>
+
+  <nav class="main-nav" [class.nav-mobile]="isMobile$$()">
+    <app-nav *ngIf="!isMobile$$()" />
+
+    <div class="main-nav__actions">
+      <button
+        *ngIf="'theme' | featureFlag"
+        #panelTrigger
+        aria-expanded="true"
+        (click)="togglePanel('theme')"
+        class="theme-link"
+      >
+        🎨 Theme
+      </button>
+
+      <button
+        *ngIf="'search' | featureFlag"
+        #panelTrigger
+        aria-expanded="true"
+        (click)="togglePanel('search')"
+        class="search-link"
+      >
+        🔍 Search
+      </button>
+    </div>
+
+    <button
+      *ngIf="isMobile$$()"
+      #panelTrigger
+      aria-expanded="true"
+      (click)="togglePanel('nav')"
+      class="nav-link"
+    >
+    <span class="material-symbols-outlined">menu</span>
+    <span>Menu</span>
+    </button>
+  </nav>
+</div>

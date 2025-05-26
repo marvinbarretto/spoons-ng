@@ -1,0 +1,34 @@
+<h1>Site Map</h1>
+
+@if ( pageStore.loading$$() ) {
+<div>Loading...</div>
+} @if ( pageStore.error$$() ) {
+<div>{{ pageStore.error$$() }}</div>
+}
+
+<ul *ngIf="!pageStore.loading$$() && !pageStore.error$$()">
+  <ng-container *ngFor="let page of pageStore.getRootPages()">
+    <li>
+      <h2>
+        <a [routerLink]="page.slug">{{ page.title }}</a>
+      </h2>
+
+      <ul *ngIf="pageStore.hasChildren(page.id)">
+        <ng-container *ngFor="let child of pageStore.getChildPages(page.id)">
+          <li>
+            <a [routerLink]="child.slug">{{ child.title }}</a>
+            <ul *ngIf="pageStore.hasChildren(child.id)">
+              <ng-container
+                *ngFor="let grandchild of pageStore.getChildPages(child.id)"
+              >
+                <li>
+                  <a [routerLink]="grandchild.slug">{{ grandchild.title }}</a>
+                </li>
+              </ng-container>
+            </ul>
+          </li>
+        </ng-container>
+      </ul>
+    </li>
+  </ng-container>
+</ul>

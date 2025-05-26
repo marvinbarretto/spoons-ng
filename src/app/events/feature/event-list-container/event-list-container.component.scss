@@ -1,0 +1,47 @@
+@use 'styles/index' as *;
+
+:host {
+  display: block;
+}
+
+.container {
+  margin: 1rem;
+}
+
+h1 {
+  @include heading(2);
+}
+
+.actions {
+  background-color: rgba(black, 0.1);
+  padding: 1rem;
+  margin: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+ol {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.event-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 1rem;
+}
+
+.event-list__item {
+  background-color: rgba(black, 0.1);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  text-decoration: none;
+  padding: 1rem;
+  &:hover {
+    background-color: rgba(white, 0.5); // TODO: standardise
+  }
+}

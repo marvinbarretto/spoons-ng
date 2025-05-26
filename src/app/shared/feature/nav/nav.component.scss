@@ -1,0 +1,38 @@
+@use 'styles/index' as *;
+
+.menu__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+
+  &.desktop {
+    display: flex;
+    // background-color: var(--color-secondary);
+  }
+
+  &.mobile {
+    display: block;
+    // background-color: var(--color-secondary);
+  }
+
+  li {
+    a {
+      display: block;
+      padding: 0.5rem 1rem;
+      font-size: var(--font-size);
+      color: white;
+
+      text-decoration: none;
+      transition: background-color 0.2s ease, color 0.2s ease;
+
+      &:hover {
+        background-color: var(--color-accent);
+      }
+
+      &.active {
+        // TODO: Address this
+        font-weight: bold;
+      }
+    }
+  }
+}

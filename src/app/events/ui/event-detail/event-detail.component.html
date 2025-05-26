@@ -1,0 +1,46 @@
+<div class="container">
+  <article *ngIf="event" class="event-detail">
+    <!-- Hero image -->
+    <figure class="event-hero" *ngIf="event.hero">
+      <picture>
+        <source
+          *ngIf="event.hero.formats.large.url"
+          [attr.srcset]="event.hero.formats.large.url | assetUrl"
+          type="image/webp"
+          media="(min-width: 768px)"
+        />
+
+        <img
+          [src]="event.hero.formats.large.url | assetUrl"
+          [alt]="event.hero.alternativeText || event.title"
+          width="1000"
+          height="751"
+          loading="eager"
+          decoding="async"
+          style="width: 100%; height: auto"
+        />
+      </picture>
+    </figure>
+
+    <!-- Event header -->
+    <header>
+      <h1>{{ event.title }}</h1>
+      <span>{{ event.date | daysUntil }}</span>
+
+      <p class="meta">
+        <span>{{ event.date | date : 'longDate' }}</span>
+        <span *ngIf="event.location"> · {{ event.location }}</span>
+        <span *ngIf="event.eventStatus"> · {{ event.eventStatus }}</span>
+      </p>
+    </header>
+
+    <!-- Event content blocks -->
+    <section class="event-content">
+      <ng-container *ngFor="let block of event.content">
+        <p *ngIf="block.type === 'paragraph'">
+          {{ getBlockText(block) }}
+        </p>
+      </ng-container>
+    </section>
+  </article>
+</div>

@@ -1,0 +1,92 @@
+@use 'styles/index' as *;
+
+:host {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.toast-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.toast {
+  // Default
+  background-color: var(--color-subtleDarker);
+  color: var(--color-onSubtleDarker);
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  color: var(--color-white); // Assuming white text for good contrast
+  min-width: 250px;
+  max-width: 400px;
+  word-break: break-word;
+  animation: toastEnter 0.3s ease-out;
+  color: var(--color-text);
+
+  &--success {
+    background-color: var(--color-success-500);
+    color: var(--color-white);
+  }
+
+  &--error {
+    background-color: var(--color-error-500);
+    color: var(--color-white);
+  }
+
+  &--warning {
+    background-color: var(--color-warning-500);
+    color: var(--color-white);
+  }
+
+  &--info {
+    background-color: var(--color-info-500);
+    color: var(--color-white);
+  }
+}
+
+.toast-icon {
+  margin-right: 8px;
+  // Optional: Adjust icon size if needed, e.g., font-size: 20px;
+  // Material Icons typically inherit color, so specific color styling might not be needed
+  // unless a different color from the toast text is desired.
+}
+
+.toast-message {
+  flex-grow: 1;
+}
+
+.toast-dismiss-button {
+  background: transparent;
+  border: none;
+  color: inherit; // Inherits color from parent (.toast)
+  font-size: 20px;
+  line-height: 1;
+  margin-left: 10px;
+  padding: 0 5px;
+  cursor: pointer;
+  opacity: 0.7;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+@keyframes toastEnter {
+  from {
+    opacity: 0;
+    transform: translateX(100%); // Start off-screen to the right
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0); // Slide to original position
+  }
+}

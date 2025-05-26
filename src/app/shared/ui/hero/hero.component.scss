@@ -1,0 +1,65 @@
+/* hero.component.scss */
+
+.hero {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+
+  /* 1) fluid min-height:
+     at smallest → 50vh;
+     slopes up with viewport (slope ≈ 15vh over 880px → 1.7vw);
+     caps at 65vh */
+  min-height: clamp(50vh, 50vh + 1.7vw, 65vh);
+  /* lock height so it can’t shrink below the min */
+  height: auto;
+  transition: min-height 0.4s ease;
+  border: 2px dotted rgba(0,0,255,0.5); /* debug */
+}
+
+.hero__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  /* 2) fluid focal‐Y:
+     start at 50% → then slowly move to 15% by 1200px */
+  object-position: center clamp(50%, 50% - 0.029vw, 15%);
+  transition: object-position 0.4s ease;
+  border: 2px dotted rgba(0,255,0,0.5); /* debug */
+}
+
+.hero__content {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+
+  /* 3) fluid bottom offset:
+     at 320px → 3rem;
+     by 860px → 6rem */
+  bottom: clamp(3rem, 3rem + 0.35vw, 6rem);
+  transition: bottom 0.4s ease;
+  max-width: 720px;
+  padding: 0 1rem;
+  text-align: center;
+  border: 2px dotted rgba(255,165,0,0.5); /* debug */
+}
+
+.strapline {
+  font-size: clamp(1.5rem, 3vw, 2.5rem);
+  line-height: 1.3;
+  font-weight: 400;
+  display: inline;
+  background: var(--color-text);
+  color: var(--color-background);
+}
+
+/* 4) swap to your “wide” image at 1650px */
+@media (min-width: 1650px) {
+  .hero picture > source {
+    content: url('/assets/images/generated-wide.avif');
+  }
+}

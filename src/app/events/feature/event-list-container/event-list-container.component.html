@@ -1,0 +1,32 @@
+<div class="container">
+  <h1>
+    @switch (filterStatus$$()) { @case (EventStatus.UPCOMING) {Upcoming Events}
+    @case (EventStatus.PAST) {Past Events} @case (EventStatus.PENDING) {Events
+    Awaiting Review} @case (EventStatus.ARCHIVED) {Archived Events} }
+  </h1>
+
+  <app-events-nav />
+
+  <!-- Error -->
+  <p class="error" *ngIf="error$$()">{{ error$$() }}</p>
+
+  <!-- Event list or fallback -->
+  <ng-container *ngIf="paginatedEvents().length > 0; else noEvents">
+    <ol class="approved-events">
+      <li *ngFor="let event of paginatedEvents(); trackBy: trackByEventId">
+        <app-event-list-item [event]="event" (clicked)="onItemClicked(event)" />
+      </li>
+    </ol>
+
+    <app-pagination
+      [currentPage]="currentPage$$()"
+      [totalPages]="totalPages()"
+      [pageSize]="pageSize"
+      (pageChange)="onPageChange($event)"
+    ></app-pagination>
+  </ng-container>
+
+  <ng-template #noEvents>
+    <p>No events found.</p>
+  </ng-template>
+</div>
