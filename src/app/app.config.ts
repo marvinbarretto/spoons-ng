@@ -5,7 +5,7 @@ import { appRoutes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { USER_THEME_TOKEN } from '../libs/tokens/user-theme.token';
 import { ThemeStore } from './shared/data-access/theme.store';
-import { provideAuthInitializer } from './auth/data-access/auth-initializer';
+// import { provideAuthInitializer } from './auth/data-access/auth-initializer';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { authInterceptor } from './auth/data-access/auth.interceptor';
 import { GlobalErrorHandler } from './shared/utils/global-error-handler';
@@ -27,7 +27,8 @@ export const appConfig: ApplicationConfig = {
     provideClientHydration(withEventReplay()),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(appRoutes),
-    provideAuthInitializer(),
+    // TODO: Vertify if its useful
+    // provideAuthInitializer(),
     provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
     { provide: 'environment', useValue: environment },

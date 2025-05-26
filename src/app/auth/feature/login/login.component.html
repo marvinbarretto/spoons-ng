@@ -1,18 +1,10 @@
 <div class="login">
   <h1>Login</h1>
 
-  <!-- Quick login buttons for dev -->
-  <div class="quick-login">
-    <app-button [fullWidth$$]="true" [icon$$]="'person'" (onClick)="quickLogin('auth')">Login as Authenticated</app-button>
-    <app-button [fullWidth$$]="true" [icon$$]="'person'" (onClick)="quickLogin('author')">Login as Author</app-button>
-    <app-button [fullWidth$$]="true" [icon$$]="'person'" (onClick)="quickLogin('admin')">Login as Admin</app-button>
-  </div>
 
 
 
-
-
-  <form (ngSubmit)="onLogin()">
+  <!-- <form (ngSubmit)="onLogin()">
     <label for="identifier">Email</label>
     <input id="identifier" name="identifier" [(ngModel)]="identifier" required />
 
@@ -27,5 +19,5 @@
     >
       Login
     </app-button>
-  </form>
+  </form> -->
 </div>

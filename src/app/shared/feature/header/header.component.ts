@@ -13,7 +13,6 @@ import { Router, RouterModule } from '@angular/router';
 
 import { CommonModule } from '@angular/common';
 import { FeatureFlagPipe } from '../../utils/feature-flag.pipe';
-import { UserInfoComponent } from '../user-info/user-info.component';
 import { SsrPlatformService } from '../../utils/ssr/ssr-platform.service';
 import { PageStore } from '../../../pages/data-access/page.store';
 import { PanelStore, PanelType } from '../../ui/panel/panel.store';
@@ -28,7 +27,6 @@ import { NavComponent } from '../nav/nav.component';
     RouterModule,
     CommonModule,
     FeatureFlagPipe,
-    UserInfoComponent,
     NavComponent,
   ],
 })

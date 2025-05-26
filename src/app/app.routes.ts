@@ -32,12 +32,12 @@ export const appRoutes: Routes = [
     title: 'Site Map',
     component: SiteMapComponent,
   },
-  {
-    path: 'events',
-    title: 'Events',
-    loadChildren: () =>
-      import('./events/events.routes').then((m) => m.EVENTS_ROUTES),
-  },
+  // {
+  //   path: 'events',
+  //   title: 'Events',
+  //   loadChildren: () =>
+  //     import('./events/events.routes').then((m) => m.EVENTS_ROUTES),
+  // },
   // Only works for single-segment routes
   {
     path: ':slug',

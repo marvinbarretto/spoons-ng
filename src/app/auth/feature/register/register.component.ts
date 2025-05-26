@@ -39,6 +39,6 @@ export class RegisterComponent {
     }
 
     const { username, email, password } = this.registerForm.value;
-    this.authStore.register({ username, email, password });
+    // this.authStore.register({ username, email, password });
   }
 }
