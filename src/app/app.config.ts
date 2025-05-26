@@ -1,4 +1,4 @@
-import { ApplicationConfig, ErrorHandler, inject, provideAppInitializer, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, ErrorHandler, inject, provideAppInitializer, provideZoneChangeDetection, isDevMode } from '@angular/core';
 import { provideRouter, TitleStrategy } from '@angular/router';
 
 import { appRoutes } from './app.routes';
@@ -13,6 +13,7 @@ import { environment } from '../environments/environment';
 import { DeviceCapabilityService } from './shared/utils/device-capability-check.service';
 import { TemplatePageTitleStrategy } from './TemplatePageTitleStrategy';
 import { firebaseProviders } from '../../firebase.config';
+import { provideServiceWorker } from '@angular/service-worker';
 
 
 export const appConfig: ApplicationConfig = {
@@ -30,6 +31,9 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
     { provide: 'environment', useValue: environment },
-    { provide: TitleStrategy, useClass: TemplatePageTitleStrategy }
+    { provide: TitleStrategy, useClass: TemplatePageTitleStrategy }, provideServiceWorker('ngsw-worker.js', {
+            enabled: !isDevMode(),
+            registrationStrategy: 'registerWhenStable:30000'
+          })
   ]
 };
