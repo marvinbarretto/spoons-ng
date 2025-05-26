@@ -8,6 +8,7 @@ import { FeedbackWidgetComponent } from '../feedback-widget/feedback-widget.comp
 import { RegisterWidgetComponent } from "../register-widget/register-widget.component";
 import { WaitComponent } from "../../../test/wait/wait.component";
 import { FirestoreService } from '../../../auth/data-access/firestore.service';
+import { PubListComponent } from "../../../pubs/ui/pub-list/pub-list.component";
 
 
 @Component({
@@ -19,7 +20,8 @@ import { FirestoreService } from '../../../auth/data-access/firestore.service';
     AdvertWidgetComponent,
     FeedbackWidgetComponent,
     RegisterWidgetComponent,
-    WaitComponent
+    WaitComponent,
+    PubListComponent
 ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
