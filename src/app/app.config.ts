@@ -12,9 +12,12 @@ import { GlobalErrorHandler } from './shared/utils/global-error-handler';
 import { environment } from '../environments/environment';
 import { DeviceCapabilityService } from './shared/utils/device-capability-check.service';
 import { TemplatePageTitleStrategy } from './TemplatePageTitleStrategy';
+import { firebaseProviders } from '../../firebase.config';
+
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    ...firebaseProviders,
     { provide: DeviceCapabilityService, useClass: DeviceCapabilityService },
     { provide: USER_THEME_TOKEN, useValue: 'default' },
     provideAppInitializer(() => {

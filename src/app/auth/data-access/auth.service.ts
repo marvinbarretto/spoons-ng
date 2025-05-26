@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import {
   AuthResponse,
   LoginPayload,
@@ -12,6 +12,8 @@ import { User } from '../../users/utils/user.model';
   providedIn: 'root',
 })
 export class AuthService extends DirectStrapiService {
+
+
   login(payload: LoginPayload): Observable<AuthResponse> {
     return this.post<AuthResponse>(`auth/local`, payload);
   }

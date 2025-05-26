@@ -1,6 +1,8 @@
 <!-- TODO: Apply feature flag -->
 
 
+
+
 <app-wait></app-wait>
 <app-hero></app-hero>
 
@@ -9,6 +11,10 @@
   @if (!authStore.isAuthenticated$$()) {
     <app-register-widget></app-register-widget>
   }
+
+{{ data$$() | json }}
+
+
 
   <app-advert-widget></app-advert-widget>
   <app-feedback-widget></app-feedback-widget>

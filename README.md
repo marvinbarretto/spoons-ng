@@ -3,6 +3,36 @@
 Gamified pub check-in app built with Angular + Firebase
 
 
+
+## Troubleshooting
+### Firebase
+- Useful commands
+  - `firebase projects:list`
+
+- Auth issues
+  - `firebase logout` 
+  - `rm -rf ~/.config/configstore/firebase-tools.json`
+  - `firebase login`
+
+- Permission issues
+  - `FirebaseError: Missing or insufficient permissions`
+    - they could be being blocked in the firestore rules, check the console
+    
+
+## Stack
+- Angular
+- Firestore
+- Firebase Hosting?
+- Docker
+- Redis
+- Node
+- Express
+- Jest, Supertest
+- Standard-version
+- Playwright soon...
+
+
+
 ## Workflow
 `build:ssr` will build the project and start the server
 `ng serve` will start the client for HMR development
