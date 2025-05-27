@@ -17,7 +17,6 @@ import { SsrPlatformService } from '../../utils/ssr/ssr-platform.service';
 import { PageStore } from '../../../pages/data-access/page.store';
 import { PanelStore, PanelType } from '../../ui/panel/panel.store';
 import { ViewportService } from '../../data-access/viewport.service';
-import { NavComponent } from '../nav/nav.component';
 import { UserInfoComponent } from "../user-info/user-info.component";
 
 @Component({
@@ -28,7 +27,6 @@ import { UserInfoComponent } from "../user-info/user-info.component";
     RouterModule,
     CommonModule,
     FeatureFlagPipe,
-    NavComponent,
     UserInfoComponent
 ],
 })
@@ -62,8 +60,6 @@ export class HeaderComponent implements OnInit, AfterViewInit {
   @ViewChild('panelTrigger', { static: false }) panelTriggerRef!: ElementRef;
 
   ngOnInit(): void {
-    if (this.platform.isServer) return;
-    this.pageStore.loadPrimaryNavLinks();
 
     console.log('isHomepage$$', this.isHomepage$$());
     console.log('currentRoute$$', this.currentRoute$$());

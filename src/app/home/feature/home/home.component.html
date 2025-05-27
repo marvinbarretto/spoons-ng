@@ -1,23 +1,42 @@
-<!-- TODO: Apply feature flag -->
+<h1>🍻 Welcome to Spoons</h1>
 
+<section>
+  <h2>🔎 Debug: Raw Location</h2>
+  <pre>{{ location$$() | json }}</pre>
+</section>
 
+<section>
+  <h2>🏘️ Debug: All pubs ({{ allPubs$$().length }})</h2>
+  <ul>
+    <li *ngFor="let pub of allPubs$$()">
+      {{ pub.name }} – {{ pub.location.city }}, {{ pub.location.country }}
+    </li>
+  </ul>
+</section>
 
+<section>
+  <h2>📏 Debug: Calculated Distances</h2>
+  <ul>
+    <li *ngFor="let dist of distances$$()">
+      {{ dist[0] }} – {{ dist[1] | number:'1.0-0' }}m
+    </li>
+  </ul>
+</section>
 
+<section>
+  <h2>📍 Nearest pubs ({{ nearestPubs$$().length }})</h2>
 
-<app-pub-list></app-pub-list>
-<app-wait></app-wait>
-<app-hero></app-hero>
-
-<div class="sections">
-
-  @if (!authStore.isAuthenticated$$()) {
-    <app-register-widget></app-register-widget>
+  @if (nearestPubs$$().length) {
+    <ul>
+      @for (pub of nearestPubs$$(); track pub.id) {
+        <li>{{ pub.name }} ({{ pub.distance.toFixed(0) }}m away)</li>
+      }
+    </ul>
+  } @else {
+    <p>📡 Trying to find pubs near you...</p>
   }
+</section>
 
-{{ data$$() | json }}
+<hr />
 
-
-
-  <app-advert-widget></app-advert-widget>
-  <app-feedback-widget></app-feedback-widget>
-</div>
+<app-pub-list />

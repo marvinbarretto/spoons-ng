@@ -34,7 +34,6 @@ import { getRedisClient } from '../server/redis/redis.client';
 import newsRoute from '../server/routes/news.route';
 import debugRoute from '../server/routes/debug.route';
 import eventsRoute from '../server/routes/events.route';
-import navRoute from '../server/routes/nav.route';
 import devRoute from '../server/routes/dev.route';
 
 // === Debug Utilities ===
@@ -111,7 +110,6 @@ export async function createServer(): Promise<express.Express> {
 
   app.use(newsRoute);
   app.use(eventsRoute);
-  app.use(navRoute);
 
   // Static assets
   app.get(

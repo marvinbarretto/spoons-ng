@@ -8,7 +8,6 @@ import { filter } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ThemeSelectorComponent } from './shared/feature/theme-selector/theme-selector.component';
-import { NavComponent } from './shared/feature/nav/nav.component';
 import { NotificationsComponent } from './shared/ui/notifications/notifications.component';
 import { SearchComponent } from './shared/feature/search/search.component';
 import { PanelComponent } from './shared/ui/panel/panel.component';
@@ -26,7 +25,6 @@ import { PageTitleService } from './shared/data-access/page-title.service';
     PanelComponent,
     ThemeSelectorComponent,
     CommonModule,
-    NavComponent,
     SearchComponent,
     NotificationsComponent,
     ToastComponent

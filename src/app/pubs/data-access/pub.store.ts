@@ -1,7 +1,9 @@
 // pub.store.ts
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { PubsService } from './pubs.service';
 import type { Pub } from '../utils/pub.models';
+import pubs from '../utils/pubs.json';
+import { SsrPlatformService } from '../../shared/utils/ssr/ssr-platform.service';
 
 @Injectable({ providedIn: 'root' })
 export class PubStore {
@@ -10,37 +12,26 @@ export class PubStore {
   readonly error$$ = signal<string | null>(null);
 
   private loaded = false;
-  // this feels flat, not dynamic?
-
   readonly pubService = inject(PubsService);
+  readonly platform = inject(SsrPlatformService);
 
   constructor() {
     console.log('[PubStore] Bootstrapping');
+
+    // Always use mock response in both SSR and browser
+    this.pubs$$.set(pubs); // ← this is your local JSON import
+    this.loaded = true;
+
+    // Optional: log clearly that we're skipping Firestore
+    console.log('[PubStore] 🚫 Skipping Firestore; using local pubs.json');
   }
 
   loadOnce() {
-    if (this.loaded) return;
-    this.loadPubs();
+    // no-op while using mock data
   }
 
   loadPubs() {
-    console.log('[PubStore] 📡 Loading pubs...');
-    this.loading$$.set(true);
-    this.error$$.set(null);
-
-    this.pubService.loadPubs().subscribe({
-      next: (data) => {
-        console.log('[PubStore] ✅ Pubs loaded from Firestore:', data);
-        this.pubs$$.set(data);
-        this.loaded = true;
-      },
-      error: (err) => {
-        console.error('[PubStore] ❌ Failed to load pubs:', err);
-        this.error$$.set(String(err));
-      },
-      complete: () => {
-        this.loading$$.set(false);
-      },
-    });
+    // no-op while using mock data
   }
 }
+

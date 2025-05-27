@@ -1,40 +1,28 @@
+import { Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
-import { RouterModule } from '@angular/router';
-import { AuthStore } from '../../../auth/data-access/auth.store';
-import { HeroComponent } from "../../../shared/ui/hero/hero.component";
-import { AdvertWidgetComponent } from '../advert-widget/advert-widget.component';
-import { FeedbackWidgetComponent } from '../feedback-widget/feedback-widget.component';
-import { RegisterWidgetComponent } from "../register-widget/register-widget.component";
-import { WaitComponent } from "../../../test/wait/wait.component";
-import { FirestoreService } from '../../../auth/data-access/firestore.service';
-import { PubListComponent } from "../../../pubs/ui/pub-list/pub-list.component";
-
+import { NearbyPubStore } from '../../../pubs/data-access/nearby-pub.store';
+import { LocationService } from '../../../shared/data-access/location.service';
+import { haversineDistanceInMeters } from '../../../shared/utils/geo';
+import { PubListComponent } from "../../../pubs/ui/pub-list/pub-list.component"; // if not yet exposed
 
 @Component({
   selector: 'app-home',
-  imports: [
-    RouterModule,
-    CommonModule,
-    HeroComponent,
-    AdvertWidgetComponent,
-    FeedbackWidgetComponent,
-    RegisterWidgetComponent,
-    WaitComponent,
-    PubListComponent
-],
+  standalone: true,
+  imports: [CommonModule, PubListComponent],
   templateUrl: './home.component.html',
-  styleUrl: './home.component.scss',
 })
 export class HomeComponent {
-  authStore = inject(AuthStore);
-  firestoreService = inject(FirestoreService);
+  private nearby = inject(NearbyPubStore);
+  private locationService = inject(LocationService);
 
-  readonly data$$ = signal<any[]>([]);
+  location$$ = this.nearby.location$$;
+  allPubs$$ = this.nearby.allPubs$$;
+  nearestPubs$$ = this.nearby.nearbyPubs$$;
 
-  constructor() {
-    this.firestoreService.getData().subscribe((data) => {
-      this.data$$.set(data);
-    });
-  }
+  distances$$ = computed(() => {
+    const loc = this.location$$();
+    const pubs = this.allPubs$$();
+    if (!loc) return [];
+    return pubs.map(p => [p.name, haversineDistanceInMeters(loc, p.location)]);
+  });
 }

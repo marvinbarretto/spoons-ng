@@ -2,7 +2,6 @@ import { Routes } from '@angular/router';
 import { LoginComponent } from './auth/feature/login/login.component';
 import { RegisterComponent } from './auth/feature/register/register.component';
 import { HomeComponent } from './home/feature/home/home.component';
-import { SiteMapComponent } from './pages/feature/site-map/site-map.component';
 import { PageResolverService } from './pages/data-access/page.resolver';
 import { pageGuard } from './pages/data-access/page.guard';
 import {
@@ -26,11 +25,6 @@ export const appRoutes: Routes = [
     path: 'register',
     title: 'Register',
     component: RegisterComponent,
-  },
-  {
-    path: 'site-map',
-    title: 'Site Map',
-    component: SiteMapComponent,
   },
   // {
   //   path: 'events',

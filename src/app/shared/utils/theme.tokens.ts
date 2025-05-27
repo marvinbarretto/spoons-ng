@@ -168,7 +168,7 @@ export const themeTokens: Record<string, Theme> = {
   Default: {
     name: 'Default',
     tokens: {
-      background: '#ECDFCC',
+      background: '#EFF7F6',
       text: '#181C14',
 
       buttonPrimaryBase: '#007BFF',
