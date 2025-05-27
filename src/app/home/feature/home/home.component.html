@@ -1,8 +1,27 @@
-<h1>🍻 Welcome to Spoons</h1>
-
 <section>
   <h2>🔎 Debug: Raw Location</h2>
   <pre>{{ location$$() | json }}</pre>
+</section>
+
+@if (userCanCheckIn$$()) {
+  <section>
+    <h2>Check-in to the {{ closestPub$$()?.name }}</h2>
+    <button>Check-in</button>
+  </section>
+}
+
+<section class="nearest-pubs">
+  <h2>📍 Nearest pubs ({{ nearestPubs$$().length }})</h2>
+
+  @if (nearestPubs$$().length) {
+    <ul>
+      @for (pub of nearestPubs$$(); track pub.id) {
+        <li>{{ pub.name }} ({{ pub.distance.toFixed(0) }}m away)</li>
+      }
+    </ul>
+  } @else {
+    <p>📡 Trying to find pubs near you...</p>
+  }
 </section>
 
 <section>
@@ -23,19 +42,7 @@
   </ul>
 </section>
 
-<section>
-  <h2>📍 Nearest pubs ({{ nearestPubs$$().length }})</h2>
 
-  @if (nearestPubs$$().length) {
-    <ul>
-      @for (pub of nearestPubs$$(); track pub.id) {
-        <li>{{ pub.name }} ({{ pub.distance.toFixed(0) }}m away)</li>
-      }
-    </ul>
-  } @else {
-    <p>📡 Trying to find pubs near you...</p>
-  }
-</section>
 
 <hr />
 

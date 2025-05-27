@@ -1,5 +1,15 @@
 [
   {
+    "id": "000",
+    "name": "The Locale",
+    "location": {
+      "city": "Watford",
+      "country": "England",
+      "lat": 51.6225,
+      "lng": -0.3222
+    }
+  },
+  {
     "id": "001",
     "name": "The Watford Arms",
     "location": {

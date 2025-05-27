@@ -21,25 +21,18 @@ export class NearbyPubStore {
 
     if (!location || !pubs.length) return [];
 
-    console.log('[NearbyPubStore] 🧪 distances:', pubs.map(p =>
-      [p.name, haversineDistanceInMeters(location, p.location)]
-    ));
+    const loc = { lat: location.lat, lng: location.lng };
 
     const pubsWithDistances = pubs.map((pub) => ({
       ...pub,
-      distance: haversineDistanceInMeters(location, pub.location),
+      distance: haversineDistanceInMeters(loc, pub.location),
     }));
 
-    console.log(
-      '🧪 Checking threshold:',
-      pubsWithDistances.map((p) => [p.name, p.distance, p.distance < PUB_DISTANCE_THRESHOLD_METRES])
-    );
+    console.log('[NearbyPubStore] 🧪 distances (m):', pubsWithDistances.map(p =>
+      [p.name, `${p.distance.toFixed(0)}m`, p.distance < PUB_DISTANCE_THRESHOLD_METRES ? '✅' : '❌']
+    ));
 
-    return pubs
-      .map((pub) => ({
-        ...pub,
-        distance: haversineDistanceInMeters(location, pub.location),
-      }))
+    return pubsWithDistances
       .filter((p) => p.distance < PUB_DISTANCE_THRESHOLD_METRES)
       .sort((a, b) => a.distance - b.distance)
       .slice(0, 3);

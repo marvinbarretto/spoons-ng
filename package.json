@@ -6,7 +6,6 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
-    "build:prod": "ng build --configuration=production",
     "watch": "ng build --watch --configuration development",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -15,7 +14,9 @@
     "ssr": "ng build && npm run serve:ssr",
     "serve:ssr": "DEBUG=api:* VERBOSE_ENV=true node dist/spoons/server/server.mjs",
     "release": "standard-version",
-    "analyze": "source-map-explorer dist/spoons/browser/*.js"
+    "analyze": "source-map-explorer dist/spoons/browser/*.js",
+    "build:firebase": "ng build --configuration production && cp dist/spoons/browser/index.csr.html dist/spoons/browser/index.html",
+    "deploy": "npm run build:firebase && firebase deploy"
   },
   "private": true,
   "dependencies": {

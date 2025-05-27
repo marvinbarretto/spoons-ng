@@ -13,18 +13,14 @@ import { SsrPlatformService } from '../../../shared/utils/ssr/ssr-platform.servi
     <div *ngIf="store.loading$$()">⏳ Loading pubs...</div>
     <div *ngIf="store.error$$()">❌ {{ store.error$$() }}</div>
 
-    <p *ngIf="store.pubs$$().length === 51">🧪 SSR fallback pubs loaded (51 pubs)</p>
-    <p *ngIf="store.pubs$$().length && store.pubs$$().length !== 51">📡 Live pubs loaded ({{ store.pubs$$().length }})</p>
-    <p *ngIf="!store.pubs$$().length && !store.loading$$()">⚠️ No pubs found.</p>
-
-    <ul>
+    <!-- <ul>
       @for (pub of store.pubs$$(); track pub.id) {
         <li>
           🏷 {{ pub.name }}<br />
           🌍 {{ pub.location.city }}, {{ pub.location.country }}
         </li>
       }
-    </ul>
+    </ul> -->
   `,
 })
 export class PubListComponent {

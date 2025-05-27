@@ -10,14 +10,24 @@ import { PubListComponent } from "../../../pubs/ui/pub-list/pub-list.component";
   standalone: true,
   imports: [CommonModule, PubListComponent],
   templateUrl: './home.component.html',
+  styleUrl: './home.component.scss'
 })
 export class HomeComponent {
-  private nearby = inject(NearbyPubStore);
+  private nearbyPubStore = inject(NearbyPubStore);
   private locationService = inject(LocationService);
 
-  location$$ = this.nearby.location$$;
-  allPubs$$ = this.nearby.allPubs$$;
-  nearestPubs$$ = this.nearby.nearbyPubs$$;
+  location$$ = this.nearbyPubStore.location$$;
+  allPubs$$ = this.nearbyPubStore.allPubs$$;
+  nearestPubs$$ = this.nearbyPubStore.nearbyPubs$$;
+
+
+  readonly closestPubId$$ = computed(() => this.nearbyPubStore.closestPub$$()?.id ?? null);
+
+  readonly userCanCheckIn$$ = this.nearbyPubStore.canCheckIn$$;
+  readonly closestPub$$ = this.nearbyPubStore.closestPub$$;
+
+
+
 
   distances$$ = computed(() => {
     const loc = this.location$$();

@@ -52,3 +52,6 @@ src/environments/environment.prod.ts
 
 PROJECT_CONTEXT.md
 FEATURES.md
+
+# Firebase
+.firebase/
