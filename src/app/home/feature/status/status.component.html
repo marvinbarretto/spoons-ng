@@ -1,0 +1,90 @@
+<section class="status">
+
+  <!-- TODO: Make these components -->
+  <section class="status__pub-count">
+    <h2>Pub count</h2>
+
+    @if (loading()) {
+      <p>Loading pubs...</p>
+    } @else {
+      <p>
+        You’ve claimed <strong>{{ claimedCount() }}</strong> of {{ totalPubs() }} pubs
+      </p>
+      <meter [value]="claimedCount()" [max]="totalPubs()"></meter>
+    }
+  </section>
+
+
+  @if ('patchwork' | featureFlag) {
+    <!--section class="status__patchwork">
+      <h2>Your Patchwork</h2>
+      <div class="patchwork-grid">
+        @for (pub of pubs().slice(0, 6); track pub.id) {
+          <img [src]="pub.carpetUrl" [alt]="pub.name" />
+        }
+      </div>
+    </section-->
+  }
+
+  @if ('landlord' | featureFlag) {
+    <section class="status__landlord">
+      <h2>You’re Landlord Of</h2>
+
+      @if (landlordPubs().length === 0) {
+        <p>You don’t own any pubs (yet!).</p>
+      } @else {
+        <ul>
+          @for (pub of landlordPubs(); track pub.id) {
+            <li>
+              <img [src]="pub.carpetUrl" [alt]="pub.name" />
+              <span>{{ pub.name }}</span>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  }
+
+  <!-- === Badges === -->
+  @if ('badges' | featureFlag) {
+    <section class="status__badges">
+      <h2>Your Badges</h2>
+
+      @if (badges().length === 0) {
+        <p>No badges earned yet. Keep checking in!</p>
+      } @else {
+        <ul class="badges-grid">
+          @for (badge of badges(); track badge.id) {
+            <li>
+              <img [src]="badge.iconUrl" [alt]="badge.name" />
+              <span>{{ badge.name }}</span>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  }
+
+  <!-- === Missions === -->
+  @if ('missions' | featureFlag) {
+    <section class="status__missions">
+      <h2>Your Missions</h2>
+
+      @if (missions().length === 0) {
+        <p>You haven’t joined any missions yet.</p>
+        <button>Browse Missions</button>
+      } @else {
+        <ul class="missions-list">
+          @for (mission of missions(); track mission.id) {
+            <li>
+              <h3>{{ mission.title }}</h3>
+              <meter [value]="mission.progress" [max]="mission.total"></meter>
+              <p>{{ mission.progress }} of {{ mission.total }} pubs</p>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  }
+
+</section>
