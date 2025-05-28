@@ -1,30 +1,15 @@
 // user-info.component.ts
-import { Component, inject } from '@angular/core';
+import { Component, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthStore } from '../../../auth/data-access/auth.store';
+import { ButtonComponent } from "../../ui/button/button.component";
 
 @Component({
   selector: 'app-user-info',
   standalone: true,
-  imports: [CommonModule],
-  template: `
-    @if (isAuthenticated()) {
-      <div class="user-info">
-        <img
-          *ngIf="user()?.photoURL"
-          [src]="user()?.photoURL"
-          alt="User avatar"
-          width="32"
-          height="32"
-        />
-        <span>👋 Logged in as {{ user()?.displayName || user()?.email }}</span>
-        <button (click)="authStore.logout()">Logout</button>
-      </div>
-    } @else {
-      <p>🙈 Not logged in</p>
-      <button (click)="authStore.loginWithGoogle()">Login with Google</button>
-    }
-  `,
+  imports: [CommonModule, ButtonComponent],
+  styleUrl: './user-info.component.scss',
+  templateUrl: './user-info.component.html',
 })
 export class UserInfoComponent {
   protected authStore = inject(AuthStore);
@@ -32,7 +17,18 @@ export class UserInfoComponent {
   readonly user = this.authStore.user$$;
   readonly isAuthenticated = this.authStore.isAuthenticated$$;
 
+
+  readonly isAuthenticatedWithGoogle = computed(() => {
+    return this.isAuthenticated() && !this.user()?.isAnonymous;
+  });
+
   logout() {
     this.authStore.logout();
   }
+
+  loginWithGoogle() {
+    this.authStore.loginWithGoogle();
+  }
 }
+
+

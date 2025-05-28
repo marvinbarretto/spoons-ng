@@ -1,1 +1,27 @@
-<p>user-info works!</p>
+<section class="user-info">
+
+@if (user()?.isAnonymous) {
+
+  <div class="user-info__anon">
+    <span class="material-symbols-outlined">person</span>
+    <p>{{ user()?.uid }}</p>
+  </div>
+
+  <app-button (click)="loginWithGoogle()">Login with Google</app-button>
+
+} @else {
+  <div class="user-info__user">
+    <img
+    *ngIf="user()?.photoURL"
+    [src]="user()?.photoURL"
+    alt="User avatar"
+    width="32"
+    height="32"
+  />
+  <p>{{ user()?.displayName || user()?.email }}</p>
+  </div>
+
+  <app-button (click)="logout()">Logout</app-button>
+}
+</section>
+

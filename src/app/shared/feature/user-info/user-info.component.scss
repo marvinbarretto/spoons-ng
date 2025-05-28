@@ -1,0 +1,41 @@
+.user-info {
+  background-color: var(--brand-dark);
+  color: var(--brand-light);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem;
+}
+
+.user-info__anon {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  span {
+    font-size: 3rem;
+
+  }
+  p {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 10rem;
+  }
+}
+
+.user-info__user {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  img {
+    border-radius: 50%;
+    border: solid 2px var(--brand-light);
+    width: 3rem;
+    height: 3rem;
+    // Q: What do they do?
+    // object-fit: cover;
+    // object-position: center;
+  }
+}

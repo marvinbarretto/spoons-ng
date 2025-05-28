@@ -20,14 +20,3 @@ export interface RegisterForm extends RegisterPayload {
   confirmPassword: string;
 }
 
-
-// TDOO: Move this
-// types/user.types.ts or similar
-export type MinimalUser = {
-  uid: string;
-  email?: string;
-  displayName?: string;
-  photoURL?: string;
-  emailVerified?: boolean;
-  isAnonymous?: boolean;
-}

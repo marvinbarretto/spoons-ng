@@ -1,9 +1,9 @@
 // auth.store.ts
 import { inject, Injectable, signal, computed } from '@angular/core';
 import { AuthService } from './auth.service';
-import { MinimalUser } from '../utils/auth.model';
 import { CookieService } from '../../shared/data-access/cookie.service';
 import { SsrPlatformService } from '../../shared/utils/ssr/ssr-platform.service';
+import { User } from '../../users/utils/user.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthStore {
@@ -11,7 +11,7 @@ export class AuthStore {
   private cookieService = inject(CookieService);
   private platform = inject(SsrPlatformService);
 
-  readonly user$$ = signal<MinimalUser | null>(null);
+  readonly user$$ = signal<User | null>(null);
   readonly token$$ = signal<string | null>(null);
   readonly ready$$ = signal(false);
   readonly isAuthenticated$$ = computed(() => !!this.token$$());
@@ -33,7 +33,7 @@ export class AuthStore {
 
       const token = await user.getIdToken();
 
-      const minimalUser: MinimalUser = {
+      const minimalUser: User = {
         uid: user.uid,
         email: user.email ?? undefined,
         displayName: user.displayName ?? undefined,

@@ -4,10 +4,7 @@
 </section>
 
 @if (userCanCheckIn$$()) {
-  <section>
-    <h2>Check-in to the {{ closestPub$$()?.name }}</h2>
-    <button>Check-in</button>
-  </section>
+  <app-check-in [closestPub]="closestPub$$()" />
 }
 
 <section class="nearest-pubs">
