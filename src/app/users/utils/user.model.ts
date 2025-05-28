@@ -5,4 +5,6 @@ export type User = {
   email?: string;
   displayName?: string;
   photoURL?: string;
+  joinedAt?: string;
+  claimedPubIds?: string[]; // denormalized cache
 };

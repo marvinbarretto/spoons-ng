@@ -1,17 +1,20 @@
 import { Injectable } from '@angular/core';
-import { DirectStrapiService } from '../../shared/data-access/strapi.service';
-import { Observable } from 'rxjs';
-import { User } from '../utils/user.model';
+import { FirebaseService } from '../../shared/data-access/firebase.service';
+import { UserData } from '../utils/user-data.model';
 
 @Injectable({
   providedIn: 'root',
 })
-export class UserService extends DirectStrapiService {
-  getUsers(): Observable<User[]> {
-    return this.get<User[]>('users?populate=role');
+export class UserService extends FirebaseService {
+  getUser(uid: string) {
+    return this.doc$<UserData>(`users/${uid}`);
   }
 
-  getUserDetails(): Observable<User> {
-    return this.get<User>('users/me?populate=role');
+  updateUser(uid: string, data: Partial<UserData>) {
+    return this.updateDoc<Partial<UserData>>(`users/${uid}`, data);
+  }
+
+  createUser(uid: string, data: UserData) {
+    return this.setDoc<UserData>(`users/${uid}`, data);
   }
 }
