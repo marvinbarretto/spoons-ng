@@ -4,7 +4,7 @@
 
   <div class="user-info__anon">
     <span class="material-symbols-outlined">person</span>
-    <p>{{ user()?.uid }}</p>
+    <p [title]="user()?.uid">{{ user()?.uid?.slice(0, 6) }}</p>
   </div>
 
   <app-button (click)="loginWithGoogle()">Login with Google</app-button>
