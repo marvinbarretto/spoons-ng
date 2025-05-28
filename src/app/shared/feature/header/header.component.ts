@@ -18,6 +18,7 @@ import { PageStore } from '../../../pages/data-access/page.store';
 import { PanelStore, PanelType } from '../../ui/panel/panel.store';
 import { ViewportService } from '../../data-access/viewport.service';
 import { UserInfoComponent } from "../user-info/user-info.component";
+import { NavComponent } from "../nav/nav.component";
 
 @Component({
   selector: 'app-header',
@@ -27,7 +28,8 @@ import { UserInfoComponent } from "../user-info/user-info.component";
     RouterModule,
     CommonModule,
     FeatureFlagPipe,
-    UserInfoComponent
+    UserInfoComponent,
+    NavComponent,
 ],
 })
 export class HeaderComponent implements OnInit, AfterViewInit {

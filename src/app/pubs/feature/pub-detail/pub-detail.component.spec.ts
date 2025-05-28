@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PubListComponent } from './pub-list.component';
+import { PubDetailComponent } from './pub-detail.component';
 
-describe('PubListComponent', () => {
-  let component: PubListComponent;
-  let fixture: ComponentFixture<PubListComponent>;
+describe('PubDetailComponent', () => {
+  let component: PubDetailComponent;
+  let fixture: ComponentFixture<PubDetailComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PubListComponent]
+      imports: [PubDetailComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(PubListComponent);
+    fixture = TestBed.createComponent(PubDetailComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

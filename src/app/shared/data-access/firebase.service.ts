@@ -10,7 +10,6 @@ import {
   getDocs,
   CollectionReference,
   DocumentReference,
-  DocumentData,
 } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { from } from 'rxjs';
@@ -54,6 +53,4 @@ export abstract class FirebaseService {
       return deleteDoc(ref);
     });
   }
-
-  // TODO: Do I need a ping/pong method or something for a just a quick sanity check?
 }

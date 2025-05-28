@@ -15,6 +15,7 @@ import { ToastComponent } from './shared/ui/toast/toast.component';
 import { DeviceCapabilityService } from './shared/utils/device-capability-check.service';
 import { SsrPlatformService } from './shared/utils/ssr/ssr-platform.service';
 import { PageTitleService } from './shared/data-access/page-title.service';
+import { NavComponent } from './shared/feature/nav/nav.component';
 
 @Component({
   selector: 'app-root',
@@ -27,7 +28,8 @@ import { PageTitleService } from './shared/data-access/page-title.service';
     CommonModule,
     SearchComponent,
     NotificationsComponent,
-    ToastComponent
+    ToastComponent,
+    NavComponent
 ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'

@@ -1,15 +1,12 @@
 import { Routes } from '@angular/router';
-import { LoginComponent } from './auth/feature/login/login.component';
-import { RegisterComponent } from './auth/feature/register/register.component';
 import { HomeComponent } from './home/feature/home/home.component';
-import { PageResolverService } from './pages/data-access/page.resolver';
-import { pageGuard } from './pages/data-access/page.guard';
 import {
   UrlSegment,
   Route,
   UrlSegmentGroup,
   UrlMatchResult,
 } from '@angular/router';
+import { PUBS_ROUTES } from './pubs/data-access/pub.routes';
 
 export const appRoutes: Routes = [
   {
@@ -17,39 +14,10 @@ export const appRoutes: Routes = [
     component: HomeComponent,
   },
   {
-    path: 'login',
-    title: 'Login',
-    component: LoginComponent,
-  },
-  {
-    path: 'register',
-    title: 'Register',
-    component: RegisterComponent,
-  },
-  // {
-  //   path: 'events',
-  //   title: 'Events',
-  //   loadChildren: () =>
-  //     import('./events/events.routes').then((m) => m.EVENTS_ROUTES),
-  // },
-  // Only works for single-segment routes
-  {
-    path: ':slug',
-    loadComponent: () =>
-      import('./pages/feature/page/page.component').then(
-        (m) => m.PageComponent
-      ),
-    resolve: { page: PageResolverService }, // Resolve page from CMS first
-    canActivate: [pageGuard], // Be resilient for conflicts
-  },
-  {
-    matcher: multiSegmentMatcher, // Use custom matcher for multi-segment slugs
-    loadComponent: () =>
-      import('./pages/feature/page/page.component').then(
-        (m) => m.PageComponent
-      ),
-    resolve: { page: PageResolverService },
-    canActivate: [pageGuard], // Add your guard if needed
+    path: 'pubs',
+    title: 'Pubs',
+    loadChildren: () =>
+      import('./pubs/data-access/pub.routes').then((m) => m.PUBS_ROUTES),
   },
   {
     path: '**',

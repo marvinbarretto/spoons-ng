@@ -18,9 +18,12 @@
   li {
     a {
       display: block;
-      padding: 0.5rem 1rem;
       font-size: var(--font-size);
-      color: white;
+
+      @media (min-width: $nav-breakpoint) {
+        color: white;
+        padding: 0.5rem 1rem;
+      }
 
       text-decoration: none;
       transition: background-color 0.2s ease, color 0.2s ease;

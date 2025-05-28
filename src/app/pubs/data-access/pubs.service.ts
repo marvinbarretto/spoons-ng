@@ -17,11 +17,6 @@ export class PubsService extends FirebaseService {
     return this.doc$<Pub>(`pubs/${id}`);
   }
 
-  // Should i add a $ for observable?
-  // its tricky to see those and the signals...
-
-  // set, update, delete if needed
-
   getAllPubs(): Promise<Pub[]> {
     const pubConverter: FirestoreDataConverter<Pub> = {
       toFirestore: (pub) => pub,
