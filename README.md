@@ -31,8 +31,6 @@ Gamified pub check-in app built with Angular + Firebase
 - Standard-version
 - Playwright soon...
 
-
-
 ## Workflow
 `build:ssr` will build the project and start the server
 `ng serve` will start the client for HMR development
@@ -120,3 +118,11 @@ events:v1
 - Auth & profile system
 - Gamification (badges, check-in)
 - Jest/Vitest test suite
+
+
+## Firebase
+
+Seeding
+```bash
+npx ts-node --project tsconfig.seed.json tools/seed/seed.ts
+```

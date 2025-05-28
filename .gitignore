@@ -55,3 +55,4 @@ FEATURES.md
 
 # Firebase
 .firebase/
+tools/seed/serviceAccountKey.json
