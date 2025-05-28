@@ -55,17 +55,17 @@ export class DeviceCapabilityService {
         this.deviceMemoryGB$$.set(memory);
 
         // Log raw diagnostics
-        console.group('%c[DeviceCapabilityService] 🧠 Raw Device Insights', 'color: #7c4dff; font-weight: bold');
-        console.log('userAgent:', ua);
-        console.log('devicePixelRatio:', dpi);
-        console.log('hasHighDpi:', dpi >= 1.5);
-        console.log('hardwareConcurrency:', cores);
-        console.log('prefersReducedMotion:', motionPref);
-        console.log('isTouchDevice:', touch);
-        console.log('connectionType:', connectionType);
-        console.log('effectiveConnectionType:', effectiveType);
-        console.log('deviceMemoryGB:', memory);
-        console.groupEnd();
+        // console.group('%c[DeviceCapabilityService] 🧠 Raw Device Insights', 'color: #7c4dff; font-weight: bold');
+        // console.log('userAgent:', ua);
+        // console.log('devicePixelRatio:', dpi);
+        // console.log('hasHighDpi:', dpi >= 1.5);
+        // console.log('hardwareConcurrency:', cores);
+        // console.log('prefersReducedMotion:', motionPref);
+        // console.log('isTouchDevice:', touch);
+        // console.log('connectionType:', connectionType);
+        // console.log('effectiveConnectionType:', effectiveType);
+        // console.log('deviceMemoryGB:', memory);
+        // console.groupEnd();
       });
     }
   }

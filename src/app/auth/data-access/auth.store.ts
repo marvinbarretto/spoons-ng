@@ -8,7 +8,6 @@ import { User } from '../../users/utils/user.model';
 @Injectable({ providedIn: 'root' })
 export class AuthStore {
   private authService = inject(AuthService);
-  private cookieService = inject(CookieService);
   private platform = inject(SsrPlatformService);
 
   readonly user$$ = signal<User | null>(null);
@@ -44,10 +43,10 @@ export class AuthStore {
 
       this.token$$.set(token);
       this.user$$.set(minimalUser);
-      this.cookieService.setCookie('authToken', token);
 
-      // Only safe in browser
-      localStorage.setItem('user', JSON.stringify(minimalUser));
+      if (this.platform.isBrowser) {
+        localStorage.setItem('user', JSON.stringify(minimalUser));
+      }
 
       this.ready$$.set(true);
       console.log('[AuthStore] ✅ Firebase user bootstrapped:', minimalUser);
@@ -57,7 +56,6 @@ export class AuthStore {
   logout() {
     this.token$$.set(null);
     this.user$$.set(null);
-    this.cookieService.deleteCookie('authToken');
 
     if (this.platform.isBrowser) {
       localStorage.removeItem('user');

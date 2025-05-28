@@ -5,6 +5,7 @@ import { environment } from '../../../environments/environment';
 import { PanelStore } from '../ui/panel/panel.store';
 import { ViewportService } from '../data-access/viewport.service';
 import { DeviceCapabilityService } from './device-capability-check.service';
+import { NearbyPubStore } from '../../pubs/data-access/nearby-pub.store';
 
 @Component({
   selector: 'app-dev-debug',
@@ -12,7 +13,7 @@ import { DeviceCapabilityService } from './device-capability-check.service';
   imports: [JsonPipe],
   template: `
     <div class="debug-panel">
-      <pre>User: {{ user$$() | json }}</pre>
+      <pre>Location: {{ location$$() | json }}</pre>
       <pre>Token: {{ token$$() }}</pre>
       <pre>Mobile view: {{ isMobile$$() }}</pre>
       <pre>Active panel: {{ activePanel$$() }}</pre>
@@ -46,11 +47,13 @@ export class DevDebugComponent {
   private readonly panelStore = inject(PanelStore);
   private readonly viewport = inject(ViewportService);
   private readonly device = inject(DeviceCapabilityService);
+  private readonly nearbyPubStore = inject(NearbyPubStore);
 
   user$$ = this.authStore.user$$;
   token$$ = this.authStore.token$$;
   isMobile$$ = this.viewport.isMobile$$;
   activePanel$$ = this.panelStore.activePanel;
+  location$$ = this.nearbyPubStore.location$$;
   devicePixelRatio$$ = this.device!.devicePixelRatio$$();
   hardwareConcurrency$$ = this.device!.hardwareConcurrency$$();
   prefersReducedMotion$$ = this.device!.prefersReducedMotion$$();

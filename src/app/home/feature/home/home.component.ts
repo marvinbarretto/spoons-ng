@@ -4,12 +4,12 @@ import { NearbyPubStore } from '../../../pubs/data-access/nearby-pub.store';
 import { LocationService } from '../../../shared/data-access/location.service';
 import { haversineDistanceInMeters } from '../../../shared/utils/geo';
 import { PubListComponent } from "../../../pubs/ui/pub-list/pub-list.component";
-import { CheckInComponent } from "../../../check-in/ui/check-in/check-in.component"; // if not yet exposed
+import { CheckInComponent } from "../../../check-in/ui/check-in/check-in.component";
+import { StatusComponent } from "../status/status.component"; // if not yet exposed
 
 @Component({
   selector: 'app-home',
-  standalone: true,
-  imports: [CommonModule, PubListComponent, CheckInComponent],
+  imports: [CommonModule, PubListComponent, CheckInComponent, StatusComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })

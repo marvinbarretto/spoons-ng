@@ -7,7 +7,6 @@ import { USER_THEME_TOKEN } from '../libs/tokens/user-theme.token';
 import { ThemeStore } from './shared/data-access/theme.store';
 // import { provideAuthInitializer } from './auth/data-access/auth-initializer';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
-import { authInterceptor } from './auth/data-access/auth.interceptor';
 import { GlobalErrorHandler } from './shared/utils/global-error-handler';
 import { environment } from '../environments/environment';
 import { DeviceCapabilityService } from './shared/utils/device-capability-check.service';
@@ -29,7 +28,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(appRoutes),
     // TODO: Vertify if its useful
     // provideAuthInitializer(),
-    provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
+    provideHttpClient(withFetch()),
     { provide: ErrorHandler, useClass: GlobalErrorHandler },
     { provide: 'environment', useValue: environment },
     { provide: TitleStrategy, useClass: TemplatePageTitleStrategy }, provideServiceWorker('ngsw-worker.js', {

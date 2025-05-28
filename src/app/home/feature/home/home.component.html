@@ -1,7 +1,4 @@
-<section>
-  <h2>🔎 Debug: Raw Location</h2>
-  <pre>{{ location$$() | json }}</pre>
-</section>
+<app-status></app-status>
 
 @if (userCanCheckIn$$()) {
   <app-check-in [closestPub]="closestPub$$()" />
@@ -19,15 +16,6 @@
   } @else {
     <p>📡 Trying to find pubs near you...</p>
   }
-</section>
-
-<section>
-  <h2>🏘️ Debug: All pubs ({{ allPubs$$().length }})</h2>
-  <ul>
-    <li *ngFor="let pub of allPubs$$()">
-      {{ pub.name }} – {{ pub.location.city }}, {{ pub.location.country }}
-    </li>
-  </ul>
 </section>
 
 <section>

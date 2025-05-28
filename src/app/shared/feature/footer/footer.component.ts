@@ -3,7 +3,7 @@ import { DevDebugComponent } from "../../utils/dev-debug.component";
 
 @Component({
   selector: 'app-footer',
-  imports: [],
+  imports: [DevDebugComponent],
   templateUrl: './footer.component.html',
   styleUrl: './footer.component.scss',
 })
