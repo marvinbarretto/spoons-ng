@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.5](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.4...v0.0.5) (2025-05-28)
+
+
+### Features
+
+* Neaten up user login ([a679bfa](https://github.com/marvinbarretto/spoons-ng/commit/a679bfa8c7c6125d6979f09b5b5eb5082c651bf0))
+* Seed firebase with real pubs ([57bf20d](https://github.com/marvinbarretto/spoons-ng/commit/57bf20d0e2c03273fd9531517517c3f6526731e7))
+* Stub out homepage status component ([8dd568a](https://github.com/marvinbarretto/spoons-ng/commit/8dd568a0241d5e846507b2ec350ff2aa869609b5))
+* Update PubStore to use real data ([d8a5f9c](https://github.com/marvinbarretto/spoons-ng/commit/d8a5f9ca9fae35ad9c05fe3f0c270a8240d1a5c7))
+* Update User service and store ([46c7614](https://github.com/marvinbarretto/spoons-ng/commit/46c761429c1d713b67b226132bf40b0a417c85f6))
+* UserInfo - show a bit of the UID ([5688a40](https://github.com/marvinbarretto/spoons-ng/commit/5688a4038639a8956bf62aabf2d6b5f5f0099695))
+
+
+### Bug Fixes
+
+* Update FirebaseService to run in injection context ([440245a](https://github.com/marvinbarretto/spoons-ng/commit/440245a2bac0a2018f7c6750640cda2fd449e4e0))
+
 ### [0.0.4](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.3...v0.0.4) (2025-05-27)
 
 
