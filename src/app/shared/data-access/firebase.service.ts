@@ -1,4 +1,4 @@
-import { inject } from '@angular/core';
+import { inject, Injector, runInInjectionContext } from '@angular/core';
 import {
   Firestore,
   collection,
@@ -17,31 +17,42 @@ import { from } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 export abstract class FirebaseService {
+  private injector = inject(Injector);
   protected firestore = inject(Firestore);
 
   protected collection$<T>(path: string): Observable<T[]> {
-    const col = collection(this.firestore, path) as CollectionReference<T>;
-    return from(getDocs(col)).pipe(map(snapshot => snapshot.docs.map(doc => doc.data())));
+    return runInInjectionContext(this.injector, () => {
+      const col = collection(this.firestore, path) as CollectionReference<T>;
+      return from(getDocs(col)).pipe(map(snapshot => snapshot.docs.map(doc => doc.data())));
+    });
   }
 
   protected doc$<T>(path: string): Observable<T | undefined> {
-    const ref = doc(this.firestore, path) as DocumentReference<T>;
-    return from(getDoc(ref)).pipe(map(snapshot => snapshot.data()));
+    return runInInjectionContext(this.injector, () => {
+      const ref = doc(this.firestore, path) as DocumentReference<T>;
+      return from(getDoc(ref)).pipe(map(snapshot => snapshot.data()));
+    });
   }
 
   protected setDoc<T>(path: string, data: T): Promise<void> {
-    const ref = doc(this.firestore, path) as DocumentReference<T>;
-    return setDoc(ref, data);
+    return runInInjectionContext(this.injector, () => {
+      const ref = doc(this.firestore, path) as DocumentReference<T>;
+      return setDoc(ref, data);
+    });
   }
 
   protected updateDoc<T>(path: string, data: Partial<T>): Promise<void> {
-    const ref = doc(this.firestore, path) as DocumentReference<T>;
-    return updateDoc(ref, data);
+    return runInInjectionContext(this.injector, () => {
+      const ref = doc(this.firestore, path) as DocumentReference<T>;
+      return updateDoc(ref, data);
+    });
   }
 
   protected deleteDoc(path: string): Promise<void> {
-    const ref = doc(this.firestore, path);
-    return deleteDoc(ref);
+    return runInInjectionContext(this.injector, () => {
+      const ref = doc(this.firestore, path);
+      return deleteDoc(ref);
+    });
   }
 
   // TODO: Do I need a ping/pong method or something for a just a quick sanity check?
