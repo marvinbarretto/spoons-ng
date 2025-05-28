@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.6](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.5...v0.0.6) (2025-05-28)
+
+
+### Features
+
+* List all pubs and add routing ([9737fc2](https://github.com/marvinbarretto/spoons-ng/commit/9737fc2d56f3f06a8bf68512f9cb43b99d8d0e2f))
+
 ### [0.0.5](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.4...v0.0.5) (2025-05-28)
 
 
