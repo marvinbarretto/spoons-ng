@@ -1,36 +1,46 @@
- // nearby-pub.store.ts
-import { Injectable, computed, signal, inject, effect } from '@angular/core';
+import { computed, effect, inject, Injectable, Signal } from '@angular/core';
 
-import { PubStore } from './pub.store';
+import type { Pub } from '../utils/pub.models';
 import { haversineDistanceInMeters } from '../../shared/utils/geo';
 import { LocationService } from '../../shared/data-access/location.service';
-import type { Pub } from '../utils/pub.models';
+import { PubStore } from './pub.store';
 import { PUB_DISTANCE_THRESHOLD_METRES } from '../../constants';
+
+
+
+type PubWithDistance = Pub & { distance: number };
 
 @Injectable({ providedIn: 'root' })
 export class NearbyPubStore {
-  private locationService = inject(LocationService);
-  private pubStore = inject(PubStore);
+  private readonly locationService = inject(LocationService);
+  private readonly pubStore = inject(PubStore);
 
-  readonly location$$ = this.locationService.location$$;
-  readonly allPubs$$ = this.pubStore.pubs$$;
+  readonly location$$: Signal<{ lat: number; lng: number } | null> =
+    this.locationService.location$$;
 
-  readonly nearbyPubs$$ = computed(() => {
+  readonly allPubs$$: Signal<Pub[]> = this.pubStore.pubs$$;
+
+  readonly nearbyPubs$$: Signal<PubWithDistance[]> = computed(() => {
     const location = this.location$$();
-    const pubs: Pub[] = this.allPubs$$();
+    const pubs = this.allPubs$$();
 
     if (!location || !pubs.length) return [];
 
-    const loc = { lat: location.lat, lng: location.lng };
+    const userLoc = { lat: location.lat, lng: location.lng };
 
-    const pubsWithDistances = pubs.map((pub) => ({
+    const pubsWithDistances: PubWithDistance[] = pubs.map((pub) => ({
       ...pub,
-      distance: haversineDistanceInMeters(loc, pub.location),
+      distance: haversineDistanceInMeters(userLoc, pub.location),
     }));
 
-    console.log('[NearbyPubStore] 🧪 distances (m):', pubsWithDistances.map(p =>
-      [p.name, `${p.distance.toFixed(0)}m`, p.distance < PUB_DISTANCE_THRESHOLD_METRES ? '✅' : '❌']
-    ));
+    console.log(
+      '[NearbyPubStore] 🧪 distances (m):',
+      pubsWithDistances.map((p) => [
+        p.name,
+        `${p.distance.toFixed(0)}m`,
+        p.distance < PUB_DISTANCE_THRESHOLD_METRES ? '✅' : '❌',
+      ])
+    );
 
     return pubsWithDistances
       .filter((p) => p.distance < PUB_DISTANCE_THRESHOLD_METRES)
@@ -38,12 +48,12 @@ export class NearbyPubStore {
       .slice(0, 3);
   });
 
-  readonly closestPub$$ = computed(() => {
+  readonly closestPub$$: Signal<PubWithDistance | null> = computed(() => {
     const pubs = this.nearbyPubs$$();
     return pubs.length > 0 ? pubs[0] : null;
   });
 
-  readonly canCheckIn$$ = computed(() => !!this.closestPub$$());
+  readonly canCheckIn$$: Signal<boolean> = computed(() => !!this.closestPub$$());
 
   constructor() {
     console.log('[NearbyPubStore] Bootstrapping');

@@ -58,4 +58,7 @@ FEATURES.md
 tools/seed/serviceAccountKey.json
 ARCHITECTURE_SUMMARY.md
 PROMPT_CONTEXT.md
-tools/seed/html-snippett.html
+tools/seed/pub-data-source.html
+
+
+ssr-backup/

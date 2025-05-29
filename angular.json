@@ -18,39 +18,35 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "allowedCommonJsDependencies": [
-              "dotenv",
-              "compression",
-              "cors",
-              "cookie-parser",
-              "debug",
-              "redis",
-              "form-data",
-              "proxy-from-env",
-              "follow-redirects"
-            ],
-            "outputPath": "dist/spoons",
-            "index": "src/index.html",
-            "browser": "src/main.ts",
-            "polyfills": ["zone.js"],
-            "tsConfig": "tsconfig.app.json",
-            "inlineStyleLanguage": "scss",
-            "assets": [
-              {
-                "glob": "**/*",
-                "input": "public"
-              }
-            ],
-            "styles": ["src/styles.scss"],
-            "stylePreprocessorOptions": {
-              "includePaths": ["src"]
-            },
-            "scripts": [],
-            "server": "src/main.server.ts",
-            "ssr": {
-              "entry": "src/server.ts"
+          "allowedCommonJsDependencies": [
+            "dotenv",
+            "compression",
+            "cors",
+            "cookie-parser",
+            "debug",
+            "redis",
+            "form-data",
+            "proxy-from-env",
+            "follow-redirects"
+          ],
+          "outputPath": "dist/spoons",
+          "index": "src/index.html",
+          "browser": "src/main.ts",
+          "polyfills": ["zone.js"],
+          "tsConfig": "tsconfig.app.json",
+          "inlineStyleLanguage": "scss",
+          "assets": [
+            {
+              "glob": "**/*",
+              "input": "public"
             }
+          ],
+          "styles": ["src/styles.scss"],
+          "stylePreprocessorOptions": {
+            "includePaths": ["src"]
           },
+          "scripts": []
+        },
           "configurations": {
             "production": {
               "outputHashing": "all",
@@ -92,45 +88,6 @@
             },
             "development": {
               "buildTarget": "spoons:build:development"
-            }
-          },
-          "defaultConfiguration": "development"
-        },
-        "serve-ssr": {
-          "builder": "@angular-devkit/build-angular:ssr-dev-server",
-          "options": {
-            "browserTarget": "spoons:build:development",
-            "serverTarget": "spoons:server:development"
-          },
-          "configurations": {
-            "development": {
-              "browserTarget": "spoons:build:development",
-              "serverTarget": "spoons:server:development"
-            },
-            "production": {
-              "browserTarget": "spoons:build:production",
-              "serverTarget": "spoons:server:production"
-            }
-          },
-          "defaultConfiguration": "development"
-        },
-        "server": {
-          "builder": "@angular-devkit/build-angular:server",
-          "options": {
-            "outputPath": "dist/spoons/server",
-            "main": "src/main.server.ts",
-            "tsConfig": "tsconfig.server.json"
-          },
-          "configurations": {
-            "development": {
-              "outputPath": "dist/spoons/server",
-              "main": "src/main.server.ts",
-              "tsConfig": "tsconfig.server.json"
-            },
-            "production": {
-              "outputPath": "dist/spoons/server",
-              "main": "src/main.server.ts",
-              "tsConfig": "tsconfig.server.json"
             }
           },
           "defaultConfiguration": "development"

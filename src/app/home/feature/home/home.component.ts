@@ -1,36 +1,31 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, Signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NearbyPubStore } from '../../../pubs/data-access/nearby-pub.store';
-import { LocationService } from '../../../shared/data-access/location.service';
 import { haversineDistanceInMeters } from '../../../shared/utils/geo';
-import { PubListComponent } from "../../../pubs/feature/pubs-list/pubs-list.component";
-import { CheckInComponent } from "../../../check-in/ui/check-in/check-in.component";
-import { StatusComponent } from "../status/status.component"; // if not yet exposed
+import { StatusComponent } from "../status/status.component";
+import { CheckInHomepageWidgetComponent } from "../../../check-in/ui/check-in-homepage-widget/check-in-homepage-widget.component";
+import { Pub } from '../../../pubs/utils/pub.models';
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, PubListComponent, CheckInComponent, StatusComponent],
+  imports: [CommonModule, StatusComponent, CheckInHomepageWidgetComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
 export class HomeComponent {
-  private nearbyPubStore = inject(NearbyPubStore);
-  private locationService = inject(LocationService);
+  private readonly nearbyPubStore = inject(NearbyPubStore);
 
-  location$$ = this.nearbyPubStore.location$$;
-  allPubs$$ = this.nearbyPubStore.allPubs$$;
-  nearestPubs$$ = this.nearbyPubStore.nearbyPubs$$;
-
-
-  readonly closestPubId$$ = computed(() => this.nearbyPubStore.closestPub$$()?.id ?? null);
+  readonly location$$ = this.nearbyPubStore.location$$;
+  readonly allPubs$$ = this.nearbyPubStore.allPubs$$;
+  readonly nearestPubs$$ = this.nearbyPubStore.nearbyPubs$$;
 
   readonly userCanCheckIn$$ = this.nearbyPubStore.canCheckIn$$;
-  readonly closestPub$$ = this.nearbyPubStore.closestPub$$;
+  readonly closestPub$$: Signal<Pub | null> = this.nearbyPubStore.closestPub$$;
 
+  readonly closestPubId$$ = computed(() =>
+    this.nearbyPubStore.closestPub$$()?.id ?? null);
 
-
-
-  distances$$ = computed(() => {
+  readonly distances$$ = computed(() => {
     const loc = this.location$$();
     const pubs = this.allPubs$$();
     if (!loc) return [];

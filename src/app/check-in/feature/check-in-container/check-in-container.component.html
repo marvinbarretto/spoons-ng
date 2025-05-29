@@ -1,0 +1,12 @@
+<div class="camera-wrapper" *ngIf="!photoDataUrl(); else preview">
+  <video #video autoplay playsinline muted (loadedmetadata)="videoRef.set(video)"></video>
+  <button class="capture-btn" (click)="capturePhoto()">📸 Take Photo</button>
+</div>
+
+<ng-template #preview>
+  <img [src]="photoDataUrl()" alt="Captured photo" />
+  <div class="button-row">
+    <button (click)="retakePhoto()">↩️ Retake</button>
+    <button (click)="confirmPhoto()">✅ Confirm</button>
+  </div>
+</ng-template>

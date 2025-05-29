@@ -7,6 +7,7 @@ import {
   UrlMatchResult,
 } from '@angular/router';
 import { PUBS_ROUTES } from './pubs/data-access/pub.routes';
+import { CheckInContainerComponent } from './check-in/feature/check-in-container/check-in-container.component';
 
 export const appRoutes: Routes = [
   {
@@ -18,6 +19,10 @@ export const appRoutes: Routes = [
     title: 'Pubs',
     loadChildren: () =>
       import('./pubs/data-access/pub.routes').then((m) => m.PUBS_ROUTES),
+  },
+  {
+    path: 'check-in',
+    component: CheckInContainerComponent,
   },
   {
     path: '**',
