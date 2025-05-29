@@ -1,1 +1,41 @@
-<p>pub-detail works!</p>
+<article class="pub-detail">
+
+  @if (pub) {
+
+      <header>
+        <h1>{{ pub.name }}</h1>
+        <p>{{pub.city}}</p>
+      </header>
+
+
+      @if (pub.carpetUrl) {
+        <section class="carpet">
+          <h2>Carpet</h2>
+          <img [src]="pub.carpetUrl" alt="Carpet">
+        </section>
+      }
+
+
+      <section class="landlord">
+        <h2>Current landlord</h2>
+        <p>{{ pub.landlordId }}</p>
+      </section>
+
+      <section clas="stats">
+        <p>Check in count {{ pub.checkinCount }}</p>
+
+        <p>Record early check in {{ pub.recordEarlyCheckinAt }}</p>
+        <p>Record latest check in {{ pub.recordLatestCheckinAt }}</p>
+
+        <p>Longest streak {{ pub.longestStreak }}</p>
+      </section>
+
+
+
+
+  } @else {
+    <p>Pub not found.</p>
+  }
+
+  <a routerLink="/pubs">← Back to pubs</a>
+</article>

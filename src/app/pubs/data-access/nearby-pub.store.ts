@@ -33,14 +33,14 @@ export class NearbyPubStore {
       distance: haversineDistanceInMeters(userLoc, pub.location),
     }));
 
-    console.log(
-      '[NearbyPubStore] 🧪 distances (m):',
-      pubsWithDistances.map((p) => [
-        p.name,
-        `${p.distance.toFixed(0)}m`,
-        p.distance < PUB_DISTANCE_THRESHOLD_METRES ? '✅' : '❌',
-      ])
-    );
+    // console.log(
+    //   '[NearbyPubStore] 🧪 distances (m):',
+    //   pubsWithDistances.map((p) => [
+    //     p.name,
+    //     `${p.distance.toFixed(0)}m`,
+    //     p.distance < PUB_DISTANCE_THRESHOLD_METRES ? '✅' : '❌',
+    //   ])
+    // );
 
     return pubsWithDistances
       .filter((p) => p.distance < PUB_DISTANCE_THRESHOLD_METRES)
@@ -58,9 +58,9 @@ export class NearbyPubStore {
   constructor() {
     console.log('[NearbyPubStore] Bootstrapping');
     effect(() => {
-      console.log('[NearbyPubStore] 📍 location:', this.location$$());
-      console.log('[NearbyPubStore] 🧭 pubs:', this.allPubs$$());
-      console.log('[NearbyPubStore] 🏁 nearbyPubs:', this.nearbyPubs$$());
+      // console.log('[NearbyPubStore] 📍 location:', this.location$$());
+      // console.log('[NearbyPubStore] 🧭 pubs:', this.allPubs$$());
+      // console.log('[NearbyPubStore] 🏁 nearbyPubs:', this.nearbyPubs$$());
     });
   }
 }

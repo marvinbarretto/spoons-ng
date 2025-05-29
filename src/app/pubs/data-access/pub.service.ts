@@ -7,7 +7,7 @@ import { FirestoreDataConverter, collection, getDocs } from 'firebase/firestore'
 @Injectable({
   providedIn: 'root'
 })
-export class PubsService extends FirebaseService {
+export class PubService extends FirebaseService {
 
   loadPubs(): Observable<Pub[]> {
     return this.collection$<Pub>('pubs');
@@ -28,6 +28,4 @@ export class PubsService extends FirebaseService {
       snapshot.docs.map(doc => doc.data())
     );
   }
-
-
 }

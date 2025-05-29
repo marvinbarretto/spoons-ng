@@ -5,6 +5,7 @@ export type Checkin = {
   userId: string;
   pubId: string;
   timestamp: Timestamp;
+  photoUrl?: string;
   location?: { lat: number; lng: number };
   dateKey?: string;
   distanceMeters?: number;

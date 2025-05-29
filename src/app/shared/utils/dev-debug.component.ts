@@ -17,13 +17,10 @@ import { NearbyPubStore } from '../../pubs/data-access/nearby-pub.store';
       <pre>Token: {{ token$$() }}</pre>
       <pre>Mobile view: {{ isMobile$$() }}</pre>
       <pre>Active panel: {{ activePanel$$() }}</pre>
-      <pre>Device Pixel Ratio: {{ devicePixelRatio$$ }}</pre>
-      <pre>Hardware Concurrency: {{ hardwareConcurrency$$ }}</pre>
-      <pre>Is Low Power Device: {{ isLowPowerDevice$$ }}</pre>
-      <pre>Is Touch Device: {{ isTouchDevice$$ }}</pre>
-      <pre>Connection Type: {{ connectionType$$ }}</pre>
-      <pre>Effective Connection Type: {{ effectiveConnectionType$$ }}</pre>
-      <pre>Device Memory (GB): {{ deviceMemoryGB$$ }}</pre>
+      <pre>Closest pub: {{ closestPub$$() | json }}</pre>
+      <pre>Can check-in: {{ canCheckIn$$() }}</pre>
+
+
     </div>
   `,
   styles: [
@@ -62,6 +59,9 @@ export class DevDebugComponent {
   connectionType$$ = this.device!.connectionType$$();
   effectiveConnectionType$$ = this.device!.effectiveConnectionType$$();
   deviceMemoryGB$$ = this.device!.deviceMemoryGB$$();
+
+  closestPub$$ = this.nearbyPubStore.closestPub$$;
+  canCheckIn$$ = this.nearbyPubStore.canCheckIn$$;
 
   isDev = !environment.production;
 }

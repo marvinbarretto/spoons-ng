@@ -6,5 +6,10 @@ export type User = {
   displayName?: string;
   photoURL?: string;
   joinedAt?: string;
-  claimedPubIds?: string[]; // denormalized cache
+
+  landlordOf: string[];
+  claimedPubIds: string[];
+  checkedInPubIds: string[];
+  badges: string[];
+  streaks: Record<string, number>;
 };

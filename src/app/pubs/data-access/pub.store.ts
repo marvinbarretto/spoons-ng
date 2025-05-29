@@ -1,7 +1,7 @@
 import { signal } from '@angular/core';
 import { Pub } from '../utils/pub.models';
 import { inject } from '@angular/core';
-import { PubsService } from './pubs.service';
+import { PubService } from './pub.service';
 import { Injectable } from '@angular/core';
 import { CacheService } from '../../shared/data-access/cache.service';
 
@@ -13,7 +13,7 @@ export class PubStore {
   readonly loading$$ = signal(false);
   readonly error$$ = signal<string | null>(null);
 
-  private readonly pubService = inject(PubsService);
+  private readonly pubService = inject(PubService);
   private readonly cacheService = inject(CacheService);
 
 

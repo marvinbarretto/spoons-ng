@@ -1,12 +1,17 @@
-<div class="camera-wrapper" *ngIf="!photoDataUrl(); else preview">
-  <video #video autoplay playsinline muted (loadedmetadata)="videoRef.set(video)"></video>
-  <button class="capture-btn" (click)="capturePhoto()">📸 Take Photo</button>
-</div>
+<section class="check-in-container">
+  <h1>Check in</h1>
 
-<ng-template #preview>
-  <img [src]="photoDataUrl()" alt="Captured photo" />
-  <div class="button-row">
-    <button (click)="retakePhoto()">↩️ Retake</button>
-    <button (click)="confirmPhoto()">✅ Confirm</button>
-  </div>
-</ng-template>
+    <video #video autoplay muted playsinline></video>
+    <app-button (onClick)="capturePhoto()" [disabled$$]="loading$$()">📸 Capture photo</app-button>
+
+
+    <!-- @if (!photoDataUrl()) {
+      <video #video autoplay muted playsinline width="300" class="camera-preview"></video>
+      <app-button (onClick)="capturePhoto()">Capture</app-button>
+    } @else {
+      <img [src]="photoDataUrl()!" alt="Captured" width="300" />
+      <app-button (onClick)="confirmPhoto()">Confirm</app-button>
+      <app-button (onClick)="retakePhoto()">Retake</app-button>
+    } -->
+
+</section>

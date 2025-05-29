@@ -9,7 +9,7 @@ import { RouterModule } from '@angular/router';
   template: `
     <a [routerLink]="['/pubs', pub.id]" class="pub-card">
       <h2>{{ pub.name }}</h2>
-      <p>{{ pub.location.city }}</p>
+      <p>{{ pub.city }}</p>
     </a>
   `,
   styles: [`

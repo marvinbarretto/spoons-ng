@@ -2,18 +2,21 @@ import { Injectable, Injector, runInInjectionContext } from '@angular/core';
 import { computed, effect, inject, signal } from "@angular/core";
 import { UserService } from "./user.service";
 import { AuthStore } from "../../auth/data-access/auth.store";
-import { UserData } from "../utils/user-data.model";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { Subject, takeUntil } from "rxjs";
+import { User } from "../utils/user.model";
 
 @Injectable({ providedIn: 'root' })
 export class UserStore {
   private readonly userService = inject(UserService);
   private readonly authStore = inject(AuthStore);
 
-  readonly userData$$ = signal<UserData | null>(null);
+  readonly user$$ = signal<User | null>(null);
   readonly loading$$ = signal(false);
   readonly error$$ = signal<string | null>(null);
+
+
+
 
   private destroy$ = new Subject<void>();
 
@@ -22,31 +25,50 @@ export class UserStore {
       const authUser = this.authStore.user$$();
       if (!authUser) return;
 
-      this.loadUserData(authUser.uid);
+      this.loadUser(authUser.uid);
     });
   }
 
-  loadUserData(uid: string) {
+
+  loadUser(uid: string) {
     this.loading$$.set(true);
     this.error$$.set(null);
+
+    const authUser = this.authStore.user$$();
 
     this.userService.getUser(uid)
       .subscribe({
         next: (data) => {
-          this.userData$$.set(data ?? { claimedPubIds: [] });
-          console.log('[UserStore] ✅ Live user data updated:', data);
+          const merged: User = {
+            uid: authUser?.uid ?? '',
+            displayName: authUser?.displayName ?? '',
+            email: authUser?.email ?? '',
+            emailVerified: authUser?.emailVerified ?? false,
+            isAnonymous: authUser?.isAnonymous ?? true,
+            photoURL: authUser?.photoURL ?? '',
+            joinedAt: authUser?.joinedAt ?? '',
+
+            landlordOf: data?.landlordOf ?? [],
+            claimedPubIds: data?.claimedPubIds ?? [],
+            checkedInPubIds: data?.checkedInPubIds ?? [],
+            badges: data?.badges ?? [],
+            streaks: data?.streaks ?? {},
+          };
+
+          this.user$$.set(merged);
+          console.log('[UserStore] ✅ Merged user:', merged);
           this.loading$$.set(false);
         },
         error: (err) => {
           this.error$$.set('Failed to load user data');
-          console.error('[UserStore] ❌ Error in reactive user data stream:', err);
+          console.error('[UserStore] ❌ Error loading user:', err);
           this.loading$$.set(false);
         }
       });
   }
 
   get claimedCount() {
-    return computed(() => this.userData$$()?.claimedPubIds?.length ?? 0);
+    return computed(() => this.user$$()?.claimedPubIds?.length ?? 0);
   }
 
   ngOnDestroy() {
