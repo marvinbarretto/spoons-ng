@@ -23,7 +23,7 @@ export const appConfig: ApplicationConfig = {
     provideAppInitializer(() => {
       inject(ThemeStore);
     }),
-    provideClientHydration(withEventReplay()),
+    // provideClientHydration(withEventReplay()),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(appRoutes),
     // TODO: Vertify if its useful

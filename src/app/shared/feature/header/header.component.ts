@@ -14,7 +14,6 @@ import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FeatureFlagPipe } from '../../utils/feature-flag.pipe';
 import { SsrPlatformService } from '../../utils/ssr/ssr-platform.service';
-import { PageStore } from '../../../pages/data-access/page.store';
 import { PanelStore, PanelType } from '../../ui/panel/panel.store';
 import { ViewportService } from '../../data-access/viewport.service';
 import { UserInfoComponent } from "../user-info/user-info.component";
@@ -52,7 +51,6 @@ export class HeaderComponent implements OnInit, AfterViewInit {
 
 
 
-  readonly pageStore = inject(PageStore);
   readonly panelStore = inject(PanelStore);
   readonly isMobile$$ = inject(ViewportService).isMobile$$;
 
@@ -91,8 +89,6 @@ export class HeaderComponent implements OnInit, AfterViewInit {
     this.panelStore.setOriginY(y);
     this.panelStore.toggle(panel);
   }
-
-
 
   @HostBinding('class.is-mobile') get isMobileClass() {
     return this.isMobile$$();
