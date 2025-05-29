@@ -56,3 +56,6 @@ FEATURES.md
 # Firebase
 .firebase/
 tools/seed/serviceAccountKey.json
+ARCHITECTURE_SUMMARY.md
+PROMPT_CONTEXT.md
+tools/seed/html-snippett.html
