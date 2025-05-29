@@ -15,7 +15,7 @@
     "serve:ssr": "DEBUG=api:* VERBOSE_ENV=true node dist/spoons/server/server.mjs",
     "release": "standard-version",
     "analyze": "source-map-explorer dist/spoons/browser/*.js",
-    "build:firebase": "ng build --configuration production && cp dist/spoons/browser/index.csr.html dist/spoons/browser/index.html",
+    "build:firebase": "ng build --configuration production",
     "deploy": "npm run build:firebase && firebase deploy"
   },
   "private": true,
