@@ -35,7 +35,7 @@ export class PanelComponent implements OnInit {
     this.ssr.onlyOnBrowser(() => {
       effect(() => {
         const visible = this.isVisible();
-        console.log(`[PanelComponent] visibility changed:`, visible);
+        // console.log(`[PanelComponent] visibility changed:`, visible);
         document.body.style.overflow = visible ? 'hidden' : '';
       });
     });
@@ -46,21 +46,21 @@ export class PanelComponent implements OnInit {
       this.router.events
         .pipe(filter(e => e instanceof NavigationEnd))
         .subscribe(() => {
-          console.log(`[PanelComponent] route changed, closing panel`);
+          // console.log(`[PanelComponent] route changed, closing panel`);
           this.close();
         });
     });
   }
 
   close() {
-    console.log('[PanelComponent] close() called');
+    // console.log('[PanelComponent] close() called');
     this.panelStore.close();
   }
 
   @HostListener('document:keydown.escape')
   handleEscape() {
     if (this.isVisible()) {
-      console.log('[PanelComponent] Escape key pressed, closing panel');
+      // console.log('[PanelComponent] Escape key pressed, closing panel');
       this.close();
     }
   }

@@ -32,18 +32,15 @@ export class ToastService {
       timeout,
     };
 
-    console.log('[ToastService] Adding toast:', toast);
     this.toasts$$.update((current) => [toast, ...current]);
 
     if (!sticky && timeout) {
       const win = this.platform.getWindow();
       if (!win) {
-        console.warn('[ToastService] No window object – toast timeout skipped (SSR?)');
         return;
       }
 
       const timeoutId = win.setTimeout(() => {
-        console.log(`[ToastService] Auto-dismissing toast: ${toast.id}`);
         this.dismiss(toast.id);
       }, timeout);
 
@@ -68,8 +65,6 @@ export class ToastService {
   }
 
   dismiss(id: string): void {
-    console.log('[ToastService] Dismissing toast:', id);
-
     if (this.activeTimeouts.has(id)) {
       clearTimeout(this.activeTimeouts.get(id));
       this.activeTimeouts.delete(id);
@@ -79,8 +74,6 @@ export class ToastService {
   }
 
   clearAll(): void {
-    console.log('[ToastService] Clearing all toasts');
-
     this.activeTimeouts.forEach((id) => clearTimeout(id));
     this.activeTimeouts.clear();
 

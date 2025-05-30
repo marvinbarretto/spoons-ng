@@ -1,12 +1,13 @@
 import { Timestamp } from "firebase/firestore";
 
-export type Checkin = {
+export type CheckIn = {
   id: string;
   userId: string;
   pubId: string;
   timestamp: Timestamp;
+  dateKey: string;
   photoUrl?: string;
-  location?: { lat: number; lng: number };
-  dateKey?: string;
-  distanceMeters?: number;
+  madeUserLandlord?: boolean;
+  badgeName?: string;
+  missionUpdated?: boolean;
 };

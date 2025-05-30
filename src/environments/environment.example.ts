@@ -1,7 +1,7 @@
 export const environment = {
   production: false,
   ssr: false,
-  enableAllFeaturesForDev: true,
+  ENABLE_ALL_FEATURES_FOR_DEV: true,
   firebaseConfig: {
     apiKey: 'API_KEY',
     authDomain: 'AUTH_DOMAIN',
@@ -18,5 +18,6 @@ export const environment = {
     search: false,
     badges: false,
     missions: false,
+    photoUpload: false
   },
 };

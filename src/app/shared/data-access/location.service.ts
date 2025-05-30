@@ -46,12 +46,16 @@ export class LocationService {
       },
       (error) => {
         this.error$$.set(error.message);
-        console.warn('[LocationService] ❌ Error getting location:', error.message);
+        console.warn('[LocationService] ❌ Geolocation error', {
+          code: error.code,
+          message: error.message
+        });
         this.loading$$.set(false);
       },
       {
         enableHighAccuracy: true,
-        timeout: 10000,
+        maximumAge: 60000,
+        timeout: 5000,
       }
     );
   }

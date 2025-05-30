@@ -67,8 +67,11 @@ export class UserStore {
       });
   }
 
-  get claimedCount() {
-    return computed(() => this.user$$()?.claimedPubIds?.length ?? 0);
+  landlordCount(): number {
+    const user = this.user$$();
+    const count = user?.landlordOf?.length || 0;
+    console.log(`[UserStore] 🧮 Calculated landlordCount: ${count}`);
+    return count;
   }
 
   ngOnDestroy() {

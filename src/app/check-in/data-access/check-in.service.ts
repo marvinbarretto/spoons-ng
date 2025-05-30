@@ -1,18 +1,23 @@
 import { Injectable } from '@angular/core';
 import { FirebaseService } from '../../shared/data-access/firebase.service';
-import { addDoc, collection, getDocs, query, Timestamp, where } from 'firebase/firestore';
-import { Checkin } from '../util/check-in.model';
+import { addDoc, collection, DocumentReference, getDocs, query, serverTimestamp, setDoc, Timestamp, where } from 'firebase/firestore';
+import type { CheckIn } from '../util/check-in.model';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { Pub } from '../../pubs/utils/pub.models';
 import { earliest, latest } from '../../shared/utils/date-utils';
 import { User } from '../../users/utils/user.model';
 
+// TODO: can we improve this service, can it use signals?
+// Centralise user doc creation
+// how can we ensure we have a user doc before we create a checkin?
+// can we improve the naming conventions?
+
 @Injectable({
   providedIn: 'root'
 })
 export class CheckInService extends FirebaseService {
-  async getTodayCheckin(userId: string, pubId: string): Promise<Checkin | null> {
+  async getTodayCheckin(userId: string, pubId: string): Promise<CheckIn | null> {
     const todayDateKey = new Date().toISOString().split('T')[0];
 
     const ref = collection(this.firestore, 'checkins');
@@ -24,9 +29,19 @@ export class CheckInService extends FirebaseService {
     );
 
     const snapshot = await getDocs(q);
-    return snapshot.empty ? null : (snapshot.docs[0].data() as Checkin);
+    return snapshot.empty ? null : (snapshot.docs[0].data() as CheckIn);
   }
 
+  async loadUserCheckins(userId: string): Promise<CheckIn[]> {
+    const ref = collection(this.firestore, 'checkins');
+    const q = query(ref, where('userId', '==', userId));
+    const snapshot = await getDocs(q);
+
+    return snapshot.docs.map((doc) => ({
+      ...(doc.data() as CheckIn),
+      id: doc.id,
+    }));
+  }
 
   async uploadPhoto(dataUrl: string): Promise<string> {
     const storage = getStorage(); // assumes Firebase has been initialized
@@ -39,51 +54,65 @@ export class CheckInService extends FirebaseService {
     return getDownloadURL(storageRef);
   }
 
-  async completeCheckin(checkin: Omit<Checkin, 'id'>): Promise<void> {
+  async completeCheckin(checkin: Omit<CheckIn, 'id'>): Promise<DocumentReference> {
+    const { userId, pubId, timestamp } = checkin;
+
     const checkinsRef = collection(this.firestore, 'checkins');
-    const pubRef = doc(this.firestore, `pubs/${checkin.pubId}`);
-    const userRef = doc(this.firestore, `users/${checkin.userId}`);
+    const pubRef = doc(this.firestore, `pubs/${pubId}`);
+    const userRef = doc(this.firestore, `users/${userId}`);
 
+    // 1. Validate pub exists
     const pubSnap = await getDoc(pubRef);
-    const userSnap = await getDoc(userRef);
-
     if (!pubSnap.exists()) {
-      console.error('[CheckIn] ❌ Pub not found:', checkin.pubId);
+      console.error('[CheckIn] ❌ Pub not found:', pubId);
       throw new Error('Pub not found');
     }
+
+    // 2. Ensure user doc exists (create if missing)
+    let userSnap = await getDoc(userRef);
     if (!userSnap.exists()) {
-      console.error('[CheckIn] ❌ User not found:', checkin.userId);
-      throw new Error('User not found');
+      console.warn('[CheckIn] ⚠️ User not found — creating new user doc:', userId);
+      await setDoc(userRef, {
+        createdAt: serverTimestamp(),
+        landlordOf: [],
+        streaks: {},
+      });
+      userSnap = await getDoc(userRef); // re-fetch
     }
 
     const pub = pubSnap.data() as Pub;
     const user = userSnap.data() as User;
+    const checkinDate = timestamp.toDate();
 
-    const newCheckinRef = await addDoc(checkinsRef, checkin);
+    // 3. Save the check-in (strip out undefined fields)
+    const cleanCheckin = Object.fromEntries(
+      Object.entries(checkin).filter(([_, v]) => v !== undefined)
+    ) as Omit<CheckIn, 'id'>;
 
-    const newCheckinDate = checkin.timestamp.toDate();
+    const checkinRef = await addDoc(checkinsRef, cleanCheckin);
 
-    // Update pub stats
+    // 4. Update pub stats
     const updatedPub: Partial<Pub> = {
       checkinCount: (pub.checkinCount || 0) + 1,
-      lastCheckinAt: checkin.timestamp,
-      recordEarlyCheckinAt: earliest(pub.recordEarlyCheckinAt, newCheckinDate),
-      recordLatestCheckinAt: latest(pub.recordLatestCheckinAt, newCheckinDate),
-      landlordId: checkin.userId,
+      lastCheckinAt: timestamp,
+      recordEarlyCheckinAt: earliest(pub.recordEarlyCheckinAt, checkinDate),
+      recordLatestCheckinAt: latest(pub.recordLatestCheckinAt, checkinDate),
+      landlordId: userId,
     };
-
     await updateDoc(pubRef, updatedPub);
 
-    // Update user streaks
-    const prevStreak = user.streaks?.[checkin.pubId] || 0;
-    const updatedStreaks = { ...user.streaks, [checkin.pubId]: prevStreak + 1 };
-
+    // 5. Update user streaks and landlord list
+    const prevStreak = user.streaks?.[pubId] || 0;
     const updatedUser: Partial<User> = {
-      streaks: updatedStreaks,
-      landlordOf: Array.from(new Set([...(user.landlordOf || []), checkin.pubId])),
+      streaks: { ...user.streaks, [pubId]: prevStreak + 1 },
+      landlordOf: Array.from(new Set([...(user.landlordOf || []), pubId])),
     };
-
     await updateDoc(userRef, updatedUser);
+
+    // 6. Return the check-in reference
+    return checkinRef;
   }
+
+
 
 }

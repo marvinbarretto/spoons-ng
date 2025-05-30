@@ -17,7 +17,7 @@ import { NearbyPubStore } from '../../pubs/data-access/nearby-pub.store';
       <pre>Token: {{ token$$() }}</pre>
       <pre>Mobile view: {{ isMobile$$() }}</pre>
       <pre>Active panel: {{ activePanel$$() }}</pre>
-      <pre>Closest pub: {{ closestPub$$() | json }}</pre>
+      <pre>Closest pub: {{ closestPub$$()?.name }}</pre>
       <pre>Can check-in: {{ canCheckIn$$() }}</pre>
 
 

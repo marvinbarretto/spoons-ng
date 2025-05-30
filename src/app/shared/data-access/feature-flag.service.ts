@@ -13,7 +13,7 @@ export class FeatureFlagService {
   }
 
   isEnabled(flag: keyof typeof environment.featureFlags): boolean {
-    if (!environment.production && environment.enableAllFeaturesForDev) {
+    if (!environment.production && environment.ENABLE_ALL_FEATURES_FOR_DEV) {
       return true;
     }
 
