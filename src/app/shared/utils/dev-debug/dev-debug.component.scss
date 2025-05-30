@@ -1,0 +1,33 @@
+.debug-panel {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  font-size: 10px;
+  padding: 10px;
+  max-width: 350px;
+  z-index: 1000;
+  line-height: 1.4;
+  overflow-y: auto;
+  max-height: 95vh;
+}
+
+.reset-buttons {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+button {
+  font-size: 10px;
+  padding: 2px 6px;
+  background: #444;
+  border: 1px solid #888;
+  color: #fff;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #666;
+}

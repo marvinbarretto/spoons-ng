@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { DevDebugComponent } from "../../utils/dev-debug.component";
+import { DevDebugComponent } from "../../utils/dev-debug/dev-debug.component";
 
 @Component({
   selector: 'app-footer',

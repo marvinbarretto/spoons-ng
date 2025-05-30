@@ -1,6 +1,8 @@
 
 <section class="status">
 
+  {{ debugState() | json }}
+
   <section class="status__pub-count">
     <h2>pub count</h2>
     @if (loading()) {

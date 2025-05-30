@@ -15,23 +15,29 @@ export class PubStore {
 
   private readonly pubService = inject(PubService);
   private readonly cacheService = inject(CacheService);
+  private hasLoaded = false;
 
-
-  async loadOnce() {
-    if (this.loading$$() || this.pubs$$().length) {
+  async loadOnce(): Promise<void> {
+    if (this.hasLoaded) {
       console.log('[PubStore] ✅ Already loaded — skipping');
       return;
     }
 
+    await this.load();
+  }
+
+  async load(): Promise<void> {
     this.loading$$.set(true);
+    this.error$$.set(null);
     try {
       const pubs = await this.cacheService.load({
-        key:   'pubs',
-        ttlMs: 1000 * 60 * 5, // e.g. 5 minutes
-        loadFresh: () =>
-          this.pubService.getAllPubs(),
+        key: 'pubs',
+        ttlMs: 1000 * 60 * 5,
+        loadFresh: () => this.pubService.getAllPubs(),
       });
+
       this.pubs$$.set(pubs);
+      this.hasLoaded = true;
       console.log('[PubStore] 📦 Loaded pubs', pubs);
     } catch (err: any) {
       this.error$$.set(err.message || 'Unknown error');
@@ -40,4 +46,14 @@ export class PubStore {
       this.loading$$.set(false);
     }
   }
+
+  reset(): void {
+    this.cacheService.clear('pubs');
+    this.pubs$$.set([]);
+    this.loading$$.set(false);
+    this.error$$.set(null);
+    this.hasLoaded = false;
+    console.log('[PubStore] 🔄 Reset complete');
+  }
+
 }

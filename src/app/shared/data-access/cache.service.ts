@@ -63,4 +63,12 @@ export class CacheService {
 
     return fresh;
   }
+
+  clear(key: string): void {
+    this.platform.onlyOnBrowser(() => {
+      localStorage.removeItem(key);
+      console.log(`[Cache] 🧽 Cleared cache for ${key}`);
+    });
+  }
+
 }

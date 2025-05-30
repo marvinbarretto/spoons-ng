@@ -54,64 +54,64 @@ export class CheckInService extends FirebaseService {
     return getDownloadURL(storageRef);
   }
 
-  async completeCheckin(checkin: Omit<CheckIn, 'id'>): Promise<DocumentReference> {
-    const { userId, pubId, timestamp } = checkin;
+  async completeCheckin(checkin: Omit<CheckIn, 'id'>): Promise<CheckIn> {
+    const pub = await this.validatePubExists(checkin.pubId);
+    const user = await this.ensureUserExists(checkin.userId);
 
-    const checkinsRef = collection(this.firestore, 'checkins');
+    const checkinRef = await this.saveCheckin(checkin);
+    await this.updatePubStats(pub, checkin, checkinRef.id);
+    await this.updateUserStats(user, checkin);
+
+    return { ...checkin, id: checkinRef.id };
+  }
+
+  private async validatePubExists(pubId: string): Promise<Pub> {
     const pubRef = doc(this.firestore, `pubs/${pubId}`);
-    const userRef = doc(this.firestore, `users/${userId}`);
-
-    // 1. Validate pub exists
     const pubSnap = await getDoc(pubRef);
-    if (!pubSnap.exists()) {
-      console.error('[CheckIn] ❌ Pub not found:', pubId);
-      throw new Error('Pub not found');
-    }
+    if (!pubSnap.exists()) throw new Error('Pub not found');
+    return pubSnap.data() as Pub;
+  }
 
-    // 2. Ensure user doc exists (create if missing)
+  private async ensureUserExists(userId: string): Promise<User> {
+    const userRef = doc(this.firestore, `users/${userId}`);
     let userSnap = await getDoc(userRef);
     if (!userSnap.exists()) {
-      console.warn('[CheckIn] ⚠️ User not found — creating new user doc:', userId);
-      await setDoc(userRef, {
-        createdAt: serverTimestamp(),
-        landlordOf: [],
-        streaks: {},
-      });
-      userSnap = await getDoc(userRef); // re-fetch
+      await setDoc(userRef, { createdAt: serverTimestamp(), landlordOf: [], streaks: {} });
+      userSnap = await getDoc(userRef);
     }
+    return userSnap.data() as User;
+  }
 
-    const pub = pubSnap.data() as Pub;
-    const user = userSnap.data() as User;
-    const checkinDate = timestamp.toDate();
+  private async saveCheckin(checkin: Omit<CheckIn, 'id'>): Promise<DocumentReference> {
+    const checkinsRef = collection(this.firestore, 'checkins');
+    const cleanCheckin = Object.fromEntries(Object.entries(checkin).filter(([_, v]) => v !== undefined));
+    return await addDoc(checkinsRef, cleanCheckin);
+  }
 
-    // 3. Save the check-in (strip out undefined fields)
-    const cleanCheckin = Object.fromEntries(
-      Object.entries(checkin).filter(([_, v]) => v !== undefined)
-    ) as Omit<CheckIn, 'id'>;
-
-    const checkinRef = await addDoc(checkinsRef, cleanCheckin);
-
-    // 4. Update pub stats
+  private async updatePubStats(pub: Pub, checkin: Omit<CheckIn, 'id'>, checkinId: string): Promise<void> {
+    const pubRef = doc(this.firestore, `pubs/${checkin.pubId}`);
+    const checkinDate = checkin.timestamp.toDate();
     const updatedPub: Partial<Pub> = {
       checkinCount: (pub.checkinCount || 0) + 1,
-      lastCheckinAt: timestamp,
+      lastCheckinAt: checkin.timestamp,
       recordEarlyCheckinAt: earliest(pub.recordEarlyCheckinAt, checkinDate),
       recordLatestCheckinAt: latest(pub.recordLatestCheckinAt, checkinDate),
-      landlordId: userId,
+      landlordId: checkin.userId,
     };
     await updateDoc(pubRef, updatedPub);
+  }
 
-    // 5. Update user streaks and landlord list
-    const prevStreak = user.streaks?.[pubId] || 0;
+  private async updateUserStats(user: User, checkin: Omit<CheckIn, 'id'>): Promise<void> {
+    const userRef = doc(this.firestore, `users/${checkin.userId}`);
+    const prevStreak = user.streaks?.[checkin.pubId] || 0;
     const updatedUser: Partial<User> = {
-      streaks: { ...user.streaks, [pubId]: prevStreak + 1 },
-      landlordOf: Array.from(new Set([...(user.landlordOf || []), pubId])),
+      streaks: { ...user.streaks, [checkin.pubId]: prevStreak + 1 },
+      landlordOf: Array.from(new Set([...(user.landlordOf || []), checkin.pubId])),
     };
     await updateDoc(userRef, updatedUser);
-
-    // 6. Return the check-in reference
-    return checkinRef;
   }
+
+
 
 
 

@@ -4,10 +4,11 @@ import { PubStore } from '../../../pubs/data-access/pub.store';
 import { UserStore } from '../../../users/data-access/user.store';
 import { CheckinStore } from '../../../check-in/data-access/check-in.store';
 import { User } from '../../../users/utils/user.model';
+import { JsonPipe } from '@angular/common';
 
 @Component({
   selector: 'app-status',
-  imports: [FeatureFlagPipe],
+  imports: [FeatureFlagPipe, JsonPipe],
   templateUrl: './status.component.html',
   styleUrl: './status.component.scss'
 })
@@ -37,6 +38,12 @@ export class StatusComponent {
 
   // === Derived signals ===
 
+  readonly debugState = computed(() => ({
+    user: this.userStore.user$$(),
+    checkins: this.checkinStore.checkins$$(),
+  }));
+
+
   // ✅ All check-ins fetched for the current user (raw array from Firestore)
 readonly userCheckins$$ = this.checkinStore.checkins$$;
 
@@ -45,26 +52,40 @@ readonly totalCheckinsCount$$ = computed(() => this.userCheckins$$().length);
 
 // ✅ Unique pubs the user has visited at least once
 readonly uniqueVisitedPubsList$$ = computed(() => {
-  const checkins = this.userCheckins$$();
-  const pubs = this.pubs$$();
-  const user = this.user$$();
+  const checkins = this.checkinStore.checkins$$();
+  const pubs = this.pubStore.pubs$$();
+  const user = this.userStore.user$$();
+
+  console.log('[DEBUG] Signals triggered:', {
+    user,
+    checkinsCount: checkins.length,
+    pubsCount: pubs.length,
+  });
 
   if (!user || !checkins.length || !pubs.length) return [];
 
-  const uniquePubIds = new Set(checkins.map((c) => c.pubId));
-  return pubs.filter((pub) => uniquePubIds.has(pub.id));
+  const pubIds = new Set(checkins.map(c => c.pubId));
+  return pubs.filter(pub => pubIds.has(pub.id));
 });
+
 
 readonly uniqueVisitedPubsCount$$ = computed(() => this.uniqueVisitedPubsList$$().length);
 
 // ✅ Pubs where the user is currently landlord
 readonly landlordPubsList$$ = computed(() => {
-  const pubs = this.pubs$$();
-  const user = this.user$$();
+  const pubs = this.pubStore.pubs$$();
+  const user = this.userStore.user$$();
+
+  console.log('[DEBUG] landlord signal triggered', {
+    user: user?.uid,
+    pubs: pubs.map(p => ({ id: p.id, landlordId: p.landlordId })),
+  });
+
   if (!user) return [];
 
   return pubs.filter((pub) => pub.landlordId === user.uid);
 });
+
 
 readonly landlordPubsCount$$ = computed(() => this.landlordPubsList$$().length);
 

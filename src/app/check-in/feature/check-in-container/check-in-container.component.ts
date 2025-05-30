@@ -11,6 +11,7 @@ import { ToastService } from '../../../shared/data-access/toast.service';
 import { FeatureFlagPipe } from "../../../shared/utils/feature-flag.pipe";
 import { environment } from '../../../../environments/environment';
 import { SsrPlatformService } from '../../../shared/utils/ssr/ssr-platform.service';
+import { CheckinStore } from '../../data-access/check-in.store';
 
 @Component({
   selector: 'app-check-in-container',
@@ -20,20 +21,19 @@ import { SsrPlatformService } from '../../../shared/utils/ssr/ssr-platform.servi
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CheckInContainerComponent implements OnInit {
-  private readonly checkinService = inject(CheckInService);
   private readonly router = inject(Router);
   private readonly nearbyPubStore = inject(NearbyPubStore);
   private readonly userStore = inject(UserStore);
-  private readonly toastService = inject(ToastService);
   private readonly platform = inject(SsrPlatformService);
+  private readonly checkinStore = inject(CheckinStore);
 
   readonly pub = this.nearbyPubStore.closestPub$$();
   readonly user = this.userStore.user$$();
   readonly today = new Date().toISOString().split('T')[0];
 
-  readonly loading$$ = signal(true);
-  readonly checkin$$ = signal<CheckIn | null>(null);
-  readonly error$$ = signal<string | null>(null);
+  readonly loading$$ = this.checkinStore.loading$$;
+  readonly checkin$$ = this.checkinStore.checkinSuccess$$;
+  readonly error$$ = this.checkinStore.error$$;
 
   readonly isLandlord$$ = computed(() => !!this.checkin$$()?.madeUserLandlord);
   readonly badge$$ = computed(() => this.checkin$$()?.badgeName ?? null);
@@ -43,45 +43,50 @@ export class CheckInContainerComponent implements OnInit {
   private stream: MediaStream | null = null;
 
   async ngOnInit() {
-    await this.processCheckIn();
-
     if (environment.featureFlags.photoUpload) {
       this.initCamera();
     }
+
+    await this.processCheckIn();
   }
 
   async processCheckIn() {
     const pub = this.pub;
     const user = this.user;
 
-    if (!pub || !user) {
-      this.error$$.set('Missing pub or user');
-      this.loading$$.set(false);
+    if (!pub || !user || !navigator.geolocation) {
+      this.checkinStore.error$$.set('Missing pub, user, or geolocation support.');
       return;
     }
 
-    const checkin: Omit<CheckIn, 'id'> = {
-      userId: user.uid,
-      pubId: pub.id,
-      timestamp: Timestamp.now(),
-      dateKey: this.today,
-      photoUrl: '', // future: set after camera
-      madeUserLandlord: this.getMadeUserLandlord(),
-      badgeName: this.getBadgeName(),
-      missionUpdated: this.getMissionUpdated(),
-    };
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const coords = position.coords;
 
-    try {
-      await this.checkinService.completeCheckin(checkin);
-      console.log('[CheckIn] ✅ Firestore write complete', checkin);
-      this.checkin$$.set({ ...checkin, id: 'generated-locally' });
-      this.toastService.success('Check-in successful!');
-    } catch (err) {
-      console.error('[CheckIn] ❌ Failed to write check-in', err);
-      this.error$$.set('Check-in failed');
-    } finally {
-      this.loading$$.set(false);
-    }
+        let photoDataUrl: string | null = null;
+
+        if (environment.featureFlags.photoUpload && this.videoRef?.nativeElement) {
+          const canvas = document.createElement('canvas');
+          canvas.width = this.videoRef.nativeElement.videoWidth;
+          canvas.height = this.videoRef.nativeElement.videoHeight;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(this.videoRef.nativeElement, 0, 0);
+            photoDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          }
+        }
+
+        await this.checkinStore.checkin(pub.id, user.uid, coords, photoDataUrl);
+      },
+      (error) => {
+        this.checkinStore.error$$.set('Location access denied or unavailable.');
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+      }
+    );
+
   }
 
   private initCamera() {
@@ -102,17 +107,5 @@ export class CheckInContainerComponent implements OnInit {
   goHome() {
     this.router.navigateByUrl('/');
   }
-
-  // Stubs (can be replaced with real logic later)
-  private getMadeUserLandlord(): boolean {
-    return false;
-  }
-
-  private getBadgeName(): string | undefined {
-    return undefined;
-  }
-
-  private getMissionUpdated(): boolean {
-    return false;
-  }
 }
+

@@ -15,11 +15,53 @@ export class CheckinStore {
 
   private hasLoaded = false;
 
-  user$$ = signal<User | null>(null);
-  checkins$$ = signal<CheckIn[]>([]);
-  loading$$ = signal(false);
-  error$$ = signal<string | null>(null);
-  checkinSuccess$$ = signal<CheckIn | null>(null);
+  readonly user$$ = signal<User | null>(null);
+  readonly checkins$$ = signal<CheckIn[]>([]);
+  readonly loading$$ = signal(false);
+  readonly error$$ = signal<string | null>(null);
+  readonly checkinSuccess$$ = signal<CheckIn | null>(null);
+
+
+  async loadOnce(userId: string): Promise<void> {
+    if (this.hasLoaded) return;
+    this.hasLoaded = true;
+    await this.load(userId);
+  }
+
+  async load(userId: string): Promise<void> {
+    this.loading$$.set(true);
+    this.error$$.set(null);
+
+    try {
+      const checkins = await this.checkinService.loadUserCheckins(userId);
+      this.checkins$$.set(checkins);
+      console.log(`[CheckinStore] ✅ Loaded ${checkins.length} check-ins for user ${userId}`);
+    } catch (err) {
+      this.error$$.set('Failed to load check-ins');
+      console.error('[CheckinStore] ❌ Error loading check-ins', err);
+    } finally {
+      this.loading$$.set(false);
+    }
+  }
+
+  recordCheckinSuccess(newCheckin: CheckIn) {
+    console.log('[CheckinStore] Patching signal with new check-in:', newCheckin);
+
+    this.checkins$$.update(prev => {
+      const updated = [...prev, newCheckin];
+      console.log('[CheckinStore] Updated checkins count:', updated.length);
+      return updated;
+    });
+
+    this.checkinSuccess$$.set(newCheckin);
+  }
+
+  reset(): void {
+    this.hasLoaded = false;
+    this.checkins$$.set([]);
+    this.checkinSuccess$$.set(null);
+    this.error$$.set(null);
+  }
 
 
   async checkin(pubId: string, userId: string, location: GeolocationCoordinates, photoDataUrl: string | null) {
@@ -31,7 +73,9 @@ export class CheckinStore {
       if (existing) throw new Error('Already checked in today.');
 
       const distance = this.getDistanceMeters(location, await this.getPubLocation(pubId));
-      if (distance > 100) throw new Error('You are too far from this pub.');
+
+      // TODO: Do a distance check but get the value from environment or global settings
+      // if (distance > 100) throw new Error('You are too far from this pub.');
 
       let photoUrl: string | undefined = undefined;
       if (photoDataUrl) {
@@ -100,24 +144,6 @@ export class CheckinStore {
 
     const landlordOf = Array.from(new Set([...(user.landlordOf || []), pubId]));
     this.user$$.set({ ...user, landlordOf });
-  }
-
-
-  async loadOnce(userId: string) {
-    if (this.hasLoaded) return;
-    this.hasLoaded = true;
-
-    this.loading$$.set(true);
-    try {
-      const checkins = await this.checkinService.loadUserCheckins(userId);
-      this.checkins$$.set(checkins);
-      console.log(`[CheckInStore] ✅ Loaded ${checkins.length} check-ins`);
-    } catch (err) {
-      this.error$$.set('Failed to load check-ins');
-      console.error('[CheckInStore] ❌', err);
-    } finally {
-      this.loading$$.set(false);
-    }
   }
 
 
