@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.7](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.6...v0.0.7) (2025-05-30)
+
+
+### Features
+
+* Enable Check-ins ([b23f935](https://github.com/marvinbarretto/spoons-ng/commit/b23f93565c555d18c3c3982ab63d9909fc235364))
+
 ### [0.0.6](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.5...v0.0.6) (2025-05-28)
 
 
