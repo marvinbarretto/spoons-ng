@@ -51,28 +51,27 @@
 
   @if ('landlord' | featureFlag) {
     <section class="status__landlord">
-      <h2>My landlord stats</h2>
+      <h2>My Landlord Stats</h2>
 
-      <p>
-        🏠 Landlord of <strong>{{ landlordPubsCount$$() }}</strong>
-        {{ landlordPubsCount$$() === 1 ? 'pub' : 'pubs' }} today
-      </p>
+      @if (landlordPubsCount$$() > 0) {
+        <p>You’re the landlord of <strong>{{ landlordPubsCount$$() }}</strong> pub(s) today. 🍻</p>
 
-      @if (landlordPubsList$$().length) {
-        <ul>
+        <ul class="landlord-list">
           @for (pub of landlordPubsList$$(); track pub.id) {
-            <li>{{ pub.name }}</li>
+            <li>
+              <a [routerLink]="['/pub', pub.id]">
+                {{ pub.name }}
+                <span class="location">{{ pub.city ?? pub.region ?? pub.country }}</span>
+              </a>
+            </li>
           }
         </ul>
-      }
-
-      @if (!landlordPubsList$$().length) {
-        <p>
-          Not the landlord of any pubs today. Go check in after 12 noon! 🍻
-        </p>
+      } @else {
+        <p>You haven’t claimed any pubs today yet. Get out there and check in!</p>
       }
     </section>
   }
+
 
 
   <!-- === Badges === -->

@@ -2,18 +2,20 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { CheckInService } from './check-in.service';
 import type { CheckIn } from '../util/check-in.model';
-import { Timestamp } from 'firebase/firestore';
+import { serverTimestamp, Timestamp } from 'firebase/firestore';
 import { PubService } from '../../pubs/data-access/pub.service';
 import { Pub } from '../../pubs/utils/pub.models';
 import { firstValueFrom } from 'rxjs';
 import { User } from '../../users/utils/user.model';
 import { AuthStore } from '../../auth/data-access/auth.store';
+import { LandlordStore } from '../../landlord/data-access/landlord.store';
 
 @Injectable({ providedIn: 'root' })
 export class CheckinStore {
   private checkinService = inject(CheckInService);
   private pubService = inject(PubService);
   private authStore = inject(AuthStore);
+  private landlordStore = inject(LandlordStore);
 
   private hasLoaded = false;
 
@@ -59,46 +61,45 @@ export class CheckinStore {
     this.error$$.set(null);
   }
 
-  async checkin(pubId: string, location: GeolocationCoordinates, photoDataUrl: string | null) {
+  async checkin(pubId: string, coords: GeolocationCoordinates, photoDataUrl?: string): Promise<void> {
     this.loading$$.set(true);
     this.error$$.set(null);
 
     try {
-      const existing = await this.checkinService.getTodayCheckin(pubId);
-      if (existing) throw new Error('Already checked in today.');
+      const userId = this.authStore.uid;
+      if (!userId) throw new Error('Missing user ID');
 
-      const distance = this.getDistanceMeters(location, await this.getPubLocation(pubId));
-      // TODO: pull threshold from env
-      // if (distance > 100) throw new Error('You are too far from this pub.');
+      const timestamp = serverTimestamp();
+      const dateKey = new Date().toISOString().split('T')[0];
 
       let photoUrl: string | undefined;
       if (photoDataUrl) {
         photoUrl = await this.checkinService.uploadPhoto(photoDataUrl);
       }
 
-      const userId = this.authStore.uid;
-      if (!userId) throw new Error('Not logged in.');
-
-      const newCheckin: Omit<CheckIn, 'id'> = {
+      const checkin: Omit<CheckIn, 'id'> = {
         userId,
         pubId,
-        timestamp: Timestamp.now(),
-        photoUrl,
-        dateKey: new Date().toISOString().split('T')[0],
+        timestamp: new Date() as any, // local timestamp; serverTimestamp will be used in Firestore
+        dateKey,
       };
 
-      const completed = await this.checkinService.completeCheckin(newCheckin);
+      const result = await this.checkinService.completeCheckin(checkin);
+      this.checkinSuccess$$.set(result);
 
+      // 🔁 Refresh landlord state
+      await this.landlordStore.refreshLandlord(pubId);
+
+      // ✅ Show landlord message
       this.landlordMessage$$.set(
-        completed.madeUserLandlord
-          ? '👑 You’re the landlord today!'
-          : '✅ Check-in complete, but someone else is already landlord.'
+        result.madeUserLandlord
+          ? `🎉 You are now the landlord of this pub!`
+          : `✅ Check-in complete, but someone else is already landlord.`
       );
 
-      this.recordCheckinSuccess(completed);
-
     } catch (err: any) {
-      this.error$$.set(err.message || 'Check-in failed');
+      this.error$$.set(err.message ?? 'Check-in failed');
+      console.error('[CheckInStore] ❌ Check-in error:', err);
     } finally {
       this.loading$$.set(false);
     }
@@ -106,10 +107,6 @@ export class CheckinStore {
 
   readonly userCheckins$$ = computed(() =>
     this.checkins$$().map(c => c.pubId)
-  );
-
-  readonly landlordPubs$$ = computed(() =>
-    this.checkins$$().filter(c => c.madeUserLandlord).map(c => c.pubId)
   );
 
   private async getPubLocation(pubId: string): Promise<{ lat: number; lng: number }> {

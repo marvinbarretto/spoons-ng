@@ -21,3 +21,30 @@ li {
   align-items: center;
   gap: 1rem;
 }
+
+
+.status__landlord {
+  margin-block: 2rem;
+
+  .landlord-list {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 1rem;
+
+    li {
+      margin-bottom: 0.5rem;
+
+      a {
+        text-decoration: none;
+        font-weight: 500;
+
+        .location {
+          display: inline-block;
+          font-size: 0.85rem;
+          color: var(--text-muted);
+          margin-left: 0.5rem;
+        }
+      }
+    }
+  }
+}

@@ -6,7 +6,6 @@ export type CheckIn = {
   pubId: string;
   timestamp: Timestamp;
   dateKey: string;
-  photoUrl?: string;
   madeUserLandlord?: boolean;
   badgeName?: string;
   missionUpdated?: boolean;

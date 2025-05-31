@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, OnInit, signal, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { NearbyPubStore } from '../../../pubs/data-access/nearby-pub.store';
@@ -45,6 +45,16 @@ export class CheckInContainerComponent implements OnInit {
   @ViewChild('video', { static: false }) videoRef?: ElementRef<HTMLVideoElement>;
   private stream: MediaStream | null = null;
 
+  constructor() {
+    effect(() => {
+      const checkin = this.checkin$$();
+      if (checkin) {
+        this.userStore.loadUser(checkin.userId);
+      }
+    });
+
+  }
+
   async ngOnInit() {
     if (environment.featureFlags.photoUpload) {
       this.initCamera();
@@ -79,7 +89,7 @@ export class CheckInContainerComponent implements OnInit {
           }
         }
 
-        await this.checkinStore.checkin(pub.id, coords, photoDataUrl);
+        await this.checkinStore.checkin(pub.id, coords);
       },
       (error) => {
         this.checkinStore.error$$.set('Location access denied or unavailable.');

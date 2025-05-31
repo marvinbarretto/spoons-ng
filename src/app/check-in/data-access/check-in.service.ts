@@ -20,30 +20,20 @@ export class CheckInService extends FirestoreService {
   async getTodayCheckin(pubId: string): Promise<CheckIn | null> {
     const todayDateKey = new Date().toISOString().split('T')[0];
     const userId = this.authStore.uid;
-
     if (!userId) throw new Error('[CheckInService] Missing userId for getTodayCheckin');
 
-    const ref = collection(this.firestore, 'checkins');
-    const q = query(
-      ref,
+    const matches = await this.getDocsWhere<CheckIn>(
+      'checkins',
       where('userId', '==', userId),
       where('pubId', '==', pubId),
       where('dateKey', '==', todayDateKey)
     );
 
-    const snapshot = await getDocs(q);
-    return snapshot.empty ? null : (snapshot.docs[0].data() as CheckIn);
+    return matches[0] ?? null;
   }
 
   async loadUserCheckins(userId: string): Promise<CheckIn[]> {
-    const ref = collection(this.firestore, 'checkins');
-    const q = query(ref, where('userId', '==', userId));
-    const snapshot = await getDocs(q);
-
-    return snapshot.docs.map((doc) => ({
-      ...(doc.data() as CheckIn),
-      id: doc.id,
-    }));
+    return this.getDocsWhere<CheckIn>('checkins', where('userId', '==', userId));
   }
 
   async uploadPhoto(dataUrl: string): Promise<string> {
@@ -61,74 +51,76 @@ export class CheckInService extends FirestoreService {
     const pub = await this.validatePubExists(checkin.pubId);
     const user = await this.ensureUserExists(checkin.userId);
 
-    const checkinRef = await this.saveCheckin(checkin);
+    console.log('[CheckInService] !!! Adding checkin', checkin);
+    const checkinRef = await this.addDocToCollection<Omit<CheckIn, 'id'>>('checkins', checkin);
     await this.updatePubStats(pub, checkin, checkinRef.id);
     await this.updateUserStats(user, checkin);
 
-    await this.landlordService.tryAwardLandlord(checkin.pubId, checkin.timestamp.toDate());
+    const checkinDate = this.normalizeDate(checkin.timestamp);
+    await this.landlordService.tryAwardLandlord(checkin.pubId, checkinDate);
 
     return { ...checkin, id: checkinRef.id };
   }
 
   private async validatePubExists(pubId: string): Promise<Pub> {
-    const pubRef = doc(this.firestore, `pubs/${pubId}`);
-    const pubSnap = await getDoc(pubRef);
-    if (!pubSnap.exists()) throw new Error('Pub not found');
-    return pubSnap.data() as Pub;
+    const pub = await this.getDocByPath<Pub>(`pubs/${pubId}`);
+    if (!pub) throw new Error('Pub not found');
+    return pub;
   }
 
   private async ensureUserExists(userId: string): Promise<User> {
-    const userRef = doc(this.firestore, `users/${userId}`);
-    let userSnap = await getDoc(userRef);
-    if (!userSnap.exists()) {
-      await setDoc(userRef, {
-        createdAt: serverTimestamp(),
-        landlordOf: [],
-        streaks: {},
-      });
-      userSnap = await getDoc(userRef);
-    }
-    return userSnap.data() as User;
-  }
+    const user = await this.getDocByPath<User>(`users/${userId}`);
+    if (user) return user;
 
-  private async saveCheckin(checkin: Omit<CheckIn, 'id'>): Promise<DocumentReference> {
-    const checkinsRef = collection(this.firestore, 'checkins');
-    const cleanCheckin = Object.fromEntries(
-      Object.entries(checkin).filter(([_, v]) => v !== undefined)
-    );
-    return await addDoc(checkinsRef, cleanCheckin);
+    await this.setDoc(`users/${userId}`, {
+      createdAt: serverTimestamp(),
+      landlordOf: [],
+      streaks: {},
+    });
+
+    const createdUser = await this.getDocByPath<User>(`users/${userId}`);
+    if (!createdUser) throw new Error('[CheckInService] Failed to create user');
+    return createdUser;
   }
 
   private async updatePubStats(pub: Pub, checkin: Omit<CheckIn, 'id'>, checkinId: string): Promise<void> {
-    const pubRef = doc(this.firestore, `pubs/${checkin.pubId}`);
-    const checkinDate = checkin.timestamp.toDate();
+    const pubRefPath = `pubs/${checkin.pubId}`;
+    const checkinDate = this.normalizeDate(checkin.timestamp);
 
     const userId = this.authStore.uid;
-    if (!userId) {
-      throw new Error('[CheckInService] Cannot update pub stats without a valid user ID');
-    }
+    if (!userId) throw new Error('[CheckInService] Cannot update pub stats without a valid user ID');
 
-    await updateDoc(pubRef, {
-      checkinCount: increment(1),
-      lastCheckinAt: serverTimestamp(),
+    await this.updateDoc<Pub>(pubRefPath, {
+      checkinCount: increment(1) as any,
+      lastCheckinAt: serverTimestamp() as any,
       recordEarlyCheckinAt: earliest(pub.recordEarlyCheckinAt, checkinDate),
       recordLatestCheckinAt: latest(pub.recordLatestCheckinAt, checkinDate),
       checkinHistory: arrayUnion({
         userId,
-        timestamp: checkin.timestamp, // ✅ FIXED: use actual Date/Timestamp value
-      }),
+        timestamp: checkin.timestamp,
+      }) as any,
     });
   }
 
-
   private async updateUserStats(user: User, checkin: Omit<CheckIn, 'id'>): Promise<void> {
-    const userRef = doc(this.firestore, `users/${checkin.userId}`);
+    const userRefPath = `users/${checkin.userId}`;
     const prevStreak = user.streaks?.[checkin.pubId] || 0;
 
     const updatedUser: Partial<User> = {
       streaks: { ...user.streaks, [checkin.pubId]: prevStreak + 1 },
     };
 
-    await updateDoc(userRef, updatedUser);
+    await this.updateDoc<User>(userRefPath, updatedUser);
+  }
+
+  private normalizeDate(input: unknown): Date {
+    if (input instanceof Timestamp) return input.toDate();
+    if (input instanceof Date) return input;
+    if (typeof input === 'string' || typeof input === 'number') {
+      const date = new Date(input);
+      if (!isNaN(date.getTime())) return date;
+    }
+    throw new Error(`[CheckInService] Invalid timestamp: ${JSON.stringify(input)}`);
   }
 }
+

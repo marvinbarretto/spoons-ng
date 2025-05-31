@@ -6,11 +6,11 @@ import { CheckinStore } from '../../../check-in/data-access/check-in.store';
 import { User } from '../../../users/utils/user.model';
 import { JsonPipe } from '@angular/common';
 import { MissionStore } from '../../../missions/data-access/mission.store';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-status',
-  imports: [FeatureFlagPipe, JsonPipe],
+  imports: [FeatureFlagPipe, JsonPipe, RouterModule],
   templateUrl: './status.component.html',
   styleUrl: './status.component.scss'
 })

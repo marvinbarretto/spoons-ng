@@ -14,6 +14,8 @@ import {
   DocumentReference,
   QuerySnapshot,
   DocumentData,
+  QueryConstraint,
+  query,
 } from '@angular/fire/firestore';
 import { Observable, from } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -94,20 +96,38 @@ export abstract class FirestoreService {
     }));
   }
 
-  /**
-   * Check whether a document exists at the given path.
-   */
-  protected async exists(path: string): Promise<boolean> {
-    const ref = doc(this.firestore, path);
-    const snap = await getDoc(ref);
-    return snap.exists();
-  }
+
 
   /**
    * One-time fetch of a subcollection under a parent document.
    */
-  protected subcollection$<T>(parentPath: string, subcollectionName: string): Observable<T[]> {
-    const colPath = `${parentPath}/${subcollectionName}`;
-    return this.collection$<T>(colPath);
+  protected async getDocByPath<T>(path: string): Promise<T | undefined> {
+    return runInInjectionContext(this.injector, async () => {
+      const ref = doc(this.firestore, path) as DocumentReference<T>;
+      const snap = await getDoc(ref);
+      return snap.exists() ? (snap.data() as T) : undefined;
+    });
   }
+
+  protected async getDocsWhere<T>(
+    path: string,
+    ...conditions: QueryConstraint[]
+  ): Promise<(T & { id: string })[]> {
+    return runInInjectionContext(this.injector, async () => {
+      const ref = collection(this.firestore, path);
+      const q = query(ref, ...conditions);
+      const snapshot = await getDocs(q);
+      return this.mapSnapshotWithId<T>(snapshot);
+    });
+  }
+
+  protected async exists(path: string): Promise<boolean> {
+    return runInInjectionContext(this.injector, async () => {
+      const ref = doc(this.firestore, path);
+      const snap = await getDoc(ref);
+      return snap.exists();
+    });
+  }
+
+
 }
