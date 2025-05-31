@@ -101,12 +101,12 @@
     <section class="status__missions">
       <h2>Your Missions</h2>
 
-      @if (missions().length === 0) {
+      @if (joinedMissions().length === 0) {
         <p>You haven’t joined any missions yet.</p>
-        <button>Browse Missions</button>
+        <button (click)="browseMissions()">Browse Missions</button>
       } @else {
         <ul class="missions-list">
-          @for (mission of missions(); track mission.id) {
+          @for (mission of joinedMissions(); track mission.id) {
             <li>
               <h3>{{ mission.title }}</h3>
               <meter [value]="mission.progress" [max]="mission.total"></meter>
@@ -117,5 +117,6 @@
       }
     </section>
   }
+
 
 </section>

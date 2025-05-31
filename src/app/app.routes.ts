@@ -8,6 +8,7 @@ import {
 } from '@angular/router';
 import { PUBS_ROUTES } from './pubs/data-access/pub.routes';
 import { CheckInContainerComponent } from './check-in/feature/check-in-container/check-in-container.component';
+import { MISSION_ROUTES } from './missions/data-access/mission.routes';
 
 export const appRoutes: Routes = [
   {
@@ -19,6 +20,12 @@ export const appRoutes: Routes = [
     title: 'Pubs',
     loadChildren: () =>
       import('./pubs/data-access/pub.routes').then((m) => m.PUBS_ROUTES),
+  },
+  {
+    path: 'missions',
+    title: 'Missions',
+    loadChildren: () =>
+      import('./missions/data-access/mission.routes').then((m) => m.MISSION_ROUTES),
   },
   {
     path: 'check-in',

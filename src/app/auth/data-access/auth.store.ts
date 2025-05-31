@@ -71,6 +71,7 @@ export class AuthStore {
         checkedInPubIds: [],
         badges: [],
         streaks: {},
+        joinedMissionIds: [],
       };
 
       // 3. Update reactive state

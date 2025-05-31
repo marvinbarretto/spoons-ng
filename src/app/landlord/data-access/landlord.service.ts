@@ -4,6 +4,7 @@ import { AuthStore } from '../../auth/data-access/auth.store';
 import type { Pub } from '../../pubs/utils/pub.models';
 import { FirestoreService } from '../../shared/data-access/firestore.service';
 import { firstValueFrom } from 'rxjs';
+import { Timestamp } from 'firebase/firestore';
 
 @Injectable({ providedIn: 'root' })
 export class LandlordService extends FirestoreService {
@@ -28,15 +29,15 @@ export class LandlordService extends FirestoreService {
       return false;
     }
 
-    if (pub.landlordToday?.date === localDate) {
-      console.log(`[LandlordService] 🚫 Landlord already set for ${localDate}: ${pub.landlordToday.userId}`);
+    if (pub.todayLandlord?.claimedAt.toDate().toISOString().split('T')[0] === localDate) {
+      console.log(`[LandlordService] 🚫 Landlord already set for ${localDate}: ${pub.todayLandlord.userId}`);
       return false;
     }
 
     const updated: Partial<Pub> = {
-      landlordToday: {
+      todayLandlord: {
         userId: user.uid,
-        date: localDate,
+        claimedAt: Timestamp.now(),
       },
     };
 

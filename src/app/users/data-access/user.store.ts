@@ -52,6 +52,7 @@ export class UserStore {
           checkedInPubIds: data?.checkedInPubIds ?? [],
           badges: data?.badges ?? [],
           streaks: data?.streaks ?? {},
+          joinedMissionIds: data?.joinedMissionIds ?? [],
         };
 
         if (!data) {

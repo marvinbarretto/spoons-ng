@@ -14,12 +14,12 @@
     }
 
     <section class="landlord">
-      <h2>Landlord Today</h2>
-      @if (pub.landlordToday) {
-        <p>User ID: {{ pub.landlordToday.userId }}</p>
-        <p>Date: {{ pub.landlordToday.date }}</p>
+      <h2>Current landlord</h2>
+      @if (pub.currentLandlord) {
+        <p>User ID: {{ pub.currentLandlord.userId }}</p>
+        <p>Date: {{ pub.currentLandlord.claimedAt.toDate() | date: 'shortTime' }}</p>
       } @else {
-        <p>No one has claimed landlord today yet.</p>
+        <p>No one is the landlord! Go get it</p>
       }
     </section>
 
@@ -57,8 +57,8 @@
       <section class="history">
         <h2>Landlord History</h2>
         <ul>
-          @for (entry of pub.landlordHistory; track entry.date) {
-            <li>{{ entry.date }} — {{ entry.userId }}</li>
+          @for (entry of pub.landlordHistory; track entry.claimedAt) {
+            <li>{{ entry.claimedAt.toDate() | date:'shortTime' }} — {{ entry.userId }}</li>
           }
         </ul>
       </section>

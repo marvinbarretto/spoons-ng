@@ -5,6 +5,8 @@ import { UserStore } from '../../../users/data-access/user.store';
 import { CheckinStore } from '../../../check-in/data-access/check-in.store';
 import { User } from '../../../users/utils/user.model';
 import { JsonPipe } from '@angular/common';
+import { MissionStore } from '../../../missions/data-access/mission.store';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-status',
@@ -16,6 +18,8 @@ export class StatusComponent {
   private readonly pubStore = inject(PubStore);
   private readonly userStore = inject(UserStore);
   private readonly checkinStore = inject(CheckinStore);
+  private readonly missionStore = inject(MissionStore);
+  private readonly router = inject(Router);
 
   // Signals
   readonly loading = this.pubStore.loading$$;
@@ -80,8 +84,8 @@ readonly landlordPubsList$$ = computed(() => {
   if (!user) return [];
 
   return pubs.filter(pub =>
-    pub.landlordToday?.userId === user.uid &&
-    pub.landlordToday?.date === today
+    pub.todayLandlord?.userId === user.uid &&
+    pub.todayLandlord?.claimedAt.toDate().toISOString().split('T')[0] === today
   );
 });
 
@@ -99,9 +103,33 @@ readonly landlordPubsCount$$ = computed(() => this.landlordPubsList$$().length);
     { id: 'early-riser', name: 'Early Riser', iconUrl: '/assets/icons/badges/morning.svg' },
   ]);
 
-  readonly missions = signal([
-    { id: 'herts-crawl', title: 'Hertfordshire Crawl', progress: 3, total: 7 },
-    { id: 'royalty-run', title: 'Royalty Run', progress: 1, total: 4 },
-  ]);
+  // readonly missions = signal([
+  //   { id: 'herts-crawl', title: 'Hertfordshire Crawl', progress: 3, total: 7 },
+  //   { id: 'royalty-run', title: 'Royalty Run', progress: 1, total: 4 },
+  // ]);
+
+  browseMissions() {
+    this.router.navigate(['/missions']);
+  }
+
+  readonly joinedMissionIds$$ = computed(() =>
+    this.userStore.user$$()?.joinedMissionIds ?? []
+  );
+
+  readonly joinedMissions = computed(() => {
+    const user = this.userStore.user$$();
+    const allMissions = this.missionStore.missions$$();
+
+    if (!user) return [];
+
+    const joinedIds = user.joinedMissionIds ?? [];
+    return allMissions
+      .filter(m => joinedIds.includes(m.id))
+      .map(m => ({
+        ...m,
+        progress: m.pubIds.filter(id => user.checkedInPubIds.includes(id)).length,
+        total: m.pubIds.length,
+      }));
+  });
 }
 
