@@ -36,35 +36,43 @@ export class UserStore {
 
     const authUser = this.authStore.user$$();
 
-    this.userService.getUser(uid)
-      .subscribe({
-        next: (data) => {
-          const merged: User = {
-            uid: authUser?.uid ?? '',
-            displayName: authUser?.displayName ?? '',
-            email: authUser?.email ?? '',
-            emailVerified: authUser?.emailVerified ?? false,
-            isAnonymous: authUser?.isAnonymous ?? true,
-            photoURL: authUser?.photoURL ?? '',
-            joinedAt: authUser?.joinedAt ?? '',
+    this.userService.getUser(uid).subscribe({
+      next: async (data) => {
+        const merged: User = {
+          uid: authUser?.uid ?? '',
+          displayName: authUser?.displayName ?? '',
+          email: authUser?.email ?? '',
+          emailVerified: authUser?.emailVerified ?? false,
+          isAnonymous: authUser?.isAnonymous ?? true,
+          photoURL: authUser?.photoURL ?? '',
+          joinedAt: authUser?.joinedAt ?? new Date().toISOString(),
 
-            landlordOf: data?.landlordOf ?? [],
-            claimedPubIds: data?.claimedPubIds ?? [],
-            checkedInPubIds: data?.checkedInPubIds ?? [],
-            badges: data?.badges ?? [],
-            streaks: data?.streaks ?? {},
-          };
+          landlordOf: data?.landlordOf ?? [],
+          claimedPubIds: data?.claimedPubIds ?? [],
+          checkedInPubIds: data?.checkedInPubIds ?? [],
+          badges: data?.badges ?? [],
+          streaks: data?.streaks ?? {},
+        };
 
-          this.user$$.set(merged);
-          console.log('[UserStore] ✅ Merged user:', merged);
-          this.loading$$.set(false);
-        },
-        error: (err) => {
-          this.error$$.set('Failed to load user data');
-          console.error('[UserStore] ❌ Error loading user:', err);
-          this.loading$$.set(false);
+        if (!data) {
+          try {
+            await this.userService.createUser(uid, merged);
+            console.log(`[UserStore] 🔥 Created new user in Firestore: ${uid}`);
+          } catch (err) {
+            console.error(`[UserStore] ❌ Failed to create user ${uid} in Firestore:`, err);
+          }
         }
-      });
+
+        this.user$$.set(merged);
+        console.log('[UserStore] ✅ Merged user:', merged);
+        this.loading$$.set(false);
+      },
+      error: (err) => {
+        this.error$$.set('Failed to load user data');
+        console.error('[UserStore] ❌ Error loading user:', err);
+        this.loading$$.set(false);
+      }
+    });
   }
 
   landlordCount(): number {
