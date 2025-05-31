@@ -34,3 +34,22 @@ body {
   --line-height: 1.5;
   --letter-spacing: 0.015em;
 }
+
+
+.overlay-backdrop {
+  background: rgba(0, 0, 0, 0.5);
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+}
+
+.overlay-panel {
+  z-index: 1001;
+  background: white;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: auto;
+}

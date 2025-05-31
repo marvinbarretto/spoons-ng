@@ -1,5 +1,9 @@
 <div class="home">
 
+  yo
+
+  <button (click)="openOverlay()">Open overlay</button>
+
   @if (userCanCheckIn$$()) {
     <app-check-in-homepage-widget [closestPub]="closestPub$$()!" />
   }

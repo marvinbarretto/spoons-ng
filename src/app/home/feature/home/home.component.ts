@@ -7,6 +7,7 @@ import { CheckInHomepageWidgetComponent } from "../../../check-in/ui/check-in-ho
 import { Pub } from '../../../pubs/utils/pub.models';
 import { NearestPubsItemComponent } from "../../../pubs/ui/nearest-pubs-item/nearest-pubs-item.component";
 import { NearestPubsComponent } from "../../../pubs/ui/nearest-pubs/nearest-pubs.component";
+import { OverlayService } from "../../../shared/data-access/overlay.service";
 
 @Component({
   selector: 'app-home',
@@ -16,6 +17,15 @@ import { NearestPubsComponent } from "../../../pubs/ui/nearest-pubs/nearest-pubs
 })
 export class HomeComponent {
   private readonly nearbyPubStore = inject(NearbyPubStore);
+
+
+  private readonly overlayService = inject(OverlayService);
+
+  openOverlay() {
+    this.overlayService.open(NearestPubsComponent);
+  }
+
+
 
   readonly location$$ = this.nearbyPubStore.location$$;
   readonly allPubs$$ = this.nearbyPubStore.allPubs$$;
