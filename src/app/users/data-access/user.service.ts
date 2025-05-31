@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
-import { FirebaseService } from '../../shared/data-access/firebase.service';
+import { FirestoreService } from '../../shared/data-access/firestore.service';
 import { User } from '../utils/user.model';
 
 @Injectable({
   providedIn: 'root',
 })
-export class UserService extends FirebaseService {
+export class UserService extends FirestoreService {
 
   getUser(uid: string) {
     return this.doc$<User>(`users/${uid}`);

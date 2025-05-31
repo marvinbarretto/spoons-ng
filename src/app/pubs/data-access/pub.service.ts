@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { FirebaseService } from '../../shared/data-access/firebase.service';
+import { FirestoreService } from '../../shared/data-access/firestore.service';
 import { Observable } from 'rxjs';
 import type { Pub } from '../utils/pub.models';
 import { FirestoreDataConverter, collection, getDocs } from 'firebase/firestore';
@@ -7,7 +7,7 @@ import { FirestoreDataConverter, collection, getDocs } from 'firebase/firestore'
 @Injectable({
   providedIn: 'root'
 })
-export class PubService extends FirebaseService {
+export class PubService extends FirestoreService {
 
   loadPubs(): Observable<Pub[]> {
     return this.collection$<Pub>('pubs');

@@ -20,7 +20,7 @@ export class CheckinStore {
   readonly loading$$ = signal(false);
   readonly error$$ = signal<string | null>(null);
   readonly checkinSuccess$$ = signal<CheckIn | null>(null);
-
+  readonly landlordMessage$$ = signal<string | null>(null);
 
   async loadOnce(userId: string): Promise<void> {
     if (this.hasLoaded) return;
@@ -45,14 +45,7 @@ export class CheckinStore {
   }
 
   recordCheckinSuccess(newCheckin: CheckIn) {
-    console.log('[CheckinStore] Patching signal with new check-in:', newCheckin);
-
-    this.checkins$$.update(prev => {
-      const updated = [...prev, newCheckin];
-      console.log('[CheckinStore] Updated checkins count:', updated.length);
-      return updated;
-    });
-
+    this.checkins$$.update(prev => [...prev, newCheckin]);
     this.checkinSuccess$$.set(newCheckin);
   }
 
@@ -63,7 +56,6 @@ export class CheckinStore {
     this.error$$.set(null);
   }
 
-
   async checkin(pubId: string, userId: string, location: GeolocationCoordinates, photoDataUrl: string | null) {
     this.loading$$.set(true);
     this.error$$.set(null);
@@ -73,11 +65,10 @@ export class CheckinStore {
       if (existing) throw new Error('Already checked in today.');
 
       const distance = this.getDistanceMeters(location, await this.getPubLocation(pubId));
-
-      // TODO: Do a distance check but get the value from environment or global settings
+      // TODO: pull threshold from env
       // if (distance > 100) throw new Error('You are too far from this pub.');
 
-      let photoUrl: string | undefined = undefined;
+      let photoUrl: string | undefined;
       if (photoDataUrl) {
         photoUrl = await this.checkinService.uploadPhoto(photoDataUrl);
       }
@@ -90,12 +81,15 @@ export class CheckinStore {
         dateKey: new Date().toISOString().split('T')[0],
       };
 
-      await this.checkinService.completeCheckin(newCheckin);
-      this.checkins$$.update((prev) => [...prev, { ...newCheckin, id: crypto.randomUUID() }]);
-      this.checkinSuccess$$.set({ ...newCheckin, id: crypto.randomUUID() });
+      const completed = await this.checkinService.completeCheckin(newCheckin);
 
-      this.updateStreak(pubId);
-      this.addLandlord(pubId);
+      this.landlordMessage$$.set(
+        completed.madeUserLandlord
+          ? '👑 You’re the landlord today!'
+          : '✅ Check-in complete, but someone else is already landlord.'
+      );
+
+      this.recordCheckinSuccess(completed);
 
     } catch (err: any) {
       this.error$$.set(err.message || 'Check-in failed');
@@ -106,14 +100,8 @@ export class CheckinStore {
 
   private async getPubLocation(pubId: string): Promise<{ lat: number; lng: number }> {
     const pub: Pub | undefined = await firstValueFrom(this.pubService.getPubById(pubId));
-
-    if (!pub) throw new Error('Pub not found');
-    if (!pub.location?.lat || !pub.location?.lng) throw new Error('Pub is missing coordinates');
-
-    return {
-      lat: pub.location.lat,
-      lng: pub.location.lng
-    };
+    if (!pub || !pub.location) throw new Error('Pub not found or missing coordinates');
+    return pub.location;
   }
 
   private getDistanceMeters(a: GeolocationCoordinates, b: { lat: number; lng: number }): number {
@@ -122,31 +110,8 @@ export class CheckinStore {
     const φ2 = b.lat * Math.PI / 180;
     const Δφ = (b.lat - a.latitude) * Math.PI / 180;
     const Δλ = (b.lng - a.longitude) * Math.PI / 180;
-
     const x = Δλ * Math.cos((φ1 + φ2) / 2);
     const y = Δφ;
     return Math.sqrt(x * x + y * y) * R;
   }
-
-  updateStreak(pubId: string) {
-    const user = this.user$$();
-    if (!user) return;
-
-    const prevStreak = user.streaks?.[pubId] || 0;
-    const updatedStreaks = { ...user.streaks, [pubId]: prevStreak + 1 };
-
-    this.user$$.set({ ...user, streaks: updatedStreaks });
-  }
-
-  addLandlord(pubId: string) {
-    const user = this.user$$();
-    if (!user) return;
-
-    const landlordOf = Array.from(new Set([...(user.landlordOf || []), pubId]));
-    this.user$$.set({ ...user, landlordOf });
-  }
-
-
-
-
 }

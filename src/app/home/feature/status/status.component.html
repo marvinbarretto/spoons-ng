@@ -1,10 +1,8 @@
 
 <section class="status">
 
-  {{ debugState() | json }}
-
   <section class="status__pub-count">
-    <h2>pub count</h2>
+    <h2>Total</h2>
     @if (loading()) {
       <p>Loading pubs...</p>
     } @else {
@@ -53,25 +51,29 @@
 
   @if ('landlord' | featureFlag) {
     <section class="status__landlord">
-      <h2>You’re Landlord Of</h2>
+      <h2>My landlord stats</h2>
 
-          <p>You’ve claimed <strong>{{ landlordPubsCount$$() }}</strong> of {{ totalPubs() }} pubs
-        </p>
+      <p>
+        🏠 Landlord of <strong>{{ landlordPubsCount$$() }}</strong>
+        {{ landlordPubsCount$$() === 1 ? 'pub' : 'pubs' }} today
+      </p>
 
-      @if (landlordPubsList$$.length === 0) {
-        <p>You don’t own any pubs (yet!).</p>
-      } @else {
+      @if (landlordPubsList$$().length) {
         <ul>
           @for (pub of landlordPubsList$$(); track pub.id) {
-            <li>
-              <img [src]="pub.carpetUrl" [alt]="pub.name" />
-              <span>{{ pub.name }}</span>
-            </li>
+            <li>{{ pub.name }}</li>
           }
         </ul>
       }
+
+      @if (!landlordPubsList$$().length) {
+        <p>
+          Not the landlord of any pubs today. Go check in after 12 noon! 🍻
+        </p>
+      }
     </section>
   }
+
 
   <!-- === Badges === -->
   @if ('badges' | featureFlag) {

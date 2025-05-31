@@ -15,7 +15,7 @@ import { Observable } from 'rxjs';
 import { from } from 'rxjs';
 import { map } from 'rxjs/operators';
 
-export abstract class FirebaseService {
+export abstract class FirestoreService {
   private injector = inject(Injector);
   protected firestore = inject(Firestore);
 

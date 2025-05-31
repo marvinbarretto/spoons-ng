@@ -37,7 +37,10 @@ export class CheckInContainerComponent implements OnInit {
 
   readonly isLandlord$$ = computed(() => !!this.checkin$$()?.madeUserLandlord);
   readonly badge$$ = computed(() => this.checkin$$()?.badgeName ?? null);
-  readonly missionUpdated$$ = computed(() => this.checkin$$()?.missionUpdated ?? false);
+  readonly missionUpdated$$ = computed(() => this.checkin$$()?.missionUpdated ?? false)
+
+  readonly landlordMessage$$ = this.checkinStore.landlordMessage$$;
+;
 
   @ViewChild('video', { static: false }) videoRef?: ElementRef<HTMLVideoElement>;
   private stream: MediaStream | null = null;

@@ -1,5 +1,5 @@
-import { Injectable } from '@angular/core';
-import { FirebaseService } from '../../shared/data-access/firebase.service';
+import { inject, Injectable } from '@angular/core';
+import { FirestoreService } from '../../shared/data-access/firestore.service';
 import { addDoc, collection, DocumentReference, getDocs, query, serverTimestamp, setDoc, Timestamp, where } from 'firebase/firestore';
 import type { CheckIn } from '../util/check-in.model';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -7,6 +7,7 @@ import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { Pub } from '../../pubs/utils/pub.models';
 import { earliest, latest } from '../../shared/utils/date-utils';
 import { User } from '../../users/utils/user.model';
+import { LandlordService } from '../../landlord/data-access/landlord.service';
 
 // TODO: can we improve this service, can it use signals?
 // Centralise user doc creation
@@ -16,7 +17,9 @@ import { User } from '../../users/utils/user.model';
 @Injectable({
   providedIn: 'root'
 })
-export class CheckInService extends FirebaseService {
+export class CheckInService extends FirestoreService {
+  private landlordService = inject(LandlordService);
+
   async getTodayCheckin(userId: string, pubId: string): Promise<CheckIn | null> {
     const todayDateKey = new Date().toISOString().split('T')[0];
 
@@ -44,7 +47,7 @@ export class CheckInService extends FirebaseService {
   }
 
   async uploadPhoto(dataUrl: string): Promise<string> {
-    const storage = getStorage(); // assumes Firebase has been initialized
+    const storage = getStorage();
     const id = crypto.randomUUID();
     const storageRef = ref(storage, `checkins/${id}.jpg`);
 
@@ -62,6 +65,9 @@ export class CheckInService extends FirebaseService {
     await this.updatePubStats(pub, checkin, checkinRef.id);
     await this.updateUserStats(user, checkin);
 
+    // 🧠 Attempt landlord assignment here (post-check-in)
+    await this.landlordService.tryAwardLandlord(checkin.pubId, checkin.timestamp.toDate());
+
     return { ...checkin, id: checkinRef.id };
   }
 
@@ -76,7 +82,11 @@ export class CheckInService extends FirebaseService {
     const userRef = doc(this.firestore, `users/${userId}`);
     let userSnap = await getDoc(userRef);
     if (!userSnap.exists()) {
-      await setDoc(userRef, { createdAt: serverTimestamp(), landlordOf: [], streaks: {} });
+      await setDoc(userRef, {
+        createdAt: serverTimestamp(),
+        landlordOf: [],
+        streaks: {},
+      });
       userSnap = await getDoc(userRef);
     }
     return userSnap.data() as User;
@@ -84,7 +94,9 @@ export class CheckInService extends FirebaseService {
 
   private async saveCheckin(checkin: Omit<CheckIn, 'id'>): Promise<DocumentReference> {
     const checkinsRef = collection(this.firestore, 'checkins');
-    const cleanCheckin = Object.fromEntries(Object.entries(checkin).filter(([_, v]) => v !== undefined));
+    const cleanCheckin = Object.fromEntries(
+      Object.entries(checkin).filter(([_, v]) => v !== undefined)
+    );
     return await addDoc(checkinsRef, cleanCheckin);
   }
 
@@ -96,7 +108,6 @@ export class CheckInService extends FirebaseService {
       lastCheckinAt: checkin.timestamp,
       recordEarlyCheckinAt: earliest(pub.recordEarlyCheckinAt, checkinDate),
       recordLatestCheckinAt: latest(pub.recordLatestCheckinAt, checkinDate),
-      landlordId: checkin.userId,
     };
     await updateDoc(pubRef, updatedPub);
   }
@@ -104,15 +115,12 @@ export class CheckInService extends FirebaseService {
   private async updateUserStats(user: User, checkin: Omit<CheckIn, 'id'>): Promise<void> {
     const userRef = doc(this.firestore, `users/${checkin.userId}`);
     const prevStreak = user.streaks?.[checkin.pubId] || 0;
+
     const updatedUser: Partial<User> = {
       streaks: { ...user.streaks, [checkin.pubId]: prevStreak + 1 },
-      landlordOf: Array.from(new Set([...(user.landlordOf || []), checkin.pubId])),
+      // landlordOf removed — handled by LandlordService if needed in future
     };
+
     await updateDoc(userRef, updatedUser);
   }
-
-
-
-
-
 }

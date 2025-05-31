@@ -71,20 +71,20 @@ readonly uniqueVisitedPubsList$$ = computed(() => {
 
 readonly uniqueVisitedPubsCount$$ = computed(() => this.uniqueVisitedPubsList$$().length);
 
-// ✅ Pubs where the user is currently landlord
+
 readonly landlordPubsList$$ = computed(() => {
   const pubs = this.pubStore.pubs$$();
   const user = this.userStore.user$$();
-
-  console.log('[DEBUG] landlord signal triggered', {
-    user: user?.uid,
-    pubs: pubs.map(p => ({ id: p.id, landlordId: p.landlordId })),
-  });
+  const today = new Date().toISOString().split('T')[0];
 
   if (!user) return [];
 
-  return pubs.filter((pub) => pub.landlordId === user.uid);
+  return pubs.filter(pub =>
+    pub.landlordToday?.userId === user.uid &&
+    pub.landlordToday?.date === today
+  );
 });
+
 
 
 readonly landlordPubsCount$$ = computed(() => this.landlordPubsList$$().length);
