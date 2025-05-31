@@ -1,7 +1,7 @@
 // src/app/stores/checkin.store.ts
-import { inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, signal } from '@angular/core';
 import { CheckInService } from './check-in.service';
-import { CheckIn } from '../util/check-in.model';
+import type { CheckIn } from '../util/check-in.model';
 import { Timestamp } from 'firebase/firestore';
 import { PubService } from '../../pubs/data-access/pub.service';
 import { Pub } from '../../pubs/utils/pub.models';
@@ -47,8 +47,9 @@ export class CheckinStore {
   }
 
   recordCheckinSuccess(newCheckin: CheckIn) {
-    this.checkins$$.update(prev => [...prev, newCheckin]);
-    this.checkinSuccess$$.set(newCheckin);
+    const extended = { ...newCheckin, madeUserLandlord: newCheckin.madeUserLandlord ?? false };
+    this.checkins$$.update(prev => [...prev, extended]);
+    this.checkinSuccess$$.set(extended);
   }
 
   reset(): void {
@@ -103,6 +104,13 @@ export class CheckinStore {
     }
   }
 
+  readonly userCheckins$$ = computed(() =>
+    this.checkins$$().map(c => c.pubId)
+  );
+
+  readonly landlordPubs$$ = computed(() =>
+    this.checkins$$().filter(c => c.madeUserLandlord).map(c => c.pubId)
+  );
 
   private async getPubLocation(pubId: string): Promise<{ lat: number; lng: number }> {
     const pub: Pub | undefined = await firstValueFrom(this.pubService.getPubById(pubId));

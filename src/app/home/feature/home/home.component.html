@@ -1,22 +1,15 @@
-@if (userCanCheckIn$$()) {
-  <app-check-in-homepage-widget [closestPub]="closestPub$$()!" />
-}
+<div class="home">
 
-<app-status></app-status>
-
-
-<section class="nearest-pubs">
-  <h2>📍 Nearest pubs ({{ nearestPubs$$().length }})</h2>
-
-  @if (nearestPubs$$().length) {
-    <ul>
-      @for (pub of nearestPubs$$(); track pub.id) {
-        <li>{{ pub.name }} ({{ pub.distance.toFixed(0) }}m away)</li>
-      }
-    </ul>
-  } @else {
-    <p>📡 Trying to find pubs near you...</p>
+  @if (userCanCheckIn$$()) {
+    <app-check-in-homepage-widget [closestPub]="closestPub$$()!" />
   }
-</section>
+
+  <app-status></app-status>
 
 
+  <app-nearest-pubs [pubs]="nearestPubs$$()" filter="all" />
+  <app-nearest-pubs [pubs]="nearestPubs$$()" filter="not-checked-in" />
+  <app-nearest-pubs [pubs]="nearestPubs$$()" filter="checked-in" />
+
+
+</div>

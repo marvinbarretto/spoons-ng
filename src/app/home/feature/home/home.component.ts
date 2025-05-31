@@ -5,10 +5,12 @@ import { haversineDistanceInMeters } from '../../../shared/utils/geo';
 import { StatusComponent } from "../status/status.component";
 import { CheckInHomepageWidgetComponent } from "../../../check-in/ui/check-in-homepage-widget/check-in-homepage-widget.component";
 import { Pub } from '../../../pubs/utils/pub.models';
+import { NearestPubsItemComponent } from "../../../pubs/ui/nearest-pubs-item/nearest-pubs-item.component";
+import { NearestPubsComponent } from "../../../pubs/ui/nearest-pubs/nearest-pubs.component";
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, StatusComponent, CheckInHomepageWidgetComponent],
+  imports: [CommonModule, StatusComponent, CheckInHomepageWidgetComponent, NearestPubsItemComponent, NearestPubsComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
