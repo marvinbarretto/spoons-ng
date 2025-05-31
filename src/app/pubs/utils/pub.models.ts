@@ -8,27 +8,29 @@ export type Pub = {
   region?: string;
   country?: string;
 
-  location: {
-    lat: number;
-    lng: number;
-  };
+  location: { lat: number; lng: number };
 
   carpetUrl?: string;
-  landlordId?: string; // ⛔️ can remove this if replaced by landlordToday
 
   lastCheckinAt?: Timestamp;
   checkinCount?: number;
+
   recordEarlyCheckinAt?: Timestamp;
   recordLatestCheckinAt?: Timestamp;
   longestStreak?: number;
 
   landlordToday?: {
     userId: string;
-    date: string; // 'YYYY-MM-DD', local
+    date: string; // 'YYYY-MM-DD'
   };
 
   landlordHistory?: {
     userId: string;
     date: string;
+  }[];
+
+  checkinHistory?: {
+    userId: string;
+    timestamp: Timestamp;
   }[];
 };

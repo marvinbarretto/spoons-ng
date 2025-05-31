@@ -89,6 +89,12 @@ export class AuthStore {
     });
   }
 
+  get uid(): string | null {
+    return this.user$$()?.uid ?? null;
+  }
+
+
+
   logout() {
     this.token$$.set(null);
     this.user$$.set(null);

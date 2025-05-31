@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { FirestoreService } from '../../shared/data-access/firestore.service';
-import { addDoc, collection, DocumentReference, getDocs, query, serverTimestamp, setDoc, Timestamp, where } from 'firebase/firestore';
+import { addDoc, arrayUnion, collection, DocumentReference, getDocs, increment, query, serverTimestamp, setDoc, Timestamp, where } from 'firebase/firestore';
 import type { CheckIn } from '../util/check-in.model';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
@@ -8,20 +8,20 @@ import { Pub } from '../../pubs/utils/pub.models';
 import { earliest, latest } from '../../shared/utils/date-utils';
 import { User } from '../../users/utils/user.model';
 import { LandlordService } from '../../landlord/data-access/landlord.service';
-
-// TODO: can we improve this service, can it use signals?
-// Centralise user doc creation
-// how can we ensure we have a user doc before we create a checkin?
-// can we improve the naming conventions?
+import { AuthStore } from '../../auth/data-access/auth.store';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CheckInService extends FirestoreService {
   private landlordService = inject(LandlordService);
+  private authStore = inject(AuthStore);
 
-  async getTodayCheckin(userId: string, pubId: string): Promise<CheckIn | null> {
+  async getTodayCheckin(pubId: string): Promise<CheckIn | null> {
     const todayDateKey = new Date().toISOString().split('T')[0];
+    const userId = this.authStore.uid;
+
+    if (!userId) throw new Error('[CheckInService] Missing userId for getTodayCheckin');
 
     const ref = collection(this.firestore, 'checkins');
     const q = query(
@@ -65,7 +65,6 @@ export class CheckInService extends FirestoreService {
     await this.updatePubStats(pub, checkin, checkinRef.id);
     await this.updateUserStats(user, checkin);
 
-    // 🧠 Attempt landlord assignment here (post-check-in)
     await this.landlordService.tryAwardLandlord(checkin.pubId, checkin.timestamp.toDate());
 
     return { ...checkin, id: checkinRef.id };
@@ -103,13 +102,22 @@ export class CheckInService extends FirestoreService {
   private async updatePubStats(pub: Pub, checkin: Omit<CheckIn, 'id'>, checkinId: string): Promise<void> {
     const pubRef = doc(this.firestore, `pubs/${checkin.pubId}`);
     const checkinDate = checkin.timestamp.toDate();
-    const updatedPub: Partial<Pub> = {
-      checkinCount: (pub.checkinCount || 0) + 1,
-      lastCheckinAt: checkin.timestamp,
+
+    const userId = this.authStore.uid;
+    if (!userId) {
+      throw new Error('[CheckInService] Cannot update pub stats without a valid user ID');
+    }
+
+    await updateDoc(pubRef, {
+      checkinCount: increment(1),
+      lastCheckinAt: serverTimestamp(),
       recordEarlyCheckinAt: earliest(pub.recordEarlyCheckinAt, checkinDate),
       recordLatestCheckinAt: latest(pub.recordLatestCheckinAt, checkinDate),
-    };
-    await updateDoc(pubRef, updatedPub);
+      checkinHistory: arrayUnion({
+        userId,
+        timestamp: serverTimestamp(),
+      }),
+    });
   }
 
   private async updateUserStats(user: User, checkin: Omit<CheckIn, 'id'>): Promise<void> {
@@ -118,7 +126,6 @@ export class CheckInService extends FirestoreService {
 
     const updatedUser: Partial<User> = {
       streaks: { ...user.streaks, [checkin.pubId]: prevStreak + 1 },
-      // landlordOf removed — handled by LandlordService if needed in future
     };
 
     await updateDoc(userRef, updatedUser);

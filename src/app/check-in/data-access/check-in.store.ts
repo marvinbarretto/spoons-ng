@@ -7,11 +7,13 @@ import { PubService } from '../../pubs/data-access/pub.service';
 import { Pub } from '../../pubs/utils/pub.models';
 import { firstValueFrom } from 'rxjs';
 import { User } from '../../users/utils/user.model';
+import { AuthStore } from '../../auth/data-access/auth.store';
 
 @Injectable({ providedIn: 'root' })
 export class CheckinStore {
   private checkinService = inject(CheckInService);
   private pubService = inject(PubService);
+  private authStore = inject(AuthStore);
 
   private hasLoaded = false;
 
@@ -56,12 +58,12 @@ export class CheckinStore {
     this.error$$.set(null);
   }
 
-  async checkin(pubId: string, userId: string, location: GeolocationCoordinates, photoDataUrl: string | null) {
+  async checkin(pubId: string, location: GeolocationCoordinates, photoDataUrl: string | null) {
     this.loading$$.set(true);
     this.error$$.set(null);
 
     try {
-      const existing = await this.checkinService.getTodayCheckin(userId, pubId);
+      const existing = await this.checkinService.getTodayCheckin(pubId);
       if (existing) throw new Error('Already checked in today.');
 
       const distance = this.getDistanceMeters(location, await this.getPubLocation(pubId));
@@ -72,6 +74,9 @@ export class CheckinStore {
       if (photoDataUrl) {
         photoUrl = await this.checkinService.uploadPhoto(photoDataUrl);
       }
+
+      const userId = this.authStore.uid;
+      if (!userId) throw new Error('Not logged in.');
 
       const newCheckin: Omit<CheckIn, 'id'> = {
         userId,
@@ -97,6 +102,7 @@ export class CheckinStore {
       this.loading$$.set(false);
     }
   }
+
 
   private async getPubLocation(pubId: string): Promise<{ lat: number; lng: number }> {
     const pub: Pub | undefined = await firstValueFrom(this.pubService.getPubById(pubId));

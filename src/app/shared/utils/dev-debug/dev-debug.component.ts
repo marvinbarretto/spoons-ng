@@ -46,7 +46,7 @@ export class DevDebugComponent {
     const pubs = this.pubStore.pubs$$();
     const user = this.user$$();
     if (!user) return [];
-    return pubs.filter((pub) => pub.landlordId === user.uid);
+    return pubs.filter((pub) => pub.landlordToday?.userId === user.uid);
   });
 
   readonly uniqueVisitedPubsList$$ = computed(() => {

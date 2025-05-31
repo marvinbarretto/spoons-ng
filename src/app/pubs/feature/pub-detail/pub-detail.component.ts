@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import type { Pub } from '../../utils/pub.models';
 import { PubStore } from '../../data-access/pub.store';
 import { PubService } from '../../data-access/pub.service';
+import { Timestamp } from '@angular/fire/firestore';
 
 @Component({
   selector: 'app-pub-detail',
@@ -26,7 +27,6 @@ export class PubDetailComponent implements OnInit {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) return this.fail();
 
-    // Prefer local store if already loaded
     const local = this.pubStore.pubs$$().find(p => p.id === id);
     if (local) {
       this.pub = local;
@@ -44,7 +44,22 @@ export class PubDetailComponent implements OnInit {
     }
   }
 
+  get locationString(): string {
+    if (!this.pub) return '';
+    const { city, region, country } = this.pub;
+    return [city, region, country].filter(Boolean).join(', ');
+  }
+
+  formatDate(timestamp?: Timestamp): string {
+    return timestamp ? timestamp.toDate().toLocaleDateString() : '—';
+  }
+
+  formatTime(timestamp?: Timestamp): string {
+    return timestamp ? timestamp.toDate().toLocaleTimeString() : '—';
+  }
+
   private fail() {
     this.router.navigate(['/pubs']);
   }
 }
+

@@ -79,7 +79,7 @@ export class CheckInContainerComponent implements OnInit {
           }
         }
 
-        await this.checkinStore.checkin(pub.id, user.uid, coords, photoDataUrl);
+        await this.checkinStore.checkin(pub.id, coords, photoDataUrl);
       },
       (error) => {
         this.checkinStore.error$$.set('Location access denied or unavailable.');
