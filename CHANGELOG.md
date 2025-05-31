@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.9](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.8...v0.0.9) (2025-05-31)
+
+
+### Features
+
+* Missions CRUD ([0ff8c6c](https://github.com/marvinbarretto/spoons-ng/commit/0ff8c6c176a28b089a764fe27a5f047d3f6cf227))
+
+
+### Bug Fixes
+
+* Make checkins work again ([2bd4113](https://github.com/marvinbarretto/spoons-ng/commit/2bd4113c816e4f7e2f80062a287c93ba64342fad))
+* Write to db properly ([837745c](https://github.com/marvinbarretto/spoons-ng/commit/837745ce0665a8f2fdd3469cd6c9d6f71d240b31))
+
 ### [0.0.8](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.7...v0.0.8) (2025-05-31)
 
 
