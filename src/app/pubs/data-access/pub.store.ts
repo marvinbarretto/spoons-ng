@@ -1,9 +1,10 @@
-import { signal } from '@angular/core';
-import { Pub } from '../utils/pub.models';
-import { inject } from '@angular/core';
-import { PubService } from './pub.service';
-import { Injectable } from '@angular/core';
+import { signal, computed, inject, Injectable } from '@angular/core';
+import { PubService } from '../../pubs/data-access/pub.service';
 import { CacheService } from '../../shared/data-access/cache.service';
+import { LocationService } from '../../shared/data-access/location.service';
+import { CheckinStore } from '../../check-in/data-access/check-in.store';
+import type { Pub } from '../../pubs/utils/pub.models';
+import { getDistanceKm } from '../../shared/utils/get-distance';
 
 @Injectable({
   providedIn: 'root',
@@ -15,7 +16,25 @@ export class PubStore {
 
   private readonly pubService = inject(PubService);
   private readonly cacheService = inject(CacheService);
+  private readonly locationService = inject(LocationService);
+  private readonly checkinStore = inject(CheckinStore);
+
   private hasLoaded = false;
+
+  // ✅ Corrected property name
+  readonly userLocation$$ = this.locationService.location$$;
+
+  readonly sortedPubsByDistance$$ = computed(() => {
+    const pubs = this.pubs$$();
+    const loc = this.userLocation$$();
+    if (!loc) return pubs;
+
+    return [...pubs].sort((a, b) => {
+      const d1 = getDistanceKm(loc, a.location);
+      const d2 = getDistanceKm(loc, b.location);
+      return d1 - d2;
+    });
+  });
 
   async loadOnce(): Promise<void> {
     if (this.hasLoaded) {
@@ -47,6 +66,15 @@ export class PubStore {
     }
   }
 
+  getDistanceForPub(pub: Pub): number | undefined {
+    const loc = this.userLocation$$();
+    return loc ? getDistanceKm(loc, pub.location) : undefined;
+  }
+
+  hasCheckedIn(pubId: string): boolean {
+    return this.checkinStore.checkins$$().some(c => c.pubId === pubId);
+  }
+
   reset(): void {
     this.cacheService.clear('pubs');
     this.pubs$$.set([]);
@@ -55,5 +83,4 @@ export class PubStore {
     this.hasLoaded = false;
     console.log('[PubStore] 🔄 Reset complete');
   }
-
 }

@@ -14,8 +14,12 @@ import { PubCardComponent } from '../../ui/pub-card/pub-card.component';
         <p>Loading pubs...</p>
       } @else {
         <ul>
-          <li *ngFor="let pub of pubStore.pubs$$()">
-            <app-pub-card [pub]="pub" />
+          <li *ngFor="let pub of pubStore.sortedPubsByDistance$$()">
+            <app-pub-card
+              [pub]="pub"
+              [distanceInKm]="pubStore.getDistanceForPub(pub)"
+              [hasCheckedIn]="pubStore.hasCheckedIn(pub.id)"
+            />
           </li>
         </ul>
       }

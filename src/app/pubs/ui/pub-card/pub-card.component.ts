@@ -7,10 +7,16 @@ import { RouterModule } from '@angular/router';
   selector: 'app-pub-card',
   imports: [CommonModule, RouterModule],
   template: `
-    <a [routerLink]="['/pubs', pub.id]" class="pub-card">
+<article>
+  <a [routerLink]="['/pubs', pub.id]" class="pub-card">
+
       <h2>{{ pub.name }}</h2>
-      <p>{{ pub.city }}</p>
+      <p *ngIf="distanceInKm !== undefined">
+        Distance: {{ distanceInKm.toFixed(1) }} km
+      </p>
+      <p *ngIf="hasCheckedIn">✅ Already visited</p>
     </a>
+    </article>
   `,
   styles: [`
     .pub-card {
@@ -21,10 +27,12 @@ import { RouterModule } from '@angular/router';
       color: inherit;
     }
     .pub-card:hover {
-      background: #f9f9f9;
+      background: #f9f9f9; // TODO: use the theme
     }
   `],
 })
 export class PubCardComponent {
-  @Input({ required: true }) pub!: Pub;
+  @Input() pub!: Pub;
+  @Input() distanceInKm?: number;
+  @Input() hasCheckedIn = false;
 }
