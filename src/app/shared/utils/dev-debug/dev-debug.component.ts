@@ -13,46 +13,7 @@ import { PubStore } from '../../../pubs/data-access/pub.store';
   selector: 'app-dev-debug',
   standalone: true,
   imports: [JsonPipe],
-  template: `
-    @if (isDev) {
-    <div class="debug-panel">
-      <strong>🔍 Dev Debug</strong>
-
-      <!-- Reset Buttons -->
-      <div class="reset-buttons">
-        <button (click)="resetPubs()">🔄 Reset Pubs</button>
-        <button (click)="resetCheckins()">🔄 Reset Check-ins</button>
-      </div>
-
-      <!-- User + Auth -->
-      <pre>User: {{ user$$() | json }}</pre>
-      <pre>Token: {{ token$$() }}</pre>
-
-      <!-- Viewport + Device -->
-      <pre>Mobile view: {{ isMobile$$() }}</pre>
-
-      <!-- Panel + Location -->
-      <pre>Active panel: {{ activePanel$$() }}</pre>
-      <pre>Location: {{ location$$() | json }}</pre>
-      <pre>Closest pub: {{ closestPub$$()?.name }}</pre>
-      <pre>Can check-in: {{ canCheckIn$$() }}</pre>
-
-      <!-- Checkin Store -->
-      <hr />
-      <pre>✅ Check-ins: {{ checkins$$().length }}</pre>
-      <pre>Latest check-in: {{ latestCheckin$$() | json }}</pre>
-
-      <!-- Pub Store -->
-      <pre>📍 Total pubs: {{ pubs$$().length }}</pre>
-      <pre>Pubs with landlords: {{ landlordPubsList$$().length }}</pre>
-
-      <!-- Derived Stats -->
-      <hr />
-      <pre>Unique pubs visited: {{ uniqueVisitedPubsList$$().length }}</pre>
-      <pre>Landlord count: {{ landlordPubsList$$().length }}</pre>
-    </div>
-    }
-  `,
+  templateUrl: './dev-debug.component.html',
   styleUrl: './dev-debug.component.scss'
 })
 export class DevDebugComponent {

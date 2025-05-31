@@ -1,0 +1,55 @@
+<details>
+  <summary>🛠️ Dev Debug Panel</summary>
+
+  <div class="debug-section">
+    <h3>User</h3>
+    <pre>{{ user$$() | json }}</pre>
+  </div>
+
+  <!-- <div class="debug-section">
+    <h3>Token</h3>
+    <pre>{{ token$$() }}</pre>
+  </div> -->
+
+  <div class="debug-section">
+    <h3>Device</h3>
+    <p>Mobile: {{ isMobile$$() }}</p>
+    <!-- <p>Touch: {{ isTouchDevice$$() }}</p>
+    <p>Low Power: {{ isLowPowerDevice$$() }}</p>
+    <p>Memory (GB): {{ deviceMemoryGB$$() }}</p> -->
+  </div>
+
+  <div class="debug-section">
+    <h3>Location</h3>
+    <pre>{{ location$$() | json }}</pre>
+  </div>
+
+  <div class="debug-section">
+    <h3>Closest Pub</h3>
+    <pre>{{ closestPub$$() | json }}</pre>
+  </div>
+
+  <div class="debug-section">
+    <h3>Can Check In?</h3>
+    <p>{{ canCheckIn$$() }}</p>
+  </div>
+
+  <div class="debug-section">
+    <h3>Check-Ins</h3>
+    <pre>{{ checkins$$() | json }}</pre>
+    <pre>Latest: {{ latestCheckin$$() | json }}</pre>
+  </div>
+
+  <div class="debug-section">
+    <h3>Landlord Pubs</h3>
+    <pre>{{ landlordPubsList$$() | json }}</pre>
+  </div>
+
+  <div class="debug-section">
+    <h3>Visited Pubs</h3>
+    <pre>{{ uniqueVisitedPubsList$$() | json }}</pre>
+  </div>
+
+  <button type="button" (click)="resetPubs()">Reset Pubs</button>
+  <button type="button" (click)="resetCheckins()">Reset Check-ins</button>
+</details>
