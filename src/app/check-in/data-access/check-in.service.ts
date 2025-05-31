@@ -115,10 +115,11 @@ export class CheckInService extends FirestoreService {
       recordLatestCheckinAt: latest(pub.recordLatestCheckinAt, checkinDate),
       checkinHistory: arrayUnion({
         userId,
-        timestamp: serverTimestamp(),
+        timestamp: checkin.timestamp, // ✅ FIXED: use actual Date/Timestamp value
       }),
     });
   }
+
 
   private async updateUserStats(user: User, checkin: Omit<CheckIn, 'id'>): Promise<void> {
     const userRef = doc(this.firestore, `users/${checkin.userId}`);
