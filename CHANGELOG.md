@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.8](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.7...v0.0.8) (2025-05-31)
+
+
+### Features
+
+* componetize Nearest pub on homepage ([4112322](https://github.com/marvinbarretto/spoons-ng/commit/4112322cecf669af826dafa4fce1952a3d750cf0))
+* Enable debug panel to collapse ([23a5fd9](https://github.com/marvinbarretto/spoons-ng/commit/23a5fd96ac3cca065955f74fcf7aecb82806b182))
+* Improve Pub detail template ([e773867](https://github.com/marvinbarretto/spoons-ng/commit/e773867959ecfb0ddb03151b335e309b106b0248))
+* Sort pubs in order of distance ([148b28f](https://github.com/marvinbarretto/spoons-ng/commit/148b28f9046a6a020d5a2e66f027c852014c752e))
+
+
+### Bug Fixes
+
+* Make pub count reactive ([80eaf4f](https://github.com/marvinbarretto/spoons-ng/commit/80eaf4ff80902a9495a709d4ff6ddd502daf6091))
+
 ### [0.0.7](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.6...v0.0.7) (2025-05-30)
 
 
