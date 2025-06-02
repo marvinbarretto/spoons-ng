@@ -72,7 +72,7 @@ export class PubStore {
   }
 
   hasCheckedIn(pubId: string): boolean {
-    return this.checkinStore.checkins$$().some(c => c.pubId === pubId);
+    return this.checkinStore.checkins().some(c => c.pubId === pubId);
   }
 
   reset(): void {
