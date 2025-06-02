@@ -45,7 +45,7 @@ describe('PubStore', () => {
         { provide: CacheService, useValue: mockCacheService },
         { provide: LocationService, useValue: mockLocationService },
         { provide: PubService, useValue: {} },
-        { provide: CheckinStore, useValue: { checkins$$: signal([]) } },
+        { provide: CheckinStore, useValue: { checkins: signal([]) } },
       ]
     });
 

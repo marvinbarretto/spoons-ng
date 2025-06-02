@@ -27,7 +27,7 @@ export class PubDetailComponent implements OnInit {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) return this.fail();
 
-    const local = this.pubStore.pubs$$().find(p => p.id === id);
+    const local = this.pubStore.pubs().find(p => p.id === id);
     if (local) {
       this.pub = local;
       this.loading = false;

@@ -11,9 +11,9 @@ export class UserStore {
   private readonly userService = inject(UserService);
   private readonly authStore = inject(AuthStore);
 
-  readonly user$$ = signal<User | null>(null);
-  readonly loading$$ = signal(false);
-  readonly error$$ = signal<string | null>(null);
+  readonly user = signal<User | null>(null);
+  readonly loading = signal(false);
+  readonly error = signal<string | null>(null);
 
 
 
@@ -22,7 +22,7 @@ export class UserStore {
 
   constructor() {
     effect(() => {
-      const authUser = this.authStore.user$$();
+      const authUser = this.authStore.user();
       if (!authUser) return;
 
       this.loadUser(authUser.uid);
@@ -31,10 +31,10 @@ export class UserStore {
 
 
   loadUser(uid: string) {
-    this.loading$$.set(true);
-    this.error$$.set(null);
+    this.loading.set(true);
+    this.error.set(null);
 
-    const authUser = this.authStore.user$$();
+    const authUser = this.authStore.user();
 
     this.userService.getUser(uid).subscribe({
       next: async (data) => {
@@ -64,20 +64,20 @@ export class UserStore {
           }
         }
 
-        this.user$$.set(merged);
+        this.user.set(merged);
         console.log('[UserStore] ✅ Merged user:', merged);
-        this.loading$$.set(false);
+        this.loading.set(false);
       },
       error: (err) => {
-        this.error$$.set('Failed to load user data');
+        this.error.set('Failed to load user data');
         console.error('[UserStore] ❌ Error loading user:', err);
-        this.loading$$.set(false);
+        this.loading.set(false);
       }
     });
   }
 
   landlordCount(): number {
-    const user = this.user$$();
+    const user = this.user();
     const count = user?.landlordOf?.length || 0;
     console.log(`[UserStore] 🧮 Calculated landlordCount: ${count}`);
     return count;

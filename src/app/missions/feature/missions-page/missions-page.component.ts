@@ -11,7 +11,7 @@ import { ButtonComponent } from '../../../shared/ui/button/button.component';
     <div class="missions-page">
       <h1>Missions</h1>
       <app-button (onClick)="create()">Create Mission</app-button>
-      <app-mission-list [missions]="missionStore.missions$$()" (select)="edit($event)"></app-mission-list>
+      <app-mission-list [missions]="missionStore.missions()" (select)="edit($event)"></app-mission-list>
     </div>
   `,
   styleUrl: './missions-page.component.scss'

@@ -28,8 +28,8 @@
 
   <section>
     <h2>Your checkins</h2>
-    <p>{{ totalCheckins$$().length }} checkins</p>
-    @for (checkin of totalCheckins$$(); track checkin.id) {
+    <p>{{ totalcheckins().length }} checkins</p>
+    @for (checkin of totalcheckins(); track checkin.id) {
       <li>
         <strong>{{ checkin.pubId }}</strong>
         <small>{{ checkin.dateKey }}</small>

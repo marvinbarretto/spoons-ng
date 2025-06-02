@@ -14,8 +14,8 @@ import { ButtonComponent } from "../../ui/button/button.component";
 export class UserInfoComponent {
   protected authStore = inject(AuthStore);
 
-  readonly user = this.authStore.user$$;
-  readonly isAuthenticated = this.authStore.isAuthenticated$$;
+  readonly user = this.authStore.user;
+  readonly isAuthenticated = this.authStore.isAuthenticated;
 
 
   readonly isAuthenticatedWithGoogle = computed(() => {

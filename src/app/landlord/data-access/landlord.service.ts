@@ -11,7 +11,7 @@ export class LandlordService extends FirestoreService {
   private authStore = inject(AuthStore);
 
   async tryAwardLandlord(pubId: string, checkInDate: Date): Promise<boolean> {
-    const user = this.authStore.user$$();
+    const user = this.authStore.user();
     if (!user) throw new Error('User not logged in');
     console.log(`[LandlordService] 🧑 User attempting landlord claim: ${user.uid}`);
 

@@ -19,7 +19,7 @@ export class CheckInHomepageWidgetComponent {
 
   checkInToNearestPub() {
     console.log('[CheckInHomepageWidgetComponent] !!! Checking in to', this.closestPub);
-    this.checkinStore.checkin(this.closestPub.id);
+    this.checkinStore.checkinToPub(this.closestPub.id);
     this.router.navigate(['/pub', this.closestPub.id]);
   }
 }

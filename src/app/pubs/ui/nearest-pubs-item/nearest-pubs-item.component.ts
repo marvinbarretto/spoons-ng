@@ -36,7 +36,7 @@ export class NearestPubsItemComponent {
   }
 
   hasCheckedIn(pubId: string): boolean {
-    return this.checkinStore.userCheckins$$().includes(pubId);
+    return this.checkinStore.userCheckins().includes(pubId);
   }
 
 }

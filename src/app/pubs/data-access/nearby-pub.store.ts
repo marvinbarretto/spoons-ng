@@ -21,15 +21,15 @@ export class NearbyPubStore {
   private readonly pubStore = inject(PubStore);
 
   // Direct access to location and pubs from other stores
-  readonly location$$: Signal<{ lat: number; lng: number } | null> =
-    this.locationService.location$$;
+  readonly location: Signal<{ lat: number; lng: number } | null> =
+    this.locationService.location;
 
-  readonly allPubs$$: Signal<Pub[]> = this.pubStore.pubs$$;
+  readonly allPubs: Signal<Pub[]> = this.pubStore.pubs;
 
   // Computed state - this is what makes this store valuable
-  readonly nearbyPubs$$: Signal<PubWithDistance[]> = computed(() => {
-    const location = this.location$$();
-    const pubs = this.allPubs$$();
+  readonly nearbyPubs: Signal<PubWithDistance[]> = computed(() => {
+    const location = this.location();
+    const pubs = this.allPubs();
 
     if (!location || !pubs.length) return [];
 
@@ -46,17 +46,17 @@ export class NearbyPubStore {
       .slice(0, 3);
   });
 
-  readonly closestPub$$: Signal<PubWithDistance | null> = computed(() => {
-    const pubs = this.nearbyPubs$$();
+  readonly closestPub: Signal<PubWithDistance | null> = computed(() => {
+    const pubs = this.nearbyPubs();
     return pubs.length > 0 ? pubs[0] : null;
   });
 
-  readonly canCheckIn$$: Signal<boolean> = computed(() => !!this.closestPub$$());
+  readonly canCheckIn: Signal<boolean> = computed(() => !!this.closestPub());
 
   // Computed state for different filters
-  readonly nearbyPubsCount$$ = computed(() => this.nearbyPubs$$().length);
+  readonly nearbyPubsCount = computed(() => this.nearbyPubs().length);
 
-  readonly hasNearbyPubs$$ = computed(() => this.nearbyPubsCount$$() > 0);
+  readonly hasNearbyPubs = computed(() => this.nearbyPubsCount() > 0);
 
   constructor() {
     console.log('[NearbyPubStore] 📍 Initialized - watching location + pubs');
@@ -66,8 +66,8 @@ export class NearbyPubStore {
    * Utility method to get distance to a specific pub
    */
   getDistanceToPub(pubId: string): number | null {
-    const location = this.location$$();
-    const pubs = this.allPubs$$();
+    const location = this.location();
+    const pubs = this.allPubs();
 
     if (!location) return null;
 

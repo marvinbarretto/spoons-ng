@@ -54,6 +54,52 @@ export class CheckinStore extends BaseStore<CheckIn> {
   }
 
   /**
+ * Check if user can check in to a specific pub
+ */
+canCheckInToPub(pubId: string | null): boolean {
+  if (!pubId) return false;
+
+  // Check if already checked in today
+  const today = new Date().toISOString().split('T')[0];
+  const existingCheckin = this.checkins().find(
+    c => c.pubId === pubId && c.dateKey === today
+  );
+
+  return !existingCheckin;
+}
+
+
+/**
+ * Simplified checkin method that gets location automatically
+ */
+async checkinToPub(pubId: string, photoDataUrl: string | null = null): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error('Geolocation not supported'));
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          await this.checkin(pubId, position.coords, photoDataUrl);
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      },
+      (error) => {
+        reject(new Error('Location access denied or unavailable'));
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+      }
+    );
+  });
+}
+
+  /**
    * Load check-ins for specific user
    */
   async loadForUser(userId: string): Promise<void> {

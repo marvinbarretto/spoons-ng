@@ -17,10 +17,10 @@ export class NearestPubsComponent {
 
   private readonly checkinStore = inject(CheckinStore);
 
-  readonly userCheckins$$ = this.checkinStore.userCheckins$$;
+  readonly userCheckins = this.checkinStore.userCheckins;
 
   readonly filteredPubs$$ = computed(() => {
-    const pubIds = this.userCheckins$$();
+    const pubIds = this.userCheckins();
     switch (this.filter) {
       case 'checked-in':
         return this.pubs.filter(p => pubIds.includes(p.id));

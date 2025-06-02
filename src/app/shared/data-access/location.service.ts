@@ -11,9 +11,9 @@ export type GeoLocation = {
 export class LocationService {
   private platform = inject(SsrPlatformService);
 
-  readonly location$$ = signal<GeoLocation | null>(null);
-  readonly error$$ = signal<string | null>(null);
-  readonly loading$$ = signal(false);
+  readonly location = signal<GeoLocation | null>(null);
+  readonly error = signal<string | null>(null);
+  readonly loading = signal(false);
 
   constructor() {
     this.getCurrentLocation();
@@ -26,12 +26,12 @@ export class LocationService {
     }
 
     if (!('geolocation' in navigator)) {
-      this.error$$.set('Geolocation not supported');
+      this.error.set('Geolocation not supported');
       console.warn('[LocationService] ❌ Geolocation API not available');
       return;
     }
 
-    this.loading$$.set(true);
+    this.loading.set(true);
     console.log('[LocationService] 📍 Attempting to get current position...');
 
     navigator.geolocation.getCurrentPosition(
@@ -40,17 +40,17 @@ export class LocationService {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
         };
-        this.location$$.set(coords);
+        this.location.set(coords);
         console.log('[LocationService] ✅ Position acquired:', coords);
-        this.loading$$.set(false);
+        this.loading.set(false);
       },
       (error) => {
-        this.error$$.set(error.message);
+        this.error.set(error.message);
         console.warn('[LocationService] ❌ Geolocation error', {
           code: error.code,
           message: error.message
         });
-        this.loading$$.set(false);
+        this.loading.set(false);
       },
       {
         enableHighAccuracy: true,
