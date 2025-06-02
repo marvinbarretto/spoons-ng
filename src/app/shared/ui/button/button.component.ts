@@ -1,18 +1,33 @@
-import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, EventEmitter, input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, EventEmitter, input, Output } from '@angular/core';
 
 @Component({
   selector: 'app-button',
-  imports: [CommonModule],
-  standalone: true,
-  templateUrl: './button.component.html',
+  template: `
+    <button
+    [attr.data-variant]="variant$$()"
+    [disabled]="isDisabled()"
+    [class.is-loading]="loading$$()"
+    [attr.aria-busy]="loading$$()"
+    [class.full-width]="fullWidth$$()"
+    (click)="handleClick()"
+    [attr.type]="type$$()"
+  >
+
+    @if (loading$$()) {
+      <span class="spinner" aria-hidden="true"></span>
+      <!-- TODO: Use the spinner from the material icons -->
+    } @else if (icon$$()) {
+      <span class="material-symbols-outlined icon">
+        {{ icon$$() }}
+      </span>
+    }
+    <span>
+      <ng-content />
+    </span>
+  </button>
+`,
   styleUrl: './button.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  // TODO: Learn how to use inputs
-  // inputs: [
-  //   'variant$$:variant',
-  //   'icon$$:icon',
-  // ]
 })
 export class ButtonComponent {
   readonly variant$$ = input<'primary' | 'secondary' | 'link'>('secondary');
@@ -24,7 +39,11 @@ export class ButtonComponent {
 
   @Output() onClick = new EventEmitter<void>();
 
+  readonly isDisabled = computed(() => this.disabled$$() || this.loading$$());
+
   handleClick(): void {
-    this.onClick.emit();
+    if (!this.isDisabled()) {
+      this.onClick.emit();
+    }
   }
 }

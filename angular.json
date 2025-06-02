@@ -5,10 +5,12 @@
   "projects": {
     "spoons": {
       "projectType": "application",
-
       "schematics": {
         "@schematics/angular:component": {
-          "style": "scss"
+          "style": "scss",
+          "changeDetection": "OnPush",
+          "inlineTemplate": true,
+          "inlineStyle": true
         }
       },
       "root": "",

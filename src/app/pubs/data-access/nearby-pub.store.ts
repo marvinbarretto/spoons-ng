@@ -33,15 +33,6 @@ export class NearbyPubStore {
       distance: haversineDistanceInMeters(userLoc, pub.location),
     }));
 
-    // console.log(
-    //   '[NearbyPubStore] 🧪 distances (m):',
-    //   pubsWithDistances.map((p) => [
-    //     p.name,
-    //     `${p.distance.toFixed(0)}m`,
-    //     p.distance < PUB_DISTANCE_THRESHOLD_METRES ? '✅' : '❌',
-    //   ])
-    // );
-
     return pubsWithDistances
       .filter((p) => p.distance < PUB_DISTANCE_THRESHOLD_METRES)
       .sort((a, b) => a.distance - b.distance)
@@ -52,8 +43,6 @@ export class NearbyPubStore {
     const pubs = this.nearbyPubs$$();
     return pubs.length > 0 ? pubs[0] : null;
   });
-
-  readonly canCheckIn$$: Signal<boolean> = computed(() => !!this.closestPub$$());
 
   constructor() {
     console.log('[NearbyPubStore] Bootstrapping');

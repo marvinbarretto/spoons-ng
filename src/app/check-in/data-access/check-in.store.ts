@@ -9,6 +9,7 @@ import { firstValueFrom } from 'rxjs';
 import { User } from '../../users/utils/user.model';
 import { AuthStore } from '../../auth/data-access/auth.store';
 import { LandlordStore } from '../../landlord/data-access/landlord.store';
+import { LocationService } from '../../shared/data-access/location.service';
 
 @Injectable({ providedIn: 'root' })
 export class CheckinStore {
@@ -16,6 +17,7 @@ export class CheckinStore {
   private pubService = inject(PubService);
   private authStore = inject(AuthStore);
   private landlordStore = inject(LandlordStore);
+  private locationService = inject(LocationService);
 
   private hasLoaded = false;
 
@@ -48,6 +50,28 @@ export class CheckinStore {
     }
   }
 
+  canCheckInToPub(pub: Pub | null): boolean {
+    if (!pub) return false;
+
+    const location = this.locationService.location$$(); // ✅ correct signal usage
+    if (!location) return false;
+
+    const today = new Date().toISOString().split('T')[0];
+    const hasAlreadyCheckedIn = this.checkins$$().some(
+      c => c.pubId === pub.id && c.dateKey === today
+    );
+
+    // TODO: review all this logic, it looks dodgy
+    // centralise the rules into one place, so it can be used as some sort reference
+
+    const distance = this.getDistanceMeters(location, pub.location);
+    const MAX_DISTANCE_METERS = 100000; // ✅ consider promoting to a shared constant
+
+    return true; // !hasAlreadyCheckedIn && distance <= MAX_DISTANCE_METERS;
+  }
+
+
+
   recordCheckinSuccess(newCheckin: CheckIn) {
     const extended = { ...newCheckin, madeUserLandlord: newCheckin.madeUserLandlord ?? false };
     this.checkins$$.update(prev => [...prev, extended]);
@@ -61,7 +85,7 @@ export class CheckinStore {
     this.error$$.set(null);
   }
 
-  async checkin(pubId: string, coords: GeolocationCoordinates, photoDataUrl?: string): Promise<void> {
+  async checkin(pubId: string, photoDataUrl?: string): Promise<void> {
     this.loading$$.set(true);
     this.error$$.set(null);
 
@@ -115,12 +139,15 @@ export class CheckinStore {
     return pub.location;
   }
 
-  private getDistanceMeters(a: GeolocationCoordinates, b: { lat: number; lng: number }): number {
+  private getDistanceMeters(
+    a: { lat: number; lng: number },
+    b: { lat: number; lng: number }
+  ): number {
     const R = 6371000;
-    const φ1 = a.latitude * Math.PI / 180;
+    const φ1 = a.lat * Math.PI / 180;
     const φ2 = b.lat * Math.PI / 180;
-    const Δφ = (b.lat - a.latitude) * Math.PI / 180;
-    const Δλ = (b.lng - a.longitude) * Math.PI / 180;
+    const Δφ = (b.lat - a.lat) * Math.PI / 180;
+    const Δλ = (b.lng - a.lng) * Math.PI / 180;
     const x = Δλ * Math.cos((φ1 + φ2) / 2);
     const y = Δφ;
     return Math.sqrt(x * x + y * y) * R;

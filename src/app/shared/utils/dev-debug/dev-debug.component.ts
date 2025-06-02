@@ -37,7 +37,7 @@ export class DevDebugComponent {
   readonly activePanel$$ = this.panelStore.activePanel;
   readonly location$$ = this.nearbyPubStore.location$$;
   readonly closestPub$$ = this.nearbyPubStore.closestPub$$;
-  readonly canCheckIn$$ = this.nearbyPubStore.canCheckIn$$;
+  readonly canCheckIn$$ = computed(() => this.checkinStore.canCheckInToPub(this.closestPub$$()));
   readonly checkins$$ = this.checkinStore.checkins$$;
   readonly latestCheckin$$ = this.checkinStore.checkinSuccess$$;
   readonly pubs$$ = this.pubStore.pubs$$;

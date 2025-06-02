@@ -1,34 +1,137 @@
+// src/app/shared/ui/button/button.component.spec.ts
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ButtonComponent } from './button.component';
 import { By } from '@angular/platform-browser';
+import { DebugElement } from '@angular/core';
+import { watchSignal } from '../../testing/signal-test-utils.spec';
 
 describe('ButtonComponent', () => {
-  let fixture: ComponentFixture<ButtonComponent>;
   let component: ButtonComponent;
+  let fixture: ComponentFixture<ButtonComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ButtonComponent], // standalone component!
+      imports: [ButtonComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ButtonComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
-  it('renders projected content', () => {
-    fixture.nativeElement.innerHTML = `<app-button>Click me</app-button>`;
-    fixture.detectChanges();
+  describe('Signal-driven behavior', () => {
+    it('should react to loading state changes', () => {
+      // Arrange
+      const loadingWatcher = watchSignal(component.loading$$).startWatching();
 
-    const button = fixture.nativeElement.querySelector('button');
-    expect(button?.textContent).toContain('Click me');
+      // Act
+      fixture.componentRef.setInput('loading$$', true);
+      fixture.detectChanges();
+
+      const button = fixture.debugElement.query(By.css('button'));
+
+      // Assert
+      expect(button.nativeElement.disabled).toBe(true);
+      expect(button.nativeElement.classList.contains('is-loading')).toBe(true);
+      loadingWatcher.expectCurrentValue(true);
+    });
+
+    it('should emit onClick when clicked and not disabled', () => {
+      // Arrange
+      jest.spyOn(component.onClick, 'emit');
+      fixture.componentRef.setInput('disabled$$', false);
+      fixture.detectChanges();
+
+      // Act
+      const button = fixture.debugElement.query(By.css('button'));
+      button.triggerEventHandler('click', null);
+
+      // Assert
+      expect(component.onClick.emit).toHaveBeenCalledTimes(1);
+    });
+
+    it('should not emit onClick when disabled', () => {
+      // Arrange
+      jest.spyOn(component.onClick, 'emit');
+      fixture.componentRef.setInput('disabled$$', true);
+      fixture.detectChanges();
+
+      // Act
+      const button = fixture.debugElement.query(By.css('button'));
+      button.triggerEventHandler('click', null);
+
+      // Assert - button click should be prevented by disabled attribute
+      expect(component.onClick.emit).not.toHaveBeenCalled();
+    });
   });
 
-  it('emits event on click', () => {
-    spyOn(component.onClick, 'emit');
+  describe('Variant rendering', () => {
+    it('should apply correct data-variant attribute', () => {
+      // Arrange & Act
+      fixture.componentRef.setInput('variant$$', 'primary');
+      fixture.detectChanges();
 
-    const button = fixture.debugElement.query(By.css('button'));
-    button.triggerEventHandler('click');
-    expect(component.onClick.emit).toHaveBeenCalled();
+      // Assert
+      const button = fixture.debugElement.query(By.css('button'));
+      expect(button.nativeElement.getAttribute('data-variant')).toBe('primary');
+    });
+
+    it('should render icon when provided', () => {
+      // Arrange & Act
+      fixture.componentRef.setInput('icon$$', 'search');
+      fixture.detectChanges();
+
+      // Assert
+      const icon = fixture.debugElement.query(By.css('.material-symbols-outlined'));
+      expect(icon).toBeTruthy();
+      expect(icon.nativeElement.textContent.trim()).toBe('search');
+    });
+
+    it('should render spinner instead of icon when loading', () => {
+      // Arrange & Act
+      fixture.componentRef.setInput('loading$$', true);
+      fixture.componentRef.setInput('icon$$', 'search');
+      fixture.detectChanges();
+
+      // Assert
+      const spinner = fixture.debugElement.query(By.css('.spinner'));
+      const icon = fixture.debugElement.query(By.css('.material-symbols-outlined'));
+
+      expect(spinner).toBeTruthy();
+      expect(icon).toBeFalsy(); // Icon should not render when loading
+    });
+  });
+
+  describe('Full width behavior', () => {
+    it('should apply full-width class when fullWidth$$ is true', () => {
+      // Arrange & Act
+      fixture.componentRef.setInput('fullWidth$$', true);
+      fixture.detectChanges();
+
+      // Assert
+      const button = fixture.debugElement.query(By.css('button'));
+      expect(button.nativeElement.classList.contains('full-width')).toBe(true);
+    });
+  });
+
+  describe('Accessibility', () => {
+    it('should have correct aria-busy attribute when loading', () => {
+      // Arrange & Act
+      fixture.componentRef.setInput('loading$$', true);
+      fixture.detectChanges();
+
+      // Assert
+      const button = fixture.debugElement.query(By.css('button'));
+      expect(button.nativeElement.getAttribute('aria-busy')).toBe('true');
+    });
+
+    it('should have correct type attribute', () => {
+      // Arrange & Act
+      fixture.componentRef.setInput('type$$', 'submit');
+      fixture.detectChanges();
+
+      // Assert
+      const button = fixture.debugElement.query(By.css('button'));
+      expect(button.nativeElement.type).toBe('submit');
+    });
   });
 });

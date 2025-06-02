@@ -38,7 +38,8 @@ export class OverlayService {
 
   open<T>(
     component: Type<T>,
-    config: Partial<OverlayConfig> = {}
+    config: Partial<OverlayConfig> = {},
+    inputs?: Record<string, any>
   ): { componentRef: ComponentRef<T>; close: () => void } {
     if (this.overlayRef) {
       this.close();
@@ -57,6 +58,16 @@ export class OverlayService {
 
     const portal = new ComponentPortal(component, null, this.injector, this.environmentInjector);
     const componentRef = this.overlayRef.attach(portal);
+
+    if (inputs) {
+      for (const [key, value] of Object.entries(inputs)) {
+        if (componentRef.setInput) {
+          componentRef.setInput(key, value);
+        } else {
+          (componentRef.instance as any)[key] = value;
+        }
+      }
+    }
 
     const element = this.overlayRef.overlayElement;
     this.focusTrap = this.focusTrapFactory.create(element);

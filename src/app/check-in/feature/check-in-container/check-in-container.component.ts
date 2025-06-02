@@ -74,22 +74,7 @@ export class CheckInContainerComponent implements OnInit {
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
-        const coords = position.coords;
-
-        let photoDataUrl: string | null = null;
-
-        if (environment.featureFlags.photoUpload && this.videoRef?.nativeElement) {
-          const canvas = document.createElement('canvas');
-          canvas.width = this.videoRef.nativeElement.videoWidth;
-          canvas.height = this.videoRef.nativeElement.videoHeight;
-          const ctx = canvas.getContext('2d');
-          if (ctx) {
-            ctx.drawImage(this.videoRef.nativeElement, 0, 0);
-            photoDataUrl = canvas.toDataURL('image/jpeg', 0.8);
-          }
-        }
-
-        await this.checkinStore.checkin(pub.id, coords);
+        await this.checkinStore.checkin(pub.id);
       },
       (error) => {
         this.checkinStore.error$$.set('Location access denied or unavailable.');
