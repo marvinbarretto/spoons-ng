@@ -42,6 +42,41 @@ export class CheckinStore extends BaseStore<CheckIn> {
 
   readonly totalCheckins = computed(() => this.checkins().length);
 
+
+
+/**
+ * Override BaseStore.load() to handle user-specific loading
+ */
+override async load(): Promise<void> {
+  const userId = this.authStore.uid;
+  if (!userId) {
+    const message = 'Cannot load check-ins: No authenticated user';
+    this._error.set(message);
+    this.toastService.error(message);
+    console.warn('[CheckinStore] ❌ Load failed: No user');
+    return;
+  }
+
+  await this.loadForUser(userId);
+}
+
+/**
+ * Override BaseStore.loadOnce() to handle user-specific loading
+ */
+override async loadOnce(): Promise<void> {
+  const userId = this.authStore.uid;
+  if (!userId) {
+    console.log('[CheckinStore] ❌ Cannot loadOnce: No authenticated user');
+    return;
+  }
+
+  await this.loadOnceForUser(userId);
+}
+
+
+
+
+
   /**
    * Load check-ins for specific user (CheckinStore-specific method)
    */
