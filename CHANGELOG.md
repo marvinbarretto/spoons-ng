@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.10](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.9...v0.0.10) (2025-06-03)
+
+
+### Features
+
+* Add BaseStore ([24e16ab](https://github.com/marvinbarretto/spoons-ng/commit/24e16ab297c74ac92973595544b0b4bc5d56dedf))
+* Add signal test utilities ([46002cf](https://github.com/marvinbarretto/spoons-ng/commit/46002cf2cbea11a3e4f56889c5a00bdf6b1ceddd))
+* Build OverlayService ([ed4bff3](https://github.com/marvinbarretto/spoons-ng/commit/ed4bff3d5c736be594a6df4fb0e1efacd1adf3b4))
+* Update DevDebugComponent ([83bb983](https://github.com/marvinbarretto/spoons-ng/commit/83bb9835339a62fefeea9bc7cbfd1d681daf82a0))
+
+
+### Bug Fixes
+
+* Bug with checking in ([8808468](https://github.com/marvinbarretto/spoons-ng/commit/8808468bdd6ef4e64b0b9e341d357127e3d8eec9))
+
 ### [0.0.9](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.8...v0.0.9) (2025-05-31)
 
 
