@@ -1,16 +1,16 @@
 <div class="home">
 
   <!-- TODO: Make that logic correct -->
-  @if (userCanCheckIn$$()) {
-    <app-check-in-homepage-widget [closestPub]="closestPub$$()!" />
+  @if (userCanCheckIn()) {
+    <app-check-in-homepage-widget [closestPub]="closestPub()!" />
   }
 
   <app-status></app-status>
 
 
-  <app-nearest-pubs [pubs]="nearestPubs$$()" filter="all" />
-  <app-nearest-pubs [pubs]="nearestPubs$$()" filter="not-checked-in" />
-  <app-nearest-pubs [pubs]="nearestPubs$$()" filter="checked-in" />
+  <app-nearest-pubs [pubs]="nearestPubs()" filter="all" />
+  <app-nearest-pubs [pubs]="nearestPubs()" filter="not-checked-in" />
+  <app-nearest-pubs [pubs]="nearestPubs()" filter="checked-in" />
 
 
 </div>

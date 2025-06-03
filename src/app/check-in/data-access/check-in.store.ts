@@ -1,155 +1,296 @@
-// src/app/stores/checkin.store.ts
+// src/app/check-in/data-access/check-in.store.ts
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { CheckInService } from './check-in.service';
 import type { CheckIn } from '../util/check-in.model';
-import { serverTimestamp, Timestamp } from 'firebase/firestore';
+import { Timestamp } from 'firebase/firestore';
 import { PubService } from '../../pubs/data-access/pub.service';
 import { Pub } from '../../pubs/utils/pub.models';
 import { firstValueFrom } from 'rxjs';
-import { User } from '../../users/utils/user.model';
 import { AuthStore } from '../../auth/data-access/auth.store';
-import { LandlordStore } from '../../landlord/data-access/landlord.store';
-import { LocationService } from '../../shared/data-access/location.service';
+import { BaseStore } from '../../shared/data-access/base.store';
 
 @Injectable({ providedIn: 'root' })
-export class CheckinStore {
-  private checkinService = inject(CheckInService);
-  private pubService = inject(PubService);
-  private authStore = inject(AuthStore);
-  private landlordStore = inject(LandlordStore);
-  private locationService = inject(LocationService);
+export class CheckinStore extends BaseStore<CheckIn> {
+  // 🔧 Services
+  private readonly checkinService = inject(CheckInService);
+  private readonly pubService = inject(PubService);
+  private readonly authStore = inject(AuthStore);
 
-  private hasLoaded = false;
+  // 📡 Main data - expose as clean name
+  readonly checkins = this.data;
 
-  readonly user$$ = signal<User | null>(null);
-  readonly checkins$$ = signal<CheckIn[]>([]);
-  readonly loading$$ = signal(false);
-  readonly error$$ = signal<string | null>(null);
-  readonly checkinSuccess$$ = signal<CheckIn | null>(null);
-  readonly landlordMessage$$ = signal<string | null>(null);
+  // 📡 Additional check-in specific state
+  private readonly _checkinSuccess = signal<CheckIn | null>(null);
+  private readonly _landlordMessage = signal<string | null>(null);
 
-  async loadOnce(userId: string): Promise<void> {
-    if (this.hasLoaded) return;
-    this.hasLoaded = true;
-    await this.load(userId);
+  readonly checkinSuccess = this._checkinSuccess.asReadonly();
+  readonly landlordMessage = this._landlordMessage.asReadonly();
+
+  // 📡 Computed signals for derived state
+  readonly userCheckins = computed(() =>
+    this.checkins().map(c => c.pubId)
+  );
+
+  readonly landlordPubs = computed(() =>
+    this.checkins().filter(c => c.madeUserLandlord).map(c => c.pubId)
+  );
+
+  readonly todayCheckins = computed(() => {
+    const today = new Date().toISOString().split('T')[0];
+    return this.checkins().filter(c => c.dateKey === today);
+  });
+
+  readonly totalCheckins = computed(() => this.checkins().length);
+
+
+
+/**
+ * Override BaseStore.load() to handle user-specific loading
+ */
+override async load(): Promise<void> {
+  const userId = this.authStore.uid;
+  if (!userId) {
+    const message = 'Cannot load check-ins: No authenticated user';
+    this._error.set(message);
+    this.toastService.error(message);
+    console.warn('[CheckinStore] ❌ Load failed: No user');
+    return;
   }
 
-  async load(userId: string): Promise<void> {
-    this.loading$$.set(true);
-    this.error$$.set(null);
+  await this.loadForUser(userId);
+}
+
+/**
+ * Override BaseStore.loadOnce() to handle user-specific loading
+ */
+override async loadOnce(): Promise<void> {
+  const userId = this.authStore.uid;
+  if (!userId) {
+    console.log('[CheckinStore] ❌ Cannot loadOnce: No authenticated user');
+    return;
+  }
+
+  await this.loadOnceForUser(userId);
+}
+
+
+
+
+
+  /**
+   * Load check-ins for specific user (CheckinStore-specific method)
+   */
+  async loadOnceForUser(userId: string): Promise<void> {
+    if (this.hasLoaded) {
+      console.log('[CheckinStore] ✅ Already loaded — skipping');
+      return;
+    }
+    await this.loadForUser(userId);
+  }
+
+  /**
+ * Check if user can check in to a specific pub
+ */
+canCheckInToPub(pubId: string | null): boolean {
+  if (!pubId) return false;
+
+  // Check if already checked in today
+  const today = new Date().toISOString().split('T')[0];
+  const existingCheckin = this.checkins().find(
+    c => c.pubId === pubId && c.dateKey === today
+  );
+
+  return !existingCheckin;
+}
+
+
+/**
+ * Simplified checkin method that gets location automatically
+ */
+async checkinToPub(pubId: string, photoDataUrl: string | null = null): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error('Geolocation not supported'));
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          await this.checkin(pubId, position.coords, photoDataUrl);
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      },
+      (error) => {
+        reject(new Error('Location access denied or unavailable'));
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+      }
+    );
+  });
+}
+
+  /**
+   * Load check-ins for specific user
+   */
+  async loadForUser(userId: string): Promise<void> {
+    this._loading.set(true);
+    this._error.set(null);
 
     try {
       const checkins = await this.checkinService.loadUserCheckins(userId);
-      this.checkins$$.set(checkins);
+      this._data.set(checkins);
+      this.hasLoaded = true;
       console.log(`[CheckinStore] ✅ Loaded ${checkins.length} check-ins for user ${userId}`);
-    } catch (err) {
-      this.error$$.set('Failed to load check-ins');
+    } catch (err: any) {
+      const message = 'Failed to load check-ins';
+      this._error.set(message);
+      this.toastService.error(message);
       console.error('[CheckinStore] ❌ Error loading check-ins', err);
     } finally {
-      this.loading$$.set(false);
+      this._loading.set(false);
     }
   }
 
-  canCheckInToPub(pub: Pub | null): boolean {
-    if (!pub) return false;
+  /**
+   * Record successful check-in
+   */
+  recordCheckinSuccess(newCheckin: CheckIn): void {
+    const extended = {
+      ...newCheckin,
+      madeUserLandlord: newCheckin.madeUserLandlord ?? false
+    };
 
-    const location = this.locationService.location$$(); // ✅ correct signal usage
-    if (!location) return false;
-
-    const today = new Date().toISOString().split('T')[0];
-    const hasAlreadyCheckedIn = this.checkins$$().some(
-      c => c.pubId === pub.id && c.dateKey === today
-    );
-
-    // TODO: review all this logic, it looks dodgy
-    // centralise the rules into one place, so it can be used as some sort reference
-
-    const distance = this.getDistanceMeters(location, pub.location);
-    const MAX_DISTANCE_METERS = 100000; // ✅ consider promoting to a shared constant
-
-    return true; // !hasAlreadyCheckedIn && distance <= MAX_DISTANCE_METERS;
+    this.addItem(extended);
+    this._checkinSuccess.set(extended);
   }
 
-
-
-  recordCheckinSuccess(newCheckin: CheckIn) {
-    const extended = { ...newCheckin, madeUserLandlord: newCheckin.madeUserLandlord ?? false };
-    this.checkins$$.update(prev => [...prev, extended]);
-    this.checkinSuccess$$.set(extended);
-  }
-
-  reset(): void {
-    this.hasLoaded = false;
-    this.checkins$$.set([]);
-    this.checkinSuccess$$.set(null);
-    this.error$$.set(null);
-  }
-
-  async checkin(pubId: string, photoDataUrl?: string): Promise<void> {
-    this.loading$$.set(true);
-    this.error$$.set(null);
+  /**
+   * Perform check-in with full validation and error handling
+   */
+  async checkin(
+    pubId: string,
+    location: GeolocationCoordinates,
+    photoDataUrl: string | null
+  ): Promise<void> {
+    this._loading.set(true);
+    this._error.set(null);
 
     try {
-      const userId = this.authStore.uid;
-      if (!userId) throw new Error('Missing user ID');
+      // Check for existing check-in
+      const existing = await this.checkinService.getTodayCheckin(pubId);
+      if (existing) {
+        throw new Error('Already checked in today.');
+      }
 
-      const timestamp = serverTimestamp();
-      const dateKey = new Date().toISOString().split('T')[0];
+      // Validate distance
+      const distance = await this.getDistanceMeters(location, pubId);
+      // TODO: pull threshold from env
+      // if (distance > 100) throw new Error('You are too far from this pub.');
 
+      // Upload photo if provided
       let photoUrl: string | undefined;
       if (photoDataUrl) {
         photoUrl = await this.checkinService.uploadPhoto(photoDataUrl);
       }
 
-      const checkin: Omit<CheckIn, 'id'> = {
+      // Get current user
+      const userId = this.authStore.uid;
+      if (!userId) throw new Error('Not logged in.');
+
+      // Create check-in
+      const newCheckin: Omit<CheckIn, 'id'> = {
         userId,
         pubId,
-        timestamp: new Date() as any, // local timestamp; serverTimestamp will be used in Firestore
-        dateKey,
+        timestamp: Timestamp.now(),
+        dateKey: new Date().toISOString().split('T')[0],
+        ...(photoUrl && { photoUrl }), // Only include if exists
       };
 
-      const result = await this.checkinService.completeCheckin(checkin);
-      this.checkinSuccess$$.set(result);
+      // Complete check-in
+      const completed = await this.checkinService.completeCheckin(newCheckin);
 
-      // 🔁 Refresh landlord state
-      await this.landlordStore.refreshLandlord(pubId);
-
-      // ✅ Show landlord message
-      this.landlordMessage$$.set(
-        result.madeUserLandlord
-          ? `🎉 You are now the landlord of this pub!`
-          : `✅ Check-in complete, but someone else is already landlord.`
+      // Update state
+      this._landlordMessage.set(
+        completed.madeUserLandlord
+          ? '👑 You\'re the landlord today!'
+          : '✅ Check-in complete, but someone else is already landlord.'
       );
 
-    } catch (err: any) {
-      this.error$$.set(err.message ?? 'Check-in failed');
-      console.error('[CheckInStore] ❌ Check-in error:', err);
+      this.recordCheckinSuccess(completed);
+      this.toastService.success('Check-in successful!');
+    } catch (error: any) {
+      const message = error?.message || 'Check-in failed';
+      this._error.set(message);
+      this.toastService.error(message);
+      console.error('[CheckinStore] ❌ Check-in failed:', error);
     } finally {
-      this.loading$$.set(false);
+      this._loading.set(false);
     }
   }
 
-  readonly userCheckins$$ = computed(() =>
-    this.checkins$$().map(c => c.pubId)
-  );
-
-  private async getPubLocation(pubId: string): Promise<{ lat: number; lng: number }> {
-    const pub: Pub | undefined = await firstValueFrom(this.pubService.getPubById(pubId));
-    if (!pub || !pub.location) throw new Error('Pub not found or missing coordinates');
-    return pub.location;
+  /**
+   * Check if user has checked into specific pub today
+   */
+  hasCheckedInToday(pubId: string): boolean {
+    const today = new Date().toISOString().split('T')[0];
+    return this.checkins().some(c => c.pubId === pubId && c.dateKey === today);
   }
 
-  private getDistanceMeters(
-    a: { lat: number; lng: number },
-    b: { lat: number; lng: number }
-  ): number {
-    const R = 6371000;
-    const φ1 = a.lat * Math.PI / 180;
-    const φ2 = b.lat * Math.PI / 180;
-    const Δφ = (b.lat - a.lat) * Math.PI / 180;
-    const Δλ = (b.lng - a.lng) * Math.PI / 180;
-    const x = Δλ * Math.cos((φ1 + φ2) / 2);
-    const y = Δφ;
-    return Math.sqrt(x * x + y * y) * R;
+  /**
+   * Get latest checkin for a pub
+   */
+  getLatestCheckinForPub(pubId: string): CheckIn | null {
+    const pubCheckins = this.checkins()
+      .filter(c => c.pubId === pubId)
+      .sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis());
+
+    return pubCheckins[0] || null;
+  }
+
+  /**
+   * Reset store and clear check-in specific state
+   */
+  override reset(): void {
+    super.reset();
+    this._checkinSuccess.set(null);
+    this._landlordMessage.set(null);
+  }
+
+  /**
+   * BaseStore implementation - not used since we override load()
+   */
+  protected async fetchData(): Promise<CheckIn[]> {
+    throw new Error('Use loadForUser(userId) instead');
+  }
+
+  /**
+   * Get distance to pub in meters
+   */
+  private async getDistanceMeters(
+    location: GeolocationCoordinates,
+    pubId: string
+  ): Promise<number> {
+    const pub: Pub | undefined = await firstValueFrom(
+      this.pubService.getPubById(pubId)
+    );
+
+    if (!pub || !pub.location) {
+      throw new Error('Pub not found or missing coordinates');
+    }
+
+    // Haversine distance calculation
+    const earthRadius = 6371000; // Earth radius in meters
+    const lat1Rad = location.latitude * Math.PI / 180;
+    const lat2Rad = pub.location.lat * Math.PI / 180;
+    const deltaLatRad = (pub.location.lat - location.latitude) * Math.PI / 180;
+    const deltaLngRad = (pub.location.lng - location.longitude) * Math.PI / 180;
+    const x = deltaLngRad * Math.cos((lat1Rad + lat2Rad) / 2);
+    const y = deltaLatRad;
+    return Math.sqrt(x * x + y * y) * earthRadius;
   }
 }

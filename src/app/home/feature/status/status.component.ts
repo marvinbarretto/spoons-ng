@@ -3,14 +3,12 @@ import { FeatureFlagPipe } from "../../../shared/utils/feature-flag.pipe";
 import { PubStore } from '../../../pubs/data-access/pub.store';
 import { UserStore } from '../../../users/data-access/user.store';
 import { CheckinStore } from '../../../check-in/data-access/check-in.store';
-import { User } from '../../../users/utils/user.model';
-import { JsonPipe } from '@angular/common';
 import { MissionStore } from '../../../missions/data-access/mission.store';
 import { Router, RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-status',
-  imports: [FeatureFlagPipe, JsonPipe, RouterModule],
+  imports: [FeatureFlagPipe, RouterModule],
   templateUrl: './status.component.html',
   styleUrl: './status.component.scss'
 })
@@ -22,10 +20,10 @@ export class StatusComponent {
   private readonly router = inject(Router);
 
   // Signals
-  readonly loading = this.pubStore.loading$$;
-  readonly pubs$$ = this.pubStore.pubs$$;
-  readonly user$$ = this.userStore.user$$;
-  readonly totalCheckins$$ = this.checkinStore.checkins$$;
+  readonly loading = this.pubStore.loading;
+  readonly pubs = this.pubStore.pubs;
+  readonly user = this.userStore.user;
+  readonly totalcheckins = this.checkinStore.checkins;
   readonly totalPubs = signal(800); // TODO: pull from config later
 
   // Load on init
@@ -33,9 +31,9 @@ export class StatusComponent {
     this.pubStore.loadOnce();
 
     effect(() => {
-      const user = this.user$$();
+      const user = this.user();
       if (user) {
-        this.checkinStore.loadOnce(user.uid);
+        this.checkinStore.loadOnceForUser(user.uid);
       }
     });
   }
@@ -43,22 +41,22 @@ export class StatusComponent {
   // === Derived signals ===
 
   readonly debugState = computed(() => ({
-    user: this.userStore.user$$(),
-    checkins: this.checkinStore.checkins$$(),
+    user: this.userStore.user(),
+    checkins: this.checkinStore.checkins(),
   }));
 
 
   // ✅ All check-ins fetched for the current user (raw array from Firestore)
-readonly userCheckins$$ = this.checkinStore.checkins$$;
+readonly userCheckins = this.checkinStore.checkins;
 
 // ✅ Number of check-ins (can include repeats to the same pub)
-readonly totalCheckinsCount$$ = computed(() => this.userCheckins$$().length);
+readonly totalCheckinsCount$$ = computed(() => this.userCheckins().length);
 
 // ✅ Unique pubs the user has visited at least once
 readonly uniqueVisitedPubsList$$ = computed(() => {
-  const checkins = this.checkinStore.checkins$$();
-  const pubs = this.pubStore.pubs$$();
-  const user = this.userStore.user$$();
+  const checkins = this.checkinStore.checkins();
+  const pubs = this.pubStore.pubs();
+  const user = this.userStore.user();
 
   console.log('[DEBUG] Signals triggered:', {
     user,
@@ -77,8 +75,8 @@ readonly uniqueVisitedPubsCount$$ = computed(() => this.uniqueVisitedPubsList$$(
 
 
 readonly landlordPubsList$$ = computed(() => {
-  const pubs = this.pubStore.pubs$$();
-  const user = this.userStore.user$$();
+  const pubs = this.pubStore.pubs();
+  const user = this.userStore.user();
   const today = new Date().toISOString().split('T')[0];
 
   if (!user) return [];
@@ -113,12 +111,12 @@ readonly landlordPubsCount$$ = computed(() => this.landlordPubsList$$().length);
   }
 
   readonly joinedMissionIds$$ = computed(() =>
-    this.userStore.user$$()?.joinedMissionIds ?? []
+    this.userStore.user()?.joinedMissionIds ?? []
   );
 
   readonly joinedMissions = computed(() => {
-    const user = this.userStore.user$$();
-    const allMissions = this.missionStore.missions$$();
+    const user = this.userStore.user();
+    const allMissions = this.missionStore.missions();
 
     if (!user) return [];
 

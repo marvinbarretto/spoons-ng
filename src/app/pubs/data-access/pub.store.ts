@@ -10,9 +10,9 @@ import { getDistanceKm } from '../../shared/utils/get-distance';
   providedIn: 'root',
 })
 export class PubStore {
-  readonly pubs$$ = signal<Pub[]>([]);
-  readonly loading$$ = signal(false);
-  readonly error$$ = signal<string | null>(null);
+  readonly pubs = signal<Pub[]>([]);
+  readonly loading = signal(false);
+  readonly error = signal<string | null>(null);
 
   private readonly pubService = inject(PubService);
   private readonly cacheService = inject(CacheService);
@@ -22,11 +22,11 @@ export class PubStore {
   private hasLoaded = false;
 
   // ✅ Corrected property name
-  readonly userLocation$$ = this.locationService.location$$;
+  readonly userLocation = this.locationService.location;
 
-  readonly sortedPubsByDistance$$ = computed(() => {
-    const pubs = this.pubs$$();
-    const loc = this.userLocation$$();
+  readonly sortedPubsByDistance = computed(() => {
+    const pubs = this.pubs();
+    const loc = this.userLocation();
     if (!loc) return pubs;
 
     return [...pubs].sort((a, b) => {
@@ -46,8 +46,8 @@ export class PubStore {
   }
 
   async load(): Promise<void> {
-    this.loading$$.set(true);
-    this.error$$.set(null);
+    this.loading.set(true);
+    this.error.set(null);
     try {
       const pubs = await this.cacheService.load({
         key: 'pubs',
@@ -55,31 +55,31 @@ export class PubStore {
         loadFresh: () => this.pubService.getAllPubs(),
       });
 
-      this.pubs$$.set(pubs);
+      this.pubs.set(pubs);
       this.hasLoaded = true;
       console.log('[PubStore] 📦 Loaded pubs', pubs);
     } catch (err: any) {
-      this.error$$.set(err.message || 'Unknown error');
+      this.error.set(err.message || 'Unknown error');
       console.error('[PubStore] ❌ Error loading pubs:', err);
     } finally {
-      this.loading$$.set(false);
+      this.loading.set(false);
     }
   }
 
   getDistanceForPub(pub: Pub): number | undefined {
-    const loc = this.userLocation$$();
+    const loc = this.userLocation();
     return loc ? getDistanceKm(loc, pub.location) : undefined;
   }
 
   hasCheckedIn(pubId: string): boolean {
-    return this.checkinStore.checkins$$().some(c => c.pubId === pubId);
+    return this.checkinStore.checkins().some(c => c.pubId === pubId);
   }
 
   reset(): void {
     this.cacheService.clear('pubs');
-    this.pubs$$.set([]);
-    this.loading$$.set(false);
-    this.error$$.set(null);
+    this.pubs.set([]);
+    this.loading.set(false);
+    this.error.set(null);
     this.hasLoaded = false;
     console.log('[PubStore] 🔄 Reset complete');
   }

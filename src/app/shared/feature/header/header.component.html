@@ -1,7 +1,7 @@
 <div class="site-header" #headerRef>
   <!-- TODO: Extract this to UI ? -->
 
-  <ng-container *ngIf="!isHomepage$$(); else titleWithoutLink">
+  <ng-container *ngIf="!isHomepage(); else titleWithoutLink">
     <a routerLink="/" class="header__title">
       <h1>Spoons</h1>
     </a>
@@ -12,15 +12,15 @@
 
   <app-user-info></app-user-info>
 
-  <nav class="main-nav" [class.nav-mobile]="isMobile$$()">
-    <app-nav *ngIf="!isMobile$$()" />
+  <nav class="main-nav" [class.nav-mobile]="isMobile()">
+    <app-nav *ngIf="!isMobile()" />
 
     <div class="main-nav__actions">
       <button
         *ngIf="'theme' | featureFlag"
         #panelTrigger
         aria-expanded="true"
-        (click)="togglePanel('theme')"
+        (click)="onTogglePanel('theme')"
         class="theme-link"
       >
         🎨 Theme
@@ -30,7 +30,7 @@
         *ngIf="'search' | featureFlag"
         #panelTrigger
         aria-expanded="true"
-        (click)="togglePanel('search')"
+        (click)="onTogglePanel('search')"
         class="search-link"
       >
         🔍 Search
@@ -38,10 +38,10 @@
     </div>
 
     <button
-      *ngIf="isMobile$$()"
+      *ngIf="isMobile()"
       #panelTrigger
       aria-expanded="true"
-      (click)="togglePanel('nav')"
+      (click)="onTogglePanel('nav')"
       class="nav-link"
     >
     <span class="material-symbols-outlined">menu</span>

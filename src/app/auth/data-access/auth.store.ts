@@ -9,21 +9,21 @@ export class AuthStore {
   private platform = inject(SsrPlatformService);
 
   // Stores a minimal copy of the Firebase Auth user
-  readonly user$$ = signal<User | null>(null);
+  readonly user = signal<User | null>(null);
 
   // Stores the Firebase ID token (for headers, SSR cookies, etc.)
-  readonly token$$ = signal<string | null>(null);
+  readonly token = signal<string | null>(null);
 
   // Becomes true once auth state is initialized
-  readonly ready$$ = signal(false);
+  readonly ready = signal(false);
 
   // Convenience computed signal
-  readonly isAuthenticated$$ = computed(() => !!this.token$$());
+  readonly isAuthenticated = computed(() => !!this.token());
 
   constructor() {
     // No-op on the server
     if (this.platform.isServer) {
-      this.ready$$.set(true);
+      this.ready.set(true);
       return;
     }
 
@@ -34,8 +34,8 @@ export class AuthStore {
       const cachedToken = localStorage.getItem('token');
 
       if (cachedUser && cachedToken) {
-        this.user$$.set(JSON.parse(cachedUser));
-        this.token$$.set(cachedToken);
+        this.user.set(JSON.parse(cachedUser));
+        this.token.set(cachedToken);
         console.log('[AuthStore] 🚀 Bootstrapped from localStorage');
       }
     } catch (err) {
@@ -49,7 +49,7 @@ export class AuthStore {
     this.authService.onAuthChange(async (user) => {
       if (!user) {
         this.logout();
-        this.ready$$.set(true);
+        this.ready.set(true);
         return;
       }
 
@@ -75,8 +75,8 @@ export class AuthStore {
       };
 
       // 3. Update reactive state
-      this.token$$.set(token);
-      this.user$$.set(minimalUser);
+      this.token.set(token);
+      this.user.set(minimalUser);
 
       // 4. Store in localStorage for fast PWA boot
       if (this.platform.isBrowser) {
@@ -85,20 +85,20 @@ export class AuthStore {
       }
 
       // 5. Done
-      this.ready$$.set(true);
+      this.ready.set(true);
       console.log('[AuthStore] ✅ Firebase user bootstrapped:', minimalUser);
     });
   }
 
   get uid(): string | null {
-    return this.user$$()?.uid ?? null;
+    return this.user()?.uid ?? null;
   }
 
 
 
   logout() {
-    this.token$$.set(null);
-    this.user$$.set(null);
+    this.token.set(null);
+    this.user.set(null);
 
     if (this.platform.isBrowser) {
       localStorage.removeItem('user');

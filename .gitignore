@@ -64,3 +64,5 @@ tools/seed/pub-data-source.html
 ssr-backup/
 CHEAT_SHEET.md
 backup.rules
+docs/naming-conventions.md
+docs/architecture.md

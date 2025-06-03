@@ -8,25 +8,25 @@ export class MissionStore {
   private readonly missionService = inject(MissionService);
 
   // Signals
-  readonly missions$$ = signal<Mission[]>([]);
-  readonly loading$$ = signal(false);
-  readonly error$$ = signal<unknown | null>(null);
+  readonly missions = signal<Mission[]>([]);
+  readonly loading = signal(false);
+  readonly error = signal<unknown | null>(null);
 
   /**
    * Loads all missions once and caches in signal.
    */
   async loadOnce(): Promise<void> {
-    if (this.missions$$().length > 0) return;
+    if (this.missions().length > 0) return;
 
-    this.loading$$.set(true);
+    this.loading.set(true);
     try {
       const missions = await this.missionService.getAll();
-      this.missions$$.set(missions);
+      this.missions.set(missions);
     } catch (err) {
-      this.error$$.set(err);
+      this.error.set(err);
       console.error('[MissionStore] Failed to load missions', err);
     } finally {
-      this.loading$$.set(false);
+      this.loading.set(false);
     }
   }
 
@@ -36,9 +36,9 @@ export class MissionStore {
   async create(mission: Mission): Promise<void> {
     try {
       await this.missionService.create(mission.id, mission);
-      this.missions$$.update((prev) => [...prev, mission]);
+      this.missions.update((prev) => [...prev, mission]);
     } catch (err) {
-      this.error$$.set(err);
+      this.error.set(err);
       console.error('[MissionStore] Create failed', err);
     }
   }
@@ -49,11 +49,11 @@ export class MissionStore {
   async update(mission: Mission): Promise<void> {
     try {
       await this.missionService.update(mission.id, mission);
-      this.missions$$.update((prev) =>
+      this.missions.update((prev) =>
         prev.map(m => (m.id === mission.id ? mission : m))
       );
     } catch (err) {
-      this.error$$.set(err);
+      this.error.set(err);
       console.error('[MissionStore] Update failed', err);
     }
   }
@@ -64,9 +64,9 @@ export class MissionStore {
   async delete(id: string): Promise<void> {
     try {
       await this.missionService.delete(id);
-      this.missions$$.update((prev) => prev.filter(m => m.id !== id));
+      this.missions.update((prev) => prev.filter(m => m.id !== id));
     } catch (err) {
-      this.error$$.set(err);
+      this.error.set(err);
       console.error('[MissionStore] Delete failed', err);
     }
   }
@@ -75,6 +75,6 @@ export class MissionStore {
    * Lookup helper by ID.
    */
   getMissionById(id: string): Mission | undefined {
-    return this.missions$$().find(m => m.id === id);
+    return this.missions().find(m => m.id === id);
   }
 }

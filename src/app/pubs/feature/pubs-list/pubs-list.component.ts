@@ -10,11 +10,11 @@ import { PubCardComponent } from '../../ui/pub-card/pub-card.component';
     <section>
       <h1>Pubs</h1>
 
-      @if (pubStore.loading$$()) {
+      @if (pubStore.loading()) {
         <p>Loading pubs...</p>
       } @else {
         <ul>
-          <li *ngFor="let pub of pubStore.sortedPubsByDistance$$()">
+          <li *ngFor="let pub of pubStore.sortedPubsByDistance()">
             <app-pub-card
               [pub]="pub"
               [distanceInKm]="pubStore.getDistanceForPub(pub)"

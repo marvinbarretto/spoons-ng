@@ -5,18 +5,18 @@ import { SsrPlatformService } from './ssr/ssr-platform.service';
 export class DeviceCapabilityService {
   private readonly platform = inject(SsrPlatformService);
 
-  readonly devicePixelRatio$$ = signal(1);
-  readonly hasHighDpi$$ = signal(false);
-  readonly prefersReducedMotion$$ = signal(false);
-  readonly hardwareConcurrency$$ = signal(1);
-  readonly isTouchDevice$$ = signal(false);
-  readonly userAgent$$ = signal('');
-  readonly connectionType$$ = signal<'wifi' | 'cellular' | 'none' | 'unknown'>('unknown');
-  readonly effectiveConnectionType$$ = signal<'slow-2g' | '2g' | '3g' | '4g' | 'unknown'>('unknown');
-  readonly deviceMemoryGB$$ = signal<number | null>(null);
+  readonly devicePixelRatio = signal(1);
+  readonly hasHighDpi = signal(false);
+  readonly prefersReducedMotion = signal(false);
+  readonly hardwareConcurrency = signal(1);
+  readonly isTouchDevice = signal(false);
+  readonly userAgent = signal('');
+  readonly connectionType = signal<'wifi' | 'cellular' | 'none' | 'unknown'>('unknown');
+  readonly effectiveConnectionType = signal<'slow-2g' | '2g' | '3g' | '4g' | 'unknown'>('unknown');
+  readonly deviceMemoryGB = signal<number | null>(null);
 
-  readonly isLowPowerDevice$$ = computed(() =>
-    this.hardwareConcurrency$$() < 2 || this.prefersReducedMotion$$()
+  readonly isLowPowerDevice = computed(() =>
+    this.hardwareConcurrency() < 2 || this.prefersReducedMotion()
   );
 
   constructor() {
@@ -44,15 +44,15 @@ export class DeviceCapabilityService {
         const memory = 'deviceMemory' in nav ? (nav as any).deviceMemory : null;
 
         // Set signals
-        this.devicePixelRatio$$.set(dpi);
-        this.hasHighDpi$$.set(dpi >= 1.5);
-        this.prefersReducedMotion$$.set(motionPref);
-        this.hardwareConcurrency$$.set(cores);
-        this.userAgent$$.set(ua);
-        this.isTouchDevice$$.set(touch);
-        this.connectionType$$.set(connectionType);
-        this.effectiveConnectionType$$.set(effectiveType);
-        this.deviceMemoryGB$$.set(memory);
+        this.devicePixelRatio.set(dpi);
+        this.hasHighDpi.set(dpi >= 1.5);
+        this.prefersReducedMotion.set(motionPref);
+        this.hardwareConcurrency.set(cores);
+        this.userAgent.set(ua);
+        this.isTouchDevice.set(touch);
+        this.connectionType.set(connectionType);
+        this.effectiveConnectionType.set(effectiveType);
+        this.deviceMemoryGB.set(memory);
 
         // Log raw diagnostics
         // console.group('%c[DeviceCapabilityService] 🧠 Raw Device Insights', 'color: #7c4dff; font-weight: bold');
