@@ -18,11 +18,11 @@ import { toDate, isToday } from '../timestamp.utils';
 })
 export class DevDebugComponent extends BaseComponent {
   // Injected stores
-  private readonly authStore = inject(AuthStore);
-  private readonly checkinStore = inject(CheckinStore);
+  protected readonly authStore = inject(AuthStore);
+  protected readonly checkinStore = inject(CheckinStore);
   protected readonly pubStore = inject(PubStore);
   protected readonly nearbyPubStore = inject(NearbyPubStore);
-  private readonly landlordStore = inject(LandlordStore);
+  protected readonly landlordStore = inject(LandlordStore);
 
   // Component state
   readonly refreshing = signal(false);
@@ -64,7 +64,6 @@ export class DevDebugComponent extends BaseComponent {
     const loading = this.checkinStore.loading();
     const error = this.checkinStore.error();
 
-
     if (loading) return { status: 'LOADING', details: 'Loading checkins...', level: 'warning' };
     if (error) return { status: 'ERROR', details: error, level: 'error' };
     return {
@@ -74,8 +73,32 @@ export class DevDebugComponent extends BaseComponent {
     };
   });
 
+  readonly landlordHealth = computed(() => {
+    const todayLandlords = this.landlordStore.todayLandlord();
+    const loading = this.landlordStore.loading();
+    const error = this.landlordStore.error();
+
+    if (loading) return { status: 'LOADING', details: 'Loading landlords...', level: 'warning' as const };
+    if (error) return { status: 'ERROR', details: error, level: 'error' as const };
+
+    const totalPubs = Object.keys(todayLandlords).length;
+    const activeLandlords = Object.values(todayLandlords).filter(l => l !== null).length;
+
+    return {
+      status: 'LOADED',
+      details: `${activeLandlords}/${totalPubs} pubs have landlords`,
+      level: 'healthy' as const
+    };
+  });
+
   readonly overallHealth = computed(() => {
-    const healths = [this.authHealth(), this.pubHealth(), this.locationHealth(), this.checkinHealth()];
+    const healths = [
+      this.authHealth(),
+      this.pubHealth(),
+      this.locationHealth(),
+      this.checkinHealth(),
+      this.landlordHealth()
+    ];
     const errorCount = healths.filter(h => h.level === 'error').length;
     const warningCount = healths.filter(h => h.level === 'warning').length;
 
@@ -115,7 +138,6 @@ export class DevDebugComponent extends BaseComponent {
 
   readonly checkinStep2 = computed(() => {
     const location = this.nearbyPubStore.location();
-    // Note: You might need to expose locationService error through NearbyPubStore
 
     if (!location) {
       return {
@@ -181,12 +203,12 @@ export class DevDebugComponent extends BaseComponent {
     }
 
     const distance = (closestPub as any).distance;
-    const isWithinRange = distance <= 50;
+    const isWithinRange = distance <= 50000;
 
     if (!isWithinRange) {
       return {
         status: '❌ FAIL',
-        details: `${closestPub.name} is ${distance.toFixed(0)}m away (>50m)`,
+        details: `${closestPub.name} is ${distance.toFixed(0)}m away (>50,000m)`,
         level: 'error' as const
       };
     }
@@ -226,16 +248,58 @@ export class DevDebugComponent extends BaseComponent {
     };
   });
 
+  readonly checkinStep6 = computed(() => {
+    const closestPub = this.closestPub();
+    const user = this.authStore.user();
+
+    if (!closestPub || !user) {
+      return {
+        status: '❌ FAIL',
+        details: 'No pub or user for landlord check',
+        level: 'error' as const
+      };
+    }
+
+    const currentLandlord = this.landlordStore.getLandlordForPub(closestPub.id);
+
+    if (!currentLandlord) {
+      return {
+        status: '👑 AVAILABLE',
+        details: 'No landlord - you can claim it!',
+        level: 'healthy' as const
+      };
+    }
+
+    if (currentLandlord.userId === user.uid) {
+      return {
+        status: '👑 YOU ARE LANDLORD',
+        details: 'You already rule this pub!',
+        level: 'healthy' as const
+      };
+    }
+
+    return {
+      status: '👑 TAKEN',
+      details: `${currentLandlord.userId.slice(0, 8)}... is landlord`,
+      level: 'warning' as const
+    };
+  });
+
   readonly canCheckInFinal = computed(() => {
     const steps = [
       this.checkinStep1(),
       this.checkinStep2(),
       this.checkinStep3(),
       this.checkinStep4(),
-      this.checkinStep5()
+      this.checkinStep5(),
+      this.checkinStep6()
     ];
 
-    return steps.every(step => step.status === '✅ PASS');
+    return steps.every(step =>
+      step.status.includes('✅ PASS') ||
+      step.status.includes('👑 AVAILABLE') ||
+      step.status.includes('👑 YOU ARE LANDLORD')
+    );
   });
 
   // Pub Data Computed Signals
@@ -286,7 +350,7 @@ export class DevDebugComponent extends BaseComponent {
 
     Object.entries(todayLandlords).forEach(([pubId, landlord]) => {
       try {
-        if (landlord.userId === user.uid) {
+        if (landlord && landlord.userId === user.uid) {
           const claimDate = toDate(landlord.claimedAt);
           if (claimDate && isToday(claimDate)) {
             const pub = this.pubStore.pubs().find(p => p.id === pubId);
@@ -310,6 +374,66 @@ export class DevDebugComponent extends BaseComponent {
       touch: 'ontouchstart' in window,
       battery: nav.getBattery ? 'API Available' : 'Not Available',
       platform: nav.platform || nav.userAgentData?.platform || 'Unknown'
+    };
+  });
+
+  // Detailed landlord debugging data
+  readonly landlordDebugData = computed(() => {
+    const user = this.authStore.user();
+    const todayLandlords = this.landlordStore.todayLandlord();
+    const pubs = this.pubStore.pubs();
+
+    if (!user) return {
+      userLandlordPubs: [],
+      totalLandlordPubs: 0,
+      pubsWithLandlords: [],
+      pubsWithoutLandlords: []
+    };
+
+    // Find pubs where current user is landlord
+    const userLandlordPubs = Object.entries(todayLandlords)
+      .filter(([_, landlord]) => landlord?.userId === user.uid)
+      .map(([pubId, landlord]) => {
+        const pub = pubs.find(p => p.id === pubId);
+        return {
+          pubId,
+          pubName: pub?.name || 'Unknown',
+          claimedAt: landlord?.claimedAt,
+          dateKey: landlord?.dateKey
+        };
+      });
+
+    // All pubs with landlords (any user)
+    const pubsWithLandlords = Object.entries(todayLandlords)
+      .filter(([_, landlord]) => landlord !== null)
+      .map(([pubId, landlord]) => {
+        const pub = pubs.find(p => p.id === pubId);
+        return {
+          pubId,
+          pubName: pub?.name || 'Unknown',
+          landlordUserId: landlord?.userId || 'Unknown',
+          claimedAt: landlord?.claimedAt,
+          isCurrentUser: landlord?.userId === user.uid
+        };
+      });
+
+    // Pubs that have been checked but have no landlord
+    const pubsWithoutLandlords = Object.entries(todayLandlords)
+      .filter(([_, landlord]) => landlord === null)
+      .map(([pubId]) => {
+        const pub = pubs.find(p => p.id === pubId);
+        return {
+          pubId,
+          pubName: pub?.name || 'Unknown'
+        };
+      });
+
+    return {
+      userLandlordPubs,
+      totalLandlordPubs: Object.keys(todayLandlords).length,
+      pubsWithLandlords,
+      pubsWithoutLandlords,
+      allLandlordsRaw: todayLandlords
     };
   });
 
@@ -337,8 +461,14 @@ export class DevDebugComponent extends BaseComponent {
       loading: this.checkinStore.loading()
     },
     landlord: {
-      myPubs: this.landlordPubsCount(),
-      todayPubs: this.landlordToday()
+      myPubs: this.landlordDebugData().userLandlordPubs.length,
+      myPubNames: this.landlordDebugData().userLandlordPubs.map(p => p.pubName),
+      totalChecked: this.landlordDebugData().totalLandlordPubs,
+      pubsWithLandlords: this.landlordDebugData().pubsWithLandlords.length,
+      pubsWithoutLandlords: this.landlordDebugData().pubsWithoutLandlords.length,
+      loading: this.landlordStore.loading(),
+      error: this.landlordStore.error(),
+      closestPubLandlord: this.closestPub() ? this.landlordStore.getLandlordForPub(this.closestPub()!.id)?.userId : null
     },
     device: this.deviceInfo(),
     env: {
@@ -380,8 +510,6 @@ export class DevDebugComponent extends BaseComponent {
       const nearbyLat = testPub.location.lat + offset;
       const nearbyLng = testPub.location.lng + offset;
 
-      // You'll need to expose setMockLocation through NearbyPubStore or LocationService
-      // For now, this is a placeholder
       console.log(`[DevDebug] Would set location near ${testPub.name}: ${nearbyLat}, ${nearbyLng}`);
       this.showInfo(`Mock: Set location near ${testPub.name}`);
     } else {
@@ -405,6 +533,38 @@ export class DevDebugComponent extends BaseComponent {
     } finally {
       this.refreshing.set(false);
     }
+  }
+
+  async refreshLandlords(): Promise<void> {
+    const pubs = this.pubStore.pubs();
+    if (pubs.length === 0) {
+      this.showWarning('No pubs loaded to refresh landlords for');
+      return;
+    }
+
+    this.landlordStore.reset();
+
+    try {
+      // Load landlord data for first 5 pubs (to avoid overwhelming)
+      const pubsToCheck = pubs.slice(0, 5);
+      const promises = pubsToCheck.map(pub => this.landlordStore.loadLandlordOnce(pub.id));
+      await Promise.all(promises);
+
+      this.showSuccess(`Refreshed landlord data for ${pubsToCheck.length} pubs`);
+    } catch (error) {
+      this.showError('Failed to refresh landlord data');
+    }
+  }
+
+  loadLandlordForClosestPub(): void {
+    const closestPub = this.closestPub();
+    if (!closestPub) {
+      this.showWarning('No closest pub to load landlord for');
+      return;
+    }
+
+    this.landlordStore.loadLandlordOnce(closestPub.id);
+    this.showInfo(`Loading landlord data for ${closestPub.name}`);
   }
 
   resetAuth(): void {

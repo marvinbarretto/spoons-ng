@@ -8,6 +8,7 @@ import { Pub } from '../../pubs/utils/pub.models';
 import { firstValueFrom } from 'rxjs';
 import { AuthStore } from '../../auth/data-access/auth.store';
 import { BaseStore } from '../../shared/data-access/base.store';
+import { LandlordStore } from '../../landlord/data-access/landlord.store';
 
 @Injectable({ providedIn: 'root' })
 export class CheckinStore extends BaseStore<CheckIn> {
@@ -28,6 +29,7 @@ export class CheckinStore extends BaseStore<CheckIn> {
   private readonly checkinService = inject(CheckInService);
   private readonly pubService = inject(PubService);
   private readonly authStore = inject(AuthStore);
+  private readonly landlordStore = inject(LandlordStore);
 
   // 📡 Main data - expose as clean name
   readonly checkins = this.data;
@@ -195,66 +197,75 @@ canCheckInToday(pubId: string | null): boolean {
   /**
    * Perform check-in with full validation and error handling
    */
-  async checkin(
-    pubId: string,
-    location: GeolocationCoordinates,
-    photoDataUrl: string | null
-  ): Promise<void> {
-    this._loading.set(true);
-    this._error.set(null);
+async checkin(
+  pubId: string,
+  location: GeolocationCoordinates,
+  photoDataUrl: string | null
+): Promise<void> {
+  this._loading.set(true);
+  this._error.set(null);
 
-    try {
-      // Check for existing check-in
-      const existing = await this.checkinService.getTodayCheckin(pubId);
-      if (existing) {
-        throw new Error('Already checked in today.');
-      }
+  try {
+    // ❌ REMOVED: Check for existing check-in restriction
+    // const existing = await this.checkinService.getTodayCheckin(pubId);
+    // if (existing) {
+    //   throw new Error('Already checked in today.');
+    // }
 
-      // Validate distance
-      const distance = await this.getDistanceMeters(location, pubId);
-      // TODO: pull threshold from env
-      // if (distance > 100) throw new Error('You are too far from this pub.');
+    // ✅ KEEP: Validate distance (commented out for now)
+    const distance = await this.getDistanceMeters(location, pubId);
+    // TODO: pull threshold from env
+    // if (distance > 100) throw new Error('You are too far from this pub.');
 
-      // Upload photo if provided
-      let photoUrl: string | undefined;
-      if (photoDataUrl) {
-        photoUrl = await this.checkinService.uploadPhoto(photoDataUrl);
-      }
-
-      // Get current user
-      const userId = this.authStore.uid;
-      if (!userId) throw new Error('Not logged in.');
-
-      // Create check-in
-      const newCheckin: Omit<CheckIn, 'id'> = {
-        userId,
-        pubId,
-        timestamp: Timestamp.now(),
-        dateKey: new Date().toISOString().split('T')[0],
-        ...(photoUrl && { photoUrl }), // Only include if exists
-      };
-
-      // Complete check-in
-      const completed = await this.checkinService.completeCheckin(newCheckin);
-
-      // Update state
-      this._landlordMessage.set(
-        completed.madeUserLandlord
-          ? '👑 You\'re the landlord today!'
-          : '✅ Check-in complete, but someone else is already landlord.'
-      );
-
-      this.recordCheckinSuccess(completed);
-      this.toastService.success('Check-in successful!');
-    } catch (error: any) {
-      const message = error?.message || 'Check-in failed';
-      this._error.set(message);
-      this.toastService.error(message);
-      console.error('[CheckinStore] ❌ Check-in failed:', error);
-    } finally {
-      this._loading.set(false);
+    // Upload photo if provided
+    let photoUrl: string | undefined;
+    if (photoDataUrl) {
+      photoUrl = await this.checkinService.uploadPhoto(photoDataUrl);
     }
+
+    // Get current user
+    const userId = this.authStore.uid;
+    if (!userId) throw new Error('Not logged in.');
+
+    // Create check-in
+    const newCheckin: Omit<CheckIn, 'id'> = {
+      userId,
+      pubId,
+      timestamp: Timestamp.now(),
+      dateKey: new Date().toISOString().split('T')[0],
+      ...(photoUrl && { photoUrl }), // Only include if exists
+    };
+
+    // ✅ Complete check-in (this handles landlord logic)
+    const completed = await this.checkinService.completeCheckin(newCheckin);
+
+    // ✅ Update landlord store with the result
+    if (completed.landlordResult) {
+      this.landlordStore.setTodayLandlord(pubId, completed.landlordResult.landlord);
+      console.log('[CheckinStore] Updated landlord store with result:', completed.landlordResult);
+    }
+
+    // Update landlord message
+    this._landlordMessage.set(
+      completed.madeUserLandlord
+        ? '👑 You\'re the landlord today!'
+        : '✅ Check-in complete, but someone else is already landlord.'
+    );
+
+    // ✅ Clean up the completed checkin before storing (remove landlordResult)
+    const { landlordResult, ...cleanCheckin } = completed;
+    this.recordCheckinSuccess(cleanCheckin);
+    this.toastService.success('Check-in successful!');
+
+  } catch (error: any) {
+    const message = error?.message || 'Check-in failed';
+    this._error.set(message);
+    this.toastService.error(message);
+    console.error('[CheckinStore] ❌ Check-in failed:', error);
+  } finally {
+    this._loading.set(false);
   }
+}
 
   /**
    * Check if user has checked into specific pub today

@@ -10,8 +10,6 @@ import { CheckInHomepageWidgetComponent } from '../../../check-in/ui/check-in-ho
   imports: [CommonModule, CheckInHomepageWidgetComponent],
   template: `
     <div class="home-container">
-      <h1>Welcome to Spoons</h1>
-
       @if (location()) {
         <div class="location-info">
           <p>Your location: {{ location()!.lat.toFixed(3) }}, {{ location()!.lng.toFixed(3) }}</p>

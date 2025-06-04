@@ -9,6 +9,8 @@ import { earliest, latest } from '../../shared/utils/date-utils';
 import { User } from '../../users/utils/user.model';
 import { LandlordService } from '../../landlord/data-access/landlord.service';
 import { AuthStore } from '../../auth/data-access/auth.store';
+import { LandlordStore } from '../../landlord/data-access/landlord.store';
+import { Landlord } from '../../landlord/utils/landlord.model';
 
 @Injectable({
   providedIn: 'root'
@@ -16,6 +18,7 @@ import { AuthStore } from '../../auth/data-access/auth.store';
 export class CheckInService extends FirestoreService {
   private landlordService = inject(LandlordService);
   private authStore = inject(AuthStore);
+  private landlordStore = inject(LandlordStore);
 
   async getTodayCheckin(pubId: string): Promise<CheckIn | null> {
     const todayDateKey = new Date().toISOString().split('T')[0];
@@ -47,21 +50,34 @@ export class CheckInService extends FirestoreService {
     return getDownloadURL(storageRef);
   }
 
-  async completeCheckin(checkin: Omit<CheckIn, 'id'>): Promise<CheckIn> {
-    const pub = await this.validatePubExists(checkin.pubId);
-    const user = await this.ensureUserExists(checkin.userId);
+// ✅ CheckInService should only import the LandlordService, not LandlordStore
+// Update the completeCheckin method to return landlord info without updating stores
 
-    console.log('[CheckInService] completeCheckin fn', checkin);
-    const checkinRef = await this.addDocToCollection<Omit<CheckIn, 'id'>>('checkins', checkin);
-    await this.updatePubStats(pub, checkin, checkinRef.id);
-    await this.updateUserStats(user, checkin);
+async completeCheckin(checkin: Omit<CheckIn, 'id'>): Promise<CheckIn & { landlordResult?: { landlord: Landlord | null; wasAwarded: boolean } }> {
+  const pub = await this.validatePubExists(checkin.pubId);
+  const user = await this.ensureUserExists(checkin.userId);
 
-    const checkinDate = this.normalizeDate(checkin.timestamp);
-    await this.landlordService.tryAwardLandlord(checkin.pubId, checkinDate);
+  console.log('[CheckInService] completeCheckin fn', checkin);
+  const checkinRef = await this.addDocToCollection<Omit<CheckIn, 'id'>>('checkins', checkin);
+  await this.updatePubStats(pub, checkin, checkinRef.id);
+  await this.updateUserStats(user, checkin);
 
-    return { ...checkin, id: checkinRef.id };
-  }
+  // ✅ Try to award landlord but don't update any stores
+  const checkinDate = this.normalizeDate(checkin.timestamp);
+  const landlordResult = await this.landlordService.tryAwardLandlord(checkin.pubId, checkinDate);
 
+  console.log('[CheckInService] Landlord result:', landlordResult);
+
+  // ✅ Return the checkin with landlord info - let the store handle state updates
+  const completedCheckin = {
+    ...checkin,
+    id: checkinRef.id,
+    madeUserLandlord: landlordResult.wasAwarded,
+    landlordResult // ✅ Pass the full result to the store
+  };
+
+  return completedCheckin;
+}
   private async validatePubExists(pubId: string): Promise<Pub> {
     const pub = await this.getDocByPath<Pub>(`pubs/${pubId}`);
     if (!pub) throw new Error('Pub not found');

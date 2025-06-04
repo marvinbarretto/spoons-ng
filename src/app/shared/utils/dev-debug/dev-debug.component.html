@@ -30,6 +30,12 @@
       <span>{{ checkinHealth().status }}</span>
       <small>{{ checkinHealth().details }}</small>
     </div>
+
+    <div class="health-item" [ngClass]="getHealthClass(landlordHealth())">
+      <strong>Landlords</strong>
+      <span>{{ landlordHealth().status }}</span>
+      <small>{{ landlordHealth().details }}</small>
+    </div>
   </div>
 
   <!-- Check-in Eligibility Section -->
@@ -61,6 +67,11 @@
         <strong>5. Eligibility:</strong> {{ checkinStep5().status }}
         <small>{{ checkinStep5().details }}</small>
       </div>
+
+      <div class="step" [ngClass]="getStepClass(checkinStep6())">
+        <strong>6. Landlord:</strong> {{ checkinStep6().status }}
+        <small>{{ checkinStep6().details }}</small>
+      </div>
     </div>
 
     <div class="final-result" [ngClass]="getFinalResultClass()">
@@ -80,7 +91,7 @@
       @if (closestPub()) {
         <div class="closest-pub">
           <strong>Closest Pub:</strong>
-          <span>{{ closestPub() }}</span>
+          <span>{{ closestPub()!.name }}</span>
         </div>
       } @else {
         <span class="no-data">❌ No closest pub</span>
@@ -109,6 +120,68 @@
     </div>
   </div>
 
+  <!-- Landlord Section -->
+  <div class="landlord-section">
+    <h4>👑 Landlord Reality Check</h4>
+    <div class="landlord-grid">
+      <span><strong>My Landlord Pubs:</strong> {{ landlordDebugData().userLandlordPubs.length }}</span>
+      <span><strong>Pubs Checked:</strong> {{ landlordDebugData().totalLandlordPubs }}</span>
+      <span><strong>With Landlords:</strong> {{ landlordDebugData().pubsWithLandlords.length }}</span>
+      <span><strong>No Landlords:</strong> {{ landlordDebugData().pubsWithoutLandlords.length }}</span>
+
+      @if (landlordDebugData().userLandlordPubs.length > 0) {
+        <div class="my-landlord-pubs">
+          <strong>👑 I'm Landlord Of:</strong>
+          @for (pub of landlordDebugData().userLandlordPubs; track pub.pubId) {
+            <div class="landlord-pub">
+              <span class="pub-name">{{ pub.pubName }}</span>
+              <span class="claim-time">{{ pub.claimedAt }}</span>
+            </div>
+          }
+        </div>
+      } @else {
+        <span class="no-landlord-pubs">🏴 No landlord pubs today</span>
+      }
+
+      @if (closestPub()) {
+        <div class="closest-pub-landlord">
+          <strong>Closest Pub Landlord:</strong>
+          @if (landlordStore.getLandlordForPub(closestPub()!.id); as landlord) {
+            <span class="has-landlord">{{ landlord.userId.slice(0, 8) }}...</span>
+          } @else {
+            <span class="no-landlord">🏴 Available to claim!</span>
+          }
+        </div>
+      }
+    </div>
+
+    <!-- Detailed landlord breakdown -->
+    <details class="landlord-details">
+      <summary>All Landlord Data ({{ landlordDebugData().pubsWithLandlords.length }} active)</summary>
+
+      @if (landlordDebugData().pubsWithLandlords.length > 0) {
+        <div class="landlord-list">
+          @for (entry of landlordDebugData().pubsWithLandlords; track entry.pubId) {
+            <div class="landlord-entry" [class.is-me]="entry.isCurrentUser">
+              <span class="pub-name">{{ entry.pubName }}</span>
+              <span class="landlord-user">{{ entry.landlordUserId.slice(0, 8) }}{{ entry.isCurrentUser ? ' (ME)' : '' }}</span>
+              <span class="claim-time">{{ entry.claimedAt }}</span>
+            </div>
+          }
+        </div>
+      }
+
+      @if (landlordDebugData().pubsWithoutLandlords.length > 0) {
+        <div class="no-landlord-list">
+          <strong>Pubs without landlords:</strong>
+          @for (entry of landlordDebugData().pubsWithoutLandlords; track entry.pubId) {
+            <span class="pub-no-landlord">{{ entry.pubName }}</span>
+          }
+        </div>
+      }
+    </details>
+  </div>
+
   <!-- Device Capabilities -->
   <div class="device-section">
     <h4>📱 Device Reality Check</h4>
@@ -128,6 +201,8 @@
       {{ refreshing() ? '🔄' : '🔄' }} Refresh All
     </button>
     <button (click)="setTestLocationNearPub()">📍 Set Test Location</button>
+    <button (click)="refreshLandlords()">👑 Refresh Landlords</button>
+    <button (click)="loadLandlordForClosestPub()">🏃 Load Closest Pub Landlord</button>
     <button (click)="resetAuth()">🔐 Reset Auth</button>
     <button (click)="resetPubs()">🏠 Reset Pubs</button>
     <button (click)="resetCheckins()">✅ Reset Check-ins</button>

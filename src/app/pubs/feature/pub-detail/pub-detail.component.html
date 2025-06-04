@@ -16,8 +16,34 @@
     <!-- Header Section -->
     <header class="pub-header">
       <h1>{{ currentPub.name }}</h1>
-      <p class="address">{{ currentPub.address }}, {{ locationString }}</p>
+      <p class="address">{{ currentPub.address }}, {{ locationString() }}</p>
+
+      @if (userDistance()) {
+        <p class="distance">
+          📍 {{ (userDistance()! / 1000).toFixed(1) }}km away
+          @if (isNearby()) {
+            <span class="nearby-badge">✅ Nearby</span>
+          } @else {
+            <span class="far-badge">⚠️ Too far</span>
+          }
+        </p>
+      }
     </header>
+
+    <!-- Check-in Action Section -->
+    @if (canShowCheckInButton()) {
+      <section class="check-in-section">
+        <app-button
+          [variant]="isNearby() ? 'primary' : 'secondary'"
+          [disabled]="!canCheckIn() || loading()"
+          [loading]="loading()"
+          [fullWidth]="true"
+          (onClick)="checkInToPub()"
+        >
+          {{ checkInButtonText() }}
+        </app-button>
+      </section>
+    }
 
     <!-- Carpet Section -->
     @if (currentPub.carpetUrl) {
@@ -30,14 +56,29 @@
     <!-- Current Landlord Section -->
     <section class="landlord">
       <h2>Current Landlord</h2>
-      @if (currentPub.currentLandlord; as landlord) {
+      @if (currentLandlord(); as landlord) {
         <div class="landlord-info">
-          <p><strong>User ID:</strong> {{ landlord.userId }}</p>
-          <p><strong>Claimed:</strong> {{ formatTime(landlord.claimedAt) }}</p>
+          @if (isUserLandlord()) {
+            <div class="user-is-landlord">
+              <p><strong>👑 You're the landlord!</strong></p>
+              <p>Claimed: {{ formatTime(landlord.claimedAt) }}</p>
+            </div>
+          } @else {
+            <div class="other-is-landlord">
+              <p><strong>User ID:</strong> {{ landlord.userId.slice(0, 8) }}...</p>
+              <p><strong>Claimed:</strong> {{ formatTime(landlord.claimedAt) }}</p>
+            </div>
+          }
         </div>
       } @else {
         <div class="no-landlord">
-          <p>👑 No one is the landlord! Go claim it!</p>
+          @if (canCheckIn()) {
+            <p>🏴 No one is the landlord! Check in to claim your throne!</p>
+          } @else if (userDistance()) {
+            <p>🏴 No landlord today. Get within 50m to claim it!</p>
+          } @else {
+            <p>🏴 No landlord today.</p>
+          }
         </div>
       }
     </section>
@@ -75,31 +116,31 @@
     </section>
 
     <!-- Recent Check-ins -->
-    @if (currentPub.checkinHistory?.length; as checkins) {
+    @if (recentCheckins().length > 0) {
       <section class="history">
         <h2>Recent Check-ins</h2>
-        <!-- <ul class="checkin-list">
-          @for (entry of checkins.slice(-5).reverse(); track entry.timestamp) {
+        <ul class="checkin-list">
+          @for (entry of recentCheckins(); track entry.timestamp) {
             <li class="checkin-item">
-              <span class="user">{{ entry.userId }}</span>
+              <span class="user">{{ entry.userId.slice(0, 8) }}...</span>
               <span class="timestamp">{{ formatDate(entry.timestamp) }}</span>
             </li>
           }
-        </ul> -->
+        </ul>
       </section>
     }
 
     <!-- Landlord History -->
-    @if (currentPub.landlordHistory?.length; as history) {
+    @if (landlordHistory().length > 0) {
       <section class="history">
         <h2>Landlord History</h2>
         <ul class="landlord-list">
-          <!-- @for (entry of history; track entry.claimedAt) {
+          @for (entry of landlordHistory(); track entry.claimedAt) {
             <li class="landlord-item">
               <span class="timestamp">{{ formatTime(entry.claimedAt) }}</span>
-              <span class="user">{{ entry.userId }}</span>
+              <span class="user">{{ entry.userId.slice(0, 8) }}...</span>
             </li>
-          } -->
+          }
         </ul>
       </section>
     }
