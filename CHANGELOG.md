@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.12](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.11...v0.0.12) (2025-06-04)
+
+
+### Features
+
+* Add badge admin page ([c5e7faf](https://github.com/marvinbarretto/spoons-ng/commit/c5e7faf33c5e753dbe316c2b56b959310573de7d))
+* dom helper to reduce noise in ts ([dc2b000](https://github.com/marvinbarretto/spoons-ng/commit/dc2b0001526417ef6bc29238011e8bba4f092bf6))
+* initial Firestore CRUD service ([67ed7f4](https://github.com/marvinbarretto/spoons-ng/commit/67ed7f44a3b7024632233fe01f8a775c14534eb9))
+* inline svg helper component ([075775b](https://github.com/marvinbarretto/spoons-ng/commit/075775b48db7e5e0000bb9c1d8bf47e455100bf4))
+
+
+### Bug Fixes
+
+* Ensure PubDetail displays as expected ([88b234f](https://github.com/marvinbarretto/spoons-ng/commit/88b234f9a08bf12eaf6015c7c0f6c45ed31cfeb1))
+
 ### [0.0.11](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.10...v0.0.11) (2025-06-04)
 
 
