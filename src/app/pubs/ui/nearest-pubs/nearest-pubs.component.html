@@ -1,16 +1,17 @@
+<!-- src/app/pubs/ui/nearest-pubs/nearest-pubs.component.html -->
 <section class="nearest-pubs">
   <h2>
-    📍 Nearest pubs ({{ filteredPubs$$().length }})
-    @if (filter === 'checked-in') {
+    📍 Nearest pubs ({{ filteredPubs().length }})
+    @if (filter() === 'checked-in') {
       <span class="tag">✔️ Visited</span>
-    } @else if (filter === 'not-checked-in') {
+    } @else if (filter() === 'not-checked-in') {
       <span class="tag">🕵️ Yet to visit</span>
     }
   </h2>
 
-  @if (filteredPubs$$().length) {
+  @if (filteredPubs().length) {
     <ul>
-      @for (pub of filteredPubs$$(); track pub.id) {
+      @for (pub of filteredPubs(); track pub.id) {
         <app-nearest-pubs-item [pub]="pub" />
       }
     </ul>

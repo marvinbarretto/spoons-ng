@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { DevDebugComponent } from "../../utils/dev-debug/dev-debug.component";
 import { ChangeDetectionStrategy } from '@angular/core';
+import { APP_VERSION } from '../../utils/version';
 
 @Component({
   selector: 'app-footer',
@@ -12,6 +13,7 @@ import { ChangeDetectionStrategy } from '@angular/core';
       <p>
         &copy; {{ currentYear }} Spoons. All rights reserved.
       </p>
+      <p>Version: {{ version }}</p>
     </footer>
   `,
   styles: `
@@ -26,4 +28,5 @@ import { ChangeDetectionStrategy } from '@angular/core';
 })
 export class FooterComponent {
   currentYear = new Date().getFullYear();
+  readonly version = APP_VERSION;
 }

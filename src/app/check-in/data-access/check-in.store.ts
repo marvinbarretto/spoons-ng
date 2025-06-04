@@ -1,5 +1,5 @@
 // src/app/check-in/data-access/check-in.store.ts
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { CheckInService } from './check-in.service';
 import type { CheckIn } from '../util/check-in.model';
 import { Timestamp } from 'firebase/firestore';
@@ -11,6 +11,19 @@ import { BaseStore } from '../../shared/data-access/base.store';
 
 @Injectable({ providedIn: 'root' })
 export class CheckinStore extends BaseStore<CheckIn> {
+  constructor() {
+    super();
+
+    // ✅ Auto-load when user becomes available
+    effect(() => {
+      const user = this.authStore.user();
+      if (user && !user.isAnonymous) {
+        console.log('[CheckinStore] User available, loading checkins...');
+        this.loadOnce();
+      }
+    });
+  }
+
   // 🔧 Services
   private readonly checkinService = inject(CheckInService);
   private readonly pubService = inject(PubService);
@@ -74,7 +87,16 @@ override async loadOnce(): Promise<void> {
 }
 
 
+canCheckInToday(pubId: string | null): boolean {
+  if (!pubId) return false;
 
+  const today = new Date().toISOString().split('T')[0];
+  const existingCheckin = this.checkins().find(
+    c => c.pubId === pubId && c.dateKey === today
+  );
+
+  return !existingCheckin;
+}
 
 
   /**
@@ -89,50 +111,51 @@ override async loadOnce(): Promise<void> {
   }
 
   /**
- * Check if user can check in to a specific pub
- */
-canCheckInToPub(pubId: string | null): boolean {
-  if (!pubId) return false;
+   * Check if user can check in to a specific pub
+   */
+  async checkinToPub(pubId: string, photoDataUrl: string | null = null): Promise<void> {
+    console.log('[CheckinStore] checkinToPub()', pubId)
+    this.clearCheckinSuccess();
 
-  // Check if already checked in today
-  const today = new Date().toISOString().split('T')[0];
-  const existingCheckin = this.checkins().find(
-    c => c.pubId === pubId && c.dateKey === today
-  );
-
-  return !existingCheckin;
-}
-
-
-/**
- * Simplified checkin method that gets location automatically
- */
-async checkinToPub(pubId: string, photoDataUrl: string | null = null): Promise<void> {
-  return new Promise((resolve, reject) => {
-    if (!navigator.geolocation) {
-      reject(new Error('Geolocation not supported'));
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          await this.checkin(pubId, position.coords, photoDataUrl);
-          resolve();
-        } catch (error) {
-          reject(error);
-        }
-      },
-      (error) => {
-        reject(new Error('Location access denied or unavailable'));
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error('Geolocation not supported'));
+        return;
       }
-    );
-  });
-}
+
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          try {
+            await this.checkin(pubId, position.coords, photoDataUrl);
+            resolve();
+          } catch (error) {
+            reject(error);
+          }
+        },
+        (error) => {
+          let message = 'Location error';
+
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              message = 'Location access denied';
+              break;
+            case error.POSITION_UNAVAILABLE:
+              message = 'Location unavailable';
+              break;
+            case error.TIMEOUT:
+              message = 'Location timeout';
+              break;
+          }
+
+          reject(new Error(message));
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+        }
+      );
+    });
+  }
 
   /**
    * Load check-ins for specific user
@@ -293,4 +316,15 @@ async checkinToPub(pubId: string, photoDataUrl: string | null = null): Promise<v
     const y = deltaLatRad;
     return Math.sqrt(x * x + y * y) * earthRadius;
   }
+
+  // Add these methods to your existing CheckinStore
+
+/**
+ * Clear the success state
+ */
+clearCheckinSuccess(): void {
+  this._checkinSuccess.set(null);
+  this._landlordMessage.set(null);
+}
+
 }

@@ -1,23 +1,25 @@
-<nav class="pagination" *ngIf="totalPages > 1">
+
+<!-- src/app/shared/ui/pagination/pagination.component.html -->
+<nav class="pagination" *ngIf="totalPages() > 1">
   <p>
-    Page <b>{{ currentPage }}</b> of <b>{{ totalPages }}</b>
+    Page <b>{{ currentPage() }}</b> of <b>{{ totalPages() }}</b>
   </p>
 
   <div class="buttons">
     <app-button
       (onClick)="previousPage()"
-      [disabled$$]="currentPage === 1"
-      [icon$$]="'arrow_back'"
+      [disabled]="currentPage() === 1"
+      [icon]="'arrow_back'"
     >
       Previous
     </app-button>
 
-    <ng-container *ngFor="let page of pageNumbers">
+    <ng-container *ngFor="let page of pageNumbers()">
       <app-button
-        [class.active]="page === currentPage"
+        [class.active]="page === currentPage()"
         (onClick)="goToPage(page)"
         [attr.aria-label]="'Go to page ' + page"
-        [attr.aria-current]="page === currentPage ? 'page' : null"
+        [attr.aria-current]="page === currentPage() ? 'page' : null"
       >
         {{ page }}
       </app-button>
@@ -25,8 +27,8 @@
 
     <app-button
       (onClick)="nextPage()"
-      [disabled$$]="currentPage === totalPages"
-      [icon$$]="'arrow_forward'"
+      [disabled]="currentPage() === totalPages()"
+      [icon]="'arrow_forward'"
     >
       Next
     </app-button>

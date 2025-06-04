@@ -1,68 +1,142 @@
 <!-- src/app/shared/utils/dev-debug/dev-debug.component.html -->
-<details>
-  <summary>🛠️ Dev Debug Panel</summary>
+<details class="debug-panel">
+  <summary>
+    🛠️ Signal Health
+    <span [ngClass]="overallHealthClass()">{{ overallHealth() }}</span>
+  </summary>
 
-  <div class="debug-section">
-    <h3>User</h3>
-    <pre>{{ user() | json }}</pre>
+  <!-- Signal Health Matrix -->
+  <div class="health-grid">
+    <div class="health-item" [ngClass]="getHealthClass(authHealth())">
+      <strong>Auth</strong>
+      <span>{{ authHealth().status }}</span>
+      <small>{{ authHealth().details }}</small>
+    </div>
+
+    <div class="health-item" [ngClass]="getHealthClass(pubHealth())">
+      <strong>Pubs</strong>
+      <span>{{ pubHealth().status }}</span>
+      <small>{{ pubHealth().details }}</small>
+    </div>
+
+    <div class="health-item" [ngClass]="getHealthClass(locationHealth())">
+      <strong>Location</strong>
+      <span>{{ locationHealth().status }}</span>
+      <small>{{ locationHealth().details }}</small>
+    </div>
+
+    <div class="health-item" [ngClass]="getHealthClass(checkinHealth())">
+      <strong>Checkins</strong>
+      <span>{{ checkinHealth().status }}</span>
+      <small>{{ checkinHealth().details }}</small>
+    </div>
   </div>
 
-  <div class="debug-section">
-    <h3>Token</h3>
-    <pre>{{ token() }}</pre>
+  <!-- Check-in Eligibility Section -->
+  <div class="checkin-section">
+    <h4>🎯 Check-in Eligibility Flow</h4>
+
+    <div class="checkin-steps">
+      <div class="step" [ngClass]="getStepClass(checkinStep1())">
+        <strong>1. Auth:</strong> {{ checkinStep1().status }}
+        <small>{{ checkinStep1().details }}</small>
+      </div>
+
+      <div class="step" [ngClass]="getStepClass(checkinStep2())">
+        <strong>2. Location:</strong> {{ checkinStep2().status }}
+        <small>{{ checkinStep2().details }}</small>
+      </div>
+
+      <div class="step" [ngClass]="getStepClass(checkinStep3())">
+        <strong>3. Pubs:</strong> {{ checkinStep3().status }}
+        <small>{{ checkinStep3().details }}</small>
+      </div>
+
+      <div class="step" [ngClass]="getStepClass(checkinStep4())">
+        <strong>4. Range:</strong> {{ checkinStep4().status }}
+        <small>{{ checkinStep4().details }}</small>
+      </div>
+
+      <div class="step" [ngClass]="getStepClass(checkinStep5())">
+        <strong>5. Eligibility:</strong> {{ checkinStep5().status }}
+        <small>{{ checkinStep5().details }}</small>
+      </div>
+    </div>
+
+    <div class="final-result" [ngClass]="getFinalResultClass()">
+      <strong>CAN CHECK IN:</strong> {{ canCheckInFinal() ? '✅ YES' : '❌ NO' }}
+    </div>
   </div>
 
-  <div class="debug-section">
-    <h3>Device</h3>
-    <p>Mobile: {{ isMobile() }}</p>
-    <p>Touch: {{ isTouchDevice() }}</p>
-    <p>Low Power: {{ isLowPowerDevice() }}</p>
-    <p>Memory (GB): {{ deviceMemoryGB() }}</p>
+  <!-- Enhanced Pub Data Section -->
+  <div class="pub-section">
+    <h4>📍 Pub Data Reality Check</h4>
+    <div class="pub-grid">
+      <span><strong>Total Pubs:</strong> {{ totalPubs() }}</span>
+      <span><strong>Pubs Loading:</strong> {{ pubStore.loading() ? 'YES' : 'NO' }}</span>
+      <span><strong>Nearby Pubs:</strong> {{ nearbyPubsCount() }}</span>
+      <span><strong>Location Available:</strong> {{ nearbyPubStore.location() ? 'YES' : 'NO' }}</span>
+
+      @if (closestPub()) {
+        <div class="closest-pub">
+          <strong>Closest Pub:</strong>
+          <span>{{ closestPub() }}</span>
+        </div>
+      } @else {
+        <span class="no-data">❌ No closest pub</span>
+      }
+
+      <span><strong>Can Check In (Store):</strong> {{ canCheckIn() ? '✅' : '❌' }}</span>
+      <span><strong>Can Check In (Final):</strong> {{ canCheckInFinal() ? '✅' : '❌' }}</span>
+    </div>
   </div>
 
-  <div class="debug-section">
-    <h3>Location</h3>
-    <pre>{{ location() | json }}</pre>
+  <!-- Recent Activity -->
+  <div class="activity-section">
+    <h4>🕐 Recent Activity</h4>
+    <div class="activity-grid">
+      <span><strong>Today's Check-ins:</strong> {{ todayCheckinsCount() }}</span>
+      <span><strong>Latest Check-in:</strong> {{ latestCheckinPub() || 'None' }}</span>
+
+      @if (landlordToday().length > 0) {
+        <div class="landlord-today">
+          <strong>Landlord Today:</strong>
+          <span>{{ landlordToday().join(', ') }}</span>
+        </div>
+      } @else {
+        <span>👑 No landlord pubs today</span>
+      }
+    </div>
   </div>
 
-  <div class="debug-section">
-    <h3>Closest Pub</h3>
-    <pre>{{ closestPub() | json }}</pre>
+  <!-- Device Capabilities -->
+  <div class="device-section">
+    <h4>📱 Device Reality Check</h4>
+    <div class="device-grid">
+      <span>Screen: {{ deviceInfo().screen }}</span>
+      <span>Memory: {{ deviceInfo().memory }}</span>
+      <span>Connection: {{ deviceInfo().connection }}</span>
+      <span>Touch: {{ deviceInfo().touch ? '👆' : '🖱️' }}</span>
+      <span>Battery: {{ deviceInfo().battery }}</span>
+      <span>Platform: {{ deviceInfo().platform }}</span>
+    </div>
   </div>
 
-  <div class="debug-section">
-    <h3>Can Check In?</h3>
-    <p>{{ canCheckIn() }}</p>
+  <!-- Quick Actions -->
+  <div class="actions">
+    <button (click)="refreshAll()" [disabled]="refreshing()">
+      {{ refreshing() ? '🔄' : '🔄' }} Refresh All
+    </button>
+    <button (click)="setTestLocationNearPub()">📍 Set Test Location</button>
+    <button (click)="resetAuth()">🔐 Reset Auth</button>
+    <button (click)="resetPubs()">🏠 Reset Pubs</button>
+    <button (click)="resetCheckins()">✅ Reset Check-ins</button>
+    <button (click)="copyDiagnostics()">📋 Copy All Data</button>
   </div>
 
-  <div class="debug-section">
-    <h3>Check-Ins</h3>
-    <pre>{{ checkins() | json }}</pre>
-    <pre>Latest: {{ latestCheckin() | json }}</pre>
-  </div>
-
-  <div class="debug-section">
-    <h3>Landlord Pubs</h3>
-    <pre>{{ landlordPubsList() | json }}</pre>
-  </div>
-
-  <div class="debug-section">
-    <h3>Visited Pubs</h3>
-    <pre>{{ uniqueVisitedPubsList() | json }}</pre>
-  </div>
-
-  <div class="debug-section">
-    <h3>Active Panel</h3>
-    <p>{{ activePanel() }}</p>
-  </div>
-
-  <div class="debug-section">
-    <h3>All Pubs Count</h3>
-    <p>{{ pubs().length }} pubs loaded</p>
-  </div>
-
-  <div class="reset-buttons">
-    <button type="button" (click)="resetPubs()">Reset Pubs</button>
-    <button type="button" (click)="resetCheckins()">Reset Check-ins</button>
-  </div>
+  <!-- Raw Signal Values (Collapsed) -->
+  <details class="raw-signals">
+    <summary>Raw Signal Values</summary>
+    <pre class="raw-data">{{ rawSignals() | json }}</pre>
+  </details>
 </details>

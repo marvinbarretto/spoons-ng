@@ -51,7 +51,7 @@ export class CheckInService extends FirestoreService {
     const pub = await this.validatePubExists(checkin.pubId);
     const user = await this.ensureUserExists(checkin.userId);
 
-    console.log('[CheckInService] !!! Adding checkin', checkin);
+    console.log('[CheckInService] completeCheckin fn', checkin);
     const checkinRef = await this.addDocToCollection<Omit<CheckIn, 'id'>>('checkins', checkin);
     await this.updatePubStats(pub, checkin, checkinRef.id);
     await this.updateUserStats(user, checkin);

@@ -1,90 +1,62 @@
-import { Injectable, Injector, runInInjectionContext } from '@angular/core';
-import { computed, effect, inject, signal } from "@angular/core";
-import { UserService } from "./user.service";
-import { AuthStore } from "../../auth/data-access/auth.store";
-import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-import { Subject, takeUntil } from "rxjs";
-import { User } from "../utils/user.model";
+// src/app/users/data-access/user.store.ts
+import { Injectable, signal, computed } from '@angular/core';
+import { User } from '../utils/user.model';
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root'
+})
 export class UserStore {
-  private readonly userService = inject(UserService);
-  private readonly authStore = inject(AuthStore);
+  private readonly _user = signal<User | null>(null);
+  private readonly _loading = signal(false);
+  private readonly _error = signal<string | null>(null);
 
-  readonly user = signal<User | null>(null);
-  readonly loading = signal(false);
-  readonly error = signal<string | null>(null);
+  // Clean signal names
+  readonly user = this._user.asReadonly();
+  readonly loading = this._loading.asReadonly();
+  readonly error = this._error.asReadonly();
 
+  readonly isLoaded = computed(() => !!this.user());
+  readonly hasLandlordPubs = computed(() =>
+    (this.user()?.landlordOf?.length || 0) > 0
+  );
 
-
-
-  private destroy$ = new Subject<void>();
-
-  constructor() {
-    effect(() => {
-      const authUser = this.authStore.user();
-      if (!authUser) return;
-
-      this.loadUser(authUser.uid);
-    });
+  setUser(user: User | null): void {
+    this._user.set(user);
   }
 
+  async loadUser(userId: string): Promise<void> {
+    this._loading.set(true);
+    this._error.set(null);
 
-  loadUser(uid: string) {
-    this.loading.set(true);
-    this.error.set(null);
+    try {
+      // Mock implementation - replace with actual service call
+      const mockUser: User = {
+        uid: userId,
+        email: `user${userId}@example.com`,
+        displayName: `User ${userId}`,
+        landlordOf: [],
+        claimedPubIds: [],
+        checkedInPubIds: [],
+        badges: [],
+        streaks: {},
+        joinedMissionIds: [],
+        emailVerified: true,
+        isAnonymous: false,
+        photoURL: '',
+        joinedAt: new Date().toISOString(),
+      };
 
-    const authUser = this.authStore.user();
-
-    this.userService.getUser(uid).subscribe({
-      next: async (data) => {
-        const merged: User = {
-          uid: authUser?.uid ?? '',
-          displayName: authUser?.displayName ?? '',
-          email: authUser?.email ?? '',
-          emailVerified: authUser?.emailVerified ?? false,
-          isAnonymous: authUser?.isAnonymous ?? true,
-          photoURL: authUser?.photoURL ?? '',
-          joinedAt: authUser?.joinedAt ?? new Date().toISOString(),
-
-          landlordOf: data?.landlordOf ?? [],
-          claimedPubIds: data?.claimedPubIds ?? [],
-          checkedInPubIds: data?.checkedInPubIds ?? [],
-          badges: data?.badges ?? [],
-          streaks: data?.streaks ?? {},
-          joinedMissionIds: data?.joinedMissionIds ?? [],
-        };
-
-        if (!data) {
-          try {
-            await this.userService.createUser(uid, merged);
-            console.log(`[UserStore] 🔥 Created new user in Firestore: ${uid}`);
-          } catch (err) {
-            console.error(`[UserStore] ❌ Failed to create user ${uid} in Firestore:`, err);
-          }
-        }
-
-        this.user.set(merged);
-        console.log('[UserStore] ✅ Merged user:', merged);
-        this.loading.set(false);
-      },
-      error: (err) => {
-        this.error.set('Failed to load user data');
-        console.error('[UserStore] ❌ Error loading user:', err);
-        this.loading.set(false);
-      }
-    });
+      this._user.set(mockUser);
+    } catch (error: any) {
+      this._error.set(error.message || 'Failed to load user');
+    } finally {
+      this._loading.set(false);
+    }
   }
 
-  landlordCount(): number {
-    const user = this.user();
-    const count = user?.landlordOf?.length || 0;
-    console.log(`[UserStore] 🧮 Calculated landlordCount: ${count}`);
-    return count;
-  }
-
-  ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
+  reset(): void {
+    this._user.set(null);
+    this._loading.set(false);
+    this._error.set(null);
   }
 }

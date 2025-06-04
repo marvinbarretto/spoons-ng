@@ -1,176 +1,37 @@
 // src/app/shared/utils/dev-debug/dev-debug.component.ts
-import { Component, computed, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { JsonPipe, NgClass } from '@angular/common';
 import { BaseComponent } from '../../data-access/base.component';
 import { AuthStore } from '../../../auth/data-access/auth.store';
 import { CheckinStore } from '../../../check-in/data-access/check-in.store';
 import { PubStore } from '../../../pubs/data-access/pub.store';
 import { NearbyPubStore } from '../../../pubs/data-access/nearby-pub.store';
+import { LandlordStore } from '../../../landlord/data-access/landlord.store';
 import { environment } from '../../../../environments/environment';
+import { toDate, isToday } from '../timestamp.utils';
 
 @Component({
   selector: 'app-dev-debug',
-  standalone: true,
   imports: [JsonPipe, NgClass],
-  template: `
-    <details class="debug-panel">
-      <summary>
-        🛠️ Signal Health
-        <span [ngClass]="overallHealthClass()">{{ overallHealth() }}</span>
-      </summary>
-
-      <!-- Signal Health Matrix -->
-      <div class="health-grid">
-        <div class="health-item" [ngClass]="getHealthClass(authHealth())">
-          <strong>Auth</strong>
-          <span>{{ authHealth().status }}</span>
-          <small>{{ authHealth().details }}</small>
-        </div>
-
-        <div class="health-item" [ngClass]="getHealthClass(pubHealth())">
-          <strong>Pubs</strong>
-          <span>{{ pubHealth().status }}</span>
-          <small>{{ pubHealth().details }}</small>
-        </div>
-
-        <div class="health-item" [ngClass]="getHealthClass(locationHealth())">
-          <strong>Location</strong>
-          <span>{{ locationHealth().status }}</span>
-          <small>{{ locationHealth().details }}</small>
-        </div>
-
-        <div class="health-item" [ngClass]="getHealthClass(checkinHealth())">
-          <strong>Checkins</strong>
-          <span>{{ checkinHealth().status }}</span>
-          <small>{{ checkinHealth().details }}</small>
-        </div>
-      </div>
-
-      <!-- Device Capabilities -->
-      <div class="device-section">
-        <h4>Device Reality Check</h4>
-        <div class="device-grid">
-          <span>Screen: {{ deviceInfo().screen }}</span>
-          <span>Memory: {{ deviceInfo().memory }}</span>
-          <span>Connection: {{ deviceInfo().connection }}</span>
-          <span>Touch: {{ deviceInfo().touch ? '👆' : '🖱️' }}</span>
-          <span>Battery: {{ deviceInfo().battery }}</span>
-          <span>Platform: {{ deviceInfo().platform }}</span>
-        </div>
-      </div>
-
-      <!-- Quick Actions -->
-      <div class="actions">
-        <button (click)="refreshAll()" [disabled]="refreshing()">
-          {{ refreshing() ? '🔄' : '🔄' }} Refresh All
-        </button>
-        <button (click)="resetAuth()">🔐 Reset Auth</button>
-        <button (click)="copyDiagnostics()">📋 Copy Diagnostics</button>
-      </div>
-
-      <!-- Raw Signal Values (Collapsed) -->
-      <details class="raw-signals">
-        <summary>Raw Signal Values</summary>
-        <pre class="raw-data">{{ rawSignals() | json }}</pre>
-      </details>
-    </details>
-  `,
-  styles: [`
-    .debug-panel {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      background: rgba(0, 0, 0, 0.9);
-      color: #00ff00;
-      padding: 12px;
-      border-radius: 8px;
-      font-family: 'Courier New', monospace;
-      font-size: 12px;
-      max-width: 400px;
-      z-index: 9999;
-      border: 1px solid #333;
-    }
-
-    .health-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      margin: 12px 0;
-    }
-
-    .health-item {
-      padding: 8px;
-      border-radius: 4px;
-      border: 1px solid #333;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .health-item.healthy { background: rgba(0, 255, 0, 0.1); border-color: #0f0; }
-    .health-item.warning { background: rgba(255, 255, 0, 0.1); border-color: #ff0; }
-    .health-item.error { background: rgba(255, 0, 0, 0.1); border-color: #f00; }
-
-    .health-item strong { font-size: 10px; opacity: 0.7; }
-    .health-item span { font-weight: bold; }
-    .health-item small { font-size: 9px; opacity: 0.6; }
-
-    .device-section h4 { margin: 12px 0 6px; font-size: 11px; }
-    .device-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 4px;
-      font-size: 10px;
-    }
-
-    .actions {
-      display: flex;
-      gap: 8px;
-      margin: 12px 0;
-    }
-
-    .actions button {
-      background: #333;
-      color: #0f0;
-      border: 1px solid #555;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 10px;
-      cursor: pointer;
-    }
-
-    .actions button:hover { background: #444; }
-    .actions button:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    .raw-signals { margin-top: 12px; }
-    .raw-data {
-      font-size: 9px;
-      max-height: 200px;
-      overflow-y: auto;
-      background: rgba(0, 0, 0, 0.5);
-      padding: 8px;
-      border-radius: 4px;
-    }
-
-    .overall-healthy { color: #0f0; }
-    .overall-warning { color: #ff0; }
-    .overall-error { color: #f00; }
-  `],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  templateUrl: './dev-debug.component.html',
+  styleUrl: './dev-debug.component.scss',
 })
 export class DevDebugComponent extends BaseComponent {
-  private readonly _authStore = inject(AuthStore);
-  private readonly _checkinStore = inject(CheckinStore);
-  private readonly _pubStore = inject(PubStore);
-  private readonly _nearbyPubStore = inject(NearbyPubStore);
+  // Injected stores
+  private readonly authStore = inject(AuthStore);
+  private readonly checkinStore = inject(CheckinStore);
+  protected readonly pubStore = inject(PubStore);
+  protected readonly nearbyPubStore = inject(NearbyPubStore);
+  private readonly landlordStore = inject(LandlordStore);
 
+  // Component state
   readonly refreshing = signal(false);
 
-  // Health Checks
+  // Health Check Computed Signals
   readonly authHealth = computed(() => {
-    const user = this._authStore.user();
-    const token = this._authStore.token();
-    const ready = this._authStore.ready();
+    const user = this.authStore.user();
+    const token = this.authStore.token();
+    const ready = this.authStore.ready();
 
     if (!ready) return { status: 'LOADING', details: 'Auth initializing...', level: 'warning' };
     if (!user || !token) return { status: 'OFFLINE', details: 'Not authenticated', level: 'error' };
@@ -178,9 +39,9 @@ export class DevDebugComponent extends BaseComponent {
   });
 
   readonly pubHealth = computed(() => {
-    const pubs = this._pubStore.pubs();
-    const loading = this._pubStore.loading();
-    const error = this._pubStore.error();
+    const pubs = this.pubStore.pubs();
+    const loading = this.pubStore.loading();
+    const error = this.pubStore.error();
 
     if (loading) return { status: 'LOADING', details: 'Fetching pubs...', level: 'warning' };
     if (error) return { status: 'ERROR', details: error, level: 'error' };
@@ -189,7 +50,7 @@ export class DevDebugComponent extends BaseComponent {
   });
 
   readonly locationHealth = computed(() => {
-    const location = this._nearbyPubStore.location();
+    const location = this.nearbyPubStore.location();
     if (!location) return { status: 'NO_LOCATION', details: 'Location unavailable', level: 'error' };
     return {
       status: 'ACTIVE',
@@ -199,9 +60,10 @@ export class DevDebugComponent extends BaseComponent {
   });
 
   readonly checkinHealth = computed(() => {
-    const checkins = this._checkinStore.checkins();
-    const loading = this._checkinStore.loading();
-    const error = this._checkinStore.error();
+    const checkins = this.checkinStore.checkins();
+    const loading = this.checkinStore.loading();
+    const error = this.checkinStore.error();
+
 
     if (loading) return { status: 'LOADING', details: 'Loading checkins...', level: 'warning' };
     if (error) return { status: 'ERROR', details: error, level: 'error' };
@@ -231,7 +93,214 @@ export class DevDebugComponent extends BaseComponent {
     };
   });
 
-  // Real Device Capabilities
+  // Check-in Step-by-Step Diagnosis
+  readonly checkinStep1 = computed(() => {
+    const isAuth = this.authStore.isAuthenticated();
+    const user = this.authStore.user();
+
+    if (!isAuth || !user) {
+      return {
+        status: '❌ FAIL',
+        details: 'Not authenticated',
+        level: 'error' as const
+      };
+    }
+
+    return {
+      status: '✅ PASS',
+      details: `User: ${user.uid.slice(0, 8)}...`,
+      level: 'healthy' as const
+    };
+  });
+
+  readonly checkinStep2 = computed(() => {
+    const location = this.nearbyPubStore.location();
+    // Note: You might need to expose locationService error through NearbyPubStore
+
+    if (!location) {
+      return {
+        status: '⏳ LOADING',
+        details: 'Requesting location...',
+        level: 'warning' as const
+      };
+    }
+
+    return {
+      status: '✅ PASS',
+      details: `${location.lat.toFixed(3)}, ${location.lng.toFixed(3)}`,
+      level: 'healthy' as const
+    };
+  });
+
+  readonly checkinStep3 = computed(() => {
+    const totalPubs = this.totalPubs();
+    const nearbyPubs = this.nearbyPubsCount();
+    const loading = this.pubStore.loading();
+    const error = this.pubStore.error();
+
+    if (loading) {
+      return {
+        status: '⏳ LOADING',
+        details: 'Loading pubs...',
+        level: 'warning' as const
+      };
+    }
+
+    if (error) {
+      return {
+        status: '❌ FAIL',
+        details: error,
+        level: 'error' as const
+      };
+    }
+
+    if (totalPubs === 0) {
+      return {
+        status: '❌ FAIL',
+        details: 'No pubs loaded',
+        level: 'error' as const
+      };
+    }
+
+    return {
+      status: '✅ PASS',
+      details: `${totalPubs} total, ${nearbyPubs} nearby`,
+      level: 'healthy' as const
+    };
+  });
+
+  readonly checkinStep4 = computed(() => {
+    const closestPub = this.closestPub();
+
+    if (!closestPub) {
+      return {
+        status: '❌ FAIL',
+        details: 'No nearby pubs within 50m',
+        level: 'error' as const
+      };
+    }
+
+    const distance = (closestPub as any).distance;
+    const isWithinRange = distance <= 50;
+
+    if (!isWithinRange) {
+      return {
+        status: '❌ FAIL',
+        details: `${closestPub.name} is ${distance.toFixed(0)}m away (>50m)`,
+        level: 'error' as const
+      };
+    }
+
+    return {
+      status: '✅ PASS',
+      details: `${closestPub.name} is ${distance.toFixed(0)}m away`,
+      level: 'healthy' as const
+    };
+  });
+
+  readonly checkinStep5 = computed(() => {
+    const closestPub = this.closestPub();
+
+    if (!closestPub) {
+      return {
+        status: '❌ FAIL',
+        details: 'No pub to check eligibility',
+        level: 'error' as const
+      };
+    }
+
+    const alreadyCheckedIn = this.checkinStore.hasCheckedInToday(closestPub.id);
+
+    if (alreadyCheckedIn) {
+      return {
+        status: '❌ FAIL',
+        details: 'Already checked in today',
+        level: 'warning' as const
+      };
+    }
+
+    return {
+      status: '✅ PASS',
+      details: 'Eligible to check in',
+      level: 'healthy' as const
+    };
+  });
+
+  readonly canCheckInFinal = computed(() => {
+    const steps = [
+      this.checkinStep1(),
+      this.checkinStep2(),
+      this.checkinStep3(),
+      this.checkinStep4(),
+      this.checkinStep5()
+    ];
+
+    return steps.every(step => step.status === '✅ PASS');
+  });
+
+  // Pub Data Computed Signals
+  readonly totalPubs = computed(() => this.pubStore.pubs().length);
+  readonly nearbyPubsCount = computed(() => this.nearbyPubStore.nearbyPubs().length);
+  readonly closestPub = computed(() => this.nearbyPubStore.closestPub());
+  readonly canCheckIn = computed(() => this.nearbyPubStore.canCheckIn());
+
+  readonly visitedPubsCount = computed(() => {
+    if (this.checkinStore.loading()) {
+      console.log('[DevDebug] CheckinStore still loading...');
+      return 0;
+    }
+
+    const checkins = this.checkinStore.checkins();
+    const uniquePubIds = new Set(checkins.map(c => c.pubId));
+    return uniquePubIds.size;
+  });
+
+  readonly landlordPubsCount = computed(() => {
+    const user = this.authStore.user();
+    if (!user) return 0;
+    return user.landlordOf?.length || 0;
+  });
+
+  readonly todayCheckinsCount = computed(() => {
+    return this.checkinStore.todayCheckins().length;
+  });
+
+  readonly latestCheckinPub = computed(() => {
+    const checkins = this.checkinStore.checkins();
+    if (checkins.length === 0) return null;
+
+    const latest = checkins.sort((a, b) =>
+      b.timestamp.toMillis() - a.timestamp.toMillis()
+    )[0];
+
+    const pub = this.pubStore.pubs().find(p => p.id === latest.pubId);
+    return pub?.name || `Pub ID: ${latest.pubId}`;
+  });
+
+  readonly landlordToday = computed(() => {
+    const user = this.authStore.user();
+    if (!user) return [];
+
+    const todayLandlords = this.landlordStore.todayLandlord();
+    const userLandlordPubs: string[] = [];
+
+    Object.entries(todayLandlords).forEach(([pubId, landlord]) => {
+      try {
+        if (landlord.userId === user.uid) {
+          const claimDate = toDate(landlord.claimedAt);
+          if (claimDate && isToday(claimDate)) {
+            const pub = this.pubStore.pubs().find(p => p.id === pubId);
+            userLandlordPubs.push(pub?.name || pubId);
+          }
+        }
+      } catch (error) {
+        console.warn('[DevDebug] Failed to process landlord:', landlord, error);
+      }
+    });
+
+    return userLandlordPubs;
+  });
+
   readonly deviceInfo = computed(() => {
     const nav = navigator as any;
     return {
@@ -244,22 +313,32 @@ export class DevDebugComponent extends BaseComponent {
     };
   });
 
-  // Raw signal snapshot for diagnostics
   readonly rawSignals = computed(() => ({
     auth: {
-      user: !!this._authStore.user(),
-      token: !!this._authStore.token(),
-      ready: this._authStore.ready()
+      user: !!this.authStore.user(),
+      token: !!this.authStore.token(),
+      ready: this.authStore.ready(),
+      uid: this.authStore.user()?.uid
     },
     pubs: {
-      count: this._pubStore.pubs().length,
-      loading: this._pubStore.loading(),
-      error: this._pubStore.error()
+      total: this.totalPubs(),
+      nearby: this.nearbyPubsCount(),
+      visited: this.visitedPubsCount(),
+      loading: this.pubStore.loading(),
+      error: this.pubStore.error(),
+      closestPub: this.closestPub()?.name,
+      canCheckIn: this.canCheckIn()
     },
-    location: this._nearbyPubStore.location(),
+    location: this.nearbyPubStore.location(),
     checkins: {
-      count: this._checkinStore.checkins().length,
-      loading: this._checkinStore.loading()
+      total: this.checkinStore.checkins().length,
+      today: this.todayCheckinsCount(),
+      latest: this.latestCheckinPub(),
+      loading: this.checkinStore.loading()
+    },
+    landlord: {
+      myPubs: this.landlordPubsCount(),
+      todayPubs: this.landlordToday()
     },
     device: this.deviceInfo(),
     env: {
@@ -268,6 +347,7 @@ export class DevDebugComponent extends BaseComponent {
     }
   }));
 
+  // Helper Methods
   getHealthClass(health: any) {
     return {
       'healthy': health.level === 'healthy',
@@ -276,29 +356,82 @@ export class DevDebugComponent extends BaseComponent {
     };
   }
 
+  getStepClass(step: any) {
+    return {
+      'step-pass': step.level === 'healthy',
+      'step-warning': step.level === 'warning',
+      'step-error': step.level === 'error'
+    };
+  }
+
+  getFinalResultClass() {
+    return {
+      'final-pass': this.canCheckInFinal(),
+      'final-fail': !this.canCheckInFinal()
+    };
+  }
+
+  // Action Methods
+  setTestLocationNearPub(): void {
+    const pubs = this.pubStore.pubs();
+    if (pubs.length > 0) {
+      const testPub = pubs[0];
+      const offset = 0.0001; // ~11 meters
+      const nearbyLat = testPub.location.lat + offset;
+      const nearbyLng = testPub.location.lng + offset;
+
+      // You'll need to expose setMockLocation through NearbyPubStore or LocationService
+      // For now, this is a placeholder
+      console.log(`[DevDebug] Would set location near ${testPub.name}: ${nearbyLat}, ${nearbyLng}`);
+      this.showInfo(`Mock: Set location near ${testPub.name}`);
+    } else {
+      this.showWarning('No pubs loaded to set location near');
+    }
+  }
+
   async refreshAll(): Promise<void> {
     this.refreshing.set(true);
     try {
-      const promises = [this._pubStore.load()];
+      const promises = [this.pubStore.load()];
 
-      // Only load checkins if user is authenticated
-      if (this._authStore.user()) {
-        promises.push(this._checkinStore.load());
+      if (this.authStore.user()) {
+        promises.push(this.checkinStore.load());
       }
 
       await Promise.all(promises);
+      this.showSuccess('All data refreshed!');
+    } catch (error) {
+      this.showError('Failed to refresh data');
     } finally {
       this.refreshing.set(false);
     }
   }
 
   resetAuth(): void {
-    this._authStore.logout();
+    this.authStore.logout();
+    this.showInfo('Auth reset - logged out');
+  }
+
+  resetPubs(): void {
+    this.pubStore.reset();
+    this.showInfo('Pub store reset');
+  }
+
+  resetCheckins(): void {
+    this.checkinStore.reset();
+    this.showInfo('Check-in store reset');
   }
 
   copyDiagnostics(): void {
-    navigator.clipboard?.writeText(JSON.stringify(this.rawSignals(), null, 2));
+    const diagnostics = {
+      ...this.rawSignals(),
+      url: window.location.href,
+      userAgent: navigator.userAgent,
+      timestamp: new Date().toISOString()
+    };
+
+    navigator.clipboard?.writeText(JSON.stringify(diagnostics, null, 2))
+      .then(() => this.showSuccess('Diagnostics copied to clipboard'))
+      .catch(() => this.showWarning('Failed to copy diagnostics'));
   }
 }
-
-

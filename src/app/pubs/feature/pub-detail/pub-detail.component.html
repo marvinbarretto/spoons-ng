@@ -1,72 +1,120 @@
+<!-- src/app/pubs/feature/pub-detail/pub-detail.component.html -->
 <article class="pub-detail">
-  @if (pub) {
-
-    <header>
-      <h1>{{ pub.name }}</h1>
-      <p>{{ pub.address }}, {{ pub.city }}, {{ pub.region }}, {{ pub.country }}</p>
-    </header>
-
-    @if (pub.carpetUrl) {
-      <section class="carpet">
-        <h2>Carpet of the Pub</h2>
-        <img [src]="pub.carpetUrl" alt="Pub carpet" />
-      </section>
-    }
-
-    <section class="landlord">
-      <h2>Current landlord</h2>
-      @if (pub.currentLandlord) {
-        <p>User ID: {{ pub.currentLandlord.userId }}</p>
-        <p>Date: {{ pub.currentLandlord.claimedAt.toDate() | date: 'shortTime' }}</p>
-      } @else {
-        <p>No one is the landlord! Go get it</p>
-      }
-    </section>
-
-    <section class="stats">
-      <h2>Stats</h2>
-      <p>Total check-ins: {{ pub.checkinCount || 0 }}</p>
-
-      @if (pub.recordEarlyCheckinAt) {
-        <p>Earliest check-in: {{ pub.recordEarlyCheckinAt.toDate() | date: 'shortTime' }}</p>
-      }
-
-      @if (pub.recordLatestCheckinAt) {
-        <p>Latest check-in: {{ pub.recordLatestCheckinAt.toDate() | date: 'shortTime' }}</p>
-      }
-
-      @if (pub.longestStreak) {
-        <p>Longest landlord streak: {{ pub.longestStreak }} days</p>
-      }
-    </section>
-
-    @if (pub.checkinHistory?.length) {
-      <section class="history">
-        <h2>Recent Check-ins</h2>
-        <ul>
-          @for (entry of pub.checkinHistory?.slice(-5)?.reverse() ?? []; track entry.timestamp) {
-            <li>
-              {{ entry.userId }} — {{ entry.timestamp.toDate() | date:'short' }}
-            </li>
-          }
-        </ul>
-      </section>
-    }
-
-    @if (pub.landlordHistory?.length) {
-      <section class="history">
-        <h2>Landlord History</h2>
-        <ul>
-          @for (entry of pub.landlordHistory; track entry.claimedAt) {
-            <li>{{ entry.claimedAt.toDate() | date:'shortTime' }} — {{ entry.userId }}</li>
-          }
-        </ul>
-      </section>
-    }
-
-  } @else {
-    <p>Pub not found.</p>
+  @if (loading()) {
+    <div class="loading-state">
+      <h1>Loading pub details...</h1>
+    </div>
+  } @else if (error()) {
+    <div class="error-state">
+      <h1>Error Loading Pub</h1>
+      <p>{{ error() }}</p>
+      <a routerLink="/pubs">← Back to pubs</a>
+    </div>
   }
 
-  <a routerLink="/pubs">← Back to pubs</a>
+  @if (pub(); as currentPub) {
+    <!-- Header Section -->
+    <header class="pub-header">
+      <h1>{{ currentPub.name }}</h1>
+      <p class="address">{{ currentPub.address }}, {{ locationString }}</p>
+    </header>
+
+    <!-- Carpet Section -->
+    @if (currentPub.carpetUrl) {
+      <section class="carpet">
+        <h2>Carpet of the Pub</h2>
+        <img [src]="currentPub.carpetUrl" alt="Pub carpet" loading="lazy" />
+      </section>
+    }
+
+    <!-- Current Landlord Section -->
+    <section class="landlord">
+      <h2>Current Landlord</h2>
+      @if (currentPub.currentLandlord; as landlord) {
+        <div class="landlord-info">
+          <p><strong>User ID:</strong> {{ landlord.userId }}</p>
+          <p><strong>Claimed:</strong> {{ formatTime(landlord.claimedAt) }}</p>
+        </div>
+      } @else {
+        <div class="no-landlord">
+          <p>👑 No one is the landlord! Go claim it!</p>
+        </div>
+      }
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats">
+      <h2>Statistics</h2>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <span class="stat-value">{{ currentPub.checkinCount || 0 }}</span>
+          <span class="stat-label">Total Check-ins</span>
+        </div>
+
+        @if (currentPub.recordEarlyCheckinAt; as earliest) {
+          <div class="stat-item">
+            <span class="stat-value">{{ formatTime(earliest) }}</span>
+            <span class="stat-label">Earliest Check-in</span>
+          </div>
+        }
+
+        @if (currentPub.recordLatestCheckinAt; as latest) {
+          <div class="stat-item">
+            <span class="stat-value">{{ formatTime(latest) }}</span>
+            <span class="stat-label">Latest Check-in</span>
+          </div>
+        }
+
+        @if (currentPub.longestStreak; as streak) {
+          <div class="stat-item">
+            <span class="stat-value">{{ streak }} days</span>
+            <span class="stat-label">Longest Landlord Streak</span>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Recent Check-ins -->
+    @if (currentPub.checkinHistory?.length; as checkins) {
+      <section class="history">
+        <h2>Recent Check-ins</h2>
+        <!-- <ul class="checkin-list">
+          @for (entry of checkins.slice(-5).reverse(); track entry.timestamp) {
+            <li class="checkin-item">
+              <span class="user">{{ entry.userId }}</span>
+              <span class="timestamp">{{ formatDate(entry.timestamp) }}</span>
+            </li>
+          }
+        </ul> -->
+      </section>
+    }
+
+    <!-- Landlord History -->
+    @if (currentPub.landlordHistory?.length; as history) {
+      <section class="history">
+        <h2>Landlord History</h2>
+        <ul class="landlord-list">
+          <!-- @for (entry of history; track entry.claimedAt) {
+            <li class="landlord-item">
+              <span class="timestamp">{{ formatTime(entry.claimedAt) }}</span>
+              <span class="user">{{ entry.userId }}</span>
+            </li>
+          } -->
+        </ul>
+      </section>
+    }
+
+    <!-- Actions -->
+    <div class="pub-actions">
+      <a routerLink="/pubs" class="back-link">← Back to pubs</a>
+    </div>
+
+  } @else {
+    <!-- No pub found -->
+    <div class="not-found">
+      <h1>Pub Not Found</h1>
+      <p>The pub you're looking for doesn't exist or couldn't be loaded.</p>
+      <a routerLink="/pubs">← Back to pubs</a>
+    </div>
+  }
 </article>

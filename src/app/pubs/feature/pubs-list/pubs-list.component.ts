@@ -1,7 +1,9 @@
+// src/app/pubs/feature/pubs-list/pubs-list.component.ts
 import { Component, inject, OnInit } from '@angular/core';
 import { PubStore } from '../../data-access/pub.store';
 import { CommonModule } from '@angular/common';
 import { PubCardComponent } from '../../ui/pub-card/pub-card.component';
+import { BaseComponent } from '../../../shared/data-access/base.component';
 
 @Component({
   selector: 'app-pub-list',
@@ -26,10 +28,10 @@ import { PubCardComponent } from '../../ui/pub-card/pub-card.component';
     </section>
   `,
 })
-export class PubListComponent implements OnInit {
-  pubStore = inject(PubStore);
+export class PubListComponent extends BaseComponent implements OnInit {
+  protected readonly pubStore = inject(PubStore);
 
-  ngOnInit() {
+  protected override onInit(): void {
     this.pubStore.loadOnce();
   }
 }

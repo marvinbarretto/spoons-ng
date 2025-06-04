@@ -1,93 +1,230 @@
-:host {
-  position: fixed;
-  bottom: 0;
-  right: 0;
-  z-index: 1000;
-  max-width: 350px;
-  font-size: 10px;
-  line-height: 1.4;
-}
+/* src/app/shared/utils/dev-debug/dev-debug.component.scss */
 
-details {
-  background: rgba(0, 0, 0, 0.75);
-  color: #fff;
-  padding: 10px;
-  max-height: 95vh;
+.debug-panel {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.9);
+  color: #00ff00;
+  padding: 12px;
+  border-radius: 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  max-width: 450px;
+  z-index: 9999;
+  border: 1px solid #333;
+  max-height: 90vh;
   overflow-y: auto;
-  border: 1px solid #444;
-  border-radius: 4px;
 
   summary {
     cursor: pointer;
     font-weight: bold;
-    font-size: 11px;
-    margin-bottom: 6px;
-    outline: none;
-
-    &::marker {
-      color: #fff;
-    }
-  }
-
-  // Optional animation
-  &[open] {
-    animation: fadeIn 0.2s ease-in-out;
+    margin-bottom: 8px;
   }
 }
 
-.debug-section {
-  margin-bottom: 10px;
+/* Health Grid */
+.health-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 12px 0;
+}
 
-  h3 {
-    margin: 4px 0;
+.health-item {
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #333;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  &.healthy {
+    background: rgba(0, 255, 0, 0.1);
+    border-color: #0f0;
+  }
+
+  &.warning {
+    background: rgba(255, 255, 0, 0.1);
+    border-color: #ff0;
+  }
+
+  &.error {
+    background: rgba(255, 0, 0, 0.1);
+    border-color: #f00;
+  }
+
+  strong {
+    font-size: 10px;
+    opacity: 0.7;
+  }
+
+  span {
     font-weight: bold;
-    font-size: 11px;
-    color: #ffeb3b;
   }
 
-  pre {
-    white-space: pre-wrap;
-    word-break: break-word;
-    background: #222;
-    padding: 4px;
-    border-radius: 2px;
-    border: 1px solid #444;
-  }
-
-  p {
-    margin: 2px 0;
+  small {
+    font-size: 9px;
+    opacity: 0.6;
   }
 }
 
-.reset-buttons,
-button {
+/* Check-in Eligibility Section */
+.checkin-section {
+  margin: 16px 0;
+  border-top: 1px solid #333;
+  padding-top: 12px;
+}
+
+.checkin-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 8px 0;
+}
+
+.step {
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 10px;
+  border: 1px solid #555;
+
+  &.step-pass {
+    background: rgba(0, 255, 0, 0.1);
+    border-color: #0f0;
+  }
+
+  &.step-warning {
+    background: rgba(255, 255, 0, 0.1);
+    border-color: #ff0;
+  }
+
+  &.step-error {
+    background: rgba(255, 0, 0, 0.1);
+    border-color: #f00;
+  }
+
+  strong {
+    display: inline-block;
+    width: 60px;
+  }
+
+  small {
+    display: block;
+    margin-top: 2px;
+    opacity: 0.7;
+    font-size: 9px;
+  }
+}
+
+.final-result {
+  margin: 8px 0;
+  padding: 8px;
+  border-radius: 4px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 11px;
+
+  &.final-pass {
+    background: rgba(0, 255, 0, 0.2);
+    border: 2px solid #0f0;
+    color: #0f0;
+  }
+
+  &.final-fail {
+    background: rgba(255, 0, 0, 0.2);
+    border: 2px solid #f00;
+    color: #f00;
+  }
+}
+
+/* Data Sections */
+.pub-section,
+.activity-section,
+.device-section {
+  margin: 16px 0;
+  border-top: 1px solid #333;
+  padding-top: 12px;
+
+  h4 {
+    margin: 0 0 8px 0;
+    font-size: 11px;
+    color: #ff0;
+  }
+}
+
+.pub-grid,
+.activity-grid,
+.device-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4px;
+  font-size: 10px;
+}
+
+.closest-pub,
+.landlord-today {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  small {
+    opacity: 0.7;
+  }
+}
+
+.can-checkin {
+  color: #0f0;
+}
+
+.cannot-checkin,
+.no-data {
+  color: #f80;
+}
+
+/* Actions */
+.actions {
   display: flex;
   gap: 6px;
-  margin-top: 10px;
-}
+  margin: 12px 0;
+  flex-wrap: wrap;
 
-button {
-  font-size: 10px;
-  padding: 2px 6px;
-  background: #444;
-  border: 1px solid #888;
-  color: #fff;
-  cursor: pointer;
-  border-radius: 2px;
-  transition: background 0.2s ease;
+  button {
+    font-size: 9px;
+    padding: 4px 6px;
+    background: #333;
+    border: 1px solid #555;
+    color: #0f0;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background 0.2s ease;
 
-  &:hover {
-    background: #666;
+    &:hover {
+      background: #444;
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   }
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Raw Signals */
+.raw-signals {
+  margin-top: 12px;
 }
+
+.raw-data {
+  font-size: 9px;
+  max-height: 200px;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 8px;
+  border-radius: 4px;
+}
+
+/* Overall Health Colors */
+.overall-healthy { color: #0f0; }
+.overall-warning { color: #ff0; }
+.overall-error { color: #f00; }

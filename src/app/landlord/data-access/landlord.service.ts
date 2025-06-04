@@ -1,66 +1,79 @@
-import { Injectable } from '@angular/core';
-import { inject } from '@angular/core';
-import { AuthStore } from '../../auth/data-access/auth.store';
-import type { Pub } from '../../pubs/utils/pub.models';
+// src/app/landlord/data-access/landlord.service.ts
+import { Injectable, inject } from '@angular/core';
 import { FirestoreService } from '../../shared/data-access/firestore.service';
-import { firstValueFrom } from 'rxjs';
-import { Timestamp } from 'firebase/firestore';
+import { Landlord } from '../utils/landlord.model';
+import { Timestamp, serverTimestamp, where } from 'firebase/firestore';
+import { toDate, toTimestamp } from '../../shared/utils/timestamp.utils';
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root'
+})
 export class LandlordService extends FirestoreService {
-  private authStore = inject(AuthStore);
 
-  async tryAwardLandlord(pubId: string, checkInDate: Date): Promise<boolean> {
-    const user = this.authStore.user();
-    if (!user) throw new Error('User not logged in');
-    console.log(`[LandlordService] 🧑 User attempting landlord claim: ${user.uid}`);
+  async tryAwardLandlord(pubId: string, checkinDate: Date): Promise<void> {
+    const today = new Date().toISOString().split('T')[0];
+    const checkinDateKey = checkinDate.toISOString().split('T')[0];
 
-    const pubPath = `pubs/${pubId}`;
-    const pub = await firstValueFrom(this.doc$<Pub>(pubPath));
-    if (!pub) throw new Error('Pub not found');
-    console.log(`[LandlordService] 🏠 Checking pub: ${pub.name} (${pubId})`);
-
-    const localDate = this.getLocalDate(checkInDate);
-    const isAfterNoon = this.isAfterNoon(checkInDate);
-    console.log(`[LandlordService] 📅 Local date: ${localDate}, After noon? ${isAfterNoon}`);
-
-    if (!isAfterNoon) {
-      console.log(`[LandlordService] ❌ Check-in is before 12:00 – not eligible for landlord`);
-      return false;
+    // Only award landlord if checking in today
+    if (checkinDateKey !== today) {
+      console.log('[LandlordService] Not awarding landlord - check-in not from today');
+      return;
     }
 
-    if (pub.todayLandlord?.claimedAt.toDate().toISOString().split('T')[0] === localDate) {
-      console.log(`[LandlordService] 🚫 Landlord already set for ${localDate}: ${pub.todayLandlord.userId}`);
-      return false;
-    }
+    try {
+      // Check if there's already a landlord for today
+      const existingLandlord = await this.getTodaysLandlord(pubId);
 
-    const updated: Partial<Pub> = {
-      todayLandlord: {
-        userId: user.uid,
+      if (existingLandlord) {
+        console.log('[LandlordService] Landlord already exists for today:', existingLandlord);
+        return;
+      }
+
+      // Award landlord
+      const newLandlord: Omit<Landlord, 'id'> = {
+        userId: 'current-user-id', // TODO: Get from AuthStore
+        pubId,
         claimedAt: Timestamp.now(),
-      },
-    };
+        dateKey: today,
+        isActive: true,
+      };
 
-    await this.updateDoc<Pub>(pubPath, updated);
-    console.log(`[LandlordService] ✅ ${user.uid} is now landlord of ${pub.name} for ${localDate}`);
-    return true;
+      await this.addDocToCollection<Omit<Landlord, 'id'>>('landlords', newLandlord);
+      console.log('[LandlordService] ✅ Landlord awarded:', newLandlord);
+
+    } catch (error) {
+      console.error('[LandlordService] ❌ Failed to award landlord:', error);
+    }
   }
 
+  private async getTodaysLandlord(pubId: string): Promise<Landlord | null> {
+    const today = new Date().toISOString().split('T')[0];
 
-  async getPub(pubId: string): Promise<Pub> {
-    const pub = await firstValueFrom(this.doc$<Pub>(`pubs/${pubId}`));
-    if (!pub) throw new Error('Pub not found');
-    return pub;
+    const landlords = await this.getDocsWhere<Landlord>(
+      'landlords',
+      where('pubId', '==', pubId),
+      where('dateKey', '==', today),
+      where('isActive', '==', true)
+    );
+
+    return landlords[0] || null;
   }
 
-  private getLocalDate(date: Date): string {
-    const d = new Date(date);
-    d.setHours(0, 0, 0, 0);
-    return d.toISOString().split('T')[0];
-  }
+  /**
+   * Safely normalize landlord data from Firestore
+   */
+  normalizeLandlord(data: any): Landlord | null {
+    if (!data) return null;
 
-  private isAfterNoon(date: Date): boolean {
-    return date.getHours() >= 12;
+    try {
+      return {
+        ...data,
+        claimedAt: toTimestamp(data.claimedAt) || Timestamp.now(),
+        id: data.id || crypto.randomUUID(),
+      } as Landlord;
+    } catch (error) {
+      console.error('[LandlordService] Failed to normalize landlord:', data, error);
+      return null;
+    }
   }
-
 }

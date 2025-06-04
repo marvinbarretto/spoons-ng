@@ -1,67 +1,105 @@
-import { Component, computed, inject, Signal } from '@angular/core';
+// src/app/home/feature/home/home.component.ts
+import { Component, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NearbyPubStore } from '../../../pubs/data-access/nearby-pub.store';
-import { haversineDistanceInMeters } from '../../../shared/utils/geo';
-import { StatusComponent } from "../status/status.component";
-import { CheckInHomepageWidgetComponent } from "../../../check-in/ui/check-in-homepage-widget/check-in-homepage-widget.component";
-import { Pub } from '../../../pubs/utils/pub.models';
-import { NearestPubsItemComponent } from "../../../pubs/ui/nearest-pubs-item/nearest-pubs-item.component";
-import { NearestPubsComponent } from "../../../pubs/ui/nearest-pubs/nearest-pubs.component";
-import { OverlayService } from "../../../shared/data-access/overlay.service";
 import { CheckinStore } from '../../../check-in/data-access/check-in.store';
-import { Router } from '@angular/router';
-import { CheckInResultOverlayComponent } from '../../../check-in/ui/check-in-result-overlay/check-in-result-overlay.component';
-
+import { CheckInHomepageWidgetComponent } from '../../../check-in/ui/check-in-homepage-widget/check-in-homepage-widget.component';
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, StatusComponent, CheckInHomepageWidgetComponent, NearestPubsComponent],
-  templateUrl: './home.component.html',
-  styleUrl: './home.component.scss'
+  imports: [CommonModule, CheckInHomepageWidgetComponent],
+  template: `
+    <div class="home-container">
+      <h1>Welcome to Spoons</h1>
+
+      @if (location()) {
+        <div class="location-info">
+          <p>Your location: {{ location()!.lat.toFixed(3) }}, {{ location()!.lng.toFixed(3) }}</p>
+        </div>
+      } @else {
+        <p>Getting your location...</p>
+      }
+
+      @if (closestPub() && userCanCheckIn()) {
+        <app-check-in-homepage-widget
+          [closestPub]="closestPub()!"
+        />
+      } @else if (closestPub() && !userCanCheckIn()) {
+        <div class="already-checked-in">
+          <p>You've already checked in to {{ closestPub()!.name }} today!</p>
+        </div>
+      } @else {
+        <p>No nearby pubs found</p>
+      }
+
+      @if (nearestPubs().length > 0) {
+        <div class="nearby-pubs">
+          <h2>Nearby Pubs</h2>
+          <ul>
+            @for (pub of nearestPubs(); track pub.id) {
+              <li>
+                {{ pub.name }} - {{ (pub.distance / 1000).toFixed(1) }}km
+              </li>
+            }
+          </ul>
+        </div>
+      }
+    </div>
+  `,
+  styles: [`
+    .home-container {
+      padding: 1rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .location-info {
+      background: var(--color-subtleLighter);
+      padding: 1rem;
+      border-radius: 4px;
+      margin: 1rem 0;
+    }
+
+    .already-checked-in {
+      background: var(--color-subtleLighter);
+      padding: 1rem;
+      border-radius: 4px;
+      margin: 1rem 0;
+      text-align: center;
+    }
+
+    .nearby-pubs {
+      margin-top: 2rem;
+    }
+
+    .nearby-pubs ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .nearby-pubs li {
+      padding: 0.5rem;
+      border-bottom: 1px solid var(--color-subtleLighter);
+    }
+  `]
 })
 export class HomeComponent {
   private readonly nearbyPubStore = inject(NearbyPubStore);
   private readonly checkinStore = inject(CheckinStore);
-  private readonly router = inject(Router);
-
-  private readonly overlayService = inject(OverlayService);
-
-  openOverlay() {
-    // this.overlayService.open(CheckInResultOverlayComponent);
-    console.log('TODO: Open check-in result overlay');
-  }
-
-
 
   readonly location = this.nearbyPubStore.location;
   readonly allPubs = this.nearbyPubStore.allPubs;
   readonly nearestPubs = this.nearbyPubStore.nearbyPubs;
+  readonly closestPub = this.nearbyPubStore.closestPub;
 
-  readonly userCanCheckIn = computed(() =>
-    this.checkinStore.canCheckInToPub(this.closestPubId())
+  readonly userCanCheckIn = computed(() => {
+    const pubId = this.closestPub()?.id ?? null;
+    if (!pubId) return false;
 
-  );
+    const isClose = this.nearbyPubStore.isWithinCheckInRange(pubId);
+    const hasntCheckedInToday = this.checkinStore.canCheckInToday(pubId);
 
-    readonly closestPub = this.nearbyPubStore.closestPub;
-
-  readonly closestPubId = computed(() =>
-    this.closestPub()?.id ?? null);
-
-  readonly distances = computed(() => {
-    const loc = this.location();
-    const pubs = this.allPubs();
-    if (!loc) return [];
-    return pubs.map(p => [p.name, haversineDistanceInMeters(loc, p.location)]);
+    return isClose && hasntCheckedInToday;
   });
 
-
-
-  // Maybe move this out
-
-  async checkInToNearestPub() {
-    const pub = this.closestPub();
-    if (!pub) return;
-
-    console.log('TODO: Open check-in result overlay');
-  }
 }

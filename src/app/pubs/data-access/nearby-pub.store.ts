@@ -80,7 +80,7 @@ export class NearbyPubStore {
   /**
    * Check if a pub is within check-in range
    */
-  canCheckInToPub(pubId: string): boolean {
+  isWithinCheckInRange(pubId: string): boolean {
     const distance = this.getDistanceToPub(pubId);
     return distance !== null && distance < PUB_DISTANCE_THRESHOLD_METRES;
   }
