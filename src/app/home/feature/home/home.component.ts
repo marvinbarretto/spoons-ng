@@ -4,10 +4,12 @@ import { CommonModule } from '@angular/common';
 import { NearbyPubStore } from '../../../pubs/data-access/nearby-pub.store';
 import { CheckinStore } from '../../../check-in/data-access/check-in.store';
 import { CheckInHomepageWidgetComponent } from '../../../check-in/ui/check-in-homepage-widget/check-in-homepage-widget.component';
+import { UserBadgesComponent } from '../../../badges/ui/user-badges/user-badges.component';
+import { BadgeStore } from '../../../badges/data-access/badge.store';
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, CheckInHomepageWidgetComponent],
+  imports: [CommonModule, CheckInHomepageWidgetComponent, UserBadgesComponent],
   template: `
     <div class="home-container">
       @if (location()) {
@@ -84,6 +86,7 @@ import { CheckInHomepageWidgetComponent } from '../../../check-in/ui/check-in-ho
 export class HomeComponent {
   private readonly nearbyPubStore = inject(NearbyPubStore);
   private readonly checkinStore = inject(CheckinStore);
+  protected readonly badgeStore = inject(BadgeStore);
 
   readonly location = this.nearbyPubStore.location;
   readonly allPubs = this.nearbyPubStore.allPubs;

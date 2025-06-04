@@ -6,9 +6,9 @@ import {
   UrlSegmentGroup,
   UrlMatchResult,
 } from '@angular/router';
-import { PUBS_ROUTES } from './pubs/data-access/pub.routes';
 import { CheckInContainerComponent } from './check-in/feature/check-in-container/check-in-container.component';
 import { MISSION_ROUTES } from './missions/data-access/mission.routes';
+import { BADGE_ROUTES } from './badges/data-access/badge.routes';
 
 export const appRoutes: Routes = [
   {
@@ -26,6 +26,11 @@ export const appRoutes: Routes = [
     title: 'Missions',
     loadChildren: () =>
       import('./missions/data-access/mission.routes').then((m) => m.MISSION_ROUTES),
+  },
+  {
+    path: 'admin/badges',
+    loadChildren: () =>
+      import('./badges/data-access/badge.routes').then((m) => m.BADGE_ROUTES),
   },
   {
     path: 'check-in',

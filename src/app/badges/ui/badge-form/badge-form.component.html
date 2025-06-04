@@ -1,0 +1,23 @@
+<form (ngSubmit)="submit()" class="form">
+  <label>
+    ID:
+    <input [value]="model().id" (input)="onInputChange('id', $event)" />
+  </label>
+
+  <label>
+  Name:
+    <input [value]="model().name" (input)="onInputChange('name', $event)" />
+  </label>
+
+  <label>
+    Description:
+    <input [value]="model().description" (input)="onInputChange('description', $event)" />
+  </label>
+
+  <label>
+    Emoji:
+    <input [value]="model().emoji" (input)="onInputChange('emoji', $event)" />
+  </label>
+
+  <button type="submit">Save</button>
+</form>
