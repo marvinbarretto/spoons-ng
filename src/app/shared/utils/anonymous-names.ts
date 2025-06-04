@@ -2,23 +2,21 @@
  * Generate cheeky pub-themed names for anonymous users
  */
 
-// TODO: spice these up
-
-
 const ADJECTIVES = [
-  'Sloshed', 'Bladdered', 'Steaming', 'Legless', 'Hammered',
-  'Pickled', 'Trollied', 'Wasted', 'Smashed', 'Pissed',
-  'Ratarsed', 'Blotto', 'Squiffy', 'Tipsy', 'Merry',
-  'Wobbly', 'Plastered', 'Sozzled', 'Battered', 'Cunning'
+  'Tipsy', 'Wobbly', 'Merry', 'Jolly', 'Cheeky',
+  'Crafty', 'Sneaky', 'Dodgy', 'Shifty', 'Slippery',
+  'Bouncy', 'Giggly', 'Dizzy', 'Wonky', 'Squiffy',
+  'Pickled', 'Sloshed', 'Legless', 'Hammered', 'Steaming',
+  'Bladdered', 'Trollied', 'Gazeboed', 'Paralytic', 'Catatonic'
 ];
 
 const NOUNS = [
-  'Landlord', 'Punter', 'Barfly', 'Pisshead', 'Boozer',
-  'Alky', 'Drunkard', 'Lush', 'Soak', 'Wino',
-  'Dipso', 'Rummy', 'Tosser', 'Plonker', 'Muppet',
-  'Numpty', 'Pillock', 'Bellend', 'Knobhead', 'Twerp'
+  'Landlord', 'Publican', 'Barkeep', 'Tapmaster', 'Brewmeister',
+  'Punter', 'Regular', 'Local', 'Patron', 'Customer',
+  'Boozer', 'Tippler', 'Sipper', 'Quaffer', 'Guzzler',
+  'Toper', 'Reveler', 'Carouser', 'Merrymaker', 'Wassailer',
+  'Drunkard', 'Soak', 'Lush', 'Dipso', 'Barfly'
 ];
-
 
 /**
  * Simple hash function for consistent results
@@ -36,7 +34,7 @@ function simpleHash(str: string): number {
 /**
  * Generate a consistent, human-readable name for anonymous users
  * @param uid - Firebase user UID
- * @returns A cheeky pub-themed name like "Tipsy Landlord"
+ * @returns A kebab-case pub-themed name like "tipsy-landlord-847"
  */
 export function generateAnonymousName(uid: string): string {
   const hash = simpleHash(uid);
@@ -44,13 +42,29 @@ export function generateAnonymousName(uid: string): string {
   const adjIndex = hash % ADJECTIVES.length;
   const nounIndex = Math.floor(hash / ADJECTIVES.length) % NOUNS.length;
 
-  return `${ADJECTIVES[adjIndex]} ${NOUNS[nounIndex]}`;
+  const adjective = ADJECTIVES[adjIndex].toLowerCase();
+  const noun = NOUNS[nounIndex].toLowerCase();
+
+  // Use a different part of the hash for the number (100-999 for 3-digit consistency)
+  const numberHash = simpleHash(uid + 'number_salt');
+  const displayNumber = (numberHash % 900) + 100; // 100-999
+
+  return `${adjective}-${noun}-${displayNumber}`;
 }
 
 /**
- * Get just the adjective for shorter display
+ * Get just the base name without number for casual display
+ * @param uid - Firebase user UID
+ * @returns Base name like "tipsy-landlord"
  */
-export function getAnonymousFirstName(uid: string): string {
+export function getAnonymousBaseName(uid: string): string {
   const hash = simpleHash(uid);
-  return ADJECTIVES[hash % ADJECTIVES.length];
+
+  const adjIndex = hash % ADJECTIVES.length;
+  const nounIndex = Math.floor(hash / ADJECTIVES.length) % NOUNS.length;
+
+  const adjective = ADJECTIVES[adjIndex].toLowerCase();
+  const noun = NOUNS[nounIndex].toLowerCase();
+
+  return `${adjective}-${noun}`;
 }

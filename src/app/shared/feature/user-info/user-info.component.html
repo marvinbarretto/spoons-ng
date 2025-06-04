@@ -1,27 +1,34 @@
 <section class="user-info">
 
-@if (user()?.isAnonymous) {
+  @if (user()?.isAnonymous) {
 
-  <div class="user-info__anon">
-    <span class="material-symbols-outlined">person</span>
-    <p [title]="user()?.uid">{{ user()?.uid?.slice(0, 6) }}</p>
-  </div>
+    <div class="user-info__anon">
+      <span class="material-symbols-outlined">person</span>
+      <div class="user-details">
+        <p class="user-name" [title]="'Anonymous: ' + user()?.uid">
+          {{ userDisplayName() }}
+        </p>
+        <small class="user-type">Anonymous User</small>
+      </div>
+    </div>
 
-  <app-button (click)="loginWithGoogle()">Login with Google</app-button>
+    <app-button (onClick)="loginWithGoogle()">Login with Google</app-button>
 
-} @else {
-  <div class="user-info__user">
-    <img
-    *ngIf="user()?.photoURL"
-    [src]="user()?.photoURL"
-    alt="User avatar"
-    width="32"
-    height="32"
-  />
-  <p>{{ user()?.displayName || user()?.email }}</p>
-  </div>
+  } @else {
+    <div class="user-info__user">
+      <img
+        *ngIf="user()?.photoURL"
+        [src]="user()?.photoURL"
+        alt="User avatar"
+        width="32"
+        height="32"
+      />
+      <div class="user-details">
+        <p class="user-name">{{ userDisplayName() }}</p>
+        <small class="user-type">Logged In</small>
+      </div>
+    </div>
 
-  <app-button (click)="logout()">Logout</app-button>
-}
-</section>
-
+    <app-button (onClick)="logout()">Logout</app-button>
+  }
+  </section>

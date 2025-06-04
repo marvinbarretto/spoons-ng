@@ -39,3 +39,30 @@
     // object-position: center;
   }
 }
+
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+
+  .user-name {
+    font-weight: 600;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 12rem;
+  }
+
+  .user-type {
+    opacity: 0.7;
+    font-size: 0.75rem;
+    margin: 0;
+  }
+}
+
+.user-info__anon .user-details,
+.user-info__user .user-details {
+  flex: 1;
+}
