@@ -1,51 +1,20 @@
 // src/app/home/feature/home/home.component.ts
-import { Component, inject, computed } from '@angular/core';
+import { Component, inject, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NearbyPubStore } from '../../../pubs/data-access/nearby-pub.store';
 import { CheckinStore } from '../../../check-in/data-access/check-in.store';
 import { CheckInHomepageWidgetComponent } from '../../../check-in/ui/check-in-homepage-widget/check-in-homepage-widget.component';
 import { UserBadgesComponent } from '../../../badges/ui/user-badges/user-badges.component';
 import { BadgeStore } from '../../../badges/data-access/badge.store';
+import { BaseComponent } from '../../../shared/data-access/base.component';
+import { PubStore } from '../../../pubs/data-access/pub.store';
+import { toDate, isToday } from '../../../shared/utils/timestamp.utils';
+import { PubProgressHeroComponent } from '../../../home/ui/pub-progress-hero/pub-progress-hero.component';
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, CheckInHomepageWidgetComponent, UserBadgesComponent],
-  template: `
-    <div class="home-container">
-      @if (location()) {
-        <div class="location-info">
-          <p>Your location: {{ location()!.lat.toFixed(3) }}, {{ location()!.lng.toFixed(3) }}</p>
-        </div>
-      } @else {
-        <p>Getting your location...</p>
-      }
-
-      @if (closestPub() && userCanCheckIn()) {
-        <app-check-in-homepage-widget
-          [closestPub]="closestPub()!"
-        />
-      } @else if (closestPub() && !userCanCheckIn()) {
-        <div class="already-checked-in">
-          <p>You've already checked in to {{ closestPub()!.name }} today!</p>
-        </div>
-      } @else {
-        <p>No nearby pubs found</p>
-      }
-
-      @if (nearestPubs().length > 0) {
-        <div class="nearby-pubs">
-          <h2>Nearby Pubs</h2>
-          <ul>
-            @for (pub of nearestPubs(); track pub.id) {
-              <li>
-                {{ pub.name }} - {{ (pub.distance / 1000).toFixed(1) }}km
-              </li>
-            }
-          </ul>
-        </div>
-      }
-    </div>
-  `,
+  imports: [CommonModule, CheckInHomepageWidgetComponent, UserBadgesComponent, PubProgressHeroComponent],
+  templateUrl: './home.component.html',
   styles: [`
     .home-container {
       padding: 1rem;
@@ -83,16 +52,50 @@ import { BadgeStore } from '../../../badges/data-access/badge.store';
     }
   `]
 })
-export class HomeComponent {
+export class HomeComponent extends BaseComponent {
   private readonly nearbyPubStore = inject(NearbyPubStore);
-  private readonly checkinStore = inject(CheckinStore);
+  protected readonly checkinStore = inject(CheckinStore);
+  private readonly pubStore = inject(PubStore);
   protected readonly badgeStore = inject(BadgeStore);
 
+  // ✅ Location & nearby pubs
   readonly location = this.nearbyPubStore.location;
   readonly allPubs = this.nearbyPubStore.allPubs;
   readonly nearestPubs = this.nearbyPubStore.nearbyPubs;
   readonly closestPub = this.nearbyPubStore.closestPub;
 
+  // ✅ Static total (will be configurable later)
+  // TODO: get this from our total
+  readonly totalPubs = signal(800);
+
+  /**
+   * Count of unique pubs the user has visited
+   * @returns Number of unique pubs checked into
+   */
+  readonly visitedPubsCount = computed(() => {
+    const checkins = this.checkinStore.checkins();
+    if (!checkins.length) return 0;
+
+    const uniquePubIds = new Set(checkins.map(c => c.pubId));
+    return uniquePubIds.size;
+  });
+
+  /**
+   * Progress percentage towards visiting all pubs
+   * @returns Percentage (0-100) of pubs visited
+   */
+  readonly progressPercentage = computed(() => {
+    const visited = this.visitedPubsCount();
+    const total = this.totalPubs();
+
+    if (total === 0) return 0;
+    return Math.round((visited / total) * 100);
+  });
+
+  /**
+   * Check if user can check in to closest pub today
+   * @returns Whether check-in is allowed
+   */
   readonly userCanCheckIn = computed(() => {
     const pubId = this.closestPub()?.id ?? null;
     if (!pubId) return false;
@@ -103,4 +106,17 @@ export class HomeComponent {
     return isClose && hasntCheckedInToday;
   });
 
+  /**
+   * Whether we have enough data to show meaningful stats
+   * @returns True if user has checked in to any pubs
+   */
+  readonly hasProgressData = computed(() => this.visitedPubsCount() > 0);
+
+  /**
+   * Loading state - true if any critical data is still loading
+   * @returns Whether we're still loading essential data
+   */
+  readonly isLoading = computed(() =>
+    this.pubStore.loading() || this.checkinStore.loading()
+  );
 }

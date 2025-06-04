@@ -1,0 +1,61 @@
+<!-- home/feature/home/home.component.html -->
+<div class="home-container">
+
+  <!-- 🏆 HERO: Big imposing pub count - the core value prop -->
+  <app-pub-progress-hero
+    [visitedCount]="visitedPubsCount()"
+    [totalPubs]="totalPubs()"
+    [hasProgress]="hasProgressData()"
+  />
+
+  <!-- ✅ Check-in Widget -->
+  @if (closestPub() && userCanCheckIn()) {
+    <app-check-in-homepage-widget
+      [closestPub]="closestPub()!"
+    />
+  } @else if (closestPub() && !userCanCheckIn()) {
+    <div class="already-checked-in">
+      <h3>{{ closestPub()!.name }}</h3>
+      <p>✅ You've already checked in today!</p>
+      <small>Distance: {{ (closestPub()!.distance / 1000).toFixed(1) }}km</small>
+    </div>
+  } @else {
+    <div class="no-nearby-pubs">
+      <h3>🕵️ No Nearby Pubs</h3>
+      <p>No pubs found within range. Keep exploring!</p>
+    </div>
+  }
+
+  <!-- 🍺 Nearby Pubs List -->
+  @if (nearestPubs().length > 0) {
+    <div class="nearby-pubs">
+      <h2>📍 Nearby Pubs ({{ nearestPubs().length }})</h2>
+      <ul class="pub-list">
+        @for (pub of nearestPubs(); track pub.id) {
+          <li class="pub-item">
+            <div class="pub-info">
+              <h4>{{ pub.name }}</h4>
+              <small>{{ (pub.distance / 1000).toFixed(1) }}km away</small>
+            </div>
+            @if (checkinStore.hasCheckedInToday(pub.id)) {
+              <span class="checked-in-badge">✅ Visited today</span>
+            }
+          </li>
+        }
+      </ul>
+    </div>
+  }
+
+  <!-- 🏅 User Badges (if available) -->
+  @if (badgeStore) {
+    <app-user-badges [badges]="badgeStore.data" />
+  }
+
+  <!-- 🔄 Loading State -->
+  @if (isLoading()) {
+    <div class="loading-state">
+      <p>🔄 Loading your pub data...</p>
+    </div>
+  }
+
+</div>

@@ -1,3 +1,4 @@
+// status.component.ts
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FeatureFlagPipe } from "../../../shared/utils/feature-flag.pipe";
 import { PubStore } from '../../../pubs/data-access/pub.store';
@@ -5,6 +6,8 @@ import { UserStore } from '../../../users/data-access/user.store';
 import { CheckinStore } from '../../../check-in/data-access/check-in.store';
 import { MissionStore } from '../../../missions/data-access/mission.store';
 import { Router, RouterModule } from '@angular/router';
+import { BaseComponent } from '../../../shared/data-access/base.component';
+import { toDate, isToday } from '../../../shared/utils/timestamp.utils';
 
 @Component({
   selector: 'app-status',
@@ -12,105 +15,125 @@ import { Router, RouterModule } from '@angular/router';
   templateUrl: './status.component.html',
   styleUrl: './status.component.scss'
 })
-export class StatusComponent {
+export class StatusComponent extends BaseComponent {
   private readonly pubStore = inject(PubStore);
   private readonly userStore = inject(UserStore);
   private readonly checkinStore = inject(CheckinStore);
   private readonly missionStore = inject(MissionStore);
   private readonly router = inject(Router);
 
-  // Signals
-  readonly loading = this.pubStore.loading;
+  // ✅ Core reactive data
+
+  // TODO: Do we need this if we're already inherting it?
+  override readonly loading = this.pubStore.loading;
   readonly pubs = this.pubStore.pubs;
   readonly user = this.userStore.user;
-  readonly totalcheckins = this.checkinStore.checkins;
-  readonly totalPubs = signal(800); // TODO: pull from config later
+  readonly userCheckins = this.checkinStore.checkins;
 
-  // Load on init
-  constructor() {
-    this.pubStore.loadOnce();
+  // ✅ Static totals (could be loaded from config later)
+  readonly totalPubs = signal(800);
 
-    effect(() => {
-      const user = this.user();
-      if (user) {
-        this.checkinStore.loadOnceForUser(user.uid);
-      }
-    });
-  }
+  /**
+   * Count of unique pubs the user has visited
+   * @returns Number of unique pubs checked into
+   */
+  readonly uniqueVisitedPubsCount = computed(() => {
+    const checkins = this.userCheckins();
+    if (!checkins.length) return 0;
 
-  // === Derived signals ===
-
-  readonly debugState = computed(() => ({
-    user: this.userStore.user(),
-    checkins: this.checkinStore.checkins(),
-  }));
-
-
-  // ✅ All check-ins fetched for the current user (raw array from Firestore)
-readonly userCheckins = this.checkinStore.checkins;
-
-// ✅ Number of check-ins (can include repeats to the same pub)
-readonly totalCheckinsCount$$ = computed(() => this.userCheckins().length);
-
-// ✅ Unique pubs the user has visited at least once
-readonly uniqueVisitedPubsList$$ = computed(() => {
-  const checkins = this.checkinStore.checkins();
-  const pubs = this.pubStore.pubs();
-  const user = this.userStore.user();
-
-  console.log('[DEBUG] Signals triggered:', {
-    user,
-    checkinsCount: checkins.length,
-    pubsCount: pubs.length,
+    const uniquePubIds = new Set(checkins.map(c => c.pubId));
+    return uniquePubIds.size;
   });
 
-  if (!user || !checkins.length || !pubs.length) return [];
+  /**
+   * List of unique pubs the user has visited with full pub data
+   * @returns Array of pub objects that user has checked into
+   */
+  readonly uniqueVisitedPubsList = computed(() => {
+    const checkins = this.userCheckins();
+    const allPubs = this.pubs();
 
-  const pubIds = new Set(checkins.map(c => c.pubId));
-  return pubs.filter(pub => pubIds.has(pub.id));
-});
+    if (!checkins.length || !allPubs.length) return [];
 
+    const visitedPubIds = new Set(checkins.map(c => c.pubId));
+    return allPubs.filter(pub => visitedPubIds.has(pub.id));
+  });
 
-readonly uniqueVisitedPubsCount$$ = computed(() => this.uniqueVisitedPubsList$$().length);
+  /**
+   * Progress percentage towards visiting all pubs
+   * @returns Percentage (0-100) of pubs visited
+   */
+  readonly progressPercentage = computed(() => {
+    const visited = this.uniqueVisitedPubsCount();
+    const total = this.totalPubs();
 
+    if (total === 0) return 0;
+    return Math.round((visited / total) * 100);
+  });
 
-readonly landlordPubsList$$ = computed(() => {
-  const pubs = this.pubStore.pubs();
-  const user = this.userStore.user();
-  const today = new Date().toISOString().split('T')[0];
+  /**
+   * Total number of check-ins (including multiple visits to same pub)
+   * @returns Total check-in count
+   */
+  readonly totalCheckinsCount = computed(() => this.userCheckins().length);
 
-  if (!user) return [];
+  /**
+   * Check-ins made today
+   * @returns Array of today's check-ins
+   */
+  readonly todayCheckins = computed(() => {
+    const today = new Date().toISOString().split('T')[0];
+    return this.userCheckins().filter(c => c.dateKey === today);
+  });
 
-  return pubs.filter(pub =>
-    pub.todayLandlord?.userId === user.uid &&
-    pub.todayLandlord?.claimedAt.toDate().toISOString().split('T')[0] === today
-  );
-});
+  /**
+   * Count of check-ins made today
+   * @returns Number of today's check-ins
+   */
+  readonly todayCheckinsCount = computed(() => this.todayCheckins().length);
 
+  /**
+   * Most recent check-in pub name
+   * @returns Name of last checked-in pub or null
+   */
+  readonly latestCheckinPub = computed(() => {
+    const checkins = this.userCheckins();
+    if (checkins.length === 0) return null;
 
+    const latest = checkins.sort((a, b) =>
+      b.timestamp.toMillis() - a.timestamp.toMillis()
+    )[0];
 
-readonly landlordPubsCount$$ = computed(() => this.landlordPubsList$$().length);
+    const pub = this.pubs().find(p => p.id === latest.pubId);
+    return pub?.name || `Pub ID: ${latest.pubId}`;
+  });
 
+  // ✅ Landlord-related computed signals (existing logic)
+  /**
+   * List of pubs where current user is landlord today
+   * @returns Array of pubs where user is today's landlord
+   */
+  readonly landlordPubsList = computed(() => {
+    const pubs = this.pubStore.pubs();
+    const user = this.userStore.user();
 
+    if (!user) return [];
 
+    return pubs.filter(pub => {
+      if (!pub.todayLandlord?.userId || pub.todayLandlord.userId !== user.uid) {
+        return false;
+      }
 
-  // === Temporary mock badges & missions ===
+      // ✅ Safe timestamp conversion using our utility
+      const claimDate = toDate(pub.todayLandlord.claimedAt);
+      return claimDate ? isToday(claimDate) : false;
+    });
+  });
 
-  readonly badges = signal([
-    { id: 'first-checkin', name: 'First Check-In', iconUrl: '/assets/icons/badges/first.svg' },
-    { id: 'early-riser', name: 'Early Riser', iconUrl: '/assets/icons/badges/morning.svg' },
-  ]);
+  readonly landlordPubsCount = computed(() => this.landlordPubsList().length);
 
-  // readonly missions = signal([
-  //   { id: 'herts-crawl', title: 'Hertfordshire Crawl', progress: 3, total: 7 },
-  //   { id: 'royalty-run', title: 'Royalty Run', progress: 1, total: 4 },
-  // ]);
-
-  browseMissions() {
-    this.router.navigate(['/missions']);
-  }
-
-  readonly joinedMissionIds$$ = computed(() =>
+  // ✅ Mission progress (existing logic)
+  readonly joinedMissionIds = computed(() =>
     this.userStore.user()?.joinedMissionIds ?? []
   );
 
@@ -129,5 +152,29 @@ readonly landlordPubsCount$$ = computed(() => this.landlordPubsList$$().length);
         total: m.pubIds.length,
       }));
   });
-}
 
+  // ✅ Badges (existing mock logic)
+  readonly badges = signal([
+    { id: 'first-checkin', name: 'First Check-In', iconUrl: '/assets/icons/badges/first.svg' },
+    { id: 'early-riser', name: 'Early Riser', iconUrl: '/assets/icons/badges/morning.svg' },
+  ]);
+
+  // ✅ Load data on init - using BaseComponent pattern
+  protected override onInit(): void {
+    this.pubStore.loadOnce();
+
+    effect(() => {
+      const user = this.user();
+      if (user) {
+        this.checkinStore.loadOnceForUser(user.uid);
+      }
+    });
+  }
+
+  /**
+   * Navigate to missions page
+   */
+  browseMissions(): void {
+    this.router.navigate(['/missions']);
+  }
+}

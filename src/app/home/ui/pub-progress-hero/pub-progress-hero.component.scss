@@ -1,0 +1,135 @@
+// pub-progress-hero.component.scss
+.progress-hero {
+  // Layout structure
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 2rem;
+
+  // Basic visual foundation
+  border-radius: 8px;
+  background: var(--color-background);
+  border: 1px solid var(--color-subtleLighter);
+}
+
+.main-achievement {
+  text-align: center;
+
+  .big-number {
+    display: block;
+    font-size: 4rem;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--color-text);
+  }
+
+  .achievement-title {
+    margin: 0.5rem 0 0.25rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-text);
+  }
+
+  .achievement-subtitle {
+    margin: 0;
+    font-size: 1rem;
+    opacity: 0.8;
+    color: var(--color-text);
+  }
+}
+
+.progress-section {
+  .progress-bar-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .progress-bar {
+    width: 100%;
+    height: 12px;
+    background: var(--color-subtleLighter);
+    border-radius: 6px;
+    overflow: hidden;
+
+    .progress-fill {
+      height: 100%;
+      background: var(--color-buttonPrimaryBase);
+      border-radius: 6px;
+      transition: width 0.5s ease;
+    }
+  }
+
+  .progress-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+
+    .current {
+      font-weight: 700;
+      color: var(--color-buttonPrimaryBase);
+    }
+
+    .separator, .label {
+      opacity: 0.7;
+    }
+
+    .total {
+      font-weight: 600;
+    }
+  }
+}
+
+.motivation-section {
+  text-align: center;
+
+  .motivation-text {
+    margin: 0 0 1rem;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--color-text);
+  }
+
+  .next-milestone {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    .milestone-label {
+      font-size: 0.85rem;
+      opacity: 0.7;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .milestone-target {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--color-buttonPrimaryBase);
+    }
+
+    .milestone-remaining {
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+  }
+}
+
+// Mobile responsiveness
+@media (max-width: 600px) {
+  .progress-hero {
+    padding: 1.5rem;
+    gap: 1rem;
+  }
+
+  .main-achievement .big-number {
+    font-size: 3rem;
+  }
+
+  .progress-text {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+}
