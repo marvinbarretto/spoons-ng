@@ -10,6 +10,7 @@ import { BaseComponent } from '../../../shared/data-access/base.component';
 import { PubStore } from '../../../pubs/data-access/pub.store';
 import { toDate, isToday } from '../../../shared/utils/timestamp.utils';
 import { PubProgressHeroComponent } from '../../../home/ui/pub-progress-hero/pub-progress-hero.component';
+import { AuthStore } from '../../../auth/data-access/auth.store';
 
 @Component({
   selector: 'app-home',
@@ -53,10 +54,13 @@ import { PubProgressHeroComponent } from '../../../home/ui/pub-progress-hero/pub
   `]
 })
 export class HomeComponent extends BaseComponent {
-  private readonly nearbyPubStore = inject(NearbyPubStore);
+  // ✅ Add AuthStore for user tracking
+  private readonly authStore = inject(AuthStore);
+  // ✅ Expose checkinStore for template access
   protected readonly checkinStore = inject(CheckinStore);
   private readonly pubStore = inject(PubStore);
   protected readonly badgeStore = inject(BadgeStore);
+  private readonly nearbyPubStore = inject(NearbyPubStore);
 
   // ✅ Location & nearby pubs
   readonly location = this.nearbyPubStore.location;
@@ -65,18 +69,23 @@ export class HomeComponent extends BaseComponent {
   readonly closestPub = this.nearbyPubStore.closestPub;
 
   // ✅ Static total (will be configurable later)
-  // TODO: get this from our total
   readonly totalPubs = signal(800);
 
   /**
    * Count of unique pubs the user has visited
-   * @returns Number of unique pubs checked into
+   * @returns Number of unique pubs checked into (0 for fresh anonymous users)
    */
   readonly visitedPubsCount = computed(() => {
     const checkins = this.checkinStore.checkins();
-    if (!checkins.length) return 0;
+    const user = this.authStore.user();
 
-    const uniquePubIds = new Set(checkins.map(c => c.pubId));
+    // ✅ If no user or no checkins, return 0
+    if (!user || !checkins.length) return 0;
+
+    // ✅ Only count checkins for the current user
+    const userCheckins = checkins.filter(c => c.userId === user.uid);
+    const uniquePubIds = new Set(userCheckins.map(c => c.pubId));
+
     return uniquePubIds.size;
   });
 

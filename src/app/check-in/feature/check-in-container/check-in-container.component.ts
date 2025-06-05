@@ -27,7 +27,7 @@ export class CheckInContainerComponent extends BaseComponent {
   private readonly router = inject(Router);
   private readonly nearbyPubStore = inject(NearbyPubStore);
   private readonly userStore = inject(UserStore);
-  private readonly checkinStore = inject(CheckinStore);
+  protected readonly checkinStore = inject(CheckinStore);
 
   // ✅ Reactive data from stores
   private readonly pubSignal = this.nearbyPubStore.closestPub;
@@ -122,10 +122,9 @@ export class CheckInContainerComponent extends BaseComponent {
       const currentPub = this.pub();
       const currentUser = this.user();
 
-      const position = await this.getCurrentPosition();
       const photoDataUrl = await this.capturePhoto();
 
-      await this.checkinStore.checkin(currentPub.id, position.coords, photoDataUrl);
+      await this.checkinStore.checkinToPub(currentPub.id, photoDataUrl);
 
       // Success handled by store + toasts from BaseComponent
     } catch (error: any) {

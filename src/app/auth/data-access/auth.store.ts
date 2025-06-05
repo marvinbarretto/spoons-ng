@@ -1,4 +1,5 @@
-import { inject, Injectable, signal, computed } from '@angular/core';
+// auth/data-access/auth.store.ts
+import { inject, Injectable, signal, computed, effect } from '@angular/core';
 import { AuthService } from './auth.service';
 import { SsrPlatformService } from '../../shared/utils/ssr/ssr-platform.service';
 import { User } from '../../users/utils/user.model';
@@ -8,64 +9,67 @@ export class AuthStore {
   private authService = inject(AuthService);
   private platform = inject(SsrPlatformService);
 
-  // Stores a minimal copy of the Firebase Auth user
-  readonly user = signal<User | null>(null);
+  // ✅ Core auth state
+  private readonly _user = signal<User | null>(null);
+  private readonly _token = signal<string | null>(null);
+  private readonly _ready = signal(false);
 
-  // Stores the Firebase ID token (for headers, SSR cookies, etc.)
-  readonly token = signal<string | null>(null);
+  // ✅ Public readonly signals
+  readonly user = this._user.asReadonly();
+  readonly token = this._token.asReadonly();
+  readonly ready = this._ready.asReadonly();
 
-  // Becomes true once auth state is initialized
-  readonly ready = signal(false);
-
-  // Convenience computed signal
+  // ✅ Derived state
   readonly isAuthenticated = computed(() => !!this.token());
+  readonly uid = computed(() => this.user()?.uid ?? null);
+
+  // ✅ User change signal for other stores to listen to
+  private readonly _userChangeCounter = signal(0);
+  readonly userChangeSignal = this._userChangeCounter.asReadonly();
 
   constructor() {
-    // No-op on the server
+    // ✅ Single source of truth: Firebase auth only
+    this.platform.onlyOnBrowser(() => {
+      console.log('[AuthStore] 🔁 Starting Firebase auth listener...');
+
+      this.authService.onAuthChange(async (firebaseUser) => {
+        if (firebaseUser) {
+          await this.handleUserSignIn(firebaseUser);
+        } else {
+          this.handleUserSignOut();
+        }
+
+        this._ready.set(true);
+      });
+    });
+
+    // ✅ Server-side: just mark as ready
     if (this.platform.isServer) {
-      this.ready.set(true);
-      return;
+      this._ready.set(true);
     }
+  }
 
-
-    // 1. Try bootstrapping from localStorage
+  /**
+   * Handle user sign in - build app user and store state
+   * @param firebaseUser - Firebase auth user
+   */
+  private async handleUserSignIn(firebaseUser: any): Promise<void> {
     try {
-      const cachedUser = localStorage.getItem('user');
-      const cachedToken = localStorage.getItem('token');
+      console.log('[AuthStore] ✅ User signed in:', firebaseUser.uid, firebaseUser.isAnonymous ? '(anonymous)' : '(authenticated)');
 
-      if (cachedUser && cachedToken) {
-        this.user.set(JSON.parse(cachedUser));
-        this.token.set(cachedToken);
-        console.log('[AuthStore] 🚀 Bootstrapped from localStorage');
-      }
-    } catch (err) {
-      console.warn('[AuthStore] ⚠️ Failed to parse localStorage user:', err);
-    }
+      // Get Firebase ID token
+      const token = await firebaseUser.getIdToken();
 
+      // Build minimal app user
+      const appUser: User = {
+        uid: firebaseUser.uid,
+        email: firebaseUser.email ?? undefined,
+        displayName: firebaseUser.displayName ?? undefined,
+        photoURL: firebaseUser.photoURL ?? undefined,
+        emailVerified: firebaseUser.emailVerified,
+        isAnonymous: firebaseUser.isAnonymous,
 
-    console.log('[AuthStore] 🔁 Listening for auth changes...');
-
-    // Watch for Firebase Auth state changes
-    this.authService.onAuthChange(async (user) => {
-      if (!user) {
-        this.logout();
-        this.ready.set(true);
-        return;
-      }
-
-      // 1. Fetch the Firebase ID token
-      const token = await user.getIdToken();
-
-      // 2. Store a minimal user object
-      const minimalUser: User = {
-        uid: user.uid,
-        email: user.email ?? undefined,
-        displayName: user.displayName ?? undefined,
-        photoURL: user.photoURL ?? undefined,
-        emailVerified: user.emailVerified,
-        isAnonymous: user.isAnonymous,
-
-        // App-specific fields — left empty here for bootstrap
+        // App-specific fields - empty for new user
         landlordOf: [],
         claimedPubIds: [],
         checkedInPubIds: [],
@@ -74,47 +78,73 @@ export class AuthStore {
         joinedMissionIds: [],
       };
 
-      // 3. Update reactive state
-      this.token.set(token);
-      this.user.set(minimalUser);
+      // ✅ Update state atomically
+      this._token.set(token);
+      this._user.set(appUser);
 
-      // 4. Store in localStorage for fast PWA boot
-      if (this.platform.isBrowser) {
-        localStorage.setItem('user', JSON.stringify(minimalUser));
+      // ✅ Persist to localStorage for fast PWA boot
+      this.platform.onlyOnBrowser(() => {
+        localStorage.setItem('user', JSON.stringify(appUser));
         localStorage.setItem('token', token);
-      }
+      });
 
-      // 5. Done
-      this.ready.set(true);
-      console.log('[AuthStore] ✅ Firebase user bootstrapped:', minimalUser);
-    });
+      // ✅ Trigger user change event for dependent stores
+      this._userChangeCounter.update(c => c + 1);
+
+      console.log('[AuthStore] ✅ User state updated:', appUser.uid);
+
+    } catch (error) {
+      console.error('[AuthStore] ❌ Error handling user sign in:', error);
+      this.handleUserSignOut(); // Fallback to signed out state
+    }
   }
 
-  get uid(): string | null {
-    return this.user()?.uid ?? null;
-  }
+  /**
+   * Handle user sign out - clean up all state
+   */
+  private handleUserSignOut(): void {
+    console.log('[AuthStore] 👋 User signed out - cleaning up state');
 
+    // ✅ Clear auth state
+    this._user.set(null);
+    this._token.set(null);
 
-
-  logout() {
-    this.token.set(null);
-    this.user.set(null);
-
-    if (this.platform.isBrowser) {
+    // ✅ Clear localStorage
+    this.platform.onlyOnBrowser(() => {
       localStorage.removeItem('user');
       localStorage.removeItem('token');
-    }
+    });
 
+    // ✅ Trigger user change event - this is KEY for cleanup
+    this._userChangeCounter.update(c => c + 1);
+
+    console.log('[AuthStore] ✅ Cleanup complete');
+  }
+
+  /**
+   * Initiate logout
+   */
+  logout(): void {
+    console.log('[AuthStore] 🚪 Logout initiated');
     this.authService.logout();
-    console.log('[AuthStore] 👋 Logged out');
+    // handleUserSignOut() will be called by the auth listener
   }
 
-  // These are pass-throughs to your actual AuthService
-  loginWithEmail(email: string, password: string) {
-    this.authService.loginWithEmail(email, password);
-  }
-
-  loginWithGoogle() {
+  /**
+   * Initiate Google login
+   */
+  loginWithGoogle(): void {
+    console.log('[AuthStore] 🔐 Google login initiated');
     this.authService.loginWithGoogle();
+    // handleUserSignIn() will be called by the auth listener
+  }
+
+  /**
+   * Initiate email login
+   */
+  loginWithEmail(email: string, password: string): void {
+    console.log('[AuthStore] 📧 Email login initiated');
+    this.authService.loginWithEmail(email, password);
+    // handleUserSignIn() will be called by the auth listener
   }
 }

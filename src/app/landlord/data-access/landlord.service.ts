@@ -28,16 +28,16 @@ export class LandlordService extends FirestoreService {
         return { landlord: normalizedLandlord, wasAwarded: false };
       }
 
-      // No existing landlord - award it to the current user
-      const userId = this.authStore.uid;
+      // ✅ FIXED: Call the computed signal with parentheses
+      const userId = this.authStore.uid();
       if (!userId) {
         console.warn('[LandlordService] ❌ Cannot award landlord: No user ID');
         return { landlord: null, wasAwarded: false };
       }
 
       const newLandlord: Landlord = {
-        id: crypto.randomUUID(), // ✅ Add missing id
-        userId,
+        id: crypto.randomUUID(),
+        userId, // ✅ Now correctly typed as string
         pubId,
         claimedAt: Timestamp.now(),
         dateKey,

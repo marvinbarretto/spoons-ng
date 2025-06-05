@@ -66,3 +66,5 @@ CHEAT_SHEET.md
 backup.rules
 docs/naming-conventions.md
 docs/architecture.md
+docs/reactive-store-pattern.md
+TECHNICAL_DEBT.md

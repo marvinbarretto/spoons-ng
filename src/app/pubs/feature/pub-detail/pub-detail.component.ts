@@ -41,7 +41,7 @@ export class PubDetailComponent extends BaseComponent implements OnInit {
   });
 
   readonly isUserLandlord = computed(() => {
-    const userId = this.authStore.uid;
+    const userId = this.authStore.uid();
     const landlord = this.currentLandlord();
     return landlord?.userId === userId;
   });

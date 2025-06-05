@@ -13,5 +13,5 @@ export type User = {
   badges: string[];
   streaks: Record<string, number>;
 
-  joinedMissionIds: string[]; // 👈 NEW
+  joinedMissionIds: string[];
 };
