@@ -3,7 +3,14 @@
   @if (user()?.isAnonymous) {
 
     <div class="user-info__anon">
-      <span class="material-symbols-outlined">person</span>
+      <!-- <span class="material-symbols-outlined">person</span> -->
+      <img
+        class="anon-avatar"
+        src="assets/images/npc-wojack-shaky.webp"
+        alt="Anonymous NPC"
+        width="48"
+        height="48"
+      />
       <div class="user-details">
         <p class="user-name" [title]="'Anonymous: ' + user()?.uid">
           {{ userDisplayName() }}
