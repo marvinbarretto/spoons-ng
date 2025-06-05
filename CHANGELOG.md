@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.14](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.13...v0.0.14) (2025-06-05)
+
+
+### Features
+
+* Make NPC the default avatar ([879fd00](https://github.com/marvinbarretto/spoons-ng/commit/879fd009718f2577a9ef2e554241dc20c77f9568))
+* make PubDetail look a bit better ([177f7ff](https://github.com/marvinbarretto/spoons-ng/commit/177f7ffda124c6f2fa21670d488f3b55b31a79d8))
+
 ### [0.0.13](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.12...v0.0.13) (2025-06-05)
 
 
