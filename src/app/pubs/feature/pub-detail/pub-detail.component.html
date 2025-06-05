@@ -1,5 +1,15 @@
 <!-- src/app/pubs/feature/pub-detail/pub-detail.component.html -->
 <article class="pub-detail">
+
+
+  @if (debugInfo()) {
+    <details class="debug">
+      <summary>Debug Info</summary>
+      <pre>{{ debugInfo() | json }}</pre>
+    </details>
+  }
+
+
   @if (loading()) {
     <div class="loading-state">
       <h1>Loading pub details...</h1>

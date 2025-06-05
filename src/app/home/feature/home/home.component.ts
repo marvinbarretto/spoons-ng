@@ -62,6 +62,17 @@ export class HomeComponent extends BaseComponent {
   protected readonly badgeStore = inject(BadgeStore);
   private readonly nearbyPubStore = inject(NearbyPubStore);
 
+  // Add to HomeComponent for debugging
+readonly authDebug = computed(() => ({
+  authReady: this.authStore.ready(),
+  hasUser: !!this.authStore.user(),
+  userId: this.authStore.user()?.uid,
+  isAnonymous: this.authStore.user()?.isAnonymous,
+  email: this.authStore.user()?.email,
+  checkinCount: this.checkinStore.checkins().length,
+  checkinStoreLoading: this.checkinStore.loading(),
+}));
+
   // ✅ Location & nearby pubs
   readonly location = this.nearbyPubStore.location;
   readonly allPubs = this.nearbyPubStore.allPubs;

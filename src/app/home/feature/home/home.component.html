@@ -1,6 +1,11 @@
 <!-- home/feature/home/home.component.html -->
 <div class="home-container">
 
+  <details class="auth-debug">
+    <summary>Auth Debug</summary>
+    <pre>{{ authDebug() | json }}</pre>
+  </details>
+
   <!-- 🏆 HERO: Big imposing pub count - the core value prop -->
   <app-pub-progress-hero
     [visitedCount]="visitedPubsCount()"

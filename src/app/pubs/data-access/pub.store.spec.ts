@@ -12,7 +12,7 @@ import type { Pub } from '../utils/pub.models';
 describe('PubStore', () => {
   let store: PubStore;
   let mockCacheService: jest.Mocked<CacheService>;
-  let mockLocationService: { location$$: ReturnType<typeof signal> };
+  let mockLocationService: { location: ReturnType<typeof signal> };
 
   const mockPubs: Pub[] = [
     {
@@ -36,7 +36,7 @@ describe('PubStore', () => {
     } as any;
 
     mockLocationService = {
-      location$$: signal<{ lat: number; lng: number } | null>(null)
+      location: signal<{ lat: number; lng: number } | null>(null)
     };
 
     TestBed.configureTestingModule({
@@ -55,7 +55,7 @@ describe('PubStore', () => {
   describe('Signal Reactivity', () => {
     it('should update loading state during load operation', async () => {
       // Arrange
-      const loadingWatcher = watchSignal(store.loading$$).startWatching();
+      const loadingWatcher = watchSignal(store.loading).startWatching();
       mockCacheService.load.mockResolvedValue(mockPubs);
 
       // Act
@@ -67,7 +67,7 @@ describe('PubStore', () => {
 
     it('should set error state when load fails', async () => {
       // Arrange
-      const errorWatcher = watchSignal(store.error$$).startWatching();
+      const errorWatcher = watchSignal(store.error).startWatching();
       mockCacheService.load.mockRejectedValue(new Error('Network failed'));
 
       // Act
@@ -86,15 +86,15 @@ describe('PubStore', () => {
         new Promise(resolve => { resolveLoad = resolve; })
       );
 
-      const loadingWatcher = watchSignal(store.loading$$).startWatching();
-      const errorWatcher = watchSignal(store.error$$).startWatching();
+      const loadingWatcher = watchSignal(store.loading).startWatching();
+      const errorWatcher = watchSignal(store.error).startWatching();
 
       // Act: Start loading
       const loadPromise = store.load();
 
       // Assert: Should be loading, no error
-      expect(store.loading$$()).toBe(true);
-      expect(store.error$$()).toBeNull();
+      expect(store.loading()).toBe(true);
+      expect(store.error()).toBeNull();
 
       // Act: Complete loading
       resolveLoad!(mockPubs);
@@ -103,33 +103,33 @@ describe('PubStore', () => {
       // Assert: Final state
       loadingWatcher.expectValues([false, true, false]);
       errorWatcher.expectValues([null]); // No errors
-      expect(store.pubs$$()).toEqual(mockPubs);
+      expect(store.pubs()).toEqual(mockPubs);
     });
   });
 
   describe('Computed Signals', () => {
     it('should sort pubs by distance when location changes', () => {
       // Arrange
-      store.pubs$$.set(mockPubs);
-      const sortedWatcher = watchSignal(store.sortedPubsByDistance$$).startWatching();
+      store.pubs.set(mockPubs);
+      const sortedWatcher = watchSignal(store.sortedPubsByDistance).startWatching();
 
       // Act: Set location closer to The Swan
-      mockLocationService.location$$.set({ lat: 51.516, lng: -0.092 });
+      mockLocationService.location.set({ lat: 51.516, lng: -0.092 });
 
       // Assert: The Swan should be first (it's closer)
-      const sortedPubs = store.sortedPubsByDistance$$();
+      const sortedPubs = store.sortedPubsByDistance();
       expect(sortedPubs[0].name).toBe('The Swan');
       expect(sortedPubs[1].name).toBe('The Crown');
     });
 
     it('should return unsorted pubs when no location available', () => {
       // Arrange
-      store.pubs$$.set(mockPubs);
+      store.pubs.set(mockPubs);
 
       // Act: No location set (remains null)
 
       // Assert: Should return original order
-      expect(store.sortedPubsByDistance$$()).toEqual(mockPubs);
+      expect(store.sortedPubsByDistance()).toEqual(mockPubs);
     });
   });
 

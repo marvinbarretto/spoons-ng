@@ -213,6 +213,28 @@ export class PubDetailComponent extends BaseComponent implements OnInit {
       }));
   });
 
+
+
+
+  // In PubDetailComponent class, add this after your existing computed signals:
+
+  readonly debugInfo = computed(() => {
+    const pubValue = this.pub();
+    const userId = this.authStore.uid();
+    const user = this.authStore.user();
+
+    return {
+      // ... existing debug info ...
+      authReady: this.authStore.ready(),
+      userExists: !!user,
+      userIsAnonymous: user?.isAnonymous,
+      checkinStoreLoading: this.checkinStore.loading(),
+      checkinStoreHasLoaded: this.checkinStore.hasData(), // If this method exists
+    };
+  });
+
+
+
   /**
    * ✅ Calculate distance between two points using Haversine formula
    */
