@@ -78,7 +78,7 @@ export class CheckinStore extends BaseStore<CheckIn> {
       // 🚀 LOAD: New authenticated user detected
       console.log('[CheckinStore] Loading check-ins for new user:', user.uid);
       this.lastLoadedUserId = user.uid;
-      this.loadOnce(); // BaseStore handles caching + loading
+      this.load(); // BaseStore handles caching + loading
     });
   }
 
