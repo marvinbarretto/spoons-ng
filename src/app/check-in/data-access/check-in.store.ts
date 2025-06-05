@@ -61,8 +61,8 @@ export class CheckinStore extends BaseStore<CheckIn> {
         lastLoaded: this.lastLoadedUserId
       });
 
-      // 🛡️ GUARD: Handle logout or anonymous users
-      if (!user || user.isAnonymous) {
+      // 🛡️ GUARD: Handle logout
+      if (!user) {
         console.log('[CheckinStore] Clearing data (logout/anonymous)');
         this.reset();
         this.lastLoadedUserId = null;

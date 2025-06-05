@@ -36,8 +36,8 @@ export class UserStore {
         const user = this.authStore.user();
         // whenever authStore.user() changes, this effect runs
 
-        // 🛡️ GUARD: Handle logout/anonymous users
-        if (!user || user.isAnonymous) {
+        // 🛡️ GUARD: Handle logout
+        if (!user) {
           this.reset();                    // Clear all user data
           this.lastLoadedUserId = null;    // Reset tracking
           return;                          // Exit early
