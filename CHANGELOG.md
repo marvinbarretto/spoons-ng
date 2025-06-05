@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.15](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.14...v0.0.15) (2025-06-05)
+
+
+### Features
+
+* Stub leaderboard ([be47ec8](https://github.com/marvinbarretto/spoons-ng/commit/be47ec8c2c8ffdd0d27cd6fd214c71b7f6e61fbb))
+
+
+### Bug Fixes
+
+* Ensure homepage hero is reactive ([4fa93fc](https://github.com/marvinbarretto/spoons-ng/commit/4fa93fc321ffcb1b8fad45790ad223398269479e))
+* Make history appear on UserDetail ([d85defb](https://github.com/marvinbarretto/spoons-ng/commit/d85defb4175748513a8429abcd52ad529990b64c))
+
 ### [0.0.14](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.13...v0.0.14) (2025-06-05)
 
 
