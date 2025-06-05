@@ -22,11 +22,16 @@ const NOUNS = [
  * Simple hash function for consistent results
  */
 function simpleHash(str: string): number {
+  if (!str || typeof str !== 'string') {
+    console.warn('[AnonymousNames] Invalid string for hash:', str);
+    return 12345; // Fallback hash
+  }
+
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
     hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // Convert to 32-bit integer
+    hash = hash & hash;
   }
   return Math.abs(hash);
 }
@@ -37,6 +42,11 @@ function simpleHash(str: string): number {
  * @returns A kebab-case pub-themed name like "tipsy-landlord-847"
  */
 export function generateAnonymousName(uid: string): string {
+  if (!uid) {
+    console.warn('[AnonymousNames] Empty UID provided');
+    return 'unknown-user-000';
+  }
+
   const hash = simpleHash(uid);
 
   const adjIndex = hash % ADJECTIVES.length;

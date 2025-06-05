@@ -9,6 +9,7 @@ import {
 import { CheckInContainerComponent } from './check-in/feature/check-in-container/check-in-container.component';
 import { MISSION_ROUTES } from './missions/data-access/mission.routes';
 import { BADGE_ROUTES } from './badges/data-access/badge.routes';
+import { LeaderboardContainerComponent } from './leaderboard/feature/leaderboard-container/leaderboard-container.component';
 
 export const appRoutes: Routes = [
   {
@@ -27,6 +28,13 @@ export const appRoutes: Routes = [
     loadChildren: () =>
       import('./missions/data-access/mission.routes').then((m) => m.MISSION_ROUTES),
   },
+// app.routes.ts
+{
+  path: 'leaderboard',
+  loadComponent: () =>
+    import('./leaderboard/feature/leaderboard-container/leaderboard-container.component')
+      .then(m => m.LeaderboardContainerComponent)
+},
   {
     path: 'admin/badges',
     loadChildren: () =>

@@ -39,6 +39,12 @@ export class CheckInService extends FirestoreService {
     return matches[0] ?? null;
   }
 
+
+  async getAllCheckins(): Promise<CheckIn[]> {
+    return this.getDocsWhere<CheckIn>('checkins');
+  }
+
+
   /**
    * Load all check-ins for a specific user
    * @param userId - User ID to load check-ins for
@@ -179,6 +185,9 @@ export class CheckInService extends FirestoreService {
 
     const updatedUser: Partial<User> = {
       streaks: { ...user.streaks, [checkin.pubId]: prevStreak + 1 },
+
+      checkedInPubIds: arrayUnion(checkin.pubId) as any, // Add pub to visited list
+      claimedPubIds: user.claimedPubIds || [], // Ensure it exists
     };
 
     await this.updateDoc<User>(userRefPath, updatedUser);

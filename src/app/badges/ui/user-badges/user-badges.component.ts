@@ -5,7 +5,7 @@ import type { Badge } from '../../utils/badge.model';
 @Component({
   selector: 'app-user-badges',
   standalone: true,
-  imports: [NgIf, NgForOf],
+  imports: [NgIf],
   template: `
     <section *ngIf="badges().length > 0">
       <h2>Unlocked Badges</h2>

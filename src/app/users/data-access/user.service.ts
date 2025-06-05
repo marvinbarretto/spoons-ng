@@ -18,4 +18,8 @@ export class UserService extends FirestoreService {
   createUser(uid: string, data: User) {
     return this.setDoc<User>(`users/${uid}`, data);
   }
+
+  async getAllUsers(): Promise<User[]> {
+    return this.getDocsWhere<User>('users');
+  }
 }

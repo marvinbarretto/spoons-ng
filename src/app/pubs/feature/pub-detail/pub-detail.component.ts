@@ -16,7 +16,7 @@ import { generateAnonymousName } from '../../../shared/utils/anonymous-names';
 
 @Component({
   selector: 'app-pub-detail',
-  imports: [CommonModule, RouterModule, ButtonComponent],
+  imports: [CommonModule, RouterModule],
   templateUrl: './pub-detail.component.html',
   styleUrl: './pub-detail.component.scss',
 })
