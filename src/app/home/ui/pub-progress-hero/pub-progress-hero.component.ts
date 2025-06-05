@@ -90,9 +90,9 @@ export class PubProgressHeroComponent {
   readonly achievementText = computed(() => {
     const count = this.visitedCount();
 
-    if (count === 0) return 'Start Your Pub Quest!';
-    if (count === 1) return 'Pub Conquered!';
-    if (count < 5) return 'Pubs Conquered!';
+    if (count === 0) return 'Start Your Carpet Quest!';
+    if (count === 1) return 'carpet collected!';
+    if (count < 5) return 'pubs collected!';
     if (count < 10) return 'Pubs Dominated!';
     if (count < 25) return 'Pub Crawling Pro!';
     if (count < 50) return 'Legendary Pub Explorer!';

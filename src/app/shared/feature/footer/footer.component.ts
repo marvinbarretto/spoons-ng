@@ -11,7 +11,7 @@ import { APP_VERSION } from '../../utils/version';
     <app-dev-debug></app-dev-debug>
     <footer class="footer">
       <p>
-        &copy; {{ currentYear }} Spoons. All rights reserved.
+        &copy; {{ currentYear }} Spooncount. All rights reserved.
       </p>
       <p>Version: {{ version }}</p>
     </footer>

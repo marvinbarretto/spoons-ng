@@ -30,20 +30,39 @@
       }
     </header>
 
-    <!-- Check-in Action Section -->
-    @if (canShowCheckInButton()) {
-      <section class="check-in-section">
-        <app-button
-          [variant]="isNearby() ? 'primary' : 'secondary'"
-          [disabled]="!canCheckIn() || loading()"
-          [loading]="loading()"
-          [fullWidth]="true"
-          (onClick)="checkInToPub()"
-        >
-          {{ checkInButtonText() }}
-        </app-button>
+    <!-- User's Personal Stats -->
+    @if (userPubStats(); as stats) {
+      <section class="user-stats">
+        <h2>Your History</h2>
+        @if (stats.hasVisited) {
+          <div class="visited-stats">
+            <p><strong>✅ You've visited {{ stats.visitCount }} time{{ stats.visitCount === 1 ? '' : 's' }}</strong></p>
+            <p>Last visit: {{ stats.lastVisit }}</p>
+            @if (!stats.canCheckInToday) {
+              <p class="already-visited">🎯 Already checked in today!</p>
+            }
+          </div>
+        } @else {
+          <p class="never-visited">🕵️ You haven't visited this pub yet</p>
+        }
       </section>
     }
+
+    <!-- Landlord Status Section - Enhanced -->
+    <section class="landlord-status">
+      <h2>Current Landlord</h2>
+      @if (landlordInsights(); as insights) {
+        <div class="landlord-card" [class]="'landlord-card--' + insights.status">
+          <div class="landlord-main">
+            <p class="landlord-message"><strong>{{ insights.message }}</strong></p>
+            <p class="landlord-subtitle">{{ insights.subtitle }}</p>
+          </div>
+          <div class="landlord-action">
+            <small class="action-hint">{{ insights.actionHint }}</small>
+          </div>
+        </div>
+      }
+    </section>
 
     <!-- Carpet Section -->
     @if (currentPub.carpetUrl) {
@@ -53,92 +72,59 @@
       </section>
     }
 
-    <!-- Current Landlord Section -->
-    <section class="landlord">
-      <h2>Current Landlord</h2>
-      @if (currentLandlord(); as landlord) {
-        <div class="landlord-info">
-          @if (isUserLandlord()) {
-            <div class="user-is-landlord">
-              <p><strong>👑 You're the landlord!</strong></p>
-              <p>Claimed: {{ formatTime(landlord.claimedAt) }}</p>
+    <!-- Enhanced Stats Section -->
+    @if (pubStats(); as stats) {
+      <section class="pub-stats">
+        <h2>Pub Statistics</h2>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <span class="stat-value">{{ stats.totalCheckins }}</span>
+            <span class="stat-label">Total Check-ins</span>
+          </div>
+
+          <div class="stat-item">
+            <span class="stat-value">{{ stats.lastVisit }}</span>
+            <span class="stat-label">Last Visit</span>
+          </div>
+
+          @if (stats.earliestCheckin) {
+            <div class="stat-item">
+              <span class="stat-value">{{ stats.earliestCheckin }}</span>
+              <span class="stat-label">Earliest Check-in</span>
             </div>
-          } @else {
-            <div class="other-is-landlord">
-              <p><strong>User ID:</strong> {{ landlord.userId.slice(0, 8) }}...</p>
-              <p><strong>Claimed:</strong> {{ formatTime(landlord.claimedAt) }}</p>
+          }
+
+          @if (stats.latestCheckin) {
+            <div class="stat-item">
+              <span class="stat-value">{{ stats.latestCheckin }}</span>
+              <span class="stat-label">Latest Check-in</span>
+            </div>
+          }
+
+          @if (stats.longestStreak > 0) {
+            <div class="stat-item">
+              <span class="stat-value">{{ stats.longestStreak }} days</span>
+              <span class="stat-label">Longest Landlord Streak</span>
             </div>
           }
         </div>
-      } @else {
-        <div class="no-landlord">
-          @if (canCheckIn()) {
-            <p>🏴 No one is the landlord! Check in to claim your throne!</p>
-          } @else if (userDistance()) {
-            <p>🏴 No landlord today. Get within 50m to claim it!</p>
-          } @else {
-            <p>🏴 No landlord today.</p>
-          }
-        </div>
-      }
-    </section>
-
-    <!-- Stats Section -->
-    <section class="stats">
-      <h2>Statistics</h2>
-      <div class="stats-grid">
-        <div class="stat-item">
-          <span class="stat-value">{{ currentPub.checkinCount || 0 }}</span>
-          <span class="stat-label">Total Check-ins</span>
-        </div>
-
-        @if (currentPub.recordEarlyCheckinAt; as earliest) {
-          <div class="stat-item">
-            <span class="stat-value">{{ formatTime(earliest) }}</span>
-            <span class="stat-label">Earliest Check-in</span>
-          </div>
-        }
-
-        @if (currentPub.recordLatestCheckinAt; as latest) {
-          <div class="stat-item">
-            <span class="stat-value">{{ formatTime(latest) }}</span>
-            <span class="stat-label">Latest Check-in</span>
-          </div>
-        }
-
-        @if (currentPub.longestStreak; as streak) {
-          <div class="stat-item">
-            <span class="stat-value">{{ streak }} days</span>
-            <span class="stat-label">Longest Landlord Streak</span>
-          </div>
-        }
-      </div>
-    </section>
-
-    <!-- Recent Check-ins -->
-    @if (recentCheckins().length > 0) {
-      <section class="history">
-        <h2>Recent Check-ins</h2>
-        <ul class="checkin-list">
-          @for (entry of recentCheckins(); track entry.timestamp) {
-            <li class="checkin-item">
-              <span class="user">{{ entry.userId.slice(0, 8) }}...</span>
-              <span class="timestamp">{{ formatDate(entry.timestamp) }}</span>
-            </li>
-          }
-        </ul>
       </section>
     }
 
-    <!-- Landlord History -->
-    @if (landlordHistory().length > 0) {
+    <!-- Enhanced Recent Check-ins -->
+    @if (recentCheckins().length > 0) {
       <section class="history">
-        <h2>Landlord History</h2>
-        <ul class="landlord-list">
-          @for (entry of landlordHistory(); track entry.claimedAt) {
-            <li class="landlord-item">
-              <span class="timestamp">{{ formatTime(entry.claimedAt) }}</span>
-              <span class="user">{{ entry.userId.slice(0, 8) }}...</span>
+        <h2>Recent Check-ins ({{ recentCheckins().length }})</h2>
+        <ul class="checkin-list">
+          @for (entry of recentCheckins(); track entry.timestamp) {
+            <li class="checkin-item" [class.is-current-user]="entry.isCurrentUser">
+              <div class="checkin-user">
+                <span class="user-name">{{ entry.displayName }}</span>
+                @if (entry.isCurrentUser) {
+                  <span class="you-badge">You</span>
+                }
+              </div>
+              <span class="checkin-time">{{ entry.relativeTime }}</span>
             </li>
           }
         </ul>
@@ -149,6 +135,74 @@
     <div class="pub-actions">
       <a routerLink="/pubs" class="back-link">← Back to pubs</a>
     </div>
+
+    <!-- Enhanced Landlord History -->
+    @if (landlordHistory().length > 0) {
+      <section class="history">
+        <h2>Recent Landlords ({{ landlordHistory().length }})</h2>
+        <ul class="landlord-list">
+          @for (entry of landlordHistory(); track entry.claimedAt) {
+            <li class="landlord-item" [class.is-current-user]="entry.isCurrentUser">
+              <div class="landlord-user">
+                <span class="crown">👑</span>
+                <span class="user-name">{{ entry.displayName }}</span>
+                @if (entry.isCurrentUser) {
+                  <span class="you-badge">You</span>
+                }
+              </div>
+              <span class="claim-time">{{ entry.relativeTime }}</span>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
+    <!-- Nearby Pubs Discovery -->
+    @if (unvisitedNearbyPubs().length > 0) {
+      <section class="nearby-discovery">
+        <h2>🗺️ Unvisited Pubs Nearby ({{ unvisitedNearbyPubs().length }})</h2>
+        <p class="discovery-hint">Expand your pub crawling territory!</p>
+        <ul class="nearby-pub-list">
+          @for (pub of unvisitedNearbyPubs(); track pub.id) {
+            <li class="nearby-pub-item unvisited">
+              <div class="pub-info">
+                <h4>
+                  <a [routerLink]="['/pubs', pub.id]">{{ pub.name }}</a>
+                </h4>
+                <p class="pub-address">{{ pub.address }}</p>
+                <small class="pub-distance">{{ pub.distance.toFixed(1) }}km away</small>
+              </div>
+              <div class="pub-status">
+                <span class="unvisited-badge">🕵️ Not visited</span>
+              </div>
+            </li>
+          }
+        </ul>
+      </section>
+    }
+
+    @if (visitedNearbyPubs().length > 0) {
+      <section class="nearby-discovery">
+        <h2>✅ Visited Pubs Nearby ({{ visitedNearbyPubs().length }})</h2>
+        <p class="discovery-hint">Your local conquests!</p>
+        <ul class="nearby-pub-list">
+          @for (pub of visitedNearbyPubs(); track pub.id) {
+            <li class="nearby-pub-item visited">
+              <div class="pub-info">
+                <h4>
+                  <a [routerLink]="['/pubs', pub.id]">{{ pub.name }}</a>
+                </h4>
+                <p class="pub-address">{{ pub.address }}</p>
+                <small class="pub-distance">{{ pub.distance.toFixed(1) }}km away</small>
+              </div>
+              <div class="pub-status">
+                <span class="visited-badge">✅ Visited</span>
+              </div>
+            </li>
+          }
+        </ul>
+      </section>
+    }
 
   } @else {
     <!-- No pub found -->
