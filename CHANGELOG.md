@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.13](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.12...v0.0.13) (2025-06-05)
+
+
+### Features
+
+* Display names as cheeky alternative names rather than the hash ([4143a7a](https://github.com/marvinbarretto/spoons-ng/commit/4143a7a47a8424befe7873b52ff9078ac79e2ed3))
+* Show visited pubs count on the homepage ([81deea3](https://github.com/marvinbarretto/spoons-ng/commit/81deea398f21f5c811587c24e933af100e462006))
+
+
+### Bug Fixes
+
+* Check in process ([4db0075](https://github.com/marvinbarretto/spoons-ng/commit/4db007567da2f8f3f769ca86dc9e2f3bfbbf86e5))
+
 ### [0.0.12](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.11...v0.0.12) (2025-06-04)
 
 
