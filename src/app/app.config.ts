@@ -7,7 +7,6 @@ import { USER_THEME_TOKEN } from '../libs/tokens/user-theme.token';
 import { ThemeStore } from './shared/data-access/theme.store';
 // import { provideAuthInitializer } from './auth/data-access/auth-initializer';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
-import { GlobalErrorHandler } from './shared/utils/global-error-handler';
 import { environment } from '../environments/environment';
 import { DeviceCapabilityService } from './shared/utils/device-capability-check.service';
 import { TemplatePageTitleStrategy } from './TemplatePageTitleStrategy';
@@ -29,7 +28,6 @@ export const appConfig: ApplicationConfig = {
     // TODO: Vertify if its useful
     // provideAuthInitializer(),
     provideHttpClient(withFetch()),
-    { provide: ErrorHandler, useClass: GlobalErrorHandler },
     { provide: 'environment', useValue: environment },
     { provide: TitleStrategy, useClass: TemplatePageTitleStrategy }, provideServiceWorker('ngsw-worker.js', {
             enabled: !isDevMode(),
