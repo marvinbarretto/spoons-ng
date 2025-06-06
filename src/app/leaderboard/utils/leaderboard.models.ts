@@ -1,4 +1,3 @@
-// /leaderboard/utils/leaderboard.types.ts
 export type LeaderboardEntry = {
   userId: string;
   displayName: string;
@@ -6,6 +5,10 @@ export type LeaderboardEntry = {
   uniquePubs: number;
   joinedDate: string;
   rank: number;
+  photoURL?: string;
+  email?: string;
+  realDisplayName?: string;
+  isAnonymous?: boolean;
   // Later: totalPoints, badges, streaks, etc.
 };
 

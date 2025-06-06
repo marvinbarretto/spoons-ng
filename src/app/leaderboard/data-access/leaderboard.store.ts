@@ -47,74 +47,113 @@ export class LeaderboardStore extends BaseStore<LeaderboardEntry> {
     ) + 1 || null;
   });
 
-  protected async fetchData(): Promise<LeaderboardEntry[]> {
-    console.log('[LeaderboardStore] Building leaderboard from all users...');
 
-    const allUsers = await this.userService.getAllUsers();
-    console.log('[LeaderboardStore] Total users found:', allUsers.length);
+  // In LeaderboardStore - replace fetchData with this debug version:
 
-    // 🧹 Only filter out users with invalid IDs
-    const validUsers = allUsers.filter(user => {
-      const userId = user.uid || (user as any).id;
-      const hasValidId = !!userId && typeof userId === 'string';
+protected async fetchData(): Promise<LeaderboardEntry[]> {
+  console.log('[LeaderboardStore] Building leaderboard from all users...');
 
-      if (!hasValidId) {
-        console.warn('[LeaderboardStore] Skipping user with invalid ID:', {
-          uid: user.uid,
-          id: (user as any).id,
-          user
-        });
-        return false;
-      }
+  const allUsers = await this.userService.getAllUsers();
+  console.log('[LeaderboardStore] Total users found:', allUsers.length);
 
-      return true; // Keep all users, even with 0 check-ins
+  const validUsers = allUsers.filter(user => {
+    const userId = user.uid || (user as any).id;
+    const hasValidId = !!userId && typeof userId === 'string';
+
+    if (!hasValidId) {
+      console.warn('[LeaderboardStore] Skipping user with invalid ID:', user);
+      return false;
+    }
+
+    return true;
+  });
+
+  console.log('[LeaderboardStore] Valid users:', validUsers.length);
+
+  // 🐛 DEBUG: Look for real users vs anonymous
+  const realUsers = validUsers.filter(user => !user.isAnonymous);
+  const anonUsers = validUsers.filter(user => user.isAnonymous);
+
+  console.log('[LeaderboardStore] Real users found:', realUsers.length);
+  console.log('[LeaderboardStore] Anonymous users found:', anonUsers.length);
+
+  // 🐛 DEBUG: Show some real user data
+  realUsers.slice(0, 3).forEach((user, index) => {
+    console.log(`[LeaderboardStore] Real user ${index}:`, {
+      uid: user.uid,
+      email: user.email,
+      displayName: user.displayName,
+      isAnonymous: user.isAnonymous,
+      checkedInPubIds: user.checkedInPubIds?.length || 0
     });
+  });
 
-    console.log('[LeaderboardStore] Valid users:', validUsers.length);
+  return validUsers.map(user => {
+    const userId = user.uid || (user as any).id;
+    const displayName = this.getDisplayName(userId, user);
 
-    // 🐛 Debug the first few users to see their data
-    validUsers.slice(0, 3).forEach((user, index) => {
-      console.log(`[LeaderboardStore] User ${index} data:`, {
-        uid: user.uid || (user as any).id,
-        checkedInPubIds: user.checkedInPubIds,
-        checkedInCount: user.checkedInPubIds?.length || 0,
-        landlordOf: user.landlordOf,
-        allFields: Object.keys(user)
+    // 🐛 DEBUG: Log what display name we're generating
+    if (user.displayName || user.email) {
+      console.log('[LeaderboardStore] Real user display name:', {
+        userId: userId.slice(0, 8),
+        originalName: user.displayName,
+        email: user.email,
+        isAnonymous: user.isAnonymous,
+        hasRealProfile: !!(user.displayName || user.email),
+        photoURL: user.photoURL,
+        generatedName: displayName
       });
-    });
+    }
 
-    return validUsers.map(user => {
-      const userId = user.uid || (user as any).id;
+    return {
+      userId,
+      displayName,
+      totalVisits: user.checkedInPubIds?.length || 0,
+      uniquePubs: user.checkedInPubIds?.length || 0,
+      joinedDate: user.joinedAt || new Date().toISOString(),
+      rank: 0,
+      photoURL: user.photoURL,
+      email: user.email,
+      realDisplayName: user.displayName,
+      isAnonymous: user.isAnonymous
+    };
+  });
+}
 
-      return {
-        userId,
-        displayName: this.getDisplayName(userId, user),
-        totalVisits: user.checkedInPubIds?.length || 0,
-        uniquePubs: user.checkedInPubIds?.length || 0,
-        joinedDate: user.joinedAt || new Date().toISOString(),
-        rank: 0
-      };
-    });
+
+private getDisplayName(userId: string, user: User): string {
+  if (!userId) {
+    return 'Unknown User';
   }
 
-  private getDisplayName(userId: string, user: User): string {
-    if (!userId) {
-      return 'Unknown User';
+  const currentUser = this.authStore.user();
+
+  // ✅ Check if it's current user first
+  if (currentUser?.uid === userId) {
+    if (user.isAnonymous) {
+      return `${generateAnonymousName(userId)} (You)`;
     }
+    return `${user.displayName || user.email || 'You'} (You)`;
+  }
 
-    const currentUser = this.authStore.user();
+  // ✅ FOR OTHER USERS: Check if they have real profile data
+  // If they have displayName or email, they're a real user (not anonymous)
+  const hasRealProfile = user.displayName || user.email;
 
-    // Current user
-    if (currentUser?.uid === userId) {
-      if (user.isAnonymous) {
-        return `${generateAnonymousName(userId)} (You)`;
-      }
-      return `${user.displayName || user.email || 'You'} (You)`;
+  if (hasRealProfile) {
+    // ✅ REAL USER: Show their actual name!
+    if (user.displayName) {
+      return user.displayName;
+    } else if (user.email) {
+      return user.email;
+    } else {
+      return `User ${userId.slice(0, 8)}`;
     }
-
-    // Other users - generate anonymous name
+  } else {
+    // Anonymous user - generate pub name
     return generateAnonymousName(userId);
   }
+}
 
   /**
    * Get user's stats for comparison
