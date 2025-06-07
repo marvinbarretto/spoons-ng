@@ -1,31 +1,47 @@
-<!-- src/app/home/feature/home/home.component.html -->
 <div class="home-container">
-
-  <details class="auth-debug">
+  <!-- 🧪 Debug Panel (Development Only) -->
+  <details class="auth-debug" *ngIf="!isProduction">
     <summary>Auth Debug</summary>
     <pre>{{ authDebug() | json }}</pre>
   </details>
 
-  <!-- ✅ UPDATED: Welcome section with two buttons -->
-  <div class="welcome-hero">
-    <h1>Welcome to Spooncount!</h1>
-    <p>Find a nearby pub and start your carpet-collecting journey</p>
-    <div class="username-preview">
-      <p>You're playing as: <strong>{{ userDisplayName() }}</strong></p>
+  <!-- 👋 Welcome Section -->
+  <section class="welcome">
+    <h1>Welcome, {{ authStore.userDisplayName() }}!</h1>
 
-      <!-- ✅ TWO BUTTONS: Change Username and Choose Avatar -->
-      <div class="user-controls">
-        <button class="customize-button" (click)="changeUsername()">
-          ✏️ Change Username
-        </button>
-        <button class="customize-button" (click)="chooseAvatar()">
-          🎨 Choose Avatar
-        </button>
+    @if (authStore.isAnonymous()) {
+      <div class="anonymous-actions">
+        <p>Customize your pub crawling experience:</p>
+        <div class="action-buttons">
+          <app-button
+            variant="secondary"
+            (onClick)="changeUsername()"
+            icon="edit"
+          >
+            Change Name
+          </app-button>
+
+          <app-button
+            variant="secondary"
+            (onClick)="chooseAvatar()"
+            icon="person"
+          >
+            Choose Avatar
+          </app-button>
+
+          <app-button
+            variant="primary"
+            (onClick)="upgradeToFullAccount()"
+            icon="upgrade"
+          >
+            Create Account
+          </app-button>
+        </div>
       </div>
-    </div>
-  </div>
+    }
+  </section>
 
-  <!-- 🏆 HERO: Big imposing pub count - the core value prop -->
+  <!-- 🏆 HERO: Big imposing pub count -->
   <app-pub-progress-hero
     [visitedCount]="visitedPubsCount()"
     [totalPubs]="totalPubs()"
@@ -70,8 +86,8 @@
     </div>
   }
 
-  <!-- 🏅 User Badges (if available) -->
-  @if (badgeStore) {
+  <!-- 🏅 User Badges -->
+  @if (badgeStore && badgeStore.data().length > 0) {
     <app-user-badges [badges]="badgeStore.data" />
   }
 
@@ -81,5 +97,4 @@
       <p>🔄 Loading your pub data...</p>
     </div>
   }
-
 </div>
