@@ -9,6 +9,7 @@ import { NearbyPubStore } from '../../../pubs/data-access/nearby-pub.store';
 import { LandlordStore } from '../../../landlord/data-access/landlord.store';
 import { environment } from '../../../../environments/environment';
 import { toDate, isToday } from '../timestamp.utils';
+import { Pub } from '../../../pubs/utils/pub.models';
 
 @Component({
   selector: 'app-dev-debug',
@@ -39,7 +40,7 @@ export class DevDebugComponent extends BaseComponent {
   });
 
   readonly pubHealth = computed(() => {
-    const pubs = this.pubStore.pubs();
+    const pubs = this.pubStore.data();
     const loading = this.pubStore.loading();
     const error = this.pubStore.error();
 
@@ -303,7 +304,7 @@ export class DevDebugComponent extends BaseComponent {
   });
 
   // Pub Data Computed Signals
-  readonly totalPubs = computed(() => this.pubStore.pubs().length);
+  readonly totalPubs = computed(() => this.pubStore.data().length);
   readonly nearbyPubsCount = computed(() => this.nearbyPubStore.nearbyPubs().length);
   readonly closestPub = computed(() => this.nearbyPubStore.closestPub());
   readonly canCheckIn = computed(() => this.nearbyPubStore.canCheckIn());
@@ -337,7 +338,7 @@ export class DevDebugComponent extends BaseComponent {
       b.timestamp.toMillis() - a.timestamp.toMillis()
     )[0];
 
-    const pub = this.pubStore.pubs().find(p => p.id === latest.pubId);
+    const pub = this.pubStore.data().find((p: Pub) => p.id === latest.pubId);
     return pub?.name || `Pub ID: ${latest.pubId}`;
   });
 
@@ -353,7 +354,7 @@ export class DevDebugComponent extends BaseComponent {
         if (landlord && landlord.userId === user.uid) {
           const claimDate = toDate(landlord.claimedAt);
           if (claimDate && isToday(claimDate)) {
-            const pub = this.pubStore.pubs().find(p => p.id === pubId);
+            const pub = this.pubStore.data().find((p: Pub) => p.id === pubId);
             userLandlordPubs.push(pub?.name || pubId);
           }
         }
@@ -381,7 +382,7 @@ export class DevDebugComponent extends BaseComponent {
   readonly landlordDebugData = computed(() => {
     const user = this.authStore.user();
     const todayLandlords = this.landlordStore.todayLandlord();
-    const pubs = this.pubStore.pubs();
+    const pubs = this.pubStore.data();
 
     if (!user) return {
       userLandlordPubs: [],
@@ -421,7 +422,7 @@ export class DevDebugComponent extends BaseComponent {
     const pubsWithoutLandlords = Object.entries(todayLandlords)
       .filter(([_, landlord]) => landlord === null)
       .map(([pubId]) => {
-        const pub = pubs.find(p => p.id === pubId);
+        const pub = pubs.find((p: Pub) => p.id === pubId);
         return {
           pubId,
           pubName: pub?.name || 'Unknown'
@@ -503,7 +504,7 @@ export class DevDebugComponent extends BaseComponent {
 
   // Action Methods
   setTestLocationNearPub(): void {
-    const pubs = this.pubStore.pubs();
+    const pubs = this.pubStore.data();
     if (pubs.length > 0) {
       const testPub = pubs[0];
       const offset = 0.0001; // ~11 meters
@@ -536,7 +537,7 @@ export class DevDebugComponent extends BaseComponent {
   }
 
   async refreshLandlords(): Promise<void> {
-    const pubs = this.pubStore.pubs();
+    const pubs = this.pubStore.data();
     if (pubs.length === 0) {
       this.showWarning('No pubs loaded to refresh landlords for');
       return;

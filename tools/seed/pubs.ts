@@ -1,132 +1,13 @@
 export const pubs = [
   {
-    id: 'abraham-darby-brierley-hill',
-    name: 'Abraham Darby',
-    address: 'Merry Hill Centre, Merry Hill, Brierley Hill, West Midlands, DY5 1QX',
-    city: 'Brierley Hill',
-    region: 'West Midlands',
-    country: 'England',
-    location: {
-      lat: null,
-      lng: null
-    },
-    // No explicit “carpet” image URL was available in the snippet; fill in when the asset is known
-    carpetUrl: ''
-  },
-  {
-    id: 'an-ruadh-ghleann-rutherglen',
-    name: 'An Ruadh-Ghleann',
-    address: '40–44 Main Street, Rutherglen, South Lanarkshire, G73 2HY',
-    city: 'Rutherglen',
-    region: 'South Lanarkshire',
-    country: 'Scotland',
-    location: {
-      lat: null,
-      lng: null
-    },
-    carpetUrl: ''
-  },
-  {
-    id: 'baxters-court-hackney',
-    name: 'Baxter’s Court',
-    address: '282–284 Mare Street, Hackney, E8 1HE',
-    city: 'Hackney',
+    name: 'The Ledger Building',
+    address: '4 Hertsmere Road, West India Quay, Docklands, London, E14 4AL',
+    city: 'London',
     region: 'London',
     country: 'England',
     location: {
-      lat: null,
-      lng: null
-    },
-    carpetUrl: ''
-  },
-  {
-    id: 'becketts-bank-leeds',
-    name: 'Beckett’s Bank',
-    address: '28–30 Park Row, Leeds, West Yorkshire, LS1 5HU',
-    city: 'Leeds',
-    region: 'West Yorkshire',
-    country: 'England',
-    location: {
-      lat: null,
-      lng: null
-    },
-    carpetUrl: ''
-  },
-  {
-    id: 'cabot-court-hotel-weston-super-mare',
-    name: 'Cabot Court Hotel',
-    address: 'Knightstone Road, Weston-super-Mare, Somerset, BS23 2AH',
-    city: 'Weston-super-Mare',
-    region: 'Somerset',
-    country: 'England',
-    location: {
-      lat: null,
-      lng: null
-    },
-    carpetUrl: ''
-  },
-  {
-    id: 'captain-ridleys-shooting-party-milton-keynes',
-    name: 'Captain Ridley’s Shooting Party',
-    address: '183–185 Queensway, Bletchley, Milton Keynes, Buckinghamshire, MK2 2ED',
-    city: 'Milton Keynes',
-    region: 'Buckinghamshire',
-    country: 'England',
-    location: {
-      lat: null,
-      lng: null
-    },
-    carpetUrl: ''
-  },
-  {
-    id: 'castle-in-the-air-manchester',
-    name: 'Castle in the Air',
-    address: 'Chill Factore, 7 Trafford Way, Manchester, M41 7JA',
-    city: 'Manchester',
-    region: 'Greater Manchester',
-    country: 'England',
-    location: {
-      lat: null,
-      lng: null
-    },
-    carpetUrl: ''
-  },
-  {
-    id: 'charles-henry-roe-leeds',
-    name: 'Charles Henry Roe',
-    address: '39/41 Austhorpe Road, Cross Gates, Leeds, West Yorkshire, LS15 8BA',
-    city: 'Leeds',
-    region: 'West Yorkshire',
-    country: 'England',
-    location: {
-      lat: null,
-      lng: null
-    },
-    carpetUrl: ''
-  },
-  {
-    id: 'cornfield-garage-eastbourne',
-    name: 'Cornfield Garage',
-    address: '21–23 Cornfield Road, Eastbourne, East Sussex, BN21 4QD',
-    city: 'Eastbourne',
-    region: 'East Sussex',
-    country: 'England',
-    location: {
-      lat: null,
-      lng: null
-    },
-    carpetUrl: ''
-  },
-  {
-    id: 'george-hotel-bewdley',
-    name: 'George Hotel',
-    address: 'Load Street, Bewdley, Worcestershire, DY12 2AW',
-    city: 'Bewdley',
-    region: 'Worcestershire',
-    country: 'England',
-    location: {
-      lat: null,
-      lng: null
+      "lng": -0.02702622826531754,
+      "lat": 51.50840639638788
     },
     carpetUrl: ''
   }

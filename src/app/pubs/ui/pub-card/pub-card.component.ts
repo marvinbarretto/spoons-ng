@@ -7,6 +7,7 @@ import { RouterModule } from '@angular/router';
   selector: 'app-pub-card',
   imports: [CommonModule, RouterModule],
   template: `
+
 <article>
   <a [routerLink]="['/pubs', pub.id]" class="pub-card">
 
@@ -35,4 +36,16 @@ export class PubCardComponent {
   @Input() pub!: Pub;
   @Input() distanceInKm?: number;
   @Input() hasCheckedIn = false;
+
+  getPubId(pub: Pub): string {
+    // Debug: Check what ID fields are available
+    console.log('Pub ID fields:', {
+      id: pub.id,
+      documentId: (pub as any).documentId,
+      _id: (pub as any)._id,
+      pubId: (pub as any).pubId
+    });
+
+    return pub.id || (pub as any).documentId || 'unknown';
+  }
 }

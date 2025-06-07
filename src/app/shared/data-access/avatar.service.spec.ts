@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { UserPreferencesStore } from './user-preferences.store';
+import { AvatarService } from './avatar.service';
 
-describe('AccessibilityService', () => {
-  let service: UserPreferencesStore;
+describe('AvatarService', () => {
+  let service: AvatarService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(UserPreferencesStore);
+    service = TestBed.inject(AvatarService);
   });
 
   it('should be created', () => {

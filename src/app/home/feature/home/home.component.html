@@ -1,10 +1,29 @@
-<!-- home/feature/home/home.component.html -->
+<!-- src/app/home/feature/home/home.component.html -->
 <div class="home-container">
 
   <details class="auth-debug">
     <summary>Auth Debug</summary>
     <pre>{{ authDebug() | json }}</pre>
   </details>
+
+  <!-- ✅ UPDATED: Welcome section with two buttons -->
+  <div class="welcome-hero">
+    <h1>Welcome to Spooncount!</h1>
+    <p>Find a nearby pub and start your carpet-collecting journey</p>
+    <div class="username-preview">
+      <p>You're playing as: <strong>{{ userDisplayName() }}</strong></p>
+
+      <!-- ✅ TWO BUTTONS: Change Username and Choose Avatar -->
+      <div class="user-controls">
+        <button class="customize-button" (click)="changeUsername()">
+          ✏️ Change Username
+        </button>
+        <button class="customize-button" (click)="chooseAvatar()">
+          🎨 Choose Avatar
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- 🏆 HERO: Big imposing pub count - the core value prop -->
   <app-pub-progress-hero

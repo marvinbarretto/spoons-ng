@@ -9,6 +9,7 @@ import { firstValueFrom } from 'rxjs';
 import { AuthStore } from '../../auth/data-access/auth.store';
 import { BaseStore } from '../../shared/data-access/base.store';
 import { LandlordStore } from '../../landlord/data-access/landlord.store';
+import { getDistanceKm } from '../../shared/utils/get-distance';
 
 @Injectable({ providedIn: 'root' })
 export class CheckinStore extends BaseStore<CheckIn> {
@@ -254,27 +255,20 @@ export class CheckinStore extends BaseStore<CheckIn> {
   /**
    * Calculate distance to pub in meters
    */
-  private async getDistanceMeters(
-    location: GeolocationCoordinates,
-    pubId: string
-  ): Promise<number> {
-    const pub: Pub | undefined = await firstValueFrom(
-      this.pubService.getPubById(pubId)
-    );
+  private async getDistanceMeters(location: GeolocationCoordinates, pubId: string): Promise<number> {
+    const pub: Pub | undefined = await firstValueFrom(this.pubService.getPubById(pubId));
 
     if (!pub || !pub.location) {
       throw new Error('Pub not found or missing coordinates');
     }
 
-    // Haversine distance calculation
-    const earthRadius = 6371000; // Earth radius in meters
-    const lat1Rad = location.latitude * Math.PI / 180;
-    const lat2Rad = pub.location.lat * Math.PI / 180;
-    const deltaLatRad = (pub.location.lat - location.latitude) * Math.PI / 180;
-    const deltaLngRad = (pub.location.lng - location.longitude) * Math.PI / 180;
-    const x = deltaLngRad * Math.cos((lat1Rad + lat2Rad) / 2);
-    const y = deltaLatRad;
-    return Math.sqrt(x * x + y * y) * earthRadius;
+    // ✅ Use your existing correct function
+    const distanceKm = getDistanceKm(
+      { lat: location.latitude, lng: location.longitude },
+      pub.location
+    );
+
+    return distanceKm * 1000; // Convert to meters
   }
 
   /**

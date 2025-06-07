@@ -159,7 +159,9 @@ export class PubDetailComponent extends BaseComponent implements OnInit {
   // ✅ Nearby pubs discovery features
   readonly nearbyPubs = computed(() => {
     const currentPub = this.pub();
-    const allPubs = this.pubStore.pubs();
+    const allPubs = this.pubStore.data();
+
+    // Q: Shouldnt i be using sortedPubsByDistance from pubStore?
 
     if (!currentPub || !allPubs.length) return [];
 
@@ -269,7 +271,7 @@ export class PubDetailComponent extends BaseComponent implements OnInit {
   }
 
   private async loadPub(id: string): Promise<void> {
-    const local = this.pubStore.pubs().find(p => p.id === id);
+    const local = this.pubStore.data().find(p => p.id === id);
     if (local) {
       this.pub.set(local);
       await this.landlordStore.loadLandlordOnce(id);
