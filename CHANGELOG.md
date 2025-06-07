@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.18](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.17...v0.0.18) (2025-06-07)
+
+
+### Features
+
+* Add share functionality ([ce1c6f1](https://github.com/marvinbarretto/spoons-ng/commit/ce1c6f1e441f0ec367edcb9b78049a42b196c8f0))
+
 ### [0.0.17](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.16...v0.0.17) (2025-06-07)
 
 
