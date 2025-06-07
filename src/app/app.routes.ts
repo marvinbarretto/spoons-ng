@@ -10,6 +10,7 @@ import { CheckInContainerComponent } from './check-in/feature/check-in-container
 import { MISSION_ROUTES } from './missions/data-access/mission.routes';
 import { BADGE_ROUTES } from './badges/data-access/badge.routes';
 import { LeaderboardContainerComponent } from './leaderboard/feature/leaderboard-container/leaderboard-container.component';
+import { ShareContainerComponent } from './share/feature/share-container/share-container.component';
 
 export const appRoutes: Routes = [
   {
@@ -39,6 +40,10 @@ export const appRoutes: Routes = [
     path: 'admin/badges',
     loadChildren: () =>
       import('./badges/data-access/badge.routes').then((m) => m.BADGE_ROUTES),
+  },
+  {
+    path: 'share',
+    component: ShareContainerComponent,
   },
   {
     path: 'check-in',
