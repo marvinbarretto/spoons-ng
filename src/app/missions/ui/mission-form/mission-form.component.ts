@@ -9,7 +9,7 @@ import { FormsModule } from '@angular/forms';
   imports: [FormsModule],
   template: `
     <form (ngSubmit)="emitSubmit()">
-      <label>Title <input [(ngModel)]="form.title" name="title" /></label>
+      <label>Name <input [(ngModel)]="form.name" name="name" /></label>
       <label>Description <textarea [(ngModel)]="form.description" name="description"></textarea></label>
       <label>Pub IDs (comma-separated) <input [(ngModel)]="form.pubIdsRaw" name="pubIds" /></label>
       <button type="submit">{{ submitLabel }}</button>
@@ -24,7 +24,7 @@ export class MissionFormComponent {
     if (value) {
       this.form = {
         id: value.id,
-        title: value.title,
+        name: value.name,
         description: value.description,
         pubIdsRaw: value.pubIds.join(','),
       };
@@ -35,7 +35,7 @@ export class MissionFormComponent {
 
   form = {
     id: '',
-    title: '',
+    name: '',
     description: '',
     pubIdsRaw: '',
   };
@@ -43,7 +43,7 @@ export class MissionFormComponent {
   emitSubmit() {
     this.submit.emit({
       id: this.form.id.trim(),
-      title: this.form.title.trim(),
+      name: this.form.name.trim(),
       description: this.form.description.trim(),
       pubIds: this.form.pubIdsRaw.split(',').map(s => s.trim()).filter(Boolean),
     });

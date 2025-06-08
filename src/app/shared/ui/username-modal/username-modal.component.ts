@@ -20,7 +20,7 @@ import { User } from '../../../users/utils/user.model';
         <!-- Current Display Preview -->
         <div class="current-display">
           <div class="avatar-preview">
-            {{ selectedEmoji() }}
+            <img [src]="selectedAvatar()" alt="Selected Avatar">
           </div>
           <div class="name-input-container">
             <input
@@ -35,18 +35,18 @@ import { User } from '../../../users/utils/user.model';
           </div>
         </div>
 
-        <!-- Emoji Selection Grid -->
-        <div class="emoji-section">
+        <!-- Avatar Selection Grid -->
+        <div class="avatar-section">
           <h3>Choose Your Avatar</h3>
-          <div class="emoji-grid">
-            @for (emoji of emojiOptions(); track emoji.id) {
+          <div class="avatar-grid">
+            @for (avatar of avatarOptions(); track avatar.id) {
               <button
-                class="emoji-option"
-                [class.selected]="selectedEmojiId() === emoji.id"
-                (click)="selectEmoji(emoji.id)"
-                [title]="emoji.name"
+                class="avatar-option"
+                [class.selected]="selectedAvatarId() === avatar.id"
+                (click)="selectAvatar(avatar.id)"
+                [title]="avatar.name"
               >
-                {{ emoji.emoji }}
+                <img [src]="avatar.url" alt="Avatar">
               </button>
             }
           </div>
@@ -132,9 +132,17 @@ import { User } from '../../../users/utils/user.model';
       border-radius: 8px;
 
       .avatar-preview {
-        font-size: 3rem;
-        line-height: 1;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        overflow: hidden;
         flex-shrink: 0;
+      }
+
+      .avatar-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
       }
 
       .name-input-container {
@@ -174,41 +182,43 @@ import { User } from '../../../users/utils/user.model';
       }
     }
 
-    .emoji-section {
+    .avatar-section {
       h3 {
         margin: 0 0 0.75rem;
         font-size: 1rem;
         color: var(--color-text);
       }
 
-      .emoji-grid {
+      .avatar-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
         gap: 0.5rem;
       }
 
-      .emoji-option {
+      .avatar-option {
         display: flex;
         align-items: center;
         justify-content: center;
         width: 60px;
         height: 60px;
-        font-size: 2rem;
-        background: var(--color-background);
-        border: 2px solid var(--color-subtleLighter);
         border-radius: 8px;
         cursor: pointer;
         transition: all 0.2s ease;
 
         &:hover {
-          border-color: var(--color-buttonPrimaryBase);
           transform: scale(1.05);
         }
 
         &.selected {
-          border-color: var(--color-buttonPrimaryBase);
-          background: rgba(59, 130, 246, 0.1);
+          border: 2px solid var(--color-buttonPrimaryBase);
         }
+      }
+
+      .avatar-option img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 8px;
       }
     }
 
@@ -267,14 +277,13 @@ import { User } from '../../../users/utils/user.model';
         gap: 1rem;
       }
 
-      .emoji-grid {
+      .avatar-grid {
         grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
       }
 
-      .emoji-option {
+      .avatar-option {
         width: 50px;
         height: 50px;
-        font-size: 1.75rem;
       }
 
       .modal-footer {
@@ -292,7 +301,7 @@ export class UsernameModalComponent {
 
   // 📡 Component state
   readonly displayName = signal('');
-  readonly selectedEmojiId = signal('regular');
+  readonly selectedAvatarId = signal('');
   readonly saving = signal(false);
 
   // 🎭 Computed data
@@ -300,24 +309,14 @@ export class UsernameModalComponent {
     return this.authStore.userDisplayName();
   });
 
-  readonly emojiOptions = computed(() => [
-    { id: 'regular', emoji: '🍺', name: 'Regular' },
-    { id: 'landlord', emoji: '👨‍💼', name: 'Landlord' },
-    { id: 'scholar', emoji: '🤓', name: 'Scholar' },
-    { id: 'champion', emoji: '🎯', name: 'Champion' },
-    { id: 'master', emoji: '🧠', name: 'Master' },
-    { id: 'king', emoji: '🎤', name: 'King' },
-    { id: 'shark', emoji: '🎱', name: 'Shark' },
-    { id: 'connoisseur', emoji: '🍷', name: 'Connoisseur' },
-    { id: 'expert', emoji: '🍻', name: 'Expert' },
-    { id: 'enthusiast', emoji: '🥃', name: 'Enthusiast' },
-    { id: 'mixer', emoji: '🍸', name: 'Mixer' },
-    { id: 'explorer', emoji: '🗺️', name: 'Explorer' }
-  ]);
+  readonly avatarOptions = computed(() => {
+    const user = this.authStore.user();
+    return user ? this.avatarService.generateAvatarOptions(user.uid) : [];
+  });
 
-  readonly selectedEmoji = computed(() => {
-    const selected = this.emojiOptions().find(e => e.id === this.selectedEmojiId());
-    return selected?.emoji || '🍺';
+  readonly selectedAvatar = computed(() => {
+    const selected = this.avatarOptions().find(a => a.id === this.selectedAvatarId());
+    return selected?.url || '';
   });
 
   readonly nameSuggestions = computed(() => [
@@ -338,8 +337,16 @@ export class UsernameModalComponent {
   closeModal: () => void = () => {};
 
   // 🎬 Actions
-  selectEmoji(emojiId: string): void {
-    this.selectedEmojiId.set(emojiId);
+  async selectAvatar(avatarId: string): Promise<void> {
+    const selectedAvatar = this.avatarOptions().find(a => a.id === avatarId);
+    if (!selectedAvatar) return;
+
+    try {
+      await this.avatarService.selectAvatar(selectedAvatar);
+      this.selectedAvatarId.set(avatarId);
+    } catch (error) {
+      console.error('[UsernameModal] ❌ Failed to select avatar:', error);
+    }
   }
 
   useSuggestion(suggestion: string): void {
@@ -353,13 +360,13 @@ export class UsernameModalComponent {
 
     try {
       const name = this.displayName().trim();
-      const selectedEmoji = this.selectedEmoji();
+      const selectedAvatar = this.selectedAvatar();
 
       // TODO: Implement actual save logic
       // await this.userService.updateDisplayName(name);
-      // await this.avatarService.updateEmoji(selectedEmoji);
+      // await this.avatarService.updateAvatar(selectedAvatar);
 
-      console.log('[UsernameModal] ✅ Saved:', { name, emoji: selectedEmoji });
+      console.log('[UsernameModal] ✅ Saved:', { name, avatar: selectedAvatar });
 
       // Close modal after successful save
       this.closeModal();

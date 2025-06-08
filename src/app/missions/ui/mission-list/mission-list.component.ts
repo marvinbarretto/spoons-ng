@@ -7,9 +7,13 @@ import { Mission } from '../../utils/mission.model';
   template: `
     <ul>
       @for (mission of missions; track mission.id) {
-        <li (click)="select.emit(mission.id)">
-          <h3>{{ mission.title }}</h3>
-          <p>{{ mission.description }}</p>
+        <li>
+          <div (click)="select.emit(mission.id)">
+            <h3>{{ mission.name }}</h3>
+            <p>{{ mission.description }}</p>
+          </div>
+          <button (click)="edit.emit(mission.id)">Edit</button>
+          <button (click)="delete.emit(mission.id)">Delete</button>
         </li>
       }
     </ul>
@@ -19,4 +23,6 @@ import { Mission } from '../../utils/mission.model';
 export class MissionListComponent {
   @Input() missions: Mission[] = [];
   @Output() select = new EventEmitter<string>();
+  @Output() edit = new EventEmitter<string>();
+  @Output() delete = new EventEmitter<string>();
 }
