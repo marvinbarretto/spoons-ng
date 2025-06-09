@@ -14,7 +14,7 @@ import type { User } from '../../users/utils/user.model';
 export class UserInfoComponent {
 
   // readonly shortName = input.required<Signal<string>>();
-  @Input({ required: true }) shortName!: string;
+  @Input({ required: true }) displayName!: string;
 
 
   readonly user = input.required<Signal<User | null>>();
@@ -27,12 +27,6 @@ export class UserInfoComponent {
   readonly currentUser = computed(() => this.user()?.());
 
   constructor() {
-    effect(() => {
-      console.log('[UserInfoComponent] typeof shortName:', typeof this.shortName);
-      console.log('[UserInfoComponent] shortName():', this.shortName);
-      console.log('[UserInfoComponent] shortName()():', this.shortName); // ❌ PROVES it's double-wrapped
-      console.log('[UserInfoComponent] shortName():', this.shortName); // ✅ string like "wobbly-barkeep-251"
-
-    });
+// TODO: do we need to create side effects?
   }
 }

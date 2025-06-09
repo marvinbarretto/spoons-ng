@@ -1,5 +1,21 @@
 import { User } from '../../users/utils/user.model';
 
+export type AuthUser = {
+  uid: string;
+  displayName: string;
+  isAnonymous: boolean;
+  email?: string;
+  emailVerified: boolean;
+  photoURL?: string;
+  landlordOf: string[];
+  claimedPubIds: string[];
+  checkedInPubIds: string[];
+  badges: string[];
+  streaks: Record<string, number>;
+  joinedMissionIds: string[];
+  joinedAt: string;
+};
+
 export interface AuthResponse {
   jwt: string;
   user: User;

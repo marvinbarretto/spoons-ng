@@ -219,7 +219,7 @@ export class AvatarSelectorComponent {
   readonly user = this.authStore.user;
 
   readonly userDisplayName = computed(() => {
-    return this.authStore.userDisplayName();
+    return this.authStore.displayName();
   });
 
   readonly avatarOptions = computed((): AvatarOption[] => [

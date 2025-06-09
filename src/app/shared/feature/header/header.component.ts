@@ -39,7 +39,6 @@ export class HeaderComponent extends BaseComponent implements AfterViewInit {
   // 🔧 Services
   private readonly router = inject(Router);
   private readonly viewportService = inject(ViewportService);
-
   private readonly panelStore = inject(PanelStore);
   private readonly landlordStore = inject(LandlordStore);
   private readonly nearbyPubStore = inject(NearbyPubStore);
@@ -58,14 +57,10 @@ export class HeaderComponent extends BaseComponent implements AfterViewInit {
   readonly isMobile = this.viewportService.isMobile;
   readonly closestPub = computed(() => this.nearbyPubStore.closestPub());
 
-  // ✅ Signals for child components
+  // ✅ Auth signals
   readonly user = this.authStore.user;
   readonly isAnonymous = this.authStore.isAnonymous;
-  readonly shortName = this.authStore.userShortName;
-
-  readonly shortNameSignal = this.authStore.userShortName; // for reactivity
-  readonly shortNameSnapshot = computed(() => this.shortNameSignal()); // clean up input.required behavior
-
+  readonly displayName = this.authStore.displayName;
 
   handleLogin = () => this.authStore.loginWithGoogle();
   handleLogout = () => this.authStore.logout();
@@ -76,16 +71,10 @@ export class HeaderComponent extends BaseComponent implements AfterViewInit {
   constructor() {
     super();
     effect(() => {
-      const value = this.shortName;
-      console.log('[HeaderComponent] shortName typeof:', typeof value);
-      console.log('[HeaderComponent] shortName is signal:', typeof value === 'function');
-      console.log('[HeaderComponent] shortName() typeof:', typeof value());
+      console.log('[HeaderComponent] Current route:', this.currentRoute());
+      console.log('[HeaderComponent] Is homepage:', this.isHomepage());
+      console.log('[HeaderComponent] Display name:', this.displayName());
     });
-  }
-
-  protected override onInit(): void {
-    console.log('[HeaderComponent] Current route:', this.currentRoute());
-    console.log('[HeaderComponent] Is homepage:', this.isHomepage());
   }
 
   ngAfterViewInit(): void {

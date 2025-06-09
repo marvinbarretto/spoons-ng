@@ -357,8 +357,7 @@ export class DevDebugComponent extends BaseComponent {
       user: user,
       uid: this.authStore.uid(),
       isAnonymous: this.authStore.isAnonymous(),
-      userDisplayName: this.authStore.userDisplayName(),
-      userShortName: this.authStore.userShortName(),
+      userDisplayName: this.authStore.displayName(),
       token: this.authStore.token() ? '[TOKEN_PRESENT]' : null,
     };
   });
@@ -465,7 +464,7 @@ export class DevDebugComponent extends BaseComponent {
       hasUser: !!user,
       hasToken: !!token,
       canLoadUserStores: ready && !!user,
-      displayName: user ? this.authStore.userDisplayName() : null,
+      displayName: user ? this.authStore.displayName() : null,
     };
   });
 

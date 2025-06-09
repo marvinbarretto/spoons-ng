@@ -237,11 +237,9 @@ export class NewHomeComponent extends BaseComponent {
       isAuthenticated: isAuth,
       user: user,
       uid: this.authStore.uid(),
+      displayName: this.authStore.displayName(),
       isAnonymous: this.authStore.isAnonymous(),
-      userDisplayName: this.authStore.userDisplayName(),
-      userShortName: this.authStore.userShortName(),
       token: this.authStore.token() ? '[TOKEN_PRESENT]' : null,
-      // ✅ Add auth flow status
       authFlow: {
         step1_ready: ready,
         step2_hasUser: !!user,

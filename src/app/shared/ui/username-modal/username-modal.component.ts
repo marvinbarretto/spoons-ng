@@ -306,7 +306,7 @@ export class UsernameModalComponent {
 
   // 🎭 Computed data
   readonly currentDisplayName = computed(() => {
-    return this.authStore.userDisplayName();
+    return this.authStore.displayName();
   });
 
   readonly avatarOptions = computed(() => {
