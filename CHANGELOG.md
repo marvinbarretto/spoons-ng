@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.21](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.20...v0.0.21) (2025-06-09)
+
+
+### Features
+
+* Add Badge administration ([a8539b8](https://github.com/marvinbarretto/spoons-ng/commit/a8539b85d0eeabae8e55850755eff35006603cca))
+* put auth in basestore ([0b8ca1e](https://github.com/marvinbarretto/spoons-ng/commit/0b8ca1ebcb11598b4ccc7419c65419a51f0b12ba))
+
+
+### Bug Fixes
+
+* remove shortName ([7dc228f](https://github.com/marvinbarretto/spoons-ng/commit/7dc228fd0f1af44360948f1d2c72c2ccf26bb769))
+
 ### [0.0.20](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.19...v0.0.20) (2025-06-09)
 
 
