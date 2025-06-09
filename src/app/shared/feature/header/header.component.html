@@ -1,12 +1,5 @@
 <div class="site-header" #headerRef>
   <!-- TODO: Extract this to UI ? -->
-
-  <div class="debug-header">
-    <pre>User: {{ user() | json }}</pre>
-    <pre>Short Name: {{ shortName() }}</pre>
-    <pre>Is Anonymous: {{ isAnonymous() }}</pre>
-  </div>
-
     <app-user-info
     [user]="user"
     [isAnonymous]="isAnonymous"

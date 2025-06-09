@@ -1,14 +1,36 @@
 // /badges/data-access/badge.store.ts
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, computed, effect, signal } from '@angular/core';
 import type { Badge } from '../utils/badge.model';
 import { BadgeService } from './badge.service';
 import { BaseStore } from '../../shared/data-access/base.store';
 import { Timestamp } from 'firebase/firestore';
+import { inject } from '@angular/core';
+import { AuthStore } from '../../auth/data-access/auth.store';
 
 @Injectable({ providedIn: 'root' })
 export class BadgeStore extends BaseStore<Badge> {
+  private readonly _authStore = inject(AuthStore);
+  private lastUserId: string | null = null;
+
   constructor(private readonly badgeService: BadgeService) {
     super();
+
+    // ✅ Auto-react to auth changes
+    effect(() => {
+      const user = this._authStore.user();
+      const currentUserId = user?.uid || null;
+
+      if (currentUserId !== this.lastUserId) {
+        console.log('[BadgeStore] User changed, resetting data');
+        this.resetForUser(currentUserId || undefined);
+        this.lastUserId = currentUserId;
+
+        // Auto-load for authenticated user
+        if (currentUserId) {
+          this.loadOnce();
+        }
+      }
+    });
   }
 
   // ✅ Internal signals
@@ -36,10 +58,12 @@ export class BadgeStore extends BaseStore<Badge> {
     if (!this._allBadgesLoaded()) await this.loadAllBadgesOnce();
   }
 
-  protected override async fetchData(): Promise<Badge[]> {
-    const uid = this._userId();
-    if (!uid) throw new Error('User ID not set in BadgeStore');
-    return await this.badgeService.getUserBadges(uid);
+  protected async fetchData(): Promise<Badge[]> {
+    const userId = this._authStore.user()?.uid;
+    if (!userId) {
+      throw new Error('User ID not set in BadgeStore');
+    }
+    return this.badgeService.getUserBadges(userId);
   }
 
   private async loadAllBadgesOnce(): Promise<void> {

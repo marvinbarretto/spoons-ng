@@ -2,597 +2,506 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { JsonPipe, NgClass } from '@angular/common';
 import { BaseComponent } from '../../data-access/base.component';
+
+// Import all stores
 import { AuthStore } from '../../../auth/data-access/auth.store';
 import { CheckinStore } from '../../../check-in/data-access/check-in.store';
 import { PubStore } from '../../../pubs/data-access/pub.store';
 import { NearbyPubStore } from '../../../pubs/data-access/nearby-pub.store';
 import { LandlordStore } from '../../../landlord/data-access/landlord.store';
-import { environment } from '../../../../environments/environment';
-import { toDate, isToday } from '../timestamp.utils';
-import { Pub } from '../../../pubs/utils/pub.models';
+import { BadgeStore } from '../../../badges/data-access/badge.store';
+import { UserStore } from '../../../users/data-access/user.store';
+
+// Import store validation
+import {
+  validateStoreContract,
+  getStoreType,
+  addDebugInfoToStore
+} from '../../data-access/store.contracts';
 
 @Component({
   selector: 'app-dev-debug',
   imports: [JsonPipe, NgClass],
-  templateUrl: './dev-debug.component.html',
-  styleUrl: './dev-debug.component.scss',
+  template: `
+    <div class="dev-debug" [class.collapsed]="isCollapsed()">
+      <!-- Collapse/Expand Toggle -->
+      <button
+        class="toggle-btn"
+        (click)="toggleCollapsed()"
+        [attr.aria-label]="isCollapsed() ? 'Expand debug panel' : 'Collapse debug panel'"
+      >
+        {{ isCollapsed() ? '🔍 Debug' : '❌ Hide' }}
+      </button>
+
+      <!-- Main Debug Content -->
+      @if (!isCollapsed()) {
+        <div class="debug-content">
+
+          <!-- Quick Actions -->
+          <div class="debug-section quick-actions">
+            <h4>🚀 Quick Actions</h4>
+            <div class="action-buttons">
+              <button (click)="refreshStores()" class="action-btn">Refresh All</button>
+              <button (click)="clearErrors()" class="action-btn">Clear Errors</button>
+              <button (click)="toggleVerbose()" class="action-btn">
+                {{ showVerbose() ? 'Simple' : 'Verbose' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Store Status Summary -->
+          <div class="debug-section status-summary">
+            <h4>📊 Store Status</h4>
+            <div class="status-grid">
+              @for (store of storeStatus(); track store.name) {
+                <div class="status-item" [ngClass]="store.status">
+                  <span class="store-name">{{ store.name }}</span>
+                  <span class="store-status">{{ store.indicator }}</span>
+                  <span class="store-count">{{ store.count }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Auth Flow Debug -->
+          <div class="debug-section auth-debug">
+            <h4>🔐 Auth Flow</h4>
+            <div class="auth-status">
+              <div class="auth-step" [ngClass]="{ active: authStatus().ready }">
+                1. Ready: {{ authStatus().ready ? '✅' : '⏳' }}
+              </div>
+              <div class="auth-step" [ngClass]="{ active: authStatus().hasUser }">
+                2. User: {{ authStatus().hasUser ? '✅' : '❌' }}
+              </div>
+              <div class="auth-step" [ngClass]="{ active: authStatus().hasToken }">
+                3. Token: {{ authStatus().hasToken ? '✅' : '❌' }}
+              </div>
+              <div class="auth-step" [ngClass]="{ active: authStatus().canLoadUserStores }">
+                4. User Stores: {{ authStatus().canLoadUserStores ? '✅' : '❌' }}
+              </div>
+            </div>
+            @if (authStatus().displayName) {
+              <p class="current-user">{{ authStatus().displayName }}</p>
+            }
+          </div>
+
+          <!-- Raw JSON Data (Expandable Sections) -->
+          <div class="debug-section raw-data">
+            <h4>📋 Raw Store Data</h4>
+
+            <details class="data-details">
+              <summary>🔐 AuthStore ({{ authData().ready ? 'Ready' : 'Loading' }})</summary>
+              <pre>{{ authData() | json }}</pre>
+            </details>
+
+            @if (showVerbose()) {
+              <details class="data-details">
+                <summary>👤 UserStore ({{ userData().loading ? 'Loading' : userData().user ? 'Loaded' : 'Empty' }})</summary>
+                <pre>{{ userData() | json }}</pre>
+              </details>
+
+              <details class="data-details">
+                <summary>🏪 PubStore ({{ pubData().pubCount }} pubs)</summary>
+                <pre>{{ pubData() | json }}</pre>
+              </details>
+
+              <details class="data-details">
+                <summary>📍 NearbyPubStore ({{ nearbyPubData().nearbyCount }} nearby)</summary>
+                <pre>{{ nearbyPubData() | json }}</pre>
+              </details>
+
+              <details class="data-details">
+                <summary>✅ CheckinStore ({{ checkinData().checkinCount }} checkins)</summary>
+                <pre>{{ checkinData() | json }}</pre>
+              </details>
+
+              <details class="data-details">
+                <summary>👑 LandlordStore ({{ landlordData().landlordCount }} landlords)</summary>
+                <pre>{{ landlordData() | json }}</pre>
+              </details>
+
+              <details class="data-details">
+                <summary>🏆 BadgeStore ({{ badgeData().badgeCount }} badges)</summary>
+                <pre>{{ badgeData() | json }}</pre>
+              </details>
+
+              <details class="data-details">
+                <summary>🔍 Store Contracts</summary>
+                <pre>{{ storeValidation() | json }}</pre>
+              </details>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  `,
+  styles: [`
+    .dev-debug {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: #1a1a1a;
+      color: #f0f0f0;
+      border-top: 2px solid #333;
+      font-family: 'Courier New', monospace;
+      font-size: 0.75rem;
+      z-index: 1000;
+      max-height: 70vh;
+      overflow-y: auto;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .dev-debug.collapsed {
+      max-height: 40px;
+    }
+
+    .toggle-btn {
+      position: absolute;
+      top: 8px;
+      right: 16px;
+      background: #333;
+      color: #f0f0f0;
+      border: 1px solid #555;
+      border-radius: 4px;
+      padding: 0.25rem 0.5rem;
+      cursor: pointer;
+      font-size: 0.7rem;
+      font-weight: bold;
+      z-index: 1001;
+    }
+
+    .toggle-btn:hover {
+      background: #444;
+    }
+
+    .debug-content {
+      padding: 1rem;
+      padding-right: 100px; /* Space for toggle button */
+    }
+
+    .debug-section {
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+      background: #2a2a2a;
+      border-radius: 4px;
+      border-left: 3px solid #007bff;
+    }
+
+    .debug-section h4 {
+      margin: 0 0 0.5rem 0;
+      color: #00bcd4;
+      font-size: 0.8rem;
+    }
+
+    /* Quick Actions */
+    .action-buttons {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .action-btn {
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      padding: 0.25rem 0.5rem;
+      cursor: pointer;
+      font-size: 0.7rem;
+    }
+
+    .action-btn:hover {
+      background: #0056b3;
+    }
+
+    /* Status Grid */
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 0.5rem;
+    }
+
+    .status-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.25rem 0.5rem;
+      background: #333;
+      border-radius: 3px;
+      font-size: 0.7rem;
+    }
+
+    .status-item.healthy { border-left: 3px solid #28a745; }
+    .status-item.loading { border-left: 3px solid #ffc107; }
+    .status-item.error { border-left: 3px solid #dc3545; }
+    .status-item.empty { border-left: 3px solid #6c757d; }
+
+    .store-name {
+      font-weight: bold;
+    }
+
+    .store-status {
+      font-size: 0.8rem;
+    }
+
+    .store-count {
+      color: #aaa;
+      font-size: 0.65rem;
+    }
+
+    /* Auth Flow */
+    .auth-status {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .auth-step {
+      padding: 0.25rem 0.5rem;
+      background: #333;
+      border-radius: 3px;
+      opacity: 0.5;
+      transition: opacity 0.2s;
+      font-size: 0.7rem;
+    }
+
+    .auth-step.active {
+      opacity: 1;
+      background: #007bff;
+    }
+
+    .current-user {
+      margin: 0.5rem 0 0 0;
+      color: #00bcd4;
+      font-weight: bold;
+    }
+
+    /* Raw Data */
+    .data-details {
+      margin-bottom: 0.5rem;
+      background: #333;
+      border-radius: 3px;
+    }
+
+    .data-details summary {
+      padding: 0.5rem;
+      cursor: pointer;
+      font-weight: bold;
+      color: #00bcd4;
+      user-select: none;
+    }
+
+    .data-details summary:hover {
+      background: #444;
+    }
+
+    .data-details pre {
+      margin: 0;
+      padding: 0.5rem;
+      background: #1a1a1a;
+      border-top: 1px solid #444;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 200px;
+      overflow-y: auto;
+      font-size: 0.65rem;
+      line-height: 1.2;
+    }
+
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {
+      .dev-debug {
+        font-size: 0.7rem;
+      }
+
+      .debug-content {
+        padding: 0.5rem;
+        padding-right: 80px;
+      }
+
+      .status-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .auth-status {
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+    }
+  `],
 })
 export class DevDebugComponent extends BaseComponent {
-  // Injected stores
+  // Inject all stores
   protected readonly authStore = inject(AuthStore);
-  protected readonly checkinStore = inject(CheckinStore);
+  protected readonly userStore = inject(UserStore);
   protected readonly pubStore = inject(PubStore);
   protected readonly nearbyPubStore = inject(NearbyPubStore);
+  protected readonly checkinStore = inject(CheckinStore);
   protected readonly landlordStore = inject(LandlordStore);
+  protected readonly badgeStore = inject(BadgeStore);
 
-  // Component state
-  readonly refreshing = signal(false);
+  // UI state
+  readonly isCollapsed = signal(false);
+  readonly showVerbose = signal(false);
 
-  // Health Check Computed Signals
-  readonly authHealth = computed(() => {
+  // Store data (copied from NewHomeComponent)
+  readonly authData = computed(() => {
     const user = this.authStore.user();
-    const token = this.authStore.token();
     const ready = this.authStore.ready();
 
-    if (!ready) return { status: 'LOADING', details: 'Auth initializing...', level: 'warning' };
-    if (!user || !token) return { status: 'OFFLINE', details: 'Not authenticated', level: 'error' };
-    return { status: 'ONLINE', details: `${user.displayName || user.email}`, level: 'healthy' };
-  });
-
-  readonly pubHealth = computed(() => {
-    const pubs = this.pubStore.data();
-    const loading = this.pubStore.loading();
-    const error = this.pubStore.error();
-
-    if (loading) return { status: 'LOADING', details: 'Fetching pubs...', level: 'warning' };
-    if (error) return { status: 'ERROR', details: error, level: 'error' };
-    if (pubs.length === 0) return { status: 'EMPTY', details: 'No pubs loaded', level: 'warning' };
-    return { status: 'LOADED', details: `${pubs.length} pubs`, level: 'healthy' };
-  });
-
-  readonly locationHealth = computed(() => {
-    const location = this.nearbyPubStore.location();
-    if (!location) return { status: 'NO_LOCATION', details: 'Location unavailable', level: 'error' };
     return {
-      status: 'ACTIVE',
-      details: `${location.lat.toFixed(3)}, ${location.lng.toFixed(3)}`,
-      level: 'healthy'
+      ready,
+      isAuthenticated: this.authStore.isAuthenticated(),
+      user: user,
+      uid: this.authStore.uid(),
+      isAnonymous: this.authStore.isAnonymous(),
+      userDisplayName: this.authStore.userDisplayName(),
+      userShortName: this.authStore.userShortName(),
+      token: this.authStore.token() ? '[TOKEN_PRESENT]' : null,
     };
   });
 
-  readonly checkinHealth = computed(() => {
-    const checkins = this.checkinStore.checkins();
-    const loading = this.checkinStore.loading();
-    const error = this.checkinStore.error();
-
-    if (loading) return { status: 'LOADING', details: 'Loading checkins...', level: 'warning' };
-    if (error) return { status: 'ERROR', details: error, level: 'error' };
-    return {
-      status: 'LOADED',
-      details: `${checkins.length} checkins`,
-      level: 'healthy'
-    };
-  });
-
-  readonly landlordHealth = computed(() => {
-    const todayLandlords = this.landlordStore.todayLandlord();
-    const loading = this.landlordStore.loading();
-    const error = this.landlordStore.error();
-
-    if (loading) return { status: 'LOADING', details: 'Loading landlords...', level: 'warning' as const };
-    if (error) return { status: 'ERROR', details: error, level: 'error' as const };
-
-    const totalPubs = Object.keys(todayLandlords).length;
-    const activeLandlords = Object.values(todayLandlords).filter(l => l !== null).length;
-
-    return {
-      status: 'LOADED',
-      details: `${activeLandlords}/${totalPubs} pubs have landlords`,
-      level: 'healthy' as const
-    };
-  });
-
-  readonly overallHealth = computed(() => {
-    const healths = [
-      this.authHealth(),
-      this.pubHealth(),
-      this.locationHealth(),
-      this.checkinHealth(),
-      this.landlordHealth()
-    ];
-    const errorCount = healths.filter(h => h.level === 'error').length;
-    const warningCount = healths.filter(h => h.level === 'warning').length;
-
-    if (errorCount > 0) return 'CRITICAL';
-    if (warningCount > 0) return 'DEGRADED';
-    return 'HEALTHY';
-  });
-
-  readonly overallHealthClass = computed(() => {
-    const health = this.overallHealth();
-    return {
-      'overall-healthy': health === 'HEALTHY',
-      'overall-warning': health === 'DEGRADED',
-      'overall-error': health === 'CRITICAL'
-    };
-  });
-
-  // Check-in Step-by-Step Diagnosis
-  readonly checkinStep1 = computed(() => {
-    const isAuth = this.authStore.isAuthenticated();
-    const user = this.authStore.user();
-
-    if (!isAuth || !user) {
-      return {
-        status: '❌ FAIL',
-        details: 'Not authenticated',
-        level: 'error' as const
-      };
-    }
-
-    return {
-      status: '✅ PASS',
-      details: `User: ${user.uid.slice(0, 8)}...`,
-      level: 'healthy' as const
-    };
-  });
-
-  readonly checkinStep2 = computed(() => {
-    const location = this.nearbyPubStore.location();
-
-    if (!location) {
-      return {
-        status: '⏳ LOADING',
-        details: 'Requesting location...',
-        level: 'warning' as const
-      };
-    }
-
-    return {
-      status: '✅ PASS',
-      details: `${location.lat.toFixed(3)}, ${location.lng.toFixed(3)}`,
-      level: 'healthy' as const
-    };
-  });
-
-  readonly checkinStep3 = computed(() => {
-    const totalPubs = this.totalPubs();
-    const nearbyPubs = this.nearbyPubsCount();
-    const loading = this.pubStore.loading();
-    const error = this.pubStore.error();
-
-    if (loading) {
-      return {
-        status: '⏳ LOADING',
-        details: 'Loading pubs...',
-        level: 'warning' as const
-      };
-    }
-
-    if (error) {
-      return {
-        status: '❌ FAIL',
-        details: error,
-        level: 'error' as const
-      };
-    }
-
-    if (totalPubs === 0) {
-      return {
-        status: '❌ FAIL',
-        details: 'No pubs loaded',
-        level: 'error' as const
-      };
-    }
-
-    return {
-      status: '✅ PASS',
-      details: `${totalPubs} total, ${nearbyPubs} nearby`,
-      level: 'healthy' as const
-    };
-  });
-
-  readonly checkinStep4 = computed(() => {
-    const closestPub = this.closestPub();
-
-    if (!closestPub) {
-      return {
-        status: '❌ FAIL',
-        details: 'No nearby pubs within 50m',
-        level: 'error' as const
-      };
-    }
-
-    const distance = (closestPub as any).distance;
-    const isWithinRange = distance <= 50000;
-
-    if (!isWithinRange) {
-      return {
-        status: '❌ FAIL',
-        details: `${closestPub.name} is ${distance.toFixed(0)}m away (>50,000m)`,
-        level: 'error' as const
-      };
-    }
-
-    return {
-      status: '✅ PASS',
-      details: `${closestPub.name} is ${distance.toFixed(0)}m away`,
-      level: 'healthy' as const
-    };
-  });
-
-  readonly checkinStep5 = computed(() => {
-    const closestPub = this.closestPub();
-
-    if (!closestPub) {
-      return {
-        status: '❌ FAIL',
-        details: 'No pub to check eligibility',
-        level: 'error' as const
-      };
-    }
-
-    const alreadyCheckedIn = this.checkinStore.hasCheckedInToday(closestPub.id);
-
-    if (alreadyCheckedIn) {
-      return {
-        status: '❌ FAIL',
-        details: 'Already checked in today',
-        level: 'warning' as const
-      };
-    }
-
-    return {
-      status: '✅ PASS',
-      details: 'Eligible to check in',
-      level: 'healthy' as const
-    };
-  });
-
-  readonly checkinStep6 = computed(() => {
-    const closestPub = this.closestPub();
-    const user = this.authStore.user();
-
-    if (!closestPub || !user) {
-      return {
-        status: '❌ FAIL',
-        details: 'No pub or user for landlord check',
-        level: 'error' as const
-      };
-    }
-
-    const currentLandlord = this.landlordStore.get(closestPub.id);
-
-    if (!currentLandlord) {
-      return {
-        status: '👑 AVAILABLE',
-        details: 'No landlord - you can claim it!',
-        level: 'healthy' as const
-      };
-    }
-
-    if (currentLandlord.userId === user.uid) {
-      return {
-        status: '👑 YOU ARE LANDLORD',
-        details: 'You already rule this pub!',
-        level: 'healthy' as const
-      };
-    }
-
-    return {
-      status: '👑 TAKEN',
-      details: `${currentLandlord.userId.slice(0, 8)}... is landlord`,
-      level: 'warning' as const
-    };
-  });
-
-  readonly canCheckInFinal = computed(() => {
-    const steps = [
-      this.checkinStep1(),
-      this.checkinStep2(),
-      this.checkinStep3(),
-      this.checkinStep4(),
-      this.checkinStep5(),
-      this.checkinStep6()
-    ];
-
-    return steps.every(step =>
-      step.status.includes('✅ PASS') ||
-      step.status.includes('👑 AVAILABLE') ||
-      step.status.includes('👑 YOU ARE LANDLORD')
-    );
-  });
-
-  // Pub Data Computed Signals
-  readonly totalPubs = computed(() => this.pubStore.data().length);
-  readonly nearbyPubsCount = computed(() => this.nearbyPubStore.nearbyPubs().length);
-  readonly closestPub = computed(() => this.nearbyPubStore.closestPub());
-  readonly canCheckIn = computed(() => this.nearbyPubStore.canCheckIn());
-
-  readonly visitedPubsCount = computed(() => {
-    if (this.checkinStore.loading()) {
-      console.log('[DevDebug] CheckinStore still loading...');
-      return 0;
-    }
-
-    const checkins = this.checkinStore.checkins();
-    const uniquePubIds = new Set(checkins.map(c => c.pubId));
-    return uniquePubIds.size;
-  });
-
-  readonly landlordPubsCount = computed(() => {
-    const user = this.authStore.user();
-    if (!user) return 0;
-    return user.landlordOf?.length || 0;
-  });
-
-  readonly todayCheckinsCount = computed(() => {
-    return this.checkinStore.todayCheckins().length;
-  });
-
-  readonly latestCheckinPub = computed(() => {
-    const checkins = this.checkinStore.checkins();
-    if (checkins.length === 0) return null;
-
-    const latest = checkins.sort((a, b) =>
-      b.timestamp.toMillis() - a.timestamp.toMillis()
-    )[0];
-
-    const pub = this.pubStore.data().find((p: Pub) => p.id === latest.pubId);
-    return pub?.name || `Pub ID: ${latest.pubId}`;
-  });
-
-  readonly landlordToday = computed(() => {
-    const user = this.authStore.user();
-    if (!user) return [];
-
-    const todayLandlords = this.landlordStore.todayLandlord();
-    const userLandlordPubs: string[] = [];
-
-    Object.entries(todayLandlords).forEach(([pubId, landlord]) => {
-      try {
-        if (landlord && landlord.userId === user.uid) {
-          const claimDate = toDate(landlord.claimedAt);
-          if (claimDate && isToday(claimDate)) {
-            const pub = this.pubStore.data().find((p: Pub) => p.id === pubId);
-            userLandlordPubs.push(pub?.name || pubId);
-          }
-        }
-      } catch (error) {
-        console.warn('[DevDebug] Failed to process landlord:', landlord, error);
-      }
-    });
-
-    return userLandlordPubs;
-  });
-
-  readonly deviceInfo = computed(() => {
-    const nav = navigator as any;
-    return {
-      screen: `${screen.width}×${screen.height}`,
-      memory: nav.deviceMemory ? `${nav.deviceMemory}GB` : 'Unknown',
-      connection: nav.connection?.effectiveType || 'Unknown',
-      touch: 'ontouchstart' in window,
-      battery: nav.getBattery ? 'API Available' : 'Not Available',
-      platform: nav.platform || nav.userAgentData?.platform || 'Unknown'
-    };
-  });
-
-  // Detailed landlord debugging data
-  readonly landlordDebugData = computed(() => {
-    const user = this.authStore.user();
-    const todayLandlords = this.landlordStore.todayLandlord();
-    const pubs = this.pubStore.data();
-
-    if (!user) return {
-      userLandlordPubs: [],
-      totalLandlordPubs: 0,
-      pubsWithLandlords: [],
-      pubsWithoutLandlords: []
-    };
-
-    // Find pubs where current user is landlord
-    const userLandlordPubs = Object.entries(todayLandlords)
-      .filter(([_, landlord]) => landlord?.userId === user.uid)
-      .map(([pubId, landlord]) => {
-        const pub = pubs.find(p => p.id === pubId);
-        return {
-          pubId,
-          pubName: pub?.name || 'Unknown',
-          claimedAt: landlord?.claimedAt,
-          dateKey: landlord?.dateKey
-        };
-      });
-
-    // All pubs with landlords (any user)
-    const pubsWithLandlords = Object.entries(todayLandlords)
-      .filter(([_, landlord]) => landlord !== null)
-      .map(([pubId, landlord]) => {
-        const pub = pubs.find(p => p.id === pubId);
-        return {
-          pubId,
-          pubName: pub?.name || 'Unknown',
-          landlordUserId: landlord?.userId || 'Unknown',
-          claimedAt: landlord?.claimedAt,
-          isCurrentUser: landlord?.userId === user.uid
-        };
-      });
-
-    // Pubs that have been checked but have no landlord
-    const pubsWithoutLandlords = Object.entries(todayLandlords)
-      .filter(([_, landlord]) => landlord === null)
-      .map(([pubId]) => {
-        const pub = pubs.find((p: Pub) => p.id === pubId);
-        return {
-          pubId,
-          pubName: pub?.name || 'Unknown'
-        };
-      });
-
-    return {
-      userLandlordPubs,
-      totalLandlordPubs: Object.keys(todayLandlords).length,
-      pubsWithLandlords,
-      pubsWithoutLandlords,
-      allLandlordsRaw: todayLandlords
-    };
-  });
-
-  readonly rawSignals = computed(() => ({
-    auth: {
-      user: !!this.authStore.user(),
-      token: !!this.authStore.token(),
-      ready: this.authStore.ready(),
-      uid: this.authStore.user()?.uid
-    },
-    pubs: {
-      total: this.totalPubs(),
-      nearby: this.nearbyPubsCount(),
-      visited: this.visitedPubsCount(),
-      loading: this.pubStore.loading(),
-      error: this.pubStore.error(),
-      closestPub: this.closestPub()?.name,
-      canCheckIn: this.canCheckIn()
-    },
-    location: this.nearbyPubStore.location(),
-    checkins: {
-      total: this.checkinStore.checkins().length,
-      today: this.todayCheckinsCount(),
-      latest: this.latestCheckinPub(),
-      loading: this.checkinStore.loading()
-    },
-    landlord: {
-      myPubs: this.landlordDebugData().userLandlordPubs.length,
-      myPubNames: this.landlordDebugData().userLandlordPubs.map(p => p.pubName),
-      totalChecked: this.landlordDebugData().totalLandlordPubs,
-      pubsWithLandlords: this.landlordDebugData().pubsWithLandlords.length,
-      pubsWithoutLandlords: this.landlordDebugData().pubsWithoutLandlords.length,
-      loading: this.landlordStore.loading(),
-      error: this.landlordStore.error(),
-      closestPubLandlord: this.closestPub() ? this.landlordStore.get(this.closestPub()!.id)?.userId : null
-    },
-    device: this.deviceInfo(),
-    env: {
-      production: environment.production,
-      timestamp: Date.now()
-    }
+  readonly userData = computed(() => ({
+    loading: this.userStore.loading(),
+    error: this.userStore.error(),
+    user: this.userStore.user(),
+    isLoaded: this.userStore.isLoaded(),
   }));
 
-  // Helper Methods
-  getHealthClass(health: any) {
-    return {
-      'healthy': health.level === 'healthy',
-      'warning': health.level === 'warning',
-      'error': health.level === 'error'
-    };
-  }
-
-  getStepClass(step: any) {
-    return {
-      'step-pass': step.level === 'healthy',
-      'step-warning': step.level === 'warning',
-      'step-error': step.level === 'error'
-    };
-  }
-
-  getFinalResultClass() {
-    return {
-      'final-pass': this.canCheckInFinal(),
-      'final-fail': !this.canCheckInFinal()
-    };
-  }
-
-  // Action Methods
-  setTestLocationNearPub(): void {
+  readonly pubData = computed(() => {
     const pubs = this.pubStore.data();
-    if (pubs.length > 0) {
-      const testPub = pubs[0];
-      const offset = 0.0001; // ~11 meters
-      const nearbyLat = testPub.location.lat + offset;
-      const nearbyLng = testPub.location.lng + offset;
+    return {
+      loading: this.pubStore.loading(),
+      error: this.pubStore.error(),
+      pubCount: pubs.length,
+      samplePubs: pubs.slice(0, 2).map(p => ({ id: p.id, name: p.name })),
+    };
+  });
 
-      console.log(`[DevDebug] Would set location near ${testPub.name}: ${nearbyLat}, ${nearbyLng}`);
-      this.showInfo(`Mock: Set location near ${testPub.name}`);
-    } else {
-      this.showWarning('No pubs loaded to set location near');
+  readonly nearbyPubData = computed(() => {
+    const pubs = this.nearbyPubStore.nearbyPubs();
+    return {
+      nearbyCount: pubs.length,
+      closestPub: this.nearbyPubStore.closestPub(),
+      canCheckIn: this.nearbyPubStore.canCheckIn(),
+    };
+  });
+
+  readonly checkinData = computed(() => {
+    const checkins = this.checkinStore.data();
+    return {
+      loading: this.checkinStore.loading(),
+      error: this.checkinStore.error(),
+      checkinCount: checkins.length,
+      canLoad: !!this.authStore.user(),
+    };
+  });
+
+  readonly landlordData = computed(() => ({
+    loading: this.landlordStore.loading(),
+    error: this.landlordStore.error(),
+    landlordCount: this.landlordStore.landlordCount(),
+    landlordPubIds: this.landlordStore.landlordPubIds(),
+  }));
+
+  readonly badgeData = computed(() => {
+    const badges = this.badgeStore.data();
+    return {
+      loading: this.badgeStore.loading(),
+      error: this.badgeStore.error(),
+      badgeCount: badges.length,
+    };
+  });
+
+  // Store validation
+  readonly storeValidation = computed(() => ({
+    pubStore: { type: getStoreType(this.pubStore), valid: validateStoreContract(this.pubStore, 'collection') },
+    userStore: { type: getStoreType(this.userStore), valid: validateStoreContract(this.userStore, 'entity') },
+    nearbyPubStore: { type: getStoreType(this.nearbyPubStore), valid: validateStoreContract(this.nearbyPubStore, 'computed') },
+    landlordStore: { type: getStoreType(this.landlordStore), valid: validateStoreContract(this.landlordStore, 'map') },
+  }));
+
+  // Status summary for quick overview
+  readonly storeStatus = computed(() => [
+    {
+      name: 'Auth',
+      status: this.authStore.ready() ? (this.authStore.user() ? 'healthy' : 'empty') : 'loading',
+      indicator: this.authStore.ready() ? (this.authStore.user() ? '✅' : '👤') : '⏳',
+      count: this.authStore.user()?.uid?.slice(-4) || 'none'
+    },
+    {
+      name: 'Pubs',
+      status: this.pubStore.loading() ? 'loading' : (this.pubStore.data().length > 0 ? 'healthy' : 'empty'),
+      indicator: this.pubStore.loading() ? '⏳' : (this.pubStore.data().length > 0 ? '✅' : '📭'),
+      count: this.pubStore.data().length.toString()
+    },
+    {
+      name: 'Nearby',
+      status: this.nearbyPubStore.nearbyPubs().length > 0 ? 'healthy' : 'empty',
+      indicator: this.nearbyPubStore.nearbyPubs().length > 0 ? '📍' : '🚫',
+      count: this.nearbyPubStore.nearbyPubs().length.toString()
+    },
+    {
+      name: 'Checkins',
+      status: this.checkinStore.loading() ? 'loading' :
+             this.checkinStore.error() ? 'error' :
+             this.checkinStore.data().length > 0 ? 'healthy' : 'empty',
+      indicator: this.checkinStore.loading() ? '⏳' :
+                this.checkinStore.error() ? '❌' :
+                this.checkinStore.data().length > 0 ? '✅' : '📭',
+      count: this.checkinStore.data().length.toString()
+    }
+  ]);
+
+  readonly authStatus = computed(() => {
+    const ready = this.authStore.ready();
+    const user = this.authStore.user();
+    const token = this.authStore.token();
+
+    return {
+      ready,
+      hasUser: !!user,
+      hasToken: !!token,
+      canLoadUserStores: ready && !!user,
+      displayName: user ? this.authStore.userDisplayName() : null,
+    };
+  });
+
+  constructor() {
+    super();
+
+    // Add debug info to stores that don't have it
+    this.onlyOnBrowser(() => {
+      addDebugInfoToStore(this.landlordStore);
+      addDebugInfoToStore(this.nearbyPubStore);
+    });
+  }
+
+  // UI Actions
+  toggleCollapsed(): void {
+    this.isCollapsed.update(collapsed => !collapsed);
+  }
+
+  toggleVerbose(): void {
+    this.showVerbose.update(verbose => !verbose);
+  }
+
+  refreshStores(): void {
+    console.log('🔄 Refreshing all stores...');
+    this.pubStore.loadOnce();
+    if (this.authStore.user()) {
+      this.checkinStore.loadOnce();
     }
   }
 
-  async refreshAll(): Promise<void> {
-    this.refreshing.set(true);
-    try {
-      const promises = [this.pubStore.load()];
-
-      if (this.authStore.user()) {
-        promises.push(this.checkinStore.load());
+  clearErrors(): void {
+    console.log('🧹 Clearing store errors...');
+    [this.pubStore, this.checkinStore, this.badgeStore, this.landlordStore].forEach(store => {
+      if ('clearError' in store && typeof store.clearError === 'function') {
+        store.clearError();
       }
-
-      await Promise.all(promises);
-      this.showSuccess('All data refreshed!');
-    } catch (error) {
-      this.showError('Failed to refresh data');
-    } finally {
-      this.refreshing.set(false);
-    }
-  }
-
-  async refreshLandlords(): Promise<void> {
-    const pubs = this.pubStore.data();
-    if (pubs.length === 0) {
-      this.showWarning('No pubs loaded to refresh landlords for');
-      return;
-    }
-
-    this.landlordStore.reset();
-
-    try {
-      // Load landlord data for first 5 pubs (to avoid overwhelming)
-      const pubsToCheck = pubs.slice(0, 5);
-      const promises = pubsToCheck.map(pub => this.landlordStore.loadOnce(pub.id));
-      await Promise.all(promises);
-
-      this.showSuccess(`Refreshed landlord data for ${pubsToCheck.length} pubs`);
-    } catch (error) {
-      this.showError('Failed to refresh landlord data');
-    }
-  }
-
-  loadLandlordForClosestPub(): void {
-    const closestPub = this.closestPub();
-    if (!closestPub) {
-      this.showWarning('No closest pub to load landlord for');
-      return;
-    }
-
-    this.landlordStore.loadOnce(closestPub.id);
-    this.showInfo(`Loading landlord data for ${closestPub.name}`);
-  }
-
-  resetAuth(): void {
-    this.authStore.logout();
-    this.showInfo('Auth reset - logged out');
-  }
-
-  resetPubs(): void {
-    this.pubStore.reset();
-    this.showInfo('Pub store reset');
-  }
-
-  resetCheckins(): void {
-    this.checkinStore.reset();
-    this.showInfo('Check-in store reset');
-  }
-
-  copyDiagnostics(): void {
-    const diagnostics = {
-      ...this.rawSignals(),
-      url: window.location.href,
-      userAgent: navigator.userAgent,
-      timestamp: new Date().toISOString()
-    };
-
-    navigator.clipboard?.writeText(JSON.stringify(diagnostics, null, 2))
-      .then(() => this.showSuccess('Diagnostics copied to clipboard'))
-      .catch(() => this.showWarning('Failed to copy diagnostics'));
+    });
   }
 }

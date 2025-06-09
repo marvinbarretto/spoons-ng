@@ -8,7 +8,7 @@ import { APP_VERSION } from '../../utils/version';
   imports: [DevDebugComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <app-dev-debug></app-dev-debug>
+    <!-- <app-dev-debug></app-dev-debug> -->
     <footer class="footer">
       <p>
         &copy; {{ currentYear }} Spooncount. All rights reserved.
