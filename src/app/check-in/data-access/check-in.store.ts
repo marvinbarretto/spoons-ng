@@ -18,7 +18,6 @@ export class CheckinStore extends BaseStore<CheckIn> {
   // 🔧 Dependencies
   private readonly checkinService = inject(CheckInService);
   private readonly pubService = inject(PubService);
-  private readonly authStore = inject(AuthStore);
   private readonly landlordStore = inject(LandlordStore);
   private readonly userStore = inject(UserStore);
 

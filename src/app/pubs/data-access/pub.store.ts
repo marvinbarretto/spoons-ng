@@ -3,7 +3,6 @@ import { signal, computed, inject, Injectable, effect } from '@angular/core';
 import { PubService } from './pub.service';
 import { CacheService } from '../../shared/data-access/cache.service';
 import { LocationService } from '../../shared/data-access/location.service';
-import { AuthStore } from '../../auth/data-access/auth.store';
 import { BaseStore } from '../../shared/data-access/base.store';
 import type { Pub } from '../utils/pub.models';
 import { getDistanceKm } from '../../shared/utils/get-distance';
@@ -16,7 +15,6 @@ export class PubStore extends BaseStore<Pub> {
   private readonly pubService = inject(PubService);
   private readonly cacheService = inject(CacheService);
   private readonly locationService = inject(LocationService);
-  private readonly authStore = inject(AuthStore);
 
   // Q OK for this store to be calling another store?
   private readonly checkinStore = inject(CheckinStore);

@@ -4,28 +4,46 @@
  * All collection stores should extend this class
  */
 
-import { signal, computed, inject } from '@angular/core';
+import { signal, computed, inject, effect } from '@angular/core';
 import { ToastService } from './toast.service';
 import type { CollectionStore } from './store.contracts';
+import { AuthStore } from '../../auth/data-access/auth.store';
 
 export abstract class BaseStore<T> implements CollectionStore<T> {
   protected readonly toastService = inject(ToastService);
+  protected readonly authStore = inject(AuthStore);
 
-  // ✅ REQUIRED SIGNALS (CollectionStoreSignals)
+  // ✅ Signals (CollectionStoreSignals)
   protected readonly _data = signal<T[]>([]);
   protected readonly _loading = signal(false);
   protected readonly _error = signal<string | null>(null);
+  protected readonly _userId = signal<string | null>(null);
+  protected readonly _hasLoaded = signal(false);
 
-  // ✅ Public readonly signals - clean names following contracts
+  // ✅ Public readonly signals
   readonly data = this._data.asReadonly();
   readonly loading = this._loading.asReadonly();
   readonly error = this._error.asReadonly();
 
-  // ✅ REQUIRED COMPUTED SIGNALS (CollectionStoreSignals)
+  // ✅ Derived signals
   readonly hasData = computed(() => this._data().length > 0);
   readonly isEmpty = computed(() => this._data().length === 0);
   readonly itemCount = computed(() => this._data().length);
+  readonly userId = this._userId.asReadonly();
 
+  protected constructor() {
+    effect(() => {
+      const userId = this.authStore.user()?.uid ?? null;
+      const prevUserId = this._userId();
+
+      if (userId !== prevUserId) {
+        console.log(`[${this.constructor.name}] Auth changed:`, userId);
+        this._userId.set(userId);
+        this.resetForUser(userId || undefined);
+        if (userId) this.loadOnce();
+      }
+    });
+  }
   // ✅ Load tracking - private property
   protected hasLoaded = false;
 
@@ -35,12 +53,13 @@ export abstract class BaseStore<T> implements CollectionStore<T> {
    * Load data only if not already loaded (recommended default)
    */
   async loadOnce(): Promise<void> {
-    if (this.hasLoaded) {
-      console.log(`[${this.constructor.name}] ✅ Already loaded — skipping`);
+    if (this.hasLoaded || !this._userId()) {
+      console.log(`[${this.constructor.name}] ⏭ Skipping loadOnce — already loaded or no user`);
       return;
     }
     await this.load();
   }
+
 
   /**
    * Force reload data regardless of current state

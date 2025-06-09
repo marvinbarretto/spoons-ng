@@ -12,7 +12,6 @@ import { User } from "../../users/utils/user.model";
 // /leaderboard/data-access/leaderboard.store.ts
 export class LeaderboardStore extends BaseStore<LeaderboardEntry> {
   private readonly userService = inject(UserService);
-  private readonly authStore = inject(AuthStore);
 
 
   // 📊 Different ranking views
