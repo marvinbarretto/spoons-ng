@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.20](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.19...v0.0.20) (2025-06-09)
+
+
+### Features
+
+* Stub store contracts to enforce consistency ([f566b9d](https://github.com/marvinbarretto/spoons-ng/commit/f566b9ddbbc9e1a3b4121f82c1c74a31f0c659d3))
+
 ### [0.0.19](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.18...v0.0.19) (2025-06-09)
 
 
