@@ -18,7 +18,6 @@ export abstract class BaseStore<T> implements CollectionStore<T> {
   protected readonly _loading = signal(false);
   protected readonly _error = signal<string | null>(null);
   protected readonly _userId = signal<string | null>(null);
-  protected readonly _hasLoaded = signal(false);
 
   // ✅ Public readonly signals
   readonly data = this._data.asReadonly();
@@ -40,7 +39,10 @@ export abstract class BaseStore<T> implements CollectionStore<T> {
         console.log(`[${this.constructor.name}] Auth changed:`, userId);
         this._userId.set(userId);
         this.resetForUser(userId || undefined);
-        if (userId) this.loadOnce();
+
+        if (userId) {
+          this.loadOnce(); // safe because we guard below
+        }
       }
     });
   }

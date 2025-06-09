@@ -3,6 +3,8 @@ import {
   EnvironmentInjector,
   Injectable,
   Injector,
+  Signal,
+  signal,
   Type,
 } from '@angular/core';
 import {
@@ -15,16 +17,17 @@ import {
   ComponentPortal,
 } from '@angular/cdk/portal';
 import { FocusTrap, FocusTrapFactory } from '@angular/cdk/a11y';
+import { Subscription } from 'rxjs';
 
 
 @Injectable({ providedIn: 'root' })
 export class OverlayService {
   private overlayRef?: OverlayRef;
   private focusTrap?: FocusTrap;
+  private backdropSubscription?: Subscription;
+
   private keydownListener = (event: KeyboardEvent) => {
-    if (event.key === 'Escape') {
-      this.close();
-    }
+    if (event.key === 'Escape') this.close();
   };
 
   constructor(
@@ -41,14 +44,16 @@ export class OverlayService {
       .centerVertically();
   }
 
+  // ✅ Your preferred API - restored!
   open<T>(
     component: Type<T>,
     config: Partial<OverlayConfig> = {},
-    inputs?: Record<string, any>
-  ): { componentRef: ComponentRef<T>; close: () => void } {
-    if (this.overlayRef) {
-      this.close();
-    }
+    inputs: Record<string, any> = {}
+  ): {
+    componentRef: ComponentRef<T>;
+    close: (value?: any) => void;
+  } {
+    if (this.overlayRef) this.close();
 
     this.overlayRef = this.overlay.create({
       hasBackdrop: true,
@@ -59,20 +64,18 @@ export class OverlayService {
       ...config,
     });
 
-    this.overlayRef.backdropClick().subscribe(() => this.close());
-
+    this.backdropSubscription = this.overlayRef.backdropClick().subscribe(() => this.close());
     document.addEventListener('keydown', this.keydownListener);
 
     const portal = new ComponentPortal(component, null, this.injector, this.environmentInjector);
     const componentRef = this.overlayRef.attach(portal);
 
-    if (inputs) {
-      for (const [key, value] of Object.entries(inputs)) {
-        if (componentRef.setInput) {
-          componentRef.setInput(key, value);
-        } else {
-          (componentRef.instance as any)[key] = value;
-        }
+    // Set inputs if provided
+    for (const [key, value] of Object.entries(inputs)) {
+      if (componentRef.setInput) {
+        componentRef.setInput(key, value);
+      } else {
+        (componentRef.instance as any)[key] = value;
       }
     }
 
@@ -80,17 +83,25 @@ export class OverlayService {
     this.focusTrap = this.focusTrapFactory.create(element);
     this.focusTrap.focusInitialElementWhenReady();
 
-    return {
-      componentRef,
-      close: () => this.close(),
-    };
+    // ✅ Return the API you prefer
+    const close = (value?: any) => this.close(value);
+
+    return { componentRef, close };
   }
 
-  close(): void {
+  close(value?: any): void {
+    this.backdropSubscription?.unsubscribe();
+    this.backdropSubscription = undefined;
+
     this.overlayRef?.dispose();
     this.overlayRef = undefined;
     this.focusTrap?.destroy();
+    this.focusTrap = undefined;
     document.removeEventListener('keydown', this.keydownListener);
   }
-}
 
+  // ✅ Keep this for components that want to close themselves
+  closeFromComponent(value?: any): void {
+    this.close(value);
+  }
+}

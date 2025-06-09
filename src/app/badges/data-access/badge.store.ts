@@ -1,69 +1,84 @@
 // /badges/data-access/badge.store.ts
-import { Injectable, computed, effect, signal } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import type { Badge } from '../utils/badge.model';
-import { BadgeService } from './badge.service';
-import { BaseStore } from '../../shared/data-access/base.store';
-import { Timestamp } from 'firebase/firestore';
 import { inject } from '@angular/core';
+import { BadgeService } from './badge.service';
 
 @Injectable({ providedIn: 'root' })
-export class BadgeStore extends BaseStore<Badge> {
-  private readonly badgeService = inject(BadgeService);
+export class BadgeStore {
+  private readonly service = inject(BadgeService);
 
-  // ✅ Internal signals
-  private readonly _allBadges = signal<Badge[]>([]);
-  private readonly _allBadgesLoaded = signal(false);
+  private readonly _badges = signal<Badge[]>([]);
+  private readonly _loading = signal(false);
+  private readonly _error = signal<string | null>(null);
 
-  // ✅ Public signals
-  readonly allBadges = this._allBadges.asReadonly();
-  readonly allBadgesLoaded = this._allBadgesLoaded.asReadonly();
+  readonly badges = this._badges.asReadonly();
+  readonly loading = this._loading.asReadonly();
+  readonly error = this._error.asReadonly();
 
-  // ✅ Badge presence check
-  hasBadge = (id: string) => computed(() => this.data().some(b => b.id === id));
-
-  // ✅ Badge lookup helpers
-  getBadgeById = (id: string): Badge | undefined => this._allBadges().find(b => b.id === id);
-  getBadgesByIds = (ids: string[]): Badge[] =>
-    ids.map(id => this.getBadgeById(id)).filter(Boolean) as Badge[];
-
-  protected async fetchData(): Promise<Badge[]> {
-    const userId = this._userId();
-    if (!userId) {
-      console.warn('[BadgeStore] Skipping fetchData — userId not set');
-      return [];
+  async loadOnce(): Promise<void> {
+    if (this._badges().length || this._loading()) return;
+    this._loading.set(true);
+    try {
+      const badges = await this.service.getBadgeDefinitions();
+      this._badges.set(badges);
+    } catch (err: any) {
+      this._error.set(err?.message ?? 'Failed to load badges');
+      console.error('[BadgeStore] loadOnce error:', err);
+    } finally {
+      this._loading.set(false);
     }
-    return this.badgeService.getUserBadges(userId);
   }
 
-  override resetForUser(): void {
-    super.resetForUser();
-    this._allBadges.set([]);
-    this._allBadgesLoaded.set(false);
+  async create(newBadge: Badge): Promise<void> {
+    try {
+      await this.service.create(newBadge);
+      this._badges.update(current => [...current, newBadge]);
+    } catch (err: any) {
+      this._error.set(err?.message ?? 'Failed to create badge');
+      console.error('[BadgeStore] create error:', err);
+    }
   }
 
-  async loadAllBadgesOnce(): Promise<void> {
-    if (this._allBadgesLoaded()) return;
-    const all = await this.badgeService.getAllBadges();
-    this._allBadges.set(all);
-    this._allBadgesLoaded.set(true);
+  async update(updatedBadge: Badge): Promise<void> {
+    try {
+      await this.service.update(updatedBadge.id, updatedBadge);
+      this._badges.update(current =>
+        current.map(b => b.id === updatedBadge.id ? updatedBadge : b)
+      );
+    } catch (err: any) {
+      this._error.set(err?.message ?? 'Failed to update badge');
+      console.error('[BadgeStore] update error:', err);
+    }
   }
 
-  async award(badge: Badge): Promise<void> {
-    const uid = this._userId();
-    if (!uid) return;
-    if (this.hasItem(b => b.id === badge.id)) return;
+  async save(badge: Badge): Promise<void> {
+    try {
+      const exists = this._badges().some(b => b.id === badge.id);
+      exists
+        ? await this.service.update(badge.id, badge)
+        : await this.service.create(badge);
 
-    await this.badgeService.awardBadgeToUser(uid, badge);
-    this.addItem({ ...badge, createdAt: Timestamp.now() });
-    this.toastService.success(`🏅 ${badge.name} badge awarded!`);
+      // Refresh or manually update signal
+      const updated = exists
+        ? this._badges().map(b => (b.id === badge.id ? badge : b))
+        : [...this._badges(), badge];
+
+      this._badges.set(updated);
+    } catch (err: any) {
+      this._error.set(err?.message ?? 'Save failed');
+      console.error('[BadgeStore] Save error:', err);
+    }
   }
 
-  async revoke(badgeId: string): Promise<void> {
-    const uid = this._userId();
-    if (!uid) return;
 
-    await this.badgeService.revokeBadgeFromUser(uid, badgeId);
-    this.removeItem(b => b.id === badgeId);
+  async delete(id: string): Promise<void> {
+    try {
+      await this.service.delete(id);
+      this._badges.update(current => current.filter(b => b.id !== id));
+    } catch (err: any) {
+      this._error.set(err?.message ?? 'Failed to delete badge');
+      console.error('[BadgeStore] delete error:', err);
+    }
   }
 }
-

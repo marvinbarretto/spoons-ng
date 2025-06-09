@@ -338,7 +338,7 @@ export class NewHomeComponent extends BaseComponent {
   });
 
   readonly badgeData = computed(() => {
-    const badges = this.badgeStore.data();
+    const badges = this.badgeStore.badges();
     const loading = this.badgeStore.loading();
     const error = this.badgeStore.error();
     const user = this.authStore.user();

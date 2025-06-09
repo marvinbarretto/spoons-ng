@@ -1,45 +1,57 @@
 // /badges/data-access/badge.service.ts
 import { Injectable } from '@angular/core';
 import type { Badge } from '../utils/badge.model';
-import { FirestoreService } from '../../shared/data-access/firestore.service';
+import { FirestoreCrudService } from '../../shared/data-access/firestore-crud.service';
+
+type UserBadge = Badge & { awardedAt: number };
 
 @Injectable({ providedIn: 'root' })
-export class BadgeService extends FirestoreService {
-  private readonly BADGES_PATH = 'badges';
+export class BadgeService extends FirestoreCrudService<Badge> {
+  protected override path = 'badges';
+
   private readonly USER_BADGES_PATH = (userId: string) => `users/${userId}/badges`;
 
   /**
-   * Fetch all badge definitions (for display or admin UI).
+   * Fetch all badge definitions from the global badge catalog.
    */
-  getAllBadges(): Promise<Badge[]> {
-    return this.getDocsWhere<Badge>(this.BADGES_PATH); // definitions (e.g. badge catalog)
+  getBadgeDefinitions(): Promise<Badge[]> {
+    console.log('[BadgeService] getBadgeDefinitions', this.path);
+    return this.getAll(); // use inherited method that uses `path`
   }
 
   /**
-   * Fetch awarded badges for a user.
+   * Fetch all badges awarded to a specific user.
    */
-  getUserBadges(userId: string): Promise<Badge[]> {
-    return this.getDocsWhere<Badge>(this.USER_BADGES_PATH(userId));
+  getAwardedBadgesForUser(userId: string): Promise<UserBadge[]> {
+    return this.getDocsWhere<UserBadge>(this.USER_BADGES_PATH(userId));
   }
 
   /**
-   * Award a badge to a user (if not already awarded).
+   * Award a badge to a user (noop if already awarded).
    */
   async awardBadgeToUser(userId: string, badge: Badge): Promise<void> {
     const badgePath = `${this.USER_BADGES_PATH(userId)}/${badge.id}`;
-    const alreadyExists = await this.exists(badgePath);
-    if (alreadyExists) return;
+    const alreadyAwarded = await this.exists(badgePath);
+    if (alreadyAwarded) {
+      console.log(`[BadgeService] User ${userId} already has badge ${badge.id}`);
+      return;
+    }
 
-    await this.setDoc(badgePath, {
+    const userBadge: UserBadge = {
       ...badge,
       awardedAt: Date.now(),
-    });
+    };
+
+    await this.setDoc<UserBadge>(badgePath, userBadge);
+    console.log(`[BadgeService] Awarded badge ${badge.id} to user ${userId}`);
   }
 
   /**
-   * Revoke a badge (e.g. for testing).
+   * Revoke a previously awarded badge from a user.
    */
-  revokeBadgeFromUser(userId: string, badgeId: string): Promise<void> {
-    return this.deleteDoc(`${this.USER_BADGES_PATH(userId)}/${badgeId}`);
+  async revokeBadgeFromUser(userId: string, badgeId: string): Promise<void> {
+    const badgePath = `${this.USER_BADGES_PATH(userId)}/${badgeId}`;
+    await this.deleteDoc(badgePath);
+    console.log(`[BadgeService] Revoked badge ${badgeId} from user ${userId}`);
   }
 }

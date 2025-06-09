@@ -406,7 +406,7 @@ export class DevDebugComponent extends BaseComponent {
   }));
 
   readonly badgeData = computed(() => {
-    const badges = this.badgeStore.data();
+    const badges = this.badgeStore.badges();
     return {
       loading: this.badgeStore.loading(),
       error: this.badgeStore.error(),

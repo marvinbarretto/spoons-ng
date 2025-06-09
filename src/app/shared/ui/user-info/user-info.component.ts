@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, input, computed, Signal, effect, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ButtonComponent } from '../ui/button/button.component';
-import type { User } from '../../users/utils/user.model';
+import { ButtonComponent } from '../button/button.component';
+import type { User } from '../../../users/utils/user.model';
 
 @Component({
   selector: 'app-user-info',

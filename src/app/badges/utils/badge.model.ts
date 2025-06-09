@@ -4,10 +4,9 @@ export type Badge = {
   id: string;              // slug or UUID
   name: string;
   description: string;
-  emoji: string;
-
-  criteria: string;        // short machine-readable key e.g. 'first-checkin'
-  createdAt: Timestamp;    // optional for ordering
-
+  icon?: string;
   iconUrl?: string;
+  createdAt?: Timestamp;
+  criteria?: string;
+  emoji?: string;
 };

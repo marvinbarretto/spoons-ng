@@ -1,23 +1,29 @@
-<form (ngSubmit)="submit()" class="form">
+<form [formGroup]="form" (ngSubmit)="save()" novalidate>
   <label>
-    ID:
-    <input [value]="model().id" (input)="onInputChange('id', $event)" />
-  </label>
-
-  <label>
-  Name:
-    <input [value]="model().name" (input)="onInputChange('name', $event)" />
+    Name:
+    <input formControlName="name" required />
   </label>
 
   <label>
     Description:
-    <input [value]="model().description" (input)="onInputChange('description', $event)" />
+    <input formControlName="description" />
   </label>
 
   <label>
-    Emoji:
-    <input [value]="model().emoji" (input)="onInputChange('emoji', $event)" />
+    Choose Icon:
+    <div class="icon-grid">
+      @for (emoji of defaultIcons; track emoji) {
+        <button
+          type="button"
+          class="icon-option"
+          [class.selected]="form.controls.icon.value === emoji"
+          (click)="selectIcon(emoji)"
+        >
+          {{ emoji }}
+        </button>
+      }
+    </div>
   </label>
 
-  <button type="submit">Save</button>
+  <button type="submit" [disabled]="form.invalid">Save</button>
 </form>

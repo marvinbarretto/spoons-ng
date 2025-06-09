@@ -4,7 +4,7 @@
 
   <!-- 👋 Welcome Section -->
   <section class="welcome">
-    <h1>Welcome, {{ authStore.userDisplayName() }}!</h1>
+    <h1>Welcome, {{ authStore.displayName() }}!</h1>
 
     @if (authStore.isAnonymous()) {
       <div class="anonymous-actions">
@@ -76,8 +76,8 @@
   }
 
   <!-- 🏅 User Badges -->
-  @if (badgeStore && badgeStore.data().length > 0) {
-    <app-user-badges [badges]="badgeStore.data" />
+  @if (badgeStore && badgeStore.badges().length > 0) {
+    <!-- <app-user-badges [badges]="badgeStore.badges()" /> -->
   }
 
   <!-- 🔄 Loading State -->
