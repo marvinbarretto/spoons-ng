@@ -10,6 +10,8 @@ import { AuthStore } from '../../auth/data-access/auth.store';
 import { BaseStore } from '../../shared/data-access/base.store';
 import { LandlordStore } from '../../landlord/data-access/landlord.store';
 import { getDistanceKm } from '../../shared/utils/get-distance';
+import { User } from '../../users/utils/user.model';
+import { UserStore } from '../../users/data-access/user.store';
 
 @Injectable({ providedIn: 'root' })
 export class CheckinStore extends BaseStore<CheckIn> {
@@ -18,6 +20,7 @@ export class CheckinStore extends BaseStore<CheckIn> {
   private readonly pubService = inject(PubService);
   private readonly authStore = inject(AuthStore);
   private readonly landlordStore = inject(LandlordStore);
+  private readonly userStore = inject(UserStore);
 
   // 🔒 Auth-reactive state
   private lastLoadedUserId: string | null = null;
@@ -162,7 +165,7 @@ export class CheckinStore extends BaseStore<CheckIn> {
 
       // 7. Update landlord store if landlord was awarded
       if (completed.landlordResult) {
-        this.landlordStore.setTodayLandlord(pubId, completed.landlordResult.landlord);
+        this.landlordStore.set(pubId, completed.landlordResult.landlord);
         console.log('[CheckinStore] 👑 Updated landlord store:', completed.landlordResult);
       }
 
@@ -270,6 +273,59 @@ export class CheckinStore extends BaseStore<CheckIn> {
 
     return distanceKm * 1000; // Convert to meters
   }
+
+
+  async performCheckIn(pubId: string): Promise<void> {
+    const user = this.authStore.user();
+    if (!user) {
+      console.warn('[CheckinStore] ❌ Cannot check in without a user');
+      return;
+    }
+
+    const now = new Date();
+    const checkin = {
+      userId: user.uid,
+      pubId,
+      timestamp: Timestamp.fromDate(now), // Convert Date to Timestamp
+      dateKey: now.toISOString().split('T')[0],
+      photoURL: '', // set this later if capturing a photo
+    };
+
+    try {
+      // ✅ Step 1: Complete the check-in
+      const result = await this.checkinService.completeCheckin(checkin);
+      console.log('[CheckinStore] ✅ Check-in completed:', result);
+
+      // ✅ Step 2: Update user Firestore doc
+      const current = this.userStore.user();
+      const prevStreak = current?.streaks?.[pubId] || 0;
+      const updatedUserFields: Partial<User> = {
+        streaks: { ...(current?.streaks || {}), [pubId]: prevStreak + 1 },
+        checkedInPubIds: [...new Set([...(current?.checkedInPubIds || []), pubId])],
+      };
+
+      await this.checkinService.patchUserDocument(user.uid, updatedUserFields);
+
+      // ✅ Step 3: Update local user state
+      this.userStore.patchUser(updatedUserFields);
+
+      // ✅ Step 4: Handle landlord result
+      if (result.landlordResult?.wasAwarded && result.landlordResult.landlord) {
+        this.landlordStore.set(pubId, result.landlordResult.landlord);
+        console.log('[CheckinStore] 👑 New landlord awarded:', result.landlordResult.landlord);
+      }
+
+      // ✅ Step 5: Add check-in to local state
+      this.recordCheckinSuccess(result); // Use recordCheckinSuccess instead of addCheckin
+
+    } catch (error: any) {
+      console.error('[CheckinStore] ❌ performCheckIn failed:', error);
+      this.toastService.error('Check-in failed. Please try again.');
+    }
+  }
+
+
+
 
   /**
    * Record successful check-in

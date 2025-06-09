@@ -58,6 +58,14 @@ export class UserStore {
     this._user.set(user);
   }
 
+  patchUser(updates: Partial<User>): void {
+    const current = this._user();
+    if (!current) return;
+    this._user.set({ ...current, ...updates });
+  }
+
+
+
   async loadUser(userId: string): Promise<void> {
     this._loading.set(true);
     this._error.set(null);

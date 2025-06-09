@@ -9,20 +9,20 @@ export type TodayLandlordMap = Record<string, Landlord | null>;
 export class LandlordStore {
   private readonly landlordService = inject(LandlordService);
 
-  // ✅ Clean signal names following our conventions
+  // 🔒 Private signals
   private readonly _todayLandlord = signal<TodayLandlordMap>({});
+  private readonly _loadedPubs = signal<Set<string>>(new Set());
   private readonly _loading = signal(false);
   private readonly _error = signal<string | null>(null);
-  private readonly _loadedPubs = signal<Set<string>>(new Set()); // Track what we've loaded
 
   // ✅ Public readonly signals
   readonly todayLandlord = this._todayLandlord.asReadonly();
   readonly loading = this._loading.asReadonly();
   readonly error = this._error.asReadonly();
 
-  // ✅ Computed signals for derived state
+  // ✅ Derived signals
   readonly landlordPubIds = computed(() =>
-    Object.keys(this.todayLandlord()).filter(pubId => this.todayLandlord()[pubId])
+    Object.keys(this.todayLandlord()).filter(pubId => !!this.todayLandlord()[pubId])
   );
 
   readonly landlordCount = computed(() => this.landlordPubIds().length);
@@ -31,80 +31,70 @@ export class LandlordStore {
     console.log('[LandlordStore] 👑 Initialized');
   }
 
-  /**
-   * ✅ Load landlord data with loadOnce pattern
-   */
-  async loadLandlordOnce(pubId: string): Promise<void> {
-    // Check if we already loaded this pub
-    if (this._loadedPubs().has(pubId)) {
-      console.log(`[LandlordStore] ✅ Already loaded landlord for ${pubId}:`, this.getLandlordForPub(pubId)?.userId || 'none');
-      return;
-    }
+  // --- RESTFUL / CRUD-style METHODS ---
 
-    console.log(`[LandlordStore] 📡 Loading landlord for ${pubId}...`);
+  /**
+   * Read landlord for a specific pub from Firestore if not already loaded
+   */
+  async loadOnce(pubId: string): Promise<void> {
+    if (this._loadedPubs().has(pubId)) return;
+
+    console.log(`[LandlordStore] 📡 Loading landlord for ${pubId}`);
     this._loading.set(true);
     this._error.set(null);
 
     try {
       const landlord = await this.landlordService.getTodayLandlord(pubId);
 
-      // Update state
-      this._todayLandlord.update(current => ({
-        ...current,
+      this._todayLandlord.update(map => ({
+        ...map,
         [pubId]: landlord
       }));
 
-      // Mark as loaded
-      this._loadedPubs.update(loaded => new Set([...loaded, pubId]));
-
+      this._loadedPubs.update(set => new Set([...set, pubId]));
       console.log(`[LandlordStore] ✅ Loaded landlord for ${pubId}:`, landlord?.userId || 'none');
 
-    } catch (error: any) {
-      const message = `Failed to load landlord for ${pubId}`;
-      this._error.set(message);
-      console.error('[LandlordStore] ❌ Error loading landlord:', error);
+    } catch (err: any) {
+      const msg = `Failed to load landlord for ${pubId}`;
+      this._error.set(msg);
+      console.error(`[LandlordStore] ❌ ${msg}:`, err);
     } finally {
       this._loading.set(false);
     }
   }
 
   /**
-   * Set landlord for a specific pub (used by other stores)
+   * Create or update the landlord for a pub
    */
-  setTodayLandlord(pubId: string, landlord: Landlord | null): void {
-    this._todayLandlord.update(current => ({
-      ...current,
+  set(pubId: string, landlord: Landlord | null): void {
+    this._todayLandlord.update(map => ({
+      ...map,
       [pubId]: landlord
     }));
 
-    // Mark as loaded since we're setting data
-    this._loadedPubs.update(loaded => new Set([...loaded, pubId]));
-
+    this._loadedPubs.update(set => new Set([...set, pubId]));
     console.log(`[LandlordStore] 👑 Set landlord for ${pubId}:`, landlord?.userId || 'none');
   }
 
   /**
-   * Get landlord for a specific pub
+   * Read landlord from signal
    */
-  getLandlordForPub(pubId: string): Landlord | null {
-    return this.todayLandlord()[pubId] || null;
+  get(pubId: string): Landlord | null {
+    return this._todayLandlord()[pubId] || null;
   }
 
   /**
-   * Check if a specific user is landlord of a pub
+   * Delete landlord from state (local only)
    */
-  isUserLandlord(pubId: string, userId: string): boolean {
-    const landlord = this.getLandlordForPub(pubId);
-    return landlord?.userId === userId;
-  }
-
-  /**
-   * Get all pubs where a user is landlord
-   */
-  getUserLandlordPubs(userId: string): string[] {
-    return Object.entries(this.todayLandlord())
-      .filter(([_, landlord]) => landlord?.userId === userId)
-      .map(([pubId]) => pubId);
+  clear(pubId: string): void {
+    const { [pubId]: _, ...rest } = this._todayLandlord();
+    this._todayLandlord.set(rest);
+    this._loadedPubs.update(set => {
+      const copy = new Set(set);
+      copy.delete(pubId);
+      return copy;
+    });
+    console.log(`[LandlordStore] 🧹 Cleared landlord for ${pubId}`);
   }
 
   /**
@@ -112,9 +102,25 @@ export class LandlordStore {
    */
   reset(): void {
     this._todayLandlord.set({});
+    this._loadedPubs.set(new Set());
     this._loading.set(false);
     this._error.set(null);
-    this._loadedPubs.set(new Set());
-    console.log('[LandlordStore] 🔄 Reset complete');
+    console.log('[LandlordStore] 🔄 Reset all landlord data');
+  }
+
+  // --- UTILITY METHODS ---
+
+  hasLoaded(pubId: string): boolean {
+    return this._loadedPubs().has(pubId);
+  }
+
+  isUserLandlord(pubId: string, userId: string): boolean {
+    return this.get(pubId)?.userId === userId;
+  }
+
+  getPubsWhereUserIsLandlord(userId: string): string[] {
+    return Object.entries(this._todayLandlord()).flatMap(([pubId, landlord]) =>
+      landlord?.userId === userId ? [pubId] : []
+    );
   }
 }

@@ -3,11 +3,11 @@
   background-color: var(--brand-dark);
   color: var(--brand-light);
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
   gap: 1rem;
   padding: 0.75rem;
   flex-wrap: wrap;
+  border: solid 1px red;
 }
 
 .user-info__anon {

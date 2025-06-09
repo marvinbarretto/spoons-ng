@@ -21,13 +21,18 @@ import { FocusTrap, FocusTrapFactory } from '@angular/cdk/a11y';
 export class OverlayService {
   private overlayRef?: OverlayRef;
   private focusTrap?: FocusTrap;
+  private keydownListener = (event: KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      this.close();
+    }
+  };
 
   constructor(
     private overlay: Overlay,
     private injector: Injector,
     private environmentInjector: EnvironmentInjector,
     private focusTrapFactory: FocusTrapFactory
-  ) { }
+  ) {}
 
   private createCentrePositionStrategy(): GlobalPositionStrategy {
     return this.overlay.position()
@@ -56,6 +61,8 @@ export class OverlayService {
 
     this.overlayRef.backdropClick().subscribe(() => this.close());
 
+    document.addEventListener('keydown', this.keydownListener);
+
     const portal = new ComponentPortal(component, null, this.injector, this.environmentInjector);
     const componentRef = this.overlayRef.attach(portal);
 
@@ -83,5 +90,7 @@ export class OverlayService {
     this.overlayRef?.dispose();
     this.overlayRef = undefined;
     this.focusTrap?.destroy();
+    document.removeEventListener('keydown', this.keydownListener);
   }
 }
+

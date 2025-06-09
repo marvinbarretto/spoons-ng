@@ -6,6 +6,7 @@ import {
   ElementRef,
   ViewChild,
   inject,
+  effect,
 } from '@angular/core';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -16,8 +17,11 @@ import { BaseComponent } from '../../data-access/base.component';
 import { FeatureFlagPipe } from '../../utils/feature-flag.pipe';
 import { PanelStore, PanelType } from '../../ui/panel/panel.store';
 import { ViewportService } from '../../data-access/viewport.service';
-import { UserInfoComponent } from "../user-info/user-info.component";
+import { UserInfoComponent } from "../../user-info/user-info.component";
 import { NavComponent } from "../nav/nav.component";
+import { LandlordStore } from '../../../landlord/data-access/landlord.store';
+import { NearbyPubStore } from '../../../pubs/data-access/nearby-pub.store';
+import { AuthStore } from '../../../auth/data-access/auth.store';
 
 @Component({
   selector: 'app-header',
@@ -34,27 +38,50 @@ import { NavComponent } from "../nav/nav.component";
 export class HeaderComponent extends BaseComponent implements AfterViewInit {
   // 🔧 Services
   private readonly router = inject(Router);
-  private readonly panelStore = inject(PanelStore);
   private readonly viewportService = inject(ViewportService);
 
-  // 📡 Observables (rare cases)
+  private readonly panelStore = inject(PanelStore);
+  private readonly landlordStore = inject(LandlordStore);
+  private readonly nearbyPubStore = inject(NearbyPubStore);
+  private readonly authStore = inject(AuthStore);
+
   private readonly currentRoute$ = this.router.events.pipe(
     filter((event): event is NavigationEnd => event instanceof NavigationEnd),
     map(event => event.url)
   );
 
-  // 📡 Signals - reactive router tracking
   private readonly currentRoute = toSignal(this.currentRoute$, {
-    initialValue: this.router.url
+    initialValue: this.router.url,
   });
 
-  // 📡 Computed signals
   readonly isHomepage = computed(() => this.currentRoute() === '/');
   readonly isMobile = this.viewportService.isMobile;
+  readonly closestPub = computed(() => this.nearbyPubStore.closestPub());
 
-  // 🎭 Template refs
+  // ✅ Signals for child components
+  readonly user = this.authStore.user;
+  readonly isAnonymous = this.authStore.isAnonymous;
+  readonly shortName = this.authStore.userShortName;
+
+  readonly shortNameSignal = this.authStore.userShortName; // for reactivity
+  readonly shortNameSnapshot = computed(() => this.shortNameSignal()); // clean up input.required behavior
+
+
+  handleLogin = () => this.authStore.loginWithGoogle();
+  handleLogout = () => this.authStore.logout();
+
   @ViewChild('headerRef', { static: false }) headerRef!: ElementRef;
   @ViewChild('panelTrigger', { static: false }) panelTriggerRef!: ElementRef;
+
+  constructor() {
+    super();
+    effect(() => {
+      const value = this.shortName;
+      console.log('[HeaderComponent] shortName typeof:', typeof value);
+      console.log('[HeaderComponent] shortName is signal:', typeof value === 'function');
+      console.log('[HeaderComponent] shortName() typeof:', typeof value());
+    });
+  }
 
   protected override onInit(): void {
     console.log('[HeaderComponent] Current route:', this.currentRoute());
@@ -62,15 +89,11 @@ export class HeaderComponent extends BaseComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.onlyOnBrowser(() => {
-      this.updatePanelOrigin();
-    });
+    this.onlyOnBrowser(() => this.updatePanelOrigin());
   }
 
-  // 🎬 Event handlers
   onTogglePanel(panel: PanelType): void {
     this.onlyOnBrowser(() => {
-      // Position panel relative to the clicked trigger
       const button = this.panelTriggerRef?.nativeElement as HTMLElement;
       if (button) {
         const y = button.getBoundingClientRect().bottom + window.scrollY;
@@ -80,7 +103,6 @@ export class HeaderComponent extends BaseComponent implements AfterViewInit {
     });
   }
 
-  // 🎬 Private methods
   private updatePanelOrigin(): void {
     const rect = this.headerRef?.nativeElement?.getBoundingClientRect();
     if (rect) {
@@ -89,7 +111,6 @@ export class HeaderComponent extends BaseComponent implements AfterViewInit {
     }
   }
 
-  // 🎨 Host bindings
   @HostBinding('class.is-mobile')
   get isMobileClass(): boolean {
     return this.isMobile();

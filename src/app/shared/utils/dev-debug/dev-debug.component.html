@@ -146,7 +146,7 @@
       @if (closestPub()) {
         <div class="closest-pub-landlord">
           <strong>Closest Pub Landlord:</strong>
-          @if (landlordStore.getLandlordForPub(closestPub()!.id); as landlord) {
+          @if (landlordStore.get(closestPub()!.id); as landlord) {
             <span class="has-landlord">{{ landlord.userId.slice(0, 8) }}...</span>
           } @else {
             <span class="no-landlord">🏴 Available to claim!</span>

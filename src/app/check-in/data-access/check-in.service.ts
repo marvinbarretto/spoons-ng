@@ -71,6 +71,29 @@ export class CheckInService extends FirestoreService {
   }
 
   /**
+ * Update user statistics after a check-in
+ * - Updates streak count for this pub
+ * - Adds pub to visited list
+ * @param user - The user document
+ * @param checkin - The check-in data
+ */
+private async updateUserStats(user: User, checkin: Omit<CheckIn, 'id'>): Promise<void> {
+  const userRefPath = `users/${checkin.userId}`;
+  const prevStreak = user.streaks?.[checkin.pubId] || 0;
+
+  const updatedUser: Partial<User> = {
+    streaks: {
+      ...(user.streaks || {}),
+      [checkin.pubId]: prevStreak + 1,
+    },
+    checkedInPubIds: arrayUnion(checkin.pubId) as any,
+  };
+
+  await this.updateDoc<User>(userRefPath, updatedUser);
+}
+
+
+  /**
    * Complete a check-in with full validation and side effects
    * - Validates pub exists
    * - Ensures user exists in Firestore
@@ -91,7 +114,7 @@ export class CheckInService extends FirestoreService {
 
     // Update related statistics
     await this.updatePubStats(pub, checkin, checkinRef.id);
-    await this.updateUserStats(user, checkin);
+    await this.updateUserStats(user, checkin); // ✅ FIXED: Use transformation logic
 
     // Try to award landlord status (doesn't update stores)
     const checkinDate = this.normalizeDate(checkin.timestamp);
@@ -104,11 +127,12 @@ export class CheckInService extends FirestoreService {
       ...checkin,
       id: checkinRef.id,
       madeUserLandlord: landlordResult.wasAwarded,
-      landlordResult // Pass the full result to the store
+      landlordResult,
     };
 
     return completedCheckin;
   }
+
 
   /**
    * Validate that a pub exists in Firestore
@@ -173,25 +197,14 @@ export class CheckInService extends FirestoreService {
     });
   }
 
-  /**
-   * Update user statistics after a check-in
-   * - Updates streak count for this pub
-   * @param user - The user document
-   * @param checkin - The check-in data
-   */
-  private async updateUserStats(user: User, checkin: Omit<CheckIn, 'id'>): Promise<void> {
-    const userRefPath = `users/${checkin.userId}`;
-    const prevStreak = user.streaks?.[checkin.pubId] || 0;
-
-    const updatedUser: Partial<User> = {
-      streaks: { ...user.streaks, [checkin.pubId]: prevStreak + 1 },
-
-      checkedInPubIds: arrayUnion(checkin.pubId) as any, // Add pub to visited list
-      claimedPubIds: user.claimedPubIds || [], // Ensure it exists
-    };
-
-    await this.updateDoc<User>(userRefPath, updatedUser);
-  }
+/**
+ * Patch the user's Firestore document with updates.
+ * Intended to be called after a check-in or profile update.
+ */
+async patchUserDocument(userId: string, updates: Partial<User>): Promise<void> {
+  const path = `users/${userId}`;
+  await this.updateDoc<User>(path, updates);
+}
 
   /**
    * Safely convert various timestamp formats to Date

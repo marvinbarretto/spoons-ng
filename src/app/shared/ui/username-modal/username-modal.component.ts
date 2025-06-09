@@ -362,13 +362,11 @@ export class UsernameModalComponent {
       const name = this.displayName().trim();
       const selectedAvatar = this.selectedAvatar();
 
-      // TODO: Implement actual save logic
-      // await this.userService.updateDisplayName(name);
-      // await this.avatarService.updateAvatar(selectedAvatar);
-
+      await this.authStore.updateUserProfile({
+        displayName: name,
+        photoURL: selectedAvatar,
+      });
       console.log('[UsernameModal] ✅ Saved:', { name, avatar: selectedAvatar });
-
-      // Close modal after successful save
       this.closeModal();
 
     } catch (error) {

@@ -41,7 +41,7 @@ export class PubDetailComponent extends BaseComponent implements OnInit {
   readonly currentLandlord = computed(() => {
     const pubId = this.pub()?.id;
     if (!pubId) return null;
-    return this.landlordStore.getLandlordForPub(pubId);
+    return this.landlordStore.get(pubId);
   });
 
   readonly isUserLandlord = computed(() => {
@@ -274,7 +274,7 @@ export class PubDetailComponent extends BaseComponent implements OnInit {
     const local = this.pubStore.data().find(p => p.id === id);
     if (local) {
       this.pub.set(local);
-      await this.landlordStore.loadLandlordOnce(id);
+      await this.landlordStore.loadOnce(id);
       return;
     }
 
@@ -284,7 +284,7 @@ export class PubDetailComponent extends BaseComponent implements OnInit {
         this.pub.set(found ?? null);
 
         if (found) {
-          await this.landlordStore.loadLandlordOnce(found.id);
+          await this.landlordStore.loadOnce(found.id);
         }
 
         return found;

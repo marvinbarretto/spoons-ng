@@ -261,7 +261,7 @@ export class DevDebugComponent extends BaseComponent {
       };
     }
 
-    const currentLandlord = this.landlordStore.getLandlordForPub(closestPub.id);
+    const currentLandlord = this.landlordStore.get(closestPub.id);
 
     if (!currentLandlord) {
       return {
@@ -469,7 +469,7 @@ export class DevDebugComponent extends BaseComponent {
       pubsWithoutLandlords: this.landlordDebugData().pubsWithoutLandlords.length,
       loading: this.landlordStore.loading(),
       error: this.landlordStore.error(),
-      closestPubLandlord: this.closestPub() ? this.landlordStore.getLandlordForPub(this.closestPub()!.id)?.userId : null
+      closestPubLandlord: this.closestPub() ? this.landlordStore.get(this.closestPub()!.id)?.userId : null
     },
     device: this.deviceInfo(),
     env: {
@@ -548,7 +548,7 @@ export class DevDebugComponent extends BaseComponent {
     try {
       // Load landlord data for first 5 pubs (to avoid overwhelming)
       const pubsToCheck = pubs.slice(0, 5);
-      const promises = pubsToCheck.map(pub => this.landlordStore.loadLandlordOnce(pub.id));
+      const promises = pubsToCheck.map(pub => this.landlordStore.loadOnce(pub.id));
       await Promise.all(promises);
 
       this.showSuccess(`Refreshed landlord data for ${pubsToCheck.length} pubs`);
@@ -564,7 +564,7 @@ export class DevDebugComponent extends BaseComponent {
       return;
     }
 
-    this.landlordStore.loadLandlordOnce(closestPub.id);
+    this.landlordStore.loadOnce(closestPub.id);
     this.showInfo(`Loading landlord data for ${closestPub.name}`);
   }
 

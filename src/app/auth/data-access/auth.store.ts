@@ -5,6 +5,7 @@ import { OverlayService } from '../../shared/data-access/overlay.service';
 import { SsrPlatformService } from '../../shared/utils/ssr/ssr-platform.service';
 import { User } from '../../users/utils/user.model';
 import { generateAnonymousName } from '../../shared/utils/anonymous-names';
+import { getAuth, updateProfile } from 'firebase/auth';
 
 @Injectable({ providedIn: 'root' })
 export class AuthStore {
@@ -38,27 +39,37 @@ export class AuthStore {
     return user.displayName || user.email || 'User';
   });
 
+  // readonly userShortName = computed(() => {
+  //   const user = this.user();
+  //   if (!user) return '';
+
+  //   if (user.isAnonymous) {
+  //     // Just the base name without number for compact displays
+  //     const fullName = generateAnonymousName(user.uid);
+  //     return fullName.split('-').slice(0, 2).join('-'); // "tipsy-landlord"
+  //   }
+
+  //   const displayName = user.displayName;
+  //   if (displayName) {
+  //     return displayName.split(' ')[0];
+  //   }
+
+  //   const email = user.email;
+  //   if (email) {
+  //     return email.split('@')[0];
+  //   }
+
+  //   return 'User';
+  // });
   readonly userShortName = computed(() => {
-    const user = this.user();
-    if (!user) return '';
+    const user = this._user();
+    if (!user) return 'Anonymous';
 
     if (user.isAnonymous) {
-      // Just the base name without number for compact displays
-      const fullName = generateAnonymousName(user.uid);
-      return fullName.split('-').slice(0, 2).join('-'); // "tipsy-landlord"
+      return generateAnonymousName(user.uid);
     }
 
-    const displayName = user.displayName;
-    if (displayName) {
-      return displayName.split(' ')[0];
-    }
-
-    const email = user.email;
-    if (email) {
-      return email.split('@')[0];
-    }
-
-    return 'User';
+    return user.displayName ?? 'Anonymous';
   });
 
   readonly isAnonymous = computed(() => this.user()?.isAnonymous ?? true);
@@ -200,5 +211,36 @@ export class AuthStore {
   loginWithEmail(email: string, password: string): void {
     console.log('[AuthStore] 📧 Email login initiated');
     this.authService.loginWithEmail(email, password);
+  }
+
+  async updateUserProfile(updates: Partial<User>): Promise<void> {
+    const current = this._user();
+    if (!current) return;
+
+    const auth = getAuth();
+    const fbUser = auth.currentUser;
+
+    if (!fbUser) {
+      throw new Error('No authenticated Firebase user found.');
+    }
+
+    try {
+      await updateProfile(fbUser, {
+        displayName: updates.displayName,
+        photoURL: updates.photoURL,
+      });
+
+      // Set updated local signal to trigger reactivity
+      this._user.set({
+        ...current,
+        ...updates,
+      });
+
+      console.log('[AuthStore] ✅ Firebase profile updated:', updates);
+
+    } catch (error) {
+      console.error('[AuthStore] ❌ Failed to update Firebase profile:', error);
+      throw error;
+    }
   }
 }

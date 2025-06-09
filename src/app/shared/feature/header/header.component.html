@@ -1,6 +1,20 @@
 <div class="site-header" #headerRef>
   <!-- TODO: Extract this to UI ? -->
 
+  <div class="debug-header">
+    <pre>User: {{ user() | json }}</pre>
+    <pre>Short Name: {{ shortName() }}</pre>
+    <pre>Is Anonymous: {{ isAnonymous() }}</pre>
+  </div>
+
+    <app-user-info
+    [user]="user"
+    [isAnonymous]="isAnonymous"
+    [shortName]="shortName()"
+    [onLogin]="handleLogin"
+    [onLogout]="handleLogout"
+  />
+
   <ng-container *ngIf="!isHomepage(); else titleWithoutLink">
     <a routerLink="/" class="header__title">
       <h1>Spooncount</h1>
@@ -10,7 +24,7 @@
     <h1 class="header__title">Spooncount</h1>
   </ng-template>
 
-  <app-user-info></app-user-info>
+
 
   <nav class="main-nav" [class.nav-mobile]="isMobile()">
     <app-nav *ngIf="!isMobile()" />
