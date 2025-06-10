@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.22](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.21...v0.0.22) (2025-06-10)
+
+
+### Features
+
+* Improve DevDebug so its useful ([8ed2583](https://github.com/marvinbarretto/spoons-ng/commit/8ed2583e00ed7d1447a06ab6bfb6917186fee041))
+* Mission CRUD ([7a74b7b](https://github.com/marvinbarretto/spoons-ng/commit/7a74b7bb023b7c2f28260571145e23fd5518df6d))
+
+
+### Bug Fixes
+
+* Badges correctly assigned to users ([c061575](https://github.com/marvinbarretto/spoons-ng/commit/c06157581873687d0123a0971a7f0c91c34b35f5))
+
 ### [0.0.21](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.20...v0.0.21) (2025-06-09)
 
 
