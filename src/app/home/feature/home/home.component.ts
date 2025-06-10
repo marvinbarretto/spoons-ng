@@ -12,6 +12,7 @@ import { PubProgressHeroComponent } from '../../../home/ui/pub-progress-hero/pub
 import { AuthStore } from '../../../auth/data-access/auth.store';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { NewHomeComponent } from '../new-home/new-home.component';
+import { EarnedBadgeListComponent } from '../../../badges/ui/earned-badge-list/earned-badge-list.component';
 
 @Component({
   selector: 'app-home',
@@ -21,7 +22,8 @@ import { NewHomeComponent } from '../new-home/new-home.component';
     UserBadgesComponent,
     PubProgressHeroComponent,
     ButtonComponent,
-    NewHomeComponent
+    NewHomeComponent,
+    EarnedBadgeListComponent
 ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'

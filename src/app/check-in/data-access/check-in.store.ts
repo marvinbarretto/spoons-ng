@@ -12,12 +12,14 @@ import { LandlordStore } from '../../landlord/data-access/landlord.store';
 import { getDistanceKm } from '../../shared/utils/get-distance';
 import { User } from '../../users/utils/user.model';
 import { UserStore } from '../../users/data-access/user.store';
+import { BadgeAwardService } from '../../badges/data-access/badge-award.service';
 
 @Injectable({ providedIn: 'root' })
 export class CheckinStore extends BaseStore<CheckIn> {
   // 🔧 Dependencies
   private readonly checkinService = inject(CheckInService);
   private readonly pubService = inject(PubService);
+  private readonly badgeAwardService = inject(BadgeAwardService);
   private readonly landlordStore = inject(LandlordStore);
   private readonly userStore = inject(UserStore);
 
@@ -168,18 +170,22 @@ export class CheckinStore extends BaseStore<CheckIn> {
         console.log('[CheckinStore] 👑 Updated landlord store:', completed.landlordResult);
       }
 
-      // 8. Set success message
+      // 8. Record success (remove landlordResult before storing)
+      const { landlordResult, ...cleanCheckin } = completed;
+      this.recordCheckinSuccess(cleanCheckin);
+
+      // ✅ 9. NEW: Evaluate badges after successful check-in
+      console.log('[CheckinStore] 🏅 Starting badge evaluation...');
+      await this.evaluateBadgesAfterCheckIn(userId, cleanCheckin);
+
+      // 10. Set success message
       this._landlordMessage.set(
         completed.madeUserLandlord
           ? '👑 You\'re the landlord today!'
           : '✅ Check-in complete!'
       );
 
-      // 9. Record success (remove landlordResult before storing)
-      const { landlordResult, ...cleanCheckin } = completed;
-      this.recordCheckinSuccess(cleanCheckin);
       this.toastService.success('Check-in successful!');
-
       console.log('[CheckinStore] ✅ Check-in completed successfully');
 
     } catch (error: any) {
@@ -191,19 +197,112 @@ export class CheckinStore extends BaseStore<CheckIn> {
     }
   }
 
-  /**
-   * Clear check-in success state
+     /**
+   * Get badge debug info for current user
    */
-  clearCheckinSuccess(): void {
-    this._checkinSuccess.set(null);
-    this._landlordMessage.set(null);
+  async debugBadges(userId?: string): Promise<void> {
+    const targetUserId = userId || this.authStore.uid();
+    if (!targetUserId) {
+      console.error('[CheckinStore] ❌ No user ID for badge debug');
+      return;
+    }
+
+    console.log('[CheckinStore] 🐛 Badge debug for user:', targetUserId);
+
+    try {
+      const userCheckIns = this.checkins().filter(ci => ci.userId === targetUserId);
+      const debugInfo = await this.badgeAwardService.getDebugInfo(targetUserId, userCheckIns);
+      console.log('[CheckinStore] 🐛 Badge debug info:', debugInfo);
+    } catch (error) {
+      console.error('[CheckinStore] 🐛 Badge debug failed:', error);
+    }
   }
 
-  // 🧹 Enhanced reset - clears check-in specific state
+  // ✅ NEW: Development/Testing helpers
+  /**
+   * Manual badge evaluation for testing
+   */
+  async testBadgeEvaluation(userId?: string): Promise<void> {
+    const targetUserId = userId || this.authStore.uid();
+    if (!targetUserId) {
+      console.error('[CheckinStore] ❌ No user ID for badge testing');
+      return;
+    }
+
+    console.log('[CheckinStore] 🧪 Testing badge evaluation for user:', targetUserId);
+
+    try {
+      const userCheckIns = this.checkins().filter(ci => ci.userId === targetUserId);
+      const eligibleBadges = await this.badgeAwardService.evaluateBadgesForUser(targetUserId, userCheckIns);
+      console.log('[CheckinStore] 🧪 Test results - eligible badges:', eligibleBadges);
+    } catch (error) {
+      console.error('[CheckinStore] 🧪 Badge test failed:', error);
+    }
+  }
+
+
+  private async evaluateBadgesAfterCheckIn(userId: string, checkIn: CheckIn): Promise<void> {
+    console.log('[CheckinStore] 🎯 Badge evaluation starting', {
+      userId,
+      checkInId: checkIn.id,
+      pubId: checkIn.pubId
+    });
+
+    try {
+      // Get all user check-ins (including the new one just added)
+      const allUserCheckIns = this.checkins().filter(ci => ci.userId === userId);
+
+      const awardedBadges = await this.badgeAwardService.evaluateAndAwardBadges(
+        userId,
+        checkIn,
+        allUserCheckIns
+      );
+
+      if (awardedBadges.length > 0) {
+        console.log('[CheckinStore] 🎉 Badges awarded during check-in!', {
+          checkInId: checkIn.id,
+          userId,
+          badgesAwarded: awardedBadges.map(b => b.badgeId),
+          totalAwarded: awardedBadges.length
+        });
+
+        // Optional: Show toast for badge awards
+        const badgeNames = awardedBadges.map(b => b.badgeId).join(', ');
+        this.toastService.success(`🏅 New badge${awardedBadges.length > 1 ? 's' : ''} earned: ${badgeNames}!`);
+
+      } else {
+        console.log('[CheckinStore] 📝 No new badges awarded for this check-in');
+      }
+
+    } catch (badgeError) {
+      // Don't fail the check-in if badge awarding fails
+      console.error('[CheckinStore] ⚠️ Badge evaluation failed, but check-in was successful:', badgeError);
+    }
+  }
+  /**
+   * Clear check-in success state with null checks
+   */
+  clearCheckinSuccess(): void {
+    if (this._checkinSuccess) {
+      this._checkinSuccess.set(null);
+    }
+    if (this._landlordMessage) {
+      this._landlordMessage.set(null);
+    }
+  }
+
+  // 🧹 Enhanced reset - clears check-in specific state with null checks
   override reset(): void {
     super.reset();
-    this._checkinSuccess.set(null);
-    this._landlordMessage.set(null);
+
+    // ✅ Safe null checks before calling set()
+    if (this._checkinSuccess) {
+      this._checkinSuccess.set(null);
+    }
+    if (this._landlordMessage) {
+      this._landlordMessage.set(null);
+    }
+
     console.log('[CheckinStore] 🧹 Complete reset');
   }
 
@@ -285,9 +384,9 @@ export class CheckinStore extends BaseStore<CheckIn> {
     const checkin = {
       userId: user.uid,
       pubId,
-      timestamp: Timestamp.fromDate(now), // Convert Date to Timestamp
+      timestamp: Timestamp.fromDate(now),
       dateKey: now.toISOString().split('T')[0],
-      photoURL: '', // set this later if capturing a photo
+      photoURL: '',
     };
 
     try {
@@ -315,7 +414,11 @@ export class CheckinStore extends BaseStore<CheckIn> {
       }
 
       // ✅ Step 5: Add check-in to local state
-      this.recordCheckinSuccess(result); // Use recordCheckinSuccess instead of addCheckin
+      this.recordCheckinSuccess(result);
+
+      // ✅ Step 6: NEW: Evaluate badges after successful check-in
+      console.log('[CheckinStore] 🏅 Starting badge evaluation...');
+      await this.evaluateBadgesAfterCheckIn(user.uid, result);
 
     } catch (error: any) {
       console.error('[CheckinStore] ❌ performCheckIn failed:', error);

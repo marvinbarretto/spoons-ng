@@ -37,6 +37,22 @@
     [hasProgress]="hasProgressData()"
   />
 
+  <!-- Badge Section -->
+  <section class="badges-section">
+    <app-earned-badge-list
+      title="Your Recent Badges"
+      [maxItems]="3"
+      size="small"
+      [showEarnedDate]="true"
+      [showStats]="false"
+    />
+
+    <!-- Optional: Link to full badge page -->
+    <div class="badges-footer">
+      <a href="/badges" class="view-all-link">View All Badges →</a>
+    </div>
+  </section>
+
   <!-- ✅ Check-in Widget -->
   @if (closestPub() && userCanCheckIn()) {
     <app-check-in-homepage-widget
