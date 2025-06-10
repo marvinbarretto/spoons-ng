@@ -11,6 +11,7 @@ import { NearbyPubStore } from '../../../pubs/data-access/nearby-pub.store';
 import { LandlordStore } from '../../../landlord/data-access/landlord.store';
 import { BadgeStore } from '../../../badges/data-access/badge.store';
 import { UserStore } from '../../../users/data-access/user.store';
+import { CleanupResult, CleanupService } from '../cleanup.service';
 
 // Import store validation
 import {
@@ -19,410 +20,395 @@ import {
   addDebugInfoToStore
 } from '../../data-access/store.contracts';
 
+
 @Component({
+  imports: [JsonPipe],
   selector: 'app-dev-debug',
-  imports: [JsonPipe, NgClass],
   template: `
-    <div class="dev-debug" [class.collapsed]="isCollapsed()">
-      <!-- Collapse/Expand Toggle -->
-      <button
-        class="toggle-btn"
-        (click)="toggleCollapsed()"
-        [attr.aria-label]="isCollapsed() ? 'Expand debug panel' : 'Collapse debug panel'"
-      >
-        {{ isCollapsed() ? '🔍 Debug' : '❌ Hide' }}
-      </button>
+    <div class="dev-debug">
+      <!-- Header with toggle -->
+      <div class="header" (click)="toggleExpanded()">
+        <h2>🛠️ Dev Debug</h2>
+        <span class="toggle">{{ isExpanded() ? '▼' : '▶' }}</span>
+      </div>
 
-      <!-- Main Debug Content -->
-      @if (!isCollapsed()) {
-        <div class="debug-content">
-
-          <!-- Quick Actions -->
-          <div class="debug-section quick-actions">
-            <h4>🚀 Quick Actions</h4>
-            <div class="action-buttons">
-              <button (click)="refreshStores()" class="action-btn">Refresh All</button>
-              <button (click)="clearErrors()" class="action-btn">Clear Errors</button>
-              <button (click)="toggleVerbose()" class="action-btn">
-                {{ showVerbose() ? 'Simple' : 'Verbose' }}
-              </button>
+      @if (isExpanded()) {
+        <!-- Quick Status Summary -->
+        <div class="status-grid">
+          @for (status of storeStatus(); track status.name) {
+            <div class="status-item" [attr.data-status]="status.status">
+              <span class="indicator">{{ status.indicator }}</span>
+              <span class="name">{{ status.name }}</span>
+              <span class="count">{{ status.count }}</span>
             </div>
+          }
+        </div>
+
+        <!-- Actions -->
+        <div class="actions">
+          <button (click)="refreshStores()" class="btn">🔄 Refresh Stores</button>
+          <button (click)="clearErrors()" class="btn">🧹 Clear Errors</button>
+          <button (click)="toggleVerbose()" class="btn">
+            {{ showVerbose() ? '📋 Hide Details' : '📊 Show Details' }}
+          </button>
+        </div>
+
+        <!-- Cleanup Section -->
+        <div class="cleanup-section">
+          <h3>🗑️ Test Data Cleanup</h3>
+
+          <!-- Collection Counts -->
+          <div class="counts">
+            <div class="count-item">
+              <span>Users:</span>
+              <strong>{{ counts().users }}</strong>
+            </div>
+            <div class="count-item">
+              <span>Check-ins:</span>
+              <strong>{{ counts().checkIns }}</strong>
+            </div>
+            <div class="count-item">
+              <span>Pubs:</span>
+              <strong>{{ counts().pubs }}</strong>
+            </div>
+            <button (click)="refreshCounts()" class="btn-small">🔄</button>
           </div>
 
-          <!-- Store Status Summary -->
-          <div class="debug-section status-summary">
-            <h4>📊 Store Status</h4>
-            <div class="status-grid">
-              @for (store of storeStatus(); track store.name) {
-                <div class="status-item" [ngClass]="store.status">
-                  <span class="store-name">{{ store.name }}</span>
-                  <span class="store-status">{{ store.indicator }}</span>
-                  <span class="store-count">{{ store.count }}</span>
-                </div>
+          <!-- Cleanup Actions -->
+          <div class="cleanup-actions">
+            <button
+              (click)="clearUsers()"
+              [disabled]="cleanupLoading()"
+              class="btn-danger">
+              Clear Users ({{ counts().users }})
+            </button>
+
+            <button
+              (click)="clearCheckIns()"
+              [disabled]="cleanupLoading()"
+              class="btn-danger">
+              Clear Check-ins ({{ counts().checkIns }})
+            </button>
+
+            <button
+              (click)="clearAll()"
+              [disabled]="cleanupLoading()"
+              class="btn-danger-big">
+              💥 Clear ALL Test Data
+            </button>
+          </div>
+
+          <!-- Cleanup Status -->
+          @if (cleanupLoading()) {
+            <div class="status loading">🔄 Cleaning up...</div>
+          }
+
+          @if (lastCleanupResult()) {
+            <div class="status" [class.success]="lastCleanupResult()?.success" [class.error]="!lastCleanupResult()?.success">
+              @if (lastCleanupResult()?.success) {
+                ✅ Deleted {{ lastCleanupResult()?.deletedCount }} items
+              } @else {
+                ❌ {{ lastCleanupResult()?.error }}
               }
             </div>
-          </div>
+          }
 
-          <!-- Auth Flow Debug -->
-          <div class="debug-section auth-debug">
-            <h4>🔐 Auth Flow</h4>
-            <div class="auth-status">
-              <div class="auth-step" [ngClass]="{ active: authStatus().ready }">
-                1. Ready: {{ authStatus().ready ? '✅' : '⏳' }}
-              </div>
-              <div class="auth-step" [ngClass]="{ active: authStatus().hasUser }">
-                2. User: {{ authStatus().hasUser ? '✅' : '❌' }}
-              </div>
-              <div class="auth-step" [ngClass]="{ active: authStatus().hasToken }">
-                3. Token: {{ authStatus().hasToken ? '✅' : '❌' }}
-              </div>
-              <div class="auth-step" [ngClass]="{ active: authStatus().canLoadUserStores }">
-                4. User Stores: {{ authStatus().canLoadUserStores ? '✅' : '❌' }}
-              </div>
-            </div>
-            @if (authStatus().displayName) {
-              <p class="current-user">{{ authStatus().displayName }}</p>
-            }
-          </div>
-
-          <!-- Raw JSON Data (Expandable Sections) -->
-          <div class="debug-section raw-data">
-            <h4>📋 Raw Store Data</h4>
-
-            <details class="data-details">
-              <summary>🔐 AuthStore ({{ authData().ready ? 'Ready' : 'Loading' }})</summary>
-              <pre>{{ authData() | json }}</pre>
-            </details>
-
-            @if (showVerbose()) {
-              <details class="data-details">
-                <summary>👤 UserStore ({{ userData().loading ? 'Loading' : userData().user ? 'Loaded' : 'Empty' }})</summary>
-                <pre>{{ userData() | json }}</pre>
-              </details>
-
-              <details class="data-details">
-                <summary>🏪 PubStore ({{ pubData().pubCount }} pubs)</summary>
-                <pre>{{ pubData() | json }}</pre>
-              </details>
-
-              <details class="data-details">
-                <summary>📍 NearbyPubStore ({{ nearbyPubData().nearbyCount }} nearby)</summary>
-                <pre>{{ nearbyPubData() | json }}</pre>
-              </details>
-
-              <details class="data-details">
-                <summary>✅ CheckinStore ({{ checkinData().checkinCount }} checkins)</summary>
-                <pre>{{ checkinData() | json }}</pre>
-              </details>
-
-              <details class="data-details">
-                <summary>👑 LandlordStore ({{ landlordData().landlordCount }} landlords)</summary>
-                <pre>{{ landlordData() | json }}</pre>
-              </details>
-
-              <details class="data-details">
-                <summary>🏆 BadgeStore ({{ badgeData().badgeCount }} badges)</summary>
-                <pre>{{ badgeData() | json }}</pre>
-              </details>
-
-              <details class="data-details">
-                <summary>🔍 Store Contracts</summary>
-                <pre>{{ storeValidation() | json }}</pre>
-              </details>
-            }
+          <!-- Warning -->
+          <div class="warning">
+            ⚠️ <strong>Development Only:</strong> Permanently deletes Firestore data.
+            Pub data unaffected.
           </div>
         </div>
+
+        <!-- Verbose Details -->
+        @if (showVerbose()) {
+          <div class="verbose-section">
+            <div class="detail-grid">
+              <div class="detail-item">
+                <h4>🔐 Auth</h4>
+                <pre>{{ authData() | json }}</pre>
+              </div>
+
+              <div class="detail-item">
+                <h4>👤 User</h4>
+                <pre>{{ userData() | json }}</pre>
+              </div>
+
+              <div class="detail-item">
+                <h4>🏪 Pubs</h4>
+                <pre>{{ pubData() | json }}</pre>
+              </div>
+
+              <div class="detail-item">
+                <h4>✅ Check-ins</h4>
+                <pre>{{ checkinData() | json }}</pre>
+              </div>
+            </div>
+          </div>
+        }
       }
     </div>
   `,
   styles: [`
     .dev-debug {
       position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: #1a1a1a;
-      color: #f0f0f0;
-      border-top: 2px solid #333;
-      font-family: 'Courier New', monospace;
-      font-size: 0.75rem;
+      bottom: 20px;
+      right: 20px;
+      background: #f8f9fa;
+      border: 2px solid #6c757d;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      font-family: monospace;
+      font-size: 12px;
       z-index: 1000;
-      max-height: 70vh;
+      max-width: 500px;
+      max-height: 80vh;
       overflow-y: auto;
-      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.3);
-      transition: all 0.3s ease;
     }
 
-    .dev-debug.collapsed {
-      max-height: 40px;
-    }
-
-    .toggle-btn {
-      position: absolute;
-      top: 8px;
-      right: 16px;
-      background: #333;
-      color: #f0f0f0;
-      border: 1px solid #555;
-      border-radius: 4px;
-      padding: 0.25rem 0.5rem;
-      cursor: pointer;
-      font-size: 0.7rem;
-      font-weight: bold;
-      z-index: 1001;
-    }
-
-    .toggle-btn:hover {
-      background: #444;
-    }
-
-    .debug-content {
-      padding: 1rem;
-      padding-right: 100px; /* Space for toggle button */
-    }
-
-    .debug-section {
-      margin-bottom: 1rem;
-      padding: 0.5rem;
-      background: #2a2a2a;
-      border-radius: 4px;
-      border-left: 3px solid #007bff;
-    }
-
-    .debug-section h4 {
-      margin: 0 0 0.5rem 0;
-      color: #00bcd4;
-      font-size: 0.8rem;
-    }
-
-    /* Quick Actions */
-    .action-buttons {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-
-    .action-btn {
-      background: #007bff;
+    .header {
+      background: #6c757d;
       color: white;
-      border: none;
-      border-radius: 3px;
-      padding: 0.25rem 0.5rem;
+      padding: 8px 12px;
       cursor: pointer;
-      font-size: 0.7rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      user-select: none;
     }
 
-    .action-btn:hover {
-      background: #0056b3;
+    .header h2 {
+      margin: 0;
+      font-size: 14px;
     }
 
-    /* Status Grid */
+    .toggle {
+      font-size: 12px;
+    }
+
     .status-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 0.5rem;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      padding: 8px;
+      background: #e9ecef;
     }
 
     .status-item {
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
       align-items: center;
-      padding: 0.25rem 0.5rem;
-      background: #333;
-      border-radius: 3px;
-      font-size: 0.7rem;
+      padding: 4px;
+      border-radius: 4px;
+      background: white;
     }
 
-    .status-item.healthy { border-left: 3px solid #28a745; }
-    .status-item.loading { border-left: 3px solid #ffc107; }
-    .status-item.error { border-left: 3px solid #dc3545; }
-    .status-item.empty { border-left: 3px solid #6c757d; }
+    .status-item[data-status="loading"] { background: #fff3cd; }
+    .status-item[data-status="error"] { background: #f8d7da; }
+    .status-item[data-status="healthy"] { background: #d4edda; }
+    .status-item[data-status="empty"] { background: #e2e3e5; }
 
-    .store-name {
+    .indicator {
+      font-size: 16px;
+      margin-bottom: 2px;
+    }
+
+    .name {
+      font-size: 10px;
       font-weight: bold;
     }
 
-    .store-status {
-      font-size: 0.8rem;
+    .count {
+      font-size: 9px;
+      color: #6c757d;
     }
 
-    .store-count {
-      color: #aaa;
-      font-size: 0.65rem;
-    }
-
-    /* Auth Flow */
-    .auth-status {
+    .actions {
       display: flex;
-      gap: 1rem;
+      gap: 4px;
+      padding: 8px;
       flex-wrap: wrap;
     }
 
-    .auth-step {
-      padding: 0.25rem 0.5rem;
-      background: #333;
-      border-radius: 3px;
-      opacity: 0.5;
-      transition: opacity 0.2s;
-      font-size: 0.7rem;
-    }
-
-    .auth-step.active {
-      opacity: 1;
+    .btn {
       background: #007bff;
-    }
-
-    .current-user {
-      margin: 0.5rem 0 0 0;
-      color: #00bcd4;
-      font-weight: bold;
-    }
-
-    /* Raw Data */
-    .data-details {
-      margin-bottom: 0.5rem;
-      background: #333;
-      border-radius: 3px;
-    }
-
-    .data-details summary {
-      padding: 0.5rem;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
       cursor: pointer;
+      font-size: 10px;
+    }
+
+    .btn:hover { background: #0056b3; }
+
+    .cleanup-section {
+      border-top: 1px solid #dee2e6;
+      padding: 8px;
+      background: #fff5f5;
+    }
+
+    .cleanup-section h3 {
+      margin: 0 0 8px 0;
+      font-size: 12px;
+      color: #721c24;
+    }
+
+    .counts {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+
+    .count-item {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+      font-size: 10px;
+    }
+
+    .btn-small {
+      background: #6c757d;
+      color: white;
+      border: none;
+      padding: 2px 6px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 9px;
+    }
+
+    .cleanup-actions {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-danger {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 9px;
+    }
+
+    .btn-danger:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-danger-big {
+      background: #721c24;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 10px;
       font-weight: bold;
-      color: #00bcd4;
-      user-select: none;
     }
 
-    .data-details summary:hover {
-      background: #444;
+    .status {
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+      font-size: 10px;
     }
 
-    .data-details pre {
+    .status.loading {
+      background: #cce5ff;
+      color: #004085;
+    }
+
+    .status.success {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status.error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .warning {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      padding: 6px;
+      border-radius: 4px;
+      color: #856404;
+      font-size: 9px;
+    }
+
+    .verbose-section {
+      border-top: 1px solid #dee2e6;
+      padding: 8px;
+      background: #f8f9fa;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .detail-item h4 {
+      margin: 0 0 4px 0;
+      font-size: 11px;
+      color: #495057;
+    }
+
+    .detail-item pre {
+      background: white;
+      border: 1px solid #ced4da;
+      border-radius: 3px;
+      padding: 4px;
       margin: 0;
-      padding: 0.5rem;
-      background: #1a1a1a;
-      border-top: 1px solid #444;
-      white-space: pre-wrap;
-      word-break: break-word;
-      max-height: 200px;
-      overflow-y: auto;
-      font-size: 0.65rem;
-      line-height: 1.2;
+      font-size: 9px;
+      overflow: auto;
+      max-height: 120px;
     }
 
-    /* Mobile responsiveness */
     @media (max-width: 768px) {
       .dev-debug {
-        font-size: 0.7rem;
+        position: relative;
+        bottom: auto;
+        right: auto;
+        margin: 10px;
+        max-width: none;
       }
 
-      .debug-content {
-        padding: 0.5rem;
-        padding-right: 80px;
-      }
-
-      .status-grid {
+      .detail-grid {
         grid-template-columns: 1fr;
       }
 
-      .auth-status {
-        flex-direction: column;
-        gap: 0.25rem;
+      .status-grid {
+        grid-template-columns: repeat(2, 1fr);
       }
     }
   `],
 })
 export class DevDebugComponent extends BaseComponent {
-  // Inject all stores
+  // Inject stores
   protected readonly authStore = inject(AuthStore);
   protected readonly userStore = inject(UserStore);
   protected readonly pubStore = inject(PubStore);
-  protected readonly nearbyPubStore = inject(NearbyPubStore);
   protected readonly checkinStore = inject(CheckinStore);
-  protected readonly landlordStore = inject(LandlordStore);
-  protected readonly badgeStore = inject(BadgeStore);
+  private readonly cleanupService = inject(CleanupService);
 
   // UI state
-  readonly isCollapsed = signal(false);
+  readonly isExpanded = signal(false);
   readonly showVerbose = signal(false);
 
-  // Store data (copied from NewHomeComponent)
-  readonly authData = computed(() => {
-    const user = this.authStore.user();
-    const ready = this.authStore.ready();
+  // Cleanup state
+  protected readonly counts = signal({ users: 0, checkIns: 0, pubs: 0 });
+  protected readonly cleanupLoading = signal(false);
+  protected readonly lastCleanupResult = signal<CleanupResult | null>(null);
 
-    return {
-      ready,
-      isAuthenticated: this.authStore.isAuthenticated(),
-      user: user,
-      uid: this.authStore.uid(),
-      isAnonymous: this.authStore.isAnonymous(),
-      userDisplayName: this.authStore.displayName(),
-      token: this.authStore.token() ? '[TOKEN_PRESENT]' : null,
-    };
-  });
-
-  readonly userData = computed(() => ({
-    loading: this.userStore.loading(),
-    error: this.userStore.error(),
-    user: this.userStore.user(),
-    isLoaded: this.userStore.isLoaded(),
-  }));
-
-  readonly pubData = computed(() => {
-    const pubs = this.pubStore.data();
-    return {
-      loading: this.pubStore.loading(),
-      error: this.pubStore.error(),
-      pubCount: pubs.length,
-      samplePubs: pubs.slice(0, 2).map(p => ({ id: p.id, name: p.name })),
-    };
-  });
-
-  readonly nearbyPubData = computed(() => {
-    const pubs = this.nearbyPubStore.nearbyPubs();
-    return {
-      nearbyCount: pubs.length,
-      closestPub: this.nearbyPubStore.closestPub(),
-      canCheckIn: this.nearbyPubStore.canCheckIn(),
-    };
-  });
-
-  readonly checkinData = computed(() => {
-    const checkins = this.checkinStore.data();
-    return {
-      loading: this.checkinStore.loading(),
-      error: this.checkinStore.error(),
-      checkinCount: checkins.length,
-      canLoad: !!this.authStore.user(),
-    };
-  });
-
-  readonly landlordData = computed(() => ({
-    loading: this.landlordStore.loading(),
-    error: this.landlordStore.error(),
-    landlordCount: this.landlordStore.landlordCount(),
-    landlordPubIds: this.landlordStore.landlordPubIds(),
-  }));
-
-  readonly badgeData = computed(() => {
-    const badges = this.badgeStore.badges();
-    return {
-      loading: this.badgeStore.loading(),
-      error: this.badgeStore.error(),
-      badgeCount: badges.length,
-    };
-  });
-
-  // Store validation
-  readonly storeValidation = computed(() => ({
-    pubStore: { type: getStoreType(this.pubStore), valid: validateStoreContract(this.pubStore, 'collection') },
-    userStore: { type: getStoreType(this.userStore), valid: validateStoreContract(this.userStore, 'entity') },
-    nearbyPubStore: { type: getStoreType(this.nearbyPubStore), valid: validateStoreContract(this.nearbyPubStore, 'computed') },
-    landlordStore: { type: getStoreType(this.landlordStore), valid: validateStoreContract(this.landlordStore, 'map') },
-  }));
-
-  // Status summary for quick overview
+  // Quick status summary
   readonly storeStatus = computed(() => [
     {
       name: 'Auth',
@@ -437,13 +423,13 @@ export class DevDebugComponent extends BaseComponent {
       count: this.pubStore.data().length.toString()
     },
     {
-      name: 'Nearby',
-      status: this.nearbyPubStore.nearbyPubs().length > 0 ? 'healthy' : 'empty',
-      indicator: this.nearbyPubStore.nearbyPubs().length > 0 ? '📍' : '🚫',
-      count: this.nearbyPubStore.nearbyPubs().length.toString()
+      name: 'User',
+      status: this.userStore.loading() ? 'loading' : (this.userStore.user() ? 'healthy' : 'empty'),
+      indicator: this.userStore.loading() ? '⏳' : (this.userStore.user() ? '✅' : '👤'),
+      count: this.userStore.user() ? 'loaded' : 'none'
     },
     {
-      name: 'Checkins',
+      name: 'Check-ins',
       status: this.checkinStore.loading() ? 'loading' :
              this.checkinStore.error() ? 'error' :
              this.checkinStore.data().length > 0 ? 'healthy' : 'empty',
@@ -454,33 +440,44 @@ export class DevDebugComponent extends BaseComponent {
     }
   ]);
 
-  readonly authStatus = computed(() => {
-    const ready = this.authStore.ready();
-    const user = this.authStore.user();
-    const token = this.authStore.token();
+  // Verbose data (reuse from NewHomeComponent patterns)
+  readonly authData = computed(() => ({
+    ready: this.authStore.ready(),
+    isAuthenticated: this.authStore.isAuthenticated(),
+    uid: this.authStore.uid(),
+    displayName: this.authStore.displayName(),
+    isAnonymous: this.authStore.isAnonymous(),
+  }));
 
-    return {
-      ready,
-      hasUser: !!user,
-      hasToken: !!token,
-      canLoadUserStores: ready && !!user,
-      displayName: user ? this.authStore.displayName() : null,
-    };
-  });
+  readonly userData = computed(() => ({
+    loading: this.userStore.loading(),
+    error: this.userStore.error(),
+    hasUser: !!this.userStore.user(),
+    isLoaded: this.userStore.isLoaded(),
+  }));
+
+  readonly pubData = computed(() => ({
+    loading: this.pubStore.loading(),
+    error: this.pubStore.error(),
+    count: this.pubStore.data().length,
+  }));
+
+  readonly checkinData = computed(() => ({
+    loading: this.checkinStore.loading(),
+    error: this.checkinStore.error(),
+    count: this.checkinStore.data().length,
+    canLoad: !!this.authStore.user(),
+  }));
 
   constructor() {
     super();
-
-    // Add debug info to stores that don't have it
-    this.onlyOnBrowser(() => {
-      addDebugInfoToStore(this.landlordStore);
-      addDebugInfoToStore(this.nearbyPubStore);
-    });
+    // Auto-load counts when expanded
+    this.refreshCounts();
   }
 
   // UI Actions
-  toggleCollapsed(): void {
-    this.isCollapsed.update(collapsed => !collapsed);
+  toggleExpanded(): void {
+    this.isExpanded.update(expanded => !expanded);
   }
 
   toggleVerbose(): void {
@@ -488,7 +485,7 @@ export class DevDebugComponent extends BaseComponent {
   }
 
   refreshStores(): void {
-    console.log('🔄 Refreshing all stores...');
+    console.log('🔄 [DevDebug] Refreshing stores...');
     this.pubStore.loadOnce();
     if (this.authStore.user()) {
       this.checkinStore.loadOnce();
@@ -496,11 +493,87 @@ export class DevDebugComponent extends BaseComponent {
   }
 
   clearErrors(): void {
-    console.log('🧹 Clearing store errors...');
-    [this.pubStore, this.checkinStore, this.badgeStore, this.landlordStore].forEach(store => {
+    console.log('🧹 [DevDebug] Clearing store errors...');
+    [this.pubStore, this.checkinStore].forEach(store => {
       if ('clearError' in store && typeof store.clearError === 'function') {
         store.clearError();
       }
     });
+  }
+
+  // Cleanup Actions
+  protected async refreshCounts(): Promise<void> {
+    try {
+      const newCounts = await this.cleanupService.getCollectionCounts();
+      this.counts.set(newCounts);
+    } catch (error: any) {
+      console.error('[DevDebug] Error refreshing counts:', error);
+    }
+  }
+
+  protected async clearUsers(): Promise<void> {
+    if (!confirm('Delete ALL users? This cannot be undone.')) return;
+
+    this.cleanupLoading.set(true);
+    this.lastCleanupResult.set(null);
+
+    try {
+      const result = await this.cleanupService.clearUsers();
+      this.lastCleanupResult.set(result);
+      await this.refreshCounts();
+
+      // Reset user store local state too
+      this.userStore.reset();
+    } finally {
+      this.cleanupLoading.set(false);
+    }
+  }
+
+  protected async clearCheckIns(): Promise<void> {
+    if (!confirm('Delete ALL check-ins? This cannot be undone.')) return;
+
+    this.cleanupLoading.set(true);
+    this.lastCleanupResult.set(null);
+
+    try {
+      const result = await this.cleanupService.clearCheckIns();
+      this.lastCleanupResult.set(result);
+      await this.refreshCounts();
+
+      // Reset checkin store local state too
+      this.checkinStore.reset();
+    } finally {
+      this.cleanupLoading.set(false);
+    }
+  }
+
+  protected async clearAll(): Promise<void> {
+    if (!confirm('Delete ALL users AND check-ins? This cannot be undone.')) return;
+    if (!confirm('Are you absolutely sure? This will clear all test data.')) return;
+
+    this.cleanupLoading.set(true);
+    this.lastCleanupResult.set(null);
+
+    try {
+      const results = await this.cleanupService.clearAllTestData();
+
+      // Show combined result
+      const totalDeleted = results.users.deletedCount + results.checkIns.deletedCount;
+      const allSuccess = results.users.success && results.checkIns.success;
+
+      this.lastCleanupResult.set({
+        success: allSuccess,
+        deletedCount: totalDeleted,
+        error: allSuccess ? undefined : 'Some operations failed'
+      });
+
+      await this.refreshCounts();
+
+      // Reset local store state
+      this.userStore.reset();
+      this.checkinStore.reset();
+    } finally {
+      this.cleanupLoading.set(false);
+    }
   }
 }
