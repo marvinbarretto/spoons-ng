@@ -140,8 +140,23 @@ import {
               </div>
 
               <div class="detail-item">
+                <h4>📍 NearbyPubStore</h4>
+                <pre>{{ nearbyPubData() | json }}</pre>
+              </div>
+
+              <div class="detail-item">
                 <h4>✅ Check-ins</h4>
                 <pre>{{ checkinData() | json }}</pre>
+              </div>
+
+              <div class="detail-item">
+                <h4>🏠 Landlord</h4>
+                <pre>{{ landlordData() | json }}</pre>
+              </div>
+
+              <div class="detail-item">
+                <h4>🏆 Badges</h4>
+                <pre>{{ badgeData() | json }}</pre>
               </div>
             </div>
           </div>
@@ -396,7 +411,11 @@ export class DevDebugComponent extends BaseComponent {
   protected readonly authStore = inject(AuthStore);
   protected readonly userStore = inject(UserStore);
   protected readonly pubStore = inject(PubStore);
-  protected readonly checkinStore = inject(CheckinStore);
+  protected readonly nearbyPubStore = inject(NearbyPubStore);
+    protected readonly checkinStore = inject(CheckinStore);
+    protected readonly landlordStore = inject(LandlordStore);
+    protected readonly badgeStore = inject(BadgeStore);
+
   private readonly cleanupService = inject(CleanupService);
 
   // UI state
@@ -441,26 +460,61 @@ export class DevDebugComponent extends BaseComponent {
   ]);
 
   // Verbose data (reuse from NewHomeComponent patterns)
-  readonly authData = computed(() => ({
-    ready: this.authStore.ready(),
-    isAuthenticated: this.authStore.isAuthenticated(),
-    uid: this.authStore.uid(),
-    displayName: this.authStore.displayName(),
-    isAnonymous: this.authStore.isAnonymous(),
-  }));
+  readonly authData = computed(() => {
+    const user = this.authStore.user();
+    const ready = this.authStore.ready();
+    const isAuth = this.authStore.isAuthenticated();
 
-  readonly userData = computed(() => ({
-    loading: this.userStore.loading(),
-    error: this.userStore.error(),
-    hasUser: !!this.userStore.user(),
-    isLoaded: this.userStore.isLoaded(),
-  }));
+    const data = {
+      ready,
+      isAuthenticated: isAuth,
+      user: user,
+      uid: this.authStore.uid(),
+      displayName: this.authStore.displayName(),
+      isAnonymous: this.authStore.isAnonymous(),
+      token: this.authStore.token() ? '[TOKEN_PRESENT]' : null,
+      authFlow: {
+        step1_ready: ready,
+        step2_hasUser: !!user,
+        step3_hasToken: !!this.authStore.token(),
+        step4_canLoadUserStores: ready && !!user,
+      }
+    };
 
-  readonly pubData = computed(() => ({
-    loading: this.pubStore.loading(),
-    error: this.pubStore.error(),
-    count: this.pubStore.data().length,
-  }));
+    return data;
+  });
+
+  readonly userData = computed(() => {
+    const user = this.userStore.user();
+    const loading = this.userStore.loading();
+    const error = this.userStore.error();
+
+    const data = {
+      loading,
+      error,
+      user: user,
+      isLoaded: this.userStore.isLoaded(),
+      hasLandlordPubs: this.userStore.hasLandlordPubs(),
+    };
+
+    return data;
+  });
+
+  readonly pubData = computed(() => {
+    const pubs = this.pubStore.data();
+    const loading = this.pubStore.loading();
+    const error = this.pubStore.error();
+
+    const data = {
+      loading,
+      error,
+      pubCount: pubs.length,
+      pubs: pubs.slice(0, 3), // First 3 for brevity
+      allPubIds: pubs.map(p => p.id),
+    };
+
+    return data;
+  });
 
   readonly checkinData = computed(() => ({
     loading: this.checkinStore.loading(),
@@ -468,6 +522,61 @@ export class DevDebugComponent extends BaseComponent {
     count: this.checkinStore.data().length,
     canLoad: !!this.authStore.user(),
   }));
+
+    readonly nearbyPubData = computed(() => {
+      const pubs = this.nearbyPubStore.nearbyPubs();
+      const closestPub = this.nearbyPubStore.closestPub();
+
+      const data = {
+        loading: false, // Computed stores don't have loading state
+        error: null,    // They derive from source stores
+        nearbyCount: pubs.length,
+        pubs: pubs.slice(0, 3),
+        closestPub: closestPub,
+        canCheckIn: this.nearbyPubStore.canCheckIn(),
+      };
+
+      return data;
+    });
+
+    readonly badgeData = computed(() => {
+      const badges = this.badgeStore.badges();
+      const loading = this.badgeStore.loading();
+      const error = this.badgeStore.error();
+      const user = this.authStore.user();
+
+      const data = {
+        loading,
+        error,
+        authStatus: user ? 'authenticated' : 'not authenticated',
+        badgeCount: badges.length,
+        badges: badges.slice(0, 3),
+        // Show if this is user badges or badge definitions
+        dataType: user ? 'user badges' : 'badge definitions',
+      };
+
+      return data;
+    });
+
+  readonly landlordData = computed(() => {
+    const todayLandlords = this.landlordStore.todayLandlord();
+    const loading = this.landlordStore.loading();
+    const error = this.landlordStore.error();
+
+    const data = {
+      loading,
+      error,
+      landlordCount: this.landlordStore.landlordCount(),
+      landlordPubIds: this.landlordStore.landlordPubIds(),
+      sampleLandlords: Object.entries(todayLandlords).slice(0, 3).map(([pubId, landlord]) => ({
+        pubId,
+        landlord
+      })),
+    };
+
+    return data;
+  });
+
 
   constructor() {
     super();

@@ -1,13 +1,25 @@
 export const pubs = [
   {
-    name: 'The Ledger Building',
-    address: '4 Hertsmere Road, West India Quay, Docklands, London, E14 4AL',
+    name: 'The Montagu Pyke',
+    address: '105-107 Charing Cross Rd, London WC2H 0DT',
     city: 'London',
     region: 'London',
     country: 'England',
     location: {
-      "lng": -0.02702622826531754,
-      "lat": 51.50840639638788
+      "lng": -0.1292581,
+      "lat": 51.525447
+    },
+    carpetUrl: ''
+  },
+  {
+    name: 'The Captain Flinders',
+    address: '34-38 Eversholt St, Euston Square, London NW1 1DA',
+    city: 'London',
+    region: 'London',
+    country: 'England',
+    location: {
+      "lng": -0.1679958,
+      "lat": 51.5140454
     },
     carpetUrl: ''
   }
