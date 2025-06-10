@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { EditMissionPageComponent } from './edit-mission-page.component';
+import { MissionAdminComponent } from './mission-admin.component';
 
-describe('EditMissionPageComponent', () => {
-  let component: EditMissionPageComponent;
-  let fixture: ComponentFixture<EditMissionPageComponent>;
+describe('MissionAdminComponent', () => {
+  let component: MissionAdminComponent;
+  let fixture: ComponentFixture<MissionAdminComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [EditMissionPageComponent]
+      imports: [MissionAdminComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(EditMissionPageComponent);
+    fixture = TestBed.createComponent(MissionAdminComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

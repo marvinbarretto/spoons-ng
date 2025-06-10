@@ -1,10 +1,10 @@
 import { Routes } from '@angular/router';
-import { BadgeAdminPageComponent } from '../feature/badge-admin-page/badge-admin-page.component';
+import { BadgeAdminComponent } from '../feature/badge-admin/badge-admin.component';
 
 export const BADGE_ROUTES: Routes = [
   {
     path: '',
     title: 'All Badges',
-    component: BadgeAdminPageComponent,
+    component: BadgeAdminComponent,
   }
 ];

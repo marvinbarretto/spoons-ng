@@ -231,7 +231,7 @@ import { BadgeStore } from '../../data-access/badge.store';
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class BadgeAdminPageComponent implements OnInit {
+export class BadgeAdminComponent implements OnInit {
   private readonly overlayService = inject(OverlayService);
   private readonly badgeStore = inject(BadgeStore);
 

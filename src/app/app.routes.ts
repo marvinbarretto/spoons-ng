@@ -7,7 +7,7 @@ import {
   UrlMatchResult,
 } from '@angular/router';
 import { CheckInContainerComponent } from './check-in/feature/check-in-container/check-in-container.component';
-import { MISSION_ROUTES } from './missions/data-access/mission.routes';
+import { MISSIONS_ROUTES } from './missions/data-access/mission.routes';
 import { BADGE_ROUTES } from './badges/data-access/badge.routes';
 import { LeaderboardContainerComponent } from './leaderboard/feature/leaderboard-container/leaderboard-container.component';
 import { ShareContainerComponent } from './share/feature/share-container/share-container.component';
@@ -32,7 +32,7 @@ export const appRoutes: Routes = [
     path: 'missions',
     title: 'Missions',
     loadChildren: () =>
-      import('./missions/data-access/mission.routes').then((m) => m.MISSION_ROUTES),
+      import('./missions/data-access/mission.routes').then((m) => m.MISSIONS_ROUTES),
   },
 // app.routes.ts
 {
