@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { FirestoreService } from '../../shared/data-access/firestore.service';
 import { arrayUnion, increment, serverTimestamp, Timestamp, where } from 'firebase/firestore';
-import type { CheckIn } from '../util/check-in.model';
+import type { CheckIn } from '../utils/check-in.model';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { Pub } from '../../pubs/utils/pub.models';
 import { earliest, latest } from '../../shared/utils/date-utils';

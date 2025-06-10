@@ -1,6 +1,6 @@
 
 import { Timestamp } from "firebase/firestore";
-import { CheckIn } from "../../check-in/util/check-in.model";
+import { CheckIn } from "../../check-in/utils/check-in.model";
 import { Landlord } from "../../landlord/utils/landlord.model";
 
 export type Pub = {

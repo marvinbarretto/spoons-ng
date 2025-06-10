@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 
 import { BadgeEvaluatorService } from './badge-evaluator.service';
 import { Badge } from '../utils/badge.model';
-import { CheckIn } from '../../check-in/util/check-in.model';
+import { CheckIn } from '../../check-in/utils/check-in.model';
 import { Timestamp } from 'firebase/firestore';
 
 describe('BadgeEvaluatorService', () => {

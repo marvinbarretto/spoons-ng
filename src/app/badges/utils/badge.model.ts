@@ -1,5 +1,5 @@
 import { Timestamp } from "firebase/firestore";
-import { CheckIn } from "../../check-in/util/check-in.model";
+import { CheckIn } from "../../check-in/utils/check-in.model";
 
 export type Badge = {
   id: string;

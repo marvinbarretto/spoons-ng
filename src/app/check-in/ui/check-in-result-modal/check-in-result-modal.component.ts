@@ -3,7 +3,7 @@ import { Component, inject, input, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
-import type { CheckIn } from '../../util/check-in.model';
+import type { CheckIn } from '../../utils/check-in.model';
 import type { Pub } from '../../../pubs/utils/pub.models';
 import { environment } from '../../../../environments/environment';
 

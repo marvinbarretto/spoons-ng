@@ -1,6 +1,6 @@
 // /badges/utils/badge.config.ts
 import type { Badge } from './badge.model';
-import type { CheckIn } from '../../check-in/util/check-in.model';
+import type { CheckIn } from '../../check-in/utils/check-in.model';
 
 export const BADGE_DEFINITIONS: Badge[] = [
   {
