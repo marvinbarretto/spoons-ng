@@ -3,45 +3,29 @@
     <div class="user-info__anon">
       <img
         class="anon-avatar"
-        src="assets/images/npc-wojack-shaky.webp"
+        [src]="avatarUrl()"
         alt="Anonymous NPC"
         width="48"
         height="48"
       />
       <div class="user-details">
-        <p class="user-name">{{ displayName }}</p>
+        <p class="user-name">{{ displayName() }}</p>
       </div>
-
-      <app-button
-        variant="primary"
-        size="sm"
-        icon="login"
-        (onClick)="onLogin()"
-      >
-        Sign Up
-      </app-button>
+      <!-- rest unchanged -->
     </div>
   } @else {
     <div class="user-info__user">
       @if (currentUser()) {
         <img
-          *ngIf="currentUser()?.photoURL"
-          [src]="currentUser()?.photoURL"
-          alt="User Photo"
+          [src]="avatarUrl()"
+          [alt]="displayName() + ' Photo'"
         />
         <div class="user-details">
-          <p class="user-name">{{ displayName }}</p>
+          <p class="user-name">{{ displayName() }}</p>
           <small class="user-type">Signed In</small>
         </div>
       }
-
-      <app-button
-        size="sm"
-        icon="logout"
-        (onClick)="onLogout()"
-      >
-        Logout
-      </app-button>
+      <!-- rest unchanged -->
     </div>
   }
 </section>

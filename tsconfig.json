@@ -3,6 +3,19 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+    "baseUrl": "./src",
+    "paths": {
+      "@/*": ["*"],
+      "@app/*": ["app/*"],
+      "@home/*": ["app/home/*"],
+      "@shared/*": ["app/shared/*"],
+      "@auth/*": ["app/auth/*"],
+      "@pubs/*": ["app/pubs/*"],
+      "@check-in/*": ["app/check-in/*"],
+      "@badges/*": ["app/badges/*"],
+      "@users/*": ["app/users/*"],
+      "@landlord/*": ["app/landlord/*"]
+    },
     "outDir": "./dist/out-tsc",
     "strict": true,
     "noImplicitOverride": true,

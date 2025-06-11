@@ -36,6 +36,12 @@ export class AuthStore {
     return user.displayName || user.email?.split('@')[0] || 'User';
   });
 
+  readonly avatarUrl = computed(() => {
+    const user = this.user();
+    if (!user) return null;
+    return user.photoURL || null;
+  });
+
   constructor() {
     this.platform.onlyOnBrowser(() => {
       this.authService.onAuthChange(async (firebaseUser) => {

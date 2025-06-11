@@ -1,109 +1,189 @@
-// Enhanced widget that gathers more debug info
-import { Component, Input, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { Pub } from '../../../pubs/utils/pub.models';
-import { CheckinStore } from '../../data-access/check-in.store';
-import { LandlordStore } from '../../../landlord/data-access/landlord.store';
-import { AuthStore } from '../../../auth/data-access/auth.store';
-import { OverlayService } from '../../../shared/data-access/overlay.service';
-import { CheckInResultModalComponent, CheckInResultData } from '../check-in-result-modal/check-in-result-modal.component';
-import { ButtonComponent } from '../../../shared/ui/button/button.component';
+// src/app/features/home/ui/check-in-homepage-widget/check-in-homepage-widget.component.ts
+import { Component, input, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { CheckinStore } from '@check-in/data-access/check-in.store';
+import { OverlayService } from '@shared/data-access/overlay.service';
+import { ButtonComponent } from '@shared/ui/button/button.component';
+import { CheckInResultModalComponent } from '@check-in/ui/check-in-result-modal/check-in-result-modal.component';
+
+// ✅ Define the Pub type for this component
+type Pub = {
+  id: string;
+  name: string;
+  distance: number;
+};
+
+// ✅ Define the result data type
+type CheckInResultData = {
+  success: boolean;
+  checkin?: any;
+  pub?: Pub;
+  isNewLandlord?: boolean;
+  landlordMessage?: string;
+  autoNavigate?: boolean;
+  badges?: any[];
+  error?: string;
+};
 
 @Component({
   selector: 'app-check-in-homepage-widget',
-  imports: [CommonModule, RouterModule, ButtonComponent],
+  imports: [ButtonComponent],
   template: `
     <div class="check-in-widget">
-      <h3>{{ closestPub.name }}</h3>
+      @if (canCheckIn()) {
+        <div class="check-in-ready">
+          <h3>Check into {{ closestPub().name }}</h3>
 
-      <app-button
-        [variant]="'primary'"
-        [fullWidth]="true"
-        [loading]="isCheckingIn()"
-        [disabled]="isCheckingIn()"
-        (onClick)="checkInToNearestPub()"
-      >
-        {{ isCheckingIn() ? 'Checking in...' : 'Check In' }}
-      </app-button>
+          <app-button
+            variant="primary"
+            [fullWidth]="true"
+            [loading]="isCheckingIn()"
+            [disabled]="isCheckingIn() || !canCheckIn()"
+            (onClick)="handleCheckIn()"
+          >
+            {{ isCheckingIn() ? 'Checking in...' : '✅ Check In' }}
+          </app-button>
+        </div>
+      } @else {
+        <div class="check-in-unavailable">
+          <h3>{{ closestPub().name }}</h3>
+          <p class="distance">{{ distanceKm() }}km away</p>
+          <p class="status">{{ getUnavailableReason() }}</p>
+        </div>
+      }
     </div>
   `,
-  styles: [`
+  styles: `
     .check-in-widget {
-      padding: 1rem;
-      background-color: #f5f5f5;
-      border: 1px solid #ddd;
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      align-items: center;
+      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+      color: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
     }
-  `]
+
+    .check-in-ready h3,
+    .check-in-unavailable h3 {
+      margin: 0 0 0.5rem 0;
+      font-size: 1.3rem;
+      font-weight: 600;
+    }
+
+    .distance {
+      margin: 0 0 1.5rem 0;
+      font-size: 0.95rem;
+      opacity: 0.9;
+    }
+
+    .check-in-unavailable {
+      background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .status {
+      margin: 0;
+      font-weight: 500;
+      color: #ffc107;
+      font-size: 0.95rem;
+    }
+
+    /* Button overrides for this context */
+    :host ::ng-deep .btn-primary {
+      background: rgba(255, 255, 255, 0.95);
+      color: #28a745;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      font-weight: 600;
+      font-size: 1.1rem;
+      padding: 0.875rem 2rem;
+    }
+
+    :host ::ng-deep .btn-primary:hover:not(:disabled) {
+      background: white;
+      color: #1e7e34;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    :host ::ng-deep .btn-primary:disabled {
+      background: rgba(255, 255, 255, 0.6);
+      color: rgba(40, 167, 69, 0.7);
+      cursor: not-allowed;
+    }
+
+    /* Mobile responsive */
+    @media (max-width: 480px) {
+      .check-in-widget {
+        padding: 1.25rem;
+      }
+
+      .check-in-ready h3,
+      .check-in-unavailable h3 {
+        font-size: 1.2rem;
+      }
+    }
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CheckInHomepageWidgetComponent {
-  @Input({ required: true }) closestPub!: Pub;
+  // ✅ Modern input signals
+  readonly closestPub = input.required<Pub>();
+  readonly canCheckIn = input.required<boolean>();
+  readonly distanceKm = input.required<string>();
 
+  // ✅ Store injections
   private readonly checkinStore = inject(CheckinStore);
-  private readonly landlordStore = inject(LandlordStore);
-  private readonly authStore = inject(AuthStore);
   private readonly overlayService = inject(OverlayService);
 
-  readonly isCheckingIn = signal(false);
+  // ✅ Local state
+  private readonly _isCheckingIn = signal(false);
+  readonly isCheckingIn = this._isCheckingIn.asReadonly();
 
-  async checkInToNearestPub(): Promise<void> {
-    if (this.isCheckingIn()) return;
+  /**
+   * Get human-readable reason why check-in is unavailable
+   */
+  getUnavailableReason(): string {
+    if (!this.canCheckIn()) {
+      // TODO: Add more specific reasons based on store state
+      // - Too far away
+      // - Already checked in today
+      // - Pub is closed
+      return 'Too far to check in';
+    }
+    return '';
+  }
 
-    console.log('[CheckinWidget] Starting check-in for:', this.closestPub.name);
-    this.isCheckingIn.set(true);
+  /**
+   * Handle check-in button click
+   */
+  async handleCheckIn(): Promise<void> {
+    if (this._isCheckingIn() || !this.canCheckIn()) {
+      return;
+    }
+
+    const pub = this.closestPub();
+    console.log('[CheckinWidget] Starting check-in for:', pub.name);
+
+    this._isCheckingIn.set(true);
 
     try {
-      // Capture pre-checkin state for debugging
-      const preCheckinLandlord = this.landlordStore.todayLandlord()[this.closestPub.id];
-      const currentUser = this.authStore.user();
+      // ✅ Delegate to store
+      await this.checkinStore.checkinToPub(pub.id);
 
-      console.log('[CheckinWidget] Pre-checkin landlord state:', preCheckinLandlord);
-      console.log('[CheckinWidget] Current user:', currentUser?.uid);
-
-      await this.checkinStore.checkinToPub(this.closestPub.id);
-
-      // Capture post-checkin state
+      // ✅ Get results from store
       const latestCheckin = this.checkinStore.checkinSuccess();
       const landlordMessage = this.checkinStore.landlordMessage();
-      const postCheckinLandlord = this.landlordStore.todayLandlord()[this.closestPub.id];
-
-      console.log('[CheckinWidget] Post-checkin landlord state:', postCheckinLandlord);
-      console.log('[CheckinWidget] Latest checkin:', latestCheckin);
-      console.log('[CheckinWidget] Landlord message:', landlordMessage);
 
       if (latestCheckin) {
-        // Determine if user is new landlord
         const isNewLandlord = latestCheckin.madeUserLandlord === true;
-
-        // Gather debug info
-        const debugInfo = {
-          pubLandlordStatus: postCheckinLandlord ? 'Has landlord' : 'No landlord',
-          checkinTime: latestCheckin.timestamp.toDate().toISOString(),
-          landlordClaimedAt: postCheckinLandlord?.claimedAt
-            ? (typeof postCheckinLandlord.claimedAt === 'object' && 'toDate' in postCheckinLandlord.claimedAt
-               ? postCheckinLandlord.claimedAt.toDate().toISOString()
-               : String(postCheckinLandlord.claimedAt))
-            : undefined,
-          existingLandlordUserId: postCheckinLandlord?.userId,
-          preCheckinLandlord: preCheckinLandlord?.userId || 'none',
-          postCheckinLandlord: postCheckinLandlord?.userId || 'none',
-          userWhoCheckedIn: currentUser?.uid,
-        };
-
-        console.log('[CheckinWidget] Debug info:', debugInfo);
 
         this.showResultModal({
           success: true,
           checkin: latestCheckin,
-          pub: this.closestPub,
+          pub: pub,
           isNewLandlord,
           landlordMessage: landlordMessage || undefined,
-          currentLandlord: postCheckinLandlord,
-          debugInfo,
+          autoNavigate: true,
+          badges: [], // TODO: Add badges when available
         });
       } else {
         this.showResultModal({
@@ -114,17 +194,21 @@ export class CheckInHomepageWidgetComponent {
 
     } catch (error: any) {
       console.error('[CheckinWidget] Check-in failed:', error);
+
       this.showResultModal({
         success: false,
-        error: error?.message || 'Check-in failed'
+        error: error?.message || 'Check-in failed. Please try again.'
       });
     } finally {
-      this.isCheckingIn.set(false);
+      this._isCheckingIn.set(false);
     }
   }
 
+  /**
+   * Show check-in result modal
+   */
   private showResultModal(data: CheckInResultData): void {
-    console.log('[CheckinWidget] !!! showResultModal', data);
+    console.log('[CheckinWidget] Showing result modal:', data);
 
     const { componentRef, close } = this.overlayService.open(
       CheckInResultModalComponent,
@@ -132,6 +216,7 @@ export class CheckInHomepageWidgetComponent {
       { data }
     );
 
+    // ✅ Provide close function to modal
     componentRef.instance.closeModal = close;
   }
 }

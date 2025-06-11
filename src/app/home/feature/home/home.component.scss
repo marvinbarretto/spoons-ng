@@ -1,3 +1,5 @@
+// src/app/features/home/home-three.component.scss
+
 .home-container {
   padding: 1rem;
   max-width: 600px;
@@ -5,225 +7,62 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+
+  // Ensure consistent spacing
+  > * {
+    flex-shrink: 0;
+  }
 }
 
-.welcome-hero {
-  text-align: center;
+.no-nearby-pubs-message {
+  background: #f8f9fa;
+  border: 2px dashed #dee2e6;
+  border-radius: 12px;
   padding: 2rem 1rem;
-  background: linear-gradient(135deg, var(--color-buttonPrimaryBase), var(--color-accentBase));
-  color: white;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-}
-
-.welcome-hero h1 {
-  margin: 0 0 1rem;
-  font-size: 2rem;
-  font-weight: 800;
-}
-
-.welcome-hero p {
-  margin: 0.5rem 0;
-  font-size: 1.1rem;
-  opacity: 0.9;
-}
-
-.username-preview {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 0.75rem;
-  border-radius: 6px;
-  margin-top: 1rem;
-}
-
-.username-preview strong {
-  color: #FFD54F;
-  font-weight: 700;
-}
-
-.post-checkin-celebration {
   text-align: center;
-  padding: 2rem 1rem;
-  background: linear-gradient(135deg, #10b981, #059669);
-  color: white;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-}
+  color: #6c757d;
 
-.post-checkin-celebration h2 {
-  margin: 0 0 1rem;
-  font-size: 1.8rem;
-  font-weight: 800;
-}
-
-.celebration-stats {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 1rem;
-  border-radius: 6px;
-  margin: 1rem 0;
-}
-
-.upgrade-prompt {
-  background: var(--color-subtleLighter);
-  padding: 1.5rem;
-  border-radius: 8px;
-  text-align: center;
-  border: 2px solid var(--color-accentBase);
-}
-
-.upgrade-prompt h3 {
-  margin: 0 0 1rem;
-  color: var(--color-text);
-}
-
-.upgrade-prompt p {
-  margin: 0.5rem 0;
-  opacity: 0.8;
-}
-
-.upgrade-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin-top: 1.5rem;
-}
-
-.skip-button {
-  background: transparent;
-  border: none;
-  color: var(--color-text);
-  padding: 0.5rem;
-  cursor: pointer;
-  opacity: 0.7;
-  font-size: 0.9rem;
-  text-decoration: underline;
-}
-
-.skip-button:hover {
-  opacity: 1;
-}
-
-.location-info {
-  background: var(--color-subtleLighter);
-  padding: 1rem;
-  border-radius: 8px;
-  text-align: center;
-}
-
-.location-info p {
-  margin: 0;
-  font-size: 0.9rem;
-  opacity: 0.8;
-}
-
-.already-checked-in {
-  background: rgba(34, 197, 94, 0.1);
-  border: 1px solid rgba(34, 197, 94, 0.3);
-  padding: 1.5rem;
-  border-radius: 8px;
-  text-align: center;
-}
-
-.already-checked-in h3 {
-  margin: 0 0 0.5rem;
-  color: var(--color-text);
-}
-
-.already-checked-in p {
-  margin: 0 0 0.5rem;
-  font-weight: 600;
-  color: #16a34a;
-}
-
-.already-checked-in small {
-  opacity: 0.7;
-}
-
-.no-nearby-pubs {
-  background: var(--color-subtleLighter);
-  padding: 1.5rem;
-  border-radius: 8px;
-  text-align: center;
-}
-
-.no-nearby-pubs h3 {
-  margin: 0 0 0.5rem;
-  color: var(--color-text);
-}
-
-.no-nearby-pubs p {
-  margin: 0;
-  opacity: 0.8;
-}
-
-.nearby-pubs {
-  h2 {
-    margin: 0 0 1rem;
+  h3 {
+    margin: 0 0 0.5rem 0;
     font-size: 1.2rem;
-    color: var(--color-text);
+    color: #495057;
   }
 
-  .pub-list {
-    list-style: none;
+  p {
     margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .pub-item {
-    background: var(--color-subtleLighter);
-    padding: 1rem;
-    border-radius: 6px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    .pub-info {
-      h4 {
-        margin: 0 0 0.25rem;
-        font-size: 1rem;
-        color: var(--color-text);
-      }
-
-      small {
-        opacity: 0.7;
-        font-size: 0.85rem;
-      }
-    }
-
-    .checked-in-badge {
-      background: rgba(34, 197, 94, 0.1);
-      color: #16a34a;
-      padding: 0.25rem 0.5rem;
-      border-radius: 4px;
-      font-size: 0.8rem;
-      font-weight: 600;
-    }
+    font-size: 0.95rem;
   }
 }
 
 .loading-state {
   text-align: center;
   padding: 2rem;
+  color: #6c757d;
+  background: #f8f9fa;
+  border-radius: 8px;
 
   p {
     margin: 0;
-    opacity: 0.7;
-    font-style: italic;
+    font-size: 1rem;
   }
 }
 
-// Mobile responsiveness
-@media (max-width: 600px) {
+// Mobile responsive adjustments
+@media (max-width: 480px) {
   .home-container {
-    padding: 0.5rem;
-    gap: 1rem;
+    padding: 0.75rem;
+    gap: 1.25rem;
   }
 
-  .pub-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
+  .no-nearby-pubs-message {
+    padding: 1.5rem 0.75rem;
+
+    h3 {
+      font-size: 1.1rem;
+    }
+
+    p {
+      font-size: 0.9rem;
+    }
   }
 }

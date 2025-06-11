@@ -52,26 +52,11 @@ import { User } from '../../../users/utils/user.model';
           </div>
         </div>
 
-        <!-- Quick Name Suggestions -->
-        <div class="suggestions">
-          <h3>Quick Ideas</h3>
-          <div class="suggestion-buttons">
-            @for (suggestion of nameSuggestions(); track suggestion) {
-              <button
-                class="suggestion-btn"
-                (click)="useSuggestion(suggestion)"
-                [disabled]="saving()"
-              >
-                {{ suggestion }}
-              </button>
-            }
-          </div>
-        </div>
+        <!-- Bring in a username generator -->
       </div>
 
       <div class="modal-footer">
         <app-button
-          variant="ghost"
           (onClick)="cancel()"
           [disabled]="saving()"
         >
@@ -302,6 +287,20 @@ export class UsernameModalComponent {
   // 📡 Component state
   readonly displayName = signal('');
   readonly selectedAvatarId = signal('');
+
+  // Add initialization logic
+  ngOnInit(): void {
+    // Set default to current user's avatar or fallback to npc-wojack
+    const currentPhotoURL = this.authStore.user()?.photoURL;
+    const currentAvatarId = this.findAvatarIdByUrl(currentPhotoURL) || 'npc-wojack';
+    this.selectedAvatarId.set(currentAvatarId);
+  }
+
+  private findAvatarIdByUrl(url: string | undefined): string | null {
+    if (!url) return null;
+    const avatar = this.avatarOptions().find(a => a.url === url);
+    return avatar?.id || null;
+  }
   readonly saving = signal(false);
 
   // 🎭 Computed data
@@ -311,11 +310,13 @@ export class UsernameModalComponent {
 
   readonly avatarOptions = computed(() => {
     const user = this.authStore.user();
+    console.log('[username-modal] avatarOptions', user);
     return user ? this.avatarService.generateAvatarOptions(user.uid) : [];
   });
 
   readonly selectedAvatar = computed(() => {
     const selected = this.avatarOptions().find(a => a.id === this.selectedAvatarId());
+    console.log('[username-modal] selectedAvatar', selected);
     return selected?.url || '';
   });
 
@@ -337,16 +338,8 @@ export class UsernameModalComponent {
   closeModal: () => void = () => {};
 
   // 🎬 Actions
-  async selectAvatar(avatarId: string): Promise<void> {
-    const selectedAvatar = this.avatarOptions().find(a => a.id === avatarId);
-    if (!selectedAvatar) return;
-
-    try {
-      await this.avatarService.selectAvatar(selectedAvatar);
-      this.selectedAvatarId.set(avatarId);
-    } catch (error) {
-      console.error('[UsernameModal] ❌ Failed to select avatar:', error);
-    }
+  selectAvatar(avatarId: string): void {
+    this.selectedAvatarId.set(avatarId); // Instant!
   }
 
   useSuggestion(suggestion: string): void {
@@ -360,12 +353,20 @@ export class UsernameModalComponent {
 
     try {
       const name = this.displayName().trim();
-      const selectedAvatar = this.selectedAvatar();
+      const selectedAvatar = this.selectedAvatar(); // Get the preview URL
 
+      // 🔄 Persist both name AND avatar here
       await this.authStore.updateUserProfile({
         displayName: name,
         photoURL: selectedAvatar,
       });
+
+      // 💾 Also persist avatar selection if needed by service
+      const avatarOption = this.avatarOptions().find(a => a.id === this.selectedAvatarId());
+      if (avatarOption) {
+        await this.avatarService.selectAvatar(avatarOption);
+      }
+
       console.log('[UsernameModal] ✅ Saved:', { name, avatar: selectedAvatar });
       this.closeModal();
 
@@ -375,7 +376,6 @@ export class UsernameModalComponent {
       this.saving.set(false);
     }
   }
-
   cancel(): void {
     this.closeModal();
   }

@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { HomeComponent } from './home.component';
+import { NearbyPubListComponent } from './nearby-pub-list.component';
 
-describe('HomeComponent', () => {
-  let component: HomeComponent;
-  let fixture: ComponentFixture<HomeComponent>;
+describe('NearbyPubListComponent', () => {
+  let component: NearbyPubListComponent;
+  let fixture: ComponentFixture<NearbyPubListComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HomeComponent]
+      imports: [NearbyPubListComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(HomeComponent);
+    fixture = TestBed.createComponent(NearbyPubListComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -1,322 +1,309 @@
-// badges/ui/earned-badge-list.component.ts
-import { Component, computed, inject, input, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { EarnedBadgeStore } from '../../data-access/earned-badge.store';
-import { BadgeStore } from '../../data-access/badge.store';
-import { BadgeComponent } from '../badge/badge.component';
-import type { Badge } from '../../utils/badge.model';
+import { Component, input, computed, ChangeDetectionStrategy } from '@angular/core';
+import type { EarnedBadge, Badge } from '../../utils/badge.model';
+
+// ✅ Type for combined earned badge + definition
+type EarnedBadgeWithDefinition = {
+  earnedBadge: EarnedBadge;
+  badge: Badge | undefined;
+};
 
 @Component({
   selector: 'app-earned-badge-list',
-  imports: [CommonModule, BadgeComponent],
+  imports: [],
   template: `
-    <div class="earned-badges">
-      <!-- Header -->
-      <div class="earned-badges-header">
-        <h2 class="earned-badges-title">
-          {{ title() }}
-          @if (earnedBadgeStore.hasData()) {
-            <span class="badge-count">({{ earnedBadgeStore.earnedBadgeCount() }})</span>
-          }
-        </h2>
+    <section class="badges-section">
+      <h2>{{ title() }}</h2>
 
-        @if (showStats()) {
-          <div class="earned-badges-stats">
-            <span class="stat">{{ earnedBadgeStore.earnedBadgeCount() }} earned</span>
-            @if (recentBadgeCount() > 0) {
-              <span class="stat stat--recent">{{ recentBadgeCount() }} this week</span>
-            }
-          </div>
-        }
-      </div>
-
-      <!-- Loading State -->
-      @if (earnedBadgeStore.loading()) {
-        <div class="loading-state">
-          <div class="loading-spinner"></div>
-          <p>Loading your badges...</p>
+      @if (displayBadges().length === 0) {
+        <div class="placeholder">
+          <p>🏆 Your badges will appear here</p>
+          <small>Check in to pubs to earn your first badge!</small>
         </div>
-      }
-
-      <!-- Error State -->
-      @else if (earnedBadgeStore.error()) {
-        <div class="error-state">
-          <p class="error-message">{{ earnedBadgeStore.error() }}</p>
-          <button (click)="retry()" class="retry-button">Try Again</button>
-        </div>
-      }
-
-      <!-- Empty State -->
-      @else if (earnedBadgeStore.isEmpty()) {
-        <div class="empty-state">
-          <div class="empty-icon">🏆</div>
-          <h3>No badges yet</h3>
-          <p>Start checking in to pubs to earn your first badge!</p>
-        </div>
-      }
-
-      <!-- Badge List -->
-      @else {
-        <div class="badge-grid" [class]="gridClass()">
-          @for (earnedBadge of displayBadges(); track earnedBadge.id) {
-            @if (getBadgeDefinition(earnedBadge.badgeId); as badge) {
-              <div class="badge-item">
-                <app-badge
-                  [badge]="badge"
-                  [size]="badgeSize()"
-                  [showName]="showBadgeNames()"
-                  [showDescription]="showDescriptions()"
-                  [showCategory]="showCategories()"
-                />
-
-                @if (showEarnedDate()) {
-                  <div class="earned-date">
-                    Earned {{ formatDate(earnedBadge.awardedAt) }}
-                  </div>
+      } @else {
+        <div class="badges-container">
+          @for (item of displayBadges(); track item.earnedBadge.id) {
+            <div class="badge-item" [class]="'size-' + size()">
+              <div class="badge-icon">
+                @if (item.badge?.emoji) {
+                  <span class="badge-emoji">{{ item.badge?.emoji }}</span>
+                } @else if (item.badge?.icon) {
+                  <span class="badge-icon-text">{{ item.badge?.icon }}</span>
+                } @else {
+                  <span class="badge-default-icon">🏆</span>
                 }
               </div>
-            } @else {
-              <!-- Fallback for missing badge definition -->
-              <div class="badge-item badge-item--missing">
-                <div class="missing-badge">
-                  <span class="missing-icon">❓</span>
-                  <span class="missing-text">Badge not found</span>
-                </div>
+
+              <div class="badge-content">
+                <h4 class="badge-name">
+                  {{ item.badge?.name || 'Unknown Badge' }}
+                </h4>
+
+                @if (showEarnedDate()) {
+                  <small class="badge-date">
+                    Earned {{ formatEarnedDate(item.earnedBadge.awardedAt) }}
+                  </small>
+                }
+
+                @if (item.badge?.description && size() !== 'small') {
+                  <p class="badge-description">
+                    {{ item.badge?.description }}
+                  </p>
+                }
               </div>
-            }
+            </div>
           }
         </div>
+
+        @if (linkToFullPage()) {
+          <div class="badges-footer">
+            <a href="/badges" class="view-all-link">View All Badges →</a>
+          </div>
+        }
       }
-    </div>
+    </section>
   `,
-  styles: [`
-    .earned-badges {
-      width: 100%;
+  styles: `
+    .badges-section {
+      background: white;
+      border-radius: 12px;
+      padding: 1.5rem;
+      border: 1px solid #e9ecef;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
     }
 
-    .earned-badges-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 1.5rem;
-      gap: 1rem;
+    .badges-section h2 {
+      margin: 0 0 1.25rem 0;
+      color: #333;
+      font-size: 1.3rem;
+      font-weight: 600;
     }
 
-    .earned-badges-title {
-      margin: 0;
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: #111827;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .badge-count {
-      font-size: 1rem;
-      font-weight: 500;
-      color: #6b7280;
-    }
-
-    .earned-badges-stats {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-
-    .stat {
-      font-size: 0.875rem;
-      color: #6b7280;
-      padding: 0.25rem 0.75rem;
-      background: #f3f4f6;
-      border-radius: 9999px;
-    }
-
-    .stat--recent {
-      background: #dbeafe;
-      color: #1d4ed8;
-    }
-
-    .loading-state,
-    .error-state,
-    .empty-state {
+    .placeholder {
       text-align: center;
-      padding: 3rem 1rem;
+      padding: 2rem 1rem;
+      color: #6c757d;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border: 2px dashed #dee2e6;
     }
 
-    .loading-spinner {
-      width: 2rem;
-      height: 2rem;
-      border: 2px solid #e5e7eb;
-      border-top: 2px solid #3b82f6;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 1rem;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .error-message {
-      color: #dc2626;
-      margin-bottom: 1rem;
-    }
-
-    .retry-button {
-      padding: 0.5rem 1rem;
-      background: #3b82f6;
-      color: white;
-      border: none;
-      border-radius: 0.375rem;
-      cursor: pointer;
-      font-size: 0.875rem;
-    }
-
-    .retry-button:hover {
-      background: #2563eb;
-    }
-
-    .empty-icon {
-      font-size: 3rem;
-      margin-bottom: 1rem;
-    }
-
-    .empty-state h3 {
+    .placeholder p {
       margin: 0 0 0.5rem 0;
-      color: #374151;
+      font-size: 1.1rem;
     }
 
-    .empty-state p {
-      margin: 0;
-      color: #6b7280;
+    .placeholder small {
+      color: #adb5bd;
     }
 
-    .badge-grid {
-      display: grid;
+    .badges-container {
+      display: flex;
+      flex-direction: column;
       gap: 1rem;
-    }
-
-    .badge-grid--small {
-      grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
-    }
-
-    .badge-grid--medium {
-      grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
-    }
-
-    .badge-grid--large {
-      grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
-    }
-
-    .badge-grid--list {
-      grid-template-columns: 1fr;
     }
 
     .badge-item {
-      position: relative;
-    }
-
-    .badge-item--missing {
-      opacity: 0.6;
-    }
-
-    .missing-badge {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 1rem;
+      padding: 1rem;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border: 1px solid #e9ecef;
+      transition: all 0.2s ease;
+    }
+
+    .badge-item:hover {
+      background: #e9ecef;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Size variants */
+    .badge-item.size-small {
       padding: 0.75rem;
-      border: 1px dashed #d1d5db;
-      border-radius: 0.5rem;
-      color: #6b7280;
+      gap: 0.75rem;
     }
 
-    .earned-date {
-      margin-top: 0.5rem;
-      font-size: 0.75rem;
-      color: #9ca3af;
+    .badge-item.size-small .badge-icon {
+      width: 40px;
+      height: 40px;
+      font-size: 1.2rem;
+    }
+
+    .badge-item.size-medium {
+      padding: 1rem;
+      gap: 1rem;
+    }
+
+    .badge-item.size-medium .badge-icon {
+      width: 50px;
+      height: 50px;
+      font-size: 1.5rem;
+    }
+
+    .badge-item.size-large {
+      padding: 1.25rem;
+      gap: 1.25rem;
+    }
+
+    .badge-item.size-large .badge-icon {
+      width: 60px;
+      height: 60px;
+      font-size: 1.8rem;
+    }
+
+    .badge-icon {
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 1.5rem;
+      box-shadow: 0 2px 4px rgba(255, 215, 0, 0.3);
+    }
+
+    .badge-emoji,
+    .badge-icon-text,
+    .badge-default-icon {
+      line-height: 1;
+    }
+
+    .badge-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .badge-name {
+      margin: 0 0 0.25rem 0;
+      color: #333;
+      font-size: 1rem;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .badge-item.size-small .badge-name {
+      font-size: 0.9rem;
+      margin-bottom: 0.125rem;
+    }
+
+    .badge-item.size-large .badge-name {
+      font-size: 1.1rem;
+      margin-bottom: 0.375rem;
+    }
+
+    .badge-date {
+      color: #6c757d;
+      font-size: 0.8rem;
+      line-height: 1.2;
+    }
+
+    .badge-description {
+      margin: 0.5rem 0 0 0;
+      color: #666;
+      font-size: 0.85rem;
+      line-height: 1.3;
+    }
+
+    .badges-footer {
       text-align: center;
+      margin-top: 1.5rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e9ecef;
     }
-  `]
+
+    .view-all-link {
+      color: #007bff;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    .view-all-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Mobile responsive */
+    @media (max-width: 480px) {
+      .badges-section {
+        padding: 1.25rem;
+      }
+
+      .badge-item {
+        padding: 0.75rem;
+        gap: 0.75rem;
+      }
+
+      .badge-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+      }
+
+      .badge-name {
+        font-size: 0.9rem;
+      }
+    }
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class EarnedBadgeListComponent implements OnInit {
-  protected readonly earnedBadgeStore = inject(EarnedBadgeStore);
-  protected readonly badgeStore = inject(BadgeStore);
-
-  // Configuration inputs
-  readonly title = input<string>('Your Badges');
-  readonly layout = input<'grid' | 'list'>('grid');
-  readonly badgeSize = input<'small' | 'medium' | 'large'>('medium');
-  readonly maxItems = input<number | null>(null);
-  readonly showStats = input<boolean>(true);
-  readonly showBadgeNames = input<boolean>(true);
-  readonly showDescriptions = input<boolean>(false);
-  readonly showCategories = input<boolean>(false);
+export class EarnedBadgeListComponent {
+  // ✅ Support both input formats for backward compatibility
+  readonly earnedBadgesWithDefinitions = input<EarnedBadgeWithDefinition[]>([]);
+  readonly recentBadges = input<EarnedBadge[]>([]); // ✅ Legacy support
+  readonly title = input<string>('Recent Badges');
+  readonly maxItems = input<number>(3);
+  readonly size = input<'small' | 'medium' | 'large'>('medium');
   readonly showEarnedDate = input<boolean>(false);
+  readonly linkToFullPage = input<boolean>(false);
+  readonly showStats = input<boolean>(false); // ✅ Add missing input
 
-  ngOnInit(): void {
-    // Load both stores
-    this.earnedBadgeStore.loadOnce();
-    this.badgeStore.loadOnce();
-
-      // Debug logs
-      setTimeout(() => {
-        console.log('=== EARNED BADGE LIST DEBUG ===');
-        console.log('BadgeStore loaded:', this.badgeStore.badges().length);
-        console.log('EarnedBadgeStore loaded:', this.earnedBadgeStore.data().length);
-
-        // 🔍 NEW: Check actual badge IDs in store
-        console.log('Available badge IDs:', this.badgeStore.badges().map(b => b.id));
-        console.log('Earned badge IDs:', this.earnedBadgeStore.data().map(eb => eb.badgeId));
-
-        // 🔍 NEW: Check exact lookup
-        const earnedBadgeId = this.earnedBadgeStore.data()[0]?.badgeId;
-        console.log('Looking for badge ID:', earnedBadgeId);
-        console.log('Badge store get() result:', this.badgeStore.badges().find(b => b.id === earnedBadgeId));
-
-        this.displayBadges().forEach(earnedBadge => {
-          const badgeDefinition = this.getBadgeDefinition(earnedBadge.badgeId);
-          console.log(`Badge ${earnedBadge.badgeId}:`, badgeDefinition ? 'FOUND' : 'NOT FOUND');
-        });
-      }, 3000);
-  }
-
-  // Computed signals
-  protected readonly displayBadges = computed(() => {
-    const badges = this.earnedBadgeStore.badgesByDate();
+  // ✅ Computed properties that work with either input
+  readonly displayBadges = computed(() => {
+    const withDefinitions = this.earnedBadgesWithDefinitions();
+    const rawBadges = this.recentBadges();
     const max = this.maxItems();
-    return max ? badges.slice(0, max) : badges;
+
+    // ✅ Early return pattern for safety
+    if (withDefinitions.length === 0 && rawBadges.length === 0) {
+      return [];
+    }
+
+    // Use earnedBadgesWithDefinitions if provided, otherwise convert recentBadges
+    const badges = withDefinitions.length > 0
+      ? withDefinitions.filter(item => item.badge) // ✅ Filter out undefined badges early
+      : rawBadges.map(earnedBadge => ({
+          earnedBadge,
+          badge: undefined // Will show "Unknown Badge"
+        }));
+
+    return badges.slice(0, max);
   });
 
-  protected readonly gridClass = computed(() => {
-    if (this.layout() === 'list') return 'badge-grid--list';
-    return `badge-grid--${this.badgeSize()}`;
-  });
-
-  protected readonly recentBadgeCount = computed(() => {
-    const oneWeekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
-    return this.earnedBadgeStore.getEarnedBadgesSince(oneWeekAgo).length;
-  });
-
-  // Helper methods
-  protected getBadgeDefinition(badgeId: string): Badge | undefined {
-    return this.badgeStore.badges().find(b => b.id === badgeId);
-  }
-
-  protected formatDate(timestamp: number): string {
+  // ✅ Format earned date for display
+  formatEarnedDate(timestamp: number): string {
     const date = new Date(timestamp);
     const now = new Date();
-    const daysDiff = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-    if (daysDiff === 0) return 'today';
-    if (daysDiff === 1) return 'yesterday';
-    if (daysDiff < 7) return `${daysDiff} days ago`;
-    if (daysDiff < 30) return `${Math.floor(daysDiff / 7)} weeks ago`;
-
-    return date.toLocaleDateString();
-  }
-
-  protected retry(): void {
-    this.earnedBadgeStore.load();
+    if (diffDays === 0) {
+      return 'today';
+    } else if (diffDays === 1) {
+      return 'yesterday';
+    } else if (diffDays < 7) {
+      return `${diffDays} days ago`;
+    } else if (diffDays < 30) {
+      const weeks = Math.floor(diffDays / 7);
+      return weeks === 1 ? '1 week ago' : `${weeks} weeks ago`;
+    } else {
+      return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric'
+      });
+    }
   }
 }

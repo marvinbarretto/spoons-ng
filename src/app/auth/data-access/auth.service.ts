@@ -76,6 +76,7 @@ export class AuthService {
           streaks: {},
           joinedMissionIds: [],
           displayName,
+          joinedAt: new Date().toISOString(),
         };
         await setDoc(userRef, newUser);
         console.log('[AuthService] Anonymous profile created in Firestore.');

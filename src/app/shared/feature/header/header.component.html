@@ -1,12 +1,6 @@
 <div class="site-header" #headerRef>
-  <!-- TODO: Extract this to UI ? -->
-    <app-user-info
-    [user]="user"
-    [isAnonymous]="isAnonymous"
-    [displayName]="displayName()"
-    [onLogin]="handleLogin"
-    [onLogout]="handleLogout"
-  />
+
+
 
   <ng-container *ngIf="!isHomepage(); else titleWithoutLink">
     <a routerLink="/" class="header__title">
@@ -17,7 +11,13 @@
     <h1 class="header__title">Spooncount</h1>
   </ng-template>
 
-
+  <!--
+  <app-user-info
+    [user]="user"
+    [isAnonymous]="isAnonymous"
+    [onLogin]="handleLogin"
+    [onLogout]="handleLogout"
+  /> -->
 
   <nav class="main-nav" [class.nav-mobile]="isMobile()">
     <app-nav *ngIf="!isMobile()" />

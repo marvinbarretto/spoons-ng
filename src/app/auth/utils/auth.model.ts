@@ -1,4 +1,5 @@
-import { User } from '../../users/utils/user.model';
+import { EarnedBadge } from '@badges/utils/badge.model';
+import { User } from '@users/utils/user.model';
 
 export type AuthUser = {
   uid: string;
@@ -10,7 +11,7 @@ export type AuthUser = {
   landlordOf: string[];
   claimedPubIds: string[];
   checkedInPubIds: string[];
-  badges: string[];
+  badges: EarnedBadge[];
   streaks: Record<string, number>;
   joinedMissionIds: string[];
   joinedAt: string;

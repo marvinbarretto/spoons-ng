@@ -1,3 +1,5 @@
+// src/app/badges/utils/badge.model.ts
+
 import { Timestamp } from "firebase/firestore";
 import { CheckIn } from "../../check-in/utils/check-in.model";
 

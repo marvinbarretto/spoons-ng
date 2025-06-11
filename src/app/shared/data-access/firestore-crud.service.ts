@@ -28,3 +28,4 @@ export abstract class FirestoreCrudService<T extends { id: string }> extends Fir
     await this.deleteDoc(`${this.path}/${id}`);
   }
 }
+
