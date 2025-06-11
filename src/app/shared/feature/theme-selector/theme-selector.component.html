@@ -1,14 +1,41 @@
 <nav aria-label="Theme selector">
-  <ul>
-    <li *ngFor="let theme of themeOptions">
-      <button
-        type="button"
-        (click)="setTheme(theme)"
-        [attr.aria-pressed]="currentTheme() === theme"
-        [class.active]="currentTheme() === theme"
-      >
-        {{ theme }}
-      </button>
-    </li>
+  <ul class="theme-options">
+    @for (theme of themeOptions; track theme.type) {
+      <li>
+        <button
+          type="button"
+          class="theme-button"
+          [class.active]="currentTheme() === theme.type"
+          [attr.aria-pressed]="currentTheme() === theme.type"
+          (click)="setTheme(theme.type)"
+        >
+          <div class="theme-preview" [attr.data-theme]="theme.type">
+            <div class="preview-colors">
+              <span class="color-swatch primary" [style.background-color]="theme.colors.semantic.primary"></span>
+              <span class="color-swatch surface" [style.background-color]="theme.colors.semantic.surface"></span>
+              <span class="color-swatch accent" [style.background-color]="theme.colors.semantic.success"></span>
+            </div>
+          </div>
+          <span class="theme-name">{{ theme.name }}</span>
+          @if (currentTheme() === theme.type) {
+            <span class="check-icon" aria-hidden="true">✓</span>
+          }
+        </button>
+      </li>
+    }
   </ul>
+
+  <!-- Quick toggle for light/dark -->
+  <button
+    type="button"
+    class="quick-toggle"
+    (click)="toggleTheme()"
+    [attr.aria-label]="toggleLabel()"
+  >
+    @if (isDark()) {
+      <span>☀️ Light</span>
+    } @else {
+      <span>🌙 Dark</span>
+    }
+  </button>
 </nav>

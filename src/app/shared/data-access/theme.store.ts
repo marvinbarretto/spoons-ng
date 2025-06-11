@@ -1,100 +1,202 @@
-import { signal, computed, effect, Injectable } from '@angular/core';
-import { inject } from '@angular/core';
+import { signal, computed, effect, Injectable, inject, Inject } from '@angular/core';
 import { CookieService } from './cookie.service';
 import { SsrPlatformService } from '../utils/ssr/ssr-platform.service';
-import {
-  Theme,
-  ThemeType,
-  defaultTheme,
-  themeTokens,
-} from '../utils/theme.tokens';
-import { Inject } from '@angular/core';
+import { themes, defaultTheme, type ThemeType, type Theme } from '../utils/theme.tokens';
 import { USER_THEME_TOKEN } from '../../../libs/tokens/user-theme.token';
 
-const THEME_COOKIE_KEY = 'userTheme';
+const THEME_COOKIE_KEY = 'theme';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class ThemeStore {
-  private readonly cookie = inject(CookieService);
-  private readonly platform = inject(SsrPlatformService);
+  private readonly _cookie = inject(CookieService);
+  private readonly _platform = inject(SsrPlatformService);
 
-  private themeType$$ = signal<ThemeType>(defaultTheme.type);
+  // ✅ Follow your signal conventions
+  private readonly _themeType = signal<ThemeType>(defaultTheme.type);
+  private readonly _isLoaded = signal(false);
 
-  readonly theme = computed(() => themeTokens[this.themeType$$()]);
-  readonly themeType = computed(() => this.themeType$$());
+  // ✅ Public readonly signals
+  readonly themeType = this._themeType.asReadonly();
+  readonly theme = computed(() => themes[this._themeType()]);
+  readonly isLoaded = this._isLoaded.asReadonly();
+  readonly isDark = computed(() => this.theme().isDark);
 
-  constructor(@Inject(USER_THEME_TOKEN) serverTheme?: ThemeType) {
+  constructor(@Inject(USER_THEME_TOKEN) serverTheme?: string) {
+    // Validate and set initial theme
+    const safeTheme = this._validateTheme(serverTheme);
+    this._themeType.set(safeTheme);
 
-    console.log('[ThemeStore] Raw server theme:', serverTheme);
-
-    const safeTheme = serverTheme
-      ? (serverTheme.charAt(0).toUpperCase() + serverTheme.slice(1)) as ThemeType
-      : defaultTheme.type;
-
-    const initial = themeTokens[safeTheme] ? safeTheme : defaultTheme.type;
-    this.themeType$$.set(initial);
-
-    console.log('[ThemeStore] Final theme set to:', initial);
-
-    this.platform.onlyOnBrowser(() => {
-      const cookieTheme = this.cookie.getCookie(THEME_COOKIE_KEY) as ThemeType;
-
-      if (cookieTheme && cookieTheme !== initial && themeTokens[cookieTheme]) {
-        this.themeType$$.set(cookieTheme);
-        console.log(`[ThemeStore] Cookie theme overridden: ${cookieTheme}`);
-      }
-
-      this.applyThemeToDOM(this.theme());
+    // Only run browser-specific code on client
+    this._platform.onlyOnBrowser(() => {
+      this._initializeBrowserTheme(safeTheme);
+      this._isLoaded.set(true);
     });
 
+    // Apply theme to DOM whenever it changes
     effect(() => {
-      this.platform.onlyOnBrowser(() => {
-        this.applyThemeToDOM(this.theme());
-        console.log(`[ThemeStore] Theme applied:`, this.theme());
+      this._platform.onlyOnBrowser(() => {
+        this._applyThemeToDOM(this.theme());
       });
     });
   }
 
   setTheme(type: ThemeType): void {
-    if (!themeTokens[type]) {
+    if (!themes[type]) {
       console.warn(`[ThemeStore] Unknown theme type: ${type}`);
       return;
     }
 
-    console.log(`[ThemeStore] Setting theme to ${type}`);
-    this.themeType$$.set(type);
-    this.cookie.setCookie(THEME_COOKIE_KEY, type);
-    console.log(
-      `[ThemeStore] Theme cookie set: ${this.cookie.getCookie(
-        THEME_COOKIE_KEY
-      )}`
-    );
+    this._themeType.set(type);
+    this._cookie.setCookie(THEME_COOKIE_KEY, type);
 
-    // TODO: If user is logged in, update their saved profile theme here
+    // TODO: Save to user profile if authenticated
   }
 
-  private applyThemeToDOM(theme: Theme): void {
-    const root = this.platform.getDocument()?.documentElement;
+  toggleTheme(): void {
+    const current = this._themeType();
+
+    // ✅ NEW: Smart toggle between light and dark themes
+    const availableThemes = Object.entries(themes);
+    const lightThemes = availableThemes.filter(([_, theme]) => !theme.isDark);
+    const darkThemes = availableThemes.filter(([_, theme]) => theme.isDark);
+
+    if (this.isDark()) {
+      // Switch to a light theme (default to first light theme)
+      const newTheme = lightThemes[0]?.[0] as ThemeType || 'sage';
+      this.setTheme(newTheme);
+    } else {
+      // Switch to a dark theme (default to first dark theme)
+      const newTheme = darkThemes[0]?.[0] as ThemeType || 'slate';
+      this.setTheme(newTheme);
+    }
+  }
+
+  // ✅ NEW: Get themes grouped by light/dark
+  getLightThemes(): Array<{ type: ThemeType; theme: Theme }> {
+    return Object.entries(themes)
+      .filter(([_, theme]) => !theme.isDark)
+      .map(([type, theme]) => ({ type: type as ThemeType, theme }));
+  }
+
+  getDarkThemes(): Array<{ type: ThemeType; theme: Theme }> {
+    return Object.entries(themes)
+      .filter(([_, theme]) => theme.isDark)
+      .map(([type, theme]) => ({ type: type as ThemeType, theme }));
+  }
+
+  getAllThemes(): Array<{ type: ThemeType; theme: Theme }> {
+    return Object.entries(themes)
+      .map(([type, theme]) => ({ type: type as ThemeType, theme }));
+  }
+
+  // Generate CSS custom properties for current theme
+  getCSSVariables(): Record<string, string> {
+    const theme = this.theme();
+    const variables: Record<string, string> = {};
+
+    // Add all semantic colors
+    Object.entries(theme.colors.semantic).forEach(([key, value]) => {
+      variables[`--color-${this._kebabCase(key)}`] = value;
+    });
+
+    // Add color scales
+    Object.entries(theme.colors.neutral).forEach(([shade, value]) => {
+      variables[`--color-neutral-${shade}`] = value;
+    });
+
+    Object.entries(theme.colors.primary).forEach(([shade, value]) => {
+      variables[`--color-primary-${shade}`] = value;
+    });
+
+    Object.entries(theme.colors.accent).forEach(([shade, value]) => {
+      variables[`--color-accent-${shade}`] = value;
+    });
+
+    return variables;
+  }
+
+  private _validateTheme(themeInput?: string): ThemeType {
+    if (!themeInput) return defaultTheme.type;
+
+    // ✅ UPDATED: Handle new theme names and legacy names
+    const themeMap: Record<string, ThemeType> = {
+      // New themes
+      'sage': 'sage',
+      'amber': 'amber',
+      'slate': 'slate',
+      'coral': 'coral',
+      'forest': 'forest',
+
+      // Legacy mappings (in case old cookies exist)
+      'default': 'sage',
+      'light': 'sage',
+      'dark': 'slate',
+      'highcontrast': 'slate',
+      'cvdsafe': 'sage'
+    };
+
+    const normalized = themeInput.toLowerCase();
+    const mappedTheme = themeMap[normalized];
+
+    return mappedTheme && themes[mappedTheme] ? mappedTheme : defaultTheme.type;
+  }
+
+  private _initializeBrowserTheme(initialTheme: ThemeType): void {
+    const cookieTheme = this._cookie.getCookie(THEME_COOKIE_KEY) as ThemeType;
+
+    if (cookieTheme && cookieTheme !== initialTheme && themes[cookieTheme]) {
+      this._themeType.set(cookieTheme);
+      return;
+    }
+
+    // ✅ UPDATED: Respect user's system preference with new themes
+    if (!cookieTheme && this._hasSystemThemePreference()) {
+      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+      if (systemPrefersDark) {
+        const darkThemes = this.getDarkThemes();
+        const systemTheme = darkThemes[0]?.type || 'slate';
+        this._themeType.set(systemTheme);
+      } else {
+        const lightThemes = this.getLightThemes();
+        const systemTheme = lightThemes[0]?.type || 'sage';
+        this._themeType.set(systemTheme);
+      }
+    }
+  }
+
+  private _hasSystemThemePreference(): boolean {
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches !== undefined;
+  }
+
+  private _applyThemeToDOM(theme: Theme): void {
+    const root = this._platform.getDocument()?.documentElement;
     if (!root) return;
 
-    Object.entries(theme.tokens).forEach(([key, value]) => {
-      root.style.setProperty(`--color-${key}`, value);
+    // Apply CSS custom properties
+    const variables = this.getCSSVariables();
+    Object.entries(variables).forEach(([property, value]) => {
+      root.style.setProperty(property, value);
     });
-    root.classList.remove(
-      ...Object.keys(themeTokens).map((t) => `theme--${t}`)
-    );
 
-    const themeClass = `theme--${this.kebabCase(theme.name)}`;
-    root.classList.add(themeClass);
+    // ✅ UPDATED: Use theme type instead of theme name for classes
+    const themeClasses = Object.keys(themes).map(t => `theme--${t}`);
+    root.classList.remove(...themeClasses);
+    root.classList.add(`theme--${this._themeType()}`);
+
+    // Add dark mode class for easier CSS targeting
+    root.classList.toggle('dark', theme.isDark);
+
+    // ✅ NEW: Add theme-specific classes for advanced styling
+    root.setAttribute('data-theme', this._themeType());
+    root.setAttribute('data-theme-mode', theme.isDark ? 'dark' : 'light');
   }
 
-  private kebabCase(str: string): string {
+  private _kebabCase(str: string): string {
     return str
-      .replace(/([a-z])([A-Z])/g, '$1-$2') // camelCase → kebab-case
-      .replace(/\s+/g, '-')                // spaces → dashes
-      .replace(/[^a-z0-9\-]/gi, '')        // remove unsafe characters
+      .replace(/([a-z])([A-Z])/g, '$1-$2')
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9\-]/gi, '')
       .toLowerCase();
   }
 }

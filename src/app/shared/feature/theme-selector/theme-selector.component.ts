@@ -1,8 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ThemeStore } from '../../data-access/theme.store';
-import { ThemeType } from '../../utils/theme.tokens';
-import { ALL_THEME_TYPES } from '../../utils/theme.tokens';
+import { themes, type ThemeType } from '../../utils/theme.tokens';
 import { PanelStore } from '../../ui/panel/panel.store';
 
 @Component({
@@ -12,21 +11,29 @@ import { PanelStore } from '../../ui/panel/panel.store';
   styleUrl: './theme-selector.component.scss',
 })
 export class ThemeSelectorComponent {
-  private readonly themeStore = inject(ThemeStore);
-  private readonly panelStore = inject(PanelStore);
+  private readonly _themeStore = inject(ThemeStore);
+  private readonly _panelStore = inject(PanelStore);
 
-  readonly currentTheme = this.themeStore.themeType;
+  // ✅ Following your signal conventions
+  protected readonly currentTheme = this._themeStore.themeType;
+  protected readonly isDark = this._themeStore.isDark;
 
-  themeOptions: ThemeType[] = ALL_THEME_TYPES;
+  // ✅ Use the new themes object instead of ALL_THEME_TYPES
+  protected readonly themeOptions = Object.entries(themes).map(([type, theme]) => ({
+    type: type as ThemeType,
+    ...theme
+  }));
 
-  setTheme(type: ThemeType) {
-    console.log('[ThemeSelectorComponent] setTheme() called', type);
-    this.themeStore.setTheme(type);
-    this.panelStore.close();
+  protected readonly toggleLabel = () =>
+    `Switch to ${this.isDark() ? 'light' : 'dark'} theme`;
+
+  setTheme(type: ThemeType): void {
+    this._themeStore.setTheme(type);
+    this._panelStore.close();
   }
 
-  // get currentTheme() {
-  //   console.log('[ThemeSelectorComponent] currentTheme() called');
-  //   return this.themeStore.themeType();
-  // }
+  toggleTheme(): void {
+    this._themeStore.toggleTheme();
+    this._panelStore.close();
+  }
 }

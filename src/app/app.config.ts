@@ -2,11 +2,9 @@ import { ApplicationConfig, ErrorHandler, inject, provideAppInitializer, provide
 import { provideRouter, TitleStrategy } from '@angular/router';
 
 import { appRoutes } from './app.routes';
-import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { USER_THEME_TOKEN } from '../libs/tokens/user-theme.token';
 import { ThemeStore } from './shared/data-access/theme.store';
-// import { provideAuthInitializer } from './auth/data-access/auth-initializer';
-import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
+import { provideHttpClient, withFetch } from '@angular/common/http';
 import { environment } from '../environments/environment';
 import { DeviceCapabilityService } from './shared/utils/device-capability-check.service';
 import { TemplatePageTitleStrategy } from './TemplatePageTitleStrategy';
@@ -18,15 +16,12 @@ export const appConfig: ApplicationConfig = {
   providers: [
     ...firebaseProviders,
     { provide: DeviceCapabilityService, useClass: DeviceCapabilityService },
-    { provide: USER_THEME_TOKEN, useValue: 'default' },
+    { provide: USER_THEME_TOKEN, useValue: 'light' },
     provideAppInitializer(() => {
       inject(ThemeStore);
     }),
-    // provideClientHydration(withEventReplay()),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(appRoutes),
-    // TODO: Vertify if its useful
-    // provideAuthInitializer(),
     provideHttpClient(withFetch()),
     { provide: 'environment', useValue: environment },
     { provide: TitleStrategy, useClass: TemplatePageTitleStrategy }, provideServiceWorker('ngsw-worker.js', {

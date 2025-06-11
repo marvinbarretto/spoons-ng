@@ -1,12 +1,98 @@
 // theme-selector.component.scss
-a.active {
-  font-weight: bold;
-  text-decoration: underline;
+
+.theme-options {
+  display: grid;
+  gap: 0.75rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
-button {
+.theme-button {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem;
+  background: transparent;
+  border: 2px solid var(--color-border);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
   color: var(--color-text);
+
   &:hover {
-    color: var(--color-text);
+    border-color: var(--color-primary);
+    background-color: var(--color-surface-elevated);
+  }
+
+  &.active {
+    border-color: var(--color-primary);
+    background-color: var(--color-primary);
+    color: var(--color-primary-text);
+  }
+}
+
+.theme-preview {
+  display: flex;
+  align-items: center;
+}
+
+.preview-colors {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.color-swatch {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+
+  &.primary {
+    // Primary color applied via inline style
+  }
+
+  &.surface {
+    // Surface color applied via inline style
+  }
+
+  &.accent {
+    // Accent color applied via inline style
+  }
+}
+
+.theme-name {
+  flex: 1;
+  text-align: left;
+  font-weight: 500;
+}
+
+.check-icon {
+  font-weight: bold;
+  margin-left: auto;
+}
+
+.quick-toggle {
+  margin-top: 1rem;
+  width: 100%;
+  padding: 0.75rem;
+  background-color: var(--color-secondary);
+  color: var(--color-secondary-text);
+  border: 1px solid var(--color-border);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+
+  &:hover {
+    background-color: var(--color-secondary-hover);
+  }
+
+  &:active {
+    background-color: var(--color-secondary-active);
   }
 }
