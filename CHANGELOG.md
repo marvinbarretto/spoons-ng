@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.23](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.22...v0.0.23) (2025-06-11)
+
+
+### Features
+
+* Clean up homepage ([f8e9db5](https://github.com/marvinbarretto/spoons-ng/commit/f8e9db5b8d247261bf40bdbf9aea2a61ade8b6f0))
+
 ### [0.0.22](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.21...v0.0.22) (2025-06-10)
 
 
