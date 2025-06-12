@@ -93,9 +93,9 @@ import { ASSETS } from '@shared/utils/assets.constants';
     /* User Section */
     .user-section {
       display: flex;
+      flex-direction: column;
       align-items: center;
       gap: 1rem;
-      margin-bottom: 1.5rem;
     }
 
     .welcome.brand-new .user-section {

@@ -18,7 +18,7 @@ import { OverlayService } from '@shared/data-access/overlay.service';
 import { ProfileCustomizationModalComponent } from '../../ui/profile-customization-modal/profile-customization-modal.component';
 
 @Component({
-  selector: 'app-home-three',
+  selector: 'app-home',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     PubProgressHeroComponent,
@@ -41,8 +41,7 @@ import { ProfileCustomizationModalComponent } from '../../ui/profile-customizati
         (upgradeAccount)="upgradeToFullAccount()"
       />
 
-      <!-- ✅ Check-in widget (always show if there's a nearby pub) -->
-      @if (closestPub()) {
+      @if (shouldShowCheckInWidget() && closestPub()) {
         <app-check-in-homepage-widget
           [closestPub]="closestPub()!"
           [canCheckIn]="canCheckInToClosestPub()"
@@ -85,14 +84,6 @@ import { ProfileCustomizationModalComponent } from '../../ui/profile-customizati
         <div class="loading-state">
           <p>🔄 Loading your pub data...</p>
         </div>
-      }
-
-      <!-- ✅ Debug panel for development -->
-      @if (!isProduction) {
-        <details class="debug-panel">
-          <summary>🐛 User Status Debug</summary>
-          <pre>{{ userStatusDebug() | json }}</pre>
-        </details>
       }
     </div>
   `,
@@ -157,6 +148,16 @@ export class HomeComponent extends BaseComponent {
   readonly shouldShowNearbyPubsEmptyState = computed(() => {
     // Only show empty state if user is not brand new (they understand the app)
     return !this.isBrandNewUser();
+  });
+
+  readonly shouldShowCheckInWidget = computed(() => {
+    const closestPub = this.closestPub();
+    if (!closestPub) return false;
+
+    const isWithinRange = this.nearbyPubStore.isWithinCheckInRange(closestPub.id);
+    const canCheckInToday = this.checkinStore.canCheckInToday(closestPub.id);
+
+    return isWithinRange && canCheckInToday;
   });
 
   // ✅ Existing Computed Properties
