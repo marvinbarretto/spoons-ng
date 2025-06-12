@@ -110,9 +110,11 @@ import { User } from '@users/utils/user.model';
       background: var(--color-background);
       border: 1px solid var(--color-border);
       border-radius: 12px;
+      /* ✅ Remove fixed dimensions - let overlay service handle responsive sizing */
+      width: 100%;
+      height: 100%;
       max-width: 480px;
-      width: 90vw;
-      max-height: 85vh;
+      max-height: none;
       overflow: hidden;
       display: flex;
       flex-direction: column;
@@ -134,10 +136,30 @@ import { User } from '@users/utils/user.model';
     .modal-body {
       flex: 1;
       padding: 1.5rem;
+      /* ✅ Enable proper scrolling within modal body */
       overflow-y: auto;
+      /* ✅ Add scroll momentum on iOS */
+      -webkit-overflow-scrolling: touch;
+      /* ✅ Hide scrollbar styling */
+      scrollbar-width: thin;
+      scrollbar-color: var(--color-border) transparent;
+
       display: flex;
       flex-direction: column;
       gap: 1.5rem;
+    }
+
+    .modal-body::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .modal-body::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .modal-body::-webkit-scrollbar-thumb {
+      background: var(--color-border);
+      border-radius: 3px;
     }
 
     .current-display {
@@ -315,8 +337,14 @@ import { User } from '@users/utils/user.model';
 
     @media (max-width: 600px) {
       .modal-container {
-        width: 95vw;
-        max-height: 90vh;
+        /* ✅ Remove fixed sizing - overlay handles this now */
+        border-radius: 8px;
+      }
+
+      .modal-header,
+      .modal-body,
+      .modal-footer {
+        padding: 1rem;
       }
 
       .current-display {

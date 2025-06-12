@@ -1,0 +1,184 @@
+/* src/styles/components/_overlay.scss */
+
+/**
+ * 🔧 RESPONSIVE OVERLAY STYLES
+ *
+ * Mobile-first overlay system with proper spacing and scroll handling
+ * Uses vw/vh units for consistent spacing across devices
+ */
+
+ .cdk-overlay-container {
+  /* Ensure overlay container covers full viewport */
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.cdk-overlay-backdrop {
+  /* Reset any default backdrop styling */
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.overlay-backdrop {
+  background: var(--color-overlay, rgba(0, 0, 0, 0.5));
+  backdrop-filter: blur(2px);
+  animation: fadeIn 200ms ease-out;
+}
+
+.cdk-overlay-pane {
+  /* The actual modal container */
+  position: absolute;
+  pointer-events: auto;
+  box-sizing: border-box;
+  z-index: 1000;
+
+  /* ✅ Responsive spacing using vw/vh */
+  /* Desktop: 5vh/5vw spacing, Mobile: 2.5vh/2.5vw spacing */
+  margin: clamp(2.5vh, 5vh, 5vh) clamp(2.5vw, 5vw, 5vw);
+
+  /* Ensure content doesn't overflow viewport */
+  max-width: calc(100vw - clamp(5vw, 10vw, 10vw));
+  max-height: calc(100vh - clamp(5vh, 10vh, 10vh));
+
+  /* Enable scrolling within modal if content overflows */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.overlay-panel {
+  /* Panel-specific styling */
+  border-radius: clamp(8px, 1.5vw, 16px);
+  box-shadow:
+    0 4px 24px var(--color-shadow, rgba(0, 0, 0, 0.15)),
+    0 8px 64px var(--color-shadow, rgba(0, 0, 0, 0.1));
+
+  animation: slideInScale 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Ensure consistent background */
+  background: var(--color-background);
+  border: 1px solid var(--color-border);
+
+  /* Handle overflow properly */
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  /* Minimum size constraints */
+  min-width: 280px;
+  min-height: 200px;
+}
+
+/* ✅ MOBILE-SPECIFIC OPTIMIZATIONS */
+@media (max-width: 768px) {
+  .cdk-overlay-pane {
+    /* Tighter spacing on mobile */
+    margin: 2.5vh 2.5vw;
+    max-width: calc(100vw - 5vw);
+    max-height: calc(100vh - 5vh);
+  }
+
+  .overlay-panel {
+    /* Smaller border radius on mobile */
+    border-radius: 12px;
+    min-width: 260px;
+  }
+
+  /* Handle very small screens */
+  @media (max-width: 480px) {
+    .cdk-overlay-pane {
+      margin: 1.5vh 1.5vw;
+      max-width: calc(100vw - 3vw);
+      max-height: calc(100vh - 3vh);
+    }
+
+    .overlay-panel {
+      border-radius: 8px;
+      min-width: 240px;
+    }
+  }
+}
+
+/* ✅ LANDSCAPE MOBILE OPTIMIZATIONS */
+@media (max-height: 500px) and (orientation: landscape) {
+  .cdk-overlay-pane {
+    /* Even tighter vertical spacing in landscape */
+    margin: 1vh 3vw;
+    max-height: calc(100vh - 2vh);
+  }
+}
+
+/* ✅ ANIMATIONS */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInScale {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+/* ✅ SCROLL LOCK UTILITIES */
+.cdk-global-scrollblock {
+  /* CDK applies this when scroll is blocked */
+  position: fixed;
+  overflow-y: scroll;
+  width: 100%;
+}
+
+/* ✅ ACCESSIBILITY IMPROVEMENTS */
+.overlay-panel:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  .overlay-backdrop,
+  .overlay-panel {
+    animation: none;
+  }
+
+  .overlay-backdrop {
+    transition: opacity 150ms ease;
+  }
+
+  .overlay-panel {
+    transition: transform 150ms ease, opacity 150ms ease;
+  }
+}
+
+/* ✅ HIGH CONTRAST MODE SUPPORT */
+@media (prefers-contrast: high) {
+  .overlay-backdrop {
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: none;
+  }
+
+  .overlay-panel {
+    border: 2px solid var(--color-text);
+    box-shadow: none;
+  }
+}

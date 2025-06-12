@@ -1,10 +1,9 @@
+// src/app/shared/data-access/overlay.service.ts
 import {
   ComponentRef,
   EnvironmentInjector,
   Injectable,
   Injector,
-  Signal,
-  signal,
   Type,
 } from '@angular/core';
 import {
@@ -18,7 +17,6 @@ import {
 } from '@angular/cdk/portal';
 import { FocusTrap, FocusTrapFactory } from '@angular/cdk/a11y';
 import { Subscription } from 'rxjs';
-
 
 @Injectable({ providedIn: 'root' })
 export class OverlayService {
@@ -37,14 +35,13 @@ export class OverlayService {
     private focusTrapFactory: FocusTrapFactory
   ) {}
 
-  private createCentrePositionStrategy(): GlobalPositionStrategy {
+  private createResponsivePositionStrategy(): GlobalPositionStrategy {
     return this.overlay.position()
       .global()
       .centerHorizontally()
       .centerVertically();
   }
 
-  // ✅ Your preferred API - restored!
   open<T>(
     component: Type<T>,
     config: Partial<OverlayConfig> = {},
@@ -60,12 +57,21 @@ export class OverlayService {
       backdropClass: 'overlay-backdrop',
       panelClass: 'overlay-panel',
       scrollStrategy: this.overlay.scrollStrategies.block(),
-      positionStrategy: this.createCentrePositionStrategy(),
+      positionStrategy: this.createResponsivePositionStrategy(),
+      // ✅ Responsive width/height constraints
+      maxWidth: '95vw',
+      maxHeight: '95vh',
+      minWidth: '320px',
+      width: 'auto',
+      height: 'auto',
       ...config,
     });
 
     this.backdropSubscription = this.overlayRef.backdropClick().subscribe(() => this.close());
     document.addEventListener('keydown', this.keydownListener);
+
+    // ✅ Prevent body scroll when modal is open (mobile fix)
+    document.body.style.overflow = 'hidden';
 
     const portal = new ComponentPortal(component, null, this.injector, this.environmentInjector);
     const componentRef = this.overlayRef.attach(portal);
@@ -83,13 +89,15 @@ export class OverlayService {
     this.focusTrap = this.focusTrapFactory.create(element);
     this.focusTrap.focusInitialElementWhenReady();
 
-    // ✅ Return the API you prefer
     const close = (value?: any) => this.close(value);
 
     return { componentRef, close };
   }
 
   close(value?: any): void {
+    // ✅ Restore body scroll
+    document.body.style.overflow = '';
+
     this.backdropSubscription?.unsubscribe();
     this.backdropSubscription = undefined;
 
@@ -100,7 +108,6 @@ export class OverlayService {
     document.removeEventListener('keydown', this.keydownListener);
   }
 
-  // ✅ Keep this for components that want to close themselves
   closeFromComponent(value?: any): void {
     this.close(value);
   }
