@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.25](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.24...v0.0.25) (2025-06-12)
+
+
+### Features
+
+* Progress hero theme ([8eeccca](https://github.com/marvinbarretto/spoons-ng/commit/8eeccca130b0bd88fa02cbee5f60103692d71a2e))
+* Refine welcome component ([73a2d88](https://github.com/marvinbarretto/spoons-ng/commit/73a2d8868a348856df55fb9d0b8810acb088bf6a))
+
+
+### Bug Fixes
+
+* tweak Overlay so it doesnt take the whole screen ([9e15e36](https://github.com/marvinbarretto/spoons-ng/commit/9e15e36d3ac3a7e7c939c091564203113955b1bf))
+
 ### [0.0.24](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.23...v0.0.24) (2025-06-12)
 
 
