@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.26](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.25...v0.0.26) (2025-06-12)
+
+
+### Features
+
+* Formalise UserProgressionService ([f65d7eb](https://github.com/marvinbarretto/spoons-ng/commit/f65d7eb4d5593fbf039c87dd8679c540ec6f729b))
+* User model refactoring ([9172567](https://github.com/marvinbarretto/spoons-ng/commit/917256768575ba59d2bae2eed2ce12659a3d65f4))
+
 ### [0.0.25](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.24...v0.0.25) (2025-06-12)
 
 
