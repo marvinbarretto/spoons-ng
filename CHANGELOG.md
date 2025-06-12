@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.24](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.23...v0.0.24) (2025-06-12)
+
+
+### Features
+
+* Apply new theme colours and switcher ([ca7639d](https://github.com/marvinbarretto/spoons-ng/commit/ca7639debe428d9561234589ea60d7c30bb9779c))
+* New theme colours ([c071493](https://github.com/marvinbarretto/spoons-ng/commit/c07149384f6c63d0f0fc027e28277adb2d458712))
+
 ### [0.0.23](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.22...v0.0.23) (2025-06-11)
 
 
