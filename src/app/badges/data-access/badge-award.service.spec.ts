@@ -5,7 +5,7 @@ import { BadgeAwardService } from './badge-award.service';
 import { BadgeLogicService } from './badge-logic.service';
 import { EarnedBadgeStore } from './earned-badge.store';
 import { BadgeTestFactories } from '../testing/badge-test-factories';
-import type { CheckIn } from '../../check-in/utils/check-in.model';
+import type { CheckIn } from '../../check-in/utils/check-in.models';
 import type { EarnedBadge } from '../utils/badge.model';
 
 /**

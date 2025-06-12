@@ -1,6 +1,6 @@
 // src/app/features/home/ui/nearby-pub-list/nearby-pub-list.component.ts
 import { Component, input, computed, ChangeDetectionStrategy } from '@angular/core';
-import type { CheckIn } from '@check-in/utils/check-in.model';
+import type { CheckIn } from '@/app/check-in/utils/check-in.models';
 import type { Pub } from '@pubs/utils/pub.models';
 
 type NearbyPub = {

@@ -4,7 +4,7 @@ import { AuthService } from './auth.service';
 import { SsrPlatformService } from '../../shared/utils/ssr/ssr-platform.service';
 import { OverlayService } from '../../shared/data-access/overlay.service';
 import { generateAnonymousName } from '../../shared/utils/anonymous-names';
-import type { AuthUser } from '../../auth/utils/auth.model';
+import type { User } from '@users/utils/user.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthStore {
@@ -13,7 +13,7 @@ export class AuthStore {
   private readonly platform = inject(SsrPlatformService);
 
   // 🔐 Internal state
-  private readonly _user = signal<AuthUser | null>(null);
+  private readonly _user = signal<User | null>(null);
   private readonly _token = signal<string | null>(null);
   private readonly _ready = signal(false);
   private readonly _userChangeCounter = signal(0);
@@ -31,7 +31,7 @@ export class AuthStore {
 
   readonly displayName = computed(() => {
     const user = this.user();
-    if (!user) return 'Guest';
+    if (!user) return;
     if (user.isAnonymous) return user.displayName || generateAnonymousName(user.uid);
     return user.displayName || user.email?.split('@')[0] || 'User';
   });
@@ -73,7 +73,7 @@ export class AuthStore {
         }
       }
 
-      const appUser: AuthUser = {
+      const appUser: User = {
         uid: firebaseUser.uid,
         displayName: displayName ?? generateAnonymousName(firebaseUser.uid),
         isAnonymous: firebaseUser.isAnonymous,
@@ -85,8 +85,8 @@ export class AuthStore {
         checkedInPubIds: [],
         badges: [],
         streaks: {},
-        joinedMissionIds: [],
         joinedAt: new Date().toISOString(),
+        userStage: 'guest',
       };
 
       this._user.set(appUser);
@@ -126,7 +126,7 @@ export class AuthStore {
 
     await updateProfile(fbUser, { displayName: newDisplayName });
 
-    const updatedUser: AuthUser = { ...current, displayName: newDisplayName };
+    const updatedUser: User = { ...current, displayName: newDisplayName };
     this._user.set(updatedUser);
 
     this.platform.onlyOnBrowser(() => {
@@ -136,7 +136,7 @@ export class AuthStore {
     await this.saveUserToFirestore(updatedUser);
   }
 
-  async updateUserProfile(updates: Partial<AuthUser>): Promise<void> {
+  async updateUserProfile(updates: Partial<User>): Promise<void> {
     const current = this._user();
     if (!current) return;
 
@@ -152,7 +152,7 @@ export class AuthStore {
     this._user.set({ ...current, ...updates });
   }
 
-  private async saveUserToFirestore(user: AuthUser): Promise<void> {
+  private async saveUserToFirestore(user: User): Promise<void> {
     try {
       console.log('[AuthStore] Would save to Firestore:', {
         uid: user.uid,

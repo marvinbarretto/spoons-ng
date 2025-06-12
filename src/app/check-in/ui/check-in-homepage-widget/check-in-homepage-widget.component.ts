@@ -4,24 +4,14 @@ import { CheckinStore } from '@check-in/data-access/check-in.store';
 import { OverlayService } from '@shared/data-access/overlay.service';
 import { ButtonComponent } from '@shared/ui/button/button.component';
 import { CheckInResultModalComponent } from '@check-in/ui/check-in-result-modal/check-in-result-modal.component';
+import { CheckInModalService } from '../../data-access/check-in-modal.service';
+import type { CheckInResultData } from '@check-in/utils/check-in.models';
 
 // ✅ Define the Pub type for this component
 type Pub = {
   id: string;
   name: string;
   distance: number;
-};
-
-// ✅ Define the result data type
-type CheckInResultData = {
-  success: boolean;
-  checkin?: any;
-  pub?: Pub;
-  isNewLandlord?: boolean;
-  landlordMessage?: string;
-  autoNavigate?: boolean;
-  badges?: any[];
-  error?: string;
 };
 
 @Component({
@@ -133,6 +123,7 @@ export class CheckInHomepageWidgetComponent {
   // ✅ Store injections
   private readonly checkinStore = inject(CheckinStore);
   private readonly overlayService = inject(OverlayService);
+  private readonly checkInModalService = inject(CheckInModalService);
 
   // ✅ Local state
   private readonly _isCheckingIn = signal(false);
@@ -210,13 +201,16 @@ export class CheckInHomepageWidgetComponent {
   private showResultModal(data: CheckInResultData): void {
     console.log('[CheckinWidget] Showing result modal:', data);
 
-    const { componentRef, close } = this.overlayService.open(
-      CheckInResultModalComponent,
-      {},
-      { data }
-    );
+    // ✅ Use service for consecutive modal flow
+    this.checkInModalService.showCheckInResults(data);
 
-    // ✅ Provide close function to modal
-    componentRef.instance.closeModal = close;
+    // const { componentRef, close } = this.overlayService.open(
+    //   CheckInResultModalComponent,
+    //   {},
+    //   { data }
+    // );
+
+    // // ✅ Provide close function to modal
+    // componentRef.instance.closeModal = close;
   }
 }

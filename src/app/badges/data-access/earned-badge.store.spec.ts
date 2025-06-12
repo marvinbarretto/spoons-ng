@@ -6,7 +6,8 @@ import { EarnedBadgeService } from './earned-badge.service';
 import { AuthStore } from '../../auth/data-access/auth.store';
 import { BadgeTestFactories } from '../testing/badge-test-factories';
 import type { EarnedBadge } from '../utils/badge.model';
-import type { AuthUser } from '../../auth/utils/auth.model';
+import type { User } from '@users/utils/user.model';
+import { UserStage } from '@shared/utils/user-progression.models';
 
 /**
  * Test suite for EarnedBadgeStore.
@@ -19,8 +20,8 @@ describe('EarnedBadgeStore', () => {
   let mockService: jest.Mocked<EarnedBadgeService>;
   let mockAuthStore: jest.Mocked<AuthStore>;
 
-  // Complete test user data matching AuthUser interface
-  const testUser: AuthUser = {
+  // Complete test user data matching User interface
+  const testUser: User = {
     uid: 'user123',
     displayName: 'Test User',
     isAnonymous: false,
@@ -33,7 +34,8 @@ describe('EarnedBadgeStore', () => {
     badges: [],
     streaks: {},
     joinedMissionIds: [],
-    joinedAt: '2023-01-01T00:00:00.000Z'
+    joinedAt: '2023-01-01T00:00:00.000Z',
+    userStage: UserStage.BEGINNER,
   };
 
   beforeEach(() => {

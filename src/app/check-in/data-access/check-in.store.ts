@@ -1,7 +1,7 @@
 // src/app/check-in/data-access/check-in.store.ts
 import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { CheckInService } from './check-in.service';
-import type { CheckIn } from '../utils/check-in.model';
+import type { CheckIn } from '../utils/check-in.models';
 import { Timestamp } from 'firebase/firestore';
 import { PubService } from '../../pubs/data-access/pub.service';
 import { Pub } from '../../pubs/utils/pub.models';

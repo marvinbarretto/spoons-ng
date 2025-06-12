@@ -2,30 +2,10 @@ import { Component, inject, input, computed, effect, signal } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
-import type { CheckIn } from '../../utils/check-in.model';
+import type { CheckIn } from '../../utils/check-in.models';
 import type { Pub } from '../../../pubs/utils/pub.models';
 import { environment } from '../../../../environments/environment';
-
-export type CheckInResultData = {
-  success: boolean;
-  checkin?: CheckIn;
-  pub?: Pub;
-  isNewLandlord?: boolean;
-  landlordMessage?: string;
-  error?: string;
-  // Enhanced celebration properties
-  badges?: Array<{ badgeId: string; name: string; }>;
-  autoNavigate?: boolean;
-  currentLandlord?: any;
-  todayLandlord?: any;
-  userWhoCheckedIn?: string;
-  debugInfo?: {
-    pubLandlordStatus: string;
-    checkinTime: string;
-    landlordClaimedAt?: string;
-    existingLandlordUserId?: string;
-  };
-};
+import type { CheckInResultData } from '@check-in/utils/check-in.models';
 
 @Component({
   selector: 'app-check-in-result-modal',

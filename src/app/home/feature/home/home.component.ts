@@ -32,18 +32,8 @@ import { UserProgressionService } from '../../../shared/data-access/user-progres
   template: `
     <div class="home-container">
 
-      <!-- ✅ Welcome section with progression service -->
-      <app-welcome
-        [displayName]="authStore.displayName()"
-        [avatarUrl]="authStore.avatarUrl()"
-        [isAnonymous]="authStore.isAnonymous()"
-        [isBrandNew]="progression.isBrandNewUser()"
-        [showWelcomeText]="progression.shouldShowWelcomeFlow()"
-        (openSettings)="openProfileSettings()"
-        (upgradeAccount)="upgradeToFullAccount()"
-      />
+      <app-welcome [user]="authStore.user()" (openSettings)="openProfileSettings()" />
 
-      <!-- ✅ Check-in widget (smart conditional) -->
       @if (shouldShowCheckInWidget() && closestPub()) {
         <app-check-in-homepage-widget
           [closestPub]="closestPub()!"
@@ -117,6 +107,22 @@ export class HomeComponent extends BaseComponent {
 
   // ✅ Environment
   readonly isProduction = false; // TODO: inject from environment
+
+   // ✅ All existing computed properties can now use userStage directly
+   readonly isBrandNewUser = computed(() => {
+    const user = this.authStore.user();
+    return user?.userStage === 'brandNew';
+  });
+
+  readonly shouldShowAdvancedFeatures = computed(() => {
+    const user = this.authStore.user();
+    return user?.userStage === 'powerUser' || user?.userStage === 'explorer';
+  });
+
+  readonly shouldShowOnboarding = computed(() => {
+    const user = this.authStore.user();
+    return user?.userStage === 'brandNew' || user?.userStage === 'firstTime';
+  });
 
   constructor() {
     super();

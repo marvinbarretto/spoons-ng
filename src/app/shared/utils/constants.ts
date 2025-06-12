@@ -10,3 +10,9 @@ export const HEADER = {
 export const PANEL = {
   MAX_WIDTH: 640,
 };
+
+export const ASSETS = {
+  NPC_AVATAR: '/assets/avatars/npc.webp',
+  FALLBACK_AVATAR: '/assets/avatars/default-user.png',
+  LOGO: '/assets/brand/logo.svg',
+} as const;

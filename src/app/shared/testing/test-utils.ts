@@ -1,4 +1,4 @@
-import { User } from '../../users/utils/user.model';
+import { createUser, User } from '../../users/utils/user.model';
 
 export function getMockUser(overrides: Partial<User> = {}): User {
   return {
@@ -21,4 +21,25 @@ export function getMockUser(overrides: Partial<User> = {}): User {
     },
     ...overrides,
   };
+}
+
+
+// TODO: Mend and updatethis...
+export function createTestUser(overrides: Partial<Omit<User, 'userStage'>> = {}): User {
+  const defaultData: Omit<User, 'userStage'> = {
+    uid: `test-user-${Math.random().toString(36).substr(2, 9)}`,
+    email: 'test@example.com',
+    displayName: 'Test User',
+    landlordOf: [],
+    claimedPubIds: [],
+    checkedInPubIds: [],
+    badges: [],
+    streaks: {},
+    emailVerified: true,
+    isAnonymous: false,
+    joinedAt: new Date().toISOString(),
+    ...overrides
+  };
+
+  return createUser(defaultData);
 }

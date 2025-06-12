@@ -1,13 +1,14 @@
 // src/app/home/ui/welcome/welcome.component.ts
 import { Component, input, output, computed, ChangeDetectionStrategy } from '@angular/core';
-import { ASSETS } from '@shared/utils/assets.constants';
+import { JsonPipe } from '@angular/common';
+import type { User } from '@users/utils/user.model';
+import { ASSETS } from '@shared/utils/constants';
 
 @Component({
   selector: 'app-welcome',
-  imports: [],
+  imports: [JsonPipe],
   template: `
-    <section class="welcome" [class.brand-new]="isBrandNew()" [class.compact]="!showWelcomeText()">
-
+    <section class="welcome" [class]="welcomeClasses()">
       <!-- ✅ User Avatar & Name Section -->
       <div class="user-section">
         @if (avatarUrl()) {
@@ -19,7 +20,6 @@ import { ASSETS } from '@shared/utils/assets.constants';
           />
         } @else {
           <div class="avatar-placeholder npc-avatar" (click)="openSettings.emit()">
-            <!-- ✅ Using simple asset constant -->
             <img [src]="NPC_AVATAR" alt="Default avatar" class="npc-image">
             @if (canCustomizeAvatar()) {
               <div class="avatar-edit-hint">✏️</div>
@@ -28,21 +28,16 @@ import { ASSETS } from '@shared/utils/assets.constants';
         }
 
         <div class="name-section">
-          @if (showWelcomeText()) {
-            <h1 class="welcome-title">
-              Welcome,
-              <button class="username-button" (click)="openSettings.emit()">
-                <span class="username-text">{{ displayName() }}</span>
-                <span class="edit-icon">✏️</span>
-              </button>!
-            </h1>
-          } @else {
-            <h1 class="user-name">
-              <button class="username-button" (click)="openSettings.emit()">
-                <span class="username-text">{{ displayName() }}</span>
-                <span class="edit-icon">✏️</span>
-              </button>
-            </h1>
+          <h1 class="user-name">
+            <button class="username-button" (click)="openSettings.emit()">
+              <span class="username-text">{{ displayName() }}</span>
+              <span class="edit-icon">✏️</span>
+            </button>
+          </h1>
+
+          <!-- ✅ Show user stage underneath displayName -->
+          @if (user()) {
+            <p class="user-stage">{{ user()!.userStage }}</p>
           }
         </div>
       </div>
@@ -50,87 +45,80 @@ import { ASSETS } from '@shared/utils/assets.constants';
       <!-- ✅ Simplified Action Buttons -->
       @if (shouldShowActions()) {
         <div class="user-actions">
-          @if (isBrandNew()) {
-            <p class="onboarding-text">Customize your pub crawling experience:</p>
-          }
-
-          <div class="action-buttons">
-            <!-- Single settings button -->
-            <button
-              type="button"
-              class="btn btn-primary"
-              (click)="openSettings.emit()"
-            >
-              ⚙️ Customize Profile
-            </button>
-          </div>
+          <button
+            type="button"
+            class="btn btn-primary"
+            (click)="openSettings.emit()"
+          >
+            ⚙️ Customize Profile
+          </button>
         </div>
       }
     </section>
   `,
   styles: `
     .welcome {
-      background: linear-gradient(135deg, var(--color-background) 0%, var(--color-lighter) 100%);
-      border-radius: 12px;
-      padding: 2rem 1.5rem;
-      margin: 1rem auto;
-      max-width: 400px;
-      text-align: center;
-      box-shadow: 0 4px 16px var(--color-shadow);
+      background: var(--color-surface);
+      border-radius: 8px;
+      padding: 1rem;
+      margin: 0.5rem auto;
+      max-width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      box-shadow: 0 2px 8px var(--color-shadow);
       border: 1px solid var(--color-border);
     }
 
-    .welcome.compact {
-      padding: 1.5rem;
-      max-width: 500px;
-    }
-
-    .welcome.brand-new {
+    /* ✅ CSS Hooks for different user states */
+    .welcome--brand-new {
       background: linear-gradient(135deg, var(--color-accentLight) 0%, var(--color-lighter) 100%);
       border: 1px solid var(--color-accent);
+      padding: 1.5rem;
     }
 
-    /* User Section */
+    .welcome--new-user {
+      background: var(--color-surfaceElevated);
+      border: 1px solid var(--color-primary);
+    }
+
+    .welcome--compact {
+      padding: 0.75rem;
+      margin: 0.25rem auto;
+    }
+
+    /* User Section - More compact */
     .user-section {
       display: flex;
-      flex-direction: column;
       align-items: center;
       gap: 1rem;
+      flex: 1;
     }
 
-    .welcome.brand-new .user-section {
-      flex-direction: column;
-      gap: 1.5rem;
-    }
-
-    /* Avatar Styles */
+    /* Avatar Styles - Smaller */
     .avatar,
     .avatar-placeholder {
-      width: 80px;
-      height: 80px;
+      width: 50px;
+      height: 50px;
       border-radius: 50%;
       position: relative;
       cursor: pointer;
       transition: transform 0.2s ease;
+      flex-shrink: 0;
     }
 
     .avatar {
       object-fit: cover;
-      border: 3px solid var(--color-primary);
-      box-shadow: 0 2px 8px var(--color-shadow);
+      border: 2px solid var(--color-primary);
+      box-shadow: 0 1px 4px var(--color-shadow);
     }
 
     .avatar-placeholder {
-      background: var(--color-surface);
+      background: transparent;
       display: flex;
       align-items: center;
       justify-content: center;
-      border: 3px solid var(--color-borderSecondary);
-    }
-
-    .npc-avatar {
-      background: transparent;
-      border: 3px solid var(--color-secondary);
+      border: 2px solid var(--color-secondary);
     }
 
     .npc-image {
@@ -151,17 +139,17 @@ import { ASSETS } from '@shared/utils/assets.constants';
       right: -2px;
       background: var(--color-primary);
       border-radius: 50%;
-      width: 24px;
-      height: 24px;
+      width: 18px;
+      height: 18px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 12px;
+      font-size: 10px;
       border: 2px solid var(--color-background);
       color: var(--color-primaryText);
     }
 
-    /* Username Button Styling */
+    /* Username Button Styling - More compact */
     .username-button {
       background: none;
       border: none;
@@ -170,12 +158,12 @@ import { ASSETS } from '@shared/utils/assets.constants';
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 0.35rem;
+      gap: 0.25rem;
       color: inherit;
       font: inherit;
       transition: all 0.2s ease;
-      border-radius: 6px;
-      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      padding: 0.2rem 0.4rem;
     }
 
     .username-button:hover {
@@ -184,115 +172,73 @@ import { ASSETS } from '@shared/utils/assets.constants';
     }
 
     .username-text {
-      color: var(--color-textSecondary);
+      color: var(--color-text);
       font-weight: 600;
     }
 
     .edit-icon {
-      opacity: 0.5;
-      font-size: 0.75em;
+      opacity: 0.4;
+      font-size: 0.7em;
       transition: opacity 0.2s ease;
       color: var(--color-textMuted);
     }
 
     .username-button:hover .edit-icon {
-      opacity: 0.8;
+      opacity: 0.7;
     }
 
-    /* Name Section */
+    /* Name Section - Tighter */
     .name-section {
       flex: 1;
       min-width: 0;
-      text-align: left;
-    }
-
-    .welcome.brand-new .name-section {
-      text-align: center;
-    }
-
-    .welcome-title {
-      margin: 0;
-      color: var(--color-text);
-      font-size: 1.8rem;
-      font-weight: 600;
-      line-height: 1.2;
     }
 
     .user-name {
-      margin: 0;
+      margin: 0 0 0.25rem 0;
       color: var(--color-text);
-      font-size: 1.5rem;
+      font-size: 1.2rem;
       font-weight: 600;
       line-height: 1.2;
     }
 
-    .welcome.compact .user-name {
-      font-size: 1.3rem;
-    }
-
-    /* Actions Section */
-    .user-actions {
-      background: var(--color-surfaceElevated);
-      border-radius: 8px;
-      padding: 1rem;
-      border: 1px solid var(--color-border);
-    }
-
-    .welcome.compact .user-actions {
-      background: var(--color-surface);
-      padding: 0.75rem;
-      opacity: 0.9;
-    }
-
-    .onboarding-text {
-      margin: 0 0 1rem 0;
+    /* ✅ User Stage Display */
+    .user-stage {
+      margin: 0;
+      font-size: 0.85rem;
       color: var(--color-textSecondary);
-      font-size: 1rem;
-      text-align: center;
+      font-weight: 500;
+      text-transform: capitalize;
     }
 
-    .action-buttons {
-      display: flex;
-      gap: 0.75rem;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-
-    .welcome.compact .action-buttons {
-      justify-content: flex-start;
+    /* Actions Section - More compact */
+    .user-actions {
+      flex-shrink: 0;
     }
 
     .btn {
-      padding: 0.75rem 1.5rem;
+      padding: 0.5rem 1rem;
       border: none;
-      border-radius: 8px;
+      border-radius: 6px;
       cursor: pointer;
       font-weight: 600;
-      font-size: 0.95rem;
+      font-size: 0.85rem;
       transition: all 0.2s ease;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      min-width: 140px;
-      justify-content: center;
-    }
-
-    .welcome.compact .btn {
-      min-width: 120px;
-      padding: 0.5rem 1rem;
-      font-size: 0.9rem;
+      gap: 0.4rem;
+      white-space: nowrap;
     }
 
     .btn-primary {
       background: var(--color-primary);
       color: var(--color-primaryText);
-      box-shadow: 0 2px 4px var(--color-shadow);
+      box-shadow: 0 1px 3px var(--color-shadow);
     }
 
     .btn-primary:hover {
       background: var(--color-primaryHover);
       transform: translateY(-1px);
-      box-shadow: 0 4px 8px var(--color-shadow);
+      box-shadow: 0 2px 6px var(--color-shadow);
     }
 
     .btn-primary:active {
@@ -300,81 +246,133 @@ import { ASSETS } from '@shared/utils/assets.constants';
       transform: translateY(0);
     }
 
-    .btn:disabled {
-      background: var(--color-textMuted);
-      color: var(--color-background);
-      cursor: not-allowed;
-      opacity: 0.6;
+    /* ✅ Brand new user layout - Stack vertically */
+    .welcome--brand-new {
+      flex-direction: column;
+      text-align: center;
+      max-width: 400px;
+    }
+
+    .welcome--brand-new .user-section {
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .welcome--brand-new .name-section {
+      text-align: center;
+    }
+
+    .welcome--brand-new .avatar,
+    .welcome--brand-new .avatar-placeholder {
+      width: 80px;
+      height: 80px;
+    }
+
+    .welcome--brand-new .user-name {
+      font-size: 1.5rem;
+    }
+
+    .welcome--brand-new .user-actions {
+      width: 100%;
+    }
+
+    .welcome--brand-new .btn {
+      padding: 0.75rem 1.5rem;
+      font-size: 0.95rem;
     }
 
     /* Mobile responsive */
     @media (max-width: 480px) {
       .welcome {
-        padding: 1.25rem 0.75rem;
-        margin: 0.5rem auto;
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem;
       }
 
-      .welcome-title {
-        font-size: 1.5rem;
+      .user-section {
+        width: 100%;
+        justify-content: center;
       }
 
       .user-name {
-        font-size: 1.3rem;
+        font-size: 1.1rem;
       }
 
-      .welcome.compact .user-name {
-        font-size: 1.2rem;
-      }
-
-      .action-buttons {
-        flex-direction: column;
-        align-items: center;
-      }
-
-      .welcome.compact .action-buttons {
-        flex-direction: row;
-        align-items: flex-start;
+      .user-actions {
+        width: 100%;
       }
 
       .btn {
         width: 100%;
-        max-width: 200px;
-      }
-
-      .welcome.compact .btn {
-        width: auto;
-        max-width: none;
+        justify-content: center;
       }
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WelcomeComponent {
-  // ✅ Simple asset reference
+  // ✅ Asset reference
   readonly NPC_AVATAR = ASSETS.NPC_AVATAR;
 
-  // ✅ Input signals
-  readonly displayName = input<string>('Guest');
-  readonly avatarUrl = input<string | null>(null);
-  readonly isAnonymous = input<boolean>(false);
-  readonly isBrandNew = input<boolean>(false);
-  readonly showWelcomeText = input<boolean>(true);
+  // ✅ Single input - just the user!
+  readonly user = input<User | null>(null);
 
   // ✅ Output events
   readonly openSettings = output<void>();
 
-  // ✅ Computed properties
-  readonly avatarInitial = computed(() => {
-    const name = this.displayName();
-    return name.charAt(0).toUpperCase();
+  // ✅ All computed properties derived from user
+  readonly displayName = computed(() => {
+    const currentUser = this.user();
+    if (!currentUser) return 'Guest';
+
+    // ✅ Always show the actual displayName, never "Anon" or "Guest"
+    return currentUser.displayName || 'User';
+  });
+
+  readonly avatarUrl = computed(() => {
+    const currentUser = this.user();
+    return currentUser?.photoURL || null;
+  });
+
+  readonly isAnonymous = computed(() => {
+    const currentUser = this.user();
+    return currentUser?.isAnonymous ?? false;
+  });
+
+  readonly isBrandNew = computed(() => {
+    const currentUser = this.user();
+    return currentUser?.userStage === 'brandNew';
+  });
+
+  readonly isNewUser = computed(() => {
+    const currentUser = this.user();
+    const stage = currentUser?.userStage;
+    return stage === 'brandNew' || stage === 'firstTime';
   });
 
   readonly canCustomizeAvatar = computed(() => {
+    // Always allow avatar customization
     return true;
   });
 
   readonly shouldShowActions = computed(() => {
+    // Show actions for brand new users or anonymous users
     return this.isBrandNew() || this.isAnonymous();
+  });
+
+  // ✅ CSS class generation with hooks
+  readonly welcomeClasses = computed(() => {
+    const classes = ['welcome'];
+
+    if (this.isBrandNew()) {
+      classes.push('welcome--brand-new');
+    } else if (this.isNewUser()) {
+      classes.push('welcome--new-user');
+    } else {
+      classes.push('welcome--compact');
+    }
+
+    return classes.join(' ');
   });
 
   // ✅ Event handlers

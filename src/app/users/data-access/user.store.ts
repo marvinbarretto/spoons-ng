@@ -3,14 +3,10 @@ import { Injectable, signal, computed, effect, inject } from '@angular/core';
 import { User } from '../utils/user.model';
 import { AuthStore } from '../../auth/data-access/auth.store';
 import { UserService } from './user.service';
-import { Badge, EarnedBadge } from '../../badges/utils/badge.model';
+import { EarnedBadge } from '../../badges/utils/badge.model';
 import { BadgeService } from '../../badges/data-access/badge.service';
 import { generateAnonymousName } from '../../shared/utils/anonymous-names';
 import { firstValueFrom } from 'rxjs';
-import { CheckinStore } from '../../check-in/data-access/check-in.store';
-
-
-
 
 
 @Injectable({
@@ -200,11 +196,11 @@ export class UserStore {
         claimedPubIds: userData.claimedPubIds || [],
         checkedInPubIds: userData.checkedInPubIds || [],
         streaks: userData.streaks || {},
-        joinedMissionIds: userData.joinedMissionIds || [],
         emailVerified: userData.emailVerified,
         isAnonymous: userData.isAnonymous,
         photoURL: userData.photoURL,
         joinedAt: userData.joinedAt,
+        userStage: userData.userStage,
       };
 
       return userWithoutBadges;
@@ -229,11 +225,11 @@ export class UserStore {
       claimedPubIds: authUser.claimedPubIds || [],
       checkedInPubIds: authUser.checkedInPubIds || [],
       streaks: authUser.streaks || {},
-      joinedMissionIds: authUser.joinedMissionIds || [],
       emailVerified: authUser.emailVerified,
       isAnonymous: authUser.isAnonymous,
       photoURL: authUser.photoURL,
       joinedAt: authUser.joinedAt || new Date().toISOString(),
+      userStage: authUser.userStage,
     };
 
     return userWithoutBadges;
