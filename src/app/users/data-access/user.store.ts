@@ -7,6 +7,7 @@ import { Badge, EarnedBadge } from '../../badges/utils/badge.model';
 import { BadgeService } from '../../badges/data-access/badge.service';
 import { generateAnonymousName } from '../../shared/utils/anonymous-names';
 import { firstValueFrom } from 'rxjs';
+import { CheckinStore } from '../../check-in/data-access/check-in.store';
 
 
 

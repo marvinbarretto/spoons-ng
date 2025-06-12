@@ -16,6 +16,7 @@ import { NearbyPubListComponent } from '@home/ui/nearby-pub-list/nearby-pub-list
 import { WelcomeComponent } from '@home/ui/welcome/welcome.component';
 import { OverlayService } from '@shared/data-access/overlay.service';
 import { ProfileCustomizationModalComponent } from '../../ui/profile-customization-modal/profile-customization-modal.component';
+import { UserProgressionService } from '../../../shared/data-access/user-progression.service';
 
 @Component({
   selector: 'app-home',
@@ -31,16 +32,18 @@ import { ProfileCustomizationModalComponent } from '../../ui/profile-customizati
   template: `
     <div class="home-container">
 
+      <!-- ✅ Welcome section with progression service -->
       <app-welcome
         [displayName]="authStore.displayName()"
         [avatarUrl]="authStore.avatarUrl()"
         [isAnonymous]="authStore.isAnonymous()"
-        [isBrandNew]="isBrandNewUser()"
-        [showWelcomeText]="shouldShowWelcomeText()"
+        [isBrandNew]="progression.isBrandNewUser()"
+        [showWelcomeText]="progression.shouldShowWelcomeFlow()"
         (openSettings)="openProfileSettings()"
         (upgradeAccount)="upgradeToFullAccount()"
       />
 
+      <!-- ✅ Check-in widget (smart conditional) -->
       @if (shouldShowCheckInWidget() && closestPub()) {
         <app-check-in-homepage-widget
           [closestPub]="closestPub()!"
@@ -49,15 +52,15 @@ import { ProfileCustomizationModalComponent } from '../../ui/profile-customizati
         />
       }
 
-      <!-- ✅ Progress hero (always show) -->
+      <!-- ✅ Progress hero (always show if has data) -->
       <app-pub-progress-hero
-        [visitedCount]="visitedPubsCount()"
+        [visitedCount]="progression.uniquePubsVisited()"
         [totalPubs]="totalPubs()"
-        [hasProgress]="hasProgressData()"
+        [hasProgress]="progression.totalCheckinsCount() > 0"
       />
 
-      <!-- ✅ Only show badges if user has earned any -->
-      @if (shouldShowBadges()) {
+      <!-- ✅ Badges (progression service determines visibility) -->
+      @if (progression.shouldShowBadges()) {
         <app-earned-badge-list
           [earnedBadgesWithDefinitions]="badgeStore.recentBadgesForDisplay()"
           [maxItems]="3"
@@ -66,13 +69,13 @@ import { ProfileCustomizationModalComponent } from '../../ui/profile-customizati
         />
       }
 
-      <!-- ✅ Nearby pubs list -->
+      <!-- ✅ Nearby pubs with smart empty state -->
       @if (nearestPubs().length > 0) {
         <app-nearby-pub-list
           [pubs]="nearestPubs()"
           [userCheckins]="todaysCheckins()"
         />
-      } @else if (shouldShowNearbyPubsEmptyState()) {
+      } @else if (progression.shouldShowProgressFeatures()) {
         <div class="no-nearby-pubs-message">
           <h3>🕵️ No Nearby Pubs</h3>
           <p>Move closer to pubs to see check-in options!</p>
@@ -85,6 +88,15 @@ import { ProfileCustomizationModalComponent } from '../../ui/profile-customizati
           <p>🔄 Loading your pub data...</p>
         </div>
       }
+
+      <!-- ✅ Development debug info -->
+      @if (!isProduction) {
+        <details class="debug-panel">
+          <summary>🐛 Debug Info</summary>
+          <pre>{{ debugInfo() | json }}</pre>
+        </details>
+      }
+
     </div>
   `,
   styleUrl: './home.component.scss'
@@ -100,6 +112,8 @@ export class HomeComponent extends BaseComponent {
 
   private readonly overlayService = inject(OverlayService);
 
+  // ✅ User progression service (replaces local progression logic)
+  protected readonly progression = inject(UserProgressionService);
 
   // ✅ Environment
   readonly isProduction = false; // TODO: inject from environment
@@ -108,46 +122,17 @@ export class HomeComponent extends BaseComponent {
     super();
 
     // ✅ Initialize stores that need loading
-    this.badgeStore.loadOnce(); // Load badge definitions
-    this.pubStore.loadOnce();   // Load pub data
-    // UserStore loads automatically via auth effect
-    // CheckinStore loads automatically via auth effect
+    this.badgeStore.loadOnce();
+    this.pubStore.loadOnce();
   }
 
-  // ✅ User Status Computed Properties
-  readonly isBrandNewUser = computed(() => {
-    const checkinCount = this.visitedPubsCount();
-    const user = this.authStore.user();
+  // ✅ Location & check-in specific computed signals (HomeComponent responsibility)
+  readonly closestPub = this.nearbyPubStore.closestPub;
+  readonly nearestPubs = this.nearbyPubStore.nearbyPubs;
 
-    // Brand new if no check-ins and anonymous user
-    return checkinCount === 0 && !!user?.isAnonymous; // ✅ Ensure boolean
-  });
-
-  readonly isNewUser = computed(() => {
-    const checkinCount = this.visitedPubsCount();
-    // New user if they have 0-2 check-ins
-    return checkinCount <= 2;
-  });
-
-  readonly isRegularUser = computed(() => {
-    const checkinCount = this.visitedPubsCount();
-    // Regular user if they have 3+ check-ins
-    return checkinCount >= 3;
-  });
-
-  readonly shouldShowWelcomeText = computed(() => {
-    // Show "Welcome, {name}" for brand new users, otherwise just show name
-    return this.isBrandNewUser(); // ✅ Already returns boolean
-  });
-
-  readonly shouldShowBadges = computed(() => {
-    // Only show badges if user has earned some
-    return this.badgeStore.hasBadges();
-  });
-
-  readonly shouldShowNearbyPubsEmptyState = computed(() => {
-    // Only show empty state if user is not brand new (they understand the app)
-    return !this.isBrandNewUser();
+  readonly closestPubDistanceKm = computed(() => {
+    const pub = this.closestPub();
+    return pub ? (pub.distance / 1000).toFixed(1) : '0';
   });
 
   readonly shouldShowCheckInWidget = computed(() => {
@@ -158,34 +143,6 @@ export class HomeComponent extends BaseComponent {
     const canCheckInToday = this.checkinStore.canCheckInToday(closestPub.id);
 
     return isWithinRange && canCheckInToday;
-  });
-
-  // ✅ Existing Computed Properties
-  readonly visitedPubsCount = computed(() => {
-    const checkins = this.checkinStore.checkins();
-    const user = this.authStore.user();
-
-    if (!user || !checkins.length) return 0;
-
-    const userCheckins = checkins.filter(c => c.userId === user.uid);
-    const uniquePubIds = new Set(userCheckins.map(c => c.pubId));
-    return uniquePubIds.size;
-  });
-
-  readonly totalPubs = computed(() => 800); // TODO: make configurable
-
-  readonly progressPercentage = computed(() => {
-    const visited = this.visitedPubsCount();
-    const total = this.totalPubs();
-    return total === 0 ? 0 : Math.round((visited / total) * 100);
-  });
-
-  readonly closestPub = this.nearbyPubStore.closestPub;
-  readonly nearestPubs = this.nearbyPubStore.nearbyPubs;
-
-  readonly closestPubDistanceKm = computed(() => {
-    const pub = this.closestPub();
-    return pub ? (pub.distance / 1000).toFixed(1) : '0';
   });
 
   readonly canCheckInToClosestPub = computed(() => {
@@ -207,27 +164,35 @@ export class HomeComponent extends BaseComponent {
       .filter(c => c.userId === user.uid && new Date(c.timestamp.toDate()).toDateString() === today);
   });
 
-  readonly hasProgressData = computed(() => this.visitedPubsCount() > 0);
+  // ✅ App-specific constants
+  readonly totalPubs = computed(() => 800); // TODO: make configurable
 
   readonly isLoading = computed(() =>
     this.pubStore.loading() || this.checkinStore.loading()
   );
 
-  // ✅ Debug information
-  readonly userStatusDebug = computed(() => ({
-    visitedPubs: this.visitedPubsCount(),
-    isBrandNew: this.isBrandNewUser(),
-    isNew: this.isNewUser(),
-    isRegular: this.isRegularUser(),
-    shouldShowWelcome: this.shouldShowWelcomeText(),
-    shouldShowBadges: this.shouldShowBadges(),
-    badgeCount: this.badgeStore.badgeCount(),
-    shouldShowEmptyState: this.shouldShowNearbyPubsEmptyState(),
-    isAnonymous: this.authStore.user()?.isAnonymous,
-    hasUser: !!this.authStore.user(),
+  // ✅ Consolidated debug information
+  readonly debugInfo = computed(() => ({
+    // Progression service data
+    userStage: this.progression.userStage(),
+    progressionStats: this.progression.progressionStats(),
+    uiFlags: this.progression.uiFlags(),
+
+    // HomeComponent specific data
+    location: {
+      closestPubDistance: this.closestPubDistanceKm(),
+      nearbyPubsCount: this.nearestPubs().length,
+      canCheckIn: this.canCheckInToClosestPub(),
+      shouldShowWidget: this.shouldShowCheckInWidget(),
+    },
+
+    // App state
+    todaysCheckins: this.todaysCheckins().length,
+    isLoading: this.isLoading(),
+    isProduction: this.isProduction,
   }));
 
-  // ✅ NEW: Single method to open profile settings modal
+  // ✅ User actions
   protected openProfileSettings(): void {
     console.log('[Home] Opening profile settings modal');
 
@@ -237,15 +202,11 @@ export class HomeComponent extends BaseComponent {
       { currentUser: this.authStore.user() }
     );
 
-    // Provide close function to modal
     componentRef.instance.closeModal = close;
   }
 
-  // ✅ Keep existing upgrade account method
   protected upgradeToFullAccount(): void {
     console.log('[Home] Upgrading to full account');
     this.authStore.loginWithGoogle();
   }
-
-
 }
