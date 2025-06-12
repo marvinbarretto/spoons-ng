@@ -14,6 +14,8 @@ import { CheckInHomepageWidgetComponent } from '@check-in/ui/check-in-homepage-w
 import { EarnedBadgeListComponent } from '@badges/ui/earned-badge-list/earned-badge-list.component';
 import { NearbyPubListComponent } from '@home/ui/nearby-pub-list/nearby-pub-list.component';
 import { WelcomeComponent } from '@home/ui/welcome/welcome.component';
+import { OverlayService } from '@shared/data-access/overlay.service';
+import { ProfileCustomizationModalComponent } from '../../ui/profile-customization-modal/profile-customization-modal.component';
 
 @Component({
   selector: 'app-home-three',
@@ -35,8 +37,7 @@ import { WelcomeComponent } from '@home/ui/welcome/welcome.component';
         [isAnonymous]="authStore.isAnonymous()"
         [isBrandNew]="isBrandNewUser()"
         [showWelcomeText]="shouldShowWelcomeText()"
-        (changeUsername)="changeUsername()"
-        (chooseAvatar)="chooseAvatar()"
+        (openSettings)="openProfileSettings()"
         (upgradeAccount)="upgradeToFullAccount()"
       />
 
@@ -105,6 +106,9 @@ export class HomeComponent extends BaseComponent {
   protected readonly userStore = inject(UserStore);
   protected readonly badgeStore = inject(BadgeStore);
   protected readonly nearbyPubStore = inject(NearbyPubStore);
+
+  private readonly overlayService = inject(OverlayService);
+
 
   // ✅ Environment
   readonly isProduction = false; // TODO: inject from environment
@@ -222,16 +226,25 @@ export class HomeComponent extends BaseComponent {
     hasUser: !!this.authStore.user(),
   }));
 
-  // ✅ User Actions
-  changeUsername(): void {
-    this.authStore.openUsernameModal();
+  // ✅ NEW: Single method to open profile settings modal
+  protected openProfileSettings(): void {
+    console.log('[Home] Opening profile settings modal');
+
+    const { componentRef, close } = this.overlayService.open(
+      ProfileCustomizationModalComponent,
+      {},
+      { currentUser: this.authStore.user() }
+    );
+
+    // Provide close function to modal
+    componentRef.instance.closeModal = close;
   }
 
-  chooseAvatar(): void {
-    this.authStore.openAvatarSelector();
-  }
-
-  upgradeToFullAccount(): void {
+  // ✅ Keep existing upgrade account method
+  protected upgradeToFullAccount(): void {
+    console.log('[Home] Upgrading to full account');
     this.authStore.loginWithGoogle();
   }
+
+
 }

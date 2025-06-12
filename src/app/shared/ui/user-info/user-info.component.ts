@@ -40,6 +40,6 @@ export class UserInfoComponent {
     // - App state
 
     // Simple example - you could inject other stores if needed
-    return 'assets/images/npc-wojack-shaky.webp';
+    return 'assets/avatars/npc.webp';
   });
 }

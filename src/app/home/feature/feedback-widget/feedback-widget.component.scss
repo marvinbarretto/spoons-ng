@@ -1,6 +1,0 @@
-@use 'styles/index' as *;
-@use 'styles/components/widget' as *;
-
-.widget--feedback {
-  @include widget-style;
-}

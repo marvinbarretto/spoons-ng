@@ -1,5 +1,6 @@
-// src/app/features/home/ui/welcome/welcome.component.ts
+// src/app/home/ui/welcome/welcome.component.ts
 import { Component, input, output, computed, ChangeDetectionStrategy } from '@angular/core';
+import { ASSETS } from '@shared/utils/assets.constants';
 
 @Component({
   selector: 'app-welcome',
@@ -17,24 +18,36 @@ import { Component, input, output, computed, ChangeDetectionStrategy } from '@an
             (error)="onAvatarError($event)"
           />
         } @else {
-          <div class="avatar-placeholder" (click)="chooseAvatar.emit()">
-            <span class="avatar-icon">{{ avatarInitial() }}</span>
+          <div class="avatar-placeholder npc-avatar" (click)="openSettings.emit()">
+            <!-- ✅ Using simple asset constant -->
+            <img [src]="NPC_AVATAR" alt="Default avatar" class="npc-image">
             @if (canCustomizeAvatar()) {
-              <div class="avatar-edit-hint">📷</div>
+              <div class="avatar-edit-hint">✏️</div>
             }
           </div>
         }
 
         <div class="name-section">
           @if (showWelcomeText()) {
-            <h1 class="welcome-title">Welcome, {{ displayName() }}!</h1>
+            <h1 class="welcome-title">
+              Welcome,
+              <button class="username-button" (click)="openSettings.emit()">
+                <span class="username-text">{{ displayName() }}</span>
+                <span class="edit-icon">✏️</span>
+              </button>!
+            </h1>
           } @else {
-            <h1 class="user-name">{{ displayName() }}</h1>
+            <h1 class="user-name">
+              <button class="username-button" (click)="openSettings.emit()">
+                <span class="username-text">{{ displayName() }}</span>
+                <span class="edit-icon">✏️</span>
+              </button>
+            </h1>
           }
         </div>
       </div>
 
-      <!-- ✅ Progressive Action Buttons -->
+      <!-- ✅ Simplified Action Buttons -->
       @if (shouldShowActions()) {
         <div class="user-actions">
           @if (isBrandNew()) {
@@ -42,334 +55,304 @@ import { Component, input, output, computed, ChangeDetectionStrategy } from '@an
           }
 
           <div class="action-buttons">
-            @if (canCustomizeAvatar()) {
-              <button
-                type="button"
-                class="btn btn-secondary"
-                (click)="chooseAvatar.emit()"
-              >
-                📷 {{ avatarUrl() ? 'Change Avatar' : 'Add Avatar' }}
-              </button>
-            }
-
+            <!-- Single settings button -->
             <button
               type="button"
-              class="btn btn-secondary"
-              (click)="changeUsername.emit()"
+              class="btn btn-primary"
+              (click)="openSettings.emit()"
             >
-              ✏️ Change Name
+              ⚙️ Customize Profile
             </button>
-
-            @if (isAnonymous()) {
-              <button
-                type="button"
-                class="btn btn-primary"
-                (click)="upgradeAccount.emit()"
-              >
-                🚀 Sign up with Google
-              </button>
-            }
           </div>
         </div>
       }
     </section>
   `,
   styles: `
-  .welcome {
-    padding: 1.5rem 1rem;
-    border-radius: 12px;
-    margin-bottom: 1rem;
-    transition: all 0.3s ease;
-
-    /* ✅ NEW: Theme-aware styling */
-    border: 1px solid var(--color-border);
-    box-shadow: var(--color-shadow);
-  }
-
-  /* Brand new user styling */
-  .welcome.brand-new {
-    /* ✅ SIMPLIFIED: One gradient works for all themes */
-    background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-lighter) 100%);
-    text-align: center;
-    border: 2px solid var(--color-primary);
-  }
-
-  /* Compact styling for returning users */
-  .welcome.compact {
-    background: var(--color-surface);
-    padding: 1rem;
-    text-align: left;
-    border: 1px solid var(--color-border-secondary);
-    box-shadow: none;
-  }
-
-  .user-section {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
-
-  .welcome.brand-new .user-section {
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .welcome.compact .user-section {
-    margin-bottom: 0;
-  }
-
-  /* Avatar Styles */
-  .avatar,
-  .avatar-placeholder {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    position: relative;
-  }
-
-  .welcome.brand-new .avatar,
-  .welcome.brand-new .avatar-placeholder {
-    width: 80px;
-    height: 80px;
-  }
-
-  .avatar {
-    object-fit: cover;
-    /* ✅ NEW: Theme-aware avatar styling */
-    border: 3px solid var(--color-primary);
-    box-shadow: var(--color-shadow);
-  }
-
-  .avatar-placeholder {
-    /* ✅ SIMPLIFIED: Theme-aware gradient */
-    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-dark) 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-    border: 3px solid var(--color-primary);
-  }
-
-  .avatar-placeholder:hover {
-    transform: scale(1.05);
-    /* ✅ NEW: Enhanced hover with theme colors */
-    box-shadow: 0 6px 16px var(--color-overlay);
-  }
-
-  .avatar-icon {
-    color: var(--color-primary-text);
-    font-size: 1.5rem;
-    font-weight: 600;
-  }
-
-  .welcome.brand-new .avatar-icon {
-    font-size: 2rem;
-  }
-
-  .avatar-edit-hint {
-    position: absolute;
-    bottom: -2px;
-    right: -2px;
-    background: var(--color-success);
-    color: var(--color-success-text);
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-    border: 2px solid var(--color-surface);
-  }
-
-  /* Name Section */
-  .name-section {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .welcome-title {
-    margin: 0;
-    color: var(--color-text);
-    font-size: 1.8rem;
-    font-weight: 600;
-    line-height: 1.2;
-  }
-
-  .user-name {
-    margin: 0;
-    color: var(--color-text);
-    font-size: 1.5rem;
-    font-weight: 600;
-    line-height: 1.2;
-  }
-
-  .welcome.compact .user-name {
-    font-size: 1.3rem;
-  }
-
-  /* Actions Section */
-  .user-actions {
-    /* ✅ NEW: Theme-aware styling */
-    background: var(--color-surface-elevated);
-    border-radius: 8px;
-    padding: 1rem;
-    border: 1px solid var(--color-border-secondary);
-  }
-
-  .welcome.compact .user-actions {
-    background: transparent;
-    border: none;
-    padding: 0;
-    margin-top: 1rem;
-  }
-
-  .onboarding-text {
-    margin: 0 0 1rem 0;
-    color: var(--color-text-secondary);
-    font-size: 1rem;
-    text-align: center;
-  }
-
-  .action-buttons {
-    display: flex;
-    gap: 0.75rem;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  .welcome.compact .action-buttons {
-    justify-content: flex-start;
-  }
-
-  /* ✅ SIMPLIFIED: Theme-aware buttons */
-  .btn {
-    padding: 0.75rem 1.5rem;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 0.95rem;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    min-width: 140px;
-    justify-content: center;
-    text-decoration: none;
-
-    /* ✅ NEW: Focus states */
-    &:focus-visible {
-      outline: 2px solid var(--color-primary);
-      outline-offset: 2px;
-    }
-  }
-
-  .welcome.compact .btn {
-    min-width: 120px;
-    padding: 0.5rem 1rem;
-    font-size: 0.9rem;
-  }
-
-  .btn-primary {
-    background: var(--color-primary);
-    color: var(--color-primary-text);
-    box-shadow: var(--color-shadow);
-  }
-
-  .btn-primary:hover {
-    background: var(--color-primary-hover);
-    transform: translateY(-1px);
-    /* ✅ SIMPLIFIED: Uses theme overlay for shadow */
-    box-shadow: 0 6px 16px var(--color-overlay);
-  }
-
-  .btn-secondary {
-    background: var(--color-secondary);
-    color: var(--color-secondary-text);
-    box-shadow: var(--color-shadow);
-  }
-
-  .btn-secondary:hover {
-    background: var(--color-secondary-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 6px 16px var(--color-overlay);
-  }
-
-  .btn:active {
-    transform: translateY(0);
-  }
-
-  /* Mobile responsive */
-  @media (max-width: 480px) {
     .welcome {
-      padding: 1.25rem 0.75rem;
+      background: linear-gradient(135deg, var(--color-background) 0%, var(--color-lighter) 100%);
+      border-radius: 12px;
+      padding: 2rem 1.5rem;
+      margin: 1rem auto;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 4px 16px var(--color-shadow);
+      border: 1px solid var(--color-border);
     }
 
-    .welcome-title {
-      font-size: 1.5rem;
+    .welcome.compact {
+      padding: 1.5rem;
+      max-width: 500px;
     }
 
-    .user-name {
-      font-size: 1.3rem;
+    .welcome.brand-new {
+      background: linear-gradient(135deg, var(--color-accentLight) 0%, var(--color-lighter) 100%);
+      border: 1px solid var(--color-accent);
     }
 
-    .action-buttons {
-      flex-direction: column;
+    /* User Section */
+    .user-section {
+      display: flex;
       align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
     }
 
-    .welcome.compact .action-buttons {
-      flex-direction: row;
-      align-items: flex-start;
+    .welcome.brand-new .user-section {
+      flex-direction: column;
+      gap: 1.5rem;
     }
 
-    .btn {
+    /* Avatar Styles */
+    .avatar,
+    .avatar-placeholder {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      position: relative;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .avatar {
+      object-fit: cover;
+      border: 3px solid var(--color-primary);
+      box-shadow: 0 2px 8px var(--color-shadow);
+    }
+
+    .avatar-placeholder {
+      background: var(--color-surface);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 3px solid var(--color-borderSecondary);
+    }
+
+    .npc-avatar {
+      background: transparent;
+      border: 3px solid var(--color-secondary);
+    }
+
+    .npc-image {
       width: 100%;
-      max-width: 200px;
-    }
-
-    .welcome.compact .btn {
-      width: auto;
-      max-width: none;
-    }
-  }
-
-  /* ✅ NEW: Print styles */
-  @media print {
-    .welcome {
-      background: white !important;
-      border: 1px solid #ccc !important;
-      box-shadow: none !important;
-    }
-
-    .btn {
-      background: white !important;
-      color: black !important;
-      border: 1px solid #ccc !important;
-    }
-  }
-
-  /* ✅ NEW: Reduced motion support */
-  @media (prefers-reduced-motion: reduce) {
-    .welcome,
-    .avatar-placeholder,
-    .btn {
-      transition: none;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
     }
 
     .avatar-placeholder:hover,
-    .btn:hover {
-      transform: none;
+    .avatar:hover {
+      transform: scale(1.05);
     }
-  }
-`,
+
+    .avatar-edit-hint {
+      position: absolute;
+      bottom: -2px;
+      right: -2px;
+      background: var(--color-primary);
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      border: 2px solid var(--color-background);
+      color: var(--color-primaryText);
+    }
+
+    /* Username Button Styling */
+    .username-button {
+      background: none;
+      border: none;
+      padding: 0;
+      margin: 0;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      color: inherit;
+      font: inherit;
+      transition: all 0.2s ease;
+      border-radius: 6px;
+      padding: 0.25rem 0.5rem;
+    }
+
+    .username-button:hover {
+      background: var(--color-lighter);
+      transform: translateY(-1px);
+    }
+
+    .username-text {
+      color: var(--color-textSecondary);
+      font-weight: 600;
+    }
+
+    .edit-icon {
+      opacity: 0.5;
+      font-size: 0.75em;
+      transition: opacity 0.2s ease;
+      color: var(--color-textMuted);
+    }
+
+    .username-button:hover .edit-icon {
+      opacity: 0.8;
+    }
+
+    /* Name Section */
+    .name-section {
+      flex: 1;
+      min-width: 0;
+      text-align: left;
+    }
+
+    .welcome.brand-new .name-section {
+      text-align: center;
+    }
+
+    .welcome-title {
+      margin: 0;
+      color: var(--color-text);
+      font-size: 1.8rem;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .user-name {
+      margin: 0;
+      color: var(--color-text);
+      font-size: 1.5rem;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .welcome.compact .user-name {
+      font-size: 1.3rem;
+    }
+
+    /* Actions Section */
+    .user-actions {
+      background: var(--color-surfaceElevated);
+      border-radius: 8px;
+      padding: 1rem;
+      border: 1px solid var(--color-border);
+    }
+
+    .welcome.compact .user-actions {
+      background: var(--color-surface);
+      padding: 0.75rem;
+      opacity: 0.9;
+    }
+
+    .onboarding-text {
+      margin: 0 0 1rem 0;
+      color: var(--color-textSecondary);
+      font-size: 1rem;
+      text-align: center;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .welcome.compact .action-buttons {
+      justify-content: flex-start;
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-width: 140px;
+      justify-content: center;
+    }
+
+    .welcome.compact .btn {
+      min-width: 120px;
+      padding: 0.5rem 1rem;
+      font-size: 0.9rem;
+    }
+
+    .btn-primary {
+      background: var(--color-primary);
+      color: var(--color-primaryText);
+      box-shadow: 0 2px 4px var(--color-shadow);
+    }
+
+    .btn-primary:hover {
+      background: var(--color-primaryHover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px var(--color-shadow);
+    }
+
+    .btn-primary:active {
+      background: var(--color-primaryActive);
+      transform: translateY(0);
+    }
+
+    .btn:disabled {
+      background: var(--color-textMuted);
+      color: var(--color-background);
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    /* Mobile responsive */
+    @media (max-width: 480px) {
+      .welcome {
+        padding: 1.25rem 0.75rem;
+        margin: 0.5rem auto;
+      }
+
+      .welcome-title {
+        font-size: 1.5rem;
+      }
+
+      .user-name {
+        font-size: 1.3rem;
+      }
+
+      .welcome.compact .user-name {
+        font-size: 1.2rem;
+      }
+
+      .action-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .welcome.compact .action-buttons {
+        flex-direction: row;
+        align-items: flex-start;
+      }
+
+      .btn {
+        width: 100%;
+        max-width: 200px;
+      }
+
+      .welcome.compact .btn {
+        width: auto;
+        max-width: none;
+      }
+    }
+  `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WelcomeComponent {
+  // ✅ Simple asset reference
+  readonly NPC_AVATAR = ASSETS.NPC_AVATAR;
+
   // ✅ Input signals
   readonly displayName = input<string>('Guest');
   readonly avatarUrl = input<string | null>(null);
@@ -378,9 +361,7 @@ export class WelcomeComponent {
   readonly showWelcomeText = input<boolean>(true);
 
   // ✅ Output events
-  readonly changeUsername = output<void>();
-  readonly chooseAvatar = output<void>();
-  readonly upgradeAccount = output<void>();
+  readonly openSettings = output<void>();
 
   // ✅ Computed properties
   readonly avatarInitial = computed(() => {
@@ -389,19 +370,15 @@ export class WelcomeComponent {
   });
 
   readonly canCustomizeAvatar = computed(() => {
-    // Always allow avatar customization for now
-    // Could be restricted based on user type later
     return true;
   });
 
   readonly shouldShowActions = computed(() => {
-    // Show actions for brand new users or anonymous users
     return this.isBrandNew() || this.isAnonymous();
   });
 
   // ✅ Event handlers
   onAvatarError(event: Event): void {
     console.warn('[Welcome] Avatar failed to load:', this.avatarUrl());
-    // Could emit an event to handle this in the parent component
   }
 }

@@ -188,7 +188,7 @@ export class DataTableComponent {
 
     if (isAnonymousUser) {
       // Use NPC image for anonymous users
-      return 'assets/images/npc-wojack-shaky.webp';
+      return 'assets/avatars/npc.webp';
     } else {
       // Fallback avatar for Google users without profile photos
       return 'assets/images/default-user-avatar.png';
@@ -198,6 +198,6 @@ export class DataTableComponent {
   onImageError(event: Event): void {
     // Fallback to NPC image if any avatar fails to load
     const img = event.target as HTMLImageElement;
-    img.src = 'assets/images/npc-wojack-shaky.webp';
+    img.src = 'assets/avatars/npc.webp';
   }
 }

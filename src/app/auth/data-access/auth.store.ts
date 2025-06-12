@@ -165,19 +165,6 @@ export class AuthStore {
     }
   }
 
-  // ✅ UI Modals
-  openUsernameModal(): void {
-    this.platform.onlyOnBrowser(async () => {
-      const { UsernameModalComponent } = await import('../../shared/ui/username-modal/username-modal.component');
-      const { componentRef, close } = this.overlayService.open(
-        UsernameModalComponent,
-        {},
-        { currentUser: this.user() }
-      );
-      componentRef.instance.closeModal = close;
-    });
-  }
-
   openAvatarSelector(): void {
     this.platform.onlyOnBrowser(async () => {
       const { AvatarSelectorComponent } = await import('../../shared/ui/avatar-selector/avatar-selector.component');

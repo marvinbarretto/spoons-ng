@@ -19,7 +19,7 @@ export class AvatarService {
 
   // TODO: Replace with environment variables
   private readonly DICEBEAR_BASE_URL = 'https://api.dicebear.com/7.x/avataaars/svg';
-  private readonly NPC_AVATAR_URL = 'assets/images/npc-wojack-shaky.webp';
+  private readonly NPC_AVATAR_URL = 'assets/avatars/npc.webp';
 
   /**
    * Generate 11 deterministic DiceBear avatars + 1 NPC option
@@ -43,7 +43,7 @@ export class AvatarService {
 
     // Add NPC option as 12th choice
     avatars.push({
-      id: 'npc-wojack',
+      id: 'npc',
       name: 'Anonymous NPC',
       url: this.NPC_AVATAR_URL,
       isDefault: true
