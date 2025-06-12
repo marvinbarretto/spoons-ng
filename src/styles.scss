@@ -7,27 +7,30 @@ body {
   font-family: 'Atkinson Hyperlegible', sans-serif;
   font-size: var(--font-size);
 
-  background-color: var(--color-background, var(--brand-light));
-  color: var(--color-text, var(--brand-darkest));
+  // ✅ SIMPLIFIED: Clean theme tokens without fallbacks
+  background-color: var(--color-background);
+  color: var(--color-text);
   min-height: 100vh;
+
+  // ✅ Enhanced typography and UX
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+
+  // ✅ Smooth theme transitions
+  transition: background-color 0.3s ease, color 0.3s ease;
+
+  // ✅ Simple background texture using new variables
+  background-image:
+    radial-gradient(circle at 20% 80%, var(--color-lighter) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, var(--color-lighter) 0%, transparent 50%);
+
+  // ✅ Responsive typography
+  @media (max-width: 768px) {
+    font-size: calc(var(--font-size) * 0.95);
+  }
 }
-
-// TODO: Sort this
-// Brand colours
-:root {
-  --brand-darkest: #32104f;
-  --brand-dark: #14213d;
-  --brand-medium: #28ac9f;
-  --brand-light: #e5e5e5;
-
-  --color-success-500: #4CAF50; /* Green */
-  --color-error-500: #F44336;   /* Red */
-  --color-warning-500: #FF9800; /* Orange */
-  --color-info-500: #2196F3;    /* Blue */
-  --color-white: #FFFFFF;
-  --color-black: #000000;
-}
-
 
 :root {
   --font-size: clamp(1rem, 0.75rem + 1vw, 1.125rem); // scales 16px → ~18px
@@ -35,21 +38,144 @@ body {
   --letter-spacing: 0.015em;
 }
 
+// ✅ Global focus styles
+*:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
 
+// ✅ Smooth scrolling
+html {
+  scroll-behavior: smooth;
+
+  @media (prefers-reduced-motion: reduce) {
+    scroll-behavior: auto;
+  }
+}
+
+// ✅ Theme-aware text selection
+::selection {
+  background-color: var(--color-accent);
+  color: var(--color-accent-light);
+}
+
+::-moz-selection {
+  background-color: var(--color-accent);
+  color: var(--color-accent-light);
+}
+
+// ✅ SIMPLIFIED: Theme-aware overlays
 .overlay-backdrop {
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--color-overlay);
   position: fixed;
   inset: 0;
   z-index: 1000;
+
+  // ✅ Enhanced UX
+  backdrop-filter: blur(4px);
+  transition: opacity 0.2s ease;
 }
 
 .overlay-panel {
   z-index: 1001;
-  background: white;
+
+  // ✅ SIMPLIFIED: Use theme tokens
+  background: var(--color-surface-elevated);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--color-shadow);
+
   border-radius: 12px;
   padding: 1rem;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
   max-width: 90vw;
   max-height: 90vh;
   overflow: auto;
+
+  // ✅ Enhanced interactions
+  transition: transform 0.2s ease, opacity 0.2s ease;
+
+  // ✅ Theme-aware scrollbars
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--color-surface);
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 4px;
+
+    &:hover {
+      background: var(--color-text-muted);
+    }
+  }
+}
+
+// ✅ Dark mode optimizations
+.dark {
+  body {
+    // ✅ Enhanced dark texture using simple variables
+    background-image:
+      radial-gradient(circle at 25% 25%, var(--color-light) 0%, transparent 50%),
+      radial-gradient(circle at 75% 75%, var(--color-light) 0%, transparent 50%);
+  }
+
+  .overlay-backdrop {
+    backdrop-filter: blur(6px);
+  }
+}
+
+// ✅ Accessibility improvements
+@media (prefers-contrast: high) {
+  body {
+    background-image: none !important;
+  }
+
+  *:focus-visible {
+    outline-width: 3px;
+    outline-offset: 3px;
+  }
+
+  .overlay-backdrop {
+    backdrop-filter: none;
+  }
+}
+
+// ✅ Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  body {
+    transition: none;
+    background-image: none;
+  }
+
+  .overlay-backdrop,
+  .overlay-panel {
+    transition: none;
+  }
+
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+// ✅ Print styles
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+    font-size: 12pt;
+    line-height: 1.5;
+    background-image: none !important;
+  }
+
+  .overlay-backdrop,
+  .overlay-panel {
+    display: none !important;
+  }
 }

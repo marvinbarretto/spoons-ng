@@ -94,22 +94,9 @@ export class ThemeStore {
     const theme = this.theme();
     const variables: Record<string, string> = {};
 
-    // Add all semantic colors
-    Object.entries(theme.colors.semantic).forEach(([key, value]) => {
+    // ✅ NEW: Add all theme colors directly (flat structure)
+    Object.entries(theme.colors).forEach(([key, value]) => {
       variables[`--color-${this._kebabCase(key)}`] = value;
-    });
-
-    // Add color scales
-    Object.entries(theme.colors.neutral).forEach(([shade, value]) => {
-      variables[`--color-neutral-${shade}`] = value;
-    });
-
-    Object.entries(theme.colors.primary).forEach(([shade, value]) => {
-      variables[`--color-primary-${shade}`] = value;
-    });
-
-    Object.entries(theme.colors.accent).forEach(([shade, value]) => {
-      variables[`--color-accent-${shade}`] = value;
     });
 
     return variables;
