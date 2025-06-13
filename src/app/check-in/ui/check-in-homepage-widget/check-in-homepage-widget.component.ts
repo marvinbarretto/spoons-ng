@@ -1,17 +1,18 @@
-// src/app/features/home/ui/check-in-homepage-widget/check-in-homepage-widget.component.ts
+// src/app/check-in/ui/check-in-homepage-widget/check-in-homepage-widget.component.ts
 import { Component, input, inject, signal, ChangeDetectionStrategy } from '@angular/core';
-import { CheckinStore } from '@check-in/data-access/check-in.store';
-import { OverlayService } from '@shared/data-access/overlay.service';
-import { ButtonComponent } from '@shared/ui/button/button.component';
-import { CheckInResultModalComponent } from '@check-in/ui/check-in-result-modal/check-in-result-modal.component';
+import { CheckinStore } from '../../data-access/check-in.store';
 import { CheckInModalService } from '../../data-access/check-in-modal.service';
-import type { CheckInResultData } from '@check-in/utils/check-in.models';
+import { ButtonComponent } from '../../../shared/ui/button/button.component';
+import type { Pub } from '../../../pubs/utils/pub.models';
 
-// ✅ Define the Pub type for this component
-type Pub = {
-  id: string;
-  name: string;
-  distance: number;
+type CheckInResultData = {
+  success: boolean;
+  checkin?: any;
+  pub?: Pub;
+  isNewLandlord?: boolean;
+  landlordMessage?: string;
+  badges?: any[];
+  error?: string;
 };
 
 @Component({
@@ -42,7 +43,7 @@ type Pub = {
       }
     </div>
   `,
-  styles: `
+  styles: [`
     .check-in-widget {
       background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
       color: white;
@@ -111,7 +112,7 @@ type Pub = {
         font-size: 1.2rem;
       }
     }
-  `,
+  `],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CheckInHomepageWidgetComponent {
@@ -120,9 +121,8 @@ export class CheckInHomepageWidgetComponent {
   readonly canCheckIn = input.required<boolean>();
   readonly distanceKm = input.required<string>();
 
-  // ✅ Store injections
+  // ✅ Store and service injections
   private readonly checkinStore = inject(CheckinStore);
-  private readonly overlayService = inject(OverlayService);
   private readonly checkInModalService = inject(CheckInModalService);
 
   // ✅ Local state
@@ -173,7 +173,6 @@ export class CheckInHomepageWidgetComponent {
           pub: pub,
           isNewLandlord,
           landlordMessage: landlordMessage || undefined,
-          autoNavigate: true,
           badges: [], // TODO: Add badges when available
         });
       } else {
@@ -196,21 +195,12 @@ export class CheckInHomepageWidgetComponent {
   }
 
   /**
-   * Show check-in result modal
+   * ✅ Use the new modal service for orchestration
    */
   private showResultModal(data: CheckInResultData): void {
     console.log('[CheckinWidget] Showing result modal:', data);
 
-    // ✅ Use service for consecutive modal flow
+    // ✅ Delegate to modal service for orchestration
     this.checkInModalService.showCheckInResults(data);
-
-    // const { componentRef, close } = this.overlayService.open(
-    //   CheckInResultModalComponent,
-    //   {},
-    //   { data }
-    // );
-
-    // // ✅ Provide close function to modal
-    // componentRef.instance.closeModal = close;
   }
 }
