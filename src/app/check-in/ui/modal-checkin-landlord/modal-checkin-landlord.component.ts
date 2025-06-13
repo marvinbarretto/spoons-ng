@@ -31,16 +31,20 @@ type LandlordModalData = {
         <!-- New User Explanation Section -->
         @if (shouldExplainLandlordSystem()) {
           <div class="explanation-section">
-            <h3>👑 How Landlord Status Works</h3>
-            <div class="explanation-content">
-              <ul class="landlord-rules">
-                <li>First person to check in each day becomes the landlord</li>
-                <li>You keep landlord status until someone takes it from you</li>
-                <li>Landlord can only be awarded once per day</li>
-                <li>If there's no landlord yet, you automatically get it</li>
-                <li>After midday, you can steal it from the current landlord</li>
-              </ul>
-            </div>
+            <details>
+              <summary>
+                <h3>👑 How Landlord Status Works</h3>
+              </summary>
+              <div class="explanation-content">
+                <ul class="landlord-rules">
+                  <li>First person to check in each day becomes the landlord</li>
+                  <li>You keep landlord status until someone takes it from you</li>
+                  <li>Landlord can only be awarded once per day</li>
+                  <li>If there's no landlord yet, you automatically get it</li>
+                  <li>After midday, you can steal it from the current landlord</li>
+                </ul>
+              </div>
+            </details>
           </div>
         }
 
