@@ -59,8 +59,8 @@ export class OverlayService {
       scrollStrategy: this.overlay.scrollStrategies.block(),
       positionStrategy: this.createResponsivePositionStrategy(),
       // ✅ Responsive width/height constraints
-      maxWidth: '95vw',
-      maxHeight: '95vh',
+      maxWidth: '90vw',
+      maxHeight: '90vh',
       minWidth: '320px',
       width: 'auto',
       height: 'auto',

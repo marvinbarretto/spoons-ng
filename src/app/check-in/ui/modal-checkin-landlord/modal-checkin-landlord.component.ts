@@ -68,25 +68,22 @@ type LandlordModalData = {
 
       <div class="modal-footer">
         <div class="button-group">
-          <app-button
-            variant="secondary"
-            (onClick)="handlePrevious()"
-          >
-            ← Back
-          </app-button>
 
           <app-button
             variant="secondary"
             (onClick)="handleDismiss()"
+            [fullWidth]="true"
+
           >
-            Close
+            Back to Dashboard
           </app-button>
 
           <app-button
             variant="primary"
             (onClick)="handleNavigate()"
+            [fullWidth]="true"
           >
-            View Pub
+            View {{data().pub?.name}} stats
           </app-button>
         </div>
       </div>
@@ -97,8 +94,6 @@ type LandlordModalData = {
       background: var(--color-background);
       border: 1px solid var(--color-subtleDarker);
       border-radius: 8px;
-      max-width: 400px;
-      width: 90vw;
     }
 
     .modal-container.new-landlord {

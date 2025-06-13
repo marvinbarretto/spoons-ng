@@ -1,8 +1,9 @@
 // src/app/check-in/ui/modal-checkin-success/modal-checkin-success.component.ts
 import { Component, inject, input, output, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ButtonComponent } from '../../../shared/ui/button/button.component';
+import { ButtonComponent } from '@shared/ui/button/button.component';
 import { CheckinStore } from '../../data-access/check-in.store';
+import { ButtonVariant } from '@shared/ui/button/button.params';
 
 type CheckInResultData = {
   success: boolean;
@@ -44,14 +45,6 @@ type CheckInResultData = {
                 }
               </div>
             }
-
-            <!-- Dev debug info -->
-            @if (isDevelopment()) {
-              <details class="debug-info">
-                <summary>🐛 CheckinStore State</summary>
-                <pre>{{ debugCheckinState() | json }}</pre>
-              </details>
-            }
           </div>
         } @else {
           <div class="error-content">
@@ -64,16 +57,11 @@ type CheckInResultData = {
       <div class="modal-footer">
         @if (data().success) {
           <div class="button-group">
-            <app-button
-              variant="secondary"
-              (onClick)="handleDismiss()"
-            >
-              Close
-            </app-button>
 
             @if (hasLandlordInfo()) {
               <app-button
-                variant="primary"
+                [fullWidth]="true"
+                [variant]="ButtonVariant.PRIMARY"
                 (onClick)="handleNext()"
               >
                 Next →
@@ -104,8 +92,6 @@ type CheckInResultData = {
       background: var(--color-background);
       border: 1px solid var(--color-subtleDarker);
       border-radius: 8px;
-      max-width: 400px;
-      width: 90vw;
     }
 
     .modal-container.success {
@@ -199,6 +185,8 @@ type CheckInResultData = {
   `]
 })
 export class ModalCheckinSuccessComponent {
+  protected readonly ButtonVariant = ButtonVariant;
+
   // ✅ Inputs
   readonly data = input.required<CheckInResultData>();
   readonly userStage = input<string>('');

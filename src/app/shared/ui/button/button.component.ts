@@ -2,10 +2,7 @@
 import { Component, computed, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-
-export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'success' | 'warning' | 'ghost' | 'link';
-export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-
+import { ButtonVariant, ButtonSize, ButtonVariantType, ButtonSizeType } from './button.params';
 @Component({
   selector: 'app-button',
   imports: [CommonModule, RouterModule],
@@ -89,8 +86,8 @@ export type ButtonSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
 })
 export class ButtonComponent {
   // Core props
-  readonly variant = input<ButtonVariant>('secondary');
-  readonly size = input<ButtonSize>('md');
+  readonly variant = input<ButtonVariantType>(ButtonVariant.SECONDARY);
+  readonly size = input<ButtonSizeType>(ButtonSize.MD);
   readonly type = input<'button' | 'submit' | 'reset'>('button');
 
   // State
