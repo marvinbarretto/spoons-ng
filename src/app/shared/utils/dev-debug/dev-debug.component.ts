@@ -71,6 +71,10 @@ import {
               <span>Pubs:</span>
               <strong>{{ counts().pubs }}</strong>
             </div>
+            <div class="count-item">
+              <span>Landlords:</span>
+              <strong>{{ counts().landlords }}</strong>
+            </div>
             <button (click)="refreshCounts()" class="btn-small">🔄</button>
           </div>
 
@@ -88,6 +92,13 @@ import {
               [disabled]="cleanupLoading()"
               class="btn-danger">
               Clear Check-ins ({{ counts().checkIns }})
+            </button>
+
+            <button
+              (click)="clearLandlords()"
+              [disabled]="cleanupLoading()"
+              class="btn-danger">
+              Clear Landlords ({{ counts().landlords }})
             </button>
 
             <button
@@ -423,7 +434,7 @@ export class DevDebugComponent extends BaseComponent {
   readonly showVerbose = signal(false);
 
   // Cleanup state
-  protected readonly counts = signal({ users: 0, checkIns: 0, pubs: 0 });
+  protected readonly counts = signal({ users: 0, checkIns: 0, pubs: 0, landlords: 0 });
   protected readonly cleanupLoading = signal(false);
   protected readonly lastCleanupResult = signal<CleanupResult | null>(null);
 
@@ -638,6 +649,25 @@ export class DevDebugComponent extends BaseComponent {
     }
   }
 
+  protected async clearLandlords(): Promise<void> {
+    if (!confirm('Delete ALL landlords? This cannot be undone.')) return;
+
+    this.cleanupLoading.set(true);
+    this.lastCleanupResult.set(null);
+
+    try {
+      const result = await this.cleanupService.clearLandlords();
+      this.lastCleanupResult.set(result);
+      await this.refreshCounts();
+
+      // Reset landlord store local state
+      this.landlordStore.reset();
+    } finally {
+      this.cleanupLoading.set(false);
+    }
+  }
+
+
   protected async clearCheckIns(): Promise<void> {
     if (!confirm('Delete ALL check-ins? This cannot be undone.')) return;
 
@@ -666,9 +696,13 @@ export class DevDebugComponent extends BaseComponent {
     try {
       const results = await this.cleanupService.clearAllTestData();
 
-      // Show combined result
-      const totalDeleted = results.users.deletedCount + results.checkIns.deletedCount;
-      const allSuccess = results.users.success && results.checkIns.success;
+// Show combined result
+      const totalDeleted = results.users.deletedCount +
+        results.checkIns.deletedCount +
+        results.landlords.deletedCount;
+      const allSuccess = results.users.success &&
+        results.checkIns.success &&
+        results.landlords.success;
 
       this.lastCleanupResult.set({
         success: allSuccess,
@@ -681,6 +715,7 @@ export class DevDebugComponent extends BaseComponent {
       // Reset local store state
       this.userStore.reset();
       this.checkinStore.reset();
+      this.landlordStore.reset();
     } finally {
       this.cleanupLoading.set(false);
     }

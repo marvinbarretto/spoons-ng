@@ -88,40 +88,59 @@ export class CleanupService {
   }
 
   /**
-   * Clear both users and check-ins in sequence
+   * Clear landlords collection
    */
-  async clearAllTestData(): Promise<{ users: CleanupResult; checkIns: CleanupResult }> {
+  async clearLandlords(): Promise<CleanupResult> {
+    return this.clearCollection('landlords');
+  }
+
+  /**
+   * Clear all test data: users, check-ins, and landlords
+   */
+  async clearAllTestData(): Promise<{
+    users: CleanupResult;
+    checkIns: CleanupResult;
+    landlords: CleanupResult;
+  }> {
     console.log('[CleanupService] Starting full test data cleanup...');
 
-    const [users, checkIns] = await Promise.all([
+    const [users, checkIns, landlords] = await Promise.all([
       this.clearUsers(),
-      this.clearCheckIns()
+      this.clearCheckIns(),
+      this.clearLandlords()
     ]);
 
-    console.log('[CleanupService] Cleanup complete:', { users, checkIns });
+    console.log('[CleanupService] Cleanup complete:', { users, checkIns, landlords });
 
-    return { users, checkIns };
+    return { users, checkIns, landlords };
   }
 
   /**
    * Get collection counts for confirmation
    */
-  async getCollectionCounts(): Promise<{ users: number; checkIns: number; pubs: number }> {
+  async getCollectionCounts(): Promise<{
+    users: number;
+    checkIns: number;
+    pubs: number;
+    landlords: number;
+  }> {
     try {
-      const [usersSnap, checkInsSnap, pubsSnap] = await Promise.all([
+      const [usersSnap, checkInsSnap, pubsSnap, landlordsSnap] = await Promise.all([
         getDocs(collection(this.firestore, 'users')),
         getDocs(collection(this.firestore, 'checkins')),
-        getDocs(collection(this.firestore, 'pubs'))
+        getDocs(collection(this.firestore, 'pubs')),
+        getDocs(collection(this.firestore, 'landlords'))
       ]);
 
       return {
         users: usersSnap.size,
         checkIns: checkInsSnap.size,
-        pubs: pubsSnap.size
+        pubs: pubsSnap.size,
+        landlords: landlordsSnap.size
       };
     } catch (error: any) {
       console.error('[CleanupService] Error getting counts:', error);
-      return { users: 0, checkIns: 0, pubs: 0 };
+      return { users: 0, checkIns: 0, pubs: 0, landlords: 0 };
     }
   }
 }
