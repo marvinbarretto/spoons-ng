@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.27](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.26...v0.0.27) (2025-06-13)
+
+
+### Features
+
+* Stub multiple modal logic ([abd800f](https://github.com/marvinbarretto/spoons-ng/commit/abd800fb5d376dd1747567a37701122f651e466b))
+
 ### [0.0.26](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.25...v0.0.26) (2025-06-12)
 
 
