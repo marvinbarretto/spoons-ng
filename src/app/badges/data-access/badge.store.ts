@@ -1,38 +1,35 @@
 // src/app/badges/data-access/badge.store.ts
-import { Injectable, inject, signal, computed } from '@angular/core';
-import { BaseStore } from '../../shared/data-access/base.store';
-import { AuthStore } from '../../auth/data-access/auth.store';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { BaseStore } from '@shared/data-access/base.store';
+import { CacheService } from '@shared/data-access/cache.service';
+import type { EarnedBadge, Badge } from '../utils/badge.model';
 import { BadgeService } from './badge.service';
-import { UserStore } from '../../users/data-access/user.store';
-import type { Badge, EarnedBadge } from '../utils/badge.model';
+import { UserStore } from '@users/data-access/user.store';
 
-/**
- * Unified BadgeStore - manages both badge definitions and user's earned badges
- * Single source of truth for all badge-related functionality
- */
 @Injectable({ providedIn: 'root' })
 export class BadgeStore extends BaseStore<EarnedBadge> {
   private readonly _badgeService = inject(BadgeService);
   private readonly _userStore = inject(UserStore);
-  private readonly _authStore = inject(AuthStore);
+  private readonly cacheService = inject(CacheService);
 
   // ===================================
-  // BADGE DEFINITIONS (Global)
+  // 🏆 BADGE DEFINITIONS (Global Data)
   // ===================================
 
   private readonly _definitions = signal<Badge[]>([]);
   private readonly _definitionsLoading = signal(false);
   private readonly _definitionsError = signal<string | null>(null);
+  private _definitionsLoaded = false;
 
   readonly definitions = this._definitions.asReadonly();
   readonly definitionsLoading = this._definitionsLoading.asReadonly();
   readonly definitionsError = this._definitionsError.asReadonly();
 
-  // ✅ Clean alias for badge definitions
+  // Clean aliases
   readonly badges = this.definitions;
 
   // ===================================
-  // EARNED BADGES (User-specific, from BaseStore)
+  // 🎖️ EARNED BADGES (User-specific, from BaseStore)
   // ===================================
 
   readonly earnedBadges = this.data; // Alias for clarity
@@ -40,7 +37,7 @@ export class BadgeStore extends BaseStore<EarnedBadge> {
   readonly hasEarnedBadges = computed(() => this.earnedBadgeCount() > 0);
 
   // ===================================
-  // COMBINED DATA (For UI)
+  // 🔗 COMBINED DATA (For UI)
   // ===================================
 
   readonly earnedBadgesWithDefinitions = computed(() => {
@@ -65,71 +62,134 @@ export class BadgeStore extends BaseStore<EarnedBadge> {
       .slice(0, 3)
   );
 
+  constructor() {
+    super();
+    console.log('[BadgeStore] ✅ Initialized with mixed caching strategy');
+  }
+
   // ===================================
-  // BASESTORE IMPLEMENTATION
+  // 🏪 BASESTORE IMPLEMENTATION (Earned Badges)
   // ===================================
 
   protected async fetchData(): Promise<EarnedBadge[]> {
-    const user = this._authStore.user();
-    if (!user?.uid) {
-      console.log('[BadgeStore] No authenticated user, returning empty badges');
+    const userId = this._userId();
+    if (!userId) {
+      console.log('[BadgeStore] 📭 No user - returning empty earned badges');
       return [];
     }
 
-    console.log('[BadgeStore] Loading earned badges for user:', user.uid);
-    return this._badgeService.getEarnedBadgesForUser(user.uid);
+    console.log('[BadgeStore] 📡 Loading earned badges for user:', userId);
+
+    // ✅ Earned badges are USER-SPECIFIC data
+    return this.cacheService.load({
+      key: 'earned-badges',
+      userId, // User-specific cache
+      ttlMs: 1000 * 60 * 15, // 15 minutes
+      loadFresh: async () => {
+        console.log('[BadgeStore] 🌐 Fetching earned badges from network...');
+        const earnedBadges = await this._badgeService.getEarnedBadgesForUser(userId);
+        console.log('[BadgeStore] ✅ Network fetch complete:', earnedBadges.length, 'earned badges');
+        return earnedBadges;
+      }
+    });
   }
 
   // ===================================
-  // INITIALIZATION
+  // 🌍 BADGE DEFINITIONS LOADING (Global Data)
   // ===================================
-
-  override async loadOnce(): Promise<void> {
-    // Load both badge definitions and user's earned badges
-    await Promise.all([
-      this.loadDefinitions(),
-      super.loadOnce() // Load user's earned badges from BaseStore
-    ]);
-  }
 
   async loadDefinitions(): Promise<void> {
-    if (this._definitions().length || this._definitionsLoading()) return;
+    if (this._definitionsLoaded || this._definitionsLoading()) {
+      console.log('[BadgeStore] ⏭ Badge definitions already loaded/loading');
+      return;
+    }
 
     this._definitionsLoading.set(true);
     this._definitionsError.set(null);
 
     try {
-      const definitions = await this._badgeService.getBadges();
+      console.log('[BadgeStore] 📡 Loading badge definitions...');
+
+      // ✅ Badge definitions are GLOBAL data
+      const definitions = await this.cacheService.load({
+        key: 'badge-definitions',
+        ttlMs: 1000 * 60 * 60 * 24, // 24 hours (definitions change rarely)
+        loadFresh: async () => {
+          console.log('[BadgeStore] 🌐 Fetching badge definitions from network...');
+          const defs = await this._badgeService.getBadges();
+          console.log('[BadgeStore] ✅ Network fetch complete:', defs.length, 'badge definitions');
+          return defs;
+        }
+        // No userId - global cache
+      });
+
       this._definitions.set(definitions);
-      console.log('[BadgeStore] ✅ Loaded badge definitions:', definitions.length);
+      this._definitionsLoaded = true;
+      console.log('[BadgeStore] ✅ Badge definitions loaded:', definitions.length);
     } catch (error: any) {
       this._definitionsError.set(error?.message || 'Failed to load badge definitions');
-      console.error('[BadgeStore] Failed to load badge definitions:', error);
+      console.error('[BadgeStore] ❌ Failed to load badge definitions:', error);
     } finally {
       this._definitionsLoading.set(false);
     }
   }
 
   // ===================================
-  // CLEAN BADGE DEFINITION METHODS
+  // 🚀 INITIALIZATION
+  // ===================================
+
+  override async loadOnce(): Promise<void> {
+    console.log('[BadgeStore] 🚀 Loading both definitions and earned badges...');
+
+    // Load both badge definitions and user's earned badges
+    await Promise.all([
+      this.loadDefinitions(),
+      super.loadOnce() // Load user's earned badges from BaseStore
+    ]);
+
+    console.log('[BadgeStore] ✅ Full badge data loaded');
+  }
+
+  // ===================================
+  // 🧽 CACHE MANAGEMENT
+  // ===================================
+
+  protected override onUserReset(userId?: string): void {
+    if (userId) {
+      console.log('[BadgeStore] 🧽 Clearing earned badges cache for user:', userId);
+      this.cacheService.clear('earned-badges', userId);
+    } else {
+      console.log('[BadgeStore] 👋 User logged out - no earned badges cache to clear');
+    }
+
+    // ✅ Don't clear badge definitions - they're global
+    console.log('[BadgeStore] 🌍 Keeping global badge definitions cache');
+  }
+
+  // ===================================
+  // 🏆 BADGE DEFINITION MANAGEMENT
   // ===================================
 
   /**
    * Create a new badge definition
    */
   async createBadge(badge: Badge): Promise<void> {
-    console.log('[BadgeStore] Creating badge:', badge.name);
+    console.log('[BadgeStore] 🆕 Creating badge:', badge.name);
     await this._badgeService.createBadge(badge);
 
     // Update local definitions
     this._definitions.update(current => [...current, badge]);
+
+    // Clear global cache to ensure fresh data
+    this.cacheService.clear('badge-definitions');
+    console.log('[BadgeStore] 🧽 Cleared global definitions cache after create');
   }
 
   /**
    * Update an existing badge definition
    */
   async updateBadge(badgeId: string, updates: Partial<Badge>): Promise<void> {
-    console.log('[BadgeStore] Updating badge:', badgeId);
+    console.log('[BadgeStore] ✏️ Updating badge:', badgeId);
     await this._badgeService.updateBadge(badgeId, updates);
 
     // Update local definitions
@@ -138,19 +198,27 @@ export class BadgeStore extends BaseStore<EarnedBadge> {
         badge.id === badgeId ? { ...badge, ...updates } : badge
       )
     );
+
+    // Clear global cache to ensure fresh data
+    this.cacheService.clear('badge-definitions');
+    console.log('[BadgeStore] 🧽 Cleared global definitions cache after update');
   }
 
   /**
    * Delete a badge definition
    */
   async deleteBadge(badgeId: string): Promise<void> {
-    console.log('[BadgeStore] Deleting badge:', badgeId);
+    console.log('[BadgeStore] 🗑️ Deleting badge:', badgeId);
     await this._badgeService.deleteBadge(badgeId);
 
     // Update local definitions
     this._definitions.update(current =>
       current.filter(badge => badge.id !== badgeId)
     );
+
+    // Clear global cache to ensure fresh data
+    this.cacheService.clear('badge-definitions');
+    console.log('[BadgeStore] 🧽 Cleared global definitions cache after delete');
   }
 
   /**
@@ -174,23 +242,16 @@ export class BadgeStore extends BaseStore<EarnedBadge> {
   }
 
   // ===================================
-  // BACKWARD COMPATIBILITY
-  // ===================================
-
-  createBadgeDefinition = this.createBadge;
-  updateBadgeDefinition = this.updateBadge;
-  deleteBadgeDefinition = this.deleteBadge;
-  getBadgeDefinition = this.getBadge;
-
-  // ===================================
-  // BADGE AWARDING
+  // 🎖️ BADGE AWARDING
   // ===================================
 
   async awardBadge(badgeId: string, metadata?: Record<string, any>): Promise<EarnedBadge> {
-    const user = this._authStore.user();
+    const user = this.authStore.user();
     if (!user?.uid) {
       throw new Error('No authenticated user');
     }
+
+    console.log('[BadgeStore] 🏅 Awarding badge:', badgeId, 'to user:', user.uid);
 
     // Check if badge definition exists
     const badgeDefinition = this.getBadge(badgeId);
@@ -210,20 +271,23 @@ export class BadgeStore extends BaseStore<EarnedBadge> {
       // 2. Update local earned badges state
       this._data.update(current => [...current, earnedBadge]);
 
-      // 3. Update user summary for performance
+      // 3. Clear user cache to ensure fresh data
+      this.cacheService.clear('earned-badges', user.uid);
+
+      // 4. Update user summary for performance
       await this.updateUserBadgeSummary(user.uid);
 
-      console.log(`[BadgeStore] ✅ Badge awarded: ${badgeId} to user ${user.uid}`);
+      console.log('[BadgeStore] ✅ Badge awarded successfully:', badgeId);
       return earnedBadge;
     } catch (error: any) {
       this._error.set(error?.message || 'Failed to award badge');
-      console.error('[BadgeStore] awardBadge error:', error);
+      console.error('[BadgeStore] ❌ awardBadge error:', error);
       throw error;
     }
   }
 
   // ===================================
-  // USER SUMMARY UPDATES
+  // 👤 USER SUMMARY UPDATES
   // ===================================
 
   private async updateUserBadgeSummary(userId: string): Promise<void> {
@@ -242,13 +306,13 @@ export class BadgeStore extends BaseStore<EarnedBadge> {
 
       console.log('[BadgeStore] ✅ Updated user badge summary:', summary);
     } catch (error) {
-      console.error('[BadgeStore] Failed to update user badge summary:', error);
+      console.error('[BadgeStore] ⚠️ Failed to update user badge summary:', error);
       // Don't throw - badge was awarded successfully, summary update is secondary
     }
   }
 
   // ===================================
-  // QUERY METHODS
+  // 🔍 QUERY METHODS
   // ===================================
 
   hasEarnedBadge(badgeId: string): boolean {
@@ -263,12 +327,16 @@ export class BadgeStore extends BaseStore<EarnedBadge> {
     return this.earnedBadges().filter(badge => badge.awardedAt >= timestamp);
   }
 
+  getEarnedBadgesForPub(pubId: string): EarnedBadge[] {
+    return this.filter(earned => earned.metadata?.['pubId'] === pubId);
+  }
+
   // ===================================
-  // BADGE REVOCATION (Admin)
+  // 🚫 BADGE REVOCATION (Admin)
   // ===================================
 
   async revokeBadge(badgeId: string): Promise<void> {
-    const user = this._authStore.user();
+    const user = this.authStore.user();
     if (!user?.uid) {
       throw new Error('No authenticated user');
     }
@@ -278,6 +346,8 @@ export class BadgeStore extends BaseStore<EarnedBadge> {
       throw new Error(`User does not have badge: ${badgeId}`);
     }
 
+    console.log('[BadgeStore] 🚫 Revoking badge:', badgeId, 'from user:', user.uid);
+
     try {
       // 1. Revoke via service
       await this._badgeService.revokeBadge(user.uid, badgeId);
@@ -285,19 +355,22 @@ export class BadgeStore extends BaseStore<EarnedBadge> {
       // 2. Update local state
       this._data.update(current => current.filter(b => b.badgeId !== badgeId));
 
-      // 3. Update user summary
+      // 3. Clear user cache
+      this.cacheService.clear('earned-badges', user.uid);
+
+      // 4. Update user summary
       await this.updateUserBadgeSummary(user.uid);
 
-      console.log(`[BadgeStore] ✅ Badge revoked: ${badgeId}`);
+      console.log('[BadgeStore] ✅ Badge revoked successfully:', badgeId);
     } catch (error: any) {
       this._error.set(error?.message || 'Failed to revoke badge');
-      console.error('[BadgeStore] revokeBadge error:', error);
+      console.error('[BadgeStore] ❌ revokeBadge error:', error);
       throw error;
     }
   }
 
   // ===================================
-  // UTILITY METHODS
+  // 📊 LEADERBOARDS & STATISTICS
   // ===================================
 
   /**
@@ -336,7 +409,50 @@ export class BadgeStore extends BaseStore<EarnedBadge> {
   }
 
   // ===================================
-  // DEBUG INFO
+  // 🔧 MANUAL CACHE MANAGEMENT
+  // ===================================
+
+  async refreshDefinitions(): Promise<void> {
+    console.log('[BadgeStore] 🔄 Manually refreshing badge definitions');
+    this.cacheService.clear('badge-definitions');
+    this._definitionsLoaded = false;
+    await this.loadDefinitions();
+  }
+
+  async refreshUserBadges(): Promise<void> {
+    const userId = this._userId();
+    if (userId) {
+      console.log('[BadgeStore] 🔄 Manually refreshing user badges');
+      this.cacheService.clear('earned-badges', userId);
+      await this.load();
+    }
+  }
+
+  clearDefinitionsCache(): void {
+    this.cacheService.clear('badge-definitions');
+    this._definitionsLoaded = false;
+    console.log('[BadgeStore] 🧽 Badge definitions cache cleared');
+  }
+
+  clearUserBadgeCache(): void {
+    const userId = this._userId();
+    if (userId) {
+      this.cacheService.clear('earned-badges', userId);
+      console.log('[BadgeStore] 🧽 User badge cache cleared for:', userId);
+    }
+  }
+
+  // ===================================
+  // 🔄 BACKWARD COMPATIBILITY
+  // ===================================
+
+  createBadgeDefinition = this.createBadge;
+  updateBadgeDefinition = this.updateBadge;
+  deleteBadgeDefinition = this.deleteBadge;
+  getBadgeDefinition = this.getBadge;
+
+  // ===================================
+  // 📊 ENHANCED DEBUG INFO
   // ===================================
 
   override getDebugInfo() {
@@ -344,10 +460,15 @@ export class BadgeStore extends BaseStore<EarnedBadge> {
       ...super.getDebugInfo(),
       definitionCount: this._definitions().length,
       definitionsLoading: this._definitionsLoading(),
+      definitionsLoaded: this._definitionsLoaded,
       earnedBadgeCount: this.earnedBadgeCount(),
       recentBadgeIds: this.recentBadges().map(b => b.badgeId),
       hasDefinitions: this._definitions().length > 0,
-      hasEarnedBadges: this.hasEarnedBadges()
+      hasEarnedBadges: this.hasEarnedBadges(),
+      cacheStatus: {
+        definitionsCache: 'global',
+        earnedBadgesCache: this._userId() ? `user-${this._userId()}` : 'none'
+      }
     };
   }
 }

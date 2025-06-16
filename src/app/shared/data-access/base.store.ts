@@ -1,9 +1,4 @@
-// src/app/shared/data-access/base.store.ts - UPDATED VERSION
-/**
- * ✅ Updated BaseStore that implements CollectionStore contract
- * All collection stores should extend this class
- */
-
+// src/app/shared/data-access/base.store.ts
 import { signal, computed, inject, effect } from '@angular/core';
 import { ToastService } from './toast.service';
 import type { CollectionStore } from './store.contracts';
@@ -32,24 +27,40 @@ export abstract class BaseStore<T> implements CollectionStore<T> {
 
   protected constructor() {
     effect(() => {
-      const userId = this.authStore.user()?.uid ?? null;
+      const user = this.authStore.user();
+      const userId = user?.uid ?? null;
       const prevUserId = this._userId();
 
+      // ✅ Only act on actual user changes
       if (userId !== prevUserId) {
-        console.log(`[${this.constructor.name}] Auth changed:`, userId);
-        this._userId.set(userId);
-        this.resetForUser(userId || undefined);
+        console.log(`[${this.constructor.name}] Auth changed: ${prevUserId} → ${userId}`);
 
+        // ✅ Update user ID first
+        this._userId.set(userId);
+
+        // ✅ Only reset if we're switching between different users
+        // Don't reset on initial load (null → userId) or logout (userId → null)
+        if (prevUserId !== null && userId !== null && prevUserId !== userId) {
+          console.log(`[${this.constructor.name}] User switched, resetting data`);
+          this.resetForUser(userId);
+        } else if (prevUserId !== null && userId === null) {
+          console.log(`[${this.constructor.name}] User logged out, clearing data`);
+          this.reset();
+        }
+
+        // ✅ Load data for authenticated user
         if (userId) {
-          this.loadOnce(); // safe because we guard below
+          this.loadOnce();
         }
       }
     });
   }
+
   // ✅ Load tracking - private property
   protected hasLoaded = false;
 
-  // ✅ REQUIRED LOADING METHODS (LoadingMethods)
+  // ✅ Prevent concurrent loads
+  private loadPromise: Promise<void> | null = null;
 
   /**
    * Load data only if not already loaded (recommended default)
@@ -59,14 +70,40 @@ export abstract class BaseStore<T> implements CollectionStore<T> {
       console.log(`[${this.constructor.name}] ⏭ Skipping loadOnce — already loaded or no user`);
       return;
     }
-    await this.load();
-  }
 
+    // ✅ Return existing promise if load in progress
+    if (this.loadPromise) {
+      console.log(`[${this.constructor.name}] ⏳ Load already in progress, waiting...`);
+      return this.loadPromise;
+    }
+
+    return this.load();
+  }
 
   /**
    * Force reload data regardless of current state
    */
   async load(): Promise<void> {
+    // ✅ Return existing promise if load in progress
+    if (this.loadPromise) {
+      console.log(`[${this.constructor.name}] ⏳ Load already in progress, waiting...`);
+      return this.loadPromise;
+    }
+
+    // ✅ Create and store the load promise
+    this.loadPromise = this._performLoad();
+
+    try {
+      await this.loadPromise;
+    } finally {
+      this.loadPromise = null;
+    }
+  }
+
+  /**
+   * Internal load implementation
+   */
+  private async _performLoad(): Promise<void> {
     this._loading.set(true);
     this._error.set(null);
 
@@ -140,6 +177,7 @@ export abstract class BaseStore<T> implements CollectionStore<T> {
     this._error.set(null);
     this._loading.set(false);
     this.hasLoaded = false;
+    this.loadPromise = null; // ✅ Clear any pending loads
     this.onReset();
     console.log(`[${this.constructor.name}] 🔄 Reset complete`);
   }
@@ -165,6 +203,7 @@ export abstract class BaseStore<T> implements CollectionStore<T> {
       error: this.error(),
       hasData: this.hasData(),
       isEmpty: this.isEmpty(),
+      userId: this._userId(),
       // Add sample of data for debugging
       sampleData: this.data().slice(0, 2), // First 2 items
     };
@@ -247,11 +286,24 @@ export abstract class BaseStore<T> implements CollectionStore<T> {
   }
 
   /**
-   * Reset with user context
+   * Reset with user context - override in child stores for cache handling
    */
   resetForUser(userId?: string): void {
     console.log(`[${this.constructor.name}] 🔄 Resetting for user:`, userId || 'anonymous');
+
+    // ✅ Let child stores handle their own cache strategy
+    this.onUserReset(userId);
+
+    // Reset the store state
     this.reset();
+  }
+
+  /**
+   * Override in child stores to handle user-specific cache clearing
+   */
+  protected onUserReset(userId?: string): void {
+    // Default: do nothing
+    // Override in stores that need user-specific cache handling
   }
 
   // ===================================
@@ -272,48 +324,3 @@ export abstract class BaseStore<T> implements CollectionStore<T> {
     return !!this._error();
   }
 }
-
-// =====================================
-// 📝 USAGE INSTRUCTIONS FOR CHILD STORES
-// =====================================
-
-/**
- * ✅ HOW TO EXTEND BaseStore:
- *
- * 1. Extend BaseStore<YourType>
- * 2. Implement fetchData() method
- * 3. Add store-specific computed signals
- * 4. Add store-specific methods
- * 5. Override CRUD methods if you need persistence
- *
- * EXAMPLE:
- *
- * @Injectable({ providedIn: 'root' })
- * export class PubStore extends BaseStore<Pub> {
- *   constructor(private pubService: PubService) {
- *     super();
- *   }
- *
- *   // ✅ Required implementation
- *   protected async fetchData(): Promise<Pub[]> {
- *     return this.pubService.getAllPubs();
- *   }
- *
- *   // ✅ Store-specific computed signals
- *   readonly sortedByName = computed(() =>
- *     this.data().toSorted((a, b) => a.name.localeCompare(b.name))
- *   );
- *
- *   // ✅ Store-specific methods
- *   findByName(name: string): Pub | undefined {
- *     return this.find(pub => pub.name.toLowerCase().includes(name.toLowerCase()));
- *   }
- *
- *   // ✅ Override CRUD for persistence (optional)
- *   async add(pubData: Omit<Pub, 'id'>): Promise<Pub> {
- *     const newPub = await this.pubService.createPub(pubData);
- *     this.addItem(newPub);
- *     return newPub;
- *   }
- * }
- */

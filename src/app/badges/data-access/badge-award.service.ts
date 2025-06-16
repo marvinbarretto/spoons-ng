@@ -47,7 +47,6 @@ export class BadgeAwardService {
         try {
           console.log(`🏅 [BadgeAward] Attempting to award badge: ${badgeId}`);
 
-          // ✅ Use unified BadgeStore instead of EarnedBadgeStore
           const earnedBadge = await this._badgeStore.awardBadge(badgeId, {
             triggeredBy: 'check-in',
             checkInId: newCheckIn.id,

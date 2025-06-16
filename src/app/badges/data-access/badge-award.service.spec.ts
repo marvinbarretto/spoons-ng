@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { BadgeAwardService } from './badge-award.service';
 import { BadgeLogicService } from './badge-logic.service';
-import { EarnedBadgeStore } from './earned-badge.store';
+import { BadgeStore } from './badge.store';
 import { BadgeTestFactories } from '../testing/badge-test-factories';
 import type { CheckIn } from '../../check-in/utils/check-in.models';
 import type { EarnedBadge } from '../utils/badge.model';
@@ -17,7 +17,7 @@ import type { EarnedBadge } from '../utils/badge.model';
 describe('BadgeAwardService', () => {
   let service: BadgeAwardService;
   let mockBadgeLogic: jest.Mocked<BadgeLogicService>;
-  let mockEarnedBadgeStore: jest.Mocked<EarnedBadgeStore>;
+  let mockBadgeStore: jest.Mocked<BadgeStore>;
 
   beforeEach(() => {
     // Create Jest mocks for dependencies
@@ -26,22 +26,22 @@ describe('BadgeAwardService', () => {
       getDebugInfo: jest.fn()
     } as jest.Mocked<Partial<BadgeLogicService>>;
 
-    const earnedBadgeStoreMock = {
+    const badgeStoreMock = {
       data: jest.fn(),
       awardBadge: jest.fn()
-    } as unknown as jest.Mocked<EarnedBadgeStore>;
+    } as unknown as jest.Mocked<BadgeStore>;
 
     TestBed.configureTestingModule({
       providers: [
         BadgeAwardService,
         { provide: BadgeLogicService, useValue: badgeLogicMock },
-        { provide: EarnedBadgeStore, useValue: earnedBadgeStoreMock }
+        { provide: BadgeStore, useValue: badgeStoreMock }
       ]
     });
 
     service = TestBed.inject(BadgeAwardService);
     mockBadgeLogic = TestBed.inject(BadgeLogicService) as jest.Mocked<BadgeLogicService>;
-    mockEarnedBadgeStore = TestBed.inject(EarnedBadgeStore) as jest.Mocked<EarnedBadgeStore>;
+    mockBadgeStore = TestBed.inject(BadgeStore) as jest.Mocked<BadgeStore>;
   });
 
   afterEach(() => {
@@ -73,8 +73,8 @@ describe('BadgeAwardService', () => {
       };
 
       mockBadgeLogic.evaluateAllBadges.mockReturnValue(['first-checkin']);
-      mockEarnedBadgeStore.data.mockReturnValue(signal([])());
-      mockEarnedBadgeStore.awardBadge.mockResolvedValue(expectedEarnedBadge);
+      mockBadgeStore.data.mockReturnValue(signal([])());
+      mockBadgeStore.awardBadge.mockResolvedValue(expectedEarnedBadge);
 
       // Act
       const result = await service.evaluateAndAwardBadges(userId, newCheckIn, allUserCheckIns);
@@ -88,7 +88,7 @@ describe('BadgeAwardService', () => {
         userCheckIns: allUserCheckIns,
         userBadges: []
       });
-      expect(mockEarnedBadgeStore.awardBadge).toHaveBeenCalledWith('first-checkin', {
+      expect(mockBadgeStore.awardBadge).toHaveBeenCalledWith('first-checkin', {
         triggeredBy: 'check-in',
         checkInId: newCheckIn.id,
         pubId: newCheckIn.pubId,
@@ -137,8 +137,8 @@ describe('BadgeAwardService', () => {
       };
 
       mockBadgeLogic.evaluateAllBadges.mockReturnValue(['regular', 'explorer']);
-      mockEarnedBadgeStore.data.mockReturnValue(signal([])());
-      mockEarnedBadgeStore.awardBadge
+      mockBadgeStore.data.mockReturnValue(signal([])());
+      mockBadgeStore.awardBadge
         .mockResolvedValueOnce(regularBadge)
         .mockResolvedValueOnce(explorerBadge);
 
@@ -149,9 +149,9 @@ describe('BadgeAwardService', () => {
       expect(result).toHaveLength(2);
       expect(result).toContain(regularBadge);
       expect(result).toContain(explorerBadge);
-      expect(mockEarnedBadgeStore.awardBadge).toHaveBeenCalledTimes(2);
-      expect(mockEarnedBadgeStore.awardBadge).toHaveBeenCalledWith('regular', expect.any(Object));
-      expect(mockEarnedBadgeStore.awardBadge).toHaveBeenCalledWith('explorer', expect.any(Object));
+      expect(mockBadgeStore.awardBadge).toHaveBeenCalledTimes(2);
+      expect(mockBadgeStore.awardBadge).toHaveBeenCalledWith('regular', expect.any(Object));
+      expect(mockBadgeStore.awardBadge).toHaveBeenCalledWith('explorer', expect.any(Object));
     });
 
     /**
@@ -165,14 +165,14 @@ describe('BadgeAwardService', () => {
       const newCheckIn = allUserCheckIns[allUserCheckIns.length - 1];
 
       mockBadgeLogic.evaluateAllBadges.mockReturnValue([]); // No eligible badges
-      mockEarnedBadgeStore.data.mockReturnValue(signal([])());
+      mockBadgeStore.data.mockReturnValue(signal([])());
 
       // Act
       const result = await service.evaluateAndAwardBadges(userId, newCheckIn, allUserCheckIns);
 
       // Assert
       expect(result).toEqual([]);
-      expect(mockEarnedBadgeStore.awardBadge).not.toHaveBeenCalled();
+      expect(mockBadgeStore.awardBadge).not.toHaveBeenCalled();
     });
 
     /**
@@ -194,8 +194,8 @@ describe('BadgeAwardService', () => {
       };
 
       mockBadgeLogic.evaluateAllBadges.mockReturnValue(['first-checkin', 'other-badge']);
-      mockEarnedBadgeStore.data.mockReturnValue(signal([])());
-      mockEarnedBadgeStore.awardBadge
+      mockBadgeStore.data.mockReturnValue(signal([])());
+      mockBadgeStore.awardBadge
         .mockResolvedValueOnce(successfulBadge) // First badge succeeds
         .mockRejectedValueOnce(new Error('Award failed')); // Second badge fails
 
@@ -205,7 +205,7 @@ describe('BadgeAwardService', () => {
       // Assert
       expect(result).toHaveLength(1);
       expect(result[0]).toEqual(successfulBadge);
-      expect(mockEarnedBadgeStore.awardBadge).toHaveBeenCalledTimes(2);
+      expect(mockBadgeStore.awardBadge).toHaveBeenCalledTimes(2);
     });
 
     /**
@@ -226,7 +226,7 @@ describe('BadgeAwardService', () => {
       }];
 
       mockBadgeLogic.evaluateAllBadges.mockReturnValue([]);
-      mockEarnedBadgeStore.data.mockReturnValue(signal(existingBadges)());
+      mockBadgeStore.data.mockReturnValue(signal(existingBadges)());
 
       // Act
       await service.evaluateAndAwardBadges(userId, newCheckIn, allUserCheckIns);
@@ -263,14 +263,14 @@ describe('BadgeAwardService', () => {
       };
 
       mockBadgeLogic.evaluateAllBadges.mockReturnValue(['first-checkin']);
-      mockEarnedBadgeStore.data.mockReturnValue(signal([])());
-      mockEarnedBadgeStore.awardBadge.mockResolvedValue(expectedBadge);
+      mockBadgeStore.data.mockReturnValue(signal([])());
+      mockBadgeStore.awardBadge.mockResolvedValue(expectedBadge);
 
       // Act
       await service.evaluateAndAwardBadges(userId, newCheckIn, allUserCheckIns);
 
       // Assert
-      expect(mockEarnedBadgeStore.awardBadge).toHaveBeenCalledWith('first-checkin', {
+      expect(mockBadgeStore.awardBadge).toHaveBeenCalledWith('first-checkin', {
         triggeredBy: 'check-in',
         checkInId: newCheckIn.id,
         pubId: newCheckIn.pubId,
@@ -290,7 +290,7 @@ describe('BadgeAwardService', () => {
       const userCheckIns = BadgeTestFactories.createSequentialCheckIns(userId, 5);
 
       mockBadgeLogic.evaluateAllBadges.mockReturnValue(['some-badge']);
-      mockEarnedBadgeStore.data.mockReturnValue(signal([])());
+      mockBadgeStore.data.mockReturnValue(signal([])());
 
       // Act
       const result = await service.evaluateBadgesForUser(userId, userCheckIns);
@@ -334,7 +334,7 @@ describe('BadgeAwardService', () => {
       const debugInfo = { userId, totalCheckIns: 3, eligibleBadges: [] };
 
       mockBadgeLogic.getDebugInfo.mockReturnValue(debugInfo);
-      mockEarnedBadgeStore.data.mockReturnValue(signal([])());
+      mockBadgeStore.data.mockReturnValue(signal([])());
 
       // Act
       const result = await service.getDebugInfo(userId, userCheckIns);

@@ -1,95 +1,90 @@
 // src/app/pubs/data-access/pub.store.ts
-import { signal, computed, inject, Injectable, effect } from '@angular/core';
-import { PubService } from './pub.service';
-import { CacheService } from '../../shared/data-access/cache.service';
-import { LocationService } from '../../shared/data-access/location.service';
-import { BaseStore } from '../../shared/data-access/base.store';
+import { Injectable, computed, inject } from '@angular/core';
+import { BaseStore } from '@shared/data-access/base.store';
+import { CacheService } from '@shared/data-access/cache.service';
+import { LocationService } from '@shared/data-access/location.service';
 import type { Pub } from '../utils/pub.models';
-import { getDistanceKm } from '../../shared/utils/get-distance';
-import { CheckinStore } from '../../check-in/data-access/check-in.store';
+import { PubService } from './pub.service';
+import { calculateDistance } from '@shared/utils/location.utils';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class PubStore extends BaseStore<Pub> {
   private readonly pubService = inject(PubService);
   private readonly cacheService = inject(CacheService);
   private readonly locationService = inject(LocationService);
 
-  // Q OK for this store to be calling another store?
-  private readonly checkinStore = inject(CheckinStore);
+  // ✅ Store-specific computed signals
+  readonly pubs = this.data; // Alias for cleaner access
 
-  // ✅ REACTIVE: Watch user changes
-  private lastUserId: string | null = null;
-
-  // ✅ REACTIVE: Location from service
-  readonly userLocation = this.locationService.location;
-
-  // ✅ COMPUTED: Distance-sorted pubs (fully reactive)
   readonly sortedPubsByDistance = computed(() => {
-    const pubs = this.data();
-    const location = this.userLocation();
+    const location = this.locationService.location();
+    const pubs = this.pubs();
 
-    if (!location || !pubs.length) return pubs;
+    if (!location) {
+      return pubs; // Return unsorted if no location
+    }
 
     return [...pubs].sort((a, b) => {
-      const distanceA = getDistanceKm(location, a.location);
-      const distanceB = getDistanceKm(location, b.location);
+      const distanceA = calculateDistance(location, { lat: a.location.lat, lng: a.location.lng });
+      const distanceB = calculateDistance(location, { lat: b.location.lat, lng: b.location.lng });
       return distanceA - distanceB;
     });
   });
 
-  // ✅ HELPER: Distance calculation (pure function)
-  getDistanceForPub(pub: Pub): number | undefined {
-    const location = this.userLocation();
-    return location ? getDistanceKm(location, pub.location) : undefined;
-  }
+  readonly pubsWithDistance = computed(() => {
+    const location = this.locationService.location();
+    const pubs = this.pubs();
 
-  // ✅ HELPER: Get pub by ID (pure lookup)
-  getPubById(pubId: string): Pub | undefined {
-    return this.data().find(pub => pub.id === pubId);
-  }
-
-  constructor() {
-    super();
-
-    // ✅ REACTIVE: Reset data when user changes
-    effect(() => {
-      const user = this.authStore.user();
-      const currentUserId = user?.uid || null;
-
-      // Reset if user changed (including logout)
-      if (currentUserId !== this.lastUserId) {
-        console.log('[PubStore] User changed, resetting data');
-        this.resetForUser(currentUserId || undefined);
-        this.lastUserId = currentUserId;
-
-        // Auto-load for new user
-        if (currentUserId) {
-          this.loadOnce();
-        }
-      }
-    });
-  }
-
-  // ✅ IMPLEMENTED: BaseStore abstract method
-  protected async fetchData(): Promise<Pub[]> {
-    return this.cacheService.load({
-      key: 'pubs',
-      ttlMs: 1000 * 60 * 5, // 5 minutes
-      loadFresh: () => this.pubService.getAllPubs(),
-    });
-  }
-
-    // ✅ ADD: Missing hasCheckedIn method
-    hasCheckedIn(pubId: string): boolean {
-      return this.checkinStore.userCheckins().includes(pubId);
+    if (!location) {
+      return pubs.map(pub => ({ ...pub, distance: null }));
     }
 
-  // ✅ ENHANCED: User-aware reset
-  override resetForUser(userId?: string): void {
-    super.resetForUser(userId);
-    this.cacheService.clear('pubs');
-    console.log('[PubStore] Reset complete for user:', userId || 'anonymous');
+    return pubs.map(pub => ({
+      ...pub,
+      distance: calculateDistance(location, { lat: pub.location.lat, lng: pub.location.lng })
+    }));
+  });
+
+  // ✅ Implement required fetchData method
+  protected async fetchData(): Promise<Pub[]> {
+    // ✅ Pubs are GLOBAL data - don't use user-specific cache
+    return this.cacheService.load({
+      key: 'pubs-global',
+      ttlMs: 1000 * 60 * 60, // 1 hour (pubs change rarely)
+      loadFresh: () => this.pubService.getAllPubs()
+      // ✅ No userId - global cache
+    });
+  }
+
+  // ✅ Override onUserReset to NOT clear global pub cache
+  protected override onUserReset(userId?: string): void {
+    // ✅ Don't clear pub cache when user changes - pubs are global
+    console.log(`[PubStore] User reset for ${userId} - keeping global pub cache`);
+    // No cache clearing here
+  }
+
+  // ✅ Store-specific methods
+  findByName(name: string): Pub | undefined {
+    return this.find(pub => pub.name.toLowerCase().includes(name.toLowerCase()));
+  }
+
+  findByLocation(lat: number, lng: number, radiusKm: number = 1): Pub[] {
+    return this.filter(pub => {
+      const distance = calculateDistance({ lat, lng }, { lat: pub.location.lat, lng: pub.location.lng });
+      return distance <= radiusKm * 1000; // Convert km to meters
+    });
+  }
+
+  // ✅ Manual cache management (if needed)
+  async refreshPubData(): Promise<void> {
+    console.log('[PubStore] Manually refreshing pub data');
+    this.cacheService.clear('pubs-global');
+    await this.load();
+  }
+
+  // ✅ Development helper
+  clearGlobalPubCache(): void {
+    this.cacheService.clear('pubs-global');
+    console.log('[PubStore] Global pub cache cleared');
   }
 }

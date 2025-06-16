@@ -1,7 +1,8 @@
 // badges/data-access/badge-logic.service.ts
 import { Injectable, inject } from '@angular/core';
-import { EarnedBadgeStore } from './earned-badge.store';
 import type { BadgeTriggerContext } from '../utils/badge.model';
+import { BadgeStore } from './badge.store';
+
 
 /**
  * Contains all badge eligibility logic.
@@ -9,7 +10,7 @@ import type { BadgeTriggerContext } from '../utils/badge.model';
  */
 @Injectable({ providedIn: 'root' })
 export class BadgeLogicService {
-  private readonly _earnedBadgeStore = inject(EarnedBadgeStore);
+  private readonly _badgeStore = inject(BadgeStore);
 
   /**
    * Check if user should earn the "First Time" badge
@@ -77,7 +78,7 @@ export class BadgeLogicService {
 
     if (hasVisitedFivePubs) {
       // Check if they already have this badge - using correct ID
-      const alreadyHasBadge = this._earnedBadgeStore.hasEarnedBadge('explorer');
+      const alreadyHasBadge = this._badgeStore.hasEarnedBadge('explorer');
 
       if (!alreadyHasBadge) {
         console.log('🏅 [BadgeLogic] User eligible for Explorer badge!');

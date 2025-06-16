@@ -1,7 +1,7 @@
 // badges/data-access/badge-logic.service.spec.ts
 import { TestBed } from '@angular/core/testing';
 import { BadgeLogicService } from './badge-logic.service';
-import { EarnedBadgeStore } from './earned-badge.store';
+import { BadgeStore } from './badge.store';
 import { BadgeTestFactories } from '../testing/badge-test-factories';
 import type { BadgeTriggerContext } from '../utils/badge.model';
 
@@ -13,23 +13,22 @@ import type { BadgeTriggerContext } from '../utils/badge.model';
  */
 describe('BadgeLogicService', () => {
   let service: BadgeLogicService;
-  let mockEarnedBadgeStore: jest.Mocked<EarnedBadgeStore>;
+  let mockBadgeStore: jest.Mocked<BadgeStore>;
 
   beforeEach(() => {
-    // Create Jest mock for EarnedBadgeStore
-    const earnedBadgeStoreMock = {
+    const badgeStoreMock = {
       hasEarnedBadge: jest.fn()
-    } as jest.Mocked<Partial<EarnedBadgeStore>>;
+    } as jest.Mocked<Partial<BadgeStore>>;
 
     TestBed.configureTestingModule({
       providers: [
         BadgeLogicService,
-        { provide: EarnedBadgeStore, useValue: earnedBadgeStoreMock }
+        { provide: BadgeStore, useValue: badgeStoreMock }
       ]
     });
 
     service = TestBed.inject(BadgeLogicService);
-    mockEarnedBadgeStore = TestBed.inject(EarnedBadgeStore) as jest.Mocked<EarnedBadgeStore>;
+    mockBadgeStore = TestBed.inject(BadgeStore) as jest.Mocked<BadgeStore>;
   });
 
   afterEach(() => {
@@ -155,14 +154,14 @@ describe('BadgeLogicService', () => {
       const checkIns = BadgeTestFactories.createMultiPubCheckIns(userId, pubIds);
       const context = BadgeTestFactories.createContext(userId, checkIns);
 
-      mockEarnedBadgeStore.hasEarnedBadge.mockReturnValue(false);
+      mockBadgeStore.hasEarnedBadge.mockReturnValue(false);
 
       // Act
       const result = service.checkExplorerBadge(context);
 
       // Assert
       expect(result).toBe(true);
-      expect(mockEarnedBadgeStore.hasEarnedBadge).toHaveBeenCalledWith('explorer');
+      expect(mockBadgeStore.hasEarnedBadge).toHaveBeenCalledWith('explorer');
     });
 
     /**
@@ -181,7 +180,7 @@ describe('BadgeLogicService', () => {
       // Assert
       expect(result).toBe(false);
       // Should not even check if user has badge since threshold not met
-      expect(mockEarnedBadgeStore.hasEarnedBadge).not.toHaveBeenCalled();
+      expect(mockBadgeStore.hasEarnedBadge).not.toHaveBeenCalled();
     });
 
     /**
@@ -195,14 +194,14 @@ describe('BadgeLogicService', () => {
       const checkIns = BadgeTestFactories.createMultiPubCheckIns(userId, pubIds);
       const context = BadgeTestFactories.createContext(userId, checkIns);
 
-      mockEarnedBadgeStore.hasEarnedBadge.mockReturnValue(true); // Already has badge
+      mockBadgeStore.hasEarnedBadge.mockReturnValue(true); // Already has badge
 
       // Act
       const result = service.checkExplorerBadge(context);
 
       // Assert
       expect(result).toBe(false);
-      expect(mockEarnedBadgeStore.hasEarnedBadge).toHaveBeenCalledWith('explorer');
+      expect(mockBadgeStore.hasEarnedBadge).toHaveBeenCalledWith('explorer');
     });
 
     /**
@@ -239,7 +238,7 @@ describe('BadgeLogicService', () => {
       const checkIns = [BadgeTestFactories.createCheckIn(userId, 'pub1')];
       const context = BadgeTestFactories.createContext(userId, checkIns);
 
-      mockEarnedBadgeStore.hasEarnedBadge.mockReturnValue(false);
+      mockBadgeStore.hasEarnedBadge.mockReturnValue(false);
 
       // Act
       const result = service.evaluateAllBadges(context);
@@ -261,7 +260,7 @@ describe('BadgeLogicService', () => {
       ];
       const context = BadgeTestFactories.createContext(userId, checkIns);
 
-      mockEarnedBadgeStore.hasEarnedBadge.mockReturnValue(false);
+      mockBadgeStore.hasEarnedBadge.mockReturnValue(false);
 
       // Act
       const result = service.evaluateAllBadges(context);
@@ -281,7 +280,7 @@ describe('BadgeLogicService', () => {
       const checkIns = BadgeTestFactories.createSequentialCheckIns(userId, 2, 'pub1');
       const context = BadgeTestFactories.createContext(userId, checkIns);
 
-      mockEarnedBadgeStore.hasEarnedBadge.mockReturnValue(false);
+      mockBadgeStore.hasEarnedBadge.mockReturnValue(false);
 
       // Act
       const result = service.evaluateAllBadges(context);
