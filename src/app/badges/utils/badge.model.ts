@@ -21,6 +21,7 @@ export type BadgeTriggerContext = {
   checkIn: CheckIn;
   userCheckIns: CheckIn[];
   userBadges: EarnedBadge[];
+  totalCheckIns: number; // ✅ Add this property
 };
 
 export type EarnedBadge = {

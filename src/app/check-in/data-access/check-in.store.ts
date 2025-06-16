@@ -211,7 +211,7 @@ export class CheckinStore extends BaseStore<CheckIn> {
 
     try {
       const userCheckIns = this.checkins().filter(ci => ci.userId === targetUserId);
-      const debugInfo = await this.badgeAwardService.getDebugInfo(targetUserId, userCheckIns);
+      const debugInfo = await this.badgeAwardService.getDebugInfo();
       console.log('[CheckinStore] 🐛 Badge debug info:', debugInfo);
     } catch (error) {
       console.error('[CheckinStore] 🐛 Badge debug failed:', error);
@@ -266,19 +266,19 @@ export class CheckinStore extends BaseStore<CheckIn> {
           totalAwarded: awardedBadges.length
         });
 
-        // Optional: Show toast for badge awards
+        // ✅ Show toast for badge awards
         const badgeNames = awardedBadges.map(b => b.badgeId).join(', ');
         this.toastService.success(`🏅 New badge${awardedBadges.length > 1 ? 's' : ''} earned: ${badgeNames}!`);
-
       } else {
         console.log('[CheckinStore] 📝 No new badges awarded for this check-in');
       }
-
-    } catch (badgeError) {
-      // Don't fail the check-in if badge awarding fails
-      console.error('[CheckinStore] ⚠️ Badge evaluation failed, but check-in was successful:', badgeError);
+    } catch (error) {
+      console.error('[CheckinStore] Badge evaluation failed:', error);
+      // Don't fail the check-in if badge evaluation fails
+      // Badge awarding is secondary to the main check-in flow
     }
   }
+
   /**
    * Clear check-in success state with null checks
    */

@@ -1,62 +1,60 @@
 // src/app/users/data-access/user.store.ts
-import { Injectable, signal, computed, effect, inject } from '@angular/core';
-import { User } from '../utils/user.model';
+import { Injectable, inject, signal, computed, effect } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 import { AuthStore } from '../../auth/data-access/auth.store';
 import { UserService } from './user.service';
-import { EarnedBadge } from '../../badges/utils/badge.model';
-import { BadgeService } from '../../badges/data-access/badge.service';
-import { generateAnonymousName } from '../../shared/utils/anonymous-names';
-import { firstValueFrom } from 'rxjs';
+import type { User, UserBadgeSummary, UserLandlordSummary } from '../utils/user.model';
 
-
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class UserStore {
+  private readonly _service = inject(UserService);
   private readonly authStore = inject(AuthStore);
-  private readonly userService = inject(UserService);
-  private readonly badgeService = inject(BadgeService);
-  private lastLoadedUserId: string | null = null;
 
-  // ✅ Single user signals
+  // ===================================
+  // STATE
+  // ===================================
+
   private readonly _user = signal<User | null>(null);
   private readonly _loading = signal(false);
   private readonly _error = signal<string | null>(null);
+  private lastLoadedUserId: string | null = null;
 
-  // ✅ Public readonly signals
+  // ===================================
+  // READONLY SIGNALS
+  // ===================================
+
   readonly user = this._user.asReadonly();
   readonly loading = this._loading.asReadonly();
   readonly error = this._error.asReadonly();
 
-  // ✅ Computed signals for general user data
-  readonly isLoaded = computed(() => !!this.user());
+  // ✅ ADD THIS: Missing isLoaded computed signal
+  readonly isLoaded = computed(() => !!this._user());
+
+
+  // ===================================
+  // COMPUTED PROPERTIES (User Profile)
+  // ===================================
+
+  readonly hasUser = computed(() => !!this.user());
   readonly hasLandlordPubs = computed(() =>
-    (this.user()?.landlordOf?.length || 0) > 0
+    (this.user()?.landlordCount || 0) > 0
   );
 
-  // ✅ Badge-specific computed signals (using EarnedBadge type)
-  readonly userBadges = computed(() => this.user()?.badges || []);
-
-  readonly recentBadges = computed(() =>
-    this.userBadges()
-      .sort((a, b) => b.awardedAt - a.awardedAt) // ✅ Using number timestamp
-      .slice(0, 5)
-  );
-
-  readonly badgeCount = computed(() => this.userBadges().length);
+  // ✅ Badge summaries (read from user document for performance)
+  readonly badgeCount = computed(() => this.user()?.badgeCount || 0);
+  readonly badgeIds = computed(() => this.user()?.badgeIds || []);
   readonly hasBadges = computed(() => this.badgeCount() > 0);
 
-  // ✅ Badge utility methods using correct types
-  hasBadge(badgeId: string): boolean {
-    return this.userBadges().some(badge => badge.badgeId === badgeId);
-  }
+  // ✅ Landlord summaries (read from user document for performance)
+  readonly landlordCount = computed(() => this.user()?.landlordCount || 0);
+  readonly landlordPubIds = computed(() => this.user()?.landlordPubIds || []);
 
-  getBadgeById(badgeId: string): EarnedBadge | undefined {
-    return this.userBadges().find(badge => badge.badgeId === badgeId);
-  }
+  // ===================================
+  // INITIALIZATION
+  // ===================================
 
-  // ✅ Constructor remains the same
   constructor() {
+    // Auto-load user when auth changes
     effect(() => {
       const user = this.authStore.user();
       if (!user) {
@@ -74,73 +72,9 @@ export class UserStore {
     });
   }
 
-  // ✅ Add badge using correct EarnedBadge type
-  addBadge(badge: EarnedBadge): void {
-    const currentUser = this._user();
-    if (!currentUser) return;
-
-    // ✅ Check for duplicates before adding
-    if (this.hasBadge(badge.badgeId)) {
-      console.warn('[UserStore] Attempted to add duplicate badge:', badge.badgeId);
-      return;
-    }
-
-    const updatedBadges = [...currentUser.badges, badge];
-    this.patchUser({ badges: updatedBadges });
-    console.log('[UserStore] ✅ Badge added to user:', badge.badgeId);
-  }
-
-  // ✅ Remove badge helper (for revocation)
-  removeBadge(earnedBadgeId: string): void {
-    const currentUser = this._user();
-    if (!currentUser) return;
-
-    const updatedBadges = currentUser.badges.filter(badge => badge.id !== earnedBadgeId);
-    this.patchUser({ badges: updatedBadges });
-    console.log('[UserStore] ✅ Badge removed from user:', earnedBadgeId);
-  }
-
-  // ✅ Award badge helper (creates EarnedBadge) - LOCAL ONLY
-  // Note: This should typically be called by BadgeStore after API success
-  awardBadgeLocally(badgeId: string, metadata?: Record<string, any>): EarnedBadge | null {
-    const currentUser = this._user();
-    if (!currentUser) return null;
-
-    // Check if already has this badge
-    if (this.hasBadge(badgeId)) {
-      console.log('[UserStore] User already has badge:', badgeId);
-      return null;
-    }
-
-    const earnedBadge: EarnedBadge = {
-      id: crypto.randomUUID(),
-      userId: currentUser.uid,
-      badgeId,
-      awardedAt: Date.now(), // ✅ Using number timestamp
-      metadata,
-    };
-
-    this.addBadge(earnedBadge);
-    return earnedBadge;
-  }
-
-  // ✅ DEPRECATED: Use BadgeStore.awardBadge() instead
-  // This method is kept for backward compatibility but should not be used directly
-  awardBadge(badgeId: string, metadata?: Record<string, any>): void {
-    console.warn('[UserStore] awardBadge() is deprecated. Use BadgeStore.awardBadge() instead.');
-    this.awardBadgeLocally(badgeId, metadata);
-  }
-
-  // ✅ Existing methods remain the same
-  setUser(user: User | null): void {
-    this._user.set(user);
-  }
-
-  patchUser(updates: Partial<User>): void {
-    const current = this._user();
-    if (!current) return;
-    this._user.set({ ...current, ...updates });
-  }
+  // ===================================
+  // USER LOADING
+  // ===================================
 
   async loadUser(userId: string): Promise<void> {
     if (this._loading()) {
@@ -152,23 +86,10 @@ export class UserStore {
     this._error.set(null);
 
     try {
-      // ✅ Load user data and badges in parallel
-      const [userData, userBadges] = await Promise.all([
-        this.loadUserData(userId),
-        this.badgeService.getUserBadges(userId).catch(err => {
-          console.warn('[UserStore] Failed to load badges, continuing with empty array:', err);
-          return []; // ✅ Graceful degradation if badges fail
-        })
-      ]);
-
-      // Combine user data with badges
-      const user: User = {
-        ...userData,
-        badges: userBadges,
-      };
-
-      this._user.set(user);
-      console.log(`[UserStore] ✅ Loaded user with ${userBadges.length} badges`);
+      console.log('[UserStore] Loading user data for:', userId);
+      const userData = await this.loadUserData(userId);
+      this._user.set(userData);
+      console.log('[UserStore] ✅ User loaded successfully');
     } catch (error: any) {
       this._error.set(error.message || 'Failed to load user');
       console.error('[UserStore] loadUser error:', error);
@@ -177,65 +98,82 @@ export class UserStore {
     }
   }
 
-  private async loadUserData(userId: string): Promise<Omit<User, 'badges'>> {
-    try {
-      // ✅ Modern RxJS pattern - use firstValueFrom instead of toPromise()
-      const userData = await firstValueFrom(this.userService.getUser(userId));
+  private async loadUserData(userId: string): Promise<User> {
+    const userData = await firstValueFrom(this._service.getUser(userId));
 
-      // ✅ Early return pattern with proper type checking
-      if (!userData) {
-        throw new Error('No user data returned from service');
-      }
-
-      // ✅ Convert User to Omit<User, 'badges'> explicitly
-      const userWithoutBadges: Omit<User, 'badges'> = {
-        uid: userData.uid,
-        email: userData.email,
-        displayName: userData.displayName,
-        landlordOf: userData.landlordOf || [],
-        claimedPubIds: userData.claimedPubIds || [],
-        checkedInPubIds: userData.checkedInPubIds || [],
-        streaks: userData.streaks || {},
-        emailVerified: userData.emailVerified,
-        isAnonymous: userData.isAnonymous,
-        photoURL: userData.photoURL,
-        joinedAt: userData.joinedAt,
-        userStage: userData.userStage,
-      };
-
-      return userWithoutBadges;
-
-    } catch (error) {
-      console.warn('[UserStore] UserService failed, using AuthStore data:', error);
+    if (!userData) {
+      throw new Error('User not found');
     }
 
-    // ✅ Fallback to AuthStore data if service fails
-    const authUser = this.authStore.user();
+    // ✅ Build user object with defaults for new fields
+    const user: User = {
+      uid: userData.uid,
+      email: userData.email || null,
+      displayName: userData.displayName,
+      emailVerified: userData.emailVerified,
+      isAnonymous: userData.isAnonymous,
+      photoURL: userData.photoURL,
+      joinedAt: userData.joinedAt || new Date().toISOString(),
 
-    // ✅ Early return pattern for safety
-    if (!authUser || authUser.uid !== userId) {
-      throw new Error(`Unable to load user data for ${userId}`);
-    }
+      // Pub-related data
+      checkedInPubIds: userData.checkedInPubIds || [],
+      streaks: userData.streaks || {},
+      joinedMissionIds: userData.joinedMissionIds || [],
 
-    const userWithoutBadges: Omit<User, 'badges'> = {
-      uid: authUser.uid,
-      email: authUser.email,
-      displayName: authUser.displayName || generateAnonymousName(authUser.uid),
-      landlordOf: authUser.landlordOf || [],
-      claimedPubIds: authUser.claimedPubIds || [],
-      checkedInPubIds: authUser.checkedInPubIds || [],
-      streaks: authUser.streaks || {},
-      emailVerified: authUser.emailVerified,
-      isAnonymous: authUser.isAnonymous,
-      photoURL: authUser.photoURL,
-      joinedAt: authUser.joinedAt || new Date().toISOString(),
-      userStage: authUser.userStage,
+      // ✅ Badge summaries (with defaults for existing users)
+      badgeCount: userData.badgeCount || 0,
+      badgeIds: userData.badgeIds || [],
+
+      // ✅ Landlord summaries (with defaults for existing users)
+      landlordCount: userData.landlordCount || 0,
+      landlordPubIds: userData.landlordPubIds || [],
     };
 
-    return userWithoutBadges;
+    return user;
   }
 
-  // ✅ Sync user data from AuthStore to UserStore
+  // ===================================
+  // USER UPDATES
+  // ===================================
+
+  setUser(user: User | null): void {
+    this._user.set(user);
+  }
+
+  patchUser(updates: Partial<User>): void {
+    const current = this._user();
+    if (!current) return;
+    this._user.set({ ...current, ...updates });
+  }
+
+  // ✅ Badge summary updates (called by BadgeStore)
+  updateBadgeSummary(summary: UserBadgeSummary): void {
+    this.patchUser(summary);
+    console.log('[UserStore] ✅ Badge summary updated:', summary);
+  }
+
+  // ✅ Landlord summary updates (called by LandlordStore)
+  updateLandlordSummary(summary: UserLandlordSummary): void {
+    this.patchUser(summary);
+    console.log('[UserStore] ✅ Landlord summary updated:', summary);
+  }
+
+  // ===================================
+  // QUICK QUERY METHODS (Using summaries)
+  // ===================================
+
+  hasBadge(badgeId: string): boolean {
+    return this.badgeIds().includes(badgeId);
+  }
+
+  isLandlordOf(pubId: string): boolean {
+    return this.landlordPubIds().includes(pubId);
+  }
+
+  // ===================================
+  // AUTH SYNC
+  // ===================================
+
   syncFromAuthStore(): void {
     const authUser = this.authStore.user();
     const currentUser = this._user();
@@ -267,7 +205,10 @@ export class UserStore {
     }
   }
 
-  // ✅ Clear error state
+  // ===================================
+  // UTILITY
+  // ===================================
+
   clearError(): void {
     this._error.set(null);
   }
@@ -280,7 +221,6 @@ export class UserStore {
     console.log('[UserStore] 🔄 Reset complete');
   }
 
-  // ✅ Debug helper
   getDebugInfo() {
     const user = this._user();
     return {
@@ -288,6 +228,8 @@ export class UserStore {
       userId: user?.uid,
       displayName: user?.displayName,
       badgeCount: this.badgeCount(),
+      hasBadges: this.hasBadges(),
+      landlordCount: this.landlordCount(),
       isLoading: this._loading(),
       hasError: !!this._error(),
       lastLoadedUserId: this.lastLoadedUserId,

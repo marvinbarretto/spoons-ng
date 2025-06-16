@@ -338,7 +338,7 @@ export class NewHomeComponent extends BaseComponent {
   });
 
   readonly badgeData = computed(() => {
-    const badges = this.badgeStore.userBadges();
+    const badges = this.badgeStore.earnedBadges();
     const loading = this.badgeStore.loading();
     const error = this.badgeStore.error();
     const user = this.authStore.user();
@@ -365,9 +365,7 @@ export class NewHomeComponent extends BaseComponent {
       anonymousDisplayName: user ? generateAnonymousName(user.uid) : null,
       userStats: user ? {
         checkedInPubs: user.checkedInPubIds?.length || 0,
-        claimedPubs: user.claimedPubIds?.length || 0,
-        landlordOf: user.landlordOf?.length || 0,
-        badges: user.badges?.length || 0,
+        badges: user.badgeIds?.length || 0,
         streaks: Object.keys(user.streaks || {}).length,
       } : null,
     };

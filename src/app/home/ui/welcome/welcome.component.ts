@@ -1,256 +1,215 @@
 // src/app/home/ui/welcome/welcome.component.ts
 import { Component, input, output, computed, ChangeDetectionStrategy } from '@angular/core';
-import { JsonPipe } from '@angular/common';
-import type { User } from '@users/utils/user.model';
 import { ASSETS } from '@shared/utils/constants';
+import type { User } from '@users/utils/user.model';
 
 @Component({
   selector: 'app-welcome',
-  imports: [JsonPipe],
   template: `
-    <section class="welcome" [class]="welcomeClasses()">
-      <!-- ✅ User Avatar & Name Section -->
+    <div class="welcome" [class]="welcomeClass()">
       <div class="user-section">
+        <!-- ✅ Avatar -->
         @if (avatarUrl()) {
           <img
             class="avatar"
             [src]="avatarUrl()!"
             [alt]="displayName() + ' avatar'"
-            (error)="onAvatarError($event)"
           />
         } @else {
-          <div class="avatar-placeholder npc-avatar" (click)="openSettings.emit()">
-            <img [src]="NPC_AVATAR" alt="Default avatar" class="npc-image">
-            @if (canCustomizeAvatar()) {
-              <div class="avatar-edit-hint">✏️</div>
-            }
-          </div>
+          <img
+            class="avatar-placeholder"
+            [src]="NPC_AVATAR"
+            [alt]="displayName() + ' default avatar'"
+          />
         }
 
+        <!-- ✅ Name and Stats -->
         <div class="name-section">
-          <h1 class="user-name">
-            <button class="username-button" (click)="openSettings.emit()">
-              <span class="username-text">{{ displayName() }}</span>
-              <span class="edit-icon">✏️</span>
-            </button>
-          </h1>
+          <h1 class="user-name">{{ welcomeMessage() }}</h1>
 
-          <!-- ✅ Show user stage underneath displayName -->
-          @if (user()) {
-            <p class="user-stage">{{ user()!.userStage }}</p>
+          @if (!isBrandNew()) {
+            <div class="user-stats">
+              <!-- ✅ Use badge summary from user document -->
+              @if (badgeCount() > 0) {
+                <span class="stat">🏅 {{ badgeCount() }} badge{{ badgeCount() === 1 ? '' : 's' }}</span>
+              }
+
+              @if (checkedInPubCount() > 0) {
+                <span class="stat">🍺 {{ checkedInPubCount() }} pub{{ checkedInPubCount() === 1 ? '' : 's' }}</span>
+              }
+
+              @if (landlordCount() > 0) {
+                <span class="stat">👑 {{ landlordCount() }} landlord{{ landlordCount() === 1 ? 'ship' : 'ships' }}</span>
+              }
+            </div>
           }
         </div>
       </div>
 
-      <!-- ✅ Simplified Action Buttons -->
-      @if (shouldShowActions()) {
-        <div class="user-actions">
+      <!-- ✅ Actions -->
+      <div class="user-actions">
+        @if (isBrandNew()) {
+          <p class="welcome-hint">
+            Welcome to Spoons! Start checking in to pubs to earn badges and track your progress.
+          </p>
+        }
+
+        @if (isAnonymous()) {
           <button
             type="button"
             class="btn btn-primary"
             (click)="openSettings.emit()"
           >
-            ⚙️ Customize Profile
+            {{ isBrandNew() ? 'Customize Profile' : 'Upgrade Account' }}
           </button>
-        </div>
-      }
-    </section>
+        } @else {
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="openSettings.emit()"
+          >
+            Profile Settings
+          </button>
+        }
+      </div>
+    </div>
   `,
   styles: `
     .welcome {
-      background: var(--color-surface);
-      border-radius: 8px;
-      padding: 1rem;
-      margin: 0.5rem auto;
-      max-width: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2rem;
       display: flex;
       align-items: center;
-      gap: 1rem;
-      box-shadow: 0 2px 8px var(--color-shadow);
-      border: 1px solid var(--color-border);
+      justify-content: space-between;
+      gap: 2rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
-    /* ✅ CSS Hooks for different user states */
-    .welcome--brand-new {
-      background: linear-gradient(135deg, var(--color-accentLight) 0%, var(--color-lighter) 100%);
-      border: 1px solid var(--color-accent);
-      padding: 1.5rem;
+    .welcome::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 200px;
+      height: 200px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      pointer-events: none;
     }
 
-    .welcome--new-user {
-      background: var(--color-surfaceElevated);
-      border: 1px solid var(--color-primary);
-    }
-
-    .welcome--compact {
-      padding: 0.75rem;
-      margin: 0.25rem auto;
-    }
-
-    /* User Section - More compact */
     .user-section {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 1.5rem;
       flex: 1;
+      z-index: 1;
     }
 
-    /* Avatar Styles - Smaller */
     .avatar,
     .avatar-placeholder {
-      width: 50px;
-      height: 50px;
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
-      position: relative;
-      cursor: pointer;
-      transition: transform 0.2s ease;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      object-fit: cover;
       flex-shrink: 0;
     }
 
-    .avatar {
-      object-fit: cover;
-      border: 2px solid var(--color-primary);
-      box-shadow: 0 1px 4px var(--color-shadow);
-    }
-
-    .avatar-placeholder {
-      background: transparent;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 2px solid var(--color-secondary);
-    }
-
-    .npc-image {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      border-radius: 50%;
-    }
-
-    .avatar-placeholder:hover,
-    .avatar:hover {
-      transform: scale(1.05);
-    }
-
-    .avatar-edit-hint {
-      position: absolute;
-      bottom: -2px;
-      right: -2px;
-      background: var(--color-primary);
-      border-radius: 50%;
-      width: 18px;
-      height: 18px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 10px;
-      border: 2px solid var(--color-background);
-      color: var(--color-primaryText);
-    }
-
-    /* Username Button Styling - More compact */
-    .username-button {
-      background: none;
-      border: none;
-      padding: 0;
-      margin: 0;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.25rem;
-      color: inherit;
-      font: inherit;
-      transition: all 0.2s ease;
-      border-radius: 4px;
-      padding: 0.2rem 0.4rem;
-    }
-
-    .username-button:hover {
-      background: var(--color-lighter);
-      transform: translateY(-1px);
-    }
-
-    .username-text {
-      color: var(--color-text);
-      font-weight: 600;
-    }
-
-    .edit-icon {
-      opacity: 0.4;
-      font-size: 0.7em;
-      transition: opacity 0.2s ease;
-      color: var(--color-textMuted);
-    }
-
-    .username-button:hover .edit-icon {
-      opacity: 0.7;
-    }
-
-    /* Name Section - Tighter */
     .name-section {
       flex: 1;
-      min-width: 0;
     }
 
     .user-name {
-      margin: 0 0 0.25rem 0;
-      color: var(--color-text);
-      font-size: 1.2rem;
-      font-weight: 600;
+      margin: 0 0 0.5rem 0;
+      font-size: 1.8rem;
+      font-weight: 700;
       line-height: 1.2;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
 
-    /* ✅ User Stage Display */
-    .user-stage {
-      margin: 0;
-      font-size: 0.85rem;
-      color: var(--color-textSecondary);
-      font-weight: 500;
-      text-transform: capitalize;
+    .user-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-top: 0.5rem;
     }
 
-    /* Actions Section - More compact */
+    .stat {
+      font-size: 0.9rem;
+      opacity: 0.9;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      backdrop-filter: blur(10px);
+    }
+
     .user-actions {
-      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      align-items: flex-end;
+      z-index: 1;
+    }
+
+    .welcome-hint {
+      margin: 0 0 1rem 0;
+      font-size: 0.9rem;
+      opacity: 0.9;
+      text-align: right;
+      max-width: 300px;
+      line-height: 1.4;
     }
 
     .btn {
-      padding: 0.5rem 1rem;
+      padding: 0.75rem 1.5rem;
       border: none;
-      border-radius: 6px;
-      cursor: pointer;
+      border-radius: 8px;
       font-weight: 600;
-      font-size: 0.85rem;
+      font-size: 0.9rem;
+      cursor: pointer;
       transition: all 0.2s ease;
-      display: flex;
+      text-decoration: none;
+      display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.5rem;
       white-space: nowrap;
     }
 
     .btn-primary {
-      background: var(--color-primary);
-      color: var(--color-primaryText);
-      box-shadow: 0 1px 3px var(--color-shadow);
+      background: white;
+      color: #667eea;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     .btn-primary:hover {
-      background: var(--color-primaryHover);
+      background: #f8f9fa;
       transform: translateY(-1px);
-      box-shadow: 0 2px 6px var(--color-shadow);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     }
 
-    .btn-primary:active {
-      background: var(--color-primaryActive);
-      transform: translateY(0);
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      backdrop-filter: blur(10px);
     }
 
-    /* ✅ Brand new user layout - Stack vertically */
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-1px);
+    }
+
+    /* ✅ Brand new user layout */
     .welcome--brand-new {
       flex-direction: column;
       text-align: center;
-      max-width: 400px;
+      max-width: 500px;
+      margin: 0 auto 2rem auto;
     }
 
     .welcome--brand-new .user-section {
@@ -269,24 +228,30 @@ import { ASSETS } from '@shared/utils/constants';
     }
 
     .welcome--brand-new .user-name {
-      font-size: 1.5rem;
+      font-size: 2rem;
     }
 
     .welcome--brand-new .user-actions {
       width: 100%;
+      align-items: center;
+    }
+
+    .welcome--brand-new .welcome-hint {
+      text-align: center;
+      max-width: none;
     }
 
     .welcome--brand-new .btn {
-      padding: 0.75rem 1.5rem;
-      font-size: 0.95rem;
+      padding: 1rem 2rem;
+      font-size: 1rem;
     }
 
     /* Mobile responsive */
     @media (max-width: 480px) {
       .welcome {
         flex-direction: column;
-        gap: 1rem;
-        padding: 1rem;
+        gap: 1.5rem;
+        padding: 1.5rem;
       }
 
       .user-section {
@@ -295,16 +260,27 @@ import { ASSETS } from '@shared/utils/constants';
       }
 
       .user-name {
-        font-size: 1.1rem;
+        font-size: 1.4rem;
+      }
+
+      .user-stats {
+        justify-content: center;
       }
 
       .user-actions {
         width: 100%;
+        align-items: center;
+      }
+
+      .welcome-hint {
+        text-align: center;
+        max-width: none;
       }
 
       .btn {
         width: 100%;
         justify-content: center;
+        padding: 0.875rem 1.5rem;
       }
     }
   `,
@@ -314,18 +290,16 @@ export class WelcomeComponent {
   // ✅ Asset reference
   readonly NPC_AVATAR = ASSETS.NPC_AVATAR;
 
-  // ✅ Single input - just the user!
+  // ✅ Single input - the user with new summary fields
   readonly user = input<User | null>(null);
 
   // ✅ Output events
   readonly openSettings = output<void>();
 
-  // ✅ All computed properties derived from user
+  // ✅ Computed properties using new user structure
   readonly displayName = computed(() => {
     const currentUser = this.user();
     if (!currentUser) return 'Guest';
-
-    // ✅ Always show the actual displayName, never "Anon" or "Guest"
     return currentUser.displayName || 'User';
   });
 
@@ -336,47 +310,44 @@ export class WelcomeComponent {
 
   readonly isAnonymous = computed(() => {
     const currentUser = this.user();
-    return currentUser?.isAnonymous ?? false;
+    return currentUser?.isAnonymous ?? true;
+  });
+
+  // ✅ Use badge summary from user document (not detailed badges)
+  readonly badgeCount = computed(() => {
+    const currentUser = this.user();
+    return currentUser?.badgeCount || 0;
+  });
+
+  readonly checkedInPubCount = computed(() => {
+    const currentUser = this.user();
+    return currentUser?.checkedInPubIds?.length || 0;
+  });
+
+  // ✅ Use landlord summary from user document
+  readonly landlordCount = computed(() => {
+    const currentUser = this.user();
+    return currentUser?.landlordCount || 0;
   });
 
   readonly isBrandNew = computed(() => {
-    const currentUser = this.user();
-    return currentUser?.userStage === 'brandNew';
+    return this.checkedInPubCount() === 0 && this.badgeCount() === 0;
   });
 
-  readonly isNewUser = computed(() => {
-    const currentUser = this.user();
-    const stage = currentUser?.userStage;
-    return stage === 'brandNew' || stage === 'firstTime';
+  readonly welcomeClass = computed(() => {
+    return this.isBrandNew() ? 'welcome--brand-new' : '';
   });
 
-  readonly canCustomizeAvatar = computed(() => {
-    // Always allow avatar customization
-    return true;
-  });
+  readonly welcomeMessage = computed(() => {
+    const name = this.displayName();
+    const isBrandNew = this.isBrandNew();
 
-  readonly shouldShowActions = computed(() => {
-    // Show actions for brand new users or anonymous users
-    return this.isBrandNew() || this.isAnonymous();
-  });
-
-  // ✅ CSS class generation with hooks
-  readonly welcomeClasses = computed(() => {
-    const classes = ['welcome'];
-
-    if (this.isBrandNew()) {
-      classes.push('welcome--brand-new');
-    } else if (this.isNewUser()) {
-      classes.push('welcome--new-user');
-    } else {
-      classes.push('welcome--compact');
+    if (isBrandNew) {
+      return `Welcome, ${name}!`;
     }
 
-    return classes.join(' ');
+    return `Hey ${name}!`;
   });
-
-  // ✅ Event handlers
-  onAvatarError(event: Event): void {
-    console.warn('[Welcome] Avatar failed to load:', this.avatarUrl());
-  }
 }
+
+

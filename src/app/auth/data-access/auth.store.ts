@@ -75,18 +75,19 @@ export class AuthStore {
 
       const appUser: User = {
         uid: firebaseUser.uid,
+        email: firebaseUser.email ?? null,
+        photoURL: firebaseUser.photoURL ?? null,
         displayName: displayName ?? generateAnonymousName(firebaseUser.uid),
         isAnonymous: firebaseUser.isAnonymous,
-        email: firebaseUser.email ?? undefined,
         emailVerified: firebaseUser.emailVerified,
-        photoURL: firebaseUser.photoURL ?? undefined,
-        landlordOf: [],
-        claimedPubIds: [],
         checkedInPubIds: [],
-        badges: [],
         streaks: {},
         joinedAt: new Date().toISOString(),
-        userStage: 'guest',
+        badgeCount: 0,
+        badgeIds: [],
+        landlordCount: 0,
+        landlordPubIds: [],
+        joinedMissionIds: [],
       };
 
       this._user.set(appUser);

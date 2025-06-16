@@ -68,16 +68,19 @@ export class AuthService {
         const displayName = generateAnonymousName(user.uid);
         const newUser: SpoonsUser = {
           uid: user.uid,
+          email: null,
+          photoURL: null,
           emailVerified: user.emailVerified,
           isAnonymous: true,
-          landlordOf: [],
-          claimedPubIds: [],
           checkedInPubIds: [],
-          badges: [],
           streaks: {},
           displayName,
           joinedAt: new Date().toISOString(),
-          userStage: 'guest',
+          badgeCount: 0,
+          badgeIds: [],
+          landlordCount: 0,
+          landlordPubIds: [],
+          joinedMissionIds: [],
         };
         await setDoc(userRef, newUser);
         console.log('[AuthService] Anonymous profile created in Firestore.');

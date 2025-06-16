@@ -236,7 +236,7 @@ export class BadgeAdminComponent implements OnInit {
   private readonly badgeStore = inject(BadgeStore);
 
   // ✅ Use BadgeStore instead of local signals
-  protected readonly badges = this.badgeStore.badges;
+  protected readonly badges = this.badgeStore.definitions;
   protected readonly loading = this.badgeStore.loading;
   protected readonly error = this.badgeStore.error;
 
@@ -251,7 +251,7 @@ export class BadgeAdminComponent implements OnInit {
     componentRef.instance.closeCallback = (badge: Badge | null) => {
       if (badge) {
         console.log('[BadgeAdminPageComponent] Creating badge:', badge);
-        this.badgeStore.save(badge);
+        this.badgeStore.saveBadge(badge);
       }
     };
   }
@@ -268,7 +268,7 @@ export class BadgeAdminComponent implements OnInit {
     componentRef.instance.closeCallback = (updated: Badge | null) => {
       if (updated) {
         console.log('[BadgeAdmin] Saving updated badge:', updated);
-        this.badgeStore.save(updated);
+        this.badgeStore.saveBadge(updated);
       }
     };
   }
@@ -279,7 +279,7 @@ export class BadgeAdminComponent implements OnInit {
     }
 
     console.log('[BadgeAdmin] Delete badge clicked:', badge);
-    this.badgeStore.delete(badge.id);
+    this.badgeStore.deleteBadge(badge.id);
   }
 
   retry(): void {

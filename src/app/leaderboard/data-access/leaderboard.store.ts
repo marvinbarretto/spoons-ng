@@ -96,11 +96,16 @@ protected async fetchData(): Promise<LeaderboardEntry[]> {
       console.log('[LeaderboardStore] Real user display name:', {
         userId: userId.slice(0, 8),
         originalName: user.displayName,
-        email: user.email,
+        email: user.email || undefined,
         isAnonymous: user.isAnonymous,
         hasRealProfile: !!(user.displayName || user.email),
-        photoURL: user.photoURL,
-        generatedName: displayName
+        photoURL: user.photoURL || undefined,
+        generatedName: displayName,
+        joinedAt: user.joinedAt || undefined,
+        badgeCount: user.badgeCount || undefined,
+        badgeIds: user.badgeIds || undefined,
+        landlordCount: user.landlordCount || undefined,
+        landlordPubIds: user.landlordPubIds || undefined,
       });
     }
 
@@ -111,9 +116,9 @@ protected async fetchData(): Promise<LeaderboardEntry[]> {
       uniquePubs: user.checkedInPubIds?.length || 0,
       joinedDate: user.joinedAt || new Date().toISOString(),
       rank: 0,
-      photoURL: user.photoURL,
-      email: user.email,
-      realDisplayName: user.displayName,
+      photoURL: user.photoURL || undefined,
+      email: user.email || undefined,
+      realDisplayName: user.displayName || undefined,
       isAnonymous: user.isAnonymous
     };
   });

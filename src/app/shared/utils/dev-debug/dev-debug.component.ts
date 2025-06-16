@@ -504,7 +504,7 @@ export class DevDebugComponent extends BaseComponent {
       loading,
       error,
       user: user,
-      isLoaded: this.userStore.isLoaded(),
+      // isLoaded: this.userStore.isLoaded(),
       hasLandlordPubs: this.userStore.hasLandlordPubs(),
     };
 
@@ -551,7 +551,7 @@ export class DevDebugComponent extends BaseComponent {
     });
 
     readonly badgeData = computed(() => {
-      const badges = this.badgeStore.userBadges();
+      const badges = this.badgeStore.recentBadgesForDisplay();
       const loading = this.badgeStore.loading();
       const error = this.badgeStore.error();
       const user = this.authStore.user();

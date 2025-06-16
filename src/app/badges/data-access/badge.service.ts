@@ -1,78 +1,72 @@
+// src/app/badges/data-access/badge.service.ts
 import { Injectable } from '@angular/core';
-import { FirestoreCrudService } from '@shared/data-access/firestore-crud.service';
-import type { Badge, EarnedBadge, CreateEarnedBadge } from '../utils/badge.model';
+import { where, orderBy } from '@angular/fire/firestore';
+import { FirestoreCrudService } from '../../shared/data-access/firestore-crud.service';
+import type { Badge, EarnedBadge } from '../utils/badge.model';
+import type { UserBadgeSummary } from '../../users/utils/user.model';
 
 @Injectable({ providedIn: 'root' })
 export class BadgeService extends FirestoreCrudService<Badge> {
-  protected override path = 'badges';
 
-  /**
-   * ✅ Get all badge definitions (uses inherited getAll method)
-   */
-  getBadgeDefinitions(): Promise<Badge[]> {
-    console.log('[BadgeService] getBadgeDefinitions');
+  // ✅ Set the path for badge definitions
+  protected path = 'badges';
+
+  // ===================================
+  // CLEAN BADGE DEFINITION METHODS
+  // ===================================
+
+  async getBadges(): Promise<Badge[]> {
+    console.log('[BadgeService] getBadges');
     return this.getAll();
   }
 
-  /**
-   * ✅ Create a new badge definition (uses inherited create method)
-   */
-  createBadgeDefinition(badge: Badge): Promise<void> {
-    console.log('[BadgeService] Creating badge definition:', badge.name);
-    return this.create(badge);
+  async getBadge(badgeId: string): Promise<Badge | null> {
+    console.log('[BadgeService] getBadge:', badgeId);
+    return this.getById(badgeId);
   }
 
-  /**
-   * ✅ Update badge definition (uses inherited update method)
-   */
-  updateBadgeDefinition(badge: Badge): Promise<void> {
-    console.log('[BadgeService] Updating badge definition:', badge.id);
-    return this.update(badge.id, badge);
+  async createBadge(badge: Badge): Promise<void> {
+    console.log('[BadgeService] createBadge:', badge);
+    await this.create(badge);
   }
 
-  /**
-   * ✅ Delete badge definition (uses inherited delete method)
-   */
-  deleteBadgeDefinition(badgeId: string): Promise<void> {
-    console.log('[BadgeService] Deleting badge definition:', badgeId);
-    return this.delete(badgeId);
+  async updateBadge(badgeId: string, updates: Partial<Badge>): Promise<void> {
+    console.log('[BadgeService] updateBadge:', badgeId, updates);
+    await this.update(badgeId, updates);
   }
 
-  /**
-   * ✅ Get a single badge definition by ID
-   */
-  async getBadgeDefinition(badgeId: string): Promise<Badge | null> {
-    console.log('[BadgeService] Getting badge definition:', badgeId);
-    const badgePath = `${this.path}/${badgeId}`;
-    const badge = await this.getDocByPath<Badge>(badgePath);
-    return badge || null;
+  async deleteBadge(badgeId: string): Promise<void> {
+    console.log('[BadgeService] deleteBadge:', badgeId);
+    await this.delete(badgeId);
   }
 
   // ===================================
-  // 🏆 USER EARNED BADGES METHODS
+  // BACKWARD COMPATIBILITY (if needed)
   // ===================================
 
-  /**
-   * ✅ Get all badges earned by a specific user
-   */
-  async getUserBadges(userId: string): Promise<EarnedBadge[]> {
-    console.log('[BadgeService] getUserBadges for:', userId);
-    const userBadgesPath = `users/${userId}/badges`;
+  getBadgeDefinitions = this.getBadges;
+  getBadgeDefinition = this.getBadge;
+  createBadgeDefinition = this.createBadge;
+  updateBadgeDefinition = this.updateBadge;
+  deleteBadgeDefinition = this.deleteBadge;
 
-    try {
-      const earnedBadges = await this.getDocsWhere<EarnedBadge>(userBadgesPath);
-      console.log(`[BadgeService] Found ${earnedBadges.length} badges for user ${userId}`);
-      return earnedBadges;
-    } catch (error) {
-      console.error('[BadgeService] Error loading user badges:', error);
-      return [];
-    }
+  // ===================================
+  // EARNED BADGES (separate collection)
+  // ===================================
+
+  async getEarnedBadgesForUser(userId: string): Promise<EarnedBadge[]> {
+    console.log('[BadgeService] getEarnedBadgesForUser:', userId);
+
+    const badges = await this.getDocsWhere<EarnedBadge>(
+      'earnedBadges',
+      where('userId', '==', userId),
+      orderBy('awardedAt', 'desc')
+    );
+
+    return badges;
   }
 
-  /**
-   * ✅ Award a badge to a user (creates EarnedBadge record)
-   */
-  async awardBadgeToUser(
+  async awardBadge(
     userId: string,
     badgeId: string,
     metadata?: Record<string, any>
@@ -91,32 +85,26 @@ export class BadgeService extends FirestoreCrudService<Badge> {
       userId,
       badgeId,
       awardedAt: Date.now(),
-      metadata,
+      metadata: metadata || {},
     };
 
-    // Save to user's badges subcollection
-    const badgePath = `users/${userId}/badges/${earnedBadge.id}`;
-    await this.setDoc<EarnedBadge>(badgePath, earnedBadge);
+    await this.setDoc(`earnedBadges/${earnedBadge.id}`, earnedBadge);
 
     console.log(`[BadgeService] ✅ Awarded badge ${badgeId} to user ${userId}`);
     return earnedBadge;
   }
 
-  /**
-   * ✅ Check if user already has a specific badge (using FirestoreService methods)
-   */
   async userHasBadge(userId: string, badgeId: string): Promise<boolean> {
     console.log('[BadgeService] Checking if user has badge:', { userId, badgeId });
 
-    const userBadgesPath = `users/${userId}/badges`;
-
     try {
-      // ✅ Use FirestoreService's getDocsWhere without importing Firebase directly
-      const existingBadges = await this.getDocsWhere<EarnedBadge>(userBadgesPath);
+      const existingBadges = await this.getDocsWhere<EarnedBadge>(
+        'earnedBadges',
+        where('userId', '==', userId),
+        where('badgeId', '==', badgeId)
+      );
 
-      // Filter in memory instead of using Firebase where clause
-      const hasBadge = existingBadges.some(badge => badge.badgeId === badgeId);
-
+      const hasBadge = existingBadges.length > 0;
       console.log(`[BadgeService] User ${userId} ${hasBadge ? 'has' : 'does not have'} badge ${badgeId}`);
       return hasBadge;
     } catch (error) {
@@ -125,119 +113,120 @@ export class BadgeService extends FirestoreCrudService<Badge> {
     }
   }
 
-  /**
-   * ✅ Get a specific earned badge by user and badge ID
-   */
-  async getUserBadge(userId: string, badgeId: string): Promise<EarnedBadge | null> {
-    console.log('[BadgeService] Getting user badge:', { userId, badgeId });
+  async revokeBadge(userId: string, badgeId: string): Promise<void> {
+    console.log('[BadgeService] revokeBadge', { userId, badgeId });
 
-    const userBadgesPath = `users/${userId}/badges`;
+    const existing = await this.getDocsWhere<EarnedBadge>(
+      'earnedBadges',
+      where('userId', '==', userId),
+      where('badgeId', '==', badgeId)
+    );
 
-    try {
-      const badges = await this.getDocsWhere<EarnedBadge>(userBadgesPath);
-
-      // Filter in memory
-      const badge = badges.find(b => b.badgeId === badgeId);
-      return badge || null;
-    } catch (error) {
-      console.error('[BadgeService] Error getting user badge:', error);
-      return null;
-    }
-  }
-
-  /**
-   * ✅ Revoke a badge from a user (delete earned badge record)
-   */
-  async revokeBadgeFromUser(userId: string, earnedBadgeId: string): Promise<void> {
-    console.log('[BadgeService] Revoking badge:', { userId, earnedBadgeId });
-
-    const badgePath = `users/${userId}/badges/${earnedBadgeId}`;
-
-    try {
-      await this.deleteDoc(badgePath);
-      console.log(`[BadgeService] ✅ Revoked badge ${earnedBadgeId} from user ${userId}`);
-    } catch (error) {
-      console.error('[BadgeService] Error revoking badge:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * ✅ Get recent badges for a user (sorted by awardedAt)
-   */
-  async getRecentUserBadges(userId: string, limit: number = 5): Promise<EarnedBadge[]> {
-    console.log('[BadgeService] Getting recent user badges:', { userId, limit });
-
-    const allBadges = await this.getUserBadges(userId);
-
-    return allBadges
-      .sort((a, b) => b.awardedAt - a.awardedAt) // Most recent first
-      .slice(0, limit);
-  }
-
-  /**
-   * ✅ Get badge statistics for a user
-   */
-  async getUserBadgeStats(userId: string): Promise<{
-    totalBadges: number;
-    recentBadges: EarnedBadge[];
-    badgesByCategory: Record<string, number>;
-  }> {
-    console.log('[BadgeService] Getting user badge stats:', userId);
-
-    const [userBadges, badgeDefinitions] = await Promise.all([
-      this.getUserBadges(userId),
-      this.getBadgeDefinitions(),
-    ]);
-
-    // Count badges by category
-    const badgesByCategory: Record<string, number> = {};
-
-    for (const earnedBadge of userBadges) {
-      const definition = badgeDefinitions.find(def => def.id === earnedBadge.badgeId);
-      const category = definition?.category || 'uncategorized';
-      badgesByCategory[category] = (badgesByCategory[category] || 0) + 1;
+    if (existing.length === 0) {
+      throw new Error(`User ${userId} does not have badge ${badgeId}`);
     }
 
-    return {
-      totalBadges: userBadges.length,
-      recentBadges: userBadges
-        .sort((a, b) => b.awardedAt - a.awardedAt)
-        .slice(0, 3),
-      badgesByCategory,
-    };
+    await this.deleteDoc(`earnedBadges/${existing[0].id}`);
+    console.log(`[BadgeService] 🗑️ Badge revoked: ${badgeId} from user ${userId}`);
   }
 
-  /**
-   * ✅ Batch award multiple badges to a user
-   */
-  async awardMultipleBadges(
+  // ===================================
+  // USER SUMMARY UPDATES
+  // ===================================
+
+  async updateUserBadgeSummary(
     userId: string,
-    badgeIds: string[],
-    metadata?: Record<string, any>
-  ): Promise<EarnedBadge[]> {
-    console.log('[BadgeService] Awarding multiple badges:', { userId, badgeIds });
-
-    const awardedBadges: EarnedBadge[] = [];
-
-    for (const badgeId of badgeIds) {
-      try {
-        const earnedBadge = await this.awardBadgeToUser(userId, badgeId, metadata);
-        awardedBadges.push(earnedBadge);
-      } catch (error) {
-        console.warn(`[BadgeService] Failed to award badge ${badgeId}:`, error);
-        // Continue with other badges
-      }
-    }
-
-    return awardedBadges;
+    summary: UserBadgeSummary
+  ): Promise<void> {
+    console.log('[BadgeService] Updating user badge summary:', { userId, summary });
+    await this.updateDoc(`users/${userId}`, summary);
   }
 
-  /**
-   * ✅ Check if a badge definition exists
-   */
-  async badgeDefinitionExists(badgeId: string): Promise<boolean> {
-    const badgePath = `${this.path}/${badgeId}`;
-    return this.exists(badgePath);
+  // ===================================
+  // ADMIN/STATS METHODS
+  // ===================================
+
+  async getAllEarnedBadges(): Promise<EarnedBadge[]> {
+    console.log('[BadgeService] getAllEarnedBadges');
+    const badges = await this.getDocsWhere<EarnedBadge>(
+      'earnedBadges',
+      orderBy('awardedAt', 'desc')
+    );
+    return badges;
+  }
+
+  async getBadgeAwardCounts(): Promise<Record<string, number>> {
+    console.log('[BadgeService] getBadgeAwardCounts');
+    const allEarned = await this.getAllEarnedBadges();
+
+    return allEarned.reduce((counts, earned) => {
+      counts[earned.badgeId] = (counts[earned.badgeId] || 0) + 1;
+      return counts;
+    }, {} as Record<string, number>);
+  }
+
+  async getEarnedBadgesForUserSince(userId: string, timestamp: number): Promise<EarnedBadge[]> {
+    console.log('[BadgeService] getEarnedBadgesForUserSince:', { userId, timestamp });
+
+    const badges = await this.getDocsWhere<EarnedBadge>(
+      'earnedBadges',
+      where('userId', '==', userId),
+      where('awardedAt', '>=', timestamp),
+      orderBy('awardedAt', 'desc')
+    );
+
+    return badges;
+  }
+
+  // ===================================
+  // UTILITY METHODS
+  // ===================================
+
+  async getBadgeByName(name: string): Promise<Badge | null> {
+    console.log('[BadgeService] getBadgeByName:', name);
+
+    const badges = await this.getDocsWhere<Badge>(
+      'badges',
+      where('name', '==', name)
+    );
+
+    return badges.length > 0 ? badges[0] : null;
+  }
+
+  async getEarnedBadgesByBadgeId(badgeId: string): Promise<EarnedBadge[]> {
+    console.log('[BadgeService] getEarnedBadgesByBadgeId:', badgeId);
+
+    const badges = await this.getDocsWhere<EarnedBadge>(
+      'earnedBadges',
+      where('badgeId', '==', badgeId),
+      orderBy('awardedAt', 'desc')
+    );
+
+    return badges;
+  }
+
+  async getUsersWithBadge(badgeId: string): Promise<string[]> {
+    console.log('[BadgeService] getUsersWithBadge:', badgeId);
+
+    const earnedBadges = await this.getDocsWhere<EarnedBadge>(
+      'earnedBadges',
+      where('badgeId', '==', badgeId)
+    );
+
+    // Return unique user IDs
+    const userIds = [...new Set(earnedBadges.map(badge => badge.userId))];
+    return userIds;
+  }
+
+  async getBadgeLeaderboard(badgeId: string, limit: number = 10): Promise<EarnedBadge[]> {
+    console.log('[BadgeService] getBadgeLeaderboard:', { badgeId, limit });
+
+    const badges = await this.getDocsWhere<EarnedBadge>(
+      'earnedBadges',
+      where('badgeId', '==', badgeId),
+      orderBy('awardedAt', 'asc') // Earliest first for "first to earn" leaderboard
+    );
+
+    return badges.slice(0, limit);
   }
 }
