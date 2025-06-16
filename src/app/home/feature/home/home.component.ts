@@ -15,6 +15,7 @@ import { CheckInHomepageWidgetComponent } from '@check-in/ui/check-in-homepage-w
 import { EarnedBadgeListComponent } from '@badges/ui/earned-badge-list/earned-badge-list.component';
 import { NearbyPubListComponent } from '@home/ui/nearby-pub-list/nearby-pub-list.component';
 import { WelcomeComponent } from '@home/ui/welcome/welcome.component';
+import { PubCountHeroComponent } from "../../ui/pub-count-hero/pub-count-hero.component";
 
 @Component({
   selector: 'app-home-three',
@@ -25,107 +26,10 @@ import { WelcomeComponent } from '@home/ui/welcome/welcome.component';
     EarnedBadgeListComponent,
     NearbyPubListComponent,
     WelcomeComponent,
-    JsonPipe
-  ],
-  template: `
-    <div class="home-container">
-
-      <!-- ✅ SIMPLIFIED: Just pass the user, WelcomeComponent handles the rest -->
-      <app-welcome
-        [user]="userStore.user()"
-        (openSettings)="openProfileSettings()"
-      />
-
-      <!-- ✅ Check-in widget (show if there's a nearby pub) -->
-      @if (closestPub()) {
-        <app-check-in-homepage-widget
-          [closestPub]="closestPub()!"
-          [canCheckIn]="canCheckInToClosestPub()"
-          [distanceKm]="closestPubDistanceKm()"
-        />
-      }
-
-      <!-- ✅ Progress hero (always show) -->
-      <app-pub-progress-hero
-        [visitedCount]="visitedPubsCount()"
-        [totalPubs]="totalPubs()"
-        [hasProgress]="hasProgressData()"
-      />
-
-      <!-- ✅ Badges section - using new unified BadgeStore -->
-      @if (shouldShowBadges()) {
-        <app-earned-badge-list
-          [earnedBadgesWithDefinitions]="badgeStore.recentBadgesForDisplay()"
-          [maxItems]="3"
-          size="small"
-          [showEarnedDate]="true"
-        />
-      }
-
-      <!-- ✅ Nearby pubs list -->
-      @if (nearestPubs().length > 0) {
-        <app-nearby-pub-list
-          [pubs]="nearestPubs()"
-          [userCheckins]="todaysCheckins()"
-        />
-      } @else if (shouldShowNearbyPubsEmptyState()) {
-        <div class="no-nearby-pubs-message">
-          <h3>🕵️ No Nearby Pubs</h3>
-          <p>Move closer to pubs to see check-in options!</p>
-        </div>
-      }
-
-      <!-- ✅ Loading state -->
-      @if (isLoading()) {
-        <div class="loading-state">
-          <p>🔄 Loading your pub data...</p>
-        </div>
-      }
-
-      <!-- ✅ Debug panel for development -->
-      @if (!isProduction) {
-        <details class="debug-panel">
-          <summary>🐛 Debug Info</summary>
-          <div class="debug-content">
-            <h4>🏆 BadgeStore State:</h4>
-            <ul>
-              <li>Definitions Loading: {{ badgeStore.definitionsLoading() }}</li>
-              <li>Definitions Count: {{ badgeStore.definitions().length }}</li>
-              <li>Earned Badges Loading: {{ badgeStore.loading() }}</li>
-              <li>Earned Badge Count: {{ badgeStore.earnedBadgeCount() }}</li>
-              <li>Recent For Display: {{ badgeStore.recentBadgesForDisplay().length }}</li>
-              <li>Should Show Badges: {{ shouldShowBadges() }}</li>
-            </ul>
-
-            <h4>👤 UserStore Badge Summaries:</h4>
-            <ul>
-              <li>Badge Count: {{ userStore.badgeCount() }}</li>
-              <li>Badge IDs: {{ userStore.badgeIds().join(', ') }}</li>
-              <li>Has Badges: {{ userStore.hasBadges() }}</li>
-            </ul>
-
-            <h4>📍 NearbyPubStore State:</h4>
-            <ul>
-              <li>Has Location: {{ nearbyPubStore.location() ? 'Yes' : 'No' }}</li>
-              <li>Nearby Pubs Count: {{ nearbyPubStore.nearbyPubsCount() }}</li>
-              <li>Closest Pub: {{ nearbyPubStore.closestPub()?.name || 'None' }}</li>
-              <li>Can Check In: {{ nearbyPubStore.canCheckIn() }}</li>
-            </ul>
-
-            <details>
-              <summary>Raw NearbyPubStore Debug</summary>
-              <pre>{{ nearbyPubStore.getDebugInfo() | json }}</pre>
-            </details>
-
-            <details>
-              <summary>Raw BadgeStore Data</summary>
-              <pre>{{ badgeStore.getDebugInfo() | json }}</pre>
-            </details>
-          </div>
-        </details>
-      }
-    </div>
-  `,
+    JsonPipe,
+    PubCountHeroComponent
+],
+  templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
 export class HomeComponent extends BaseComponent {
@@ -174,6 +78,42 @@ export class HomeComponent extends BaseComponent {
   readonly hasProgressData = computed(() => {
     return this.totalPubs() > 0 && this.visitedPubsCount() >= 0;
   });
+
+
+
+
+// ✅ Next milestone calculation for the hero
+readonly nextMilestone = computed(() => {
+  const count = this.visitedPubsCount();
+  const milestones = [1, 5, 10, 25, 50, 100, 200, 500];
+  return milestones.find(milestone => milestone > count) || null;
+});
+
+// ✅ Progressive disclosure based on user stage
+readonly userStage = computed(() => {
+  const count = this.visitedPubsCount();
+  const user = this.authStore.user();
+
+  if (!user) return 'guest';
+  if (count === 0) return 'brandNew';
+  if (count <= 3) return 'firstTime';
+  if (count <= 10) return 'earlyUser';
+  return 'regularUser';
+});
+
+// ✅ Control what to show based on user stage
+readonly shouldShowSubtext = computed(() => {
+  const stage = this.userStage();
+  return stage !== 'guest'; // Don't confuse guests with too much text
+});
+
+readonly shouldShowGoal = computed(() => {
+  const stage = this.userStage();
+  const count = this.visitedPubsCount();
+  // Show goals once they have at least 1 check-in
+  return stage !== 'guest' && stage !== 'brandNew' && count > 0;
+});
+
 
   // ===================================
   // NEARBY PUBS COMPUTED PROPERTIES (using existing NearbyPubStore interface)
