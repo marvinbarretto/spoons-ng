@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.29](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.28...v0.0.29) (2025-06-16)
+
+
+### Features
+
+* Clean up Badge service and store ([970a55e](https://github.com/marvinbarretto/spoons-ng/commit/970a55efe0b5cd34eca4211682ec1781fab9402c))
+* Ensure landlords are removed in dev debug ([1f0d061](https://github.com/marvinbarretto/spoons-ng/commit/1f0d061fb913d014b526c39a10b11e30cd249067))
+
 ### [0.0.28](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.27...v0.0.28) (2025-06-13)
 
 
