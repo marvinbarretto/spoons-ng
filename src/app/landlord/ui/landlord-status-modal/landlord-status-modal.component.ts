@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
-import { UserStage } from '../../../shared/utils/user-progression.models';
+import { UserExperienceLevel } from '../../../shared/utils/user-progression.models';
 
 
 type LandlordStatusData = {
@@ -25,7 +25,7 @@ type LandlordStatusData = {
           <div class="landlord-success">
             <div class="crown-icon">👑</div>
 
-            @switch (userStage()) {
+            @switch (UserExperienceLevel()) {
               @case ('brandNew') {
                 <div class="onboarding-explanation">
                   <h3>You're the Landlord!</h3>
@@ -60,7 +60,7 @@ type LandlordStatusData = {
         } @else {
           <!-- Landlord Challenge Failed -->
           <div class="landlord-challenge">
-            @switch (userStage()) {
+            @switch (UserExperienceLevel()) {
               @case ('brandNew') {
                 <div class="learning-explanation">
                   <h3>Landlord Status</h3>
@@ -137,7 +137,7 @@ type LandlordStatusData = {
 })
 export class LandlordStatusModalComponent {
   readonly data = input.required<LandlordStatusData>();
-  readonly userStage = input.required<UserStage>();
+  readonly UserExperienceLevel = input.required<UserExperienceLevel>();
 
   readonly navigate = output<void>();
   readonly dismiss = output<void>();

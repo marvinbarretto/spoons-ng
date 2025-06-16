@@ -19,7 +19,7 @@ import {
 } from '@angular/fire/firestore';
 import { generateAnonymousName } from '../../shared/utils/anonymous-names';
 import type { User as SpoonsUser } from '../../users/utils/user.model';
-import type { UserStage } from '@shared/utils/user-progression.models';
+import type { UserExperienceLevel } from '@shared/utils/user-progression.models';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {

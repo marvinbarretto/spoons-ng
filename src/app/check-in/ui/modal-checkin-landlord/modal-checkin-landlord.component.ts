@@ -505,7 +505,7 @@ export class ModalCheckinLandlordComponent {
 
   // Inputs
   readonly data = input.required<LandlordModalData>();
-  readonly userStage = input<string>('');
+  readonly UserExperienceLevel = input<string>('');
 
   // Outputs
   readonly navigate = output<void>();
@@ -799,7 +799,7 @@ export class ModalCheckinLandlordComponent {
       wasPreviouslyLandlordHere: this.wasPreviouslyLandlordHere(),
       neverLandlordBefore: this.neverLandlordBefore(),
       shouldExplainSystem: this.shouldExplainLandlordSystem(),
-      userStage: this.userProgressionService.userStage(),
+      UserExperienceLevel: this.userProgressionService.userExperienceLevel(),
       landlordStoreState: {
         loading: this.landlordStore.loading(),
         error: this.landlordStore.error(),

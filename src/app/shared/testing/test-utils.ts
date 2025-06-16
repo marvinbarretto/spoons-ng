@@ -25,8 +25,8 @@ export function getMockUser(overrides: Partial<User> = {}): User {
 
 
 // TODO: Mend and updatethis...
-export function createTestUser(overrides: Partial<Omit<User, 'userStage'>> = {}): User {
-  const defaultData: Omit<User, 'userStage'> = {
+export function createTestUser(overrides: Partial<Omit<User, 'UserExperienceLevel'>> = {}): User {
+  const defaultData: Omit<User, 'UserExperienceLevel'> = {
     uid: `test-user-${Math.random().toString(36).substr(2, 9)}`,
     email: 'test@example.com',
     displayName: 'Test User',

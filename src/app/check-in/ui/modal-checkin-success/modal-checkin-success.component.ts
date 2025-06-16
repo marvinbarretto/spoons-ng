@@ -388,7 +388,7 @@ export class ModalCheckinSuccessComponent {
 
   // Inputs
   readonly data = input.required<CheckInResultData>();
-  readonly userStage = input<string>('');
+  readonly UserExperienceLevel = input<string>('');
 
   // Outputs
   readonly navigate = output<void>();

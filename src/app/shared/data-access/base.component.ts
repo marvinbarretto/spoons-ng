@@ -10,6 +10,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SsrPlatformService } from '../utils/ssr/ssr-platform.service';
 import { ToastService } from './toast.service';
+import { UserProgressionService } from './user-progression.service';
 
 @Component({
   template: '',
@@ -20,6 +21,11 @@ export abstract class BaseComponent implements OnInit {
   protected readonly destroyRef = inject(DestroyRef);
   protected readonly platform = inject(SsrPlatformService);
   protected readonly toastService = inject(ToastService);
+  protected readonly userProgressionService = inject(UserProgressionService);
+
+  // Commonly used signals available everywhere
+  protected readonly userExperienceLevel = this.userProgressionService.userExperienceLevel;
+
 
   // 📡 Universal component state - clean signal names
   protected readonly loading = signal(false);

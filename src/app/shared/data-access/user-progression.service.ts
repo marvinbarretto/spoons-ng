@@ -2,7 +2,7 @@
 import { Injectable, Signal, computed, inject } from '@angular/core';
 import { UserStore } from '@users/data-access/user.store';
 import { CheckinStore } from '@check-in/data-access/check-in.store';
-import type { UserStage, UserMilestone, UserProgressionStats, UserStageUIFlags } from '@shared/utils/user-progression.models';
+import type { UserExperienceLevel, UserMilestone, UserProgressionStats, UserExperienceLevelUIFlags } from '@shared/utils/user-progression.models';
 
 @Injectable({ providedIn: 'root' })
 export class UserProgressionService {
@@ -30,7 +30,7 @@ export class UserProgressionService {
   });
 
   // ✅ User Experience Stage Classification
-  readonly userStage = computed(() => {
+  readonly userExperienceLevel = computed(() => {
     const checkinCount = this.totalCheckinsCount();
     const uniquePubs = this.uniquePubsVisited();
     const user = this.userStore.user();
@@ -54,15 +54,15 @@ export class UserProgressionService {
 
     // Power user (50+ check-ins)
     return 'powerUser';
-  }) as Signal<UserStage>;
+  }) as Signal<UserExperienceLevel>;
 
   // ✅ Specific stage checkers
-  readonly isBrandNewUser = computed(() => this.userStage() === 'brandNew');
-  readonly isFirstTimeUser = computed(() => this.userStage() === 'firstTime');
-  readonly isEarlyUser = computed(() => this.userStage() === 'earlyUser');
-  readonly isRegularUser = computed(() => this.userStage() === 'regularUser');
-  readonly isExplorer = computed(() => this.userStage() === 'explorer');
-  readonly isPowerUser = computed(() => this.userStage() === 'powerUser');
+  readonly isBrandNewUser = computed(() => this.userExperienceLevel() === 'brandNew');
+  readonly isFirstTimeUser = computed(() => this.userExperienceLevel() === 'firstTime');
+  readonly isEarlyUser = computed(() => this.userExperienceLevel() === 'earlyUser');
+  readonly isRegularUser = computed(() => this.userExperienceLevel() === 'regularUser');
+  readonly isExplorer = computed(() => this.userExperienceLevel() === 'explorer');
+  readonly isPowerUser = computed(() => this.userExperienceLevel() === 'powerUser');
 
   // ✅ UI-specific computed signals
   readonly shouldShowWelcomeFlow = computed(() =>
@@ -83,7 +83,7 @@ export class UserProgressionService {
 
   // ✅ Contextual messaging
   readonly stageMessage = computed(() => {
-    const stage = this.userStage();
+    const stage = this.userExperienceLevel();
     const checkins = this.totalCheckinsCount();
     const uniquePubs = this.uniquePubsVisited();
 
@@ -134,7 +134,7 @@ export class UserProgressionService {
 
   // ✅ Complete progression stats for components
   readonly progressionStats = computed((): UserProgressionStats => ({
-    stage: this.userStage(),
+    stage: this.userExperienceLevel(),
     totalCheckins: this.totalCheckinsCount(),
     uniquePubs: this.uniquePubsVisited(),
     nextMilestone: this.nextMilestone(),
@@ -143,7 +143,7 @@ export class UserProgressionService {
   }));
 
   // ✅ UI flags for components
-  readonly uiFlags = computed((): UserStageUIFlags => ({
+  readonly uiFlags = computed((): UserExperienceLevelUIFlags => ({
     shouldShowWelcomeFlow: this.shouldShowWelcomeFlow(),
     shouldShowBadges: this.shouldShowBadges(),
     shouldShowProgressFeatures: this.shouldShowProgressFeatures(),

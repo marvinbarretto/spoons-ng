@@ -7,7 +7,7 @@ import { AuthStore } from '../../auth/data-access/auth.store';
 import { BadgeTestFactories } from '../testing/badge-test-factories';
 import type { EarnedBadge } from '../utils/badge.model';
 import type { User } from '@users/utils/user.model';
-import { UserStage } from '@shared/utils/user-progression.models';
+import { UserExperienceLevel } from '@shared/utils/user-progression.models';
 
 /**
  * Test suite for EarnedBadgeStore.
@@ -35,7 +35,7 @@ describe('EarnedBadgeStore', () => {
     streaks: {},
     joinedMissionIds: [],
     joinedAt: '2023-01-01T00:00:00.000Z',
-    userStage: UserStage.BEGINNER,
+    UserExperienceLevel: UserExperienceLevel.BEGINNER,
   };
 
   beforeEach(() => {

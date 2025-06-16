@@ -49,7 +49,7 @@ export class CheckInModalService {
       {},
       {
         data,
-        userStage: this.userProgressionService.userStage()
+        UserExperienceLevel: this.userProgressionService.userExperienceLevel()
       }
     );
 
@@ -91,7 +91,7 @@ export class CheckInModalService {
           landlordMessage: data.landlordMessage,
           pub: data.pub
         },
-        userStage: this.userProgressionService.userStage()
+        UserExperienceLevel: this.userProgressionService.userExperienceLevel()
       }
     );
 

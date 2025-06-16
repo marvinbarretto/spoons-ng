@@ -90,7 +90,7 @@ readonly nextMilestone = computed(() => {
 });
 
 // ✅ Progressive disclosure based on user stage
-readonly userStage = computed(() => {
+readonly UserExperienceLevel = computed(() => {
   const count = this.visitedPubsCount();
   const user = this.authStore.user();
 
@@ -103,12 +103,12 @@ readonly userStage = computed(() => {
 
 // ✅ Control what to show based on user stage
 readonly shouldShowSubtext = computed(() => {
-  const stage = this.userStage();
+  const stage = this.UserExperienceLevel();
   return stage !== 'guest'; // Don't confuse guests with too much text
 });
 
 readonly shouldShowGoal = computed(() => {
-  const stage = this.userStage();
+  const stage = this.UserExperienceLevel();
   const count = this.visitedPubsCount();
   // Show goals once they have at least 1 check-in
   return stage !== 'guest' && stage !== 'brandNew' && count > 0;

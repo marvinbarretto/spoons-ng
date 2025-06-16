@@ -5,7 +5,7 @@ import { User } from "@users/utils/user.model";
 /**
  * User experience stages based on check-in activity and engagement
  */
-export type UserStage =
+export type UserExperienceLevel =
   | 'guest'        // Not logged in
   | 'brandNew'     // Anonymous user, 0 check-ins - needs onboarding
   | 'firstTime'    // 1-2 check-ins - learning the app
@@ -15,7 +15,7 @@ export type UserStage =
   | 'powerUser';   // 50+ check-ins - expert level user
 
 
-export const USER_STAGES: UserStage[] = [
+export const USER_STAGES: UserExperienceLevel[] = [
   'guest', 'brandNew', 'firstTime', 'earlyUser', 'regularUser', 'explorer', 'powerUser'
 ];
 
@@ -60,7 +60,7 @@ export const MILESTONE_TARGETS: Record<MilestoneType, number> = {
  * User progression statistics
  */
 export type UserProgressionStats = {
-  stage: UserStage;
+  stage: UserExperienceLevel;
   totalCheckins: number;
   uniquePubs: number;
   nextMilestone: UserMilestone;
@@ -71,7 +71,7 @@ export type UserProgressionStats = {
 /**
  * UI behavior flags based on user stage
  */
-export type UserStageUIFlags = {
+export type UserExperienceLevelUIFlags = {
   shouldShowWelcomeFlow: boolean;
   shouldShowBadges: boolean;
   shouldShowProgressFeatures: boolean;
@@ -81,7 +81,7 @@ export type UserStageUIFlags = {
 /**
  * Complete user progression context for components
  */
-export type UserProgressionContext = UserProgressionStats & UserStageUIFlags;
+export type UserProgressionContext = UserProgressionStats & UserExperienceLevelUIFlags;
 
 
 
@@ -90,7 +90,7 @@ export type UserProgressionContext = UserProgressionStats & UserStageUIFlags;
 /**
  * ✅ Calculate user stage based on activity
  */
-export function getUserStage(user: Pick<User, 'isAnonymous' | 'checkedInPubIds'>): UserStage {
+export function getUserExperienceLevel(user: Pick<User, 'isAnonymous' | 'checkedInPubIds'>): UserExperienceLevel {
   if (!user) return 'guest';
 
   if (user.isAnonymous && user.checkedInPubIds.length === 0) {
@@ -118,7 +118,7 @@ export function getUserStage(user: Pick<User, 'isAnonymous' | 'checkedInPubIds'>
  * ✅ Get comprehensive progression statistics
  */
 export function getUserProgressionStats(data: {
-  stage: UserStage;
+  stage: UserExperienceLevel;
   totalCheckins: number;
   uniquePubs: number;
 }): UserProgressionStats {
@@ -140,7 +140,7 @@ export function getUserProgressionStats(data: {
 /**
  * ✅ Get UI behavior flags based on user stage
  */
-export function getUserStageUIFlags(stage: UserStage): UserStageUIFlags {
+export function getUserExperienceLevelUIFlags(stage: UserExperienceLevel): UserExperienceLevelUIFlags {
   return {
     shouldShowWelcomeFlow: stage === 'brandNew' || stage === 'firstTime',
     shouldShowBadges: stage !== 'guest' && stage !== 'brandNew',
@@ -206,7 +206,7 @@ function getNextMilestone(totalCheckins: number, uniquePubs: number): UserMilest
 /**
  * ✅ Get contextual message for user's current stage
  */
-function getStageMessage(stage: UserStage, totalCheckins: number, uniquePubs: number): string {
+function getStageMessage(stage: UserExperienceLevel, totalCheckins: number, uniquePubs: number): string {
   switch (stage) {
     case 'guest':
       return 'Welcome to the pub crawl adventure!';
