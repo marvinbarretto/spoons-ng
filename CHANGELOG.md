@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.32](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.31...v0.0.32) (2025-06-17)
+
+
+### Features
+
+* New scoreboard ([09160c9](https://github.com/marvinbarretto/spoons-ng/commit/09160c9e0a369e0431be968a3e2f33f99f62a91d))
+* Split home features into widgets ([688a4aa](https://github.com/marvinbarretto/spoons-ng/commit/688a4aac91e2d18350ae4a060b84315d0688369d))
+
 ### [0.0.31](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.30...v0.0.31) (2025-06-17)
 
 
