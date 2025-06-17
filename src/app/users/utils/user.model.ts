@@ -1,5 +1,5 @@
 import { EarnedBadge } from "../../badges/utils/badge.model";
-import { getUserStage, UserStage } from "../../shared/utils/user-progression.models";
+import { getUserExperienceLevel, UserExperienceLevel } from "../../shared/utils/user-progression.models";
 
 export type User = {
   uid: string;
@@ -25,6 +25,8 @@ export type User = {
 
   // ✅ Remove the old badges array - this now comes from BadgeStore
   // The detailed badge data lives in the earnedBadges collection
+
+  UserExperienceLevel?: UserExperienceLevel;
 };
 
 // ✅ Type for user badge summary updates
@@ -41,14 +43,14 @@ export type UserLandlordSummary = {
 
 
 /**
- * ✅ Factory function to create User objects with computed userStage
+ * ✅ Factory function to create User objects with computed UserExperienceLevel
  * Perfect for AuthStore, UserStore, tests, and anywhere else
  */
-export function createUser(userData: Omit<User, 'userStage'>): User {
+export function createUser(userData: Omit<User, 'UserExperienceLevel'>): User {
   return {
     ...userData,
-    get userStage(): UserStage {
-      return getUserStage(this);
+    get UserExperienceLevel(): UserExperienceLevel {
+      return getUserExperienceLevel(this);
     }
   };
 }
