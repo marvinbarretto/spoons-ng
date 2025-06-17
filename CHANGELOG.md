@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.36](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.35...v0.0.36) (2025-06-17)
+
+
+### Bug Fixes
+
+* Footer nav invoke check in properly ([3e8a711](https://github.com/marvinbarretto/spoons-ng/commit/3e8a711b9b8f788c931536b6db5e7e6ffa98e1b6))
+* solve memory leak in UserStore ([76b6247](https://github.com/marvinbarretto/spoons-ng/commit/76b62471015a38d9043ecc03e6640ff828929e10))
+
 ### [0.0.35](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.34...v0.0.35) (2025-06-17)
 
 
