@@ -1,5 +1,5 @@
-// src/app/users/data-access/user.store.ts - Simplified version
-import { Injectable, signal, computed, effect, inject } from '@angular/core';
+// src/app/users/data-access/user.store.ts
+import { Injectable, signal, computed, inject, effect } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { UserService } from './user.service';
 import { AuthStore } from '../../auth/data-access/auth.store';
@@ -7,26 +7,23 @@ import type { User, UserBadgeSummary, UserLandlordSummary } from '../utils/user.
 
 @Injectable({ providedIn: 'root' })
 export class UserStore {
+  // 🔧 Dependencies
   private readonly _service = inject(UserService);
   private readonly authStore = inject(AuthStore);
 
-  // ===================================
-  // STATE
-  // ===================================
-
+  // 🔒 Internal state
   private readonly _user = signal<User | null>(null);
   private readonly _loading = signal(false);
   private readonly _error = signal<string | null>(null);
-  private lastLoadedUserId: string | null = null;
 
-  // ===================================
-  // READONLY SIGNALS
-  // ===================================
-
+  // 📡 Readonly signals
   readonly user = this._user.asReadonly();
   readonly loading = this._loading.asReadonly();
   readonly error = this._error.asReadonly();
-  readonly isLoaded = computed(() => !!this._user());
+  readonly isLoaded = computed(() => !this._loading() && !!this._user());
+
+  // 🔄 Track auth user ID changes separately from user data changes
+  private lastLoadedUserId: string | null = null;
 
   // ===================================
   // COMPUTED PROPERTIES (User Profile)
@@ -51,19 +48,25 @@ export class UserStore {
   // ===================================
 
   constructor() {
-    // Auto-load user when auth changes
+    // ✅ FIXED: Only track auth user ID changes, not local user data changes
     effect(() => {
       const authUser = this.authStore.user();
+
       if (!authUser) {
+        console.log('[UserStore] 🚪 User logged out, resetting');
         this.reset();
         this.lastLoadedUserId = null;
         return;
       }
 
+      // ✅ KEY FIX: Only reload if the AUTH USER ID changed
+      // Don't reload if just the user data was updated locally
       if (authUser.uid === this.lastLoadedUserId) {
+        console.log('[UserStore] ⏭ Auth user unchanged, skipping reload');
         return;
       }
 
+      console.log('[UserStore] 👤 New auth user detected:', authUser.uid);
       this.lastLoadedUserId = authUser.uid;
       this.loadUser(authUser.uid);
     });
@@ -132,102 +135,68 @@ export class UserStore {
   // ===================================
 
   setUser(user: User | null): void {
+    console.log('[UserStore] 📝 Setting user:', user?.uid || 'null');
     this._user.set(user);
   }
 
   patchUser(updates: Partial<User>): void {
     const current = this._user();
-    if (!current) return;
+    if (!current) {
+      console.warn('[UserStore] ⚠️ Cannot patch user - no current user');
+      return;
+    }
+
+    console.log('[UserStore] 🔧 Patching user with:', updates);
     this._user.set({ ...current, ...updates });
   }
 
   // Badge summary updates (called by BadgeStore)
   updateBadgeSummary(summary: UserBadgeSummary): void {
+    console.log('[UserStore] 🏅 Updating badge summary:', summary);
     this.patchUser(summary);
-    console.log('[UserStore] ✅ Badge summary updated:', summary);
+    console.log('[UserStore] ✅ Badge summary updated');
   }
 
   // Landlord summary updates (called by LandlordStore)
   updateLandlordSummary(summary: UserLandlordSummary): void {
+    console.log('[UserStore] 👑 Updating landlord summary:', summary);
     this.patchUser(summary);
-    console.log('[UserStore] ✅ Landlord summary updated:', summary);
+    console.log('[UserStore] ✅ Landlord summary updated');
   }
 
   // ===================================
-  // QUICK QUERY METHODS (Using summaries)
+  // STATE MANAGEMENT
   // ===================================
 
-  hasBadge(badgeId: string): boolean {
-    return this.badgeIds().includes(badgeId);
+  reset(): void {
+    console.log('[UserStore] 🔄 Resetting store');
+    this._user.set(null);
+    this._loading.set(false);
+    this._error.set(null);
   }
-
-  isLandlordOf(pubId: string): boolean {
-    return this.landlordPubIds().includes(pubId);
-  }
-
-  // ===================================
-  // AUTH SYNC
-  // ===================================
-
-  syncFromAuthStore(): void {
-    const authUser = this.authStore.user();
-    const currentUser = this._user();
-
-    if (!authUser || !currentUser) return;
-
-    // Only sync basic fields that can change in AuthStore
-    const updates: Partial<User> = {};
-    let hasUpdates = false;
-
-    if (authUser.displayName !== currentUser.displayName) {
-      updates.displayName = authUser.displayName;
-      hasUpdates = true;
-    }
-
-    if (authUser.photoURL !== currentUser.photoURL) {
-      updates.photoURL = authUser.photoURL;
-      hasUpdates = true;
-    }
-
-    if (authUser.email !== currentUser.email) {
-      updates.email = authUser.email;
-      hasUpdates = true;
-    }
-
-    if (hasUpdates) {
-      this.patchUser(updates);
-      console.log('[UserStore] ✅ Synced updates from AuthStore:', updates);
-    }
-  }
-
-  // ===================================
-  // UTILITY
-  // ===================================
 
   clearError(): void {
     this._error.set(null);
   }
 
-  reset(): void {
-    this._user.set(null);
-    this._loading.set(false);
-    this._error.set(null);
-    this.lastLoadedUserId = null;
-    console.log('[UserStore] 🔄 Reset complete');
+  // ===================================
+  // UTILITY METHODS
+  // ===================================
+
+  has(predicate: (user: User) => boolean): boolean {
+    const user = this._user();
+    return user ? predicate(user) : false;
   }
 
-  getDebugInfo() {
-    const user = this._user();
+  getDebugInfo(): object {
     return {
-      hasUser: !!user,
-      userId: user?.uid,
-      displayName: user?.displayName,
-      badgeCount: this.badgeCount(),
-      hasBadges: this.hasBadges(),
-      landlordCount: this.landlordCount(),
-      isLoading: this._loading(),
-      hasError: !!this._error(),
+      hasUser: !!this._user(),
+      loading: this._loading(),
+      error: this._error(),
       lastLoadedUserId: this.lastLoadedUserId,
+      userUid: this._user()?.uid || null,
+      badgeCount: this.badgeCount(),
+      landlordCount: this.landlordCount()
     };
   }
 }
