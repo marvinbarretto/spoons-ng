@@ -536,7 +536,7 @@ export class DevDebugComponent extends BaseComponent {
       isAuthenticated: isAuth,
       user: user,
       uid: this.authStore.uid(),
-      displayName: this.authStore.displayName(),
+      displayName: this.userStore.displayName(),
       isAnonymous: this.authStore.isAnonymous(),
       token: this.authStore.token() ? '[TOKEN_PRESENT]' : null,
       authFlow: {
@@ -803,7 +803,7 @@ testUpdateDisplayName(): void {
   const newName = `Test Name ${Date.now()}`;
   console.log('[DevDebugComponent] 🧪 Testing display name update:', newName);
 
-  this.authStore.updateDisplayName(newName).then(() => {
+  this.userStore.updateDisplayName(newName).then(() => {
     console.log('[DevDebugComponent] Name updated successfully to:', newName);
   }).catch(err => {
     console.log('[DevDebugComponent] Name update failed:', err.message);

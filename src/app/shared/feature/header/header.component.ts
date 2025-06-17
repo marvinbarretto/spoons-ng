@@ -25,6 +25,7 @@ import { NearbyPubStore } from '../../../pubs/data-access/nearby-pub.store';
 import { AuthStore } from '../../../auth/data-access/auth.store';
 
 import { APP_VERSION } from '../../utils/version';
+import { UserStore } from '../../../users/data-access/user.store';
 
 
 /**
@@ -58,6 +59,7 @@ export class HeaderComponent extends BaseComponent implements AfterViewInit {
   private readonly landlordStore = inject(LandlordStore);
   private readonly nearbyPubStore = inject(NearbyPubStore);
   private readonly authStore = inject(AuthStore);
+  private readonly userStore = inject(UserStore);
 
   // ✅ Reactive viewport detection
   readonly isMobile = this.viewportService.isMobile;
@@ -68,7 +70,7 @@ export class HeaderComponent extends BaseComponent implements AfterViewInit {
   // ✅ Auth signals
   readonly user = this.authStore.user;
   readonly isAnonymous = this.authStore.isAnonymous;
-  readonly displayName = this.authStore.displayName;
+  readonly displayName = this.userStore.displayName;
 
   // ✅ Auth actions
   handleLogin = () => this.authStore.loginWithGoogle();

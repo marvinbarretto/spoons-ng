@@ -1,10 +1,8 @@
-// src/app/home/ui/profile-customisation-modal/widgets/avatar-selection-widget/avatar-selection-widget.component.ts
-import { Component, input, output, computed, signal, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, input, output, computed, signal, inject, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AvatarService } from '@shared/data-access/avatar.service';
+import { UserStore } from '@users/data-access/user.store';
 import type { User } from '@users/utils/user.model';
-
-// ✅ Use the service's AvatarOption type instead of defining our own
 import type { AvatarOption } from '@shared/data-access/avatar.service';
 
 @Component({
@@ -17,13 +15,21 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
 
       <!-- ✅ Current avatar display -->
       <div class="current-avatar">
-        <img
-          class="avatar-large"
-          [src]="currentAvatarUrl()"
-          [alt]="user()?.displayName + ' current avatar'"
-        />
+        <div class="avatar-container">
+          <img
+            class="avatar-large"
+            [src]="displayAvatarUrl()"
+            [alt]="currentUser()?.displayName + ' avatar'"
+          />
+          <!-- ✅ Status indicator -->
+          @if (saving()) {
+            <div class="status-circle saving">⏳</div>
+          } @else if (lastSaved()) {
+            <div class="status-circle saved">✓</div>
+          }
+        </div>
         <div class="avatar-info">
-          <span class="avatar-name">{{ getCurrentAvatarName() }}</span>
+          <span class="avatar-name">{{ getDisplayAvatarName() }}</span>
           <span class="avatar-type">{{ isAnonymous() ? 'Anonymous User' : 'Signed In' }}</span>
         </div>
       </div>
@@ -35,7 +41,9 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
             type="button"
             class="avatar-option"
             [class.selected]="isSelected(avatar)"
+            [class.current]="isCurrent(avatar)"
             [class.default]="avatar.isDefault"
+            [disabled]="saving()"
             (click)="selectAvatar(avatar.id)"
             [title]="avatar.name"
           >
@@ -50,36 +58,16 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
         }
       </div>
 
-      <!-- ✅ Save/Reset actions -->
-      <div class="widget-actions">
-        <button
-          type="button"
-          class="btn-save"
-          [disabled]="saving() || !hasSelection()"
-          (click)="saveAvatar()"
-        >
-          @if (saving()) {
-            Saving...
-          } @else {
-            Save Avatar
-          }
-        </button>
-
-        @if (hasCustomAvatar()) {
-          <button
-            type="button"
-            class="btn-reset"
-            [disabled]="saving()"
-            (click)="resetToDefault()"
-          >
-            Reset to Default
-          </button>
-        }
-      </div>
-
       <!-- ✅ Error display -->
       @if (error()) {
-        <div class="error-message">{{ error() }}</div>
+        <div class="error-message">
+          {{ error() }}
+          @if (failedAvatar()) {
+            <button type="button" class="retry-btn" (click)="retryLastSelection()">
+              Retry
+            </button>
+          }
+        </div>
       }
     </div>
   `,
@@ -98,7 +86,6 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
       color: var(--color-text);
     }
 
-    /* ✅ Current Avatar Display */
     .current-avatar {
       display: flex;
       align-items: center;
@@ -110,12 +97,40 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
       margin-bottom: 1rem;
     }
 
+    .avatar-container {
+      position: relative;
+    }
+
     .avatar-large {
       width: 60px;
       height: 60px;
       border-radius: 50%;
       object-fit: cover;
       border: 2px solid var(--color-border);
+    }
+
+    .status-circle {
+      position: absolute;
+      bottom: -2px;
+      right: -2px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+      color: white;
+      border: 2px solid var(--color-surface);
+    }
+
+    .status-circle.saving {
+      background: #f59e0b;
+    }
+
+    .status-circle.saved {
+      background: #10b981;
     }
 
     .avatar-info {
@@ -135,7 +150,6 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
       color: var(--color-text-secondary);
     }
 
-    /* ✅ Avatar Grid */
     .avatar-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
@@ -156,11 +170,15 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
       overflow: hidden;
     }
 
+    .avatar-option:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
     .avatar-option img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      border-radius: 50%;
     }
 
     .avatar-option:hover:not(:disabled) {
@@ -170,82 +188,32 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
 
     .avatar-option.selected {
       border-color: var(--color-primary);
-      border-width: 3px;
+      box-shadow: 0 0 0 2px var(--color-primary-light);
     }
 
-    .avatar-option.default {
-      border-color: var(--color-accent);
+    .avatar-option.current {
+      border-color: var(--color-success);
     }
 
-    /* ✅ Badges */
     .default-badge,
     .selected-badge {
       position: absolute;
-      top: -2px;
+      bottom: -2px;
       right: -2px;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.6rem;
-      font-weight: bold;
+      background: var(--color-primary);
+      color: white;
+      font-size: 0.625rem;
+      font-weight: 600;
+      padding: 0.125rem 0.25rem;
+      border-radius: 4px;
+      min-width: 20px;
+      text-align: center;
     }
 
     .default-badge {
-      background: var(--color-accent);
-      color: var(--color-accent-text);
-      font-size: 0.5rem;
+      background: var(--color-text-secondary);
     }
 
-    .selected-badge {
-      background: var(--color-success);
-      color: var(--color-success-text);
-    }
-
-    /* ✅ Actions */
-    .widget-actions {
-      display: flex;
-      gap: 0.75rem;
-      flex-wrap: wrap;
-    }
-
-    .btn-save,
-    .btn-reset {
-      padding: 0.5rem 1rem;
-      border: 1px solid var(--color-border);
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.875rem;
-      transition: all 0.2s ease;
-    }
-
-    .btn-save {
-      background: var(--color-primary);
-      color: var(--color-primary-text);
-      border-color: var(--color-primary);
-    }
-
-    .btn-save:hover:not(:disabled) {
-      background: var(--color-primary-hover);
-    }
-
-    .btn-save:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .btn-reset {
-      background: var(--color-surface);
-      color: var(--color-text);
-    }
-
-    .btn-reset:hover:not(:disabled) {
-      background: var(--color-surface-hover);
-    }
-
-    /* ✅ Error Message */
     .error-message {
       padding: 0.75rem;
       background: var(--color-error-light);
@@ -254,9 +222,25 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
       color: var(--color-error-text);
       font-size: 0.875rem;
       margin-top: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
-    /* ✅ Responsive */
+    .retry-btn {
+      background: var(--color-error);
+      color: white;
+      border: none;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+
+    .retry-btn:hover {
+      background: var(--color-error-dark);
+    }
+
     @media (max-width: 640px) {
       .avatar-grid {
         grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
@@ -271,140 +255,144 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
         flex-direction: column;
         text-align: center;
       }
-
-      .widget-actions {
-        flex-direction: column;
-      }
     }
   `
 })
 export class AvatarSelectionWidgetComponent {
-  // ✅ Inject services
   private readonly _avatarService = inject(AvatarService);
+  private readonly _userStore = inject(UserStore); // ✅ Use UserStore
+  private readonly _destroyRef = inject(DestroyRef);
 
-  // ✅ Inputs
   readonly user = input<User | null>(null);
-  readonly selectedAvatarId = input('');
-
-  // ✅ Outputs
+  readonly selectedAvatarId = input(''); // ✅ For backwards compatibility
   readonly avatarSelected = output<string>();
 
-  // ✅ Internal state
+  // ✅ Local widget state
   private readonly _selectedAvatarId = signal<string>('');
   private readonly _saving = signal(false);
   private readonly _error = signal<string | null>(null);
+  private readonly _lastSaved = signal(false);
+  private readonly _failedAvatar = signal<AvatarOption | null>(null);
 
-  // ✅ Readonly accessors
-  readonly saving = this._saving.asReadonly();
+  private _saveTimer: number | null = null;
+  private readonly SAVE_DELAY = 2000; // 2 seconds
+
   readonly error = this._error.asReadonly();
+  readonly lastSaved = this._lastSaved.asReadonly();
+  readonly failedAvatar = this._failedAvatar.asReadonly();
 
-  // ✅ Computed values
-  readonly isAnonymous = computed(() => {
-    return this.user()?.isAnonymous ?? true;
-  });
+  // ✅ Use UserStore for current user data
+  readonly currentUser = this._userStore.user;
+  readonly saving = computed(() => this._saving() || this._userStore.loading());
 
-  readonly currentAvatarUrl = computed(() => {
-    const user = this.user();
-    return this._avatarService.getAvatarUrl(user);
-  });
+  readonly isAnonymous = computed(() => this.currentUser()?.isAnonymous ?? true);
 
   readonly availableAvatars = computed((): AvatarOption[] => {
-    const user = this.user();
+    const user = this.currentUser();
     if (!user) return [];
-
-    // ✅ Use AvatarService to generate options
     return this._avatarService.generateAvatarOptions(user.uid);
   });
 
-  readonly hasCustomAvatar = computed(() => {
-    return this._avatarService.hasCustomAvatar();
+  readonly currentAvatarUrl = computed(() => {
+    const user = this.currentUser();
+    return this._avatarService.getAvatarUrl(user);
   });
 
-  readonly hasSelection = computed(() => {
-    return this._selectedAvatarId() !== '';
+  readonly displayAvatarUrl = computed(() => {
+    const selectedId = this._selectedAvatarId();
+    if (selectedId) {
+      const selectedAvatar = this.availableAvatars().find(a => a.id === selectedId);
+      if (selectedAvatar) return selectedAvatar.url;
+    }
+    return this.currentAvatarUrl();
   });
 
-  // ✅ Methods
-  getCurrentAvatarName(): string {
-    const current = this.availableAvatars().find(avatar =>
-      avatar.url === this.currentAvatarUrl()
-    );
+  constructor() {
+    this._destroyRef.onDestroy(() => {
+      this._clearTimer();
+    });
+  }
+
+  getDisplayAvatarName(): string {
+    const selectedId = this._selectedAvatarId();
+    let targetUrl = this.displayAvatarUrl();
+
+    if (selectedId) {
+      const selectedAvatar = this.availableAvatars().find(a => a.id === selectedId);
+      if (selectedAvatar) return selectedAvatar.name;
+    }
+
+    const current = this.availableAvatars().find(avatar => avatar.url === targetUrl);
     return current?.name || 'Custom';
   }
 
   isSelected(avatar: AvatarOption): boolean {
-    const currentUrl = this.currentAvatarUrl();
-    const selectedId = this._selectedAvatarId();
+    return this._selectedAvatarId() === avatar.id;
+  }
 
-    // Check if this avatar is currently selected for saving
-    if (selectedId) {
-      const selectedAvatar = this.availableAvatars().find(a => a.id === selectedId);
-      return selectedAvatar?.url === avatar.url;
-    }
-
-    // Otherwise check if it's the current avatar
-    return avatar.url === currentUrl;
+  isCurrent(avatar: AvatarOption): boolean {
+    return avatar.url === this.currentAvatarUrl() && !this._selectedAvatarId();
   }
 
   selectAvatar(avatarId: string): void {
     const avatar = this.availableAvatars().find(a => a.id === avatarId);
     if (!avatar) return;
 
-    this._selectedAvatarId.set(avatarId);
+    this._clearTimer();
     this._error.set(null);
+    this._lastSaved.set(false);
+    this._failedAvatar.set(null);
+    this._selectedAvatarId.set(avatarId);
 
-    // ✅ Also emit for parent component compatibility
     this.avatarSelected.emit(avatarId);
+
+    // Start auto-save timer
+    this._saveTimer = window.setTimeout(async () => {
+      await this._performSave(avatar);
+    }, this.SAVE_DELAY);
 
     console.log('[AvatarSelectionWidget] Avatar selected:', avatar.name);
   }
 
-  async saveAvatar(): Promise<void> {
-    const selectedId = this._selectedAvatarId();
-    const avatar = this.availableAvatars().find(a => a.id === selectedId);
+  async retryLastSelection(): Promise<void> {
+    const failed = this._failedAvatar();
+    if (!failed) return;
 
-    if (!avatar) {
-      this._error.set('No avatar selected');
-      return;
-    }
+    this._error.set(null);
+    this._failedAvatar.set(null);
+    await this._performSave(failed);
+  }
 
+  private async _performSave(avatar: AvatarOption): Promise<void> {
     this._saving.set(true);
     this._error.set(null);
 
     try {
       await this._avatarService.selectAvatar(avatar);
 
-      // Clear selection after successful save
       this._selectedAvatarId.set('');
+      this._lastSaved.set(true);
 
-      console.log('[AvatarSelectionWidget] ✅ Avatar saved:', avatar.name);
+      // Hide success indicator after 3 seconds
+      setTimeout(() => this._lastSaved.set(false), 3000);
+
+      console.log('[AvatarSelectionWidget] ✅ Avatar auto-saved:', avatar.name);
 
     } catch (error: any) {
+      this._selectedAvatarId.set('');
+      this._failedAvatar.set(avatar);
       this._error.set(error?.message || 'Failed to save avatar');
-      console.error('[AvatarSelectionWidget] ❌ Save failed:', error);
+
+      console.error('[AvatarSelectionWidget] ❌ Auto-save failed:', error);
     } finally {
       this._saving.set(false);
     }
   }
 
-  async resetToDefault(): Promise<void> {
-    const npcAvatar = this.availableAvatars().find(a => a.isDefault);
-    if (!npcAvatar) return;
-
-    this._saving.set(true);
-    this._error.set(null);
-
-    try {
-      await this._avatarService.selectAvatar(npcAvatar);
-      this._selectedAvatarId.set('');
-
-      console.log('[AvatarSelectionWidget] ✅ Reset to default avatar');
-
-    } catch (error: any) {
-      this._error.set(error?.message || 'Failed to reset avatar');
-      console.error('[AvatarSelectionWidget] ❌ Reset failed:', error);
-    } finally {
-      this._saving.set(false);
+  private _clearTimer(): void {
+    if (this._saveTimer) {
+      clearTimeout(this._saveTimer);
+      this._saveTimer = null;
     }
   }
 }

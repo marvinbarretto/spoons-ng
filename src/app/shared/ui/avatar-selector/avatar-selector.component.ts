@@ -3,6 +3,7 @@ import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthStore } from '../../../auth/data-access/auth.store';
 import { ButtonComponent } from '../button/button.component';
+import { UserStore } from '../../../users/data-access/user.store';
 
 type AvatarOption = {
   id: string;
@@ -210,6 +211,7 @@ type AvatarOption = {
 })
 export class AvatarSelectorComponent {
   private readonly authStore = inject(AuthStore);
+  private readonly userStore = inject(UserStore);
 
   // 📡 State
   readonly selectedAvatarId = signal<string | null>(null);
@@ -219,7 +221,7 @@ export class AvatarSelectorComponent {
   readonly user = this.authStore.user;
 
   readonly userDisplayName = computed(() => {
-    return this.authStore.displayName();
+    return this.userStore.displayName();
   });
 
   readonly avatarOptions = computed((): AvatarOption[] => [

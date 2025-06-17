@@ -448,6 +448,7 @@ export class PubListComponent extends BaseComponent implements OnInit {
 
   navigateToPub(pub: Pub): void {
     // TODO: Inject Router and navigate to pub detail
+    this.router.navigate(['/pubs', pub.id]);
     console.log('Navigate to pub:', pub.id);
   }
 
