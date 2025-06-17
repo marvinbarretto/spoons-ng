@@ -52,6 +52,14 @@ nav {
   }
 }
 
+small {
+  display: block;
+  font-size: 14px;
+  opacity: 0.5;
+  line-height: 1;
+  font-weight: normal;
+}
+
 .header__title h1 {
   line-height: 1.2;
   margin: 0;

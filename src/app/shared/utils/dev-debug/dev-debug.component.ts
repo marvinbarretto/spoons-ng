@@ -46,12 +46,30 @@ import {
 
         <!-- Actions -->
         <div class="actions">
-          <button (click)="refreshStores()" class="btn">🔄 Refresh Stores</button>
-          <button (click)="clearErrors()" class="btn">🧹 Clear Errors</button>
-          <button (click)="toggleVerbose()" class="btn">
-            {{ showVerbose() ? '📋 Hide Details' : '📊 Show Details' }}
-          </button>
-        </div>
+  <!-- Auth Actions -->
+  <div class="action-group">
+    <span class="group-label">🔐 Auth:</span>
+    <button (click)="onLoginGoogle()" class="btn">Login Google</button>
+    <button (click)="onLogout()" class="btn">Logout</button>
+    <button (click)="testUpdateDisplayName()" class="btn">Test Name</button>
+  </div>
+
+  <!-- Store Actions -->
+  <div class="action-group">
+    <span class="group-label">🏪 Stores:</span>
+    <button (click)="refreshAllStores()" class="btn">🔄 Refresh All</button>
+    <button (click)="refreshStores()" class="btn">🔄 Refresh Stores</button>
+    <button (click)="clearErrors()" class="btn">🧹 Clear Errors</button>
+  </div>
+
+  <!-- UI Actions -->
+  <div class="action-group">
+    <span class="group-label">👁️ Display:</span>
+    <button (click)="toggleVerbose()" class="btn">
+      {{ showVerbose() ? '🙈 Hide' : '👁️ Show' }} Verbose
+    </button>
+  </div>
+</div>
 
         <!-- Cleanup Section -->
         <div class="cleanup-section">
@@ -414,6 +432,44 @@ import {
       .status-grid {
         grid-template-columns: repeat(2, 1fr);
       }
+
+
+.action-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+  padding: 6px;
+  background: #f1f3f4;
+  border-radius: 4px;
+  border: 1px solid #e1e5e9;
+}
+
+.group-label {
+  font-size: 9px;
+  font-weight: bold;
+  color: #495057;
+  margin-bottom: 2px;
+}
+
+.action-group .btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 9px;
+  transition: background-color 0.2s;
+}
+
+.action-group .btn:hover {
+  background: #0056b3;
+}
+
+.action-group .btn:active {
+  background: #004085;
+}
     }
   `],
 })
@@ -720,4 +776,56 @@ export class DevDebugComponent extends BaseComponent {
       this.cleanupLoading.set(false);
     }
   }
+
+
+// ✅ Auth debugging actions
+onLoginAnonymous(): void {
+  console.log('[DevDebugComponent] 🔐 Anonymous login requested');
+  this.authStore.loginWithGoogle(); // This might trigger anonymous if Google fails
+}
+
+onLoginGoogle(): void {
+  console.log('[DevDebugComponent] 🔐 Google login requested');
+  this.authStore.loginWithGoogle();
+}
+
+onLogout(): void {
+  console.log('[DevDebugComponent] 🚪 Logout requested');
+  this.authStore.logout();
+}
+
+testUpdateDisplayName(): void {
+  const user = this.authStore.user();
+  if (!user) {
+    console.log('[DevDebugComponent] Cannot update name - no user');
+    return;
+  }
+
+  const newName = `Test Name ${Date.now()}`;
+  console.log('[DevDebugComponent] 🧪 Testing display name update:', newName);
+
+  this.authStore.updateDisplayName(newName).then(() => {
+    console.log('[DevDebugComponent] Name updated successfully to:', newName);
+  }).catch(err => {
+    console.log('[DevDebugComponent] Name update failed:', err.message);
+  });
+}
+
+refreshAllStores(): void {
+  console.log('[DevDebugComponent] 🔄 Refreshing all store data');
+
+  // ✅ Always safe to load - no auth required
+  this.pubStore.loadOnce();
+  this.badgeStore.loadOnce();
+
+  // ✅ Only load auth-dependent stores if user is authenticated
+  const user = this.authStore.user();
+  if (user) {
+    console.log(`[DevDebugComponent] Loading user-specific data for: ${user.uid}`);
+    this.checkinStore.loadOnce();
+    this.userStore.loadUser(user.uid);
+  } else {
+    console.log('[DevDebugComponent] No authenticated user - skipping user-specific stores');
+  }
+}
 }

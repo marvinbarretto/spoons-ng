@@ -22,6 +22,7 @@ import { NavComponent } from "../nav/nav.component";
 import { LandlordStore } from '../../../landlord/data-access/landlord.store';
 import { NearbyPubStore } from '../../../pubs/data-access/nearby-pub.store';
 import { AuthStore } from '../../../auth/data-access/auth.store';
+import { APP_VERSION } from '../../utils/version';
 
 @Component({
   selector: 'app-header',
@@ -45,6 +46,8 @@ export class HeaderComponent extends BaseComponent implements AfterViewInit {
 
   readonly isMobile = this.viewportService.isMobile;
   readonly closestPub = computed(() => this.nearbyPubStore.closestPub());
+
+  readonly version = APP_VERSION;
 
   // ✅ Auth signals
   readonly user = this.authStore.user;

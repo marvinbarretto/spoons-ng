@@ -4,11 +4,13 @@
 
   <ng-container *ngIf="!isHomepage(); else titleWithoutLink">
     <a routerLink="/" class="header__title">
-      <h1>Spooncount</h1>
+      <h1>Spooncount <small>{{version}}</small></h1>
+
     </a>
   </ng-container>
   <ng-template #titleWithoutLink>
-    <h1 class="header__title">Spooncount</h1>
+    <h1 class="header__title">Spooncount <small>{{version}}</small></h1>
+
   </ng-template>
 
   <!--

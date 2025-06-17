@@ -1,31 +1,23 @@
 // src/app/home/feature/home/home.component.ts
 import { Component, computed, inject, ChangeDetectionStrategy } from '@angular/core';
 import { JsonPipe } from '@angular/common';
+import { Router } from '@angular/router';
 import { BaseComponent } from '@shared/data-access/base.component';
 import { AuthStore } from '@auth/data-access/auth.store';
-import { CheckinStore } from '@check-in/data-access/check-in.store';
-import { PubStore } from '@pubs/data-access/pub.store';
 import { UserStore } from '@users/data-access/user.store';
 import { BadgeStore } from '@badges/data-access/badge.store';
-import { NearbyPubStore } from '@pubs/data-access/nearby-pub.store';
-import { MissionStore } from '../../../missions/data-access/mission.store';
+import { MissionStore } from '@missions/data-access/mission.store';
+import { OverlayService } from '@shared/data-access/overlay.service';
 
-
-// Import your UI components
-import { PubProgressHeroComponent } from '@home/ui/pub-progress-hero/pub-progress-hero.component';
-import { CheckInHomepageWidgetComponent } from '@check-in/ui/check-in-homepage-widget/check-in-homepage-widget.component';
-import { EarnedBadgeListComponent } from '@badges/ui/earned-badge-list/earned-badge-list.component';
-import { NearbyPubListComponent } from '@home/ui/nearby-pub-list/nearby-pub-list.component';
-import { WelcomeComponent } from '@home/ui/welcome/welcome.component';
-import { PubCountHeroComponent } from "../../ui/pub-count-hero/pub-count-hero.component";
-
-import { OverlayService } from '../../../shared/data-access/overlay.service';
-
+// Import micro-widget components
 import { ScoreboardHeroComponent } from '@home/ui/scoreboard-hero/scoreboard-hero.component';
 import { BadgesShowcaseComponent } from '@home/ui/badges-showcase/badges-showcase.component';
-import { MissionsSectionComponent } from '@home/ui/missions-widget/missions-widget.component';
+import { MissionsSectionComponent } from '../../ui/missions-widget/missions-widget.component';
 import { ActionCardsComponent } from '@home/ui/action-cards/action-cards.component';
-import { UserProfileWidgetComponent } from '../../ui/user-profile-widget/user-profile-widget.component';
+import { UserProfileWidgetComponent } from '@home/ui/user-profile-widget/user-profile-widget.component';
+import { ProfileCustomisationModalComponent } from '@home/ui/profile-customisation-modal/profile-customisation-modal.component';
+import { PubCountHeroComponent } from '../../ui/pub-count-hero/pub-count-hero.component';
+
 
 
 @Component({
@@ -45,6 +37,8 @@ import { UserProfileWidgetComponent } from '../../ui/user-profile-widget/user-pr
   styleUrl: './home.component.scss'
 })
 export class HomeComponent extends BaseComponent {
+  private readonly overlayService = inject(OverlayService);
+
   // ✅ Store Injections
   protected readonly authStore = inject(AuthStore);
   protected readonly userStore = inject(UserStore);
@@ -83,6 +77,23 @@ export class HomeComponent extends BaseComponent {
     return !user || (user.checkedInPubIds?.length || 0) === 0;
   });
 
+    // ✅ Placeholder for leaderboard position
+    readonly userLeaderboardPosition = computed(() => {
+      // TODO: Implement real leaderboard calculation
+      const user = this.user();
+      if (!user) return null;
+
+      const pubs = user.checkedInPubIds?.length || 0;
+      const badges = user.badgeCount || 0;
+
+      // Fake calculation for demo - higher activity = better position
+      if (pubs >= 50 || badges >= 20) return Math.floor(Math.random() * 10) + 1;
+      if (pubs >= 20 || badges >= 10) return Math.floor(Math.random() * 50) + 10;
+      if (pubs >= 5 || badges >= 3) return Math.floor(Math.random() * 200) + 50;
+
+      return null; // Not on leaderboard yet
+    });
+
   // ✅ Development helper
   readonly isDevelopment = computed(() => {
     return true; // Always show debug in development
@@ -114,11 +125,21 @@ export class HomeComponent extends BaseComponent {
     this.router.navigate(['/admin/badges']);
   }
 
-   // ✅ Event Handlers
-   handleOpenProfile(): void {
-    console.log('[Home] Opening user profile');
-    this.showInfo('Profile modal coming soon!');
-  }
+// ✅ Event Handlers
+handleOpenProfile(): void {
+  console.log('[Home] Opening profile customization modal');
+
+  const { componentRef, close } = this.overlayService.open(
+    ProfileCustomisationModalComponent,
+    {
+      maxWidth: '600px',
+      maxHeight: '90vh'
+    }
+  );
+
+  // ✅ No need to subscribe to modal events - the close function handles everything
+  console.log('[Home] Profile modal opened, close function available');
+}
 
   // ✅ Debug Information
   readonly debugUserInfo = computed(() => {
@@ -154,22 +175,6 @@ export class HomeComponent extends BaseComponent {
     }
   }));
 
-    // ✅ Placeholder for leaderboard position
-    readonly userLeaderboardPosition = computed(() => {
-      // TODO: Implement real leaderboard calculation
-      const user = this.user();
-      if (!user) return null;
-
-      const pubs = user.checkedInPubIds?.length || 0;
-      const badges = user.badgeCount || 0;
-
-      // Fake calculation for demo - higher activity = better position
-      if (pubs >= 50 || badges >= 20) return Math.floor(Math.random() * 10) + 1;
-      if (pubs >= 20 || badges >= 10) return Math.floor(Math.random() * 50) + 10;
-      if (pubs >= 5 || badges >= 3) return Math.floor(Math.random() * 200) + 50;
-
-      return null; // Not on leaderboard yet
-    });
 
   // ✅ Data Loading
   protected override onInit(): void {

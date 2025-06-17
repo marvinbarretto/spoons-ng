@@ -11,16 +11,11 @@ import { MISSIONS_ROUTES } from './missions/data-access/mission.routes';
 import { BADGE_ROUTES } from './badges/data-access/badge.routes';
 import { LeaderboardContainerComponent } from './leaderboard/feature/leaderboard-container/leaderboard-container.component';
 import { ShareContainerComponent } from './share/feature/share-container/share-container.component';
-import { NewHomeComponent } from './home/feature/new-home/new-home.component';
 
 export const appRoutes: Routes = [
   {
     path: '',
     component: HomeComponent,
-  },
-  {
-    path: 'new',
-    component: NewHomeComponent,
   },
   {
     path: 'pubs',
