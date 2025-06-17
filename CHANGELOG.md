@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.31](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.30...v0.0.31) (2025-06-17)
+
+
+### Bug Fixes
+
+* Display pubs on PubList ([1982c07](https://github.com/marvinbarretto/spoons-ng/commit/1982c07495d2d90c8f2a219edea5144fadfda935))
+
 ### [0.0.30](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.29...v0.0.30) (2025-06-17)
 
 
