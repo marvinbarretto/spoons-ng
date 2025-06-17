@@ -4,6 +4,7 @@ import { PubStore } from '../../data-access/pub.store';
 import { CommonModule } from '@angular/common';
 import { PubCardComponent } from '../../ui/pub-card/pub-card.component';
 import { BaseComponent } from '../../../shared/data-access/base.component';
+import { CheckinStore } from '../../../check-in/data-access/check-in.store';
 
 @Component({
   selector: 'app-pub-list',
@@ -14,15 +15,18 @@ import { BaseComponent } from '../../../shared/data-access/base.component';
 
       @if (pubStore.loading()) {
         <p>Loading pubs...</p>
+      } @else if (pubStore.error()) {
+        <div class="error">{{ pubStore.error() }}</div>
       } @else {
         <ul>
-          <li *ngFor="let pub of pubStore.sortedPubsByDistance()">
-            <app-pub-card
-              [pub]="pub"
-              [distanceInKm]="pubStore.getDistanceForPub(pub)"
-              [hasCheckedIn]="pubStore.hasCheckedIn(pub.id)"
-            />
-          </li>
+          @for (pub of pubStore.pubsWithDistance(); track pub.id) {
+            <li>
+              <app-pub-card
+                [pub]="pub"
+                [hasCheckedIn]="checkinStore.hasCheckedIn(pub.id)"
+              />
+            </li>
+          }
         </ul>
       }
     </section>
@@ -30,8 +34,10 @@ import { BaseComponent } from '../../../shared/data-access/base.component';
 })
 export class PubListComponent extends BaseComponent implements OnInit {
   protected readonly pubStore = inject(PubStore);
+  protected readonly checkinStore = inject(CheckinStore);
 
   protected override onInit(): void {
     this.pubStore.loadOnce();
+    this.checkinStore.loadOnce(); // ✅ Load check-ins too
   }
 }

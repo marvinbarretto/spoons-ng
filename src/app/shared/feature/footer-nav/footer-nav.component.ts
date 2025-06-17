@@ -8,11 +8,12 @@ import { BaseComponent } from '@shared/data-access/base.component';
 import { ViewportService } from '@shared/data-access/viewport.service';
 import { NearbyPubStore } from '@pubs/data-access/nearby-pub.store';
 import { AuthStore } from '@auth/data-access/auth.store';
+import { IconComponent } from '@shared/ui/icon/icon.component';
 
 type NavItem = {
   label: string;
   route: string;
-  icon: string;
+  iconName: string;
   isActive: boolean;
   isCheckIn?: boolean;
 };
@@ -20,7 +21,7 @@ type NavItem = {
 @Component({
   selector: 'app-footer-nav',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, IconComponent],
   template: `
     <!-- ✅ Only show on mobile/tablet devices -->
     @if (shouldShowMobileNav()) {
@@ -34,7 +35,24 @@ type NavItem = {
             [class.nav-item--pulse]="item.isCheckIn && canCheckIn()"
             [attr.aria-current]="item.isActive ? 'page' : null"
           >
-            <span class="nav-item__icon" [innerHTML]="item.icon"></span>
+            <div class="nav-item__icon">
+              @if (item.isCheckIn) {
+                <!-- ✅ Special styling for check-in button -->
+                <app-icon
+                  [name]="item.iconName"
+                  size="lg"
+                  [filled]="canCheckIn()"
+                  weight="medium"
+                  customClass="check-in-icon" />
+              } @else {
+                <!-- ✅ Regular navigation icons -->
+                <app-icon
+                  [name]="item.iconName"
+                  size="md"
+                  [filled]="item.isActive"
+                  [weight]="item.isActive ? 'medium' : 'regular'" />
+              }
+            </div>
             <span class="nav-item__label">{{ item.label }}</span>
           </a>
         }
@@ -48,8 +66,8 @@ type NavItem = {
       left: 0;
       right: 0;
       display: flex;
-      background-color: var(--color-surface-elevated, #ffffff);
-      border-top: 1px solid var(--color-border, #e2e8f0);
+      background-color: var(--color-surface-elevated);
+      border-top: 1px solid var(--color-border);
       padding: 0.5rem 0;
       z-index: 1000;
 
@@ -71,7 +89,7 @@ type NavItem = {
       align-items: center;
       padding: 0.5rem 0.25rem;
       text-decoration: none;
-      color: var(--color-text-secondary, #64748b);
+      color: var(--color-text-muted);
       transition: all 0.2s ease;
       position: relative;
 
@@ -80,19 +98,19 @@ type NavItem = {
 
       &:hover,
       &:focus-visible {
-        color: var(--color-primary, #3b82f6);
+        color: var(--color-primary);
         transform: translateY(-1px);
       }
 
       &:focus-visible {
-        outline: 2px solid var(--color-accent-500, #3b82f6);
+        outline: 2px solid var(--color-primary);
         outline-offset: 2px;
         border-radius: 8px;
       }
     }
 
     .nav-item--active {
-      color: var(--color-primary, #3b82f6);
+      color: var(--color-primary);
 
       .nav-item__icon {
         transform: scale(1.1);
@@ -104,36 +122,59 @@ type NavItem = {
       position: relative;
 
       .nav-item__icon {
-        background: linear-gradient(135deg, var(--color-primary, #3b82f6) 0%, var(--color-accent-500, #8b5cf6) 100%);
-        color: white;
+        background: var(--color-success);
+        color: var(--color-success-text);
         border-radius: 50%;
         width: 48px;
         height: 48px;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.5rem;
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         transform: translateY(-8px);
+        transition: all 0.3s ease;
+
+        /* ✅ Icon color override for check-in */
+        .check-in-icon {
+          color: var(--color-success-text) !important;
+        }
       }
 
       .nav-item__label {
         margin-top: 4px;
         font-weight: 600;
         font-size: 0.75rem;
+        color: var(--color-success);
+      }
+
+      /* ✅ Disabled state when can't check in */
+      &:not(.nav-item--pulse) {
+        .nav-item__icon {
+          background: var(--color-text-muted);
+          opacity: 0.6;
+        }
+
+        .nav-item__label {
+          color: var(--color-text-muted);
+        }
       }
     }
 
     .nav-item--pulse {
       .nav-item__icon {
-        animation: pulse 2s infinite;
+        animation: pulse-success 2s infinite;
       }
     }
 
     .nav-item__icon {
-      font-size: 1.25rem;
       margin-bottom: 0.25rem;
       transition: transform 0.2s ease;
+      color: var(--color-text-muted);
+
+      /* ✅ Icon color inheritance */
+      app-icon {
+        color: inherit;
+      }
     }
 
     .nav-item__label {
@@ -141,17 +182,30 @@ type NavItem = {
       font-weight: 500;
       text-align: center;
       line-height: 1;
+      transition: color 0.2s ease;
     }
 
-    /* ✅ Pulse animation for check-in button */
-    @keyframes pulse {
+    /* ✅ Pulse animation for available check-in */
+    @keyframes pulse-success {
       0%, 100% {
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         transform: translateY(-8px) scale(1);
       }
       50% {
-        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+        box-shadow: 0 6px 20px var(--color-success), 0 0 0 4px rgba(var(--color-success-rgb, 34, 197, 94), 0.2);
         transform: translateY(-8px) scale(1.05);
+      }
+    }
+
+    /* ✅ Active states for regular nav items */
+    .nav-item--active:not(.nav-item--check-in) {
+      .nav-item__icon {
+        color: var(--color-primary);
+      }
+
+      .nav-item__label {
+        color: var(--color-primary);
+        font-weight: 600;
       }
     }
 
@@ -171,7 +225,6 @@ type NavItem = {
       .nav-item--check-in .nav-item__icon {
         width: 44px;
         height: 44px;
-        font-size: 1.3rem;
       }
     }
   `
@@ -188,7 +241,6 @@ export class FooterNavComponent extends BaseComponent {
 
   // ✅ Check if we should show mobile nav
   readonly shouldShowMobileNav = computed(() => {
-    // Show on mobile and tablet, hide on desktop
     return this.isMobile();
   });
 
@@ -197,40 +249,38 @@ export class FooterNavComponent extends BaseComponent {
     return !!this.closestPub() && !!this.user();
   });
 
-  // ✅ Navigation items with active state
+  // ✅ Navigation items with Material Symbols
   readonly navItems = computed((): NavItem[] => {
-    const currentPath = this.currentRoute();
-
     return [
       {
         label: 'Pubs',
         route: '/pubs',
-        icon: '🏠', // Alternative: 🍺 or ⌂
+        iconName: 'home', // Material Symbol for home/pubs
         isActive: this.isOnRoute('/pubs')()
       },
       {
         label: 'Missions',
         route: '/missions',
-        icon: '🎯', // Alternative: ⭐ or 🎮
+        iconName: 'flag', // Material Symbol for missions/goals
         isActive: this.isOnRoute('/missions')()
       },
       {
         label: 'Check In',
         route: '/check-in',
-        icon: '✓', // Alternative: 📍 or ⊕
+        iconName: 'location_on', // Material Symbol for location
         isActive: this.isOnRoute('/check-in')(),
         isCheckIn: true
       },
       {
         label: 'Leaderboard',
         route: '/leaderboard',
-        icon: '🏆', // Alternative: 📊 or 👑
+        iconName: 'leaderboard', // Material Symbol for rankings
         isActive: this.isOnRoute('/leaderboard')()
       },
       {
         label: 'Share',
         route: '/share',
-        icon: '↗', // Alternative: 📤 or ⤴
+        iconName: 'share', // Material Symbol for sharing
         isActive: this.isOnRoute('/share')()
       }
     ];

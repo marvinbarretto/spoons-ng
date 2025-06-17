@@ -14,13 +14,14 @@
   />
 
   <!-- ✅ Check-in widget (show if there's a nearby pub) -->
-  @if (closestPub()) {
+     <!-- TODO: Not sure we need this anymore -->
+  <!-- @if (closestPub()) {
     <app-check-in-homepage-widget
       [closestPub]="closestPub()!"
       [canCheckIn]="canCheckInToClosestPub()"
       [distanceKm]="closestPubDistanceKm()"
     />
-  }
+  } -->
 
   <!-- TODO: Not sure we need this anymore -->
   <!-- <app-pub-progress-hero

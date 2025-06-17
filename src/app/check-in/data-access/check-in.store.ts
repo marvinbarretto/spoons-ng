@@ -41,6 +41,16 @@ export class CheckinStore extends BaseStore<CheckIn> {
     this.checkins().map(c => c.pubId)
   );
 
+    // ✅ Add this method
+    hasCheckedIn(pubId: string): boolean {
+      return this.data().some(checkIn => checkIn.pubId === pubId);
+    }
+
+    // ✅ Or if you want a computed signal for all pubs
+    readonly checkedInPubIds = computed(() =>
+      new Set(this.data().map(checkIn => checkIn.pubId))
+    );
+
   readonly landlordPubs = computed(() =>
     this.checkins().filter(c => c.madeUserLandlord).map(c => c.pubId)
   );

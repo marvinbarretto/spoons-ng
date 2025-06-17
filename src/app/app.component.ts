@@ -9,7 +9,6 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ThemeSelectorComponent } from './shared/feature/theme-selector/theme-selector.component';
 import { NotificationsComponent } from './shared/ui/notifications/notifications.component';
-import { SearchComponent } from './shared/feature/search/search.component';
 import { PanelComponent } from './shared/ui/panel/panel.component';
 import { ToastComponent } from './shared/ui/toast/toast.component';
 import { DeviceCapabilityService } from './shared/utils/device-capability-check.service';
@@ -28,7 +27,6 @@ import { LandlordStore } from './landlord/data-access/landlord.store';
     PanelComponent,
     ThemeSelectorComponent,
     CommonModule,
-    SearchComponent,
     NotificationsComponent,
     ToastComponent,
     NavComponent
