@@ -10,6 +10,13 @@ export const PUBS_ROUTES: Routes = [
       ),
   },
   {
+    path: 'list',
+    loadComponent: () =>
+      import('../feature/comprehensive-pubs-list/comprehensive-pubs-list.component').then(
+        (m) => m.ComprehensivePubsListComponent
+      ),
+  },
+  {
     path: ':id',
     loadComponent: () =>
       import('../feature/pub-detail/pub-detail.component').then(

@@ -1,0 +1,243 @@
+<!-- comprehensive-pubs-list.component.html -->
+
+<!-- ✅ FIXED: Remove [state] binding, add missing inputs -->
+<app-advanced-list-controls
+  [config]="controlsConfig()"
+  [totalCount]="totalPubs()"
+  [filteredCount]="filteredPubs().length"
+  [displayedCount]="displayedPubs().length"
+  (stateChanged)="onControlsStateChanged($event)"
+/>
+
+<!-- Results Summary -->
+<div class="results-summary">
+  <span>{{ displayedPubs().length }} of {{ totalPubs() }} pubs</span>
+
+  @if (hasMoreToShow()) {
+    <span class="more-available">
+      ({{ remainingCount() }} more available)
+    </span>
+  }
+
+  @if (controlsState().activeFilters.length > 0) {
+    <button
+      type="button"
+      class="clear-filters"
+      (click)="clearAllFilters()"
+    >
+      Clear Filters
+    </button>
+  }
+</div>
+
+<!-- Loading State -->
+@if (pubStore.loading()) {
+  <div class="loading">Loading pubs...</div>
+}
+
+<!-- Error State -->
+@if (pubStore.error()) {
+  <div class="error">
+    <p>{{ pubStore.error() }}</p>
+    <button type="button" (click)="retryLoad()">Try Again</button>
+  </div>
+}
+
+<!-- Empty State -->
+@if (!pubStore.loading() && !pubStore.error() && displayedPubs().length === 0) {
+  <div class="empty-state">
+    @if (controlsState().searchQuery || controlsState().activeFilters.length > 0) {
+      <p>No pubs match your current filters.</p>
+      <button type="button" (click)="clearAllFilters()">Show All Pubs</button>
+    } @else {
+      <p>No pubs found.</p>
+    }
+  </div>
+}
+
+<!-- Pub List -->
+@if (!pubStore.loading() && displayedPubs().length > 0) {
+
+  <!-- ✅ FIXED: Virtual Scrolling with correct event and trackBy -->
+  @if (shouldUseVirtualScrolling()) {
+    <cdk-virtual-scroll-viewport
+      [itemSize]="virtualListConfig().itemHeight"
+      [maxBufferPx]="virtualListConfig().threshold"
+      [minBufferPx]="virtualListConfig().overscan"
+      class="virtual-list"
+    >
+      <div
+        *cdkVirtualFor="let pub of displayedPubs(); trackBy: pubTrackingFn"
+        class="pub-item-container"
+      >
+        <app-pub-card
+          [pub]="pub"
+          [hasCheckedIn]="checkinStore.hasCheckedIn(pub.id)"
+          (click)="onPubClicked(pub)"
+        />
+
+        <!-- Bulk Selection Checkbox -->
+        @if (controlsState().bulkMode) {
+          <label class="bulk-selector">
+            <input
+              type="checkbox"
+              [checked]="selectedPubs().includes(pub.id)"
+              (change)="togglePubSelection(pub.id)"
+            />
+            Select
+          </label>
+        }
+
+        <!-- Quick Actions -->
+        <div class="pub-actions">
+          <button
+            type="button"
+            title="Get Directions"
+            (click)="getDirections(pub)"
+          >
+            📍
+          </button>
+
+          <button
+            type="button"
+            title="Toggle Favorite"
+            [class.active]="isFavorite(pub.id)"
+            (click)="toggleFavorite(pub)"
+          >
+            {{ isFavorite(pub.id) ? '⭐' : '☆' }}
+          </button>
+
+          <button
+            type="button"
+            title="Share"
+            (click)="sharePub(pub)"
+          >
+            🔗
+          </button>
+        </div>
+      </div>
+    </cdk-virtual-scroll-viewport>
+
+  } @else {
+    <!-- Regular List for Smaller Lists -->
+    <div class="pub-list" [class]="gridClasses()">
+      @for (pub of displayedPubs(); track pub.id) {
+        <div class="pub-item-container">
+          <app-pub-card
+            [pub]="pub"
+            [hasCheckedIn]="checkinStore.hasCheckedIn(pub.id)"
+            (click)="onPubClicked(pub)"
+          />
+
+          <!-- Bulk Selection Checkbox -->
+          @if (controlsState().bulkMode) {
+            <label class="bulk-selector">
+              <input
+                type="checkbox"
+                [checked]="selectedPubs().includes(pub.id)"
+                (change)="togglePubSelection(pub.id)"
+              />
+              Select
+            </label>
+          }
+
+          <!-- Quick Actions -->
+          <div class="pub-actions">
+            <button
+              type="button"
+              title="Get Directions"
+              (click)="getDirections(pub)"
+            >
+              📍
+            </button>
+
+            <button
+              type="button"
+              title="Toggle Favorite"
+              [class.active]="isFavorite(pub.id)"
+              (click)="toggleFavorite(pub)"
+            >
+              {{ isFavorite(pub.id) ? '⭐' : '☆' }}
+            </button>
+
+            <button
+              type="button"
+              title="Share"
+              (click)="sharePub(pub)"
+            >
+              🔗
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ✅ FIXED: Use component method instead of Math.min -->
+  <!-- @if (hasMoreToShow() && !shouldUseVirtualScrolling()) {
+    <div class="load-more-container">
+      <button
+        type="button"
+        class="load-more"
+        (click)="loadMore()"
+      >
+        Load {{ getLoadMoreCount() }} More
+        ({{ remainingCount() }} remaining)
+      </button>
+    </div>
+  } -->
+}
+
+<!-- Bulk Actions Bar -->
+@if (controlsState().bulkMode && selectedPubs().length > 0) {
+  <div class="bulk-actions-bar">
+    <span class="selection-count">
+      {{ selectedPubs().length }} selected
+    </span>
+
+    <div class="bulk-buttons">
+      <button type="button" (click)="bulkAddToFavorites()">
+        Add to Favorites
+      </button>
+
+      <button type="button" (click)="bulkGetDirections()">
+        Get Directions
+      </button>
+
+      <button type="button" (click)="bulkAddToCount()">
+        Add to Count
+      </button>
+
+      <button type="button" (click)="clearSelection()">
+        Clear Selection
+      </button>
+    </div>
+  </div>
+}
+
+<!-- Debug Info (Development Only) -->
+@if (isDevelopment()) {
+  <details class="debug-info">
+    <summary>Debug Info</summary>
+    <div class="debug-content">
+      <h4>Store State</h4>
+      <pre>
+Loading: {{ pubStore.loading() }}
+Error: {{ pubStore.error() }}
+Total Pubs: {{ totalPubs() }}
+Filtered: {{ filteredPubs().length }}
+Displayed: {{ displayedPubs().length }}
+      </pre>
+
+      <h4>Controls State</h4>
+      <pre>{{ controlsState() | json }}</pre>
+
+      <h4>Performance</h4>
+      <pre>
+Virtual Scrolling: {{ shouldUseVirtualScrolling() }}
+Has More: {{ hasMoreToShow() }}
+Selected: {{ selectedPubs().length }}
+      </pre>
+    </div>
+  </details>
+}

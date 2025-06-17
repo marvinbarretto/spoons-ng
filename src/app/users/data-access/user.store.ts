@@ -1,8 +1,8 @@
-// src/app/users/data-access/user.store.ts
-import { Injectable, inject, signal, computed, effect } from '@angular/core';
+// src/app/users/data-access/user.store.ts - Simplified version
+import { Injectable, signal, computed, effect, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { AuthStore } from '../../auth/data-access/auth.store';
 import { UserService } from './user.service';
+import { AuthStore } from '../../auth/data-access/auth.store';
 import type { User, UserBadgeSummary, UserLandlordSummary } from '../utils/user.model';
 
 @Injectable({ providedIn: 'root' })
@@ -26,10 +26,7 @@ export class UserStore {
   readonly user = this._user.asReadonly();
   readonly loading = this._loading.asReadonly();
   readonly error = this._error.asReadonly();
-
-  // ✅ ADD THIS: Missing isLoaded computed signal
   readonly isLoaded = computed(() => !!this._user());
-
 
   // ===================================
   // COMPUTED PROPERTIES (User Profile)
@@ -40,12 +37,12 @@ export class UserStore {
     (this.user()?.landlordCount || 0) > 0
   );
 
-  // ✅ Badge summaries (read from user document for performance)
+  // Badge summaries
   readonly badgeCount = computed(() => this.user()?.badgeCount || 0);
   readonly badgeIds = computed(() => this.user()?.badgeIds || []);
   readonly hasBadges = computed(() => this.badgeCount() > 0);
 
-  // ✅ Landlord summaries (read from user document for performance)
+  // Landlord summaries
   readonly landlordCount = computed(() => this.user()?.landlordCount || 0);
   readonly landlordPubIds = computed(() => this.user()?.landlordPubIds || []);
 
@@ -56,19 +53,19 @@ export class UserStore {
   constructor() {
     // Auto-load user when auth changes
     effect(() => {
-      const user = this.authStore.user();
-      if (!user) {
+      const authUser = this.authStore.user();
+      if (!authUser) {
         this.reset();
         this.lastLoadedUserId = null;
         return;
       }
 
-      if (user.uid === this.lastLoadedUserId) {
+      if (authUser.uid === this.lastLoadedUserId) {
         return;
       }
 
-      this.lastLoadedUserId = user.uid;
-      this.loadUser(user.uid);
+      this.lastLoadedUserId = authUser.uid;
+      this.loadUser(authUser.uid);
     });
   }
 
@@ -87,49 +84,47 @@ export class UserStore {
 
     try {
       console.log('[UserStore] Loading user data for:', userId);
-      const userData = await this.loadUserData(userId);
-      this._user.set(userData);
+
+      // ✅ Simple load - document should exist thanks to AuthService coordination
+      const userData = await firstValueFrom(this._service.getUser(userId));
+
+      if (!userData) {
+        throw new Error('User document not found - this should not happen with fixed AuthService');
+      }
+
+      // Build user object with defaults for any missing fields
+      const user: User = {
+        uid: userData.uid,
+        email: userData.email || null,
+        displayName: userData.displayName,
+        emailVerified: userData.emailVerified,
+        isAnonymous: userData.isAnonymous,
+        photoURL: userData.photoURL,
+        joinedAt: userData.joinedAt || new Date().toISOString(),
+
+        // Pub-related data
+        checkedInPubIds: userData.checkedInPubIds || [],
+        streaks: userData.streaks || {},
+        joinedMissionIds: userData.joinedMissionIds || [],
+
+        // Badge summaries (with defaults for existing users)
+        badgeCount: userData.badgeCount || 0,
+        badgeIds: userData.badgeIds || [],
+
+        // Landlord summaries (with defaults for existing users)
+        landlordCount: userData.landlordCount || 0,
+        landlordPubIds: userData.landlordPubIds || [],
+      };
+
+      this._user.set(user);
       console.log('[UserStore] ✅ User loaded successfully');
+
     } catch (error: any) {
       this._error.set(error.message || 'Failed to load user');
       console.error('[UserStore] loadUser error:', error);
     } finally {
       this._loading.set(false);
     }
-  }
-
-  private async loadUserData(userId: string): Promise<User> {
-    const userData = await firstValueFrom(this._service.getUser(userId));
-
-    if (!userData) {
-      throw new Error('User not found');
-    }
-
-    // ✅ Build user object with defaults for new fields
-    const user: User = {
-      uid: userData.uid,
-      email: userData.email || null,
-      displayName: userData.displayName,
-      emailVerified: userData.emailVerified,
-      isAnonymous: userData.isAnonymous,
-      photoURL: userData.photoURL,
-      joinedAt: userData.joinedAt || new Date().toISOString(),
-
-      // Pub-related data
-      checkedInPubIds: userData.checkedInPubIds || [],
-      streaks: userData.streaks || {},
-      joinedMissionIds: userData.joinedMissionIds || [],
-
-      // ✅ Badge summaries (with defaults for existing users)
-      badgeCount: userData.badgeCount || 0,
-      badgeIds: userData.badgeIds || [],
-
-      // ✅ Landlord summaries (with defaults for existing users)
-      landlordCount: userData.landlordCount || 0,
-      landlordPubIds: userData.landlordPubIds || [],
-    };
-
-    return user;
   }
 
   // ===================================
@@ -146,13 +141,13 @@ export class UserStore {
     this._user.set({ ...current, ...updates });
   }
 
-  // ✅ Badge summary updates (called by BadgeStore)
+  // Badge summary updates (called by BadgeStore)
   updateBadgeSummary(summary: UserBadgeSummary): void {
     this.patchUser(summary);
     console.log('[UserStore] ✅ Badge summary updated:', summary);
   }
 
-  // ✅ Landlord summary updates (called by LandlordStore)
+  // Landlord summary updates (called by LandlordStore)
   updateLandlordSummary(summary: UserLandlordSummary): void {
     this.patchUser(summary);
     console.log('[UserStore] ✅ Landlord summary updated:', summary);

@@ -35,13 +35,11 @@ export class PubStore extends BaseStore<Pub> {
     const location = this.locationService.location();
     const pubs = this.pubs();
 
-    if (!location) {
-      return pubs.map(pub => ({ ...pub, distance: null }));
-    }
-
     return pubs.map(pub => ({
       ...pub,
-      distance: calculateDistance(location, { lat: pub.location.lat, lng: pub.location.lng })
+      distance: location
+        ? calculateDistance(location, { lat: pub.location.lat, lng: pub.location.lng })
+        : Infinity // ✅ Use Infinity instead of null - still sorts to bottom
     }));
   });
 

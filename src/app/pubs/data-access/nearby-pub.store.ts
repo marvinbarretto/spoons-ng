@@ -1,11 +1,10 @@
 import { computed, inject, Injectable, Signal } from '@angular/core';
-import type { Pub } from '../utils/pub.models';
+import type { Pub, PubWithDistance } from '../utils/pub.models';
 import { haversineDistanceInMeters } from '../../shared/utils/geo';
 import { LocationService } from '../../shared/data-access/location.service';
 import { PubStore } from './pub.store';
 import { PUB_DISTANCE_THRESHOLD_METRES, MAX_NEARBY_PUBS } from '../../constants';
 
-type PubWithDistance = Pub & { distance: number };
 
 /**
  * ✅ REACTIVE COMPUTED STORE

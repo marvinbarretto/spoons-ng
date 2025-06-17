@@ -1,4 +1,4 @@
-// auth.service.ts
+// src/app/auth/data-access/auth.service.ts
 import { Injectable, inject, signal, computed } from '@angular/core';
 import {
   Auth,
@@ -19,7 +19,6 @@ import {
 } from '@angular/fire/firestore';
 import { generateAnonymousName } from '../../shared/utils/anonymous-names';
 import type { User as SpoonsUser } from '../../users/utils/user.model';
-import type { UserExperienceLevel } from '@shared/utils/user-progression.models';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -28,6 +27,9 @@ export class AuthService {
 
   private readonly userInternal = signal<User | null>(null);
   private readonly loading = signal<boolean>(true);
+
+  // Track if we're in the middle of setting up a new anonymous user
+  private settingUpAnonymousUser = false;
 
   readonly user$$ = computed(() => this.userInternal());
   readonly isAnon$$ = computed(() => !!this.userInternal()?.isAnonymous);
@@ -40,37 +42,70 @@ export class AuthService {
   private initAuthListener() {
     console.log('[AuthService] Initializing auth state listener...');
 
-    const unsubscribe: Unsubscribe = onAuthStateChanged(this.auth, async (user) => {
-      if (user) {
-        console.log('[AuthService] User signed in:', user.uid, user.isAnonymous ? '(anonymous)' : '(registered)');
-        this.userInternal.set(user);
+    const unsubscribe: Unsubscribe = onAuthStateChanged(this.auth, async (firebaseUser) => {
+      try {
+        if (firebaseUser) {
+          console.log('[AuthService] Auth state changed:', firebaseUser.uid, firebaseUser.isAnonymous ? '(anonymous)' : '(registered)');
+
+          // ✅ For anonymous users, ensure user document exists BEFORE setting user
+          if (firebaseUser.isAnonymous && !this.settingUpAnonymousUser) {
+            console.log('[AuthService] Setting up anonymous user document...');
+            await this.ensureAnonymousUserDocument(firebaseUser);
+          }
+
+          // Now it's safe to set the user - document is guaranteed to exist
+          this.userInternal.set(firebaseUser);
+          this.loading.set(false);
+        } else {
+          console.warn('[AuthService] No user session found. Attempting anonymous login...');
+          await this.signInAnon();
+        }
+      } catch (error) {
+        console.error('[AuthService] Error in auth state handler:', error);
         this.loading.set(false);
-      } else {
-        console.warn('[AuthService] No user session found. Attempting anonymous login...');
-        await this.signInAnon();
       }
     });
-
-    // Optional: return unsubscribe if needed later
   }
 
   async signInAnon(): Promise<void> {
     try {
       this.loading.set(true);
-      const result = await signInAnonymously(this.auth);
-      const user = result.user;
-      console.log('[AuthService] Anonymous login successful. UID:', user.uid);
+      this.settingUpAnonymousUser = true;
 
-      const userRef = doc(this.firestore, `users/${user.uid}`);
+      console.log('[AuthService] Starting anonymous sign-in...');
+      const result = await signInAnonymously(this.auth);
+
+      console.log('[AuthService] ✅ Anonymous authentication successful:', result.user.uid);
+
+      // Note: onAuthStateChanged will handle user document creation and setting the user
+      // We don't need to do anything else here
+
+    } catch (error) {
+      console.error('[AuthService] Anonymous login failed:', error);
+      this.loading.set(false);
+      this.settingUpAnonymousUser = false;
+    }
+  }
+
+  /**
+   * ✅ Ensures anonymous user document exists in Firestore
+   * Called by onAuthStateChanged before setting the user
+   */
+  private async ensureAnonymousUserDocument(firebaseUser: User): Promise<void> {
+    const userRef = doc(this.firestore, `users/${firebaseUser.uid}`);
+
+    try {
       const userSnap = await getDoc(userRef);
 
       if (!userSnap.exists()) {
-        const displayName = generateAnonymousName(user.uid);
+        console.log('[AuthService] Creating anonymous user document...');
+
+        const displayName = generateAnonymousName(firebaseUser.uid);
         const newUser: SpoonsUser = {
-          uid: user.uid,
+          uid: firebaseUser.uid,
           email: null,
           photoURL: null,
-          emailVerified: user.emailVerified,
+          emailVerified: firebaseUser.emailVerified,
           isAnonymous: true,
           checkedInPubIds: [],
           streaks: {},
@@ -82,40 +117,101 @@ export class AuthService {
           landlordPubIds: [],
           joinedMissionIds: [],
         };
-        await setDoc(userRef, newUser);
-        console.log('[AuthService] Anonymous profile created in Firestore.');
-      }
 
-      this.userInternal.set(user);
-    } catch (err) {
-      console.error('[AuthService] Anonymous login failed:', err);
+        await setDoc(userRef, newUser);
+        console.log('[AuthService] ✅ Anonymous user document created');
+      } else {
+        console.log('[AuthService] Anonymous user document already exists');
+      }
+    } catch (error) {
+      console.error('[AuthService] Failed to ensure user document:', error);
+      throw error; // Re-throw to prevent user from being set without document
     } finally {
-      this.loading.set(false);
+      this.settingUpAnonymousUser = false;
     }
   }
 
   async loginWithEmail(email: string, password: string): Promise<User> {
-    const cred = await signInWithEmailAndPassword(this.auth, email, password);
-    console.log('[AuthService] Email login successful. UID:', cred.user.uid);
-    this.userInternal.set(cred.user);
-    return cred.user;
+    try {
+      this.loading.set(true);
+      const cred = await signInWithEmailAndPassword(this.auth, email, password);
+      console.log('[AuthService] ✅ Email login successful:', cred.user.uid);
+
+      // For registered users, we might want to ensure user document exists too
+      if (!cred.user.isAnonymous) {
+        await this.ensureRegisteredUserDocument(cred.user);
+      }
+
+      return cred.user;
+    } catch (error) {
+      this.loading.set(false);
+      throw error;
+    }
   }
 
   async loginWithGoogle(): Promise<User> {
-    const provider = new GoogleAuthProvider();
-    const cred = await signInWithPopup(this.auth, provider);
-    console.log('[AuthService] Google login successful. UID:', cred.user.uid);
-    this.userInternal.set(cred.user);
-    return cred.user;
+    try {
+      this.loading.set(true);
+      const provider = new GoogleAuthProvider();
+      const cred = await signInWithPopup(this.auth, provider);
+      console.log('[AuthService] ✅ Google login successful:', cred.user.uid);
+
+      // Ensure user document exists for registered users
+      await this.ensureRegisteredUserDocument(cred.user);
+
+      return cred.user;
+    } catch (error) {
+      this.loading.set(false);
+      throw error;
+    }
+  }
+
+  /**
+   * ✅ Ensures registered user document exists in Firestore
+   */
+  private async ensureRegisteredUserDocument(firebaseUser: User): Promise<void> {
+    const userRef = doc(this.firestore, `users/${firebaseUser.uid}`);
+
+    try {
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        console.log('[AuthService] Creating registered user document...');
+
+        const newUser: SpoonsUser = {
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          photoURL: firebaseUser.photoURL,
+          emailVerified: firebaseUser.emailVerified,
+          isAnonymous: false,
+          checkedInPubIds: [],
+          streaks: {},
+          displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
+          joinedAt: new Date().toISOString(),
+          badgeCount: 0,
+          badgeIds: [],
+          landlordCount: 0,
+          landlordPubIds: [],
+          joinedMissionIds: [],
+        };
+
+        await setDoc(userRef, newUser);
+        console.log('[AuthService] ✅ Registered user document created');
+      }
+    } catch (error) {
+      console.error('[AuthService] Failed to ensure registered user document:', error);
+      // Don't throw here - registered users might work without Firestore document
+    }
   }
 
   async logout(): Promise<void> {
     try {
       await signOut(this.auth);
-      console.log('[AuthService] User signed out.');
+      console.log('[AuthService] ✅ User signed out');
       this.userInternal.set(null);
-    } catch (err) {
-      console.error('[AuthService] Logout failed:', err);
+    } catch (error) {
+      console.error('[AuthService] Logout failed:', error);
+      throw error;
     }
   }
 
