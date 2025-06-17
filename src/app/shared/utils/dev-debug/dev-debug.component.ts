@@ -204,7 +204,6 @@ import {
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
       font-family: monospace;
       font-size: 12px;
-      z-index: 1000;
       max-width: 500px;
       max-height: 80vh;
       overflow-y: auto;

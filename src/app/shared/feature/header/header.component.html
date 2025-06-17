@@ -1,29 +1,23 @@
+<!-- Updated HeaderComponent template -->
 <div class="site-header" #headerRef>
-
-
-
   <ng-container *ngIf="!isHomepage(); else titleWithoutLink">
     <a routerLink="/" class="header__title">
       <h1>Spooncount <small>{{version}}</small></h1>
-
     </a>
   </ng-container>
   <ng-template #titleWithoutLink>
     <h1 class="header__title">Spooncount <small>{{version}}</small></h1>
-
   </ng-template>
 
-  <!--
-  <app-user-info
-    [user]="user"
-    [isAnonymous]="isAnonymous"
-    [onLogin]="handleLogin"
-    [onLogout]="handleLogout"
-  /> -->
+  <!-- ✅ SIMPLIFIED NAVIGATION STRATEGY:
+       Desktop: Show horizontal nav in header
+       Mobile:  Only FooterNavComponent (no hamburger menu needed)
+  -->
+  <nav class="main-nav"  *ngIf="!isMobile()">
+    <!-- ✅ Desktop Navigation: Horizontal nav links -->
+    <app-nav  />
 
-  <nav class="main-nav" [class.nav-mobile]="isMobile()">
-    <app-nav *ngIf="!isMobile()" />
-
+    <!-- ✅ Utility Actions (both desktop & mobile) -->
     <div class="main-nav__actions">
       <button
         *ngIf="'theme' | featureFlag"
@@ -46,15 +40,6 @@
       </button>
     </div>
 
-    <button
-      *ngIf="isMobile()"
-      #panelTrigger
-      aria-expanded="true"
-      (click)="onTogglePanel('nav')"
-      class="nav-link"
-    >
-    <span class="material-symbols-outlined">menu</span>
-    <span>Menu</span>
-    </button>
+    <!-- ❌ REMOVED: Mobile hamburger menu (FooterNavComponent handles mobile nav) -->
   </nav>
 </div>

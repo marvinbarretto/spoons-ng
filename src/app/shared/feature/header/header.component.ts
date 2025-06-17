@@ -1,3 +1,4 @@
+// src/app/shared/feature/header/header.component.ts
 import {
   Component,
   HostBinding,
@@ -22,8 +23,22 @@ import { NavComponent } from "../nav/nav.component";
 import { LandlordStore } from '../../../landlord/data-access/landlord.store';
 import { NearbyPubStore } from '../../../pubs/data-access/nearby-pub.store';
 import { AuthStore } from '../../../auth/data-access/auth.store';
+
 import { APP_VERSION } from '../../utils/version';
 
+
+/**
+ * HeaderComponent - Main site header with responsive navigation
+ *
+ * 🚀 NAVIGATION STRATEGY:
+ * - **Desktop (768px+)**: Shows horizontal NavComponent directly in header
+ * - **Mobile (<768px)**: Shows hamburger menu that opens NavComponent in panel
+ *   + FooterNavComponent provides bottom tab navigation for mobile
+ *
+ * This ensures optimal UX for each device type:
+ * - Desktop: Traditional horizontal nav in header
+ * - Mobile: Clean header + accessible bottom nav + panel for full menu
+ */
 @Component({
   selector: 'app-header',
   templateUrl: './header.component.html',
@@ -44,6 +59,7 @@ export class HeaderComponent extends BaseComponent implements AfterViewInit {
   private readonly nearbyPubStore = inject(NearbyPubStore);
   private readonly authStore = inject(AuthStore);
 
+  // ✅ Reactive viewport detection
   readonly isMobile = this.viewportService.isMobile;
   readonly closestPub = computed(() => this.nearbyPubStore.closestPub());
 
@@ -54,6 +70,7 @@ export class HeaderComponent extends BaseComponent implements AfterViewInit {
   readonly isAnonymous = this.authStore.isAnonymous;
   readonly displayName = this.authStore.displayName;
 
+  // ✅ Auth actions
   handleLogin = () => this.authStore.loginWithGoogle();
   handleLogout = () => this.authStore.logout();
 
@@ -73,6 +90,10 @@ export class HeaderComponent extends BaseComponent implements AfterViewInit {
     this.onlyOnBrowser(() => this.updatePanelOrigin());
   }
 
+  /**
+   * Handle panel toggle (theme, search, mobile nav)
+   * Used for mobile hamburger menu and utility buttons
+   */
   onTogglePanel(panel: PanelType): void {
     this.onlyOnBrowser(() => {
       const button = this.panelTriggerRef?.nativeElement as HTMLElement;
