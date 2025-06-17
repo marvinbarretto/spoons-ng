@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.33](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.32...v0.0.33) (2025-06-17)
+
+
+### Features
+
+* Add small user info widget to homepage ([9ed5618](https://github.com/marvinbarretto/spoons-ng/commit/9ed56186a3e4588e0a72deedeb174ec7d5228b47))
+
 ### [0.0.32](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.31...v0.0.32) (2025-06-17)
 
 
