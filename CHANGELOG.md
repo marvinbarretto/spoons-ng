@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.35](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.34...v0.0.35) (2025-06-17)
+
+
+### Features
+
+* Add filters for the PubList ([259823e](https://github.com/marvinbarretto/spoons-ng/commit/259823e2b5772a3a71d1977b6bd242f1921dadd6))
+* Display Pub List ([13092b3](https://github.com/marvinbarretto/spoons-ng/commit/13092b380d984b35a8645d57d7546f33e93db5b2))
+
 ### [0.0.34](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.33...v0.0.34) (2025-06-17)
 
 
