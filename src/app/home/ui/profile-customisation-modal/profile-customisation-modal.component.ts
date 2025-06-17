@@ -48,10 +48,10 @@ import { AccountUpgradeWidgetComponent } from './widgets/account-upgrade-widget/
         <app-theme-selection-widget />
 
         <!-- ✅ Account Upgrade Widget (anonymous users only) -->
-        <app-account-upgrade-widget
+        <!-- <app-account-upgrade-widget
           [user]="user()"
           (upgradeRequested)="onUpgradeRequested()"
-          (continueAnonymousRequested)="close()" />
+          (continueAnonymousRequested)="close()" /> -->
       </div>
 
       <!-- ✅ Footer -->

@@ -1,15 +1,11 @@
-// src/app/home/ui/profile-customization-modal/widgets/avatar-selection-widget/avatar-selection-widget.component.ts
-import { Component, input, output, computed, signal, ChangeDetectionStrategy } from '@angular/core';
+// src/app/home/ui/profile-customisation-modal/widgets/avatar-selection-widget/avatar-selection-widget.component.ts
+import { Component, input, output, computed, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ASSETS } from '@shared/utils/constants';
+import { AvatarService } from '@shared/data-access/avatar.service';
 import type { User } from '@users/utils/user.model';
 
-type AvatarOption = {
-  id: string;
-  url: string;
-  name: string;
-  isPremium?: boolean;
-};
+// ✅ Use the service's AvatarOption type instead of defining our own
+import type { AvatarOption } from '@shared/data-access/avatar.service';
 
 @Component({
   selector: 'app-avatar-selection-widget',
@@ -38,29 +34,52 @@ type AvatarOption = {
           <button
             type="button"
             class="avatar-option"
-            [class.selected]="selectedAvatarId() === avatar.id"
-            [class.premium]="avatar.isPremium && isAnonymous()"
-            [disabled]="avatar.isPremium && isAnonymous()"
+            [class.selected]="isSelected(avatar)"
+            [class.default]="avatar.isDefault"
             (click)="selectAvatar(avatar.id)"
-            [title]="getAvatarTooltip(avatar)"
+            [title]="avatar.name"
           >
             <img [src]="avatar.url" [alt]="avatar.name" />
-            @if (avatar.isPremium && isAnonymous()) {
-              <div class="premium-badge">🔒</div>
+            @if (avatar.isDefault) {
+              <div class="default-badge">NPC</div>
             }
-            @if (selectedAvatarId() === avatar.id) {
+            @if (isSelected(avatar)) {
               <div class="selected-badge">✓</div>
             }
           </button>
         }
       </div>
 
-      <!-- ✅ Premium upgrade prompt -->
-      @if (isAnonymous() && hasPremiumAvatars()) {
-        <div class="premium-prompt">
-          <span class="prompt-icon">⭐</span>
-          <span class="prompt-text">Sign up to unlock premium avatars</span>
-        </div>
+      <!-- ✅ Save/Reset actions -->
+      <div class="widget-actions">
+        <button
+          type="button"
+          class="btn-save"
+          [disabled]="saving() || !hasSelection()"
+          (click)="saveAvatar()"
+        >
+          @if (saving()) {
+            Saving...
+          } @else {
+            Save Avatar
+          }
+        </button>
+
+        @if (hasCustomAvatar()) {
+          <button
+            type="button"
+            class="btn-reset"
+            [disabled]="saving()"
+            (click)="resetToDefault()"
+          >
+            Reset to Default
+          </button>
+        }
+      </div>
+
+      <!-- ✅ Error display -->
+      @if (error()) {
+        <div class="error-message">{{ error() }}</div>
       }
     </div>
   `,
@@ -154,17 +173,12 @@ type AvatarOption = {
       border-width: 3px;
     }
 
-    .avatar-option.premium {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .avatar-option:disabled {
-      cursor: not-allowed;
+    .avatar-option.default {
+      border-color: var(--color-accent);
     }
 
     /* ✅ Badges */
-    .premium-badge,
+    .default-badge,
     .selected-badge {
       position: absolute;
       top: -2px;
@@ -179,9 +193,10 @@ type AvatarOption = {
       font-weight: bold;
     }
 
-    .premium-badge {
-      background: var(--color-warning);
-      color: var(--color-warning-text);
+    .default-badge {
+      background: var(--color-accent);
+      color: var(--color-accent-text);
+      font-size: 0.5rem;
     }
 
     .selected-badge {
@@ -189,25 +204,56 @@ type AvatarOption = {
       color: var(--color-success-text);
     }
 
-    /* ✅ Premium Prompt */
-    .premium-prompt {
+    /* ✅ Actions */
+    .widget-actions {
       display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.75rem;
-      background: linear-gradient(135deg, var(--color-accent-light), var(--color-lighter));
-      border: 1px solid var(--color-accent);
-      border-radius: 6px;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-save,
+    .btn-reset {
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--color-border);
+      border-radius: 4px;
+      cursor: pointer;
       font-size: 0.875rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn-save {
+      background: var(--color-primary);
+      color: var(--color-primary-text);
+      border-color: var(--color-primary);
+    }
+
+    .btn-save:hover:not(:disabled) {
+      background: var(--color-primary-hover);
+    }
+
+    .btn-save:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-reset {
+      background: var(--color-surface);
       color: var(--color-text);
     }
 
-    .prompt-icon {
-      font-size: 1rem;
+    .btn-reset:hover:not(:disabled) {
+      background: var(--color-surface-hover);
     }
 
-    .prompt-text {
-      font-weight: 500;
+    /* ✅ Error Message */
+    .error-message {
+      padding: 0.75rem;
+      background: var(--color-error-light);
+      border: 1px solid var(--color-error);
+      border-radius: 4px;
+      color: var(--color-error-text);
+      font-size: 0.875rem;
+      margin-top: 1rem;
     }
 
     /* ✅ Responsive */
@@ -225,11 +271,16 @@ type AvatarOption = {
         flex-direction: column;
         text-align: center;
       }
+
+      .widget-actions {
+        flex-direction: column;
+      }
     }
   `
 })
 export class AvatarSelectionWidgetComponent {
-  readonly NPC_AVATAR = ASSETS.NPC_AVATAR;
+  // ✅ Inject services
+  private readonly _avatarService = inject(AvatarService);
 
   // ✅ Inputs
   readonly user = input<User | null>(null);
@@ -238,6 +289,15 @@ export class AvatarSelectionWidgetComponent {
   // ✅ Outputs
   readonly avatarSelected = output<string>();
 
+  // ✅ Internal state
+  private readonly _selectedAvatarId = signal<string>('');
+  private readonly _saving = signal(false);
+  private readonly _error = signal<string | null>(null);
+
+  // ✅ Readonly accessors
+  readonly saving = this._saving.asReadonly();
+  readonly error = this._error.asReadonly();
+
   // ✅ Computed values
   readonly isAnonymous = computed(() => {
     return this.user()?.isAnonymous ?? true;
@@ -245,24 +305,23 @@ export class AvatarSelectionWidgetComponent {
 
   readonly currentAvatarUrl = computed(() => {
     const user = this.user();
-    return user?.photoURL || this.NPC_AVATAR;
+    return this._avatarService.getAvatarUrl(user);
   });
 
   readonly availableAvatars = computed((): AvatarOption[] => {
-    // TODO: Get from AvatarService when available
-    return [
-      { id: 'npc-default', url: this.NPC_AVATAR, name: 'Default' },
-      { id: 'avatar-1', url: '/assets/avatars/avatar-1.webp', name: 'Casual' },
-      { id: 'avatar-2', url: '/assets/avatars/avatar-2.webp', name: 'Formal' },
-      { id: 'avatar-3', url: '/assets/avatars/avatar-3.webp', name: 'Sporty', isPremium: true },
-      { id: 'avatar-4', url: '/assets/avatars/avatar-4.webp', name: 'Artistic', isPremium: true },
-      { id: 'avatar-5', url: '/assets/avatars/avatar-5.webp', name: 'Professional', isPremium: true },
-      { id: 'avatar-6', url: '/assets/avatars/avatar-6.webp', name: 'Cool', isPremium: true }
-    ];
+    const user = this.user();
+    if (!user) return [];
+
+    // ✅ Use AvatarService to generate options
+    return this._avatarService.generateAvatarOptions(user.uid);
   });
 
-  readonly hasPremiumAvatars = computed(() => {
-    return this.availableAvatars().some(avatar => avatar.isPremium);
+  readonly hasCustomAvatar = computed(() => {
+    return this._avatarService.hasCustomAvatar();
+  });
+
+  readonly hasSelection = computed(() => {
+    return this._selectedAvatarId() !== '';
   });
 
   // ✅ Methods
@@ -273,20 +332,79 @@ export class AvatarSelectionWidgetComponent {
     return current?.name || 'Custom';
   }
 
-  getAvatarTooltip(avatar: AvatarOption): string {
-    if (avatar.isPremium && this.isAnonymous()) {
-      return `${avatar.name} (Premium - Sign up to unlock)`;
+  isSelected(avatar: AvatarOption): boolean {
+    const currentUrl = this.currentAvatarUrl();
+    const selectedId = this._selectedAvatarId();
+
+    // Check if this avatar is currently selected for saving
+    if (selectedId) {
+      const selectedAvatar = this.availableAvatars().find(a => a.id === selectedId);
+      return selectedAvatar?.url === avatar.url;
     }
-    return avatar.name;
+
+    // Otherwise check if it's the current avatar
+    return avatar.url === currentUrl;
   }
 
   selectAvatar(avatarId: string): void {
     const avatar = this.availableAvatars().find(a => a.id === avatarId);
     if (!avatar) return;
 
-    // Don't allow premium avatars for anonymous users
-    if (avatar.isPremium && this.isAnonymous()) return;
+    this._selectedAvatarId.set(avatarId);
+    this._error.set(null);
 
+    // ✅ Also emit for parent component compatibility
     this.avatarSelected.emit(avatarId);
+
+    console.log('[AvatarSelectionWidget] Avatar selected:', avatar.name);
+  }
+
+  async saveAvatar(): Promise<void> {
+    const selectedId = this._selectedAvatarId();
+    const avatar = this.availableAvatars().find(a => a.id === selectedId);
+
+    if (!avatar) {
+      this._error.set('No avatar selected');
+      return;
+    }
+
+    this._saving.set(true);
+    this._error.set(null);
+
+    try {
+      await this._avatarService.selectAvatar(avatar);
+
+      // Clear selection after successful save
+      this._selectedAvatarId.set('');
+
+      console.log('[AvatarSelectionWidget] ✅ Avatar saved:', avatar.name);
+
+    } catch (error: any) {
+      this._error.set(error?.message || 'Failed to save avatar');
+      console.error('[AvatarSelectionWidget] ❌ Save failed:', error);
+    } finally {
+      this._saving.set(false);
+    }
+  }
+
+  async resetToDefault(): Promise<void> {
+    const npcAvatar = this.availableAvatars().find(a => a.isDefault);
+    if (!npcAvatar) return;
+
+    this._saving.set(true);
+    this._error.set(null);
+
+    try {
+      await this._avatarService.selectAvatar(npcAvatar);
+      this._selectedAvatarId.set('');
+
+      console.log('[AvatarSelectionWidget] ✅ Reset to default avatar');
+
+    } catch (error: any) {
+      this._error.set(error?.message || 'Failed to reset avatar');
+      console.error('[AvatarSelectionWidget] ❌ Reset failed:', error);
+    } finally {
+      this._saving.set(false);
+    }
   }
 }

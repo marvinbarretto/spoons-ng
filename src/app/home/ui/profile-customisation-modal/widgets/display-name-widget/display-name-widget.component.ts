@@ -1,7 +1,8 @@
-// src/app/home/ui/profile-customization-modal/widgets/display-name-widget/display-name-widget.component.ts
+// src/app/home/ui/profile-customisation-modal/widgets/display-name-widget/display-name-widget.component.ts
 import { Component, input, output, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { generateAnonymousName } from '../../../../../shared/utils/anonymous-names';
 import type { User } from '@users/utils/user.model';
 
 @Component({
@@ -36,22 +37,17 @@ import type { User } from '@users/utils/user.model';
         </div>
       </div>
 
-      <!-- ✅ Suggestions for anonymous users -->
-      @if (isAnonymous() && suggestions().length > 0) {
-        <div class="suggestions-section">
-          <label class="suggestions-label">Quick suggestions:</label>
-          <div class="suggestion-buttons">
-            @for (suggestion of suggestions(); track suggestion) {
-              <button
-                type="button"
-                class="suggestion-btn"
-                (click)="applySuggestion(suggestion)"
-                [disabled]="suggestion === displayName()"
-              >
-                {{ suggestion }}
-              </button>
-            }
-          </div>
+      <!-- ✅ Shuffle button for anonymous users -->
+      @if (isAnonymous()) {
+        <div class="shuffle-section">
+          <button
+            type="button"
+            class="shuffle-btn"
+            (click)="shuffleRandomName()"
+            title="Generate a random pub-themed name"
+          >
+            🎲 Shuffle random
+          </button>
         </div>
       }
 
@@ -144,46 +140,35 @@ import type { User } from '@users/utils/user.model';
       font-weight: 500;
     }
 
-    /* ✅ Suggestions */
-    .suggestions-section {
+    /* ✅ Shuffle Section */
+    .shuffle-section {
       margin-bottom: 1rem;
     }
 
-    .suggestions-label {
-      display: block;
-      margin-bottom: 0.5rem;
+    .shuffle-btn {
+      padding: 0.75rem 1rem;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      cursor: pointer;
       font-size: 0.875rem;
       font-weight: 500;
       color: var(--color-text);
-    }
-
-    .suggestion-buttons {
+      transition: all 0.2s ease;
       display: flex;
-      flex-wrap: wrap;
+      align-items: center;
       gap: 0.5rem;
     }
 
-    .suggestion-btn {
-      padding: 0.5rem 0.75rem;
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.875rem;
-      color: var(--color-text);
-      transition: all 0.2s ease;
-    }
-
-    .suggestion-btn:hover:not(:disabled) {
+    .shuffle-btn:hover {
       background: var(--color-primary);
       color: var(--color-primary-text);
       border-color: var(--color-primary);
+      transform: translateY(-1px);
     }
 
-    .suggestion-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      background: var(--color-accent);
+    .shuffle-btn:active {
+      transform: translateY(0);
     }
 
     /* ✅ Tips */
@@ -213,13 +198,9 @@ import type { User } from '@users/utils/user.model';
 
     /* ✅ Responsive */
     @media (max-width: 640px) {
-      .suggestion-buttons {
-        flex-direction: column;
-      }
-
-      .suggestion-btn {
+      .shuffle-btn {
         width: 100%;
-        text-align: center;
+        justify-content: center;
       }
     }
   `
@@ -252,20 +233,6 @@ export class DisplayNameWidgetComponent {
 
   readonly showTips = computed(() => {
     return this.isAnonymous() && this.displayName().length < 3;
-  });
-
-  readonly suggestions = computed((): string[] => {
-    if (!this.isAnonymous()) return [];
-
-    // Generate suggestions based on pub-themed names
-    return [
-      'PubCrawler',
-      'Landlord',
-      'BarFly',
-      'SpoonHunter',
-      'BeerExplorer',
-      'PintMaster'
-    ];
   });
 
   // ✅ Methods
@@ -303,9 +270,27 @@ export class DisplayNameWidgetComponent {
     this.displayNameChanged.emit(newName);
   }
 
-  applySuggestion(suggestion: string): void {
+  /**
+   * Generate a new random pub-themed name with unique number suffix
+   */
+  shuffleRandomName(): void {
+    // Generate a random UID-like string to get different results each time
+    const randomSeed = Math.random().toString(36).substring(2) + Date.now().toString(36);
+    const randomName = generateAnonymousName(randomSeed);
+
+    // Convert to a more display-friendly format (remove original numbers, capitalize)
+    const baseName = randomName.split('-').slice(0, 2).join('-');
+    const cleanName = baseName
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join('');
+
+    // Append random 3-digit number for uniqueness
+    const randomNumber = Math.floor(Math.random() * 900) + 100; // 100-999
+    const displayName = `${cleanName}${randomNumber}`;
+
     this.errorMessage.set(null);
-    this.displayNameChanged.emit(suggestion);
+    this.displayNameChanged.emit(displayName);
   }
 
   private containsInappropriateContent(name: string): boolean {

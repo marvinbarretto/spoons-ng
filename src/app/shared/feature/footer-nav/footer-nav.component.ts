@@ -1,5 +1,5 @@
 // src/app/shared/feature/footer-nav/footer-nav.component.ts
-import { Component, computed, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, computed, inject, ChangeDetectionStrategy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { filter, map } from 'rxjs/operators';
@@ -8,14 +8,17 @@ import { BaseComponent } from '@shared/data-access/base.component';
 import { ViewportService } from '@shared/data-access/viewport.service';
 import { NearbyPubStore } from '@pubs/data-access/nearby-pub.store';
 import { AuthStore } from '@auth/data-access/auth.store';
+import { CheckinStore } from '@check-in/data-access/check-in.store';
+import { CheckInModalService } from '@check-in/data-access/check-in-modal.service';
 import { IconComponent } from '@shared/ui/icon/icon.component';
 
 type NavItem = {
   label: string;
-  route: string;
+  route?: string;
   iconName: string;
   isActive: boolean;
   isCheckIn?: boolean;
+  action?: () => void;
 };
 
 @Component({
@@ -26,35 +29,46 @@ type NavItem = {
     <!-- ✅ Only show on mobile/tablet devices -->
     @if (shouldShowMobileNav()) {
       <nav class="footer-nav" role="navigation" aria-label="Main navigation">
-        @for (item of navItems(); track item.route) {
-          <a
-            [routerLink]="item.route"
-            class="nav-item"
-            [class.nav-item--active]="item.isActive"
-            [class.nav-item--check-in]="item.isCheckIn"
-            [class.nav-item--pulse]="item.isCheckIn && canCheckIn()"
-            [attr.aria-current]="item.isActive ? 'page' : null"
-          >
-            <div class="nav-item__icon">
-              @if (item.isCheckIn) {
-                <!-- ✅ Special styling for check-in button -->
+        @for (item of navItems(); track item.label) {
+          @if (item.isCheckIn) {
+            <!-- ✅ Check-in button - use click handler -->
+            <button
+              class="nav-item nav-item--check-in"
+              [class.nav-item--pulse]="canCheckIn()"
+              [disabled]="!canCheckIn() || isCheckingIn()"
+              (click)="handleCheckIn()"
+              type="button"
+            >
+              <div class="nav-item__icon">
                 <app-icon
                   [name]="item.iconName"
                   size="lg"
                   [filled]="canCheckIn()"
                   weight="medium"
                   customClass="check-in-icon" />
-              } @else {
-                <!-- ✅ Regular navigation icons -->
+              </div>
+              <span class="nav-item__label">
+                {{ isCheckingIn() ? 'Checking...' : item.label }}
+              </span>
+            </button>
+          } @else {
+            <!-- ✅ Regular navigation links -->
+            <a
+              [routerLink]="item.route"
+              class="nav-item"
+              [class.nav-item--active]="item.isActive"
+              [attr.aria-current]="item.isActive ? 'page' : null"
+            >
+              <div class="nav-item__icon">
                 <app-icon
                   [name]="item.iconName"
                   size="md"
                   [filled]="item.isActive"
                   [weight]="item.isActive ? 'medium' : 'regular'" />
-              }
-            </div>
-            <span class="nav-item__label">{{ item.label }}</span>
-          </a>
+              </div>
+              <span class="nav-item__label">{{ item.label }}</span>
+            </a>
+          }
         }
       </nav>
     }
@@ -92,6 +106,9 @@ type NavItem = {
       color: var(--color-text-muted);
       transition: all 0.2s ease;
       position: relative;
+      border: none;
+      background: none;
+      cursor: pointer;
 
       /* ✅ Tap target size for mobile */
       min-height: 44px;
@@ -148,7 +165,7 @@ type NavItem = {
       }
 
       /* ✅ Disabled state when can't check in */
-      &:not(.nav-item--pulse) {
+      &:disabled {
         .nav-item__icon {
           background: var(--color-text-muted);
           opacity: 0.6;
@@ -157,6 +174,8 @@ type NavItem = {
         .nav-item__label {
           color: var(--color-text-muted);
         }
+
+        cursor: not-allowed;
       }
     }
 
@@ -233,6 +252,12 @@ export class FooterNavComponent extends BaseComponent {
   private readonly viewportService = inject(ViewportService);
   private readonly nearbyPubStore = inject(NearbyPubStore);
   private readonly authStore = inject(AuthStore);
+  private readonly checkinStore = inject(CheckinStore);
+  private readonly checkInModalService = inject(CheckInModalService);
+
+  // ✅ Local state for check-in process
+  private readonly _isCheckingIn = signal(false);
+  readonly isCheckingIn = this._isCheckingIn.asReadonly();
 
   // ✅ Signals for reactivity
   readonly isMobile = this.viewportService.isMobile;
@@ -246,7 +271,7 @@ export class FooterNavComponent extends BaseComponent {
 
   // ✅ Check if user can check in
   readonly canCheckIn = computed(() => {
-    return !!this.closestPub() && !!this.user();
+    return !!this.closestPub() && !!this.user() && !this.isCheckingIn();
   });
 
   // ✅ Navigation items with Material Symbols
@@ -255,34 +280,93 @@ export class FooterNavComponent extends BaseComponent {
       {
         label: 'Pubs',
         route: '/pubs',
-        iconName: 'home', // Material Symbol for home/pubs
+        iconName: 'home',
         isActive: this.isOnRoute('/pubs')()
       },
       {
         label: 'Missions',
         route: '/missions',
-        iconName: 'flag', // Material Symbol for missions/goals
+        iconName: 'flag',
         isActive: this.isOnRoute('/missions')()
       },
       {
         label: 'Check In',
-        route: '/check-in',
-        iconName: 'location_on', // Material Symbol for location
-        isActive: this.isOnRoute('/check-in')(),
+        iconName: 'location_on',
+        isActive: false, // Check-in is not a route
         isCheckIn: true
       },
       {
         label: 'Leaderboard',
         route: '/leaderboard',
-        iconName: 'leaderboard', // Material Symbol for rankings
+        iconName: 'leaderboard',
         isActive: this.isOnRoute('/leaderboard')()
       },
       {
         label: 'Share',
         route: '/share',
-        iconName: 'share', // Material Symbol for sharing
+        iconName: 'share',
         isActive: this.isOnRoute('/share')()
       }
     ];
   });
+
+  // ✅ Handle check-in button click
+  async handleCheckIn(): Promise<void> {
+    if (!this.canCheckIn() || this.isCheckingIn()) {
+      console.log('[FooterNav] Check-in not available');
+      return;
+    }
+
+    const pub = this.closestPub();
+    if (!pub) {
+      console.warn('[FooterNav] No pub available for check-in');
+      return;
+    }
+
+    console.log('[FooterNav] Starting check-in for:', pub.name);
+    this._isCheckingIn.set(true);
+
+    try {
+      // ✅ Perform check-in via store
+      await this.checkinStore.checkinToPub(pub.id);
+
+      // ✅ Get results from store
+      const latestCheckin = this.checkinStore.checkinSuccess();
+      const landlordMessage = this.checkinStore.landlordMessage();
+
+      if (latestCheckin) {
+        const isNewLandlord = latestCheckin.madeUserLandlord === true;
+
+        // ✅ Use CheckInModalService for result flow
+        this.checkInModalService.showCheckInResults({
+          success: true,
+          checkin: latestCheckin,
+          pub: pub,
+          isNewLandlord,
+          landlordMessage: landlordMessage || undefined,
+          badges: [], // TODO: Add badges when available
+        });
+
+        console.log('[FooterNav] ✅ Check-in successful, modals shown');
+      } else {
+        // ✅ Show error modal
+        this.checkInModalService.showCheckInResults({
+          success: false,
+          error: 'Check-in completed but no result returned'
+        });
+      }
+
+    } catch (error: any) {
+      console.error('[FooterNav] Check-in failed:', error);
+
+      // ✅ Show error modal
+      this.checkInModalService.showCheckInResults({
+        success: false,
+        error: error?.message || 'Check-in failed. Please try again.'
+      });
+
+    } finally {
+      this._isCheckingIn.set(false);
+    }
+  }
 }
