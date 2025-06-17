@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.37](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.36...v0.0.37) (2025-06-17)
+
+
+### Bug Fixes
+
+* Avatar selector now persists ([e711e61](https://github.com/marvinbarretto/spoons-ng/commit/e711e612b7986aed164330b9e467fadab02d005f))
+
 ### [0.0.36](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.35...v0.0.36) (2025-06-17)
 
 
