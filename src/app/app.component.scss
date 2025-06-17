@@ -14,8 +14,15 @@
 }
 
 .main-content {
-  flex: 1; // stretch to fill remaining space
-  display: flex;
-  flex-direction: column;
-  // position: relative;
+  flex: 1;
+
+  /* ✅ Add bottom padding on mobile for fixed footer nav */
+  // TODO: Extract this number out and centralise media query values
+  @media (max-width: 767px) {
+    padding-bottom: calc(70px + env(safe-area-inset-bottom));
+  }
+
+  /* ✅ Ensure smooth scrolling on mobile */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }

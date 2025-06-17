@@ -2,12 +2,15 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   DestroyRef,
   inject,
   OnInit,
   signal
 } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Router, NavigationEnd } from '@angular/router';
+import { filter, map } from 'rxjs/operators';
+import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SsrPlatformService } from '../utils/ssr/ssr-platform.service';
 import { ToastService } from './toast.service';
 import { UserProgressionService } from './user-progression.service';
@@ -22,6 +25,7 @@ export abstract class BaseComponent implements OnInit {
   protected readonly platform = inject(SsrPlatformService);
   protected readonly toastService = inject(ToastService);
   protected readonly userProgressionService = inject(UserProgressionService);
+  protected readonly router = inject(Router);
 
   // Commonly used signals available everywhere
   protected readonly userExperienceLevel = this.userProgressionService.userExperienceLevel;
@@ -30,6 +34,23 @@ export abstract class BaseComponent implements OnInit {
   // 📡 Universal component state - clean signal names
   protected readonly loading = signal(false);
   protected readonly error = signal<string | null>(null);
+
+  // 🧭 Universal routing signals
+  private readonly currentRoute$ = this.router.events.pipe(
+    filter((event): event is NavigationEnd => event instanceof NavigationEnd),
+    map(event => event.url),
+    takeUntilDestroyed()
+  );
+
+  protected readonly currentRoute = toSignal(this.currentRoute$, {
+    initialValue: this.router.url,
+  });
+
+  // ✅ Common routing computeds
+  protected readonly isHomepage = computed(() => this.currentRoute() === '/');
+  protected readonly isOnRoute = (route: string) => computed(() =>
+    this.currentRoute().startsWith(route)
+  );
 
   ngOnInit(): void {
     this.onInit();

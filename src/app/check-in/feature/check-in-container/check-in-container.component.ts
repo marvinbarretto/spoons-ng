@@ -24,7 +24,6 @@ import { environment } from '../../../../environments/environment';
   styleUrl: './check-in-container.component.scss',
 })
 export class CheckInContainerComponent extends BaseComponent {
-  private readonly router = inject(Router);
   private readonly nearbyPubStore = inject(NearbyPubStore);
   private readonly userStore = inject(UserStore);
   protected readonly checkinStore = inject(CheckinStore);

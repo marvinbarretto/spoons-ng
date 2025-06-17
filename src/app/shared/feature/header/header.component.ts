@@ -37,23 +37,12 @@ import { AuthStore } from '../../../auth/data-access/auth.store';
 })
 export class HeaderComponent extends BaseComponent implements AfterViewInit {
   // 🔧 Services
-  private readonly router = inject(Router);
   private readonly viewportService = inject(ViewportService);
   private readonly panelStore = inject(PanelStore);
   private readonly landlordStore = inject(LandlordStore);
   private readonly nearbyPubStore = inject(NearbyPubStore);
   private readonly authStore = inject(AuthStore);
 
-  private readonly currentRoute$ = this.router.events.pipe(
-    filter((event): event is NavigationEnd => event instanceof NavigationEnd),
-    map(event => event.url)
-  );
-
-  private readonly currentRoute = toSignal(this.currentRoute$, {
-    initialValue: this.router.url,
-  });
-
-  readonly isHomepage = computed(() => this.currentRoute() === '/');
   readonly isMobile = this.viewportService.isMobile;
   readonly closestPub = computed(() => this.nearbyPubStore.closestPub());
 

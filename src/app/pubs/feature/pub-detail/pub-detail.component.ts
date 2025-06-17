@@ -22,7 +22,6 @@ import { generateAnonymousName } from '../../../shared/utils/anonymous-names';
 })
 export class PubDetailComponent extends BaseComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
   private readonly pubsService = inject(PubService);
 
   // ✅ Inject all required stores
