@@ -1,5 +1,14 @@
 <div class="home-container">
 
+  <app-scoreboard-hero
+    (openSettings)="handleOpenSettings()"
+    (openGuide)="handleOpenGuide()"
+    (startMission)="handleStartMission()"
+    (viewMission)="handleViewMission($event)"
+    (viewAllBadges)="handleViewAllBadges()"
+  />
+
+
   <!-- ✅ SIMPLIFIED: Just pass the user, WelcomeComponent handles the rest -->
   <app-welcome
     [user]="userStore.user()"
@@ -52,6 +61,8 @@
       <p>Move closer to pubs to see check-in options!</p>
     </div>
   }
+
+
 
   <!-- ✅ Loading state -->
   @if (isLoading()) {

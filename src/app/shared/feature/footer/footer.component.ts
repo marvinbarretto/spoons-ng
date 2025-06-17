@@ -13,8 +13,7 @@ import { FooterNavComponent } from "../footer-nav/footer-nav.component";
     <footer class="footer">
       <app-dev-debug />
       <div class="footer-content">
-        <p>&copy; {{ currentYear }} Spooncount. All rights reserved.</p>
-        <p class="version">Version: {{ version }}</p>
+        <p>&copy; {{ currentYear }} Spooncount {{ version }}</p>
       </div>
     </footer>
   `,

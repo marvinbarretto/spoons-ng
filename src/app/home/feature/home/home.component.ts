@@ -16,6 +16,9 @@ import { EarnedBadgeListComponent } from '@badges/ui/earned-badge-list/earned-ba
 import { NearbyPubListComponent } from '@home/ui/nearby-pub-list/nearby-pub-list.component';
 import { WelcomeComponent } from '@home/ui/welcome/welcome.component';
 import { PubCountHeroComponent } from "../../ui/pub-count-hero/pub-count-hero.component";
+import { ScoreboardHeroComponent } from "../../ui/scoreboard-hero/scoreboard-hero.component";
+import { OverlayService } from '../../../shared/data-access/overlay.service';
+import { MissionStore } from '../../../missions/data-access/mission.store';
 
 @Component({
   selector: 'app-home-three',
@@ -27,7 +30,8 @@ import { PubCountHeroComponent } from "../../ui/pub-count-hero/pub-count-hero.co
     NearbyPubListComponent,
     WelcomeComponent,
     JsonPipe,
-    PubCountHeroComponent
+    PubCountHeroComponent,
+    ScoreboardHeroComponent
 ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
@@ -35,13 +39,41 @@ import { PubCountHeroComponent } from "../../ui/pub-count-hero/pub-count-hero.co
 export class HomeComponent extends BaseComponent {
   // ✅ Store Injections
   protected readonly authStore = inject(AuthStore);
-  protected readonly checkinStore = inject(CheckinStore);
-  protected readonly pubStore = inject(PubStore);
   protected readonly userStore = inject(UserStore);
+  protected readonly pubStore = inject(PubStore);
   protected readonly badgeStore = inject(BadgeStore);
+  protected readonly missionStore = inject(MissionStore);
+  protected readonly checkinStore = inject(CheckinStore);
   protected readonly nearbyPubStore = inject(NearbyPubStore);
 
+
+  private readonly overlayService = inject(OverlayService);
+
+  // ✅ Data Loading
+  protected override onInit(): void {
+    console.log('[Home] Initializing component...');
+
+    // Load critical data
+    this.pubStore.loadOnce();
+    this.badgeStore.loadOnce();
+    this.missionStore.loadOnce();
+
+    console.log('[Home] Initial data loading triggered');
+  }
+
+  // ✅ Data Signals
+  readonly user = this.userStore.user;
+  readonly closestPub = this.nearbyPubStore.closestPub;
+  readonly nearbyPubs = this.nearbyPubStore.nearbyPubs;
+  readonly recentBadges = this.badgeStore.recentBadgesForDisplay;
+
+
   // ✅ Environment
+  readonly isDevelopment = computed(() => {
+    // TODO: Replace with proper environment check
+    return !this.currentRoute().includes('production');
+  });
+
   readonly isProduction = false; // TODO: inject from environment
 
   constructor() {
@@ -115,13 +147,38 @@ readonly shouldShowGoal = computed(() => {
 });
 
 
+
+// ✅ Event Handlers
+handleOpenSettings(): void {
+  console.log('[Home] Opening profile settings');
+  // TODO: Implement ProfileCustomizationModal
+  this.showInfo('Profile customization coming soon!');
+}
+
+handleOpenGuide(): void {
+  console.log('[Home] Opening how-to-play guide');
+  // TODO: Implement HowToPlayModal using OverlayService
+  this.showInfo('How to play guide coming soon!');
+}
+
+handleStartMission(): void {
+  console.log('[Home] Navigating to missions');
+  this.router.navigate(['/missions']);
+}
+
+handleViewMission(missionId: string): void {
+  console.log('[Home] Viewing mission:', missionId);
+  this.router.navigate(['/missions', missionId]);
+}
+
+handleViewAllBadges(): void {
+  console.log('[Home] Viewing all badges');
+  this.router.navigate(['/admin/badges']); // TODO: Create user-facing badges page
+}
+
   // ===================================
   // NEARBY PUBS COMPUTED PROPERTIES (using existing NearbyPubStore interface)
   // ===================================
-
-  readonly closestPub = computed(() => {
-    return this.nearbyPubStore.closestPub();
-  });
 
   readonly nearestPubs = computed(() => {
     return this.nearbyPubStore.nearbyPubs().slice(0, 5);

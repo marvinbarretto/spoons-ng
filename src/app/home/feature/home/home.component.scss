@@ -1,220 +1,76 @@
 .home-container {
-  padding: 1rem;
-  max-width: 800px;
+  padding: 0 1rem 2rem;
+  max-width: 1200px;
   margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-
-  // Ensure consistent spacing
-  > * {
-    flex-shrink: 0;
-  }
 }
 
-.no-nearby-pubs-message {
-  // ✅ NEW: Use semantic theme tokens
-  background-color: var(--color-surface);
-  border: 2px dashed var(--color-border);
-  border-radius: 12px;
-  padding: 2rem 1rem;
-  text-align: center;
-  color: var(--color-text-muted);
-
-  // ✅ NEW: Add subtle elevation with theme-aware shadow
-  box-shadow: var(--color-shadow);
-
-  h3 {
-    margin: 0 0 0.5rem 0;
-    font-size: 1.2rem;
-    color: var(--color-text-secondary);
-  }
-
-  p {
-    margin: 0;
-    font-size: 0.95rem;
-    color: var(--color-text-muted);
-  }
-
-  // ✅ NEW: Add hover effect for interactive feel
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: var(--color-surface-elevated);
-    border-color: var(--color-border-secondary);
-  }
+.recent-badges,
+.nearby-section {
+  margin-bottom: 2rem;
 }
 
-.loading-state {
-  text-align: center;
-  padding: 2rem;
-  color: var(--color-text-muted);
-  background-color: var(--color-surface);
+.recent-badges h2,
+.nearby-section h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: var(--color-text, #1f2937);
+}
+
+/* ✅ Debug Styles */
+.debug-section {
+  margin-top: 2rem;
+  background: var(--color-surface, #f8fafc);
+  border: 1px solid var(--color-border, #e2e8f0);
   border-radius: 8px;
-
-  // ✅ NEW: Add subtle border and shadow
-  border: 1px solid var(--color-border);
-  box-shadow: var(--color-shadow);
-
-  p {
-    margin: 0;
-    font-size: 1rem;
-    color: var(--color-text-secondary);
-  }
-
-  // ✅ NEW: Add loading animation support
-  &.with-spinner {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-
-    &::before {
-      content: '';
-      width: 2rem;
-      height: 2rem;
-      border: 2px solid var(--color-border);
-      border-top-color: var(--color-primary);
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-  }
+  padding: 1rem;
 }
 
-// ✅ NEW: Error state styling
-.error-state {
-  text-align: center;
-  padding: 2rem;
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-error);
-  border-radius: 8px;
-  color: var(--color-error);
-
-  h3 {
-    margin: 0 0 0.5rem 0;
-    font-size: 1.1rem;
-    color: var(--color-error);
-  }
-
-  p {
-    margin: 0;
-    font-size: 0.95rem;
-    color: var(--color-text-secondary);
-  }
+.debug-section summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--color-text-secondary, #64748b);
 }
 
-// ✅ NEW: Success state for when data loads
-.content-loaded {
+.debug-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.debug-item {
+  background: white;
+  border: 1px solid var(--color-border, #e2e8f0);
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+.debug-item h4 {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.875rem;
+  color: var(--color-text, #1f2937);
+}
+
+.debug-item pre {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 0.75rem;
+  font-size: 0.75rem;
+  overflow-x: auto;
+  max-height: 200px;
+  overflow-y: auto;
+  margin: 0;
+}
+
+/* ✅ Responsive Design */
+@media (max-width: 768px) {
   .home-container {
-    // Add subtle entrance animation
-    animation: fadeInUp 0.3s ease-out;
-  }
-}
-
-// ✅ NEW: Theme-aware focus states
-.home-container {
-  // Ensure focus is visible in all themes
-  *:focus-visible {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
-    border-radius: 4px;
-  }
-}
-
-// ✅ NEW: Theme-specific enhancements
-[data-theme="sage"] .no-nearby-pubs-message {
-  // Sage theme gets extra nature-inspired styling
-  background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-surface-elevated) 100%);
-}
-
-[data-theme="coral"] .no-nearby-pubs-message {
-  // Coral theme gets warmer, more inviting feel
-  background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-surface-elevated) 100%);
-}
-
-[data-theme="slate"] .no-nearby-pubs-message {
-  // Slate (dark) theme gets more pronounced borders
-  border-width: 1px;
-  border-style: solid;
-}
-
-[data-theme="forest"] .loading-state {
-  // Forest theme gets nature-inspired loading animation
-  &.with-spinner::before {
-    border-top-color: var(--color-accent-400);
-  }
-}
-
-// ✅ NEW: Dark mode specific adjustments
-.dark {
-  .no-nearby-pubs-message {
-    // Enhanced contrast for dark themes
-    border-color: var(--color-border-secondary);
-    background: linear-gradient(135deg, var(--color-surface) 0%, var(--color-surface-elevated) 100%);
+    padding: 0 0.5rem 1rem;
   }
 
-  .loading-state {
-    // Softer appearance in dark mode
-    background: var(--color-surface-elevated);
-  }
-}
-
-// ✅ NEW: Animations
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-// Mobile responsive adjustments
-@media (max-width: 480px) {
-  .home-container {
-    padding: 0.75rem;
-    gap: 1.25rem;
-  }
-
-  .no-nearby-pubs-message {
-    padding: 1.5rem 0.75rem;
-
-    h3 {
-      font-size: 1.1rem;
-    }
-
-    p {
-      font-size: 0.9rem;
-    }
-  }
-
-  .loading-state {
-    padding: 1.5rem 1rem;
-  }
-}
-
-// ✅ NEW: Reduced motion support
-@media (prefers-reduced-motion: reduce) {
-  .no-nearby-pubs-message {
-    transition: none;
-  }
-
-  .loading-state.with-spinner::before {
-    animation: none;
-  }
-
-  .content-loaded .home-container {
-    animation: none;
+  .debug-grid {
+    grid-template-columns: 1fr;
   }
 }
