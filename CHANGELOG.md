@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.34](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.33...v0.0.34) (2025-06-17)
+
+
+### Features
+
+* Add profile customisation modal ([8614a49](https://github.com/marvinbarretto/spoons-ng/commit/8614a49a2952e7913d402189dbe55499afffed81))
+* Remove top nav from mobile ([1bfa084](https://github.com/marvinbarretto/spoons-ng/commit/1bfa08488cc0dae1fa3c000857b1e21e8f4cb5d9))
+
 ### [0.0.33](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.32...v0.0.33) (2025-06-17)
 
 
