@@ -1,4 +1,11 @@
 <div class="home-container">
+
+  <app-user-profile-widget
+  [user]="user()"
+  [leaderboardPosition]="userLeaderboardPosition()"
+  (openProfile)="handleOpenProfile()" />
+
+
   <!-- ✅ Main Scoreboard -->
   <app-scoreboard-hero
     [user]="user()"

@@ -25,6 +25,7 @@ import { ScoreboardHeroComponent } from '@home/ui/scoreboard-hero/scoreboard-her
 import { BadgesShowcaseComponent } from '@home/ui/badges-showcase/badges-showcase.component';
 import { MissionsSectionComponent } from '@home/ui/missions-widget/missions-widget.component';
 import { ActionCardsComponent } from '@home/ui/action-cards/action-cards.component';
+import { UserProfileWidgetComponent } from '../../ui/user-profile-widget/user-profile-widget.component';
 
 
 @Component({
@@ -36,6 +37,7 @@ import { ActionCardsComponent } from '@home/ui/action-cards/action-cards.compone
     BadgesShowcaseComponent,
     MissionsSectionComponent,
     ActionCardsComponent,
+    UserProfileWidgetComponent,
     JsonPipe
 
 ],
@@ -112,6 +114,12 @@ export class HomeComponent extends BaseComponent {
     this.router.navigate(['/admin/badges']);
   }
 
+   // ✅ Event Handlers
+   handleOpenProfile(): void {
+    console.log('[Home] Opening user profile');
+    this.showInfo('Profile modal coming soon!');
+  }
+
   // ✅ Debug Information
   readonly debugUserInfo = computed(() => {
     const user = this.user();
@@ -145,6 +153,23 @@ export class HomeComponent extends BaseComponent {
       activeMissions: this.activeMissions().length
     }
   }));
+
+    // ✅ Placeholder for leaderboard position
+    readonly userLeaderboardPosition = computed(() => {
+      // TODO: Implement real leaderboard calculation
+      const user = this.user();
+      if (!user) return null;
+
+      const pubs = user.checkedInPubIds?.length || 0;
+      const badges = user.badgeCount || 0;
+
+      // Fake calculation for demo - higher activity = better position
+      if (pubs >= 50 || badges >= 20) return Math.floor(Math.random() * 10) + 1;
+      if (pubs >= 20 || badges >= 10) return Math.floor(Math.random() * 50) + 10;
+      if (pubs >= 5 || badges >= 3) return Math.floor(Math.random() * 200) + 50;
+
+      return null; // Not on leaderboard yet
+    });
 
   // ✅ Data Loading
   protected override onInit(): void {
