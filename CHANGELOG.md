@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.30](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.29...v0.0.30) (2025-06-17)
+
+
+### Features
+
+* Add PubCountHero component ([6640f2e](https://github.com/marvinbarretto/spoons-ng/commit/6640f2e2b4b1c3e97cdd06d7dd9ca8079ab4dc33))
+* Basic fixed footer ([3826ed5](https://github.com/marvinbarretto/spoons-ng/commit/3826ed503d1c4645ff714190c5e3fa4eb5a23f1b))
+
+
+### Bug Fixes
+
+* Various caching issues ([a32d99d](https://github.com/marvinbarretto/spoons-ng/commit/a32d99d02912ec1f7e1316d4c84e6d6281ad61bf))
+
 ### [0.0.29](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.28...v0.0.29) (2025-06-16)
 
 
