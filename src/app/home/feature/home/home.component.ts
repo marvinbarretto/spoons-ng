@@ -24,14 +24,11 @@ import { PubCountHeroComponent } from '../../ui/pub-count-hero/pub-count-hero.co
   selector: 'app-home-three',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    PubCountHeroComponent,
     ScoreboardHeroComponent,
     BadgesShowcaseComponent,
     MissionsSectionComponent,
     ActionCardsComponent,
     UserProfileWidgetComponent,
-    JsonPipe
-
 ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
