@@ -1,0 +1,314 @@
+<!-- src/app/shared/utils/dev-debug/dev-debug.component.html -->
+<div class="dev-debug" [class.expanded]="isExpanded()">
+
+  <!-- Header with toggle and quick status -->
+  <div class="debug-header" (click)="toggleExpanded()">
+    <span class="debug-title">🛠️ Dev Debug</span>
+    <div class="quick-status">
+      @for (status of storeStatus(); track status.name) {
+        <span class="status-indicator" [attr.title]="status.name + ': ' + status.status">
+          {{ status.indicator }}
+        </span>
+      }
+    </div>
+    <span class="toggle-icon">{{ isExpanded() ? '▼' : '▶' }}</span>
+  </div>
+
+  <!-- Expanded Content -->
+  @if (isExpanded()) {
+    <div class="debug-content">
+
+      <!-- Database Summary -->
+      <div class="section">
+        <div class="section-header">
+          <h4>📊 Database Overview</h4>
+          <button class="btn-tiny" (click)="toggleVerbose()">
+            {{ showVerbose() ? 'Simple' : 'Verbose' }}
+          </button>
+        </div>
+
+        @if (databaseSummary(); as summary) {
+          <div class="db-summary">
+            <div class="summary-stat">
+              <span class="stat-label">Total Docs:</span>
+              <span class="stat-value" [class.zero]="summary.totalDocuments === 0">
+                {{ summary.totalDocuments }}
+              </span>
+            </div>
+            <div class="summary-stat">
+              <span class="stat-label">Status:</span>
+              <span class="stat-value" [class.empty]="summary.isEmpty">
+                {{ summary.isEmpty ? 'Empty' : 'Has Data' }}
+              </span>
+            </div>
+            @if (summary.lastUpdated) {
+              <div class="summary-stat">
+                <span class="stat-label">Updated:</span>
+                <span class="stat-value">{{ summary.lastUpdated | date:'HH:mm:ss' }}</span>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Collection Counts Grid -->
+        <div class="counts-grid">
+          <div class="count-item">
+            <span class="count-label">Users:</span>
+            <span class="count-value" [class.zero]="counts().users === 0">
+              {{ counts().users }}
+            </span>
+          </div>
+          <div class="count-item">
+            <span class="count-label">Check-ins:</span>
+            <span class="count-value" [class.zero]="counts().checkIns === 0">
+              {{ counts().checkIns }}
+            </span>
+          </div>
+          <div class="count-item">
+            <span class="count-label">Landlords:</span>
+            <span class="count-value" [class.zero]="counts().landlords === 0">
+              {{ counts().landlords }}
+            </span>
+          </div>
+          <div class="count-item">
+            <span class="count-label">Earned Badges:</span>
+            <span class="count-value" [class.zero]="counts().earnedBadges === 0">
+              {{ counts().earnedBadges }}
+            </span>
+          </div>
+          <div class="count-item">
+            <span class="count-label">Pubs:</span>
+            <span class="count-value" [class.zero]="counts().pubs === 0">
+              {{ counts().pubs }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cleanup Actions -->
+      <div class="section">
+        <div class="section-header">
+          <h4>🧽 Database Cleanup</h4>
+        </div>
+
+        <div class="action-groups">
+          <!-- Bulk Cleanup -->
+          <div class="action-group">
+            <div class="group-label">💥 Bulk Operations</div>
+
+            <button
+              class="btn danger nuclear"
+              (click)="clearEverything()"
+              [disabled]="cleanupLoading()"
+              title="Delete EVERYTHING including badge definitions">
+              ☢️ Nuclear Reset
+            </button>
+
+            <button
+              class="btn danger"
+              (click)="clearAll()"
+              [disabled]="cleanupLoading()"
+              title="Clear all test data, keep badge definitions">
+              🚨 Clear All Test Data
+            </button>
+
+            <button
+              class="btn warning"
+              (click)="clearUsers()"
+              [disabled]="cleanupLoading()"
+              title="Clear users and their earned badges">
+              👥 Clear Users & Badges
+            </button>
+          </div>
+
+          <!-- Individual Collections -->
+          <div class="action-group">
+            <div class="group-label">🎯 Individual Collections</div>
+
+            <button
+              class="btn secondary"
+              (click)="clearCheckIns()"
+              [disabled]="cleanupLoading()">
+              📍 Clear Check-ins
+            </button>
+
+            <button
+              class="btn secondary"
+              (click)="clearLandlords()"
+              [disabled]="cleanupLoading()">
+              🏠 Clear Landlords
+            </button>
+
+            <button
+              class="btn secondary"
+              (click)="clearEarnedBadges()"
+              [disabled]="cleanupLoading()">
+              🏆 Clear Earned Badges
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Store Management -->
+      <div class="section">
+        <div class="section-header">
+          <h4>🔄 Store Management</h4>
+        </div>
+
+        <div class="action-groups">
+          <div class="action-group">
+            <div class="group-label">🔄 Refresh & Reset</div>
+
+            <button
+              class="btn primary"
+              (click)="refreshAllStores()">
+              🔄 Refresh All Stores
+            </button>
+
+            <button
+              class="btn secondary"
+              (click)="resetBadgeStore()">
+              🏆 Reset Badge Store
+            </button>
+
+            <button
+              class="btn secondary"
+              (click)="clearErrors()">
+              🧹 Clear Store Errors
+            </button>
+          </div>
+
+          <div class="action-group">
+            <div class="group-label">🔍 Debugging</div>
+
+            <button
+              class="btn info"
+              (click)="logDatabaseState()">
+              📊 Log DB State
+            </button>
+
+            <button
+              class="btn info"
+              (click)="debugBadgeState()">
+              🏆 Debug Badges
+            </button>
+
+            <button
+              class="btn info"
+              (click)="checkDatabaseEmpty()">
+              🔍 Check DB Empty
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Auth Testing -->
+      <div class="section">
+        <div class="section-header">
+          <h4>🔐 Authentication</h4>
+        </div>
+
+        <div class="auth-status">
+          @if (authData(); as auth) {
+            <div class="auth-info">
+              <span class="auth-label">Status:</span>
+              <span class="auth-value" [class.authenticated]="auth.isAuthenticated">
+                {{ auth.isAuthenticated ? '✅ Authenticated' : '❌ Not Authenticated' }}
+              </span>
+            </div>
+            @if (auth.user) {
+              <div class="auth-info">
+                <span class="auth-label">User:</span>
+                <span class="auth-value">{{ auth.user.displayName || 'No name' }}</span>
+              </div>
+              <div class="auth-info">
+                <span class="auth-label">UID:</span>
+                <span class="auth-value uid">{{ auth.user.uid.slice(-8) }}</span>
+              </div>
+            }
+          }
+        </div>
+
+        <div class="action-group">
+          <div class="group-label">🔐 Auth Actions</div>
+
+          <button
+            class="btn primary"
+            (click)="onLoginGoogle()">
+            🔐 Login Google
+          </button>
+
+          <button
+            class="btn secondary"
+            (click)="onLogout()">
+            🚪 Logout
+          </button>
+
+          <button
+            class="btn secondary"
+            (click)="testUpdateDisplayName()">
+            ✏️ Test Name Update
+          </button>
+        </div>
+      </div>
+
+      <!-- Cleanup Status -->
+      @if (lastCleanupResult()) {
+        <div class="section">
+          <div class="cleanup-result"
+               [class.success]="lastCleanupResult()!.success"
+               [class.error]="!lastCleanupResult()!.success">
+
+            @if (lastCleanupResult()!.success) {
+              <span class="result-icon">✅</span>
+              <span class="result-text">
+                Successfully deleted {{ lastCleanupResult()!.deletedCount }} records
+              </span>
+            } @else {
+              <span class="result-icon">❌</span>
+              <span class="result-text">
+                Cleanup failed: {{ lastCleanupResult()!.error }}
+              </span>
+            }
+          </div>
+        </div>
+      }
+
+      @if (cleanupLoading()) {
+        <div class="section">
+          <div class="loading-indicator">
+            <span class="loading-spinner">🔄</span>
+            <span>Cleaning up database...</span>
+          </div>
+        </div>
+      }
+
+      <!-- Verbose Debug Info -->
+      @if (showVerbose()) {
+        <div class="section">
+          <div class="section-header">
+            <h4>🔬 Verbose Debug Info</h4>
+          </div>
+
+          <div class="verbose-content">
+            <details class="debug-details">
+              <summary>Store Status Details</summary>
+              <pre>{{ storeStatus() | json }}</pre>
+            </details>
+
+            <details class="debug-details">
+              <summary>Database Health</summary>
+              <pre>{{ databaseHealth() | json }}</pre>
+            </details>
+
+            <details class="debug-details">
+              <summary>Auth Data</summary>
+              <pre>{{ authData() | json }}</pre>
+            </details>
+          </div>
+        </div>
+      }
+
+    </div>
+  }
+</div>

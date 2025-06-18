@@ -1,6 +1,7 @@
-import { Injectable, inject } from '@angular/core';
+// src/app/shared/utils/cleanup.service.ts
+import { Injectable } from '@angular/core';
+import { FirestoreService } from '../data-access/firestore.service';
 import {
-  Firestore,
   collection,
   getDocs,
   writeBatch,
@@ -17,8 +18,7 @@ export type CleanupResult = {
 @Injectable({
   providedIn: 'root'
 })
-export class CleanupService {
-  private readonly firestore = inject(Firestore);
+export class CleanupService extends FirestoreService {
 
   /**
    * Batch delete all documents from a collection
@@ -74,9 +74,51 @@ export class CleanupService {
   }
 
   /**
+   * Get count of documents in a collection
+   * Uses inherited FirestoreService methods
+   */
+  async getCollectionCount(collectionName: string): Promise<number> {
+    try {
+      // ✅ Use inherited method instead of manual Firestore operations
+      const docs = await this.getDocsWhere<any>(collectionName);
+      return docs.length;
+    } catch (error) {
+      console.error(`[CleanupService] Error counting ${collectionName}:`, error);
+      return 0;
+    }
+  }
+
+  /**
+   * Get counts for all collections
+   * More efficient with Promise.all
+   */
+  async getCollectionCounts(): Promise<{
+    users: number;
+    checkIns: number;
+    landlords: number;
+    earnedBadges: number;
+    pubs: number;
+  }> {
+    const [users, checkIns, landlords, earnedBadges, pubs] = await Promise.all([
+      this.getCollectionCount('users'),
+      this.getCollectionCount('checkins'),
+      this.getCollectionCount('landlords'),
+      this.getCollectionCount('earnedBadges'),
+      this.getCollectionCount('pubs')
+    ]);
+
+    return { users, checkIns, landlords, earnedBadges, pubs };
+  }
+
+  // ===================================
+  // 🧽 INDIVIDUAL COLLECTION CLEANUP
+  // ===================================
+
+  /**
    * Clear users collection
    */
   async clearUsers(): Promise<CleanupResult> {
+    console.log('[CleanupService] 👥 Clearing users collection...');
     return this.clearCollection('users');
   }
 
@@ -84,6 +126,7 @@ export class CleanupService {
    * Clear check-ins collection
    */
   async clearCheckIns(): Promise<CleanupResult> {
+    console.log('[CleanupService] 📍 Clearing check-ins collection...');
     return this.clearCollection('checkins');
   }
 
@@ -91,56 +134,138 @@ export class CleanupService {
    * Clear landlords collection
    */
   async clearLandlords(): Promise<CleanupResult> {
+    console.log('[CleanupService] 🏠 Clearing landlords collection...');
     return this.clearCollection('landlords');
   }
 
   /**
-   * Clear all test data: users, check-ins, and landlords
+   * Clear earned badges collection
+   */
+  async clearEarnedBadges(): Promise<CleanupResult> {
+    console.log('[CleanupService] 🏆 Clearing earned badges collection...');
+    return this.clearCollection('earnedBadges');
+  }
+
+  /**
+   * Clear badge definitions collection (DANGEROUS - for dev only)
+   */
+  async clearBadgeDefinitions(): Promise<CleanupResult> {
+    console.log('[CleanupService] ⚠️ Clearing badge definitions collection...');
+    return this.clearCollection('badges');
+  }
+
+  // ===================================
+  // 🚀 BULK CLEANUP OPERATIONS
+  // ===================================
+
+  /**
+   * Clear all test data: users, check-ins, landlords, and earned badges
+   * This is the main cleanup method that ensures database consistency
    */
   async clearAllTestData(): Promise<{
     users: CleanupResult;
     checkIns: CleanupResult;
     landlords: CleanupResult;
+    earnedBadges: CleanupResult;
   }> {
-    console.log('[CleanupService] Starting full test data cleanup...');
+    console.log('[CleanupService] 🧽 Starting complete test data cleanup...');
 
-    const [users, checkIns, landlords] = await Promise.all([
+    // Run all cleanup operations in parallel for efficiency
+    const [users, checkIns, landlords, earnedBadges] = await Promise.all([
       this.clearUsers(),
       this.clearCheckIns(),
-      this.clearLandlords()
+      this.clearLandlords(),
+      this.clearEarnedBadges()
     ]);
 
-    console.log('[CleanupService] Cleanup complete:', { users, checkIns, landlords });
+    const totalDeleted = users.deletedCount + checkIns.deletedCount +
+                        landlords.deletedCount + earnedBadges.deletedCount;
 
-    return { users, checkIns, landlords };
+    console.log(`[CleanupService] ✅ Cleanup complete. Total deleted: ${totalDeleted} documents`);
+    console.log('[CleanupService] Results:', { users, checkIns, landlords, earnedBadges });
+
+    return { users, checkIns, landlords, earnedBadges };
   }
 
   /**
-   * Get collection counts for confirmation
+   * Clear all user-related data (users + their earned badges)
+   * Useful for targeted cleanup that maintains data consistency
    */
-  async getCollectionCounts(): Promise<{
-    users: number;
-    checkIns: number;
-    pubs: number;
-    landlords: number;
+  async clearUserData(): Promise<{
+    users: CleanupResult;
+    earnedBadges: CleanupResult;
   }> {
-    try {
-      const [usersSnap, checkInsSnap, pubsSnap, landlordsSnap] = await Promise.all([
-        getDocs(collection(this.firestore, 'users')),
-        getDocs(collection(this.firestore, 'checkins')),
-        getDocs(collection(this.firestore, 'pubs')),
-        getDocs(collection(this.firestore, 'landlords'))
-      ]);
+    console.log('[CleanupService] 🧽 Clearing user data (users + earned badges)...');
 
-      return {
-        users: usersSnap.size,
-        checkIns: checkInsSnap.size,
-        pubs: pubsSnap.size,
-        landlords: landlordsSnap.size
-      };
-    } catch (error: any) {
-      console.error('[CleanupService] Error getting counts:', error);
-      return { users: 0, checkIns: 0, pubs: 0, landlords: 0 };
-    }
+    const [users, earnedBadges] = await Promise.all([
+      this.clearUsers(),
+      this.clearEarnedBadges()
+    ]);
+
+    const totalDeleted = users.deletedCount + earnedBadges.deletedCount;
+    console.log(`[CleanupService] ✅ User data cleanup complete. Deleted: ${totalDeleted} documents`);
+
+    return { users, earnedBadges };
+  }
+
+  /**
+   * Nuclear option: Clear EVERYTHING including badge definitions
+   * Only for complete reset scenarios
+   */
+  async clearEverything(): Promise<{
+    users: CleanupResult;
+    checkIns: CleanupResult;
+    landlords: CleanupResult;
+    earnedBadges: CleanupResult;
+    badges: CleanupResult;
+    pubs?: CleanupResult;
+  }> {
+    console.log('[CleanupService] ☢️ NUCLEAR CLEANUP - Clearing ALL data...');
+
+    const [users, checkIns, landlords, earnedBadges, badges] = await Promise.all([
+      this.clearUsers(),
+      this.clearCheckIns(),
+      this.clearLandlords(),
+      this.clearEarnedBadges(),
+      this.clearBadgeDefinitions()
+    ]);
+
+    const totalDeleted = users.deletedCount + checkIns.deletedCount +
+                        landlords.deletedCount + earnedBadges.deletedCount +
+                        badges.deletedCount;
+
+    console.log(`[CleanupService] ☢️ Nuclear cleanup complete. Deleted: ${totalDeleted} documents`);
+
+    return { users, checkIns, landlords, earnedBadges, badges };
+  }
+
+  // ===================================
+  // 🔍 UTILITY METHODS
+  // ===================================
+
+  /**
+   * Check if a collection is empty
+   */
+  async isCollectionEmpty(collectionName: string): Promise<boolean> {
+    const count = await this.getCollectionCount(collectionName);
+    return count === 0;
+  }
+
+  /**
+   * Get summary of all collection states
+   */
+  async getDatabaseSummary(): Promise<{
+    collections: Record<string, number>;
+    totalDocuments: number;
+    isEmpty: boolean;
+  }> {
+    const counts = await this.getCollectionCounts();
+    const totalDocuments = Object.values(counts).reduce((sum, count) => sum + count, 0);
+
+    return {
+      collections: counts,
+      totalDocuments,
+      isEmpty: totalDocuments === 0
+    };
   }
 }
