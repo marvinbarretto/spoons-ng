@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.40](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.39...v0.0.40) (2025-06-18)
+
+
+### Features
+
+* CRUD missions properly ([b0fc4ed](https://github.com/marvinbarretto/spoons-ng/commit/b0fc4ed796cc11ab5086242139166302e945df98))
+
 ### [0.0.39](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.38...v0.0.39) (2025-06-18)
 
 
