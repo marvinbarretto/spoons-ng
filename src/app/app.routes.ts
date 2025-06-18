@@ -6,13 +6,6 @@ import {
   UrlSegmentGroup,
   UrlMatchResult,
 } from '@angular/router';
-import { CheckInContainerComponent } from './check-in/feature/check-in-container/check-in-container.component';
-import { MISSIONS_ROUTES } from './missions/data-access/mission.routes';
-import { BADGE_ROUTES } from './badges/data-access/badge.routes';
-import { LeaderboardContainerComponent } from './leaderboard/feature/leaderboard-container/leaderboard-container.component';
-import { ShareContainerComponent } from './share/feature/share-container/share-container.component';
-import { MissionFormComponent } from './missions/feature/mission-form/mission-form.component';
-import { MissionsAdminComponent } from './missions/feature/mission-admin/mission-admin.component';
 
 
 export const appRoutes: Routes = [
@@ -45,23 +38,33 @@ export const appRoutes: Routes = [
   },
   {
     path: 'admin/missions',
-    component: MissionsAdminComponent
+    loadComponent: () =>
+      import('./missions/feature/mission-admin/mission-admin.component')
+        .then(m => m.MissionsAdminComponent)
   },
   {
     path: 'admin/missions/new',
-    component: MissionFormComponent
+    loadComponent: () =>
+      import('./missions/feature/mission-form/mission-form.component')
+        .then(m => m.MissionFormComponent)
   },
   {
     path: 'admin/missions/:id/edit',
-    component: MissionFormComponent
+    loadComponent: () =>
+      import('./missions/feature/mission-form/mission-form.component')
+        .then(m => m.MissionFormComponent)
   },
   {
     path: 'share',
-    component: ShareContainerComponent,
+    loadComponent: () =>
+      import('./share/feature/share-container/share-container.component')
+        .then(m => m.ShareContainerComponent)
   },
   {
     path: 'check-in',
-    component: CheckInContainerComponent,
+    loadComponent: () =>
+      import('./check-in/feature/check-in-container/check-in-container.component')
+        .then(m => m.CheckInContainerComponent)
   },
   {
     path: '**',
