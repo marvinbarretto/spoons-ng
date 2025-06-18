@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.38](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.37...v0.0.38) (2025-06-18)
+
+
+### Features
+
+* Stub Points services and stores ([7777213](https://github.com/marvinbarretto/spoons-ng/commit/777721305239b795862628163d62a6bc1d26672e))
+* Update pub list filter ([5e6023c](https://github.com/marvinbarretto/spoons-ng/commit/5e6023c2f2a72fc8cd57fb33f1eda1e44c572c5c))
+
+
+### Bug Fixes
+
+* Ensure jest tests can run with the ts helpers ([711b590](https://github.com/marvinbarretto/spoons-ng/commit/711b590d37b5b445a8d9701c1cc37f1b87babca1))
+
 ### [0.0.37](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.36...v0.0.37) (2025-06-17)
 
 
