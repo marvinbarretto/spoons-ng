@@ -11,6 +11,9 @@ export type CheckIn = {
   madeUserLandlord?: boolean;
   badgeName?: string;
   missionUpdated?: boolean;
+
+  pointsEarned?: number;
+  pointsBreakdown?: string;
 };
 
 // =====================================

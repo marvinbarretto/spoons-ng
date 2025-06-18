@@ -26,7 +26,11 @@ export type User = {
   // ✅ Remove the old badges array - this now comes from BadgeStore
   // The detailed badge data lives in the earnedBadges collection
 
-  UserExperienceLevel?: UserExperienceLevel;
+  UserExperienceLevel?: UserExperienceLevel; // TODO: Rename this, its awful
+
+  totalPoints?: number;  // ✅ Add this
+
+
 };
 
 // ✅ Type for user badge summary updates

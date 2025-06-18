@@ -13,15 +13,14 @@ export class PubStore extends BaseStore<Pub> {
   private readonly cacheService = inject(CacheService);
   private readonly locationService = inject(LocationService);
 
-  // ✅ Store-specific computed signals
-  readonly pubs = this.data; // Alias for cleaner access
+  readonly pubs = this.data;
 
   readonly sortedPubsByDistance = computed(() => {
     const location = this.locationService.location();
     const pubs = this.pubs();
 
     if (!location) {
-      return pubs; // Return unsorted if no location
+      return [...pubs].sort((a, b) => a.name.localeCompare(b.name));
     }
 
     return [...pubs].sort((a, b) => {
@@ -42,6 +41,9 @@ export class PubStore extends BaseStore<Pub> {
         : Infinity // ✅ Use Infinity instead of null - still sorts to bottom
     }));
   });
+
+  // ✅ Helper method for component filtering
+  readonly getSortedPubs = computed(() => this.sortedPubsByDistance());
 
   // ✅ Implement required fetchData method
   protected async fetchData(): Promise<Pub[]> {

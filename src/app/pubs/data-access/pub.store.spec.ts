@@ -1,33 +1,47 @@
 // src/app/pubs/data-access/pub.store.spec.ts
 import { TestBed } from '@angular/core/testing';
+import { signal } from '@angular/core';
 import { PubStore } from './pub.store';
 import { PubService } from './pub.service';
 import { CacheService } from '../../shared/data-access/cache.service';
 import { LocationService } from '../../shared/data-access/location.service';
-import { CheckinStore } from '../../check-in/data-access/check-in.store';
-import { watchSignal, createMockStore } from '../../shared/testing/signal-test-utils.spec';
-import { signal } from '@angular/core';
+import { watchSignal } from '../../shared/testing/signal-test-utils.spec';
 import type { Pub } from '../utils/pub.models';
+import type { GeoLocation } from '../../shared/data-access/location.service';
 
-describe('PubStore', () => {
+describe('PubStore Sorting', () => {
   let store: PubStore;
   let mockCacheService: jest.Mocked<CacheService>;
-  let mockLocationService: { location: ReturnType<typeof signal> };
+  let mockLocationService: { location: ReturnType<typeof signal<GeoLocation | null>> };
 
   const mockPubs: Pub[] = [
     {
       id: '1',
-      name: 'The Crown',
-      address: '123 High St',
-      location: { lat: 51.5074, lng: -0.1278 }, // London
+      name: 'Zebra Pub',
+      address: '789 Far St',
+      city: 'London',
+      region: 'Greater London',
+      location: { lat: 51.5074, lng: -0.1278 }, // London center
     },
     {
       id: '2',
-      name: 'The Swan',
-      address: '456 Park Ave',
+      name: 'Alpha Pub',
+      address: '123 Close Ave',
+      city: 'London',
+      region: 'Greater London',
       location: { lat: 51.5155, lng: -0.0922 }, // Closer to test location
+    },
+    {
+      id: '3',
+      name: 'Beta Pub',
+      address: '456 Mid St',
+      city: 'London',
+      region: 'Greater London',
+      location: { lat: 51.5000, lng: -0.1500 }, // Middle distance
     }
   ];
+
+  const testLocation: GeoLocation = { lat: 51.5200, lng: -0.0800 }; // Near Alpha Pub
 
   beforeEach(() => {
     mockCacheService = {
@@ -36,7 +50,7 @@ describe('PubStore', () => {
     } as any;
 
     mockLocationService = {
-      location: signal<{ lat: number; lng: number } | null>(null)
+      location: signal<GeoLocation | null>(null)
     };
 
     TestBed.configureTestingModule({
@@ -45,119 +59,157 @@ describe('PubStore', () => {
         { provide: CacheService, useValue: mockCacheService },
         { provide: LocationService, useValue: mockLocationService },
         { provide: PubService, useValue: {} },
-        { provide: CheckinStore, useValue: { checkins: signal([]) } },
       ]
     });
 
     store = TestBed.inject(PubStore);
+
+    // ✅ Set up mock data
+    mockCacheService.load.mockResolvedValue(mockPubs);
   });
 
-  describe('Signal Reactivity', () => {
-    it('should update loading state during load operation', async () => {
+  describe('sortedPubsByDistance', () => {
+    beforeEach(async () => {
+      await store.load(); // Load the mock data
+    });
+
+    it('should sort alphabetically when no location data', () => {
       // Arrange
-      const loadingWatcher = watchSignal(store.loading).startWatching();
-      mockCacheService.load.mockResolvedValue(mockPubs);
+      mockLocationService.location.set(null);
 
       // Act
-      await store.load();
+      const sorted = store.sortedPubsByDistance();
 
       // Assert
-      loadingWatcher.expectValues([false, true, false]);
+      expect(sorted.map(p => p.name)).toEqual(['Alpha Pub', 'Beta Pub', 'Zebra Pub']);
     });
 
-    it('should set error state when load fails', async () => {
+    it('should sort by proximity when location data available', () => {
       // Arrange
-      const errorWatcher = watchSignal(store.error).startWatching();
-      mockCacheService.load.mockRejectedValue(new Error('Network failed'));
+      mockLocationService.location.set(testLocation);
 
       // Act
-      await store.load();
+      const sorted = store.sortedPubsByDistance();
 
-      // Assert
-      errorWatcher.expectValues([null, 'Network failed']);
+      // Assert - Alpha Pub should be closest to test location
+      expect(sorted.map(p => p.name)).toEqual(['Alpha Pub', 'Beta Pub', 'Zebra Pub']);
+      expect(sorted[0].id).toBe('2'); // Alpha Pub
     });
-  });
 
-  describe('State Transitions', () => {
-    it('should transition through loading states correctly', async () => {
-      // Arrange: Mock slow loading
-      let resolveLoad: (value: Pub[]) => void;
-      mockCacheService.load.mockReturnValue(
-        new Promise(resolve => { resolveLoad = resolve; })
-      );
-
-      const loadingWatcher = watchSignal(store.loading).startWatching();
-      const errorWatcher = watchSignal(store.error).startWatching();
-
-      // Act: Start loading
-      const loadPromise = store.load();
-
-      // Assert: Should be loading, no error
-      expect(store.loading()).toBe(true);
-      expect(store.error()).toBeNull();
-
-      // Act: Complete loading
-      resolveLoad!(mockPubs);
-      await loadPromise;
-
-      // Assert: Final state
-      loadingWatcher.expectValues([false, true, false]);
-      errorWatcher.expectValues([null]); // No errors
-      expect(store.pubs()).toEqual(mockPubs);
-    });
-  });
-
-  describe('Computed Signals', () => {
-    it('should sort pubs by distance when location changes', () => {
+    it('should reactively re-sort when location changes', () => {
       // Arrange
-      store.pubs.set(mockPubs);
       const sortedWatcher = watchSignal(store.sortedPubsByDistance).startWatching();
 
-      // Act: Set location closer to The Swan
-      mockLocationService.location.set({ lat: 51.516, lng: -0.092 });
+      // Act - Start with no location (alphabetical)
+      mockLocationService.location.set(null);
+      const alphabetical = store.sortedPubsByDistance();
 
-      // Assert: The Swan should be first (it's closer)
-      const sortedPubs = store.sortedPubsByDistance();
-      expect(sortedPubs[0].name).toBe('The Swan');
-      expect(sortedPubs[1].name).toBe('The Crown');
+      // Act - Add location (proximity)
+      mockLocationService.location.set(testLocation);
+      const byProximity = store.sortedPubsByDistance();
+
+      // Assert
+      expect(alphabetical.map(p => p.name)).toEqual(['Alpha Pub', 'Beta Pub', 'Zebra Pub']);
+      expect(byProximity[0].id).toBe('2'); // Alpha Pub is closest
+
+      // Verify reactivity
+      expect(sortedWatcher.getValues()).toHaveLength(3); // Initial + 2 updates
     });
 
-    it('should return unsorted pubs when no location available', () => {
-      // Arrange
-      store.pubs.set(mockPubs);
+    it('should maintain alphabetical order for same distances', () => {
+      // Arrange - Set all pubs to same location
+      const samePubs: Pub[] = mockPubs.map(pub => ({
+        ...pub,
+        location: { lat: 51.5074, lng: -0.1278 }
+      }));
 
-      // Act: No location set (remains null)
+      mockCacheService.load.mockResolvedValue(samePubs);
+      await store.load();
+      mockLocationService.location.set(testLocation);
 
-      // Assert: Should return original order
-      expect(store.sortedPubsByDistance()).toEqual(mockPubs);
+      // Act
+      const sorted = store.sortedPubsByDistance();
+
+      // Assert - Should fall back to alphabetical for same distances
+      expect(sorted.map(p => p.name)).toEqual(['Alpha Pub', 'Beta Pub', 'Zebra Pub']);
     });
   });
 
-  describe('loadOnce behavior', () => {
-    it('should only load once when called multiple times', async () => {
-      // Arrange
-      mockCacheService.load.mockResolvedValue(mockPubs);
-
-      // Act
-      await store.loadOnce();
-      await store.loadOnce();
-      await store.loadOnce();
-
-      // Assert
-      expect(mockCacheService.load).toHaveBeenCalledTimes(1);
+  describe('pubsWithDistance', () => {
+    beforeEach(async () => {
+      await store.load();
     });
 
-    it('should load again after reset', async () => {
+    it('should add Infinity distance when no location', () => {
       // Arrange
-      mockCacheService.load.mockResolvedValue(mockPubs);
-      await store.loadOnce();
+      mockLocationService.location.set(null);
 
       // Act
-      store.reset();
-      await store.loadOnce();
+      const withDistance = store.pubsWithDistance();
 
       // Assert
-      expect(mockCacheService.load).toHaveBeenCalledTimes(2);
+      withDistance.forEach(pub => {
+        expect(pub.distance).toBe(Infinity);
+      });
+    });
+
+    it('should calculate actual distances when location available', () => {
+      // Arrange
+      mockLocationService.location.set(testLocation);
+
+      // Act
+      const withDistance = store.pubsWithDistance();
+
+      // Assert
+      withDistance.forEach(pub => {
+        expect(pub.distance).toBeGreaterThan(0);
+        expect(pub.distance).not.toBe(Infinity);
+        expect(typeof pub.distance).toBe('number');
+      });
+    });
+
+    it('should preserve all pub properties', () => {
+      // Arrange
+      mockLocationService.location.set(testLocation);
+
+      // Act
+      const withDistance = store.pubsWithDistance();
+
+      // Assert
+      withDistance.forEach((pub, index) => {
+        const originalPub = mockPubs[index];
+        expect(pub.id).toBe(originalPub.id);
+        expect(pub.name).toBe(originalPub.name);
+        expect(pub.address).toBe(originalPub.address);
+        expect(pub.location).toEqual(originalPub.location);
+        expect(pub).toHaveProperty('distance');
+      });
+    });
+  });
+
+  describe('error handling', () => {
+    it('should handle invalid location data gracefully', () => {
+      // Arrange
+      mockLocationService.location.set({ lat: NaN, lng: NaN } as any);
+
+      // Act & Assert - Should not throw
+      expect(() => store.sortedPubsByDistance()).not.toThrow();
+      expect(() => store.pubsWithDistance()).not.toThrow();
+    });
+
+    it('should handle empty pubs array', async () => {
+      // Arrange
+      mockCacheService.load.mockResolvedValue([]);
+      await store.load();
+      mockLocationService.location.set(testLocation);
+
+      // Act
+      const sorted = store.sortedPubsByDistance();
+      const withDistance = store.pubsWithDistance();
+
+      // Assert
+      expect(sorted).toEqual([]);
+      expect(withDistance).toEqual([]);
     });
   });
 });

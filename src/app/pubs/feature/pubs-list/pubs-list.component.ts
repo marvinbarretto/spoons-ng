@@ -16,7 +16,13 @@ import { NearbyPubStore } from '../../data-access/nearby-pub.store';
     <section class="pub-list-page">
       <header class="page-header">
         <h1>Pubs ({{ pubStore.itemCount() }})</h1>
-        <p class="page-subtitle">Discover and check in to pubs near you</p>
+        <p class="page-subtitle">
+          @if (hasLocationData()) {
+            📍 Sorted by proximity
+          } @else {
+            📄 Sorted alphabetically
+          }
+        </p>
       </header>
 
       @if (pubStore.loading()) {
@@ -47,70 +53,76 @@ import { NearbyPubStore } from '../../data-access/nearby-pub.store';
             <!-- Visited filter pills -->
             <div class="control-group">
               <span class="control-label">Show:</span>
-              <div class="pill-group">
+              <div class="filter-pills">
                 <button
-                  type="button"
-                  class="pill-button"
+                  class="filter-pill"
                   [class.active]="includeVisited()"
-                  (click)="toggleIncludeVisited()"
+                  (click)="toggleVisited()"
+                  type="button"
                 >
                   ✅ Visited ({{ visitedCount() }})
                 </button>
-
                 <button
-                  type="button"
-                  class="pill-button"
+                  class="filter-pill"
                   [class.active]="includeUnvisited()"
-                  (click)="toggleIncludeUnvisited()"
+                  (click)="toggleUnvisited()"
+                  type="button"
                 >
-                  🕵️ Unvisited ({{ unvisitedCount() }})
+                  🎯 Unvisited ({{ unvisitedCount() }})
                 </button>
               </div>
             </div>
           </div>
-        </div>
 
-        <!-- Results Summary -->
-        <div class="results-summary">
-          <p>Showing {{ filteredPubs().length }} of {{ pubStore.itemCount() }} pubs</p>
-        </div>
-
-        <!-- ✅ Pub Grid with Navigation Links -->
-        <div class="pub-grid">
-          @for (pub of filteredPubs(); track pub.id) {
-            <a
-              [routerLink]="['/pubs', pub.id]"
-              class="pub-card-link"
-            >
-              <app-pub-card
-                [pub]="pub"
-                [hasCheckedIn]="hasVisited(pub.id)"
-                [checkinCount]="getCheckinCount(pub.id)"
-                [showCheckinCount]="true"
-              />
-            </a>
-          } @empty {
-            <div class="empty-state">
-              <p>🔍 No pubs found matching your criteria</p>
-              <button (click)="clearFilters()" class="clear-filters-btn">
-                Clear filters
-              </button>
-            </div>
+          @if (hasActiveFilters()) {
+            <button (click)="clearFilters()" class="clear-filters-btn">
+              Clear Filters
+            </button>
           }
         </div>
+
+        <!-- Results count and sorting info -->
+        <div class="results-info">
+          <p>
+            Showing {{ filteredPubs().length }} of {{ pubStore.itemCount() }} pubs
+            @if (searchTerm()) {
+              matching "{{ searchTerm() }}"
+            }
+          </p>
+        </div>
+
+        <!-- Pub Grid -->
+        @if (filteredPubs().length > 0) {
+          <div class="pub-grid">
+            @for (pub of filteredPubs(); track pub.id) {
+              <a [routerLink]="['/pubs', pub.id]" class="pub-card-link">
+                <app-pub-card [pub]="pub" />
+              </a>
+            }
+          </div>
+        } @else {
+          <div class="empty-state">
+            <p>No pubs found matching your criteria</p>
+            @if (hasActiveFilters()) {
+              <button (click)="clearFilters()" class="clear-filters-btn">
+                Clear Filters
+              </button>
+            }
+          </div>
+        }
       }
     </section>
   `,
   styles: `
     .pub-list-page {
+      min-height: 100vh;
       padding: 1rem;
-      max-width: 1200px;
-      margin: 0 auto;
+      background: var(--color-background);
     }
 
     .page-header {
-      text-align: center;
       margin-bottom: 2rem;
+      text-align: center;
     }
 
     .page-header h1 {
@@ -121,25 +133,25 @@ import { NearbyPubStore } from '../../data-access/nearby-pub.store';
     }
 
     .page-subtitle {
+      font-size: 1rem;
       color: var(--color-text-secondary);
       margin: 0;
     }
 
-    /* Controls */
     .controls {
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: 8px;
-      padding: 1rem;
       margin-bottom: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
     }
 
     .search-group {
-      margin-bottom: 1rem;
+      display: flex;
+      gap: 0.5rem;
     }
 
     .search-input {
-      width: 100%;
+      flex: 1;
       padding: 0.75rem;
       border: 1px solid var(--color-border);
       border-radius: 6px;
@@ -149,59 +161,54 @@ import { NearbyPubStore } from '../../data-access/nearby-pub.store';
     .filter-controls {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: 0.75rem;
     }
 
     .control-group {
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      flex-wrap: wrap;
     }
 
     .control-label {
       font-weight: 500;
       color: var(--color-text);
-      min-width: 60px;
+      min-width: 3rem;
     }
 
-    .pill-group {
+    .filter-pills {
       display: flex;
       gap: 0.5rem;
       flex-wrap: wrap;
     }
 
-    .pill-button {
-      padding: 0.5rem 0.75rem;
+    .filter-pill {
+      padding: 0.5rem 1rem;
       border: 1px solid var(--color-border);
       border-radius: 20px;
       background: var(--color-surface);
-      color: var(--color-text-secondary);
-      font-size: 0.875rem;
+      color: var(--color-text);
       cursor: pointer;
       transition: all 0.2s ease;
+      font-size: 0.875rem;
     }
 
-    .pill-button:hover {
+    .filter-pill:hover {
       border-color: var(--color-primary);
-      background: var(--color-primary-subtle);
     }
 
-    .pill-button.active {
+    .filter-pill.active {
       border-color: var(--color-primary);
       background: var(--color-primary);
       color: var(--color-primary-text);
     }
 
-    /* Results */
-    .results-summary {
+    .results-info {
       margin-bottom: 1rem;
-      text-align: center;
       color: var(--color-text-secondary);
       font-size: 0.875rem;
     }
 
-    /* ✅ Pub Grid with Navigation Links */
     .pub-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -281,68 +288,82 @@ export class PubListComponent extends BaseComponent implements OnInit {
   protected readonly includeVisited = signal<boolean>(true);
   protected readonly includeUnvisited = signal<boolean>(true);
 
-  // ✅ Computed data
+  // ✅ Computed data - uses sorted pubs from store as base
   readonly filteredPubs = computed(() => {
-    const pubs = this.pubStore.data();
-    const search = this.searchTerm().toLowerCase();
-    const showVisited = this.includeVisited();
-    const showUnvisited = this.includeUnvisited();
+    // ✅ Start with sorted pubs (proximity or alphabetical)
+    const sortedPubs = this.pubStore.sortedPubsByDistance();
+    const search = this.searchTerm().toLowerCase().trim();
+    const checkins = this.checkinStore.userCheckins();
 
-    // ✅ Transform pubs to include distance property
-    const pubsWithDistance = pubs.map(pub => ({
+    const pubsWithDistance = sortedPubs.map(pub => ({
       ...pub,
       distance: this.nearbyPubStore.getDistanceToPub(pub.id) // ✅ Add distance
     }));
 
-    return pubsWithDistance.filter(pub => {
-      // Search filter
-      if (search && !pub.name.toLowerCase().includes(search) &&
-          !pub.address.toLowerCase().includes(search)) {
-        return false;
-      }
+    let filtered = pubsWithDistance;
 
-      // Visited filter
-      const hasVisited = this.hasVisited(pub.id);
-      if (!showVisited && hasVisited) return false;
-      if (!showUnvisited && !hasVisited) return false;
+    // ✅ Apply search filter
+    if (search) {
+      filtered = filtered.filter(pub =>
+        pub.name.toLowerCase().includes(search) ||
+        pub.address?.toLowerCase().includes(search) ||
+        pub.city?.toLowerCase().includes(search) ||
+        pub.region?.toLowerCase().includes(search)
+      );
+    }
 
-      return true;
-    });
+    // ✅ Apply visited/unvisited filters
+    if (!this.includeVisited() || !this.includeUnvisited()) {
+      filtered = filtered.filter(pub => {
+        const isVisited = checkins.includes(pub.id);
+
+        if (!this.includeVisited() && isVisited) return false;
+        if (!this.includeUnvisited() && !isVisited) return false;
+
+        return true;
+      });
+    }
+
+    return filtered;
   });
 
-  readonly visitedCount = computed(() =>
-    this.pubStore.data().filter(pub => this.hasVisited(pub.id)).length
-  );
+  // ✅ Helper computed signals
+  readonly hasLocationData = computed(() => {
+    return this.nearbyPubStore.location() !== null;
+  });
 
-  readonly unvisitedCount = computed(() =>
-    this.pubStore.data().filter(pub => !this.hasVisited(pub.id)).length
-  );
+  readonly visitedCount = computed(() => {
+    const checkins = this.checkinStore.userCheckins();
+    return this.pubStore.pubs().filter(pub => checkins.includes(pub.id)).length;
+  });
+
+  readonly unvisitedCount = computed(() => {
+    const checkins = this.checkinStore.userCheckins();
+    return this.pubStore.pubs().filter(pub => !checkins.includes(pub.id)).length;
+  });
+
+  readonly hasActiveFilters = computed(() => {
+    return this.searchTerm() !== '' ||
+           !this.includeVisited() ||
+           !this.includeUnvisited();
+  });
 
   override ngOnInit(): void {
     this.pubStore.loadOnce();
     this.checkinStore.loadOnce();
   }
 
-  // ✅ Helper methods
-  hasVisited(pubId: string): boolean {
-    return this.checkinStore.data().some(checkin => checkin.pubId === pubId);
-  }
-
-  getCheckinCount(pubId: string): number {
-    return this.checkinStore.data().filter(checkin => checkin.pubId === pubId).length;
-  }
-
-  // ✅ Filter methods
+  // ✅ Event handlers
   onSearch(term: string): void {
     this.searchTerm.set(term);
   }
 
-  toggleIncludeVisited(): void {
-    this.includeVisited.update(current => !current);
+  toggleVisited(): void {
+    this.includeVisited.update(value => !value);
   }
 
-  toggleIncludeUnvisited(): void {
-    this.includeUnvisited.update(current => !current);
+  toggleUnvisited(): void {
+    this.includeUnvisited.update(value => !value);
   }
 
   clearFilters(): void {

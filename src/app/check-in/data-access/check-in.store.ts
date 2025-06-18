@@ -13,6 +13,8 @@ import { getDistanceKm } from '../../shared/utils/get-distance';
 import { User } from '../../users/utils/user.model';
 import { UserStore } from '../../users/data-access/user.store';
 import { BadgeAwardService } from '../../badges/data-access/badge-award.service';
+import { PointsStore } from '../../points/data-access/points.store';
+import { CheckInPointsData, PointsBreakdown } from '../../points/utils/points.models';
 
 @Injectable({ providedIn: 'root' })
 export class CheckinStore extends BaseStore<CheckIn> {
@@ -22,6 +24,11 @@ export class CheckinStore extends BaseStore<CheckIn> {
   private readonly badgeAwardService = inject(BadgeAwardService);
   private readonly landlordStore = inject(LandlordStore);
   private readonly userStore = inject(UserStore);
+  private readonly pointsStore = inject(PointsStore);
+
+  private readonly _lastPointsBreakdown = signal<any>(null);
+  readonly lastPointsBreakdown = this._lastPointsBreakdown.asReadonly();
+
 
   // 🔒 Auth-reactive state
   private lastLoadedUserId: string | null = null;
@@ -41,15 +48,13 @@ export class CheckinStore extends BaseStore<CheckIn> {
     this.checkins().map(c => c.pubId)
   );
 
-    // ✅ Add this method
-    hasCheckedIn(pubId: string): boolean {
-      return this.data().some(checkIn => checkIn.pubId === pubId);
-    }
+  hasCheckedIn(pubId: string): boolean {
+    return this.data().some(checkIn => checkIn.pubId === pubId);
+  }
 
-    // ✅ Or if you want a computed signal for all pubs
-    readonly checkedInPubIds = computed(() =>
-      new Set(this.data().map(checkIn => checkIn.pubId))
-    );
+  readonly checkedInPubIds = computed(() =>
+    new Set(this.data().map(checkIn => checkIn.pubId))
+  );
 
   readonly landlordPubs = computed(() =>
     this.checkins().filter(c => c.madeUserLandlord).map(c => c.pubId)
@@ -97,7 +102,6 @@ export class CheckinStore extends BaseStore<CheckIn> {
     });
   }
 
-  // ✅ BaseStore implementation - called by loadOnce()
   protected async fetchData(): Promise<CheckIn[]> {
     const userId = this.authStore.uid();
     if (!userId) throw new Error('No authenticated user');
@@ -105,8 +109,6 @@ export class CheckinStore extends BaseStore<CheckIn> {
     console.log('[CheckinStore] 📡 Fetching check-ins for user:', userId);
     return this.checkinService.loadUserCheckins(userId);
   }
-
-  // 🎯 Public API - Query Methods
 
   canCheckInToday(pubId: string | null): boolean {
     if (!pubId) return false;
@@ -132,8 +134,6 @@ export class CheckinStore extends BaseStore<CheckIn> {
     return pubCheckins[0] || null;
   }
 
-  // 🎬 Public API - Action Methods
-
   /**
    * ✅ PRIMARY CHECK-IN METHOD
    * Handles geolocation, validation, and check-in process automatically
@@ -143,69 +143,80 @@ export class CheckinStore extends BaseStore<CheckIn> {
     this.clearCheckinSuccess();
 
     try {
-      // 1. Get user location
+      // 1-3. Your existing steps (location, validation, photo upload)
       const position = await this.getCurrentPosition();
-
-      // 2. Validate distance
       const distance = await this.getDistanceMeters(position.coords, pubId);
       console.log('[CheckinStore] Distance to pub:', distance, 'meters');
 
-      // 3. Upload photo if provided
       let photoUrl: string | undefined;
       if (photoDataUrl) {
         console.log('[CheckinStore] 📸 Uploading photo...');
         photoUrl = await this.checkinService.uploadPhoto(photoDataUrl);
       }
 
-      // 4. Get current user
       const userId = this.authStore.uid();
       if (!userId) throw new Error('Not logged in');
 
-      // 5. Create check-in data
+      // ✅ 4. Calculate points BEFORE creating check-in (via PointsStore only)
+      console.log('[CheckinStore] 🎯 Calculating points...');
+      const pointsData = await this.buildCheckInPointsData(pubId, userId, {
+        hasPhoto: !!photoUrl,
+        sharedSocial: false
+      });
+
+      const pointsBreakdown = await this.pointsStore.awardCheckInPoints(pointsData);
+      this._lastPointsBreakdown.set(pointsBreakdown);
+
+      // 5. Create check-in data WITH points included
       const newCheckin: Omit<CheckIn, 'id'> = {
         userId,
         pubId,
         timestamp: Timestamp.now(),
         dateKey: new Date().toISOString().split('T')[0],
+        // ✅ Include points in initial check-in
+        pointsEarned: pointsBreakdown.total,
+        pointsBreakdown: pointsBreakdown.reason,
         ...(photoUrl && { photoUrl }),
       };
 
-      // 6. Complete check-in (handles landlord logic)
+      // 6-8. Your existing flow (complete check-in, landlord, badges)
       console.log('[CheckinStore] 🔄 Processing check-in...');
       const completed = await this.checkinService.completeCheckin(newCheckin);
 
-      // 7. Update landlord store if landlord was awarded
       if (completed.landlordResult) {
         this.landlordStore.set(pubId, completed.landlordResult.landlord);
         console.log('[CheckinStore] 👑 Updated landlord store:', completed.landlordResult);
       }
 
-      // 8. Record success (remove landlordResult before storing)
       const { landlordResult, ...cleanCheckin } = completed;
       this.recordCheckinSuccess(cleanCheckin);
 
-      // ✅ 9. NEW: Evaluate badges after successful check-in
       console.log('[CheckinStore] 🏅 Starting badge evaluation...');
       await this.evaluateBadgesAfterCheckIn(userId, cleanCheckin);
 
-      // 10. Set success message
+      // ✅ Enhanced success message with points
+      const pointsMessage = this.formatPointsMessage(pointsBreakdown);
       this._landlordMessage.set(
         completed.madeUserLandlord
-          ? '👑 You\'re the landlord today!'
-          : '✅ Check-in complete!'
+          ? `👑 You're the landlord today! ${pointsMessage}`
+          : `✅ Check-in complete! ${pointsMessage}`
       );
 
-      this.toastService.success('Check-in successful!');
-      console.log('[CheckinStore] ✅ Check-in completed successfully');
+      this.toastService.success(`Check-in successful! ${pointsMessage}`);
+      console.log('[CheckinStore] ✅ Check-in completed with points:', pointsBreakdown.total);
 
     } catch (error: any) {
       const message = error?.message || 'Check-in failed';
       this._error.set(message);
       this.toastService.error(message);
       console.error('[CheckinStore] ❌ Check-in failed:', error);
-      throw error; // Re-throw for component handling
+      throw error;
     }
   }
+
+
+
+
 
      /**
    * Get badge debug info for current user
@@ -316,7 +327,64 @@ export class CheckinStore extends BaseStore<CheckIn> {
     console.log('[CheckinStore] 🧹 Complete reset');
   }
 
-  // 🔧 Private Helper Methods
+  // ===================================
+  // 🔧 PRIVATE HELPER METHODS
+  // ===================================
+
+  /**
+   * Build points calculation data BEFORE check-in is created
+   */
+  private async buildCheckInPointsData(
+    pubId: string,
+    userId: string,
+    options?: { hasPhoto?: boolean; sharedSocial?: boolean }
+  ): Promise<CheckInPointsData> {
+    const userCheckins = this.data().filter(c => c.userId === userId);
+
+    return {
+      pubId,
+      distanceFromHome: await this.calculateDistanceFromHome(pubId),
+      isFirstVisit: !userCheckins.some(c => c.pubId === pubId),
+      isFirstEver: userCheckins.length === 0, // No check-ins yet
+      currentStreak: this.calculateCurrentStreak(userCheckins),
+      hasPhoto: options?.hasPhoto || false,
+      sharedSocial: options?.sharedSocial || false
+    };
+  }
+
+
+    /**
+   * ✅ ADDED: Format points message for display
+   */
+    private formatPointsMessage(breakdown: PointsBreakdown): string {
+      if (breakdown.total <= 10) {
+        return `You earned ${breakdown.total} points! 🍺`;
+      } else if (breakdown.total <= 25) {
+        return `Nice! ${breakdown.total} points earned! 🎉`;
+      } else {
+        return `Excellent! ${breakdown.total} points! You're on fire! 🔥`;
+      }
+    }
+
+
+private async calculateDistanceFromHome(pubId: string): Promise<number> {
+  // Implement distance calculation logic
+  // This would use your existing location services
+  return 2.5; // Placeholder
+}
+
+private calculateCurrentStreak(userCheckins: CheckIn[]): number {
+  // Implement streak calculation logic
+  return 0; // Placeholder
+}
+
+/**
+   * Clear the points breakdown (for new check-ins)
+   */
+clearPointsBreakdown(): void {
+  this._lastPointsBreakdown.set(null);
+}
+
 
   /**
    * Get current position with proper error handling
@@ -451,4 +519,6 @@ export class CheckinStore extends BaseStore<CheckIn> {
     this.addItem(extended); // BaseStore method to add to collection
     this._checkinSuccess.set(extended);
   }
+
+
 }
