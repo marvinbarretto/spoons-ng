@@ -19,6 +19,27 @@ describe('ScoreboardHeroComponent', () => {
   let mockMissionStore: jest.Mocked<MissionStore>;
   let mockAuthStore: jest.Mocked<AuthStore>;
 
+  const createData = (overrides = {}) => ({
+    totalPoints: 0,
+    pubsVisited: 0,
+    totalPubs: 856,
+    badgeCount: 0,
+    landlordCount: 0,
+    totalCheckins: 0,
+    todaysPoints: 0,
+    isLoading: false,
+    ...overrides
+  });
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [ScoreboardHeroComponent]
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(ScoreboardHeroComponent);
+    component = fixture.componentInstance;
+  });
+
   // ✅ Test data factories
   const createMockUser = (overrides: Partial<User> = {}): User => ({
     uid: 'test-user',
@@ -91,6 +112,202 @@ describe('ScoreboardHeroComponent', () => {
     fixture = TestBed.createComponent(ScoreboardHeroComponent);
     component = fixture.componentInstance;
   });
+
+  describe('ScoreboardHeroComponent', () => {
+    let component: ScoreboardHeroComponent;
+    let fixture: ComponentFixture<ScoreboardHeroComponent>;
+
+    const createData = (overrides = {}) => ({
+      totalPoints: 0,
+      pubsVisited: 0,
+      totalPubs: 856,
+      badgeCount: 0,
+      landlordCount: 0,
+      totalCheckins: 0,
+      todaysPoints: 0,
+      isLoading: false,
+      ...overrides
+    });
+
+    beforeEach(async () => {
+      await TestBed.configureTestingModule({
+        imports: [ScoreboardHeroComponent]
+      }).compileComponents();
+
+      fixture = TestBed.createComponent(ScoreboardHeroComponent);
+      component = fixture.componentInstance;
+    });
+
+    // ✅ TEST 1: Core calculations work correctly
+    describe('Progress Calculation', () => {
+      it('should calculate progress percentage correctly', () => {
+        const data = createData({ pubsVisited: 43, totalPubs: 856 });
+        fixture.componentRef.setInput('data', data);
+
+        expect(component.progressPercentage()).toBe(5); // Math.round(43/856 * 100)
+      });
+
+      it('should handle edge case: zero total pubs', () => {
+        const data = createData({ pubsVisited: 5, totalPubs: 0 });
+        fixture.componentRef.setInput('data', data);
+
+        expect(component.progressPercentage()).toBe(0);
+      });
+    });
+
+    // ✅ TEST 2: Values actually appear in the DOM
+    describe('Template Rendering', () => {
+      it('should display animated points value in template', () => {
+        const data = createData({ totalPoints: 150 });
+        fixture.componentRef.setInput('data', data);
+        fixture.detectChanges();
+
+        const pointsElement = fixture.nativeElement.querySelector('.score-number');
+        expect(pointsElement?.textContent?.trim()).toBe('150');
+      });
+
+      it('should display progress percentage in template', () => {
+        const data = createData({ pubsVisited: 43, totalPubs: 856 });
+        fixture.componentRef.setInput('data', data);
+        fixture.detectChanges();
+
+        const progressText = fixture.nativeElement.querySelector('.progress-text');
+        expect(progressText?.textContent?.trim()).toBe('5% explored');
+      });
+
+      it('should show today\'s points bonus when present', () => {
+        const data = createData({ todaysPoints: 25 });
+        fixture.componentRef.setInput('data', data);
+        fixture.detectChanges();
+
+        const bonusElement = fixture.nativeElement.querySelector('.score-bonus');
+        expect(bonusElement?.textContent?.trim()).toBe('+25 today');
+      });
+
+      it('should hide today\'s points bonus when zero', () => {
+        const data = createData({ todaysPoints: 0 });
+        fixture.componentRef.setInput('data', data);
+        fixture.detectChanges();
+
+        const bonusElement = fixture.nativeElement.querySelector('.score-bonus');
+        expect(bonusElement).toBeFalsy();
+      });
+    });
+
+    // ✅ TEST 3: Loading states affect what's displayed
+    describe('Loading States', () => {
+      it('should show loading styles when isLoading is true', () => {
+        const data = createData({ totalPoints: 100, isLoading: true });
+        fixture.componentRef.setInput('data', data);
+        fixture.detectChanges();
+
+        const container = fixture.nativeElement.querySelector('.scoreboard-hero');
+        expect(container?.classList).toContain('loading');
+      });
+
+      it('should not show loading styles when isLoading is false', () => {
+        const data = createData({ totalPoints: 100, isLoading: false });
+        fixture.componentRef.setInput('data', data);
+        fixture.detectChanges();
+
+        const container = fixture.nativeElement.querySelector('.scoreboard-hero');
+        expect(container?.classList).not.toContain('loading');
+      });
+    });
+
+    // ✅ TEST 4: Component cleanup (memory leaks)
+    describe('Component Lifecycle', () => {
+      it('should clean up animations on destroy', () => {
+        const cancelSpy = spyOn(window, 'cancelAnimationFrame');
+
+        const data = createData({ totalPoints: 100 });
+        fixture.componentRef.setInput('data', data);
+        fixture.detectChanges();
+
+        component.ngOnDestroy();
+
+        expect(cancelSpy).toHaveBeenCalled();
+      });
+    });
+  });
+
+  // ===================================
+  // 🎯 WHAT MAKES THESE TESTS VALUABLE
+  // ===================================
+
+  /*
+  ✅ HIGH VALUE Template Tests:
+
+  1. "Does my computed value show up?"
+     - Tests the critical path: logic → template → user
+
+  2. "Do conditional elements work?"
+     - @if (todaysPoints > 0) actually shows/hides correctly
+
+  3. "Does loading state change what renders?"
+     - CSS classes and visual states work correctly
+
+  4. "Are the right numbers displayed?"
+     - No off-by-one errors, formatting issues
+
+  ❌ AVOID These Template Tests:
+
+  1. "Does it have the right CSS classes?"
+     - Implementation detail, changes frequently
+
+  2. "Is the DOM structure exactly X?"
+     - Brittle, breaks on minor HTML changes
+
+  3. "Does it have specific styling?"
+     - Visual concern, not logic concern
+
+  4. "Are there exactly N elements?"
+     - Implementation detail
+  */
+
+  // ===================================
+  // 🚀 ALTERNATIVE: EVEN MORE FOCUSED
+  // ===================================
+
+  describe('ScoreboardHero - Ultra Focused', () => {
+    // If you want REALLY minimal tests, just test these 2 things:
+
+    it('should display the right numbers', () => {
+      // ✅ Core user value: "Do I see my actual points?"
+      const data = createData({
+        totalPoints: 150,
+        pubsVisited: 5,
+        totalPubs: 100
+      });
+
+      fixture.componentRef.setInput('data', data);
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.textContent).toContain('150');
+      expect(fixture.nativeElement.textContent).toContain('5%');
+    });
+
+    it('should handle edge cases without crashing', () => {
+      // ✅ Defensive programming: "Does it break with weird data?"
+      const edgeCases = [
+        createData({ totalPubs: 0 }),
+        createData({ totalPoints: -5 }),
+        createData({ pubsVisited: 1000, totalPubs: 100 }) // > 100%
+      ];
+
+      edgeCases.forEach(data => {
+        expect(() => {
+          fixture.componentRef.setInput('data', data);
+          fixture.detectChanges();
+        }).not.toThrow();
+      });
+    });
+  });
+
+
+
+
+  // Probably delete all these
 
   describe('Component Creation', () => {
     it('should create successfully', () => {

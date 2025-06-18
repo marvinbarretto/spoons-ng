@@ -8,17 +8,18 @@ import { UserStore } from '@users/data-access/user.store';
 import { BadgeStore } from '@badges/data-access/badge.store';
 import { MissionStore } from '@missions/data-access/mission.store';
 import { OverlayService } from '@shared/data-access/overlay.service';
+import { PointsStore } from '@points/data-access/points.store';
+import { CheckinStore } from '@check-in/data-access/check-in.store';
 
 // Import micro-widget components
-import { ScoreboardHeroComponent } from '@home/ui/scoreboard-hero/scoreboard-hero.component';
+import { ScoreboardData, ScoreboardHeroComponent } from '@home/ui/scoreboard-hero/scoreboard-hero.component';
 import { BadgesShowcaseComponent } from '@home/ui/badges-showcase/badges-showcase.component';
 import { MissionsSectionComponent } from '../../ui/missions-widget/missions-widget.component';
 import { ActionCardsComponent } from '@home/ui/action-cards/action-cards.component';
 import { UserProfileWidgetComponent } from '@home/ui/user-profile-widget/user-profile-widget.component';
 import { ProfileCustomisationModalComponent } from '@home/ui/profile-customisation-modal/profile-customisation-modal.component';
 import { PubCountHeroComponent } from '../../ui/pub-count-hero/pub-count-hero.component';
-
-
+import { MissionHomepageWidgetComponent } from "@missions/feature/mission-homepage-widget/mission-homepage-widget.component";
 
 @Component({
   selector: 'app-home-three',
@@ -29,6 +30,7 @@ import { PubCountHeroComponent } from '../../ui/pub-count-hero/pub-count-hero.co
     MissionsSectionComponent,
     ActionCardsComponent,
     UserProfileWidgetComponent,
+    MissionHomepageWidgetComponent
 ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
@@ -41,9 +43,29 @@ export class HomeComponent extends BaseComponent {
   protected readonly userStore = inject(UserStore);
   protected readonly badgeStore = inject(BadgeStore, { optional: true });
   protected readonly missionStore = inject(MissionStore, { optional: true });
+  protected readonly pointsStore = inject(PointsStore);
+  protected readonly checkinStore = inject(CheckinStore);
 
   // ✅ Data Signals
   readonly user = this.userStore.user;
+
+  readonly scoreboardData = computed((): ScoreboardData => {
+    const user = this.user();
+
+    // Get unique pubs from check-ins (most reliable source)
+    const uniquePubIds = new Set(this.checkinStore.checkins().map(c => c.pubId));
+
+    return {
+      totalPoints: this.pointsStore.totalPoints(),
+      todaysPoints: this.pointsStore.todaysPoints(),
+      pubsVisited: uniquePubIds.size,
+      totalPubs: 856, // Could make this configurable later
+      badgeCount: user?.badgeCount || 0,
+      landlordCount: user?.landlordCount || 0,
+      totalCheckins: this.checkinStore.checkins().length,
+      isLoading: this.pointsStore.loading() || this.checkinStore.loading()
+    };
+  });
 
   readonly earnedBadges = computed(() => {
     return this.badgeStore?.earnedBadgesWithDefinitions?.() || [];

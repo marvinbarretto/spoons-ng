@@ -11,6 +11,7 @@
       "@shared/*": ["app/shared/*"],
       "@auth/*": ["app/auth/*"],
       "@pubs/*": ["app/pubs/*"],
+      "@points/*": ["app/points/*"],
       "@missions/*": ["app/missions/*"],
       "@check-in/*": ["app/check-in/*"],
       "@badges/*": ["app/badges/*"],

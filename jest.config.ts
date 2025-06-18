@@ -20,6 +20,7 @@ export default {
     '^@shared/(.*)$': '<rootDir>/src/app/shared/$1',
     '^@auth/(.*)$': '<rootDir>/src/app/auth/$1',
     '^@pubs/(.*)$': '<rootDir>/src/app/pubs/$1',
+    '^@points/(.*)$': '<rootDir>/src/app/points/$1',
     '^@missions/(.*)$': '<rootDir>/src/app/missions/$1',
     '^@check-in/(.*)$': '<rootDir>/src/app/check-in/$1',
     '^@badges/(.*)$': '<rootDir>/src/app/badges/$1',

@@ -70,3 +70,4 @@ docs/reactive-store-pattern.md
 TECHNICAL_DEBT.md
 NAMING_CONVENTIONS.txt
 src/app/shared/data-access/STORE_IMPLEMENTATION_GUIDE.md
+src/utils/docs/THEME_SYSTEM_USAGE.ts

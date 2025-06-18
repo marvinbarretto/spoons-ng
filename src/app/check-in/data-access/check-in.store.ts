@@ -194,6 +194,35 @@ export class CheckinStore extends BaseStore<CheckIn> {
       console.log('[CheckinStore] 🏅 Starting badge evaluation...');
       await this.evaluateBadgesAfterCheckIn(userId, cleanCheckin);
 
+
+// ✅ UPDATE USER'S CHECKED-IN PUBS (add this after badge evaluation)
+console.log('[CheckinStore] 🔄 Updating user check-in history...');
+
+// Update UserStore with new check-in data
+const currentUser = this.userStore.user();
+if (currentUser) {
+  const updatedCheckedInPubIds = [...new Set([...currentUser.checkedInPubIds, pubId])];
+
+  // Update local user state immediately
+  this.userStore.patchUser({
+    checkedInPubIds: updatedCheckedInPubIds
+  });
+
+  // Update Firestore user document
+  try {
+    await this.checkinService.patchUserDocument(userId, {
+      checkedInPubIds: updatedCheckedInPubIds
+    });
+    console.log('[CheckinStore] ✅ User check-in history updated');
+  } catch (error) {
+    console.warn('[CheckinStore] ⚠️ Failed to update user document:', error);
+    // Don't fail the check-in if user doc update fails
+  }
+}
+
+
+
+
       // ✅ Enhanced success message with points
       const pointsMessage = this.formatPointsMessage(pointsBreakdown);
       this._landlordMessage.set(
@@ -202,7 +231,10 @@ export class CheckinStore extends BaseStore<CheckIn> {
           : `✅ Check-in complete! ${pointsMessage}`
       );
 
-      this.toastService.success(`Check-in successful! ${pointsMessage}`);
+
+
+
+
       console.log('[CheckinStore] ✅ Check-in completed with points:', pointsBreakdown.total);
 
     } catch (error: any) {
@@ -367,12 +399,38 @@ export class CheckinStore extends BaseStore<CheckIn> {
     }
 
 
+/**
+ * Calculate distance from user's current location to pub
+ * Uses the same location as the check-in validation for consistency
+ */
 private async calculateDistanceFromHome(pubId: string): Promise<number> {
-  // Implement distance calculation logic
-  // This would use your existing location services
-  return 2.5; // Placeholder
-}
+  try {
+    // Get current position
+    const position = await this.getCurrentPosition();
 
+    // Calculate distance to pub (this already works correctly)
+    const distanceMeters = await this.getDistanceMeters(position.coords, pubId);
+
+    // Convert to kilometers for points calculation
+    const distanceKm = distanceMeters / 1000;
+
+    console.log('[CheckinStore] Distance calculation:', {
+      pubId,
+      distanceMeters: Math.round(distanceMeters),
+      distanceKm: distanceKm.toFixed(2),
+      coordinates: {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude
+      }
+    });
+
+    return distanceKm;
+
+  } catch (error) {
+    console.warn('[CheckinStore] Failed to calculate distance from home:', error);
+    return 0; // Default to 0 if calculation fails (no distance bonus)
+  }
+}
 private calculateCurrentStreak(userCheckins: CheckIn[]): number {
   // Implement streak calculation logic
   return 0; // Placeholder
