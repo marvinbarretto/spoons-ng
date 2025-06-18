@@ -8,8 +8,25 @@ import type { Pub } from '../../utils/pub.models';
   selector: 'app-pub-card',
   imports: [CommonModule],
   template: `
-    <div class="pub-card" (click)="onPubClicked()">
-      <header class="pub-card__header">
+ <div class="pub-card"
+      [class.pub-card--selected]="isSelected()"
+      [class.pub-card--selectable]="selectable()"
+      (click)="handleClick($event)"
+    >
+
+    <!-- Selection checkbox when in selectable mode -->
+    @if (selectable()) {
+        <div class="pub-card__checkbox">
+          <input
+            type="checkbox"
+            [checked]="isSelected()"
+            (click)="$event.stopPropagation()"
+            (change)="handleSelectionChange($event)"
+          />
+        </div>
+      }
+
+    <header class="pub-card__header">
         <h3 class="pub-card__title">{{ pub().name }}</h3>
 
         @if (hasCheckedIn()) {
@@ -36,14 +53,6 @@ import type { Pub } from '../../utils/pub.models';
           </p>
         }
       </div>
-
-      <!-- Debug info during development -->
-      @if (isDevelopment()) {
-        <details class="pub-card__debug">
-          <summary>🔧 Debug Info</summary>
-          <pre>{{ debugInfo() | json }}</pre>
-        </details>
-      }
     </div>
   `,
   styles: `
@@ -66,6 +75,23 @@ import type { Pub } from '../../utils/pub.models';
 
     .pub-card:active {
       transform: translateY(0);
+    }
+
+    .pub-card--selectable {
+      cursor: pointer;
+      position: relative;
+    }
+
+    .pub-card--selected {
+      border-color: var(--color-primary);
+      background: var(--color-primary-subtle);
+    }
+
+    .pub-card__checkbox {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      z-index: 1;
     }
 
     .pub-card__header {
@@ -198,13 +224,19 @@ export class PubCardComponent {
   // ✅ Required inputs - pure component pattern
   readonly pub = input.required<Pub & { distance: number | null }>();
 
+    // ✅ Selection mode inputs
+    readonly selectable = input<boolean>(false);
+    readonly isSelected = input<boolean>(false);
+
+
   // ✅ Optional inputs with defaults
   readonly hasCheckedIn = input<boolean>(false);
   readonly checkinCount = input<number>(0);
   readonly showCheckinCount = input<boolean>(false);
 
   // ✅ Outputs for interactions
-  readonly pubClicked = output<Pub>();
+  readonly cardClicked = output<Pub>();
+  readonly selectionChanged = output<{ pub: Pub; selected: boolean }>();
 
   // ✅ Computed properties - no store dependencies
   readonly distanceText = computed(() => {
@@ -243,7 +275,18 @@ export class PubCardComponent {
   }));
 
   // ✅ Event handlers
-  onPubClicked(): void {
-    this.pubClicked.emit(this.pub());
+  handleClick(event: Event): void {
+    if (this.selectable()) {
+      event.preventDefault(); // Prevent navigation when selecting
+    }
+    this.cardClicked.emit(this.pub());
+  }
+
+  handleSelectionChange(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.selectionChanged.emit({
+      pub: this.pub(),
+      selected: target.checked
+    });
   }
 }
