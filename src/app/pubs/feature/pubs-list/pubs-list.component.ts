@@ -9,6 +9,8 @@ import { BaseComponent } from '../../../shared/data-access/base.component';
 import { Pub } from '../../utils/pub.models';
 import { NearbyPubStore } from '../../data-access/nearby-pub.store';
 
+type PubFilterMode = 'all' | 'visited' | 'unvisited';
+
 @Component({
   selector: 'app-pub-list',
   imports: [CommonModule, RouterModule, PubCardComponent],
@@ -49,28 +51,33 @@ import { NearbyPubStore } from '../../data-access/nearby-pub.store';
           </div>
 
           <!-- Filter Controls -->
-          <div class="filter-controls">
-            <!-- Visited filter pills -->
-            <div class="control-group">
-              <span class="control-label">Show:</span>
-              <div class="filter-pills">
-                <button
-                  class="filter-pill"
-                  [class.active]="includeVisited()"
-                  (click)="toggleVisited()"
-                  type="button"
-                >
-                  ✅ Visited ({{ visitedCount() }})
-                </button>
-                <button
-                  class="filter-pill"
-                  [class.active]="includeUnvisited()"
-                  (click)="toggleUnvisited()"
-                  type="button"
-                >
-                  🎯 Unvisited ({{ unvisitedCount() }})
-                </button>
-              </div>
+          <div class="control-group">
+            <span class="control-label">Show:</span>
+            <div class="filter-pill-group">
+              <button
+                type="button"
+                class="filter-pill-radio"
+                [class.active]="filterMode() === 'all'"
+                (click)="setFilterMode('all')"
+              >
+                All ({{ pubStore.itemCount() }})
+              </button>
+              <button
+                type="button"
+                class="filter-pill-radio"
+                [class.active]="filterMode() === 'visited'"
+                (click)="setFilterMode('visited')"
+              >
+                ✅ Visited ({{ visitedCount() }})
+              </button>
+              <button
+                type="button"
+                class="filter-pill-radio"
+                [class.active]="filterMode() === 'unvisited'"
+                (click)="setFilterMode('unvisited')"
+              >
+                🎯 Unvisited ({{ unvisitedCount() }})
+              </button>
             </div>
           </div>
 
@@ -288,21 +295,39 @@ export class PubListComponent extends BaseComponent implements OnInit {
   protected readonly includeVisited = signal<boolean>(true);
   protected readonly includeUnvisited = signal<boolean>(true);
 
+
+protected readonly filterMode = signal<PubFilterMode>('all');
+
+
   // ✅ Computed data - uses sorted pubs from store as base
   readonly filteredPubs = computed(() => {
     // ✅ Start with sorted pubs (proximity or alphabetical)
     const sortedPubs = this.pubStore.sortedPubsByDistance();
     const search = this.searchTerm().toLowerCase().trim();
     const checkins = this.checkinStore.userCheckins();
+    const mode = this.filterMode();
 
     const pubsWithDistance = sortedPubs.map(pub => ({
       ...pub,
-      distance: this.nearbyPubStore.getDistanceToPub(pub.id) // ✅ Add distance
+      distance: this.nearbyPubStore.getDistanceToPub(pub.id)
     }));
 
     let filtered = pubsWithDistance;
 
-    // ✅ Apply search filter
+    // Apply visit filter based on mode
+    switch (mode) {
+      case 'visited':
+        filtered = filtered.filter(pub => checkins.includes(pub.id));
+        break;
+      case 'unvisited':
+        filtered = filtered.filter(pub => !checkins.includes(pub.id));
+        break;
+      case 'all':
+      default:
+        // Show all pubs
+        break;
+    }
+
     if (search) {
       filtered = filtered.filter(pub =>
         pub.name.toLowerCase().includes(search) ||
@@ -312,41 +337,36 @@ export class PubListComponent extends BaseComponent implements OnInit {
       );
     }
 
-    // ✅ Apply visited/unvisited filters
-    if (!this.includeVisited() || !this.includeUnvisited()) {
-      filtered = filtered.filter(pub => {
-        const isVisited = checkins.includes(pub.id);
-
-        if (!this.includeVisited() && isVisited) return false;
-        if (!this.includeUnvisited() && !isVisited) return false;
-
-        return true;
-      });
-    }
-
     return filtered;
   });
 
-  // ✅ Helper computed signals
   readonly hasLocationData = computed(() => {
     return this.nearbyPubStore.location() !== null;
   });
 
   readonly visitedCount = computed(() => {
     const checkins = this.checkinStore.userCheckins();
-    return this.pubStore.pubs().filter(pub => checkins.includes(pub.id)).length;
+    return this.pubStore.sortedPubsByDistance().filter(pub =>
+      checkins.includes(pub.id)
+    ).length;
   });
 
   readonly unvisitedCount = computed(() => {
     const checkins = this.checkinStore.userCheckins();
-    return this.pubStore.pubs().filter(pub => !checkins.includes(pub.id)).length;
+    return this.pubStore.sortedPubsByDistance().filter(pub =>
+      !checkins.includes(pub.id)
+    ).length;
   });
 
-  readonly hasActiveFilters = computed(() => {
-    return this.searchTerm() !== '' ||
-           !this.includeVisited() ||
-           !this.includeUnvisited();
-  });
+  protected setFilterMode(mode: PubFilterMode): void {
+    this.filterMode.set(mode);
+  }
+
+  protected hasActiveFilters(): boolean {
+    return this.filterMode() !== 'all' || !!this.searchTerm();
+  }
+
+
 
   override ngOnInit(): void {
     this.pubStore.loadOnce();
@@ -367,9 +387,8 @@ export class PubListComponent extends BaseComponent implements OnInit {
   }
 
   clearFilters(): void {
+    this.filterMode.set('all');
     this.searchTerm.set('');
-    this.includeVisited.set(true);
-    this.includeUnvisited.set(true);
   }
 
   retryLoad(): void {

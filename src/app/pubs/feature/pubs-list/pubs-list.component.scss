@@ -251,3 +251,50 @@
     text-align: center;
   }
 }
+
+.filter-pill-group {
+  display: flex;
+  border: 1px solid var(--color-border);
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--color-surface);
+}
+
+.filter-pill-radio {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  position: relative;
+  border-right: 1px solid var(--color-border);
+}
+
+.filter-pill-radio:last-child {
+  border-right: none;
+}
+
+.filter-pill-radio:hover {
+  background: var(--color-surface-hover, rgba(0, 0, 0, 0.05));
+}
+
+.filter-pill-radio.active {
+  background: var(--color-primary);
+  color: var(--color-primary-text);
+}
+
+.filter-pill-radio:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .filter-pill-radio {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.8rem;
+  }
+}

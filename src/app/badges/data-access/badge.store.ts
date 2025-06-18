@@ -158,6 +158,7 @@ export class BadgeStore extends BaseStore<EarnedBadge> {
     if (userId) {
       console.log('[BadgeStore] 🧽 Clearing earned badges cache for user:', userId);
       this.cacheService.clear('earned-badges', userId);
+      this._data.set([]);
     } else {
       console.log('[BadgeStore] 👋 User logged out - no earned badges cache to clear');
     }
