@@ -18,8 +18,6 @@ import { MissionsSectionComponent } from '../../ui/missions-widget/missions-widg
 import { ActionCardsComponent } from '@home/ui/action-cards/action-cards.component';
 import { UserProfileWidgetComponent } from '@home/ui/user-profile-widget/user-profile-widget.component';
 import { ProfileCustomisationModalComponent } from '@home/ui/profile-customisation-modal/profile-customisation-modal.component';
-import { PubCountHeroComponent } from '../../ui/pub-count-hero/pub-count-hero.component';
-import { MissionHomepageWidgetComponent } from "@missions/feature/mission-homepage-widget/mission-homepage-widget.component";
 
 @Component({
   selector: 'app-home-three',
@@ -30,8 +28,7 @@ import { MissionHomepageWidgetComponent } from "@missions/feature/mission-homepa
     MissionsSectionComponent,
     ActionCardsComponent,
     UserProfileWidgetComponent,
-    MissionHomepageWidgetComponent
-],
+  ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })

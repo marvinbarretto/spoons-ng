@@ -11,6 +11,9 @@ import { MISSIONS_ROUTES } from './missions/data-access/mission.routes';
 import { BADGE_ROUTES } from './badges/data-access/badge.routes';
 import { LeaderboardContainerComponent } from './leaderboard/feature/leaderboard-container/leaderboard-container.component';
 import { ShareContainerComponent } from './share/feature/share-container/share-container.component';
+import { MissionFormComponent } from './missions/feature/mission-form/mission-form.component';
+import { MissionsAdminComponent } from './missions/feature/mission-admin/mission-admin.component';
+
 
 export const appRoutes: Routes = [
   {
@@ -29,17 +32,28 @@ export const appRoutes: Routes = [
     loadChildren: () =>
       import('./missions/data-access/mission.routes').then((m) => m.MISSIONS_ROUTES),
   },
-// app.routes.ts
-{
-  path: 'leaderboard',
-  loadComponent: () =>
-    import('./leaderboard/feature/leaderboard-container/leaderboard-container.component')
-      .then(m => m.LeaderboardContainerComponent)
-},
+  {
+    path: 'leaderboard',
+    loadComponent: () =>
+      import('./leaderboard/feature/leaderboard-container/leaderboard-container.component')
+        .then(m => m.LeaderboardContainerComponent)
+  },
   {
     path: 'admin/badges',
     loadChildren: () =>
       import('./badges/data-access/badge.routes').then((m) => m.BADGE_ROUTES),
+  },
+  {
+    path: 'admin/missions',
+    component: MissionsAdminComponent
+  },
+  {
+    path: 'admin/missions/new',
+    component: MissionFormComponent
+  },
+  {
+    path: 'admin/missions/:id/edit',
+    component: MissionFormComponent
   },
   {
     path: 'share',

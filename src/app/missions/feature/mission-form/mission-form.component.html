@@ -1,0 +1,244 @@
+<!-- src/app/missions/feature/mission-form/mission-form.component.html -->
+<section class="mission-form-page">
+  <header class="page-header">
+    <div class="header-content">
+      <h1>{{ isEditMode() ? 'Edit Mission' : 'Create New Mission' }}</h1>
+      <p class="page-subtitle">
+        @if (isEditMode()) {
+          Update mission details and pub requirements
+        } @else {
+          Define a new mission for users to complete
+        }
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <app-button
+        (onClick)="handleCancel()"
+      >
+        Cancel
+      </app-button>
+    </div>
+  </header>
+
+  @if (isLoading()) {
+    <div class="loading-state">
+      <div class="loading-spinner"></div>
+      <p>{{ isEditMode() ? 'Loading mission...' : 'Preparing form...' }}</p>
+    </div>
+  } @else if (loadError()) {
+    <div class="error-state">
+      <div class="error-icon">❌</div>
+      <h2>Failed to load mission</h2>
+      <p class="error-message">{{ loadError() }}</p>
+      <div class="error-actions">
+        <app-button (onClick)="handleRetry()" variant="primary">
+          Try Again
+        </app-button>
+        <app-button (onClick)="handleCancel()">
+          Back to List
+        </app-button>
+      </div>
+    </div>
+  } @else {
+    <!-- Mission Form -->
+    <form [formGroup]="missionForm" (ngSubmit)="handleSubmit()" class="mission-form">
+      <div class="form-sections">
+        <!-- Basic Information -->
+        <div class="form-section">
+          <h3 class="section-title">Basic Information</h3>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="name" class="form-label">
+                Mission Name
+                <span class="required">*</span>
+              </label>
+              <input
+                id="name"
+                type="text"
+                class="form-input"
+                formControlName="name"
+                placeholder="Enter a memorable mission name"
+                [class.error]="hasFieldError('name')"
+              />
+              @if (hasFieldError('name')) {
+                <div class="field-error">Mission name is required</div>
+              }
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="description" class="form-label">
+                Description
+                <span class="required">*</span>
+              </label>
+              <textarea
+                id="description"
+                class="form-textarea"
+                formControlName="description"
+                placeholder="Describe what users need to do to complete this mission..."
+                rows="4"
+                [class.error]="hasFieldError('description')"
+              ></textarea>
+              @if (hasFieldError('description')) {
+                <div class="field-error">Description is required</div>
+              }
+              <div class="field-hint">
+                Be clear about what users need to do and any special requirements.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pub Selection -->
+        <div class="form-section">
+          <h3 class="section-title">Pub Requirements</h3>
+
+          <app-pub-selector
+            label="Select Pubs"
+            [required]="true"
+            searchPlaceholder="Search for pubs to include in this mission..."
+            helperText="Choose which pubs users must visit to complete this mission"
+            [selectedPubIds]="selectedPubIds()"
+            [showError]="hasFieldError('pubIds')"
+            [errorMessage]="pubSelectionError()"
+            (selectionChange)="handlePubSelectionChange($event)"
+          />
+        </div>
+
+        <!-- Rewards & Settings -->
+        <div class="form-section">
+          <h3 class="section-title">Rewards & Settings</h3>
+
+          <div class="form-row form-row--two-columns">
+            <div class="form-group">
+              <label for="pointsReward" class="form-label">
+                Points Reward
+                <span class="required">*</span>
+              </label>
+              <input
+                id="pointsReward"
+                type="number"
+                min="1"
+                max="1000"
+                class="form-input"
+                formControlName="pointsReward"
+                placeholder="25"
+                [class.error]="hasFieldError('pointsReward')"
+              />
+              @if (hasFieldError('pointsReward')) {
+                <div class="field-error">Points reward must be between 1 and 1000</div>
+              }
+              <div class="field-hint">
+                Points awarded to users when they complete this mission
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="timeLimitHours" class="form-label">
+                Time Limit (Hours)
+              </label>
+              <input
+                id="timeLimitHours"
+                type="number"
+                min="1"
+                max="8760"
+                class="form-input"
+                formControlName="timeLimitHours"
+                placeholder="No limit"
+              />
+              <div class="field-hint">
+                Optional time limit for completing the mission (leave empty for no limit)
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="badgeRewardId" class="form-label">
+                Badge Reward ID
+              </label>
+              <input
+                id="badgeRewardId"
+                type="text"
+                class="form-input"
+                formControlName="badgeRewardId"
+                placeholder="e.g. mission-explorer, local-hero"
+              />
+              <div class="field-hint">
+                Enter the ID of a badge to award when users complete this mission.
+                Leave empty if no badge reward.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <div class="action-group">
+          <app-button
+            type="button"
+            (onClick)="handleCancel()"
+
+          >
+            Cancel
+          </app-button>
+
+          <app-button
+            type="submit"
+            [disabled]="!missionForm.valid || isSaving()"
+            variant="primary"
+          >
+            @if (isSaving()) {
+              <span class="saving-indicator">
+                <span class="spinner"></span>
+                {{ isEditMode() ? 'Updating...' : 'Creating...' }}
+              </span>
+            } @else {
+              {{ isEditMode() ? 'Update Mission' : 'Create Mission' }}
+            }
+          </app-button>
+        </div>
+
+        @if (hasFormErrors()) {
+          <div class="form-errors">
+            <div class="error-icon">⚠️</div>
+            <div class="error-content">
+              <strong>Please fix the following errors:</strong>
+              <ul class="error-list">
+                @if (hasFieldError('name')) {
+                  <li>Mission name is required</li>
+                }
+                @if (hasFieldError('description')) {
+                  <li>Description is required</li>
+                }
+                @if (hasFieldError('pubIds')) {
+                  <li>At least one pub must be selected</li>
+                }
+                @if (hasFieldError('pointsReward')) {
+                  <li>Points reward must be between 1 and 1000</li>
+                }
+              </ul>
+            </div>
+          </div>
+        }
+      </div>
+    </form>
+  }
+
+  <!-- Development debug info -->
+  @if (isDevelopment()) {
+    <details class="debug-section">
+      <summary>Form Debug Info</summary>
+      <div class="debug-content">
+        <h4>Form State</h4>
+        <pre>{{ debugFormState() | json }}</pre>
+        <h4>Mission Data</h4>
+        <pre>{{ debugMissionData() | json }}</pre>
+      </div>
+    </details>
+  }
+</section>
