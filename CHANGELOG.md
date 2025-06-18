@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.39](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.38...v0.0.39) (2025-06-18)
+
+
+### Features
+
+* Add Mission cards ([f7f5758](https://github.com/marvinbarretto/spoons-ng/commit/f7f5758a316e8cbb576a40a96c868b4b82140c96))
+* Improve how pubs are filtered in PubList ([08f69a3](https://github.com/marvinbarretto/spoons-ng/commit/08f69a3c77cd8c61a18faf4d414c4bb1c0b84aa0))
+* Update Debug tool and CleanupService ([06296cb](https://github.com/marvinbarretto/spoons-ng/commit/06296cbdc59305b36129663c8b7e533fbe879e9f))
+
 ### [0.0.38](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.37...v0.0.38) (2025-06-18)
 
 
