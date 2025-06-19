@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.41](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.40...v0.0.41) (2025-06-19)
+
+
+### Features
+
+* Lazyload modules ([5f46d5e](https://github.com/marvinbarretto/spoons-ng/commit/5f46d5ecc0fbb195d7961ec749497d698a29d7b1))
+* Stub carpet checker ([f1f57c1](https://github.com/marvinbarretto/spoons-ng/commit/f1f57c1d00d6def12660e7a7e26bab13ac75a092))
+
 ### [0.0.40](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.39...v0.0.40) (2025-06-18)
 
 
