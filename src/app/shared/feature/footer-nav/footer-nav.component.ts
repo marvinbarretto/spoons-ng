@@ -15,6 +15,7 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
 type NavItem = {
   label: string;
   route?: string;
+  isDebugCarpet?: boolean;
   iconName: string;
   isActive: boolean;
   isCheckIn?: boolean;
@@ -30,7 +31,23 @@ type NavItem = {
     @if (shouldShowMobileNav()) {
       <nav class="footer-nav" role="navigation" aria-label="Main navigation">
         @for (item of navItems(); track item.label) {
-          @if (item.isCheckIn) {
+
+          @if (item.isDebugCarpet) {
+            <!-- ✅ NEW: Debug carpet recognition button -->
+            <button
+              class="nav-item nav-item--debug-carpet"
+              (click)="handleDebugCarpet()"
+              type="button"
+            >
+              <div class="nav-item__icon">
+                <app-icon
+                  [name]="item.iconName"
+                  size="md"
+                  weight="medium" />
+              </div>
+            </button>
+          }
+          @else if (item.isCheckIn) {
             <!-- ✅ Check-in button - use click handler -->
             <button
               class="nav-item nav-item--check-in"
@@ -290,6 +307,12 @@ export class FooterNavComponent extends BaseComponent {
         isActive: this.isOnRoute('/missions')()
       },
       {
+        label: '🔬 Debug Carpet',
+        iconName: 'science',
+        isActive: false,
+        isDebugCarpet: true
+      },
+      {
         label: 'Check In',
         iconName: 'location_on',
         isActive: false, // Check-in is not a route
@@ -309,6 +332,11 @@ export class FooterNavComponent extends BaseComponent {
       }
     ];
   });
+
+  handleDebugCarpet() {
+    console.log('[FooterNav] Debug carpet clicked');
+    this.router.navigate(['/debug-carpet-camera']);
+  }
 
   // ✅ Handle check-in button click
   async handleCheckIn(): Promise<void> {

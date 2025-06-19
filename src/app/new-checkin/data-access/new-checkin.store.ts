@@ -112,8 +112,7 @@ export class NewCheckinStore {
       // Calculate points (still using PointsStore but with real distance)
       const pointsData = await this.calculatePoints(pubId);
 
-      // ❌ REMOVE: Badge logic - CheckinStore will handle via effects
-      // const badgeData = await this.checkForNewBadges(userId, pubId);
+      const badgeData = await this.checkForNewBadges(userId, pubId);
 
       // Build success data (without badges - they'll be handled by CheckinStore)
       const successData = {
@@ -330,6 +329,36 @@ export class NewCheckinStore {
         debug: { source: 'fallback', error: true }
       };
     }
+  }
+
+  private async checkForNewBadges(userId: string, pubId: string): Promise<any> {
+    // try {
+    //   console.log('🔄 [NewCheckinStore] Calling BadgeAwardService.evaluateBadges...');
+
+      // This will handle the complete badge workflow
+      // await this.badgeAwardService.evaluateAndAwardBadges(userId);
+
+      // Force BadgeStore to reload fresh data
+      // await this._badgeStore.load();
+
+      // const userBadges = this._badgeStore.earnedBadges();
+      // const recentBadges = this._badgeStore.recentBadges();
+
+      // console.log('🎖️ [NewCheckinStore] Badge evaluation complete:', {
+      //   totalBadges: userBadges.length,
+      //   recentCount: recentBadges.length
+      // });
+
+      // return {
+      //   totalBadges: userBadges.length,
+      //   recentBadges: recentBadges.slice(0, 3), // Show 3 most recent
+      //   newlyAwarded: [] // TODO: Track which were just awarded
+      // };
+
+    // } catch (error) {
+    //   console.error('❌ [NewCheckinStore] Badge evaluation failed:', error);
+    //   return { error: error.message };
+    // }
   }
 
 
