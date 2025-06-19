@@ -307,11 +307,7 @@ export class ScoreboardHeroComponent implements OnDestroy {
     // ✅ Set up count-up animations when data changes
     effect(() => {
       const data = this.data();
-      console.log('[ScoreboardHero] Data changed:', {
-        isLoading: data.isLoading,
-        totalPoints: data.totalPoints,
-        currentAnimated: this.animatedPoints()
-      });
+
 
       if (!data.isLoading) {
         // ✅ FIXED: Cancel all previous animations before starting new ones
@@ -338,7 +334,6 @@ export class ScoreboardHeroComponent implements OnDestroy {
       cancelAnimationFrame(animationId);
     });
     this.activeAnimations.clear();
-    console.log('[ScoreboardHero] All animations cancelled');
   }
 
   // ✅ FIXED: Built-in count-up animation with proper cleanup
@@ -356,15 +351,10 @@ export class ScoreboardHeroComponent implements OnDestroy {
     const startValue = signalRef();
     const startTime = performance.now();
 
-    console.log(`[ScoreboardHero] Starting ${key} animation:`, {
-      startValue,
-      targetValue,
-      duration
-    });
+
 
     // If values are the same, no animation needed
     if (startValue === targetValue) {
-      console.log(`[ScoreboardHero] ${key}: No animation needed (same value)`);
       return;
     }
 
@@ -385,7 +375,6 @@ export class ScoreboardHeroComponent implements OnDestroy {
       } else {
         // ✅ Animation complete - remove from tracking
         this.activeAnimations.delete(key);
-        console.log(`[ScoreboardHero] ${key} animation completed:`, targetValue);
       }
     };
 

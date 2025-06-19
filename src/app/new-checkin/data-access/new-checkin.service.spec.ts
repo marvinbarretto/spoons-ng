@@ -339,4 +339,193 @@ describe('NewCheckinStore', () => {
       expect(mockService.createCheckin).not.toHaveBeenCalled();
     });
   });
+
+  describe('NewCheckinService - Query Methods', () => {
+    let service: NewCheckinService;
+    let mockFirestore: any;
+
+    beforeEach(() => {
+      const firestoreMock = {
+        getDocsWhere: jest.fn()
+      };
+
+      TestBed.configureTestingModule({
+        providers: [
+          NewCheckinService,
+          // Mock the inherited FirestoreService methods
+          { provide: 'FirestoreService', useValue: firestoreMock }
+        ]
+      });
+
+      service = TestBed.inject(NewCheckinService);
+      // Manually assign mocked methods to service
+      Object.assign(service, firestoreMock);
+      mockFirestore = firestoreMock;
+    });
+
+    describe('📊 getUserTotalCheckinCount', () => {
+      it('should return correct count for user with multiple check-ins', async () => {
+        // Arrange
+        const userId = 'test-user-123';
+        const mockCheckins = [
+          { id: '1', userId, pubId: 'pub1', dateKey: '2025-06-18' },
+          { id: '2', userId, pubId: 'pub2', dateKey: '2025-06-19' },
+          { id: '3', userId, pubId: 'pub1', dateKey: '2025-06-19' }
+        ];
+        mockFirestore.getDocsWhere.mockResolvedValue(mockCheckins);
+
+        // Act
+        const count = await service.getUserTotalCheckinCount(userId);
+
+        // Assert
+        expect(count).toBe(3);
+        expect(mockFirestore.getDocsWhere).toHaveBeenCalledWith(
+          'checkins',
+          expect.any(Object) // where userId == test-user-123
+        );
+      });
+
+      it('should return 0 for user with no check-ins', async () => {
+        // Arrange
+        const userId = 'new-user-123';
+        mockFirestore.getDocsWhere.mockResolvedValue([]);
+
+        // Act
+        const count = await service.getUserTotalCheckinCount(userId);
+
+        // Assert
+        expect(count).toBe(0);
+      });
+
+      it('should handle Firestore errors gracefully', async () => {
+        // Arrange
+        const userId = 'test-user-123';
+        mockFirestore.getDocsWhere.mockRejectedValue(new Error('Firestore unavailable'));
+
+        // Act
+        const count = await service.getUserTotalCheckinCount(userId);
+
+        // Assert - Should return 0 on error
+        expect(count).toBe(0);
+      });
+    });
+
+    describe('🔍 isFirstEverCheckIn', () => {
+      it('should return true for first visit to a pub', async () => {
+        // Arrange
+        const userId = 'test-user-123';
+        const pubId = 'new-pub-123';
+
+        // Mock getUserCheckinCount to return 1 (just created)
+        mockFirestore.getDocsWhere.mockResolvedValue([
+          { id: '1', userId, pubId, dateKey: '2025-06-19' }
+        ]);
+
+        // Act
+        const isFirst = await service.isFirstEverCheckIn(userId, pubId);
+
+        // Assert
+        expect(isFirst).toBe(true);
+      });
+
+      it('should return false for repeat visit to a pub', async () => {
+        // Arrange
+        const userId = 'test-user-123';
+        const pubId = 'visited-pub-123';
+
+        // Mock getUserCheckinCount to return 2+ (multiple visits)
+        mockFirestore.getDocsWhere.mockResolvedValue([
+          { id: '1', userId, pubId, dateKey: '2025-06-18' },
+          { id: '2', userId, pubId, dateKey: '2025-06-19' }
+        ]);
+
+        // Act
+        const isFirst = await service.isFirstEverCheckIn(userId, pubId);
+
+        // Assert
+        expect(isFirst).toBe(false);
+      });
+
+      it('should handle errors gracefully and return false', async () => {
+        // Arrange
+        const userId = 'test-user-123';
+        const pubId = 'test-pub-123';
+        mockFirestore.getDocsWhere.mockRejectedValue(new Error('Network error'));
+
+        // Act
+        const isFirst = await service.isFirstEverCheckIn(userId, pubId);
+
+        // Assert - Should return false on error
+        expect(isFirst).toBe(false);
+      });
+    });
+
+    describe('📚 getUserCheckinCount', () => {
+      it('should return count for specific user-pub combination', async () => {
+        // Arrange
+        const userId = 'test-user-123';
+        const pubId = 'test-pub-123';
+        const mockCheckins = [
+          { id: '1', userId, pubId, dateKey: '2025-06-18' },
+          { id: '2', userId, pubId, dateKey: '2025-06-19' }
+        ];
+        mockFirestore.getDocsWhere.mockResolvedValue(mockCheckins);
+
+        // Act
+        const count = await service.getUserCheckinCount(userId, pubId);
+
+        // Assert
+        expect(count).toBe(2);
+        expect(mockFirestore.getDocsWhere).toHaveBeenCalledWith(
+          'checkins',
+          expect.any(Object), // where userId == test-user-123
+          expect.any(Object)  // where pubId == test-pub-123
+        );
+      });
+    });
+
+    describe('🔧 Integration Scenarios', () => {
+      it('should correctly identify first-time vs repeat scenarios', async () => {
+        // Arrange - First time user
+        const newUserId = 'new-user-123';
+        const pubId = 'test-pub-123';
+
+        // Mock: 1 total check-in, 1 check-in to this pub
+        mockFirestore.getDocsWhere
+          .mockResolvedValueOnce([{ id: '1', userId: newUserId, pubId }]) // getUserCheckinCount
+          .mockResolvedValueOnce([{ id: '1', userId: newUserId, pubId }]); // getUserTotalCheckinCount
+
+        // Act
+        const [isFirstVisit, totalCount] = await Promise.all([
+          service.isFirstEverCheckIn(newUserId, pubId),
+          service.getUserTotalCheckinCount(newUserId)
+        ]);
+
+        // Assert - Should be first visit and first ever
+        expect(isFirstVisit).toBe(true);
+        expect(totalCount).toBe(1);
+      });
+
+      it('should correctly identify experienced user scenarios', async () => {
+        // Arrange - Experienced user
+        const userId = 'experienced-user-123';
+        const pubId = 'new-pub-for-them';
+
+        // Mock: 1 check-in to this pub, but 10 total check-ins
+        mockFirestore.getDocsWhere
+          .mockResolvedValueOnce([{ id: '10', userId, pubId }]) // getUserCheckinCount: first visit to THIS pub
+          .mockResolvedValueOnce(Array(10).fill(null).map((_, i) => ({ id: i, userId }))); // getUserTotalCheckinCount: 10 total
+
+        // Act
+        const [isFirstVisit, totalCount] = await Promise.all([
+          service.isFirstEverCheckIn(userId, pubId),
+          service.getUserTotalCheckinCount(userId)
+        ]);
+
+        // Assert - First visit to this pub, but not first ever
+        expect(isFirstVisit).toBe(true);  // First time at THIS pub
+        expect(totalCount).toBe(10);      // Experienced user overall
+      });
+    });
+  });
 });
