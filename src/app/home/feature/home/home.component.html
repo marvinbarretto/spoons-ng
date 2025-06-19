@@ -1,5 +1,8 @@
 <div class="home-container">
 
+  <app-checkin-button [pubId]="'moon-under-water-watford'" />
+
+
   <app-user-profile-widget
   [user]="user()"
   [leaderboardPosition]="userLeaderboardPosition()"
@@ -10,7 +13,7 @@
       <div class="onboarding-hint">
         <span class="hint-icon">💡</span>
         <span class="hint-text">
-          Welcome to Spooncount! Start a mission to begin your pub adventure.
+          Welcome to Spoonscount! Start a mission to begin your pub adventure.
         </span>
       </div>
     }
@@ -35,11 +38,11 @@
   }
 
   <!-- ✅ Action Cards -->
-  <app-action-cards
+  <!-- <app-action-cards
     [showStartMission]="activeMissions().length === 0"
     (startMission)="handleStartMission()"
     (openGuide)="handleOpenGuide()"
-    (openSettings)="handleOpenSettings()" />
+    (openSettings)="handleOpenSettings()" /> -->
 
 
 

@@ -18,6 +18,7 @@ import { MissionsSectionComponent } from '../../ui/missions-widget/missions-widg
 import { ActionCardsComponent } from '@home/ui/action-cards/action-cards.component';
 import { UserProfileWidgetComponent } from '@home/ui/user-profile-widget/user-profile-widget.component';
 import { ProfileCustomisationModalComponent } from '@home/ui/profile-customisation-modal/profile-customisation-modal.component';
+import { CheckinButtonComponent } from '../../../new-checkin/feature/checkin-button/checkin-button.component';
 
 @Component({
   selector: 'app-home-three',
@@ -28,6 +29,7 @@ import { ProfileCustomisationModalComponent } from '@home/ui/profile-customisati
     MissionsSectionComponent,
     ActionCardsComponent,
     UserProfileWidgetComponent,
+    CheckinButtonComponent
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'

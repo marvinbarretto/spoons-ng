@@ -247,9 +247,6 @@ if (currentUser) {
   }
 
 
-
-
-
      /**
    * Get badge debug info for current user
    */
@@ -292,8 +289,6 @@ if (currentUser) {
       console.error('[CheckinStore] 🧪 Badge test failed:', error);
     }
   }
-
-
   private async evaluateBadgesAfterCheckIn(userId: string, checkIn: CheckIn): Promise<void> {
     console.log('[CheckinStore] 🎯 Badge evaluation starting', {
       userId,
