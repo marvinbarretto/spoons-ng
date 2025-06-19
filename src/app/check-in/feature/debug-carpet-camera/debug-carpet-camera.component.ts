@@ -1,17 +1,17 @@
-// src/app/check-in/feature/debug-carpet-camera/debug-carpet-camera.component.ts
-import { Component, ViewChild, ElementRef, computed, effect, inject, signal } from '@angular/core';
+// src/app/check-in/feature/debug-carpet-camera/enhanced-debug-carpet-camera.component.ts
+import { Component, ViewChild, ElementRef, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { BaseComponent } from '@shared/data-access/base.component';
-import { DebugCarpetRecognitionService, type DebugCarpetMatch } from '../../data-access/debug-carpet-recognition.service';
 import { ButtonComponent } from '@shared/ui/button/button.component';
 import { IconComponent } from '@shared/ui/icon/icon.component';
+import { CarpetService } from '../../data-access/carpet.service';
 
 @Component({
-  selector: 'app-debug-carpet-camera',
+  selector: 'app-enhanced-debug-carpet-camera',
   imports: [CommonModule, ButtonComponent, IconComponent],
   template: `
-    <div class="debug-carpet-camera">
+    <div class="enhanced-debug-carpet-camera">
 
       <!-- ✅ Header -->
       <header class="camera-header">
@@ -19,10 +19,11 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
           <app-icon name="arrow_back" size="md" />
           Back
         </button>
-        <h1>🔬 Debug Carpet Recognition</h1>
+        <h1>🔬 Enhanced Carpet Recognition</h1>
+        <div class="version-badge">v2.0</div>
       </header>
 
-      <!-- ✅ Camera with debug overlay -->
+      <!-- ✅ Camera with enhanced overlay -->
       <div class="camera-container">
 
         <video
@@ -33,12 +34,17 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
           muted>
         </video>
 
-        <!-- ✅ Real-time debug overlay -->
+        <!-- ✅ Enhanced debug overlay -->
         <div class="debug-overlay">
 
-          <!-- Analysis counter -->
-          <div class="analysis-counter">
-            Analysis #{{ analysisCount() }}
+          <!-- Analysis counter & confidence -->
+          <div class="analysis-header">
+            <span class="analysis-counter">Analysis #{{ analysisCount() }}</span>
+            @if (bestMatch()) {
+              <span class="confidence-indicator" [class]="getConfidenceClass(bestMatch()!.confidence)">
+                {{ bestMatch()!.confidence.toFixed(1) }}%
+              </span>
+            }
           </div>
 
           <!-- Scanning indicator -->
@@ -49,208 +55,259 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
             </div>
           }
 
-          <!-- Current color profile -->
-          @if (lastProfile()) {
-            <div class="color-profile-display">
-              <h4>🎨 Current Frame Colors:</h4>
-              <div class="color-swatches">
-                @for (color of lastProfile()!.dominant; track color) {
-                  <div
-                    class="color-swatch"
-                    [style.background-color]="color"
-                    [title]="color">
-                    {{ color }}
+          <!-- ✅ Enhanced feature display -->
+          @if (lastFeatures()) {
+            <div class="features-display">
+
+              <!-- Geometric Features -->
+              <div class="feature-section geometry">
+                <h4>📐 Pattern Analysis</h4>
+                <div class="pattern-info">
+                  <span class="pattern-type">{{ lastFeatures()!.geometricFeatures.dominantShape | titlecase }}</span>
+                  @if (lastFeatures()!.geometricFeatures.hasSquares) {
+                    <span class="pattern-indicator squares">⬜ Squares</span>
+                  }
+                  @if (lastFeatures()!.geometricFeatures.hasOrnamental) {
+                    <span class="pattern-indicator ornamental">🌿 Ornamental</span>
+                  }
+                </div>
+                <div class="metrics-row">
+                  <span>Repetition: {{ (lastFeatures()!.geometricFeatures.repetitionScore * 100).toFixed(0) }}%</span>
+                  <span>Scale: {{ lastFeatures()!.geometricFeatures.patternScale }}</span>
+                </div>
+              </div>
+
+              <!-- Texture Features -->
+              <div class="feature-section texture">
+                <h4>🏗️ Texture Metrics</h4>
+                <div class="texture-bars">
+                  <div class="texture-bar">
+                    <label>Contrast</label>
+                    <div class="bar">
+                      <div class="bar-fill" [style.width.%]="lastFeatures()!.textureFeatures.contrast * 100"></div>
+                    </div>
+                    <span>{{ (lastFeatures()!.textureFeatures.contrast * 100).toFixed(0) }}%</span>
                   </div>
-                }
+                  <div class="texture-bar">
+                    <label>Edge Density</label>
+                    <div class="bar">
+                      <div class="bar-fill" [style.width.%]="lastFeatures()!.textureFeatures.edgeDensity"></div>
+                    </div>
+                    <span>{{ lastFeatures()!.textureFeatures.edgeDensity.toFixed(0) }}/100px</span>
+                  </div>
+                </div>
               </div>
-              <div class="profile-stats">
-                <span>Variance: {{ lastProfile()!.variance.toFixed(1) }}</span>
-                <span>Pixels: {{ lastProfile()!.sampledPixels }}/{{ lastProfile()!.totalPixels }}</span>
-                <span>Time: {{ lastProfile()!.processingTime.toFixed(1) }}ms</span>
+
+              <!-- Color Profile -->
+              <div class="feature-section colors">
+                <h4>🎨 Colors ({{ lastFeatures()!.colorProfile.dominant.length }})</h4>
+                <div class="color-swatches">
+                  @for (color of lastFeatures()!.colorProfile.dominant.slice(0, 4); track color) {
+                    <div
+                      class="color-swatch"
+                      [style.background-color]="color"
+                      [title]="color">
+                    </div>
+                  }
+                </div>
+                <div class="color-variance">
+                  Variance: {{ lastFeatures()!.colorProfile.variance.toFixed(1) }}
+                </div>
               </div>
+
             </div>
           }
 
         </div>
+
       </div>
 
-      <!-- ✅ Debug results panel -->
-      <div class="debug-results">
+      <!-- ✅ Enhanced Results Panel -->
+      @if (hasAnalyzed()) {
+        <div class="results-panel">
 
-        <!-- Match results -->
-        @if (lastMatches().length > 0) {
-          <div class="matches-section">
-            <h3>🎯 Recognition Results</h3>
+          @if (lastMatches().length > 0) {
+            <div class="matches-section">
+              <h3>🎯 Pattern Matches ({{ lastMatches().length }})</h3>
 
-            @for (match of lastMatches().slice(0, 3); track match.pubId) {
-              <div class="match-debug-card" [class]="getMatchClass(match.confidence)">
+              @for (match of lastMatches(); track match.pubId) {
+                <div class="enhanced-match-card" [class]="getMatchClass(match.confidence)">
 
-                <div class="match-header">
-                  <strong>{{ match.pubName }}</strong>
-                  <span class="confidence-badge" [class]="getConfidenceClass(match.confidence)">
-                    {{ match.confidence }}%
-                  </span>
-                </div>
-
-                <div class="match-breakdown">
-                  <div class="score-row">
-                    <span>🎨 Color Match:</span>
-                    <span>{{ match.colorMatchScore }}%</span>
-                  </div>
-                  <div class="score-row">
-                    <span>📊 Histogram:</span>
-                    <span>{{ match.histogramMatchScore }}%</span>
-                  </div>
-                  <div class="score-row">
-                    <span>🧮 Chi²:</span>
-                    <span>{{ match.histogramDetails.chiSquared.toFixed(2) }}</span>
-                  </div>
-                </div>
-
-                <!-- Color matching details -->
-                <details class="color-details">
-                  <summary>🔍 Color Matching Detail</summary>
-                  <div class="color-matches">
-                    @for (colorMatch of match.colorDetails.matchedColors; track $index) {
-                      <div class="color-match-row">
-                        <div class="color-pair">
-                          <span class="color-dot" [style.background-color]="colorMatch.color1"></span>
-                          {{ colorMatch.color1 }}
-                        </div>
-                        <span>↔</span>
-                        <div class="color-pair">
-                          <span class="color-dot" [style.background-color]="colorMatch.color2"></span>
-                          {{ colorMatch.color2 }}
-                        </div>
-                        <span class="similarity">{{ colorMatch.similarity.toFixed(1) }}%</span>
+                  <!-- Match Header -->
+                  <div class="match-header">
+                    <div class="match-info">
+                      <h4>{{ match.pubName }}</h4>
+                      <div class="confidence-badge" [class]="getConfidenceClass(match.confidence)">
+                        {{ match.confidence.toFixed(1) }}%
                       </div>
-                    }
+                    </div>
                   </div>
-                </details>
 
-                <!-- Debug notes -->
-                <details class="debug-notes">
-                  <summary>📝 Debug Notes</summary>
-                  <ul>
-                    @for (note of match.debugNotes; track note) {
-                      <li>{{ note }}</li>
-                    }
-                  </ul>
-                </details>
+                  <!-- Detailed Similarity Breakdown -->
+                  <div class="similarity-breakdown">
+                    <div class="similarity-row">
+                      <span class="label">🎨 Color</span>
+                      <div class="similarity-bar">
+                        <div class="bar-fill color" [style.width.%]="match.colorSimilarity"></div>
+                      </div>
+                      <span class="value">{{ match.colorSimilarity.toFixed(0) }}%</span>
+                    </div>
+                    <div class="similarity-row">
+                      <span class="label">🏗️ Texture</span>
+                      <div class="similarity-bar">
+                        <div class="bar-fill texture" [style.width.%]="match.textureSimilarity"></div>
+                      </div>
+                      <span class="value">{{ match.textureSimilarity.toFixed(0) }}%</span>
+                    </div>
+                    <div class="similarity-row">
+                      <span class="label">📐 Geometry</span>
+                      <div class="similarity-bar">
+                        <div class="bar-fill geometry" [style.width.%]="match.geometrySimilarity"></div>
+                      </div>
+                      <span class="value">{{ match.geometrySimilarity.toFixed(0) }}%</span>
+                    </div>
+                  </div>
 
-              </div>
-            }
-          </div>
-        } @else if (hasAnalyzed()) {
-          <div class="no-matches">
-            <p>❌ No matches found above 15% threshold</p>
-            <small>Point camera at carpet for analysis</small>
-          </div>
-        }
+                  <!-- AI Reasoning -->
+                  <details class="reasoning-details">
+                    <summary>🧠 Analysis Reasoning</summary>
+                    <ul class="reasoning-list">
+                      @for (reason of match.reasoning; track reason) {
+                        <li>{{ reason }}</li>
+                      }
+                    </ul>
+                  </details>
 
-        <!-- Console log indicator -->
-        <div class="console-notice">
-          💡 <strong>Check browser console</strong> for detailed analysis logs
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="no-matches">
+              <h3>🚫 No Pattern Matches</h3>
+              <p>The detected features don't match any known carpet patterns.</p>
+            </div>
+          }
+
         </div>
+      }
 
-        <!-- Controls -->
-        <div class="debug-controls">
-          <app-button
-            variant="secondary"
-            [fullWidth]="true"
-            (onClick)="triggerManualAnalysis()"
-            [disabled]="isScanning()"
-          >
-            🔬 Trigger Manual Analysis
-          </app-button>
+      <!-- ✅ Controls -->
+      <div class="debug-controls">
+        <app-button
+          variant="primary"
+          (click)="triggerManualAnalysis()"
+          [disabled]="isScanning()">
+          @if (isScanning()) {
+            <app-icon name="hourglass_empty" size="sm" />
+            Analyzing...
+          } @else {
+            <app-icon name="center_focus_strong" size="sm" />
+            Analyze Frame
+          }
+        </app-button>
 
-          <app-button
-            variant="secondary"
-            [fullWidth]="true"
-            (onClick)="clearResults()"
-          >
-            🗑️ Clear Results
-          </app-button>
+        <app-button
+          variant="secondary"
+          (click)="clearResults()"
+          [disabled]="isScanning()">
+          <app-icon name="clear_all" size="sm" />
+          Clear Results
+        </app-button>
+      </div>
+
+      <!-- ✅ Performance Stats -->
+      @if (lastFeatures()) {
+        <div class="performance-stats">
+          <div class="stat">
+            <label>Color Processing</label>
+            <span>{{ lastFeatures()!.colorProfile.processingTime.toFixed(1) }}ms</span>
+          </div>
+          <div class="stat">
+            <label>Pixels Sampled</label>
+            <span>{{ lastFeatures()!.colorProfile.sampledPixels.toLocaleString() }}</span>
+          </div>
+          <div class="stat">
+            <label>Features Detected</label>
+            <span>{{ featureCount() }}</span>
+          </div>
         </div>
+      }
 
-        <!-- Camera status -->
-        <div class="camera-status">
-          <div class="status-row">
-            <span>📹 Camera:</span>
-            <span [class]="cameraStatus().class">{{ cameraStatus().text }}</span>
-          </div>
-          <div class="status-row">
-            <span>🔄 Auto-scan:</span>
-            <span class="status-active">Every 3 seconds</span>
-          </div>
-          <div class="status-row">
-            <span>💾 Database:</span>
-            <span class="status-ready">{{ carpetDatabaseSize }} carpets loaded</span>
-          </div>
-        </div>
-
+      <!-- ✅ Console Notice -->
+      <div class="console-notice">
+        <app-icon name="terminal" size="sm" />
+        <span>Detailed analysis logs available in browser console</span>
       </div>
 
     </div>
   `,
   styles: [`
-    .debug-carpet-camera {
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
+    .enhanced-debug-carpet-camera {
+      display: grid;
+      gap: 1rem;
+      padding: 1rem;
       background: #1a1a1a;
-      color: #e5e5e5;
-      font-family: 'Monaco', 'Menlo', monospace;
-      font-size: 13px;
+      color: #fff;
+      min-height: 100vh;
     }
 
-    /* ✅ Header */
     .camera-header {
       display: flex;
       align-items: center;
       gap: 1rem;
-      padding: 1rem;
-      background: #000;
-      border-bottom: 2px solid #333;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #333;
     }
 
     .back-btn {
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      background: #333;
+      background: none;
       border: 1px solid #555;
-      color: #e5e5e5;
+      color: #fff;
       padding: 0.5rem 1rem;
       border-radius: 6px;
       cursor: pointer;
+      font-size: 14px;
     }
 
     .back-btn:hover {
-      background: #444;
+      background: #333;
+      border-color: #777;
     }
 
     .camera-header h1 {
+      flex: 1;
       margin: 0;
-      font-size: 1.2rem;
-      color: #00ff88;
+      font-size: 1.25rem;
+      font-weight: 600;
     }
 
-    /* ✅ Camera */
+    .version-badge {
+      background: #00ff88;
+      color: #000;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
     .camera-container {
       position: relative;
-      height: 300px;
-      background: #000;
-      border-bottom: 2px solid #333;
+      border-radius: 8px;
+      overflow: hidden;
+      aspect-ratio: 4 / 3;
+      max-height: 50vh;
     }
 
     .camera-video {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      background: #000;
     }
 
-    /* ✅ Debug overlay */
     .debug-overlay {
       position: absolute;
       top: 0;
@@ -258,132 +315,247 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
       right: 0;
       bottom: 0;
       pointer-events: none;
+      background: linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.8) 0%,
+        rgba(0,0,0,0.2) 30%,
+        rgba(0,0,0,0.2) 70%,
+        rgba(0,0,0,0.8) 100%
+      );
       display: flex;
       flex-direction: column;
-      gap: 1rem;
       padding: 1rem;
     }
 
+    .analysis-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
     .analysis-counter {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: rgba(0, 255, 136, 0.9);
-      color: #000;
-      padding: 0.5rem;
+      background: rgba(0,0,0,0.8);
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: bold;
+      color: #ffaa00;
+    }
+
+    .confidence-indicator {
+      padding: 0.25rem 0.5rem;
       border-radius: 4px;
       font-weight: bold;
-      font-size: 14px;
+      font-size: 11px;
+    }
+
+    .confidence-indicator.high {
+      background: #00ff88;
+      color: #000;
+    }
+
+    .confidence-indicator.medium {
+      background: #ffaa00;
+      color: #000;
+    }
+
+    .confidence-indicator.low {
+      background: #ff4444;
+      color: #fff;
     }
 
     .scanning-indicator {
-      background: rgba(255, 165, 0, 0.9);
-      color: #000;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      align-self: flex-start;
+      background: rgba(255,170,0,0.9);
+      color: #000;
+      padding: 0.5rem;
+      border-radius: 6px;
+      font-weight: bold;
+      margin-bottom: 1rem;
     }
 
     .scan-pulse {
       width: 12px;
       height: 12px;
-      background: #ff6600;
+      background: #000;
       border-radius: 50%;
-      animation: pulse 1s ease-in-out infinite;
+      animation: pulse 1s infinite;
     }
 
     @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(1.2); }
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
     }
 
-    .color-profile-display {
-      background: rgba(0, 0, 0, 0.8);
-      border: 1px solid #00ff88;
-      border-radius: 8px;
-      padding: 1rem;
+    .features-display {
+      display: grid;
+      gap: 0.75rem;
       margin-top: auto;
     }
 
-    .color-profile-display h4 {
+    .feature-section {
+      background: rgba(0,0,0,0.8);
+      border-radius: 6px;
+      padding: 0.75rem;
+      border-left: 3px solid #555;
+    }
+
+    .feature-section.geometry {
+      border-left-color: #00ff88;
+    }
+
+    .feature-section.texture {
+      border-left-color: #ffaa00;
+    }
+
+    .feature-section.colors {
+      border-left-color: #ff44aa;
+    }
+
+    .feature-section h4 {
       margin: 0 0 0.5rem 0;
+      font-size: 12px;
+      font-weight: bold;
+      opacity: 0.9;
+    }
+
+    .pattern-info {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .pattern-type {
+      font-weight: bold;
       color: #00ff88;
+      font-size: 13px;
+    }
+
+    .pattern-indicator {
+      font-size: 10px;
+      padding: 0.125rem 0.25rem;
+      border-radius: 3px;
+      background: rgba(255,255,255,0.1);
+    }
+
+    .pattern-indicator.squares {
+      background: rgba(0,255,136,0.2);
+      color: #00ff88;
+    }
+
+    .pattern-indicator.ornamental {
+      background: rgba(255,170,0,0.2);
+      color: #ffaa00;
+    }
+
+    .metrics-row {
+      display: flex;
+      gap: 1rem;
+      font-size: 11px;
+      opacity: 0.8;
+    }
+
+    .texture-bars {
+      display: grid;
+      gap: 0.375rem;
+    }
+
+    .texture-bar {
+      display: grid;
+      grid-template-columns: 60px 1fr 40px;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 10px;
+    }
+
+    .texture-bar label {
+      font-weight: bold;
+      opacity: 0.8;
+    }
+
+    .bar {
+      height: 8px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: #ffaa00;
+      border-radius: 4px;
+      transition: width 0.3s ease;
     }
 
     .color-swatches {
       display: flex;
-      gap: 0.5rem;
-      margin-bottom: 0.5rem;
-      flex-wrap: wrap;
+      gap: 0.25rem;
+      margin-bottom: 0.25rem;
     }
 
     .color-swatch {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 80px;
-      height: 30px;
-      border: 1px solid #666;
-      border-radius: 4px;
+      width: 20px;
+      height: 20px;
+      border-radius: 3px;
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    .color-variance {
       font-size: 10px;
-      font-weight: bold;
-      text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
-      color: white;
+      opacity: 0.7;
     }
 
-    .profile-stats {
-      display: flex;
-      gap: 1rem;
-      font-size: 11px;
-      color: #ccc;
-    }
-
-    /* ✅ Results panel */
-    .debug-results {
-      flex: 1;
-      overflow-y: auto;
+    .results-panel {
+      background: #2a2a2a;
+      border-radius: 8px;
       padding: 1rem;
-      background: #1a1a1a;
+      border: 1px solid #444;
     }
 
     .matches-section h3 {
       margin: 0 0 1rem 0;
       color: #00ff88;
-      border-bottom: 1px solid #333;
-      padding-bottom: 0.5rem;
+      font-size: 1.1rem;
     }
 
-    .match-debug-card {
-      background: #2a2a2a;
-      border: 1px solid #444;
-      border-radius: 8px;
+    .enhanced-match-card {
+      background: #333;
+      border-radius: 6px;
       padding: 1rem;
       margin-bottom: 1rem;
+      border-left: 4px solid #555;
     }
 
-    .match-debug-card.high-confidence {
-      border-color: #00ff88;
-      background: #1a2f1a;
+    .enhanced-match-card.high-confidence {
+      border-left-color: #00ff88;
+      background: rgba(0,255,136,0.05);
     }
 
-    .match-debug-card.medium-confidence {
-      border-color: #ffaa00;
-      background: #2f2a1a;
+    .enhanced-match-card.medium-confidence {
+      border-left-color: #ffaa00;
+      background: rgba(255,170,0,0.05);
     }
 
-    .match-debug-card.low-confidence {
-      border-color: #ff4444;
-      background: #2f1a1a;
+    .enhanced-match-card.low-confidence {
+      border-left-color: #ff4444;
+      background: rgba(255,68,68,0.05);
     }
 
     .match-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .match-info h4 {
+      margin: 0;
+      font-size: 1rem;
+      color: #fff;
     }
 
     .confidence-badge {
@@ -393,77 +565,102 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
       font-size: 12px;
     }
 
-    .confidence-badge.high { background: #00ff88; color: #000; }
-    .confidence-badge.medium { background: #ffaa00; color: #000; }
-    .confidence-badge.low { background: #ff4444; color: #fff; }
+    .confidence-badge.high {
+      background: #00ff88;
+      color: #000;
+    }
 
-    .match-breakdown {
+    .confidence-badge.medium {
+      background: #ffaa00;
+      color: #000;
+    }
+
+    .confidence-badge.low {
+      background: #ff4444;
+      color: #fff;
+    }
+
+    .similarity-breakdown {
       display: grid;
-      gap: 0.25rem;
-      margin-bottom: 0.75rem;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .similarity-row {
+      display: grid;
+      grid-template-columns: 60px 1fr 40px;
+      align-items: center;
+      gap: 0.75rem;
       font-size: 12px;
     }
 
-    .score-row {
-      display: flex;
-      justify-content: space-between;
+    .similarity-row .label {
+      font-weight: bold;
+      opacity: 0.9;
     }
 
-    .color-details, .debug-notes {
-      margin-top: 0.5rem;
-      border: 1px solid #555;
-      border-radius: 4px;
-    }
-
-    .color-details summary, .debug-notes summary {
-      padding: 0.5rem;
-      background: #333;
-      cursor: pointer;
-      border-radius: 4px 4px 0 0;
-    }
-
-    .color-matches {
-      padding: 0.5rem;
-      display: grid;
-      gap: 0.25rem;
-    }
-
-    .color-match-row {
-      display: grid;
-      grid-template-columns: 1fr auto 1fr auto;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 11px;
-    }
-
-    .color-pair {
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
-    }
-
-    .color-dot {
-      width: 12px;
+    .similarity-bar {
       height: 12px;
-      border-radius: 50%;
-      border: 1px solid #666;
+      background: rgba(255,255,255,0.1);
+      border-radius: 6px;
+      overflow: hidden;
     }
 
-    .similarity {
+    .similarity-bar .bar-fill {
+      height: 100%;
+      border-radius: 6px;
+      transition: width 0.5s ease;
+    }
+
+    .similarity-bar .bar-fill.color {
+      background: #ff44aa;
+    }
+
+    .similarity-bar .bar-fill.texture {
+      background: #ffaa00;
+    }
+
+    .similarity-bar .bar-fill.geometry {
+      background: #00ff88;
+    }
+
+    .similarity-row .value {
       text-align: right;
       font-weight: bold;
     }
 
-    .debug-notes ul {
-      margin: 0;
-      padding: 0.5rem 1rem;
+    .reasoning-details {
+      margin-top: 0.75rem;
+    }
+
+    .reasoning-details summary {
+      cursor: pointer;
+      font-size: 12px;
+      color: #aaa;
+      margin-bottom: 0.5rem;
+    }
+
+    .reasoning-details summary:hover {
+      color: #fff;
+    }
+
+    .reasoning-list {
+      margin: 0.5rem 0 0 1rem;
+      padding: 0;
       list-style: none;
     }
 
-    .debug-notes li {
+    .reasoning-list li {
       font-size: 11px;
       color: #ccc;
       margin-bottom: 0.25rem;
+      position: relative;
+    }
+
+    .reasoning-list li::before {
+      content: "→";
+      color: #00ff88;
+      margin-right: 0.5rem;
     }
 
     .no-matches {
@@ -472,58 +669,85 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
       color: #888;
     }
 
+    .debug-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .performance-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      background: #2a2a2a;
+      border: 1px solid #444;
+      border-radius: 6px;
+      padding: 1rem;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat label {
+      display: block;
+      font-size: 11px;
+      color: #aaa;
+      margin-bottom: 0.25rem;
+    }
+
+    .stat span {
+      font-weight: bold;
+      color: #00ff88;
+      font-size: 13px;
+    }
+
     .console-notice {
       background: #2a2a4a;
       border: 1px solid #4444aa;
       border-radius: 6px;
       padding: 0.75rem;
-      margin: 1rem 0;
-      text-align: center;
-    }
-
-    .debug-controls {
-      display: grid;
-      gap: 0.75rem;
-      margin: 1rem 0;
-    }
-
-    .camera-status {
-      background: #2a2a2a;
-      border: 1px solid #444;
-      border-radius: 6px;
-      padding: 1rem;
-      display: grid;
-      gap: 0.5rem;
-    }
-
-    .status-row {
       display: flex;
-      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
       font-size: 12px;
+      color: #bbb;
     }
-
-    .status-ready { color: #00ff88; }
-    .status-active { color: #ffaa00; }
-    .status-error { color: #ff4444; }
 
     /* ✅ Responsive */
     @media (max-width: 640px) {
-      .color-swatches {
-        gap: 0.25rem;
+      .enhanced-debug-carpet-camera {
+        padding: 0.5rem;
+        gap: 0.75rem;
       }
 
-      .color-swatch {
-        min-width: 60px;
-        height: 25px;
-        font-size: 9px;
+      .camera-header h1 {
+        font-size: 1rem;
+      }
+
+      .features-display {
+        gap: 0.5rem;
+      }
+
+      .feature-section {
+        padding: 0.5rem;
+      }
+
+      .performance-stats {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+      }
+
+      .debug-controls {
+        grid-template-columns: 1fr;
       }
     }
   `]
 })
-export class DebugCarpetCameraComponent extends BaseComponent {
+export class EnhancedDebugCarpetCameraComponent extends BaseComponent {
 
   // ✅ Services
-  private readonly carpetService = inject(DebugCarpetRecognitionService);
+  private readonly carpetService = inject(CarpetService);
 
   // ✅ Template refs
   @ViewChild('videoElement') videoRef?: ElementRef<HTMLVideoElement>;
@@ -535,29 +759,39 @@ export class DebugCarpetCameraComponent extends BaseComponent {
 
   // ✅ Service state
   readonly isScanning = this.carpetService.isAnalyzing;
-  readonly lastProfile = this.carpetService.lastProfile;
+  readonly lastFeatures = this.carpetService.lastTexture;
   readonly lastMatches = this.carpetService.lastMatches;
   readonly analysisCount = this.carpetService.analysisCount;
-
-  // ✅ Static info
-  readonly carpetDatabaseSize = 4; // From our static database
 
   // ✅ Computed
   readonly hasAnalyzed = computed(() => this._hasAnalyzed() || this.analysisCount() > 0);
 
-  readonly cameraStatus = computed(() => {
-    const stream = this._stream();
-    if (!stream) return { text: 'Initializing...', class: 'status-active' };
-    return { text: 'Ready', class: 'status-ready' };
+  readonly bestMatch = computed(() => {
+    const matches = this.lastMatches();
+    return matches.length > 0 ? matches[0] : null;
+  });
+
+  readonly featureCount = computed(() => {
+    const features = this.lastFeatures();
+    if (!features) return 0;
+
+    let count = 0;
+    count += features.colorProfile.dominant.length;
+    if (features.geometricFeatures.hasSquares) count++;
+    if (features.geometricFeatures.hasOrnamental) count++;
+    if (features.textureFeatures.contrast > 0.3) count++;
+    if (features.textureFeatures.edgeDensity > 15) count++;
+
+    return count;
   });
 
   constructor() {
     super();
-    console.log('[DebugCarpetCamera] 🎬 Component initialized');
+    console.log('[EnhancedDebugCarpetCamera] 🎬 Enhanced component initialized');
   }
 
   protected override onInit(): void {
-    console.log('[DebugCarpetCamera] 📱 Starting camera initialization...');
+    console.log('[EnhancedDebugCarpetCamera] 📱 Starting enhanced camera...');
     this.initCamera();
   }
 
@@ -566,49 +800,47 @@ export class DebugCarpetCameraComponent extends BaseComponent {
    */
   private async initCamera(): Promise<void> {
     try {
-      console.log('[DebugCarpetCamera] 📹 Requesting camera access...');
+      console.log('[EnhancedDebugCarpetCamera] 📹 Requesting camera access...');
 
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           width: { ideal: 1280 },
           height: { ideal: 720 },
-          facingMode: 'environment' // Back camera
+          facingMode: 'environment'
         }
       });
 
-      console.log('[DebugCarpetCamera] ✅ Camera stream acquired');
+      console.log('[EnhancedDebugCarpetCamera] ✅ Camera stream acquired');
       this._stream.set(stream);
 
-      // ✅ Wait for video element
       setTimeout(() => {
         if (this.videoRef?.nativeElement) {
           this.videoRef.nativeElement.srcObject = stream;
-          console.log('[DebugCarpetCamera] 🎥 Video element connected');
+          console.log('[EnhancedDebugCarpetCamera] 🎥 Video element connected');
           this.startAutoAnalysis();
         }
       }, 100);
 
     } catch (error: any) {
-      console.error('[DebugCarpetCamera] ❌ Camera access failed:', error);
+      console.error('[EnhancedDebugCarpetCamera] ❌ Camera access failed:', error);
       this.showError('Camera access denied. Please enable camera permissions.');
     }
   }
 
   /**
-   * Start automatic analysis every 3 seconds
+   * Start auto-analysis every 4 seconds (slightly slower for enhanced processing)
    */
   private startAutoAnalysis(): void {
-    console.log('[DebugCarpetCamera] ⏱️  Starting auto-analysis (3 second intervals)...');
+    console.log('[EnhancedDebugCarpetCamera] ⏱️  Starting enhanced auto-analysis...');
 
     const interval = setInterval(async () => {
       if (!this.videoRef?.nativeElement || this.isScanning()) {
-        console.log('[DebugCarpetCamera] ⏸️  Skipping auto-analysis (no video or already scanning)');
         return;
       }
 
-      console.log('[DebugCarpetCamera] 🔄 Auto-analysis triggered');
+      console.log('[EnhancedDebugCarpetCamera] 🔄 Enhanced auto-analysis triggered');
       await this.performAnalysis();
-    }, 3000);
+    }, 4000); // 4 seconds for enhanced processing
 
     this._analysisInterval.set(interval as any);
   }
@@ -617,66 +849,58 @@ export class DebugCarpetCameraComponent extends BaseComponent {
    * Trigger manual analysis
    */
   async triggerManualAnalysis(): Promise<void> {
-    console.log('[DebugCarpetCamera] 👆 Manual analysis triggered by user');
+    console.log('[EnhancedDebugCarpetCamera] 👆 Manual enhanced analysis triggered');
     await this.performAnalysis();
   }
 
   /**
-   * Perform carpet analysis
+   * Perform enhanced carpet analysis
    */
   private async performAnalysis(): Promise<void> {
     if (!this.videoRef?.nativeElement) {
-      console.warn('[DebugCarpetCamera] ⚠️  No video element available for analysis');
+      console.warn('[EnhancedDebugCarpetCamera] ⚠️  No video element available');
       return;
     }
 
     try {
-      await this.carpetService.analyzeVideoFrame(this.videoRef.nativeElement);
+      const matches = await this.carpetService.analyzeVideoFrame(this.videoRef.nativeElement);
       this._hasAnalyzed.set(true);
 
-      // Log action that would be taken
-      const matches = this.lastMatches();
+      // ✅ Enhanced action simulation
       if (matches.length > 0) {
         const bestMatch = matches[0];
-        console.log(`[DebugCarpetCamera] 🎯 ACTION SIMULATION: Would check in to "${bestMatch.pubName}" with ${bestMatch.confidence}% confidence`);
+        console.log(`[EnhancedDebugCarpetCamera] 🎯 ENHANCED ACTION: Would check in to "${bestMatch.pubName}"`);
+        console.log(`   📊 Overall: ${bestMatch.confidence.toFixed(1)}% | Color: ${bestMatch.colorSimilarity.toFixed(1)}% | Texture: ${bestMatch.textureSimilarity.toFixed(1)}% | Geometry: ${bestMatch.geometrySimilarity.toFixed(1)}%`);
+        console.log(`   🧠 Reasoning: ${bestMatch.reasoning.join(', ')}`);
 
-        if (bestMatch.confidence > 60) {
-          console.log(`[DebugCarpetCamera] ✅ HIGH CONFIDENCE: Check-in would proceed automatically`);
+        if (bestMatch.confidence > 75) {
+          console.log(`[EnhancedDebugCarpetCamera] ✅ VERY HIGH CONFIDENCE: Auto check-in would proceed`);
+        } else if (bestMatch.confidence > 60) {
+          console.log(`[EnhancedDebugCarpetCamera] ✅ HIGH CONFIDENCE: Check-in would proceed with user confirmation`);
         } else if (bestMatch.confidence > 40) {
-          console.log(`[DebugCarpetCamera] ⚠️  MEDIUM CONFIDENCE: Would show "possible match" with user confirmation`);
+          console.log(`[EnhancedDebugCarpetCamera] ⚠️  MEDIUM CONFIDENCE: Would show as "possible match"`);
         } else {
-          console.log(`[DebugCarpetCamera] ❌ LOW CONFIDENCE: Would suggest location-based fallback`);
+          console.log(`[EnhancedDebugCarpetCamera] ❌ LOW CONFIDENCE: Would fallback to location-based search`);
         }
       } else {
-        console.log(`[DebugCarpetCamera] 🚫 NO MATCHES: Would show location fallback only`);
+        console.log(`[EnhancedDebugCarpetCamera] 🚫 NO MATCHES: Enhanced analysis found no carpet matches`);
       }
 
     } catch (error) {
-      console.error('[DebugCarpetCamera] ❌ Analysis failed:', error);
+      console.error('[EnhancedDebugCarpetCamera] ❌ Enhanced analysis failed:', error);
     }
   }
 
   /**
-   * Clear results for fresh testing
+   * Clear results
    */
   clearResults(): void {
-    console.log('[DebugCarpetCamera] 🗑️  Clearing all analysis results');
+    console.log('[EnhancedDebugCarpetCamera] 🗑️  Clearing enhanced analysis results');
     this._hasAnalyzed.set(false);
-    // Note: We can't reset service signals as they're readonly,
-    // but this shows the intent for a fresh start
   }
 
   /**
-   * Get CSS class for match confidence
-   */
-  getMatchClass(confidence: number): string {
-    if (confidence > 60) return 'high-confidence';
-    if (confidence > 40) return 'medium-confidence';
-    return 'low-confidence';
-  }
-
-  /**
-   * Get CSS class for confidence badge
+   * CSS classes for confidence levels
    */
   getConfidenceClass(confidence: number): string {
     if (confidence > 60) return 'high';
@@ -684,11 +908,17 @@ export class DebugCarpetCameraComponent extends BaseComponent {
     return 'low';
   }
 
+  getMatchClass(confidence: number): string {
+    if (confidence > 60) return 'high-confidence';
+    if (confidence > 40) return 'medium-confidence';
+    return 'low-confidence';
+  }
+
   /**
    * Navigation
    */
   goBack(): void {
-    console.log('[DebugCarpetCamera] 🔙 User navigating back');
+    console.log('[EnhancedDebugCarpetCamera] 🔙 Navigating back...');
     this.cleanup();
     this.router.navigateByUrl('/');
   }
@@ -697,24 +927,18 @@ export class DebugCarpetCameraComponent extends BaseComponent {
    * Cleanup resources
    */
   private cleanup(): void {
-    console.log('[DebugCarpetCamera] 🧹 Cleaning up resources...');
+    console.log('[EnhancedDebugCarpetCamera] 🧹 Cleaning up enhanced resources...');
 
-    // ✅ Stop camera
     const stream = this._stream();
     if (stream) {
-      stream.getTracks().forEach(track => {
-        track.stop();
-        console.log('[DebugCarpetCamera] 📹 Camera track stopped');
-      });
+      stream.getTracks().forEach(track => track.stop());
       this._stream.set(null);
     }
 
-    // ✅ Clear interval
     const interval = this._analysisInterval();
     if (interval) {
       clearInterval(interval);
       this._analysisInterval.set(null);
-      console.log('[DebugCarpetCamera] ⏱️  Auto-analysis interval cleared');
     }
   }
 
