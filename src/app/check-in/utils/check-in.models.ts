@@ -14,6 +14,8 @@ export type CheckIn = {
 
   pointsEarned?: number;
   pointsBreakdown?: string;
+
+  carpetImageKey?: string;
 };
 
 // =====================================

@@ -371,6 +371,7 @@ export class CarpetDetectorComponent extends BaseComponent {
   protected readonly matcher = inject(DynamicCarpetMatcher);
   protected readonly analyzer = inject(ReferenceImageAnalyzer);
 
+
   // Local state
   private readonly _stream = signal<MediaStream | null>(null);
   private readonly _isAnalyzing = signal(false);
@@ -499,7 +500,8 @@ export class CarpetDetectorComponent extends BaseComponent {
     if (video.readyState < 2) return;
 
     try {
-      this.matcher.matchFrame(video, 70); // 70% confidence threshold
+      // Use 65% for better sensitivity since you're getting 70% on target
+      this.matcher.matchFrame(video, 65);
       this._analysisCount.set(this._analysisCount() + 1);
       this.rateCounter++;
     } catch (error) {
