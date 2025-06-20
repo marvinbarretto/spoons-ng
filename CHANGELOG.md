@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.44](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.43...v0.0.44) (2025-06-20)
+
+
+### Features
+
+* Add Indexed DB service ([f87833e](https://github.com/marvinbarretto/spoons-ng/commit/f87833edb8c3f1f62d2e9b922777f05c32f22eac))
+* Add promise support for OverlayService ([1a7544a](https://github.com/marvinbarretto/spoons-ng/commit/1a7544ab65bdf21804f3d1d100f5479386f850ab))
+* Rough carpet detection in ([846a95b](https://github.com/marvinbarretto/spoons-ng/commit/846a95b9aaa17216ff99ecce657c9ab761c92fa5))
+* Scan carpet for new check in ([d37665d](https://github.com/marvinbarretto/spoons-ng/commit/d37665d284638d0025e9775c33733a542c137659))
+
 ### [0.0.43](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.42...v0.0.43) (2025-06-20)
 
 ### [0.0.42](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.41...v0.0.42) (2025-06-20)
