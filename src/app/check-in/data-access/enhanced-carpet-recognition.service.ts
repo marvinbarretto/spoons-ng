@@ -2,6 +2,7 @@
 import { Injectable, signal } from '@angular/core';
 import { getAllCarpets, type StaticCarpetData } from './carpet-database';
 import type { PracticalCarpetMatch, EnhancedColorProfile, PracticalTextureFeatures } from './carpet.types';
+import { CarpetConfidenceConfig } from './carpet-confidence-config';
 
 @Injectable({ providedIn: 'root' })
 export class EnhancedCarpetRecognitionService {
@@ -50,6 +51,14 @@ export class EnhancedCarpetRecognitionService {
       // ✅ Stage 2: Pattern & texture analysis
       const textureFeatures = this.analyzePatternFeatures(videoElement);
       this._lastTexture.set(textureFeatures);
+
+      // ✅ Stage 2.5: Check if this looks like a carpet at all
+      const looksLikeCarpet = this.doesLookLikeCarpet(colorProfile, textureFeatures, videoElement);
+      if (!looksLikeCarpet) {
+        console.log('❌ Does not appear to be a carpet - skipping analysis');
+        this._lastMatches.set([]);
+        return [];
+      }
 
       // ✅ Stage 3: Multi-dimensional matching
       const matches = this.performIntelligentMatching(colorProfile, textureFeatures);
@@ -228,8 +237,13 @@ export class EnhancedCarpetRecognitionService {
       // ✅ Texture similarity (30% weight)
       const textureSim = this.calculateTextureSimilarity(textureFeatures, carpet);
 
-      // ✅ Weighted confidence calculation
-      const weights = { color: 0.3, pattern: 0.4, texture: 0.3 };
+      // ✅ Dynamic weighted confidence calculation
+      const imageFeatures = {
+        colorVariance: colorProfile.variance / 1000, // Normalize
+        patternClarity: textureFeatures.contrast,
+        textureDetail: textureFeatures.edgeDensity / 100
+      };
+      const weights = CarpetConfidenceConfig.getDynamicWeights(imageFeatures);
       const confidence = (colorSim * weights.color) +
                         (patternSim * weights.pattern) +
                         (textureSim * weights.texture);
@@ -300,15 +314,13 @@ export class EnhancedCarpetRecognitionService {
   private calculatePatternSimilarity(features: PracticalTextureFeatures, carpet: StaticCarpetData): number {
     const patternDesc = carpet.colorProfile.pattern.toLowerCase();
 
-    // ✅ Pattern type matching
-    let patternScore = 0;
-    if (features.patternType === 'geometric' && patternDesc.includes('geometric')) patternScore = 0.9;
-    else if (features.patternType === 'geometric' && patternDesc.includes('square')) patternScore = 0.8;
-    else if (features.patternType === 'ornamental' && patternDesc.includes('floral')) patternScore = 0.9;
-    else if (features.patternType === 'ornamental' && patternDesc.includes('leaf')) patternScore = 0.8;
-    else if (features.patternType === 'mixed' && patternDesc.includes('complex')) patternScore = 0.7;
-    else if (features.patternType === 'plain' && carpet.colorProfile.variance < 100) patternScore = 0.8;
-    else patternScore = 0.3; // Generic match
+    // ✅ Pattern type matching using configuration
+    let patternScore = CarpetConfidenceConfig.getPatternMatchScore(features.patternType, patternDesc);
+    
+    // Special case for plain patterns with low variance
+    if (features.patternType === 'plain' && carpet.colorProfile.variance < 100) {
+      patternScore = Math.max(patternScore, 0.8);
+    }
 
     // ✅ Complexity matching
     const varianceScore = 1 - Math.abs(features.colorComplexity - (carpet.colorProfile.variance / 200)) / 2;
@@ -481,24 +493,31 @@ export class EnhancedCarpetRecognitionService {
   ): string[] {
     const reasoning: string[] = [];
 
-    if (colorSim > 0.7) reasoning.push(`Strong color match (${(colorSim * 100).toFixed(0)}%)`);
-    else if (colorSim > 0.5) reasoning.push(`Moderate color similarity (${(colorSim * 100).toFixed(0)}%)`);
-    else reasoning.push(`Weak color match (${(colorSim * 100).toFixed(0)}%)`);
+    const colorLevel = CarpetConfidenceConfig.getSimilarityLevel(colorSim);
+    const patternLevel = CarpetConfidenceConfig.getSimilarityLevel(patternSim);
+    const textureLevel = CarpetConfidenceConfig.getSimilarityLevel(textureSim);
 
-    if (patternSim > 0.8) reasoning.push(`Excellent pattern match for ${features.patternType}`);
-    else if (patternSim > 0.6) reasoning.push(`Good ${features.patternType} pattern similarity`);
-    else reasoning.push(`Pattern mismatch (${features.patternType} vs ${carpet.colorProfile.pattern})`);
+    reasoning.push(`${colorLevel.charAt(0).toUpperCase() + colorLevel.slice(1)} color match (${(colorSim * 100).toFixed(0)}%)`);
+    
+    if (patternSim >= CarpetConfidenceConfig.SIMILARITY_THRESHOLDS.good) {
+      reasoning.push(`${patternLevel.charAt(0).toUpperCase() + patternLevel.slice(1)} ${features.patternType} pattern match`);
+    } else {
+      reasoning.push(`Pattern difference: ${features.patternType} vs ${carpet.colorProfile.pattern}`);
+    }
 
-    if (textureSim > 0.6) reasoning.push(`Texture complexity aligns well`);
-    else reasoning.push(`Different texture characteristics`);
+    if (textureSim >= CarpetConfidenceConfig.SIMILARITY_THRESHOLDS.moderate) {
+      reasoning.push(`Texture complexity aligns well`);
+    } else {
+      reasoning.push(`Different texture characteristics`);
+    }
 
     return reasoning;
   }
 
   private getTextureLevel(features: PracticalTextureFeatures): 'low' | 'medium' | 'high' {
     const complexity = (features.contrast + features.edgeDensity / 100 + features.colorComplexity) / 3;
-    if (complexity > 0.6) return 'high';
-    if (complexity > 0.3) return 'medium';
+    if (complexity > CarpetConfidenceConfig.TEXTURE_COMPLEXITY.high) return 'high';
+    if (complexity > CarpetConfidenceConfig.TEXTURE_COMPLEXITY.medium) return 'medium';
     return 'low';
   }
 
@@ -556,5 +575,209 @@ export class EnhancedCarpetRecognitionService {
       console.log(`      🎨 Color: ${match.colorSimilarity.toFixed(0)}% | 🏗️ Pattern: ${match.patternSimilarity.toFixed(0)}% | 📐 Texture: ${match.textureSimilarity.toFixed(0)}%`);
       console.log(`      💭 ${match.reasoning.join(', ')}`);
     });
+  }
+
+  /**
+   * 🔍 Check if the image looks like a carpet
+   */
+  private doesLookLikeCarpet(
+    colorProfile: EnhancedColorProfile,
+    textureFeatures: PracticalTextureFeatures,
+    videoElement: HTMLVideoElement
+  ): boolean {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d')!;
+    
+    // Use smaller resolution for carpet detection
+    canvas.width = 160;
+    canvas.height = 120;
+    ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    
+    // 1. Check for skin tones (human faces/hands)
+    const hasSkinTones = this.detectSkinTones(imageData);
+    if (hasSkinTones > 0.3) {
+      console.log(`🙅 Detected skin tones (${(hasSkinTones * 100).toFixed(1)}%) - likely not a carpet`);
+      return false;
+    }
+    
+    // 2. Check for carpet-like characteristics
+    const carpetScore = this.calculateCarpetLikelihood(colorProfile, textureFeatures, imageData);
+    
+    console.log(`🧐 Carpet detection score: ${(carpetScore * 100).toFixed(1)}%`);
+    return carpetScore > 0.3; // 30% threshold for carpet detection
+  }
+  
+  /**
+   * 👋 Detect skin tones in the image
+   */
+  private detectSkinTones(imageData: ImageData): number {
+    const data = imageData.data;
+    let skinPixels = 0;
+    let totalPixels = 0;
+    
+    for (let i = 0; i < data.length; i += 16) { // Sample every 4th pixel
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      
+      // Skin tone detection using RGB ranges
+      if (this.isSkinTone(r, g, b)) {
+        skinPixels++;
+      }
+      totalPixels++;
+    }
+    
+    return totalPixels > 0 ? skinPixels / totalPixels : 0;
+  }
+  
+  /**
+   * 🎨 Check if RGB values represent skin tone
+   */
+  private isSkinTone(r: number, g: number, b: number): boolean {
+    // Multiple skin tone ranges to cover different ethnicities
+    const skinRanges = [
+      // Light skin
+      { rMin: 180, rMax: 255, gMin: 120, gMax: 200, bMin: 80, bMax: 180 },
+      // Medium skin
+      { rMin: 140, rMax: 200, gMin: 100, gMax: 150, bMin: 70, bMax: 120 },
+      // Dark skin
+      { rMin: 80, rMax: 150, gMin: 60, gMax: 120, bMin: 40, bMax: 90 },
+      // Asian skin tones
+      { rMin: 200, rMax: 255, gMin: 170, gMax: 220, bMin: 120, bMax: 180 }
+    ];
+    
+    return skinRanges.some(range => 
+      r >= range.rMin && r <= range.rMax &&
+      g >= range.gMin && g <= range.gMax &&
+      b >= range.bMin && b <= range.bMax
+    );
+  }
+  
+  /**
+   * 📊 Calculate how carpet-like the image is
+   */
+  private calculateCarpetLikelihood(
+    colorProfile: EnhancedColorProfile,
+    textureFeatures: PracticalTextureFeatures,
+    imageData: ImageData
+  ): number {
+    let score = 0;
+    
+    // 1. Carpet colors (earth tones, rich colors)
+    const carpetColorScore = this.hasCarpetColors(colorProfile.dominant);
+    score += carpetColorScore * 0.3;
+    
+    // 2. Texture patterns (not too smooth, not too chaotic)
+    const textureScore = this.hasCarpetTexture(textureFeatures);
+    score += textureScore * 0.4;
+    
+    // 3. Overall image characteristics
+    const imageScore = this.hasCarpetImageCharacteristics(imageData, colorProfile);
+    score += imageScore * 0.3;
+    
+    return Math.min(1, score);
+  }
+  
+  /**
+   * 🎨 Check for typical carpet colors
+   */
+  private hasCarpetColors(dominantColors: string[]): number {
+    const carpetColors = [
+      // Reds and burgundies
+      '#8B0000', '#A52A2A', '#B22222', '#DC143C', '#CD5C5C',
+      // Browns and tans
+      '#8B4513', '#A0522D', '#D2691E', '#DEB887', '#F5DEB3', '#D2B48C',
+      // Blues and teals
+      '#2F4F4F', '#008B8B', '#4682B4', '#5F9EA0', '#708090',
+      // Greens
+      '#228B22', '#32CD32', '#6B8E23', '#808000', '#556B2F',
+      // Golds and creams
+      '#FFD700', '#DAA520', '#B8860B', '#F0E68C', '#FFFACD',
+      // Purples
+      '#800080', '#9370DB', '#8A2BE2', '#9400D3'
+    ];
+    
+    let matches = 0;
+    dominantColors.forEach(color => {
+      const bestMatch = carpetColors.reduce((best, carpetColor) => {
+        const rgb1 = this.hexToRgb(color) || [0, 0, 0];
+        const rgb2 = this.hexToRgb(carpetColor) || [0, 0, 0];
+        const similarity = this.colorDistance(rgb1, rgb2);
+        return Math.max(best, similarity);
+      }, 0);
+      
+      if (bestMatch > 0.7) matches++;
+    });
+    
+    return Math.min(1, matches / dominantColors.length);
+  }
+  
+  /**
+   * 📜 Check for carpet-like texture
+   */
+  private hasCarpetTexture(features: PracticalTextureFeatures): number {
+    let score = 0;
+    
+    // Carpets typically have moderate to high edge density
+    if (features.edgeDensity > 10 && features.edgeDensity < 50) score += 0.3;
+    
+    // Carpets have good contrast but not extreme
+    if (features.contrast > 0.1 && features.contrast < 0.8) score += 0.3;
+    
+    // Pattern types
+    if (features.patternType === 'geometric' || features.patternType === 'ornamental') score += 0.4;
+    else if (features.patternType === 'mixed') score += 0.2;
+    
+    return score;
+  }
+  
+  /**
+   * 🖼️ Check overall image characteristics
+   */
+  private hasCarpetImageCharacteristics(imageData: ImageData, colorProfile: EnhancedColorProfile): number {
+    let score = 0;
+    
+    // Carpets usually have good color variance
+    if (colorProfile.variance > 1000 && colorProfile.variance < 8000) score += 0.4;
+    
+    // Carpets typically have moderate saturation
+    if (colorProfile.saturationLevel > 0.1 && colorProfile.saturationLevel < 0.7) score += 0.3;
+    
+    // Check for repetitive patterns
+    const hasRepetition = this.detectRepetitivePatterns(imageData);
+    if (hasRepetition > 0.3) score += 0.3;
+    
+    return score;
+  }
+  
+  /**
+   * 🔄 Detect repetitive patterns typical of carpets
+   */
+  private detectRepetitivePatterns(imageData: ImageData): number {
+    // Simple pattern detection - look for repeating brightness patterns
+    const data = imageData.data;
+    const width = imageData.width;
+    const height = imageData.height;
+    
+    let repetitionScore = 0;
+    let samples = 0;
+    
+    // Check for horizontal repetition
+    for (let y = 10; y < height - 10; y += 10) {
+      for (let x = 10; x < width - 20; x += 10) {
+        const i1 = (y * width + x) * 4;
+        const i2 = (y * width + x + 10) * 4;
+        
+        const brightness1 = 0.299 * data[i1] + 0.587 * data[i1 + 1] + 0.114 * data[i1 + 2];
+        const brightness2 = 0.299 * data[i2] + 0.587 * data[i2 + 1] + 0.114 * data[i2 + 2];
+        
+        const similarity = 1 - Math.abs(brightness1 - brightness2) / 255;
+        repetitionScore += similarity;
+        samples++;
+      }
+    }
+    
+    return samples > 0 ? repetitionScore / samples : 0;
   }
 }

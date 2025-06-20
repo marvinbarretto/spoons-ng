@@ -23,6 +23,6 @@
   }
 
   /* ✅ Ensure smooth scrolling on mobile */
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  // overflow-y: auto; // TODO: this is deprecrated? learn why, replace with what
+  // -webkit-overflow-scrolling: touch; // TODO: this is deprecrated? learn why, replace with what
 }

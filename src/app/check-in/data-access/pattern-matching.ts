@@ -2,6 +2,7 @@
 import type { StaticCarpetData } from './carpet-database';
 import type { EnhancedColorProfile, PracticalTextureFeatures, PracticalCarpetMatch } from './carpet.types';
 import { colorSimilarity } from './color-analysis';
+import { CarpetConfidenceConfig } from './carpet-confidence-config';
 
 /**
  * Find intelligent matches using enhanced features
@@ -24,8 +25,13 @@ export function findIntelligentMatches(
     // ✅ Texture similarity (new)
     const textureSim = compareTexture(textureFeatures, carpet);
 
-    // ✅ Weighted confidence
-    const weights = { color: 0.3, pattern: 0.4, texture: 0.3 };
+    // ✅ Dynamic weighted confidence
+    const imageFeatures = {
+      colorVariance: colorProfile.variance / 1000,
+      patternClarity: textureFeatures.contrast,
+      textureDetail: textureFeatures.edgeDensity / 100
+    };
+    const weights = CarpetConfidenceConfig.getDynamicWeights(imageFeatures);
     const confidence = (colorSim * weights.color) +
                       (patternSim * weights.pattern) +
                       (textureSim * weights.texture);

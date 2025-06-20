@@ -7,14 +7,11 @@ import { NavigationStart } from '@angular/router';
 import { filter } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
-import { ThemeSelectorComponent } from './shared/feature/theme-selector/theme-selector.component';
 import { NotificationsComponent } from './shared/ui/notifications/notifications.component';
-import { PanelComponent } from './shared/ui/panel/panel.component';
 import { ToastComponent } from './shared/ui/toast/toast.component';
 import { DeviceCapabilityService } from './shared/utils/device-capability-check.service';
 import { SsrPlatformService } from './shared/utils/ssr/ssr-platform.service';
 import { PageTitleService } from './shared/data-access/page-title.service';
-import { NavComponent } from './shared/feature/nav/nav.component';
 import { PubStore } from './pubs/data-access/pub.store';
 import { LandlordStore } from './landlord/data-access/landlord.store';
 
@@ -24,12 +21,9 @@ import { LandlordStore } from './landlord/data-access/landlord.store';
     RouterModule,
     HeaderComponent,
     FooterComponent,
-    PanelComponent,
-    ThemeSelectorComponent,
     CommonModule,
     NotificationsComponent,
     ToastComponent,
-    NavComponent
 ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'

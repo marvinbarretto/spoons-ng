@@ -1,6 +1,8 @@
 // src/app/carpets/ui/carpet-camera/carpet-camera.component.ts
-import { Component, EventEmitter, Input, Output, ViewChild, ElementRef, OnDestroy, signal } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ViewChild, ElementRef, OnDestroy, signal, inject, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { CarpetConfidenceConfig } from '../../../check-in/data-access/carpet-confidence-config';
+import { EnhancedCarpetRecognitionService } from '../../../check-in/data-access/enhanced-carpet-recognition.service';
 
 export type CarpetCameraResult = {
   success: boolean;
@@ -342,11 +344,14 @@ export type CarpetCameraResult = {
     }
   `]
 })
-export class CarpetCameraComponent implements OnDestroy {
+export class CarpetCameraComponent implements OnDestroy, AfterViewInit {
   @Input() pubId!: string;
   @Output() result = new EventEmitter<CarpetCameraResult>();
 
   @ViewChild('videoElement') videoRef!: ElementRef<HTMLVideoElement>;
+
+  // Services
+  private carpetRecognition = inject(EnhancedCarpetRecognitionService);
 
   // State
   protected readonly hasStarted = signal(false);
@@ -418,27 +423,52 @@ export class CarpetCameraComponent implements OnDestroy {
 
       ctx.drawImage(video, 0, 0);
 
-      // Simulate confidence (replace with real detection)
-      const confidence = this.simulateConfidence();
-      this.currentConfidence.set(confidence);
+      // Real carpet recognition
+      this.analyzeCurrentFrame().then(confidence => {
+        this.currentConfidence.set(confidence);
+        
+        console.log(`[CarpetCamera] Frame ${frameCount}: confidence ${(confidence * 100).toFixed(1)}%`);
 
-      console.log(`[CarpetCamera] Frame ${frameCount}: confidence ${confidence.toFixed(2)}`);
-
-      // Check for match
-      if (confidence >= 0.65) {
-        console.log('[CarpetCamera] Carpet matched!');
-        this.capturedCanvas = canvas;
-        this.isMatched.set(true);
-        this.isScanning.set(false);
-        clearInterval(this.detectionInterval);
-      }
+        // Check for match using dynamic threshold
+        const threshold = CarpetConfidenceConfig.SIMILARITY_THRESHOLDS.good;
+        if (confidence >= threshold) {
+          console.log('[CarpetCamera] Carpet matched!');
+          this.capturedCanvas = canvas;
+          this.isMatched.set(true);
+          this.isScanning.set(false);
+          clearInterval(this.detectionInterval);
+        }
+      }).catch(error => {
+        console.error('[CarpetCamera] Frame analysis failed:', error);
+      });
     }, 600);
   }
 
-  private simulateConfidence(): number {
-    // Simulate varying confidence
-    const base = 0.3 + Math.random() * 0.5;
-    return Math.random() > 0.8 ? Math.min(0.95, base + 0.3) : base;
+  private async analyzeCurrentFrame(): Promise<number> {
+    if (!this.videoRef?.nativeElement) {
+      return 0;
+    }
+
+    try {
+      // Use the enhanced carpet recognition service
+      const matches = await this.carpetRecognition.analyzeVideoFrame(this.videoRef.nativeElement);
+      
+      if (matches.length > 0) {
+        // Return the best match confidence as a decimal (0-1)
+        const bestMatch = matches[0];
+        const confidence = bestMatch.confidence / 100;
+        
+        console.log(`[CarpetCamera] Best match: ${bestMatch.pubName} (${bestMatch.confidence.toFixed(1)}%)`);
+        console.log(`[CarpetCamera] Reasoning: ${bestMatch.reasoning.join(', ')}`);
+        
+        return confidence;
+      }
+      
+      return 0;
+    } catch (error) {
+      console.error('[CarpetCamera] Analysis failed:', error);
+      return 0;
+    }
   }
 
   capture() {

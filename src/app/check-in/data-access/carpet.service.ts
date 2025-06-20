@@ -1,6 +1,7 @@
 // src/app/check-in/data-access/carpet.service.ts
 import { Injectable, signal } from '@angular/core';
 import { CARPET_DATABASE, calculateColorSimilarity, type CarpetData } from './carpet-signatures';
+import { CarpetConfidenceConfig } from './carpet-confidence-config';
 
 export type CarpetMatch = {
   pubId: string;
@@ -115,7 +116,7 @@ export class CarpetService {
     const looksLikeCarpet = this.doesLookLikeCarpet(colors, pattern, imageData);
 
     // ✅ Overall confidence in analysis
-    const confidence = looksLikeCarpet ? 0.8 : 0.2;
+    const confidence = looksLikeCarpet ? 0.85 : 0.15;
 
     return {
       colors,
@@ -237,7 +238,7 @@ export class CarpetService {
         userLocation.lat, userLocation.lng,
         pub.location.lat, pub.location.lng
       );
-      return distance <= 0.1; // 100m radius
+      return distance <= CarpetConfidenceConfig.DISTANCE_THRESHOLDS.close; // 100m radius
     });
 
     console.log(`📍 Found ${nearbyPubs.length} pubs within 100m`);
@@ -248,17 +249,20 @@ export class CarpetService {
    * 🎯 Create high confidence match for single nearby pub
    */
   private createHighConfidenceMatch(pub: CarpetData, analysis: CarpetAnalysis): CarpetMatch {
+    // Calculate distance for confidence boost
+    const distance = 0.05; // Default to 50m if no location
+    
     // ✅ High base confidence since there's only one pub nearby
-    let confidence = 75;
+    let confidence = CarpetConfidenceConfig.getLocationConfidenceBoost(distance, 1);
 
     // ✅ Visual confirmation bonuses
     const colorMatch = calculateColorSimilarity(analysis.colors, pub.signature.colors);
     const patternMatch = analysis.pattern === pub.signature.pattern;
 
-    if (colorMatch > 0.6) confidence += 15;
-    if (patternMatch) confidence += 10;
+    confidence += CarpetConfidenceConfig.getColorMatchBonus(colorMatch);
+    if (patternMatch) confidence += CarpetConfidenceConfig.PATTERN_MATCH_BONUS;
 
-    confidence = Math.min(95, confidence); // Cap at 95%
+    confidence = Math.min(CarpetConfidenceConfig.LOCATION_CONFIDENCE.maxConfidence, confidence);
 
     const reasoning = this.generateReasoning(colorMatch, patternMatch, true);
 
@@ -282,12 +286,9 @@ export class CarpetService {
       const colorMatch = calculateColorSimilarity(analysis.colors, pub.signature.colors);
       const patternMatch = analysis.pattern === pub.signature.pattern;
 
-      let confidence = 30; // Lower base confidence for multiple options
-      if (colorMatch > 0.7) confidence += 30;
-      else if (colorMatch > 0.5) confidence += 20;
-      else if (colorMatch > 0.3) confidence += 10;
-
-      if (patternMatch) confidence += 20;
+      let confidence = CarpetConfidenceConfig.LOCATION_CONFIDENCE.multiplePubsBase;
+      confidence += CarpetConfidenceConfig.getColorMatchBonus(colorMatch) * 2; // Double visual weight when multiple options
+      if (patternMatch) confidence += CarpetConfidenceConfig.PATTERN_MATCH_BONUS * 2;
 
       const reasoning = this.generateReasoning(colorMatch, patternMatch, false);
 
@@ -314,15 +315,8 @@ export class CarpetService {
       reasons.push('Only pub in area');
     }
 
-    if (colorMatch > 0.7) {
-      reasons.push('Strong color match');
-    } else if (colorMatch > 0.5) {
-      reasons.push('Good color similarity');
-    } else if (colorMatch > 0.3) {
-      reasons.push('Some color overlap');
-    } else {
-      reasons.push('Weak color match');
-    }
+    const colorLevel = CarpetConfidenceConfig.getSimilarityLevel(colorMatch);
+    reasons.push(`${colorLevel.charAt(0).toUpperCase() + colorLevel.slice(1)} color match`);
 
     if (patternMatch) {
       reasons.push('Pattern type matches');

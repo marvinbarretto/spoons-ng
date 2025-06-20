@@ -6,6 +6,7 @@ import { BaseComponent } from '@shared/data-access/base.component';
 import { ButtonComponent } from '@shared/ui/button/button.component';
 import { IconComponent } from '@shared/ui/icon/icon.component';
 import { CarpetService } from '../../data-access/carpet.service';
+import { CarpetConfidenceConfig } from '../../data-access/carpet-confidence-config';
 
 @Component({
   selector: 'app-debug-carpet-camera',
@@ -682,8 +683,11 @@ export class EnhancedDebugCarpetCameraComponent extends BaseComponent {
    * CSS classes for confidence levels
    */
   getMatchClass(confidence: number): string {
-    if (confidence >= 70) return 'high-confidence';
-    if (confidence >= 40) return 'medium-confidence';
+    const highThreshold = CarpetConfidenceConfig.SIMILARITY_THRESHOLDS.good * 100;
+    const mediumThreshold = CarpetConfidenceConfig.SIMILARITY_THRESHOLDS.weak * 100;
+    
+    if (confidence >= highThreshold) return 'high-confidence';
+    if (confidence >= mediumThreshold) return 'medium-confidence';
     return 'low-confidence';
   }
 

@@ -1,6 +1,7 @@
 // src/app/carpets/data-access/dynamic-carpet-matcher.service.ts
 import { Injectable, signal, computed } from '@angular/core';
 import type { CapturedFeatures, MatchResult } from './carpet-reference.types';
+import { CarpetConfidenceConfig } from '../../check-in/data-access/carpet-confidence-config';
 
 @Injectable({ providedIn: 'root' })
 export class DynamicCarpetMatcherService {
@@ -34,7 +35,7 @@ export class DynamicCarpetMatcherService {
   /**
    * Match camera frame against all loaded references
    */
-  matchFrame(videoElement: HTMLVideoElement, confidenceThreshold = 75): MatchResult | null {
+  matchFrame(videoElement: HTMLVideoElement, confidenceThreshold = CarpetConfidenceConfig.LOCATION_CONFIDENCE.singlePubBase): MatchResult | null {
     if (this._loadedReferences().length === 0) {
       console.warn('[DynamicMatcher] No references loaded');
       return null;
@@ -99,17 +100,21 @@ export class DynamicCarpetMatcherService {
   }
 
   private compareWithReference(features: CapturedFeatures, reference: any, threshold: number): MatchResult {
-    // Color similarity (30% weight)
+    // Use dynamic weights based on image features
+    const imageFeatures = {
+      colorVariance: features.colorProfile.variance / 1000,
+      patternClarity: features.textureProfile.contrast,
+      textureDetail: features.textureProfile.edgeDensity / 100
+    };
+    const weights = CarpetConfidenceConfig.getDynamicWeights(imageFeatures);
+
+    // Calculate similarities
     const colorSim = this.calculateColorSimilarity(features.colorProfile, reference.colorProfile);
-
-    // Texture similarity (40% weight)
     const textureSim = this.calculateTextureSimilarity(features.textureProfile, reference.textureProfile);
-
-    // Geometric similarity (30% weight)
     const geometricSim = this.calculateGeometricSimilarity(features.geometricFeatures, reference.geometricFeatures);
 
-    // Weighted confidence
-    const confidence = (colorSim * 0.3) + (textureSim * 0.4) + (geometricSim * 0.3);
+    // Weighted confidence using dynamic weights
+    const confidence = (colorSim * weights.color) + (textureSim * weights.texture) + (geometricSim * weights.pattern);
     const confidencePercent = Math.round(confidence * 100);
 
     const isMatch = confidencePercent >= threshold;

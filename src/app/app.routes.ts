@@ -25,11 +25,10 @@ export const appRoutes: Routes = [
       import('./carpets/data-access/carpet.routes').then((m) => m.CARPETS_ROUTES),
   },
   {
-    // debug carpet camera
-    path: 'debug-carpet-camera',
+    path: 'dev/carpet-analyzer',
     loadComponent: () =>
-      import('./check-in/feature/debug-carpet-camera/enchanced-debug-carpet-camera.component')
-        .then(m => m.EnhancedDebugCarpetCameraComponent)
+      import('./dev/carpet-analyzer/carpet-analyzer.component')
+        .then(m => m.CarpetAnalyzerComponent)
   },
 
   {
