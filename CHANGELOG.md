@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.45](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.44...v0.0.45) (2025-06-20)
+
+
+### Features
+
+* Display carpets on homepage ([3869594](https://github.com/marvinbarretto/spoons-ng/commit/3869594a589bb4a14a1cd27bdf26edb0879ee2b3))
+
 ### [0.0.44](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.43...v0.0.44) (2025-06-20)
 
 
