@@ -20,6 +20,11 @@ export const appRoutes: Routes = [
       import('./pubs/data-access/pub.routes').then((m) => m.PUBS_ROUTES),
   },
   {
+    path: 'carpets',
+    loadChildren: () =>
+      import('./carpets/data-access/carpet.routes').then((m) => m.CARPETS_ROUTES),
+  },
+  {
     // debug carpet camera
     path: 'debug-carpet-camera',
     loadComponent: () =>
