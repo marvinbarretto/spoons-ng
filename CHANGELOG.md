@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.46](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.45...v0.0.46) (2025-06-20)
+
+
+### Features
+
+* develop carpet scanning idea ([7e32636](https://github.com/marvinbarretto/spoons-ng/commit/7e326364f182b5e2c59a88a2211ef50bc216ea12))
+
 ### [0.0.45](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.44...v0.0.45) (2025-06-20)
 
 
