@@ -1,5 +1,5 @@
 // src/app/home/feature/home/home.component.ts
-import { Component, computed, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, computed, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { JsonPipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { BaseComponent } from '@shared/data-access/base.component';
@@ -19,6 +19,10 @@ import { ActionCardsComponent } from '@home/ui/action-cards/action-cards.compone
 import { UserProfileWidgetComponent } from '@home/ui/user-profile-widget/user-profile-widget.component';
 import { ProfileCustomisationModalComponent } from '@home/ui/profile-customisation-modal/profile-customisation-modal.component';
 import { CheckinButtonComponent } from '../../../new-checkin/feature/checkin-button/checkin-button.component';
+import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-carpet-storage.service';
+import { CarpetGridComponent, type CarpetDisplayData } from '../../../carpets/ui/carpet-grid/carpet-grid.component';
+
+
 
 @Component({
   selector: 'app-home-three',
@@ -29,7 +33,8 @@ import { CheckinButtonComponent } from '../../../new-checkin/feature/checkin-but
     MissionsSectionComponent,
     ActionCardsComponent,
     UserProfileWidgetComponent,
-    CheckinButtonComponent
+    CheckinButtonComponent,
+    CarpetGridComponent
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
@@ -44,6 +49,14 @@ export class HomeComponent extends BaseComponent {
   protected readonly missionStore = inject(MissionStore, { optional: true });
   protected readonly pointsStore = inject(PointsStore);
   protected readonly checkinStore = inject(CheckinStore);
+
+
+  // TODO: just have a carpetstore soon...
+  private readonly carpetStorage = inject(DeviceCarpetStorageService);
+
+   protected readonly carpets = signal<CarpetDisplayData[]>([]);
+   protected readonly carpetsLoading = signal(false);
+
 
   // ✅ Data Signals
   readonly user = this.userStore.user;
@@ -194,9 +207,55 @@ handleOpenProfile(): void {
   }));
 
 
+  private async loadCarpets(): Promise<void> {
+    console.log('[HomeComponent] Loading carpet collection...');
+    this.carpetsLoading.set(true);
+
+    try {
+      // Initialize storage if needed
+      await this.carpetStorage.initialize();
+
+      // Get all carpet data
+      const carpetData = await this.carpetStorage.getAllCarpets();
+      console.log('[HomeComponent] Found', carpetData.length, 'carpets');
+
+      // Convert to display format
+      const displayData: CarpetDisplayData[] = await Promise.all(
+        carpetData.map(async (carpet) => {
+          // Create object URL for the blob
+          const imageUrl = URL.createObjectURL(carpet.blob);
+
+          return {
+            key: `${carpet.pubId}_${carpet.dateKey}`,
+            pubId: carpet.pubId,
+            pubName: carpet.pubName || 'Unknown Pub',
+            date: carpet.date,
+            imageUrl
+          };
+        })
+      );
+
+      // Sort by date, newest first
+      displayData.sort((a, b) =>
+        new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+
+      this.carpets.set(displayData);
+
+    } catch (error) {
+      console.error('[HomeComponent] Error loading carpets:', error);
+    } finally {
+      this.carpetsLoading.set(false);
+    }
+  }
+
+
   // ✅ Data Loading
-  protected override onInit(): void {
+  protected override async onInit() {
     console.log('[Home] Initializing home component with micro-widgets...');
+
+
+    await this.loadCarpets();
 
     // Load only the stores we have available
     try {
@@ -209,3 +268,12 @@ handleOpenProfile(): void {
     console.log('[Home] Component initialized');
   }
 }
+
+// TODO: DO i need to do this?
+// // Clean up object URLs when component destroys
+// ngOnDestroy() {
+//   // Revoke object URLs to free memory
+//   this.carpets().forEach(carpet => {
+//     URL.revokeObjectURL(carpet.imageUrl);
+//   });
+// }

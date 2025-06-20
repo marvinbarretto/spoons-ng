@@ -21,6 +21,14 @@
   <app-scoreboard-hero [data]="scoreboardData()" />
 
 
+  @if (carpets().length > 0 || carpetsLoading()) {
+    <app-carpet-grid
+      [carpets]="carpets"
+      [loading]="carpetsLoading"
+    />
+  }
+
+
   <!-- ✅ Badges Showcase -->
   @if (earnedBadges().length > 0) {
     <app-badges-showcase
