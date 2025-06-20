@@ -23,7 +23,7 @@ export const appRoutes: Routes = [
     // debug carpet camera
     path: 'debug-carpet-camera',
     loadComponent: () =>
-      import('./check-in/feature/debug-carpet-camera/debug-carpet-camera.component')
+      import('./check-in/feature/debug-carpet-camera/enchanced-debug-carpet-camera.component')
         .then(m => m.EnhancedDebugCarpetCameraComponent)
   },
 
