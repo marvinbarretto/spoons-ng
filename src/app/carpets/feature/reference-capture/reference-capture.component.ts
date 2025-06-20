@@ -3,7 +3,7 @@ import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BaseComponent } from '@shared/data-access/base.component';
-import { ReferenceImageAnalyzer } from '../../data-access/reference-image-analyzer.service';
+import { ReferenceImageAnalyzerService } from '../../data-access/reference-image-analyzer.service';
 
 @Component({
   selector: 'app-reference-capture',
@@ -457,7 +457,7 @@ import { ReferenceImageAnalyzer } from '../../data-access/reference-image-analyz
 })
 export class ReferenceCaptureComponent extends BaseComponent {
 
-  protected readonly analyzer = inject(ReferenceImageAnalyzer);
+  protected readonly analyzer = inject(ReferenceImageAnalyzerService);
 
   // Local state
   private readonly _imageUrl = signal('');

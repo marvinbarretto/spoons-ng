@@ -3,7 +3,7 @@ import { Injectable, signal, computed } from '@angular/core';
 import type { CapturedFeatures, MatchResult } from './carpet-reference.types';
 
 @Injectable({ providedIn: 'root' })
-export class DynamicCarpetMatcher {
+export class DynamicCarpetMatcherService {
 
   // Store loaded references
   private readonly _loadedReferences = signal<any[]>([]);

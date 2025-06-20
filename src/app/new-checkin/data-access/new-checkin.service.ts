@@ -5,13 +5,14 @@
 // src/app/new-checkin/data-access/new-checkin.service.ts
 import { Injectable, inject } from '@angular/core';
 import { Timestamp, where } from 'firebase/firestore';
-import { FirestoreService } from '../../shared/data-access/firestore.service';
+import { FirestoreCrudService } from '../../shared/data-access/firestore-crud.service';
 import { NearbyPubStore } from '../../pubs/data-access/nearby-pub.store';
 import { AuthStore } from '../../auth/data-access/auth.store';
 import type { CheckIn } from '../../check-in/utils/check-in.models';
 
 @Injectable({ providedIn: 'root' })
-export class NewCheckinService extends FirestoreService {
+export class NewCheckinService extends FirestoreCrudService<CheckIn> {
+  protected override path: string = 'checkins';
   // Clean dependencies - no underscores for services
   private readonly authStore = inject(AuthStore);
   private readonly nearbyPubStore = inject(NearbyPubStore);
@@ -155,69 +156,65 @@ export class NewCheckinService extends FirestoreService {
     }
   }
 
-  /**
-   * 🔄 UPDATED: Create a check-in record in Firestore
-   * Now uses REAL Firebase instead of simulation
-   */
-  async createCheckin(pubId: string): Promise<void> {
-    console.log('[NewCheckinService] 💾 Creating REAL check-in for pub:', pubId);
+/**
+ * Create a new check-in with optional carpet image
+ *
+ * @param pubId - The pub to check into
+ * @param carpetImageKey - Optional key for captured carpet image
+ * @returns Promise<void>
+ */
+async createCheckin(pubId: string, carpetImageKey?: string): Promise<void> {
+  console.log('[NewCheckinService] 💾 Creating REAL check-in for pub:', pubId);
 
-    try {
-      // ✅ REAL: Get authenticated user
-      const userId = this.authStore.uid();
-      if (!userId) {
-        console.log('[NewCheckinService] ❌ No authenticated user - cannot create check-in');
-        throw new Error('User must be authenticated to check in');
-      }
-
-      // ✅ REAL: Build check-in data
-      const now = new Date();
-      const checkinData: Omit<CheckIn, 'id'> = {
-        userId,
-        pubId,
-        timestamp: Timestamp.fromDate(now),
-        dateKey: now.toISOString().split('T')[0] // YYYY-MM-DD format
-      };
-
-      console.log('[NewCheckinService] 💾 Check-in data prepared:', {
-        ...checkinData,
-        timestamp: now.toISOString() // Log readable timestamp
-      });
-
-      console.log('[NewCheckinService] 💾 Saving to Firestore collection: checkins');
-
-      // ✅ REAL: Save to Firestore using inherited FirestoreService method
-      const documentRef = await this.addDocToCollection('checkins', checkinData);
-
-      console.log('[NewCheckinService] ✅ Check-in created successfully!');
-      console.log('[NewCheckinService] ✅ Firestore document ID:', documentRef.id);
-      console.log('[NewCheckinService] ✅ Document path: checkins/' + documentRef.id);
-
-      // Log what's now in Firestore
-      console.log('[NewCheckinService] 📄 Firestore document saved:', {
-        collection: 'checkins',
-        documentId: documentRef.id,
-        data: {
-          userId: checkinData.userId,
-          pubId: checkinData.pubId,
-          dateKey: checkinData.dateKey,
-          timestamp: 'Timestamp object',
-          createdAt: now.toISOString()
-        }
-      });
-
-    } catch (error: any) {
-      console.error('[NewCheckinService] ❌ Failed to create check-in:', error);
-      console.error('[NewCheckinService] ❌ Error message:', error?.message);
-      console.error('[NewCheckinService] ❌ Error code:', error?.code);
-      console.error('[NewCheckinService] ❌ Error stack:', error?.stack);
-
-      // Re-throw with user-friendly message but preserve original error for debugging
-      const userMessage = this.getFriendlyErrorMessage(error);
-      throw new Error(userMessage);
-    }
+  if (carpetImageKey) {
+    console.log('[NewCheckinService] 🎨 Including carpet image key:', carpetImageKey);
   }
 
+  const userId = this.authStore.uid();
+  if (!userId) {
+    console.log('[NewCheckinService] ❌ No authenticated user - cannot create check-in');
+    throw new Error('User must be authenticated to check in');
+  }
+
+  // Build check-in data
+  const timestamp = new Date();
+  const dateKey = timestamp.toISOString().split('T')[0];
+
+  const checkinData: Omit<CheckIn, 'id'> = {
+    userId,
+    pubId,
+    timestamp: Timestamp.fromDate(timestamp),
+    dateKey,
+    // 🆕 Include carpet image key if provided
+    ...(carpetImageKey && { carpetImageKey })
+  };
+
+  console.log('[NewCheckinService] 💾 Check-in data prepared:', {
+    ...checkinData,
+    timestamp: timestamp.toISOString()
+  });
+
+  // Save to Firestore
+  console.log('[NewCheckinService] 💾 Saving to Firestore collection: checkins');
+
+  const docRef = await this.addDocToCollection('checkins', checkinData);
+  const docId = docRef.id;
+
+  console.log('[NewCheckinService] ✅ Check-in created successfully!');
+  console.log('[NewCheckinService] ✅ Firestore document ID:', docId);
+  console.log('[NewCheckinService] ✅ Document path:', `checkins/${docId}`);
+
+  if (carpetImageKey) {
+    console.log('[NewCheckinService] 🎨 Carpet image linked to check-in:', carpetImageKey);
+  }
+
+  // Log the complete document for debugging
+  console.log('[NewCheckinService] 📄 Firestore document saved:', {
+    collection: 'checkins',
+    documentId: docId,
+    data: checkinData
+  });
+}
   /**
    * Convert Firebase errors to user-friendly messages
    */

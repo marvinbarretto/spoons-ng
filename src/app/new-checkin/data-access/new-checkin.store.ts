@@ -10,6 +10,8 @@ import { AuthStore } from '../../auth/data-access/auth.store';
 import { PubStore } from '../../pubs/data-access/pub.store';
 import { PointsStore } from '../../points/data-access/points.store';
 import { BadgeAwardService } from '../../badges/data-access/badge-award.service';
+import { CarpetCheckinIntegrationService } from '../../carpets/data-access/carpet-checkin-integration.service';
+
 
 @Injectable({ providedIn: 'root' })
 export class NewCheckinStore {
@@ -19,67 +21,131 @@ export class NewCheckinStore {
   private readonly pubStore = inject(PubStore);
   private readonly pointsStore = inject(PointsStore);
   private readonly badgeAwardService = inject(BadgeAwardService);
+  private readonly carpetIntegrationService = inject(CarpetCheckinIntegrationService);
 
   private readonly _isProcessing = signal(false);
-  readonly isProcessing = this._isProcessing.asReadonly();
+  private readonly _carpetDetectionEnabled = signal(true); // Feature flag
 
-  /**
-   * Check in to a pub
+  readonly isProcessing = this._isProcessing.asReadonly();
+  readonly carpetDetectionEnabled = this._carpetDetectionEnabled.asReadonly();
+
+ /**
+   * Check in to a pub with optional carpet detection
    *
    * @param pubId - The pub to check into
    * @returns Promise<void>
    */
-  async checkinToPub(pubId: string): Promise<void> {
-    console.log('[NewCheckinStore] 🚀 checkinToPub() called with pubId:', pubId);
+ async checkinToPub(pubId: string): Promise<void> {
+  console.log('[NewCheckinStore] 🚀 checkinToPub() called with pubId:', pubId);
 
-    if (this._isProcessing()) {
-      console.log('[NewCheckinStore] ⚠️ Already processing a check-in, ignoring');
-      return;
+  if (this._isProcessing()) {
+    console.log('[NewCheckinStore] ⚠️ Already processing a check-in, ignoring');
+    return;
+  }
+
+  this._isProcessing.set(true);
+  console.log('[NewCheckinStore] 🔄 Set processing to true');
+
+  try {
+    // Validation phase
+    console.log('[NewCheckinStore] 🔍 Starting validation phase...');
+    const validation = await this.newCheckinService.canCheckIn(pubId);
+
+    if (!validation.allowed) {
+      console.log('[NewCheckinStore] ❌ Validation failed:', validation.reason);
+      throw new Error(validation.reason);
+    }
+    console.log('[NewCheckinStore] ✅ All validations passed - proceeding with check-in');
+
+    // 🆕 Carpet Detection Phase
+    let carpetImageKey: string | undefined;
+    if (this._carpetDetectionEnabled()) {
+      console.log('[NewCheckinStore] 📸 Starting carpet detection phase...');
+      carpetImageKey = await this.detectAndCaptureCarpet(pubId);
+
+      if (carpetImageKey) {
+        console.log('[NewCheckinStore] ✅ Carpet captured successfully:', carpetImageKey);
+      } else {
+        console.log('[NewCheckinStore] ℹ️ No carpet detected or capture skipped');
+      }
+    } else {
+      console.log('[NewCheckinStore] ⏭️ Carpet detection disabled, skipping');
     }
 
-    this._isProcessing.set(true);
-    console.log('[NewCheckinStore] 🔄 Set processing to true');
+    // Creation phase with carpet data
+    console.log('[NewCheckinStore] 💾 Starting check-in creation...');
+    await this.newCheckinService.createCheckin(pubId, carpetImageKey);
+    console.log('[NewCheckinStore] ✅ Check-in creation completed successfully');
+
+    // Success flow - gather data and show overlay
+    console.log('[NewCheckinStore] 🎉 Starting success flow...');
+    await this.handleSuccessFlow(pubId, carpetImageKey);
+
+  } catch (error: any) {
+    console.error('[NewCheckinStore] ❌ Check-in process failed:', error);
+    console.error('[NewCheckinStore] ❌ Error message:', error?.message);
+
+    // Error flow - show error overlay
+    console.log('[NewCheckinStore] 💥 Starting error flow...');
+    this.handleErrorFlow(error?.message || 'Check-in failed');
+
+    throw error;
+
+  } finally {
+    this._isProcessing.set(false);
+    console.log('[NewCheckinStore] 🔄 Set processing to false');
+  }
+}
+
+
+
+  /**
+   * 🆕 Detect and capture carpet image
+   */
+  private async detectAndCaptureCarpet(pubId: string): Promise<string | undefined> {
+    console.log('[NewCheckinStore] 📸 Initiating carpet detection for pub:', pubId);
 
     try {
-      // Validation phase
-      console.log('[NewCheckinStore] 🔍 Starting validation phase...');
-      const validation = await this.newCheckinService.canCheckIn(pubId);
+      // Check if pub has carpet references
+      const hasReferences = await this.carpetIntegrationService.pubHasCarpetReferences(pubId);
 
-      if (!validation.allowed) {
-        console.log('[NewCheckinStore] ❌ Validation failed:', validation.reason);
-        throw new Error(validation.reason);
+      if (!hasReferences) {
+        console.log('[NewCheckinStore] ℹ️ No carpet references for this pub, skipping detection');
+        return undefined;
       }
-      console.log('[NewCheckinStore] ✅ All validations passed - proceeding with check-in');
 
-      // Creation phase
-      console.log('[NewCheckinStore] 💾 Starting check-in creation...');
-      await this.newCheckinService.createCheckin(pubId);
-      console.log('[NewCheckinStore] ✅ Check-in creation completed successfully');
+      console.log('[NewCheckinStore] 🎯 Pub has carpet references, starting detection...');
 
-      // ✅ NEW: Success flow - gather data and show overlay
-      console.log('[NewCheckinStore] 🎉 Starting success flow...');
-      await this.handleSuccessFlow(pubId);
+      // Initialize carpet detection
+      const result = await this.carpetIntegrationService.detectAndCaptureCarpet(pubId);
 
-    } catch (error: any) {
-      console.error('[NewCheckinStore] ❌ Check-in process failed:', error);
-      console.error('[NewCheckinStore] ❌ Error message:', error?.message);
-
-      // ✅ NEW: Error flow - show error overlay
-      console.log('[NewCheckinStore] 💥 Starting error flow...');
-      this.handleErrorFlow(error?.message || 'Check-in failed');
-
-      throw error;
-
-    } finally {
-      this._isProcessing.set(false);
-      console.log('[NewCheckinStore] 🔄 Set processing to false');
+      if (result.success && result.imageKey) {
+        console.log('[NewCheckinStore] 🎉 Carpet detection successful:', {
+          imageKey: result.imageKey,
+          confidence: result.confidence,
+          matchType: result.matchType
+        });
+        return result.imageKey;
+      } else {
+        console.log('[NewCheckinStore] 📷 Carpet detection completed without match:', {
+          reason: result.error || 'No confident match',
+          confidence: result.confidence
+        });
+        return undefined;
+      }
+    } catch (error) {
+      // Don't let carpet detection failures block check-in
+      console.error('[NewCheckinStore] ⚠️ Carpet detection error (non-blocking):', error);
+      return undefined;
     }
   }
 
+
+
   /**
-   * ✅ NEW: Handle successful check-in flow
+   * Handle successful check-in flow
    */
-  private async handleSuccessFlow(pubId: string): Promise<void> {
+  private async handleSuccessFlow(pubId: string, carpetImageKey?: string): Promise<void> {
     console.log('[NewCheckinStore] 🎉 Gathering success data for pub:', pubId);
 
     try {
@@ -91,7 +157,7 @@ export class NewCheckinStore {
         return;
       }
 
-      // ✅ NEW: Check if this is user's first ever check-in
+      // Check if this is user's first ever check-in
       const totalCheckins = await this.newCheckinService.getUserTotalCheckinCount(userId);
       const isFirstEver = totalCheckins === 1;
 
@@ -100,56 +166,50 @@ export class NewCheckinStore {
         pubName: pub?.name,
         totalCheckins,
         isFirstEver,
+        hasCarpet: !!carpetImageKey,
         timestamp: new Date().toISOString()
       });
 
-      // ✅ NEW: Handle home pub collection for first-time users
+      // Handle home pub collection for first-time users
       if (isFirstEver) {
         console.log('[NewCheckinStore] 🏠 First ever check-in detected!');
-        await this.handleFirstEverCheckin(userId, pubId, pub);
+        // TODO: Implement home pub selection logic
       }
 
-      // Calculate points (still using PointsStore but with real distance)
-      const pointsData = await this.calculatePoints(pubId);
+      // Calculate points (including carpet bonus if applicable)
+      const pointsData = await this.calculatePoints(pubId, !!carpetImageKey);
 
-      const badgeData = await this.checkForNewBadges(userId, pubId);
+      // Check for new badges
+      const newBadges = await this.badgeAwardService.checkAndAwardBadges(userId);
 
-      // Build success data (without badges - they'll be handled by CheckinStore)
+      // Check landlord status
+      // TODO: Implement landlord check
+
+      // Assemble success data
       const successData = {
         success: true,
         checkin: {
-          id: 'just-created',
-          userId,
           pubId,
-          timestamp: new Date(),
-          dateKey: new Date().toISOString().split('T')[0]
+          timestamp: new Date().toISOString(),
+          carpetImageKey
         },
         pub: {
-          id: pubId,
-          name: pub?.name || 'Unknown Pub'
+          name: pub?.name || 'Unknown Pub',
+          location: pub?.location
         },
         points: pointsData,
+        badges: newBadges,
         isFirstEver,
-        // badges: [], // Will be populated by CheckinStore effects
-        debugInfo: {
-          flow: 'NewCheckinStore',
-          timestamp: new Date().toISOString(),
-          userId,
-          pubId,
-          isFirstEver,
-          totalCheckins
-        }
+        carpetCaptured: !!carpetImageKey
       };
 
       console.log('[NewCheckinStore] 🎉 Success data assembled:', successData);
-      this.showCheckInResults(successData);
+
+      // Show success overlay
+      this.showCheckinResults(successData);
 
     } catch (error) {
       console.error('[NewCheckinStore] ❌ Error in success flow:', error);
-      this.showCheckInResults({
-        success: true,
-        error: 'Check-in successful but could not load details'
-      });
     }
   }
 
@@ -205,6 +265,14 @@ export class NewCheckinStore {
     }
   }
 
+    /**
+   * Enable/disable carpet detection
+   */
+    setCarpetDetectionEnabled(enabled: boolean): void {
+      console.log('[NewCheckinStore] 🎛️ Carpet detection:', enabled ? 'enabled' : 'disabled');
+      this._carpetDetectionEnabled.set(enabled);
+    }
+
   /**
    * ✅ NEW: Handle error flow
    */
@@ -223,44 +291,29 @@ export class NewCheckinStore {
 
     console.log('[NewCheckinStore] 💥 Error data assembled:', errorData);
     console.log('[NewCheckinStore] 🔄 Showing check-in results...');
-    this.showCheckInResults(errorData);
+    this.showCheckinResults(errorData);
   }
-
   /**
-   * ✅ NEW: Show check-in results overlay
+   * Show check-in results overlay
    */
-  private showCheckInResults(data: any): void {
+  private showCheckinResults(data: any): void {
     console.log('[NewCheckinStore] 📱 Showing check-in results:', data);
 
-    // TODO: Create proper overlay component
-    // For now, just log what we would show
+    // TODO: Implement actual overlay
     console.log('[NewCheckinStore] 📱 OVERLAY WOULD SHOW:');
     console.log('  🎉 Success:', data.success);
-
-    if (data.success) {
-      console.log('  🏠 Pub:', data.pub?.name);
-      console.log('  🎯 Points:', data.points);
-      console.log('  🏅 Badges:', data.badges);
-      console.log('  👑 Landlord:', data.landlord);
-    } else {
-      console.log('  ❌ Error:', data.error);
-    }
-
-    console.log('  🔧 Debug:', data.debugInfo);
-
-    // TODO: Replace with real overlay
-    // const { componentRef, close } = this.overlayService.open(
-    //   NewCheckinSuccessComponent,
-    //   {},
-    //   { data }
-    // );
+    console.log('  🏠 Pub:', data.pub.name);
+    console.log('  🎯 Points:', data.points);
+    console.log('  🏅 Badges:', data.badges);
+    console.log('  🎨 Carpet:', data.carpetCaptured ? 'Captured!' : 'None');
   }
 
+
   /**
-   * 🚧 STUB: Calculate points for this check-in
+   * Calculate points for check-in (with carpet bonus)
    */
-  private async calculatePoints(pubId: string): Promise<any> {
-    console.log('[NewCheckinStore] 🎯 Calculating points for pub:', pubId);
+  private async calculatePoints(pubId: string, hasCarpet: boolean): Promise<any> {
+    console.log('[NewCheckinStore] 🎯 Calculating points for pub:', pubId, 'hasCarpet:', hasCarpet);
 
     const userId = this.authStore.uid();
     if (!userId) {
@@ -275,10 +328,8 @@ export class NewCheckinStore {
         this.newCheckinService.getUserTotalCheckinCount(userId)
       ]);
 
-      // TODO: Calculate real distance from home pub (once we have home pub data)
-      const distanceFromHome = 0; // Stub for now
-      console.log('[NewCheckinStore] 🎯 [STUB] Distance from home:', distanceFromHome, 'km');
-      console.log('[NewCheckinStore] 🎯 [TODO] Calculate real distance from user\'s home pub');
+      // TODO: Calculate real distance from home pub
+      const distanceFromHome = 0;
 
       // Build PointsStore data structure
       const pointsData = {
@@ -288,12 +339,14 @@ export class NewCheckinStore {
         isFirstEver: totalCheckins === 1,
         currentStreak: 0, // TODO: Calculate streak
         hasPhoto: false,
-        sharedSocial: false
+        sharedSocial: false,
+        // 🆕 Carpet bonus
+        hasCarpet
       };
 
       console.log('[NewCheckinStore] 🎯 Points context data prepared:', pointsData);
 
-      // ✅ REAL: Use PointsStore to calculate AND persist points
+      // Use PointsStore to calculate AND persist points
       const pointsBreakdown = await this.pointsStore.awardCheckInPoints(pointsData);
 
       console.log('[NewCheckinStore] 🎯 PointsStore returned breakdown:', pointsBreakdown);
@@ -305,31 +358,18 @@ export class NewCheckinStore {
           { reason: 'Base check-in', points: pointsBreakdown.base },
           ...(pointsBreakdown.distance > 0 ? [{ reason: 'Distance bonus', points: pointsBreakdown.distance }] : []),
           ...(pointsBreakdown.bonus > 0 ? [{ reason: 'Bonus points', points: pointsBreakdown.bonus }] : [])
-        ],
-        rawBreakdown: pointsBreakdown,
-        pointsData,
-        debug: {
-          source: 'PointsStore',
-          isFirstVisit,
-          isFirstEver: totalCheckins === 1,
-          totalCheckins,
-          distanceFromHome
-        }
+        ]
       };
 
-      console.log('[NewCheckinStore] 🎯 REAL points calculated and awarded:', result);
+      console.log('[NewCheckinStore] 🎯 Points calculated and awarded:', result);
       return result;
 
     } catch (error) {
-      console.error('[NewCheckinStore] 🎯 Error calculating points:', error);
-
-      return {
-        total: 10,
-        breakdown: [{ reason: 'Base check-in (fallback)', points: 10 }],
-        debug: { source: 'fallback', error: true }
-      };
+      console.error('[NewCheckinStore] ❌ Points calculation failed:', error);
+      return { total: 0, breakdown: [] };
     }
   }
+
 
   private async checkForNewBadges(userId: string, pubId: string): Promise<any> {
     // try {

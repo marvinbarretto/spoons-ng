@@ -3,8 +3,8 @@ import { Component, ViewChild, ElementRef, signal, effect, inject } from '@angul
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { BaseComponent } from '@shared/data-access/base.component';
-import { DynamicCarpetMatcher } from '../../data-access/dynamic-carpet-matcher.service';
-import { ReferenceImageAnalyzer } from '../../data-access/reference-image-analyzer.service';
+import { DynamicCarpetMatcherService } from '../../data-access/dynamic-carpet-matcher.service';
+import { ReferenceImageAnalyzerService } from '../../data-access/reference-image-analyzer.service';
 
 @Component({
   selector: 'app-carpet-detector',
@@ -368,8 +368,8 @@ import { ReferenceImageAnalyzer } from '../../data-access/reference-image-analyz
 export class CarpetDetectorComponent extends BaseComponent {
   @ViewChild('videoElement') videoRef!: ElementRef<HTMLVideoElement>;
 
-  protected readonly matcher = inject(DynamicCarpetMatcher);
-  protected readonly analyzer = inject(ReferenceImageAnalyzer);
+  protected readonly matcher = inject(DynamicCarpetMatcherService);
+  protected readonly analyzer = inject(ReferenceImageAnalyzerService);
 
 
   // Local state

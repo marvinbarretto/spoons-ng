@@ -1,159 +1,159 @@
 // src/app/carpets/data-access/carpet-checkin-integration.service.ts
-import { Injectable, signal, inject } from '@angular/core';
-import { DynamicCarpetMatcher } from './dynamic-carpet-matcher.service';
-import { DeviceCarpetStorage } from './device-carpet-storage.service';
+import { Injectable, inject } from '@angular/core';
+import { DynamicCarpetMatcherService } from './dynamic-carpet-matcher.service';
+import { DeviceCarpetStorageService } from './device-carpet-storage.service';
+import { ReferenceImageAnalyzerService } from './reference-image-analyzer.service';
+import { PubStore } from '../../pubs/data-access/pub.store';
+import { OverlayService } from '@shared/data-access/overlay.service';
+import { CarpetCameraComponent, CarpetCameraResult } from '../ui/carpet-camera/carpet-camera.component';
 
-type CarpetCheckInResult = {
-  carpetDetected: boolean;
-  confidence: number;
-  photoSaved: boolean;
-  photoId?: string;
-  bonusPoints: number;
+export type CarpetDetectionResult = {
+  success: boolean;
+  imageKey?: string;
+  confidence?: number;
+  matchType?: string;
+  error?: string;
 };
 
 @Injectable({ providedIn: 'root' })
-export class CarpetCheckInIntegration {
+export class CarpetCheckinIntegrationService {
+  private readonly carpetMatcherService = inject(DynamicCarpetMatcherService);
+  private readonly deviceStorageService = inject(DeviceCarpetStorageService);
+  private readonly referenceAnalyzerService = inject(ReferenceImageAnalyzerService);
+  private readonly pubStore = inject(PubStore);
+  private readonly overlayService = inject(OverlayService);
 
-  private readonly matcher = inject(DynamicCarpetMatcher);
-  private readonly deviceStorage = inject(DeviceCarpetStorage);
-
-  private readonly _isCapturing = signal(false);
-  private readonly _lastCaptureResult = signal<CarpetCheckInResult | null>(null);
-
-  readonly isCapturing = this._isCapturing.asReadonly();
-  readonly lastCaptureResult = this._lastCaptureResult.asReadonly();
+  private detectionActive = false;
+  private mediaStream: MediaStream | null = null;
 
   /**
-   * 🎯 Main Integration: Capture carpet photo on check-in
-   * Stores photo on device, returns result for check-in process
+   * Check if pub has carpet references
    */
-  async captureForCheckIn(
-    videoElement: HTMLVideoElement,
-    pubId: string,
-    pubName: string,
-    userLocation?: { lat: number; lng: number }
-  ): Promise<CarpetCheckInResult> {
-
-    this._isCapturing.set(true);
+  async pubHasCarpetReferences(pubId: string): Promise<boolean> {
+    console.log('[CarpetIntegration] Checking references for pub:', pubId);
 
     try {
-      // 1. Check carpet match
-      const match = this.matcher.matchFrame(videoElement, 65);
+      // For now, assume all pubs have carpet references
+      // TODO: Implement actual reference checking when service is ready
+      const hasReferences = true;
 
-      const result: CarpetCheckInResult = {
-        carpetDetected: match?.isMatch || false,
-        confidence: match?.confidence || 0,
-        photoSaved: false,
-        bonusPoints: 0
-      };
-
-      // 2. If carpet detected, capture and store photo
-      if (match?.isMatch) {
-        console.log(`🎯 Carpet detected (${match.confidence}%)! Capturing photo...`);
-
-        // Capture optimized image
-        const imageDataUrl = this.captureOptimizedImage(videoElement);
-
-        // Save to device storage
-        const photoId = await this.deviceStorage.saveCarpetPhoto(
-          pubId,
-          pubName,
-          imageDataUrl,
-          match.confidence,
-          userLocation
-        );
-
-        result.photoSaved = true;
-        result.photoId = photoId;
-        result.bonusPoints = 5; // Carpet bonus points
-
-        console.log(`📱 Carpet photo saved to device: ${photoId}`);
-      }
-
-      this._lastCaptureResult.set(result);
-      return result;
-
-    } finally {
-      this._isCapturing.set(false);
+      console.log('[CarpetIntegration]', hasReferences ? '✅ Pub has carpet references' : '❌ No references found');
+      return hasReferences;
+    } catch (error) {
+      console.error('[CarpetIntegration] Error checking references:', error);
+      return false;
     }
   }
 
-  /**
-   * 🏅 Generate badge using user's carpet photos
+/**
+   * Main detection and capture flow - now with UI
    */
-  async generateCarpetBadge(
-    badgeText: string,
-    pubId?: string
-  ): Promise<string> {
-    return this.deviceStorage.createCarpetBadge(badgeText, pubId);
-  }
+async detectAndCaptureCarpet(pubId: string): Promise<CarpetDetectionResult> {
+  console.log('[CarpetIntegration] Starting carpet detection for pub:', pubId);
 
-  /**
-   * 🧩 Create personal patchwork from device photos
-   */
-  async createPersonalPatchwork(): Promise<string> {
-    return this.deviceStorage.generatePersonalPatchwork();
-  }
+  try {
+    // Initialize storage
+    await this.deviceStorageService.initialize();
 
-  /**
-   * 📊 Get user's carpet collection stats
-   */
-  getUserCarpetStats(): {
-    totalCarpets: number;
-    uniquePubs: number;
-    newestCapture: Date | null;
-    storageUsed: string;
-  } {
-    const photos = this.deviceStorage.photos();
-    const stats = this.deviceStorage.storageStats();
+    // Dynamically import and open camera component
+    const { CarpetCameraComponent } = await import('../ui/carpet-camera/carpet-camera.component');
 
-    const uniquePubs = new Set(photos.map(p => p.pubId)).size;
+    console.log('[CarpetIntegration] Opening carpet camera UI...');
+
+    const { componentRef, result } = this.overlayService.open<CarpetCameraComponent, CarpetCameraResult>(
+      CarpetCameraComponent,
+      {}, // overlay config
+      { pubId } // component inputs
+    );
+
+    // Wait for camera result
+    const cameraResult = await result;
+    console.log('[CarpetIntegration] Camera result:', cameraResult);
+
+    if (!cameraResult || !cameraResult.success || cameraResult.cancelled) {
+      console.log('[CarpetIntegration] User cancelled or camera failed');
+      return {
+        success: false,
+        error: 'Camera cancelled by user'
+      };
+    }
+
+    // Get the captured canvas from the component
+    const canvas = componentRef.instance.getCapturedCanvas();
+
+    if (!canvas) {
+      console.log('[CarpetIntegration] No canvas captured');
+      return {
+        success: false,
+        error: 'No image captured'
+      };
+    }
+
+    // Save the captured image
+    const pub = this.pubStore.get(pubId);
+    const imageKey = await this.deviceStorageService.captureCarpetImage(
+      canvas,
+      pubId,
+      pub?.name || 'Unknown Pub'
+    );
+
+    console.log('[CarpetIntegration] Image saved successfully:', imageKey);
 
     return {
-      totalCarpets: photos.length,
-      uniquePubs,
-      newestCapture: stats.newestPhoto,
-      storageUsed: `${stats.estimatedSizeMB} MB`
+      success: true,
+      imageKey,
+      confidence: cameraResult.confidence || 0,
+      matchType: 'user-captured'
+    };
+
+  } catch (error: any) {
+    console.error('[CarpetIntegration] Detection error:', error);
+    return {
+      success: false,
+      error: error.message || 'Camera access failed'
     };
   }
+}
+
+
+
 
   /**
-   * 🔍 Check if user has visited this pub before (carpet-wise)
+   * Stop detection manually
    */
-  hasVisitedPubBefore(pubId: string): boolean {
-    return this.deviceStorage.getPhotosForPub(pubId).length > 0;
+  stopDetection(): void {
+    console.log('[CarpetIntegration] Stopping detection...');
+    this.detectionActive = false;
+    this.cleanup();
   }
 
   /**
-   * 🧹 Manual cleanup (user can manage their own collection)
+ * Simple confidence calculation for carpet matching
+ */
+private async calculateCarpetConfidence(canvas: HTMLCanvasElement, pubId: string): Promise<number> {
+  // For now, return a random confidence for testing
+  // TODO: Implement actual carpet matching logic
+  const baseConfidence = 0.3 + Math.random() * 0.5; // 0.3 to 0.8
+
+  // Simulate some variability
+  if (Math.random() > 0.7) {
+    return Math.min(0.95, baseConfidence + 0.2); // Sometimes get a good match
+  }
+
+  return baseConfidence;
+}
+
+
+  /**
+   * Clean up resources
    */
-  removeOldPhotos(daysToKeep: number): number {
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - daysToKeep);
+  private cleanup(): void {
+    this.detectionActive = false;
 
-    const current = this.deviceStorage.photos();
-    const filtered = current.filter(p => p.timestamp > cutoffDate);
-    const removed = current.length - filtered.length;
-
-    if (removed > 0) {
-      // User would need to manually trigger this through settings
-      console.log(`Would remove ${removed} photos older than ${daysToKeep} days`);
+    if (this.mediaStream) {
+      this.mediaStream.getTracks().forEach(track => track.stop());
+      this.mediaStream = null;
+      console.log('[CarpetIntegration] Camera stream stopped');
     }
-
-    return removed;
-  }
-
-  private captureOptimizedImage(videoElement: HTMLVideoElement): string {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d')!;
-
-    // Optimal size for badges/viewing - 400x400
-    canvas.width = 400;
-    canvas.height = 400;
-
-    ctx.drawImage(videoElement, 0, 0, 400, 400);
-
-    // 75% quality for good balance of size/quality
-    return canvas.toDataURL('image/jpeg', 0.75);
   }
 }

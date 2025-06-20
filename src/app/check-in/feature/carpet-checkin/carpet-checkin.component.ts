@@ -3,8 +3,8 @@ import { Component, ViewChild, ElementRef, signal, effect, inject } from '@angul
 import { CommonModule } from '@angular/common';
 import { BaseComponent } from '@shared/data-access/base.component';
 import { CheckinStore } from '../../data-access/check-in.store';
-import { DynamicCarpetMatcher } from '../../../carpets/data-access/dynamic-carpet-matcher.service';
-import { CarpetCheckInIntegration } from '../../../carpets/data-access/carpet-checkin-integration.service';
+import { DynamicCarpetMatcherService } from '../../../carpets/data-access/dynamic-carpet-matcher.service';
+import { CarpetCheckInIntegrationService } from '../../../carpets/data-access/carpet-checkin-integration.service';
 
 @Component({
   selector: 'app-carpet-checkin',
@@ -413,8 +413,8 @@ export class CarpetCheckInComponent extends BaseComponent {
   @ViewChild('videoElement') videoRef!: ElementRef<HTMLVideoElement>;
 
   protected readonly checkInStore = inject(CheckinStore);
-  protected readonly carpetMatcher = inject(DynamicCarpetMatcher);
-  protected readonly carpetIntegration = inject(CarpetCheckInIntegration);
+  protected readonly carpetMatcher = inject(DynamicCarpetMatcherService);
+  protected readonly carpetIntegration = inject(CarpetCheckInIntegrationService);
 
   // Local state
   private readonly _stream = signal<MediaStream | null>(null);

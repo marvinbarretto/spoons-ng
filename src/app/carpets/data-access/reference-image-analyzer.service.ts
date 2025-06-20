@@ -3,7 +3,7 @@ import { Injectable, signal } from '@angular/core';
 import type { ReferenceImageData } from './carpet-reference.types';
 
 @Injectable({ providedIn: 'root' })
-export class ReferenceImageAnalyzer {
+export class ReferenceImageAnalyzerService {
 
   private readonly _analyzedReferences = signal<ReferenceImageData[]>([]);
   private readonly _isAnalyzing = signal(false);

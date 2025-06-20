@@ -14,6 +14,59 @@ export class BadgeAwardService {
   private readonly _badgeLogic = inject(BadgeLogicService);
   private readonly _badgeStore = inject(BadgeStore); // ✅ Use unified store
 
+/**
+ * Simplified badge checking for new check-in flow
+ * @param userId - User to check badges for
+ * @returns Array of newly awarded badge IDs (for success overlay)
+ */
+async checkAndAwardBadges(userId: string): Promise<string[]> {
+  console.log('[BadgeAwardService] 🏅 Checking badges for user:', userId);
+
+  try {
+    // For now, just return empty array
+    // TODO: Implement actual badge logic when ready
+    console.log('[BadgeAwardService] 📝 Badge checking complete (stub implementation)');
+    return [];
+
+    /* Future implementation:
+    // 1. Get user's check-ins from store
+    const checkIns = this._checkInStore.getUserCheckIns(userId);
+
+    // 2. Get user's current badges
+    const currentBadges = this._badgeStore.getUserBadges(userId);
+
+    // 3. Build context
+    const context = {
+      userId,
+      checkIns,
+      currentBadges,
+      totalCheckIns: checkIns.length,
+      uniquePubs: new Set(checkIns.map(c => c.pubId)).size
+    };
+
+    // 4. Evaluate eligible badges
+    const eligibleBadgeIds = this._badgeLogic.evaluateSimple(context);
+
+    // 5. Award new badges
+    const awardedBadgeIds: string[] = [];
+    for (const badgeId of eligibleBadgeIds) {
+      if (!currentBadges.some(b => b.badgeId === badgeId)) {
+        await this._badgeStore.awardBadge(badgeId, { userId });
+        awardedBadgeIds.push(badgeId);
+      }
+    }
+
+    console.log('[BadgeAwardService] ✅ Awarded badges:', awardedBadgeIds);
+    return awardedBadgeIds;
+    */
+
+  } catch (error) {
+    console.error('[BadgeAwardService] ❌ Error checking badges:', error);
+    return []; // Don't let badge errors break check-in flow
+  }
+}
+
+
   /**
    * Main entry point: evaluate and award badges after a check-in
    */
