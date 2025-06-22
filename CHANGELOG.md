@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.47](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.46...v0.0.47) (2025-06-22)
+
+
+### Features
+
+* Attempt new simpler carpet check in, wip ([dc6ea7c](https://github.com/marvinbarretto/spoons-ng/commit/dc6ea7cc79a9523a81401c8fc66bcfaaa01c287f))
+
 ### [0.0.46](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.45...v0.0.46) (2025-06-20)
 
 
