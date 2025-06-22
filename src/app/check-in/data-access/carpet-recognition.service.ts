@@ -1,5 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 import { CarpetRecognitionData } from '../utils/carpet.models';
+import { CARPET_RECOGNITION_CONFIG } from './carpet-recognition.config';
 
 @Injectable({ providedIn: 'root' })
 export class CarpetRecognitionService {
@@ -9,13 +10,14 @@ export class CarpetRecognitionService {
     orientationConfidence: 0,
     hasTexture: false,
     textureConfidence: 0,
-    overallConfidence: 0,
-    canCheckIn: false,
-    debugInfo: 'not started',
     isSharp: false,
     blurScore: 0,
     capturedPhoto: null,
-    photoTaken: false
+    photoTaken: false,
+    photoFilename: null,
+    overallConfidence: 0,
+    canCheckIn: false,
+    debugInfo: 'Not started'
   });
 
   readonly data = this._data.asReadonly();
@@ -24,11 +26,22 @@ export class CarpetRecognitionService {
   private _animationFrame: number | null = null;
 
   async startRecognition(): Promise<void> {
+    console.log('🎥 [CarpetService] Starting recognition...');
+
     try {
+      // Clean up any existing streams first
+      this.cleanup();
+
       // Start camera
+      console.log('📹 [CarpetService] Requesting camera access...');
       this._mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' }
+        video: {
+          facingMode: 'environment',
+          width: { ideal: CARPET_RECOGNITION_CONFIG.photo.maxWidth },
+          height: { ideal: CARPET_RECOGNITION_CONFIG.photo.maxHeight }
+        }
       });
+      console.log('✅ [CarpetService] Camera access granted');
 
       // Create video element for analysis
       this._videoElement = document.createElement('video');
@@ -40,12 +53,14 @@ export class CarpetRecognitionService {
 
       // Start video analysis when video loads
       this._videoElement.addEventListener('loadeddata', () => {
+        console.log('📹 [CarpetService] Video loaded, starting analysis');
         this._startVideoAnalysis();
       });
 
       this._updateData({ debugInfo: 'Recognition started' });
 
     } catch (error: any) {
+      console.error('❌ [CarpetService] Recognition failed:', error);
       this._updateData({
         debugInfo: `Error: ${error.message}`,
         canCheckIn: false
@@ -54,12 +69,27 @@ export class CarpetRecognitionService {
   }
 
   stopRecognition(): void {
+    console.log('🛑 [CarpetService] Stopping recognition...');
+    this.cleanup();
+    this._updateData({
+      debugInfo: 'Recognition stopped',
+      canCheckIn: false
+    });
+  }
+
+  private cleanup(): void {
+    console.log('🧹 [CarpetService] Cleaning up resources...');
+
     if (this._animationFrame) {
       cancelAnimationFrame(this._animationFrame);
+      this._animationFrame = null;
     }
 
     if (this._mediaStream) {
-      this._mediaStream.getTracks().forEach(track => track.stop());
+      this._mediaStream.getTracks().forEach(track => {
+        console.log(`🔇 [CarpetService] Stopping track: ${track.kind}`);
+        track.stop();
+      });
       this._mediaStream = null;
     }
 
@@ -69,65 +99,34 @@ export class CarpetRecognitionService {
     }
 
     window.removeEventListener('deviceorientation', this._handleOrientation);
-
-    this._updateData({
-      debugInfo: 'Recognition stopped',
-      canCheckIn: false
-    });
   }
 
   private _startOrientationMonitoring(): void {
     if ('DeviceOrientationEvent' in window) {
       window.addEventListener('deviceorientation', this._handleOrientation.bind(this));
+      console.log('🧭 [CarpetService] Orientation monitoring started');
     } else {
+      console.warn('⚠️ [CarpetService] Device orientation not supported');
       this._updateData({ debugInfo: 'Device orientation not supported' });
     }
   }
 
-  private _calculateDecision(): void {
-    const current = this._data();
-
-    // ✅ Use edge count as primary carpet indicator
-    const edgeThreshold = 600; // Conservative threshold based on your observation
-    const hasGoodTexture = (current.edgeCount || 0) > edgeThreshold;
-
-    // ✅ Use corrected orientation logic
-    const hasGoodOrientation = current.isPhoneDown && current.orientationConfidence > 0.6;
-
-    // ✅ Both conditions required for check-in
-    const canCheckIn = hasGoodOrientation && hasGoodTexture;
-
-    // ✅ Weight both factors
-    const orientationWeight = 0.4;
-    const textureWeight = 0.6; // Texture seems more reliable
-
-    const normalizedTextureScore = Math.min(1, (current.edgeCount || 0) / 1500); // Normalize edge count
-    const overallConfidence =
-      (current.orientationConfidence * orientationWeight) +
-      (normalizedTextureScore * textureWeight);
-
-    this._updateData({
-      overallConfidence,
-      canCheckIn,
-      debugInfo: `Orient: ${current.orientationConfidence.toFixed(2)} | Edges: ${current.edgeCount} (>${edgeThreshold}?) | Can: ${canCheckIn}`
-    });
-  }
-
   private _handleOrientation(event: DeviceOrientationEvent): void {
-    const alpha = event.alpha || 0; // Compass heading (0-360)
-    const beta = event.beta || 0;   // Front-to-back tilt (-180 to 180)
-    const gamma = event.gamma || 0; // Left-to-right tilt (-90 to 90)
+    const alpha = event.alpha || 0; // Compass heading
+    const beta = event.beta || 0;   // Front-to-back tilt
+    const gamma = event.gamma || 0; // Left-to-right tilt
 
-    // ✅ FIXED: Phone pointing down at carpet: beta should be close to 0°
-    // When holding normally (looking at screen): beta is ~90°
-    // When pointing down at ground: beta is closer to 0° (or slightly negative)
-
-    const targetAngle = 0;  // ✅ Changed from 90 to 0
-    const tolerance = 50;   // ✅ Increased tolerance for carpet scanning range
+    // Use config values
+    const { targetAngle, tolerance, minConfidence } = CARPET_RECOGNITION_CONFIG.orientation;
     const angleDiff = Math.abs(beta - targetAngle);
 
-    const isPhoneDown = angleDiff < tolerance; // Will be true when beta is -50° to +50°
+    const isPhoneDown = angleDiff < tolerance;
     const orientationConfidence = Math.max(0, 1 - (angleDiff / tolerance));
+
+    // More lenient confidence check
+    const hasGoodOrientation = isPhoneDown && orientationConfidence > minConfidence;
+
+    console.log(`📱 [CarpetService] Orientation: β:${beta.toFixed(1)}° diff:${angleDiff.toFixed(1)}° conf:${orientationConfidence.toFixed(2)} good:${hasGoodOrientation}`);
 
     this._updateData({
       isPhoneDown,
@@ -147,6 +146,7 @@ export class CarpetRecognitionService {
     const analyzeFrame = () => {
       if (!this._videoElement) return;
 
+      // Simple texture analysis using canvas
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
 
@@ -178,7 +178,7 @@ export class CarpetRecognitionService {
       // Calculate decision
       this._calculateDecision();
 
-      // ✅ Auto-capture photo when conditions are perfect
+      // Auto-capture photo when conditions are perfect
       const current = this._data();
       if (current.canCheckIn && current.isSharp && !current.photoTaken) {
         this._capturePhoto(canvas);
@@ -190,36 +190,52 @@ export class CarpetRecognitionService {
     analyzeFrame();
   }
 
-  // ✅ Photo capture method
-  private _capturePhoto(canvas: HTMLCanvasElement): void {
-    try {
-      // Capture high-quality photo
-      const photoData = canvas.toDataURL('image/jpeg', 0.95);
+  private _analyzeTexture(imageData: ImageData): { hasTexture: boolean; confidence: number; edgeCount: number; totalSamples: number; textureRatio: number } {
+    const data = imageData.data;
+    const width = imageData.width;
+    const height = imageData.height;
 
-      this._updateData({
-        capturedPhoto: photoData,
-        photoTaken: true,
-        debugInfo: 'Photo captured successfully!'
-      });
+    // Use config values
+    const { sampleStep, edgeDetectionThreshold } = CARPET_RECOGNITION_CONFIG.texture;
 
-      console.log('📸 Carpet photo captured!', {
-        blurScore: this._data().blurScore,
-        edgeCount: this._data().edgeCount
-      });
+    let edgeCount = 0;
+    let totalSamples = 0;
 
-    } catch (error) {
-      console.error('Failed to capture photo:', error);
+    for (let y = 1; y < height - 1; y += sampleStep) {
+      for (let x = 1; x < width - 1; x += sampleStep) {
+        const idx = (y * width + x) * 4;
+
+        // Get grayscale value
+        const current = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
+
+        // Check surrounding pixels for edges
+        const right = (data[idx + 4] + data[idx + 5] + data[idx + 6]) / 3;
+        const bottom = (data[((y + 1) * width + x) * 4] +
+                       data[((y + 1) * width + x) * 4 + 1] +
+                       data[((y + 1) * width + x) * 4 + 2]) / 3;
+
+        const edgeStrength = Math.abs(current - right) + Math.abs(current - bottom);
+
+        if (edgeStrength > edgeDetectionThreshold) {
+          edgeCount++;
+        }
+        totalSamples++;
+      }
     }
+
+    const textureRatio = totalSamples > 0 ? edgeCount / totalSamples : 0;
+    const confidence = Math.min(1, textureRatio * 3); // Scale up the ratio
+
+    console.log(`🏠 [CarpetService] Texture: edges:${edgeCount}/${totalSamples} ratio:${textureRatio.toFixed(3)} conf:${confidence.toFixed(2)}`);
+
+    return {
+      hasTexture: confidence > 0.1,
+      confidence: Math.round(confidence * 100) / 100,
+      edgeCount,
+      totalSamples,
+      textureRatio
+    };
   }
-
-    // ✅ Reset for new scan
-    resetCapture(): void {
-      this._updateData({
-        capturedPhoto: null,
-        photoTaken: false,
-        debugInfo: 'Ready for new scan'
-      });
-    }
 
   private _analyzeBlur(imageData: ImageData): { isSharp: boolean; score: number } {
     const data = imageData.data;
@@ -273,79 +289,81 @@ export class CarpetRecognitionService {
     variance = variance / pixelCount;
     const blurScore = Math.round(variance);
 
-    // Higher variance = sharper image. Threshold around 100-200 typically
-    const isSharp = variance > 150;
+    // Use config value
+    const isSharp = variance > CARPET_RECOGNITION_CONFIG.blur.sharpnessThreshold;
+
+    console.log(`📷 [CarpetService] Blur: score:${blurScore} sharp:${isSharp}`);
 
     return { isSharp, score: blurScore };
   }
 
-  private _analyzeTexture(imageData: ImageData): { hasTexture: boolean; confidence: number; edgeCount: number; totalSamples: number; textureRatio: number } {
-    const data = imageData.data;
-    const width = imageData.width;
-    const height = imageData.height;
+  private _capturePhoto(canvas: HTMLCanvasElement): void {
+    try {
+      console.log('📸 [CarpetService] Capturing photo...');
 
-    // Sample points for edge detection
-    let edgeCount = 0;
-    let totalSamples = 0;
-    const sampleStep = 10; // Sample every 10th pixel for performance
+      // Generate unique filename
+      const timestamp = Date.now();
+      const filename = `carpet_${timestamp}.jpg`;
 
-    for (let y = 1; y < height - 1; y += sampleStep) {
-      for (let x = 1; x < width - 1; x += sampleStep) {
-        const idx = (y * width + x) * 4;
+      // High quality capture
+      const photoData = canvas.toDataURL('image/jpeg', CARPET_RECOGNITION_CONFIG.photo.quality);
 
-        // Get grayscale value
-        const current = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
+      console.log(`📸 [CarpetService] Photo captured: ${filename} (${Math.round(photoData.length / 1024)}KB)`);
 
-        // Check surrounding pixels for edges
-        const right = (data[idx + 4] + data[idx + 5] + data[idx + 6]) / 3;
-        const bottom = (data[((y + 1) * width + x) * 4] +
-                       data[((y + 1) * width + x) * 4 + 1] +
-                       data[((y + 1) * width + x) * 4 + 2]) / 3;
+      this._updateData({
+        capturedPhoto: photoData,
+        photoTaken: true,
+        photoFilename: filename,
+        debugInfo: `Photo captured: ${filename}`
+      });
 
-        const edgeStrength = Math.abs(current - right) + Math.abs(current - bottom);
-
-        if (edgeStrength > 30) { // Threshold for detecting texture
-          edgeCount++;
-        }
-        totalSamples++;
-      }
+    } catch (error) {
+      console.error('❌ [CarpetService] Photo capture failed:', error);
     }
-
-    const textureRatio = totalSamples > 0 ? edgeCount / totalSamples : 0;
-    const confidence = Math.min(1, textureRatio * 3); // Scale up the ratio
-
-    return {
-      hasTexture: confidence > 0.1,
-      confidence: Math.round(confidence * 100) / 100,
-      edgeCount,
-      totalSamples,
-      textureRatio
-    };
   }
 
-  private _calculateOverallConfidence(): void {
+  private _calculateDecision(): void {
     const current = this._data();
 
-    // Weight orientation more heavily since it's more reliable
-    const orientationWeight = 0.7;
-    const textureWeight = 0.3;
+    // Use config values
+    const { edgeThreshold } = CARPET_RECOGNITION_CONFIG.texture;
+    const { minConfidence } = CARPET_RECOGNITION_CONFIG.orientation;
 
+    const hasGoodTexture = (current.edgeCount || 0) > edgeThreshold;
+    const hasGoodOrientation = current.isPhoneDown && current.orientationConfidence > minConfidence;
+
+    // Both conditions required for check-in
+    const canCheckIn = hasGoodOrientation && hasGoodTexture;
+
+    // Weight both factors
+    const orientationWeight = 0.4;
+    const textureWeight = 0.6; // Texture seems more reliable
+
+    const normalizedTextureScore = Math.min(1, (current.edgeCount || 0) / 1500); // Normalize edge count
     const overallConfidence =
       (current.orientationConfidence * orientationWeight) +
-      (current.textureConfidence * textureWeight);
+      (normalizedTextureScore * textureWeight);
 
-    // Can check in if phone is pointing down (main requirement)
-    const canCheckIn = current.isPhoneDown && current.orientationConfidence > 0.6;
+    console.log(`🎯 [CarpetService] Decision: orient:${hasGoodOrientation} texture:${hasGoodTexture} canCheckIn:${canCheckIn}`);
 
     this._updateData({
-      overallConfidence: Math.round(overallConfidence * 100) / 100,
+      overallConfidence,
       canCheckIn,
-      debugInfo: `Orientation: ${current.orientationConfidence.toFixed(2)}, Texture: ${current.textureConfidence.toFixed(2)}`
+      debugInfo: `Orient: ${current.orientationConfidence.toFixed(2)} | Edges: ${current.edgeCount}/${edgeThreshold} | Can: ${canCheckIn}`
     });
   }
 
-private _updateData(updates: Partial<CarpetRecognitionData>): void {
-    this._data.update(current => ({ ...current, ...updates }));
+  resetCapture(): void {
+    console.log('🔄 [CarpetService] Resetting capture state...');
+    this._updateData({
+      capturedPhoto: null,
+      photoTaken: false,
+      photoFilename: null,
+      debugInfo: 'Reset for new scan'
+    });
   }
 
+  private _updateData(updates: Partial<CarpetRecognitionData>): void {
+    this._data.update(current => ({ ...current, ...updates }));
+  }
 }

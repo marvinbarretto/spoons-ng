@@ -137,13 +137,13 @@ export class IndexedDbService {
   }
 
   /**
-   * Get all data from a store
+   * Get all items from a store
    */
   async getAll<T>(
     dbName: string,
     storeName: string
   ): Promise<T[]> {
-    console.log('[IndexedDB] Getting all data from:', `${dbName}/${storeName}`);
+    console.log('[IndexedDB] Getting all items from:', `${dbName}/${storeName}`);
 
     const db = await this.ensureDatabase(dbName);
 
@@ -153,45 +153,77 @@ export class IndexedDbService {
       const request = store.getAll();
 
       request.onsuccess = () => {
-        const results = request.result as T[];
-        console.log('[IndexedDB] Retrieved', results.length, 'items');
-        resolve(results);
-      };
-
-      request.onerror = () => {
-        console.error('[IndexedDB] Failed to get all data:', request.error);
-        reject(request.error);
-      };
-    });
-  }
-
-  /**
-   * Get all keys from a store
-   */
-  async getAllKeys(
-    dbName: string,
-    storeName: string
-  ): Promise<IDBValidKey[]> {
-    console.log('[IndexedDB] Getting all keys from:', `${dbName}/${storeName}`);
-
-    const db = await this.ensureDatabase(dbName);
-
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction([storeName], 'readonly');
-      const store = transaction.objectStore(storeName);
-      const request = store.getAllKeys();
-
-      request.onsuccess = () => {
-        console.log('[IndexedDB] Retrieved', request.result.length, 'keys');
+        console.log('[IndexedDB] Retrieved all items:', request.result.length);
         resolve(request.result);
       };
 
       request.onerror = () => {
-        console.error('[IndexedDB] Failed to get keys:', request.error);
+        console.error('[IndexedDB] Failed to get all items:', request.error);
         reject(request.error);
       };
     });
   }
+
+
+/**
+ * Get all keys from a store
+ */
+async getAllKeys(
+  dbName: string,
+  storeName: string
+): Promise<IDBValidKey[]> {
+  console.log('[IndexedDB] Getting all keys from:', `${dbName}/${storeName}`);
+
+  const db = await this.ensureDatabase(dbName);
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([storeName], 'readonly');
+    const store = transaction.objectStore(storeName);
+    const request = store.getAllKeys();
+
+    request.onsuccess = () => {
+      console.log('[IndexedDB] Retrieved all keys:', request.result.length);
+      resolve(request.result);
+    };
+
+    request.onerror = () => {
+      console.error('[IndexedDB] Failed to get all keys:', request.error);
+      reject(request.error);
+    };
+  });
+}
+
+
+/**
+ * Query items by index
+ */
+async getByIndex<T>(
+  dbName: string,
+  storeName: string,
+  indexName: string,
+  value: IDBValidKey
+): Promise<T[]> {
+  console.log('[IndexedDB] Querying by index:', `${dbName}/${storeName}/${indexName}`, 'value:', value);
+
+  const db = await this.ensureDatabase(dbName);
+
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([storeName], 'readonly');
+    const store = transaction.objectStore(storeName);
+    const index = store.index(indexName);
+    const request = index.getAll(value);
+
+    request.onsuccess = () => {
+      console.log('[IndexedDB] Found items by index:', request.result.length);
+      resolve(request.result);
+    };
+
+    request.onerror = () => {
+      console.error('[IndexedDB] Failed to query by index:', request.error);
+      reject(request.error);
+    };
+  });
+}
 
   /**
    * Delete data from IndexedDB
