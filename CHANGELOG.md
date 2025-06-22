@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.50](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.49...v0.0.50) (2025-06-22)
+
+
+### Bug Fixes
+
+* Show debug info on carpet scanner ([e4f9404](https://github.com/marvinbarretto/spoons-ng/commit/e4f9404ef11fdcf9679b2935fef87fbc8b4afcdf))
+
 ### [0.0.49](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.48...v0.0.49) (2025-06-22)
 
 
