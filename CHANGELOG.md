@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.52](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.51...v0.0.52) (2025-06-22)
+
+
+### Features
+
+* Add PhotoStorageService for saving captured carpets ([a41f01f](https://github.com/marvinbarretto/spoons-ng/commit/a41f01f215b3c18074c0929f68ed139cf74d0eb6))
+
 ### [0.0.51](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.50...v0.0.51) (2025-06-22)
 
 
