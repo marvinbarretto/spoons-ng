@@ -284,6 +284,23 @@
     min-width: 200px;
     z-index: 3;
 
+    .section {
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      h5 {
+        margin: 0 0 0.5rem 0;
+        font-size: 0.9rem;
+        color: #4CAF50;
+        font-weight: 600;
+      }
+    }
+
     .metric {
       display: flex;
       justify-content: space-between;
@@ -295,6 +312,10 @@
 
       .value {
         font-family: 'Courier New', monospace;
+
+        &.good {
+          color: #4CAF50;
+        }
 
         &.debug {
           font-size: 0.7rem;

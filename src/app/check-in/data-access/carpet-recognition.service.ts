@@ -80,11 +80,28 @@ export class CarpetRecognitionService {
     }
   }
 
+  private _calculateDecision(): void {
+    const current = this._data();
+
+    // For now, ONLY use orientation - ignore texture completely
+    const canCheckIn = current.isPhoneDown && current.orientationConfidence > 0.6;
+
+    // Keep overall confidence simple for now
+    const overallConfidence = current.orientationConfidence;
+
+    this._updateData({
+      overallConfidence,
+      canCheckIn,
+      debugInfo: `Orient: ${current.orientationConfidence.toFixed(2)} | Edges: ${current.edgeCount}/${current.totalSamples} | Ratio: ${current.textureRatio?.toFixed(3)}`
+    });
+  }
+
   private _handleOrientation(event: DeviceOrientationEvent): void {
-    const beta = event.beta || 0; // Front-to-back tilt (-180 to 180)
+    const alpha = event.alpha || 0; // Compass heading (0-360)
+    const beta = event.beta || 0;   // Front-to-back tilt (-180 to 180)
     const gamma = event.gamma || 0; // Left-to-right tilt (-90 to 90)
 
-    // Phone pointing down: beta around 90 degrees
+    // Phone pointing down: beta should be around 90 degrees
     const targetAngle = 90;
     const tolerance = 30;
     const angleDiff = Math.abs(beta - targetAngle);
@@ -95,7 +112,12 @@ export class CarpetRecognitionService {
     this._updateData({
       isPhoneDown,
       orientationAngle: beta,
-      orientationConfidence: Math.round(orientationConfidence * 100) / 100
+      alpha,
+      beta,
+      gamma,
+      angleDifference: angleDiff,
+      orientationConfidence: Math.round(orientationConfidence * 100) / 100,
+      debugInfo: `β:${beta.toFixed(1)}° γ:${gamma.toFixed(1)}° α:${alpha.toFixed(1)}°`
     });
   }
 
@@ -125,11 +147,14 @@ export class CarpetRecognitionService {
 
       this._updateData({
         hasTexture: textureResult.hasTexture,
-        textureConfidence: textureResult.confidence
+        textureConfidence: textureResult.confidence,
+        edgeCount: textureResult.edgeCount,        // ✅ Store raw values
+        totalSamples: textureResult.totalSamples,  // ✅ Store raw values
+        textureRatio: textureResult.textureRatio   // ✅ Store raw values
       });
 
-      // Calculate overall confidence and check-in eligibility
-      this._calculateOverallConfidence();
+      // Simple decision: only require phone pointing down for now
+      this._calculateDecision();
 
       this._animationFrame = requestAnimationFrame(analyzeFrame);
     };
@@ -137,12 +162,12 @@ export class CarpetRecognitionService {
     analyzeFrame();
   }
 
-  private _analyzeTexture(imageData: ImageData): { hasTexture: boolean; confidence: number } {
+  private _analyzeTexture(imageData: ImageData): { hasTexture: boolean; confidence: number; edgeCount: number; totalSamples: number; textureRatio: number } {
     const data = imageData.data;
     const width = imageData.width;
     const height = imageData.height;
 
-    // Sample points for edge detection (simple Sobel-like)
+    // Sample points for edge detection
     let edgeCount = 0;
     let totalSamples = 0;
     const sampleStep = 10; // Sample every 10th pixel for performance
@@ -173,8 +198,11 @@ export class CarpetRecognitionService {
     const confidence = Math.min(1, textureRatio * 3); // Scale up the ratio
 
     return {
-      hasTexture: confidence > 0.1, // Low threshold since carpets vary
-      confidence: Math.round(confidence * 100) / 100
+      hasTexture: confidence > 0.1,
+      confidence: Math.round(confidence * 100) / 100,
+      edgeCount,
+      totalSamples,
+      textureRatio
     };
   }
 
