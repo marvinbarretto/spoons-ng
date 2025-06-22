@@ -83,16 +83,29 @@ export class CarpetRecognitionService {
   private _calculateDecision(): void {
     const current = this._data();
 
-    // For now, ONLY use orientation - ignore texture completely
-    const canCheckIn = current.isPhoneDown && current.orientationConfidence > 0.6;
+    // ✅ Use edge count as primary carpet indicator
+    const edgeThreshold = 600; // Conservative threshold based on your observation
+    const hasGoodTexture = (current.edgeCount || 0) > edgeThreshold;
 
-    // Keep overall confidence simple for now
-    const overallConfidence = current.orientationConfidence;
+    // ✅ Use corrected orientation logic
+    const hasGoodOrientation = current.isPhoneDown && current.orientationConfidence > 0.6;
+
+    // ✅ Both conditions required for check-in
+    const canCheckIn = hasGoodOrientation && hasGoodTexture;
+
+    // ✅ Weight both factors
+    const orientationWeight = 0.4;
+    const textureWeight = 0.6; // Texture seems more reliable
+
+    const normalizedTextureScore = Math.min(1, (current.edgeCount || 0) / 1500); // Normalize edge count
+    const overallConfidence =
+      (current.orientationConfidence * orientationWeight) +
+      (normalizedTextureScore * textureWeight);
 
     this._updateData({
       overallConfidence,
       canCheckIn,
-      debugInfo: `Orient: ${current.orientationConfidence.toFixed(2)} | Edges: ${current.edgeCount}/${current.totalSamples} | Ratio: ${current.textureRatio?.toFixed(3)}`
+      debugInfo: `Orient: ${current.orientationConfidence.toFixed(2)} | Edges: ${current.edgeCount} (>${edgeThreshold}?) | Can: ${canCheckIn}`
     });
   }
 
@@ -101,12 +114,15 @@ export class CarpetRecognitionService {
     const beta = event.beta || 0;   // Front-to-back tilt (-180 to 180)
     const gamma = event.gamma || 0; // Left-to-right tilt (-90 to 90)
 
-    // Phone pointing down: beta should be around 90 degrees
-    const targetAngle = 90;
-    const tolerance = 30;
+    // ✅ FIXED: Phone pointing down at carpet: beta should be close to 0°
+    // When holding normally (looking at screen): beta is ~90°
+    // When pointing down at ground: beta is closer to 0° (or slightly negative)
+
+    const targetAngle = 0;  // ✅ Changed from 90 to 0
+    const tolerance = 50;   // ✅ Increased tolerance for carpet scanning range
     const angleDiff = Math.abs(beta - targetAngle);
 
-    const isPhoneDown = angleDiff < tolerance;
+    const isPhoneDown = angleDiff < tolerance; // Will be true when beta is -50° to +50°
     const orientationConfidence = Math.max(0, 1 - (angleDiff / tolerance));
 
     this._updateData({
