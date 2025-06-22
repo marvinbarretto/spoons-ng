@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.49](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.48...v0.0.49) (2025-06-22)
+
+
+### Bug Fixes
+
+* Phone orientation logic when scanning ([bae78a0](https://github.com/marvinbarretto/spoons-ng/commit/bae78a09b47ec82d0a786250f38c16e5fb348efc))
+
 ### [0.0.48](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.47...v0.0.48) (2025-06-22)
 
 ### [0.0.47](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.46...v0.0.47) (2025-06-22)
