@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.51](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.50...v0.0.51) (2025-06-22)
+
+
+### Features
+
+* Stub carpet success screen ([4a24367](https://github.com/marvinbarretto/spoons-ng/commit/4a243677faa457c360346749623e8812ce52184d))
+
 ### [0.0.50](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.49...v0.0.50) (2025-06-22)
 
 
