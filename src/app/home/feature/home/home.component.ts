@@ -1,7 +1,7 @@
 // src/app/home/feature/home/home.component.ts
 import { Component, computed, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { JsonPipe } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { BaseComponent } from '@shared/data-access/base.component';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { UserStore } from '@users/data-access/user.store';
@@ -34,7 +34,8 @@ import { CarpetGridComponent, type CarpetDisplayData } from '../../../carpets/ui
     ActionCardsComponent,
     UserProfileWidgetComponent,
     CheckinButtonComponent,
-    CarpetGridComponent
+    CarpetGridComponent,
+    RouterModule
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'

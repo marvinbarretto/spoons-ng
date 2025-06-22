@@ -20,6 +20,13 @@ export const appRoutes: Routes = [
       import('./pubs/data-access/pub.routes').then((m) => m.PUBS_ROUTES),
   },
   {
+    path: 'test-carpet',
+    title: 'Test Carpet',
+    loadComponent: () =>
+      import('./check-in/feature/carpet-scanner/carpet-scanner.component')
+        .then(m => m.CarpetScannerComponent)
+  },
+  {
     path: 'carpets',
     loadChildren: () =>
       import('./carpets/data-access/carpet.routes').then((m) => m.CARPETS_ROUTES),

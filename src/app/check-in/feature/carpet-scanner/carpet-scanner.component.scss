@@ -1,0 +1,335 @@
+// TODO: look at values, colours, tokens
+
+.carpet-scanner {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: #000;
+  overflow: hidden;
+
+  // Start Screen
+  .start-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-align: center;
+    padding: 2rem;
+
+    .scanner-header {
+      margin-bottom: 3rem;
+
+      h2 {
+        font-size: 2rem;
+        margin: 0 0 0.5rem 0;
+        font-weight: 300;
+      }
+
+      p {
+        font-size: 1rem;
+        opacity: 0.8;
+        margin: 0;
+      }
+    }
+
+    .start-illustration {
+      margin-bottom: 3rem;
+      font-size: 3rem;
+      line-height: 1.2;
+
+      .phone-icon {
+        animation: bounce 2s infinite;
+      }
+
+      .arrow-down {
+        margin: 0.5rem 0;
+        opacity: 0.7;
+      }
+
+      .carpet-icon {
+        animation: pulse 2s infinite;
+      }
+    }
+
+    .btn-primary {
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 1rem 2rem;
+      border-radius: 50px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+      }
+    }
+  }
+
+  // Scanner View
+  .scanner-view {
+    position: relative;
+    width: 100%;
+    height: 100%;
+
+    .camera-feed {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: 1;
+    }
+
+    .viewfinder-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.3);
+    }
+
+    .scanner-frame {
+      position: relative;
+      width: 280px;
+      height: 280px;
+      border: 2px solid rgba(255, 255, 255, 0.8);
+      border-radius: 20px;
+      margin-bottom: 2rem;
+      transition: border-color 0.3s ease;
+
+      &.success {
+        border-color: #4CAF50;
+        box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+      }
+
+      // Corner brackets
+      .corner {
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        border: 3px solid #fff;
+
+        &.top-left {
+          top: -3px;
+          left: -3px;
+          border-right: none;
+          border-bottom: none;
+          border-radius: 20px 0 0 0;
+        }
+
+        &.top-right {
+          top: -3px;
+          right: -3px;
+          border-left: none;
+          border-bottom: none;
+          border-radius: 0 20px 0 0;
+        }
+
+        &.bottom-left {
+          bottom: -3px;
+          left: -3px;
+          border-right: none;
+          border-top: none;
+          border-radius: 0 0 0 20px;
+        }
+
+        &.bottom-right {
+          bottom: -3px;
+          right: -3px;
+          border-left: none;
+          border-top: none;
+          border-radius: 0 0 20px 0;
+        }
+      }
+
+      // Scanning line animation
+      .scan-line {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #4CAF50, transparent);
+        opacity: 0;
+
+        &.scanning {
+          animation: scan 2s linear infinite;
+          opacity: 1;
+        }
+      }
+
+      // Center target
+      .center-target {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+
+        .scanning-dot {
+          width: 20px;
+          height: 20px;
+          background: rgba(255, 255, 255, 0.8);
+          border-radius: 50%;
+          animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        .success-pulse {
+          font-size: 3rem;
+          animation: successPulse 0.6s ease-out;
+        }
+      }
+    }
+
+    .status-message {
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 1rem 2rem;
+      border-radius: 25px;
+      font-size: 1.1rem;
+      text-align: center;
+      margin-bottom: 2rem;
+      backdrop-filter: blur(10px);
+      max-width: 80%;
+      transition: all 0.3s ease;
+
+      &.success {
+        background: rgba(76, 175, 80, 0.9);
+      }
+    }
+
+    .quick-stats {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+
+      .stat {
+        background: rgba(0, 0, 0, 0.7);
+        color: rgba(255, 255, 255, 0.7);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+
+        &.active {
+          background: rgba(76, 175, 80, 0.8);
+          color: white;
+        }
+      }
+    }
+
+    .scanner-controls {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+
+      .btn-stop {
+        background: rgba(244, 67, 54, 0.9);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 25px;
+        font-size: 1rem;
+        cursor: pointer;
+        backdrop-filter: blur(10px);
+
+        &:hover {
+          background: rgba(244, 67, 54, 1);
+        }
+      }
+    }
+  }
+
+  // Debug Panel
+  .debug-toggle {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 3;
+
+    .debug-btn {
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 15px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+  }
+
+  .debug-panel {
+    position: absolute;
+    top: 4rem;
+    right: 1rem;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 1rem;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    min-width: 200px;
+    z-index: 3;
+
+    .metric {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+
+      .label {
+        opacity: 0.7;
+      }
+
+      .value {
+        font-family: 'Courier New', monospace;
+
+        &.debug {
+          font-size: 0.7rem;
+          max-width: 120px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      }
+    }
+  }
+}
+
+// Animations
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-10px); }
+  60% { transform: translateY(-5px); }
+}
+
+@keyframes pulse {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes scan {
+  0% { top: 0; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+@keyframes successPulse {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}

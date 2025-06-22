@@ -1,0 +1,103 @@
+<div class="carpet-scanner">
+  @if (!isScanning()) {
+    <!-- Start Screen -->
+    <div class="start-screen">
+      <div class="scanner-header">
+        <h2>🪄 Carpet Recognition</h2>
+        <p>Advanced AI-powered carpet detection</p>
+      </div>
+
+      <div class="start-illustration">
+        <div class="phone-icon">📱</div>
+        <div class="arrow-down">⬇️</div>
+        <div class="carpet-icon">🏠</div>
+      </div>
+
+      <button class="btn-primary" (click)="startScanning()">
+        Start Carpet Scan
+      </button>
+    </div>
+  } @else {
+    <!-- Camera Scanner View -->
+    <div class="scanner-view">
+      <!-- Camera Feed Background -->
+      <video
+        #videoElement
+        class="camera-feed"
+        autoplay
+        playsinline
+        muted>
+      </video>
+
+      <!-- Viewfinder Overlay -->
+      <div class="viewfinder-overlay">
+        <!-- Animated Scanner Frame -->
+        <div class="scanner-frame" [class.success]="carpetData().canCheckIn">
+          <div class="corner top-left"></div>
+          <div class="corner top-right"></div>
+          <div class="corner bottom-left"></div>
+          <div class="corner bottom-right"></div>
+
+          <!-- Scanning Line Animation -->
+          <div class="scan-line" [class.scanning]="isScanning() && !carpetData().canCheckIn"></div>
+
+          <!-- Center Target -->
+          <div class="center-target">
+            @if (carpetData().canCheckIn) {
+              <div class="success-pulse">✅</div>
+            } @else {
+              <div class="scanning-dot"></div>
+            }
+          </div>
+        </div>
+
+        <!-- Status Message -->
+        <div class="status-message" [class.success]="carpetData().canCheckIn">
+          {{ statusMessage }}
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="quick-stats">
+          <div class="stat" [class.active]="carpetData().isPhoneDown">
+            📱 {{ carpetData().orientationConfidence * 100 | number:'1.0-0' }}%
+          </div>
+          <div class="stat" [class.active]="carpetData().hasTexture">
+            🏠 {{ carpetData().textureConfidence * 100 | number:'1.0-0' }}%
+          </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="scanner-controls">
+          <button class="btn-stop" (click)="stopScanning()">
+            Stop Scan
+          </button>
+        </div>
+      </div>
+
+      <!-- Debug Panel (Collapsible) -->
+      <div class="debug-toggle">
+        <button (click)="toggleDebug()" class="debug-btn">
+          📊 {{ showDebug() ? 'Hide' : 'Show' }} Debug
+        </button>
+
+      </div>
+
+      @if (showDebug()) {
+        <div class="debug-panel">
+          <div class="metric">
+            <span class="label">Angle (β):</span>
+            <span class="value">{{ carpetData().orientationAngle | number:'1.1-1' }}°</span>
+          </div>
+          <div class="metric">
+            <span class="label">Overall:</span>
+            <span class="value">{{ carpetData().overallConfidence * 100 | number:'1.0-0' }}%</span>
+          </div>
+          <div class="metric">
+            <span class="label">Status:</span>
+            <span class="value debug">{{ carpetData().debugInfo }}</span>
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>
