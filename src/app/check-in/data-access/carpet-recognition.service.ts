@@ -15,6 +15,9 @@ export class CarpetRecognitionService {
     capturedPhoto: null,
     photoTaken: false,
     photoFilename: null,
+    photoFormat: 'webp',
+    photoSizeKB: 0,
+    photoDisplayUrl: null,
     overallConfidence: 0,
     canCheckIn: false,
     debugInfo: 'Not started'
@@ -29,10 +32,8 @@ export class CarpetRecognitionService {
     console.log('🎥 [CarpetService] Starting recognition...');
 
     try {
-      // Clean up any existing streams first
       this.cleanup();
 
-      // Start camera
       console.log('📹 [CarpetService] Requesting camera access...');
       this._mediaStream = await navigator.mediaDevices.getUserMedia({
         video: {
@@ -43,15 +44,12 @@ export class CarpetRecognitionService {
       });
       console.log('✅ [CarpetService] Camera access granted');
 
-      // Create video element for analysis
       this._videoElement = document.createElement('video');
       this._videoElement.srcObject = this._mediaStream;
       this._videoElement.play();
 
-      // Start orientation monitoring
       this._startOrientationMonitoring();
 
-      // Start video analysis when video loads
       this._videoElement.addEventListener('loadeddata', () => {
         console.log('📹 [CarpetService] Video loaded, starting analysis');
         this._startVideoAnalysis();
@@ -98,6 +96,12 @@ export class CarpetRecognitionService {
       this._videoElement = null;
     }
 
+    // ✅ Clean up photo display URL
+    const current = this._data();
+    if (current.photoDisplayUrl) {
+      URL.revokeObjectURL(current.photoDisplayUrl);
+    }
+
     window.removeEventListener('deviceorientation', this._handleOrientation);
   }
 
@@ -112,18 +116,15 @@ export class CarpetRecognitionService {
   }
 
   private _handleOrientation(event: DeviceOrientationEvent): void {
-    const alpha = event.alpha || 0; // Compass heading
-    const beta = event.beta || 0;   // Front-to-back tilt
-    const gamma = event.gamma || 0; // Left-to-right tilt
+    const alpha = event.alpha || 0;
+    const beta = event.beta || 0;
+    const gamma = event.gamma || 0;
 
-    // Use config values
     const { targetAngle, tolerance, minConfidence } = CARPET_RECOGNITION_CONFIG.orientation;
     const angleDiff = Math.abs(beta - targetAngle);
 
     const isPhoneDown = angleDiff < tolerance;
     const orientationConfidence = Math.max(0, 1 - (angleDiff / tolerance));
-
-    // More lenient confidence check
     const hasGoodOrientation = isPhoneDown && orientationConfidence > minConfidence;
 
     console.log(`📱 [CarpetService] Orientation: β:${beta.toFixed(1)}° diff:${angleDiff.toFixed(1)}° conf:${orientationConfidence.toFixed(2)} good:${hasGoodOrientation}`);
@@ -146,7 +147,6 @@ export class CarpetRecognitionService {
     const analyzeFrame = () => {
       if (!this._videoElement) return;
 
-      // Simple texture analysis using canvas
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
 
@@ -160,7 +160,6 @@ export class CarpetRecognitionService {
 
       ctx.drawImage(this._videoElement, 0, 0, canvas.width, canvas.height);
 
-      // Get image data for analysis
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const textureResult = this._analyzeTexture(imageData);
       const blurResult = this._analyzeBlur(imageData);
@@ -175,10 +174,8 @@ export class CarpetRecognitionService {
         blurScore: blurResult.score
       });
 
-      // Calculate decision
       this._calculateDecision();
 
-      // Auto-capture photo when conditions are perfect
       const current = this._data();
       if (current.canCheckIn && current.isSharp && !current.photoTaken) {
         this._capturePhoto(canvas);
@@ -195,7 +192,6 @@ export class CarpetRecognitionService {
     const width = imageData.width;
     const height = imageData.height;
 
-    // Use config values
     const { sampleStep, edgeDetectionThreshold } = CARPET_RECOGNITION_CONFIG.texture;
 
     let edgeCount = 0;
@@ -205,10 +201,7 @@ export class CarpetRecognitionService {
       for (let x = 1; x < width - 1; x += sampleStep) {
         const idx = (y * width + x) * 4;
 
-        // Get grayscale value
         const current = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
-
-        // Check surrounding pixels for edges
         const right = (data[idx + 4] + data[idx + 5] + data[idx + 6]) / 3;
         const bottom = (data[((y + 1) * width + x) * 4] +
                        data[((y + 1) * width + x) * 4 + 1] +
@@ -224,7 +217,7 @@ export class CarpetRecognitionService {
     }
 
     const textureRatio = totalSamples > 0 ? edgeCount / totalSamples : 0;
-    const confidence = Math.min(1, textureRatio * 3); // Scale up the ratio
+    const confidence = Math.min(1, textureRatio * 3);
 
     console.log(`🏠 [CarpetService] Texture: edges:${edgeCount}/${totalSamples} ratio:${textureRatio.toFixed(3)} conf:${confidence.toFixed(2)}`);
 
@@ -242,7 +235,6 @@ export class CarpetRecognitionService {
     const width = imageData.width;
     const height = imageData.height;
 
-    // Laplacian variance method for blur detection
     let variance = 0;
     let mean = 0;
     let pixelCount = 0;
@@ -252,16 +244,12 @@ export class CarpetRecognitionService {
       for (let x = 1; x < width - 1; x++) {
         const idx = (y * width + x) * 4;
 
-        // Convert to grayscale
         const center = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
-
-        // Get surrounding pixels
         const top = (data[((y-1) * width + x) * 4] + data[((y-1) * width + x) * 4 + 1] + data[((y-1) * width + x) * 4 + 2]) / 3;
         const bottom = (data[((y+1) * width + x) * 4] + data[((y+1) * width + x) * 4 + 1] + data[((y+1) * width + x) * 4 + 2]) / 3;
         const left = (data[(y * width + (x-1)) * 4] + data[(y * width + (x-1)) * 4 + 1] + data[(y * width + (x-1)) * 4 + 2]) / 3;
         const right = (data[(y * width + (x+1)) * 4] + data[(y * width + (x+1)) * 4 + 1] + data[(y * width + (x+1)) * 4 + 2]) / 3;
 
-        // Laplacian kernel: center*4 - (top + bottom + left + right)
         const laplacian = Math.abs(center * 4 - (top + bottom + left + right));
 
         mean += laplacian;
@@ -288,8 +276,6 @@ export class CarpetRecognitionService {
 
     variance = variance / pixelCount;
     const blurScore = Math.round(variance);
-
-    // Use config value
     const isSharp = variance > CARPET_RECOGNITION_CONFIG.blur.sharpnessThreshold;
 
     console.log(`📷 [CarpetService] Blur: score:${blurScore} sharp:${isSharp}`);
@@ -297,24 +283,31 @@ export class CarpetRecognitionService {
     return { isSharp, score: blurScore };
   }
 
-  private _capturePhoto(canvas: HTMLCanvasElement): void {
+  // ✅ WebP + Binary photo capture
+  private async _capturePhoto(canvas: HTMLCanvasElement): Promise<void> {
     try {
-      console.log('📸 [CarpetService] Capturing photo...');
+      console.log('📸 [CarpetService] Capturing WebP photo...');
 
-      // Generate unique filename
       const timestamp = Date.now();
-      const filename = `carpet_${timestamp}.jpg`;
+      const { blob, format, filename } = await this._captureOptimalFormat(canvas, timestamp);
 
-      // High quality capture
-      const photoData = canvas.toDataURL('image/jpeg', CARPET_RECOGNITION_CONFIG.photo.quality);
+      const sizeKB = Math.round(blob.size / 1024);
+      const displayUrl = URL.createObjectURL(blob);
 
-      console.log(`📸 [CarpetService] Photo captured: ${filename} (${Math.round(photoData.length / 1024)}KB)`);
+      // Calculate savings vs Base64 JPEG
+      const estimatedBase64Size = blob.size * 1.33; // Base64 overhead
+      const savingsKB = Math.round((estimatedBase64Size - blob.size) / 1024);
+
+      console.log(`📸 [CarpetService] Photo captured: ${filename} (${sizeKB}KB ${format.toUpperCase()}, ${savingsKB}KB saved vs Base64)`);
 
       this._updateData({
-        capturedPhoto: photoData,
+        capturedPhoto: blob,
         photoTaken: true,
         photoFilename: filename,
-        debugInfo: `Photo captured: ${filename}`
+        photoFormat: format,
+        photoSizeKB: sizeKB,
+        photoDisplayUrl: displayUrl,
+        debugInfo: `Photo: ${filename} (${sizeKB}KB ${format}, ${savingsKB}KB saved)`
       });
 
     } catch (error) {
@@ -322,24 +315,68 @@ export class CarpetRecognitionService {
     }
   }
 
+  private async _captureOptimalFormat(
+    canvas: HTMLCanvasElement,
+    timestamp: number
+  ): Promise<{ blob: Blob; format: 'webp' | 'jpeg'; filename: string }> {
+
+    const config = CARPET_RECOGNITION_CONFIG.photo;
+
+    // ✅ Try WebP first (better compression)
+    try {
+      const webpBlob = await this._canvasToBlob(canvas, 'image/webp', config.webpQuality);
+      if (webpBlob && webpBlob.size > 0) {
+        console.log(`✅ [CarpetService] WebP capture successful (${Math.round(webpBlob.size / 1024)}KB)`);
+        return {
+          blob: webpBlob,
+          format: 'webp',
+          filename: `carpet_${timestamp}.webp`
+        };
+      }
+    } catch (error) {
+      console.warn('⚠️ [CarpetService] WebP capture failed, trying JPEG:', error);
+    }
+
+    // ✅ Fallback to JPEG
+    const jpegBlob = await this._canvasToBlob(canvas, 'image/jpeg', config.jpegQuality);
+    if (!jpegBlob) {
+      throw new Error('Failed to capture photo in any format');
+    }
+
+    console.log(`✅ [CarpetService] JPEG fallback used (${Math.round(jpegBlob.size / 1024)}KB)`);
+
+    return {
+      blob: jpegBlob,
+      format: 'jpeg',
+      filename: `carpet_${timestamp}.jpg`
+    };
+  }
+
+  private _canvasToBlob(
+    canvas: HTMLCanvasElement,
+    type: string,
+    quality: number
+  ): Promise<Blob | null> {
+    return new Promise((resolve) => {
+      canvas.toBlob(resolve, type, quality);
+    });
+  }
+
   private _calculateDecision(): void {
     const current = this._data();
 
-    // Use config values
     const { edgeThreshold } = CARPET_RECOGNITION_CONFIG.texture;
     const { minConfidence } = CARPET_RECOGNITION_CONFIG.orientation;
 
     const hasGoodTexture = (current.edgeCount || 0) > edgeThreshold;
     const hasGoodOrientation = current.isPhoneDown && current.orientationConfidence > minConfidence;
 
-    // Both conditions required for check-in
     const canCheckIn = hasGoodOrientation && hasGoodTexture;
 
-    // Weight both factors
     const orientationWeight = 0.4;
-    const textureWeight = 0.6; // Texture seems more reliable
+    const textureWeight = 0.6;
 
-    const normalizedTextureScore = Math.min(1, (current.edgeCount || 0) / 1500); // Normalize edge count
+    const normalizedTextureScore = Math.min(1, (current.edgeCount || 0) / 1500);
     const overallConfidence =
       (current.orientationConfidence * orientationWeight) +
       (normalizedTextureScore * textureWeight);
@@ -355,10 +392,20 @@ export class CarpetRecognitionService {
 
   resetCapture(): void {
     console.log('🔄 [CarpetService] Resetting capture state...');
+
+    // Clean up old display URL
+    const current = this._data();
+    if (current.photoDisplayUrl) {
+      URL.revokeObjectURL(current.photoDisplayUrl);
+    }
+
     this._updateData({
       capturedPhoto: null,
       photoTaken: false,
       photoFilename: null,
+      photoFormat: 'webp',
+      photoSizeKB: 0,
+      photoDisplayUrl: null,
       debugInfo: 'Reset for new scan'
     });
   }

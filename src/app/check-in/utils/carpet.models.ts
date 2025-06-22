@@ -19,10 +19,13 @@ export type CarpetRecognitionData = {
   isSharp: boolean;
   blurScore: number;
 
-  // Photo capture
-  capturedPhoto: string | null;
+  // Photo capture - WebP + Binary
+  capturedPhoto: Blob | null;           // ✅ Binary Blob instead of Base64
   photoTaken: boolean;
   photoFilename: string | null;
+  photoFormat: 'webp' | 'jpeg';        // ✅ Track format used
+  photoSizeKB: number;                  // ✅ Track actual file size
+  photoDisplayUrl: string | null;      // ✅ Object URL for display
 
   // Overall decision
   overallConfidence: number;

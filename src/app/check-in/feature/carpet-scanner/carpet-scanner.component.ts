@@ -4,12 +4,13 @@ import { CarpetRecognitionService } from '../../data-access/carpet-recognition.s
 import { CARPET_RECOGNITION_CONFIG } from '../../data-access/carpet-recognition.config';
 import { DecimalPipe } from '@angular/common';
 import { CarpetSuccessComponent } from '../../ui/carpet-success/carpet-success.component';
+import { CarpetPhotoData } from '../../../shared/data-access/photo-storage.service';
 
 @Component({
   selector: 'app-carpet-scanner',
   templateUrl: './carpet-scanner.component.html',
   styleUrl: './carpet-scanner.component.scss',
-  imports: [DecimalPipe, CarpetSuccessComponent]
+  imports: [ CarpetSuccessComponent]
 })
 export class CarpetScannerComponent extends BaseComponent implements OnInit, OnDestroy {
   @ViewChild('videoElement', { static: false }) videoElement!: ElementRef<HTMLVideoElement>;
@@ -23,8 +24,8 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
   protected readonly showDebug = signal(false);
   protected readonly showSuccessScreen = signal(false);
 
-  // Outputs
-  readonly carpetConfirmed = output<string>(); // Base64 image data
+  // Outputs - now emits structured photo data
+  readonly carpetConfirmed = output<CarpetPhotoData>();
   readonly exitScanner = output<void>();
 
   constructor() {
@@ -34,7 +35,7 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
     effect(() => {
       const data = this.carpetData();
       if (data.photoTaken && data.capturedPhoto) {
-        console.log('✅ [CarpetScanner] Photo captured, showing success screen');
+        console.log('✅ [CarpetScanner] WebP photo captured, showing success screen');
         this.showSuccessScreen.set(true);
         // Auto-stop scanning to save battery
         setTimeout(() => this.stopScanning(), 1000);
@@ -50,9 +51,31 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
   // Success component events
   protected onCarpetConfirmed(): void {
     console.log('✅ [CarpetScanner] Carpet confirmed by user');
-    const photo = this.carpetData().capturedPhoto;
-    if (photo) {
-      this.carpetConfirmed.emit(photo);
+    const data = this.carpetData();
+
+    if (data.capturedPhoto && data.photoFilename) {
+      // ✅ Emit structured photo data
+      const photoData: CarpetPhotoData = {
+        filename: data.photoFilename,
+        format: data.photoFormat,
+        sizeKB: data.photoSizeKB,
+        blob: data.capturedPhoto,
+        metadata: {
+          edgeCount: data.edgeCount,
+          blurScore: data.blurScore,
+          confidence: data.overallConfidence,
+          orientationAngle: data.orientationAngle
+        }
+      };
+
+      console.log(`📸 [CarpetScanner] Emitting photo data:`, {
+        filename: photoData.filename,
+        format: photoData.format,
+        sizeKB: photoData.sizeKB,
+        metadata: photoData.metadata
+      });
+
+      this.carpetConfirmed.emit(photoData);
     }
   }
 
@@ -84,12 +107,12 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
   }
 
   protected async startScanning(): Promise<void> {
-    console.log('🎬 [CarpetScanner] Starting scanning...');
+    console.log('🎬 [CarpetScanner] Starting WebP scanning...');
 
     try {
       this.cameraError.set(null);
 
-      // Get camera stream
+      // Get high-resolution camera stream for better photo quality
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: 'environment',
@@ -162,11 +185,11 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
     }
 
     if (data.photoTaken) {
-      return '✅ Perfect! Carpet photographed';
+      return `✅ Perfect! ${data.photoFormat.toUpperCase()} captured (${data.photoSizeKB}KB)`;
     }
 
     if (data.canCheckIn && !data.isSharp) {
-      return '📷 Hold steady... capturing photo';
+      return '📷 Hold steady... capturing WebP photo';
     }
 
     if (data.canCheckIn) {

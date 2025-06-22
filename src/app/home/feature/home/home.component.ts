@@ -21,6 +21,8 @@ import { ProfileCustomisationModalComponent } from '@home/ui/profile-customisati
 import { CheckinButtonComponent } from '../../../new-checkin/feature/checkin-button/checkin-button.component';
 import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-carpet-storage.service';
 import { CarpetGridComponent, type CarpetDisplayData } from '../../../carpets/ui/carpet-grid/carpet-grid.component';
+import { CarpetScannerComponent } from '../../../check-in/feature/carpet-scanner/carpet-scanner.component';
+import { CarpetPhotoData, PhotoStorageService } from '../../../shared/data-access/photo-storage.service';
 
 
 
@@ -35,13 +37,96 @@ import { CarpetGridComponent, type CarpetDisplayData } from '../../../carpets/ui
     UserProfileWidgetComponent,
     CheckinButtonComponent,
     CarpetGridComponent,
-    RouterModule
+    RouterModule,
+    CarpetScannerComponent,
+
+    JsonPipe
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
 export class HomeComponent extends BaseComponent {
   private readonly overlayService = inject(OverlayService);
+
+
+  private readonly _photoStorage = inject(PhotoStorageService);
+
+    // ✅ Simple signals for testing
+    protected readonly showCarpetTest = signal(false);
+    protected readonly lastCapturedPhoto = signal<CarpetPhotoData | null>(null);
+    protected readonly photoStats = signal<any>(null);
+
+      // ✅ Simple test methods
+  protected startCarpetTest(): void {
+    console.log('🧪 [Home] Starting carpet test...');
+    this.showCarpetTest.set(true);
+  }
+
+  protected async onCarpetConfirmed(photoData: CarpetPhotoData): Promise<void> {
+    console.log('✅ [Home] Carpet photo confirmed!', {
+      filename: photoData.filename,
+      format: photoData.format,
+      sizeKB: photoData.sizeKB,
+      metadata: photoData.metadata
+    });
+
+    try {
+      // ✅ Save the WebP/JPEG binary photo
+      await this._photoStorage.savePhotoFromCarpetData(photoData);
+
+      // Store for display
+      this.lastCapturedPhoto.set(photoData);
+
+      // Hide scanner
+      this.showCarpetTest.set(false);
+
+      // Get updated stats
+      await this.updatePhotoStats();
+
+      console.log('✅ [Home] Photo saved successfully!');
+
+    } catch (error) {
+      console.error('❌ [Home] Failed to save photo:', error);
+    }
+  }
+
+  protected onExitCarpetTest(): void {
+    console.log('🚪 [Home] Exiting carpet test');
+    this.showCarpetTest.set(false);
+  }
+
+  // ✅ Helper to see storage stats
+  protected async updatePhotoStats(): Promise<void> {
+    const stats = await this._photoStorage.getStorageStats();
+    this.photoStats.set(stats);
+    console.log('📊 [Home] Photo stats:', stats);
+  }
+
+  // ✅ Helper to clear all photos (for testing)
+  protected async clearAllPhotos(): Promise<void> {
+    await this._photoStorage.clearAllPhotos();
+    this.photoStats.set(null);
+    this.lastCapturedPhoto.set(null);
+    console.log('🧹 [Home] All photos cleared');
+  }
+
+  // ✅ Helper to display a saved photo
+  protected async displaySavedPhoto(filename: string): Promise<void> {
+    const photoUrl = await this._photoStorage.getPhotoUrl(filename);
+    if (photoUrl) {
+      // Open in new tab or display in modal
+      window.open(photoUrl, '_blank');
+
+      // Clean up URL after a delay
+      setTimeout(() => {
+        this._photoStorage.revokePhotoUrl(photoUrl);
+      }, 5000);
+    }
+  }
+
+
+
+
 
   // ✅ Store Injections
   protected readonly authStore = inject(AuthStore);

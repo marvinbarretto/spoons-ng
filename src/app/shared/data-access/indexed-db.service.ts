@@ -136,34 +136,33 @@ export class IndexedDbService {
     });
   }
 
-  /**
-   * Get all items from a store
-   */
-  async getAll<T>(
-    dbName: string,
-    storeName: string
-  ): Promise<T[]> {
-    console.log('[IndexedDB] Getting all items from:', `${dbName}/${storeName}`);
+/**
+ * Get all items from a store
+ */
+async getAll<T>(
+  dbName: string,
+  storeName: string
+): Promise<T[]> {
+  console.log('[IndexedDB] Getting all items from:', `${dbName}/${storeName}`);
 
-    const db = await this.ensureDatabase(dbName);
+  const db = await this.ensureDatabase(dbName);
 
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction([storeName], 'readonly');
-      const store = transaction.objectStore(storeName);
-      const request = store.getAll();
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction([storeName], 'readonly');
+    const store = transaction.objectStore(storeName);
+    const request = store.getAll();
 
-      request.onsuccess = () => {
-        console.log('[IndexedDB] Retrieved all items:', request.result.length);
-        resolve(request.result);
-      };
+    request.onsuccess = () => {
+      console.log('[IndexedDB] Retrieved all items:', request.result.length);
+      resolve(request.result);
+    };
 
-      request.onerror = () => {
-        console.error('[IndexedDB] Failed to get all items:', request.error);
-        reject(request.error);
-      };
-    });
-  }
-
+    request.onerror = () => {
+      console.error('[IndexedDB] Failed to get all items:', request.error);
+      reject(request.error);
+    };
+  });
+}
 
 /**
  * Get all keys from a store
@@ -192,6 +191,8 @@ async getAllKeys(
     };
   });
 }
+
+
 
 
 /**
@@ -224,7 +225,6 @@ async getByIndex<T>(
     };
   });
 }
-
   /**
    * Delete data from IndexedDB
    */
