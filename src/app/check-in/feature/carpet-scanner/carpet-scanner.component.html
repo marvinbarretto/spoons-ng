@@ -1,170 +1,219 @@
 <div class="carpet-scanner">
-  <div class="scanner-view">
-    @if (cameraError()) {
-      <!-- Camera Error State -->
-      <div class="error-state">
-        <div class="error-content">
-          <div class="error-icon">📷</div>
-          <h3>{{ cameraError() }}</h3>
-          <p>Unable to access camera for carpet scanning</p>
-          <button class="btn-primary" (click)="startScanning()">
-            Try Again
-          </button>
+  @if (showSuccessScreen()) {
+    <!-- ✅ Success Screen Component -->
+    <app-carpet-success
+      [carpetData]="carpetData()"
+      (confirmed)="onCarpetConfirmed()"
+      (scanAgain)="onScanAgain()">
+    </app-carpet-success>
+  } @else {
+    <!-- Camera Scanner View -->
+    <div class="scanner-view">
+      @if (cameraError()) {
+        <!-- Camera Error State -->
+        <div class="error-state">
+          <div class="error-content">
+            <div class="error-icon">📷</div>
+            <h3>{{ cameraError() }}</h3>
+            <p>Unable to access camera for carpet scanning</p>
+            <button class="btn-primary" (click)="startScanning()">
+              Try Again
+            </button>
+          </div>
         </div>
-      </div>
-    } @else {
-      <!-- Camera Feed Background -->
-      <video
-        #videoElement
-        class="camera-feed"
-        autoplay
-        playsinline
-        muted>
-      </video>
+      } @else {
+        <!-- Camera Feed Background -->
+        <video
+          #videoElement
+          class="camera-feed"
+          autoplay
+          playsinline
+          muted>
+        </video>
 
-      <!-- Viewfinder Overlay -->
-      <div class="viewfinder-overlay">
-        <!-- Animated Scanner Frame -->
-        <div class="scanner-frame" [class.success]="carpetData().canCheckIn">
-          <div class="corner top-left"></div>
-          <div class="corner top-right"></div>
-          <div class="corner bottom-left"></div>
-          <div class="corner bottom-right"></div>
+        <!-- Viewfinder Overlay -->
+        <div class="viewfinder-overlay">
+          <!-- Animated Scanner Frame -->
+          <div class="scanner-frame"
+               [class.success]="carpetData().canCheckIn"
+               [class.capturing]="carpetData().canCheckIn && !carpetData().isSharp"
+               [class.perfect]="carpetData().canCheckIn && carpetData().isSharp">
 
-          <!-- Scanning Line Animation -->
-          <div class="scan-line" [class.scanning]="cameraReady() && !carpetData().canCheckIn"></div>
+            <!-- Corner Brackets -->
+            <div class="corner top-left"></div>
+            <div class="corner top-right"></div>
+            <div class="corner bottom-left"></div>
+            <div class="corner bottom-right"></div>
 
-          <!-- Center Target -->
-          <div class="center-target">
-            @if (carpetData().canCheckIn) {
-              <div class="success-pulse">✅</div>
-            } @else if (cameraReady()) {
-              <div class="scanning-dot"></div>
-            } @else {
-              <div class="loading-dot">⚫</div>
-            }
+            <!-- Scanning Line Animation -->
+            <div class="scan-line" [class.scanning]="cameraReady() && !carpetData().canCheckIn"></div>
+
+            <!-- Center Target -->
+            <div class="center-target">
+              @if (carpetData().photoTaken) {
+                <div class="photo-success">📷</div>
+              } @else if (carpetData().canCheckIn && carpetData().isSharp) {
+                <div class="capturing-icon">📸</div>
+              } @else if (carpetData().canCheckIn) {
+                <div class="success-pulse">✅</div>
+              } @else if (cameraReady()) {
+                <div class="scanning-dot"></div>
+              } @else {
+                <div class="loading-dot">⚫</div>
+              }
+            </div>
+          </div>
+
+          <!-- Status Message -->
+          <div class="status-message"
+               [class.success]="carpetData().canCheckIn"
+               [class.error]="cameraError()"
+               [class.capturing]="carpetData().canCheckIn && !carpetData().isSharp">
+            {{ statusMessage }}
+          </div>
+
+          <!-- Quick Stats -->
+          @if (cameraReady() && !cameraError()) {
+            <div class="quick-stats">
+              <div class="stat" [class.active]="carpetData().isPhoneDown">
+                📱 {{ (carpetData().orientationConfidence * 100).toFixed(0) }}%
+              </div>
+              <div class="stat" [class.active]="(carpetData().edgeCount || 0) > 800">
+                🔍 {{ carpetData().edgeCount || 0 }} edges
+              </div>
+              <div class="stat" [class.active]="carpetData().isSharp">
+                📷 {{ carpetData().blurScore }}
+              </div>
+            </div>
+          }
+
+          <!-- Scanner Controls -->
+          <div class="scanner-controls">
+            <button class="btn-stop" (click)="stopScanning()">
+              Exit Scanner
+            </button>
           </div>
         </div>
 
-        <!-- Status Message -->
-        <div class="status-message" [class.success]="carpetData().canCheckIn" [class.error]="cameraError()">
-          {{ statusMessage }}
+        <!-- Debug Toggle -->
+        <div class="debug-toggle">
+          <button (click)="toggleDebug()" class="debug-btn">
+            📊 {{ showDebug() ? 'Hide' : 'Show' }} Debug
+          </button>
         </div>
 
-        <!-- Quick Stats -->
-        @if (cameraReady() && !cameraError()) {
-          <div class="quick-stats">
-            <div class="stat" [class.active]="carpetData().isPhoneDown">
-              📱 {{ (carpetData().orientationConfidence * 100).toFixed(0) }}%
+        <!-- Debug Panel -->
+        @if (showDebug()) {
+          <div class="debug-panel">
+            <h4>📊 Raw Sensor Data</h4>
+
+            <!-- Device Orientation Raw Values -->
+            <div class="section">
+              <h5>🧭 Device Orientation</h5>
+              <div class="metric">
+                <span class="label">Beta (front/back):</span>
+                <span class="value">{{ carpetData().orientationAngle.toFixed(1) }}°</span>
+              </div>
+              <div class="metric">
+                <span class="label">Gamma (left/right):</span>
+                <span class="value">{{ carpetData().gamma?.toFixed(1) || 'N/A' }}°</span>
+              </div>
+              <div class="metric">
+                <span class="label">Alpha (compass):</span>
+                <span class="value">{{ carpetData().alpha?.toFixed(1) || 'N/A' }}°</span>
+              </div>
             </div>
-            <div class="stat" [class.active]="(carpetData().edgeCount || 0) > 800">
-              🏠 {{ carpetData().edgeCount || 0 }}
+
+            <!-- Orientation Analysis -->
+            <div class="section">
+              <h5>📱 Orientation Analysis</h5>
+              <div class="metric">
+                <span class="label">Is Phone Down:</span>
+                <span class="value" [class.good]="carpetData().isPhoneDown">
+                  {{ carpetData().isPhoneDown ? '✅ YES' : '❌ NO' }}
+                </span>
+              </div>
+              <div class="metric">
+                <span class="label">Angle Diff from 0°:</span>
+                <span class="value">{{ carpetData().angleDifference?.toFixed(1) || 'N/A' }}°</span>
+              </div>
+              <div class="metric">
+                <span class="label">Orientation Confidence:</span>
+                <span class="value">{{ (carpetData().orientationConfidence * 100).toFixed(0) }}%</span>
+              </div>
+            </div>
+
+            <!-- Texture Analysis -->
+            <div class="section">
+              <h5>🏠 Texture Analysis</h5>
+              <div class="metric">
+                <span class="label">Edge Count:</span>
+                <span class="value" [class.good]="(carpetData().edgeCount || 0) > 800">
+                  {{ carpetData().edgeCount || 'N/A' }} {{ (carpetData().edgeCount || 0) > 800 ? '✅' : '❌' }}
+                </span>
+              </div>
+              <div class="metric">
+                <span class="label">Edge Threshold:</span>
+                <span class="value">800+ (carpet-like)</span>
+              </div>
+              <div class="metric">
+                <span class="label">Total Samples:</span>
+                <span class="value">{{ carpetData().totalSamples || 'N/A' }}</span>
+              </div>
+              <div class="metric">
+                <span class="label">Texture Ratio:</span>
+                <span class="value">{{ carpetData().textureRatio?.toFixed(3) || 'N/A' }}</span>
+              </div>
+              <div class="metric">
+                <span class="label">Carpet-like Texture:</span>
+                <span class="value" [class.good]="(carpetData().edgeCount || 0) > 800">
+                  {{ (carpetData().edgeCount || 0) > 800 ? '✅ YES' : '❌ NO' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Blur Detection -->
+            <div class="section">
+              <h5>📷 Image Quality</h5>
+              <div class="metric">
+                <span class="label">Is Sharp:</span>
+                <span class="value" [class.good]="carpetData().isSharp">
+                  {{ carpetData().isSharp ? '✅ YES' : '❌ NO' }}
+                </span>
+              </div>
+              <div class="metric">
+                <span class="label">Blur Score:</span>
+                <span class="value">{{ carpetData().blurScore }} (150+ = sharp)</span>
+              </div>
+              <div class="metric">
+                <span class="label">Photo Taken:</span>
+                <span class="value" [class.good]="carpetData().photoTaken">
+                  {{ carpetData().photoTaken ? '✅ YES' : '❌ NO' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Final Decision -->
+            <div class="section">
+              <h5>🎯 Decision Logic</h5>
+              <div class="metric">
+                <span class="label">Can Check In:</span>
+                <span class="value" [class.good]="carpetData().canCheckIn">
+                  {{ carpetData().canCheckIn ? '✅ YES' : '❌ NO' }}
+                </span>
+              </div>
+              <div class="metric">
+                <span class="label">Overall Confidence:</span>
+                <span class="value">{{ (carpetData().overallConfidence * 100).toFixed(0) }}%</span>
+              </div>
+              <div class="metric">
+                <span class="label">Debug Info:</span>
+                <span class="value debug">{{ carpetData().debugInfo }}</span>
+              </div>
             </div>
           </div>
         }
-
-        <!-- Controls -->
-        <div class="scanner-controls">
-          <button class="btn-stop" (click)="stopScanning()">
-            Exit Scanner
-          </button>
-        </div>
-      </div>
-
-      <!-- Debug Panel -->
-      <div class="debug-toggle">
-        <button (click)="toggleDebug()" class="debug-btn">
-          📊 {{ showDebug() ? 'Hide' : 'Show' }} Debug
-        </button>
-      </div>
-
-
-      @if (showDebug()) {
-        <div class="debug-panel">
-          <h4>📊 Raw Sensor Data</h4>
-
-          <!-- Device Orientation Raw Values -->
-          <div class="section">
-            <h5>🧭 Device Orientation</h5>
-            <div class="metric">
-              <span class="label">Beta (front/back):</span>
-              <span class="value">{{ carpetData().orientationAngle.toFixed(1) }}°</span>
-            </div>
-            <div class="metric">
-              <span class="label">Gamma (left/right):</span>
-              <span class="value">{{ carpetData().gamma?.toFixed(1) || 'N/A' }}°</span>
-            </div>
-            <div class="metric">
-              <span class="label">Alpha (compass):</span>
-              <span class="value">{{ carpetData().alpha?.toFixed(1) || 'N/A' }}°</span>
-            </div>
-          </div>
-
-          <!-- Orientation Analysis -->
-          <div class="section">
-            <h5>📱 Orientation Analysis</h5>
-            <div class="metric">
-              <span class="label">Is Phone Down:</span>
-              <span class="value" [class.good]="carpetData().isPhoneDown">
-                {{ carpetData().isPhoneDown ? '✅ YES' : '❌ NO' }}
-              </span>
-            </div>
-            <div class="metric">
-              <span class="label">Angle Diff from 90°:</span>
-              <span class="value">{{ carpetData().angleDifference?.toFixed(1) || 'N/A' }}°</span>
-            </div>
-            <div class="metric">
-              <span class="label">Orientation Confidence:</span>
-              <span class="value">{{ (carpetData().orientationConfidence * 100).toFixed(0) }}%</span>
-            </div>
-          </div>
-
-<!-- Texture Analysis -->
-<div class="section">
-  <h5>🏠 Texture Analysis</h5>
-  <div class="metric">
-    <span class="label">Edge Count:</span>
-    <span class="value" [class.good]="(carpetData().edgeCount || 0) > 800">
-      {{ carpetData().edgeCount || 'N/A' }} {{ (carpetData().edgeCount || 0) > 800 ? '✅' : '❌' }}
-    </span>
-  </div>
-  <div class="metric">
-    <span class="label">Edge Threshold:</span>
-    <span class="value">800+ (carpet-like)</span>
-  </div>
-  <div class="metric">
-    <span class="label">Total Samples:</span>
-    <span class="value">{{ carpetData().totalSamples || 'N/A' }}</span>
-  </div>
-  <div class="metric">
-    <span class="label">Texture Ratio:</span>
-    <span class="value">{{ carpetData().textureRatio?.toFixed(3) || 'N/A' }}</span>
-  </div>
-  <div class="metric">
-    <span class="label">Carpet-like Texture:</span>
-    <span class="value" [class.good]="(carpetData().edgeCount || 0) > 800">
-      {{ (carpetData().edgeCount || 0) > 800 ? '✅ YES' : '❌ NO' }}
-    </span>
-  </div>
-</div>
-
-          <!-- Final Decision -->
-          <div class="section">
-            <h5>🎯 Decision Logic</h5>
-            <div class="metric">
-              <span class="label">Can Check In:</span>
-              <span class="value" [class.good]="carpetData().canCheckIn">
-                {{ carpetData().canCheckIn ? '✅ YES' : '❌ NO' }}
-              </span>
-            </div>
-            <div class="metric">
-              <span class="label">Debug Info:</span>
-              <span class="value debug">{{ carpetData().debugInfo }}</span>
-            </div>
-          </div>
-        </div>
       }
-
-    }
-  </div>
+    </div>
+  }
 </div>

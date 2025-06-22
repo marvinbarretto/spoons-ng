@@ -11,7 +11,11 @@ export class CarpetRecognitionService {
     textureConfidence: 0,
     overallConfidence: 0,
     canCheckIn: false,
-    debugInfo: 'not started'
+    debugInfo: 'not started',
+    isSharp: false,
+    blurScore: 0,
+    capturedPhoto: null,
+    photoTaken: false
   });
 
   readonly data = this._data.asReadonly();
@@ -143,7 +147,6 @@ export class CarpetRecognitionService {
     const analyzeFrame = () => {
       if (!this._videoElement) return;
 
-      // Simple texture analysis using canvas
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
 
@@ -160,22 +163,120 @@ export class CarpetRecognitionService {
       // Get image data for analysis
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
       const textureResult = this._analyzeTexture(imageData);
+      const blurResult = this._analyzeBlur(imageData);
 
       this._updateData({
         hasTexture: textureResult.hasTexture,
         textureConfidence: textureResult.confidence,
-        edgeCount: textureResult.edgeCount,        // ✅ Store raw values
-        totalSamples: textureResult.totalSamples,  // ✅ Store raw values
-        textureRatio: textureResult.textureRatio   // ✅ Store raw values
+        edgeCount: textureResult.edgeCount,
+        totalSamples: textureResult.totalSamples,
+        textureRatio: textureResult.textureRatio,
+        isSharp: blurResult.isSharp,
+        blurScore: blurResult.score
       });
 
-      // Simple decision: only require phone pointing down for now
+      // Calculate decision
       this._calculateDecision();
+
+      // ✅ Auto-capture photo when conditions are perfect
+      const current = this._data();
+      if (current.canCheckIn && current.isSharp && !current.photoTaken) {
+        this._capturePhoto(canvas);
+      }
 
       this._animationFrame = requestAnimationFrame(analyzeFrame);
     };
 
     analyzeFrame();
+  }
+
+  // ✅ Photo capture method
+  private _capturePhoto(canvas: HTMLCanvasElement): void {
+    try {
+      // Capture high-quality photo
+      const photoData = canvas.toDataURL('image/jpeg', 0.95);
+
+      this._updateData({
+        capturedPhoto: photoData,
+        photoTaken: true,
+        debugInfo: 'Photo captured successfully!'
+      });
+
+      console.log('📸 Carpet photo captured!', {
+        blurScore: this._data().blurScore,
+        edgeCount: this._data().edgeCount
+      });
+
+    } catch (error) {
+      console.error('Failed to capture photo:', error);
+    }
+  }
+
+    // ✅ Reset for new scan
+    resetCapture(): void {
+      this._updateData({
+        capturedPhoto: null,
+        photoTaken: false,
+        debugInfo: 'Ready for new scan'
+      });
+    }
+
+  private _analyzeBlur(imageData: ImageData): { isSharp: boolean; score: number } {
+    const data = imageData.data;
+    const width = imageData.width;
+    const height = imageData.height;
+
+    // Laplacian variance method for blur detection
+    let variance = 0;
+    let mean = 0;
+    let pixelCount = 0;
+
+    // Calculate Laplacian (edge detection)
+    for (let y = 1; y < height - 1; y++) {
+      for (let x = 1; x < width - 1; x++) {
+        const idx = (y * width + x) * 4;
+
+        // Convert to grayscale
+        const center = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
+
+        // Get surrounding pixels
+        const top = (data[((y-1) * width + x) * 4] + data[((y-1) * width + x) * 4 + 1] + data[((y-1) * width + x) * 4 + 2]) / 3;
+        const bottom = (data[((y+1) * width + x) * 4] + data[((y+1) * width + x) * 4 + 1] + data[((y+1) * width + x) * 4 + 2]) / 3;
+        const left = (data[(y * width + (x-1)) * 4] + data[(y * width + (x-1)) * 4 + 1] + data[(y * width + (x-1)) * 4 + 2]) / 3;
+        const right = (data[(y * width + (x+1)) * 4] + data[(y * width + (x+1)) * 4 + 1] + data[(y * width + (x+1)) * 4 + 2]) / 3;
+
+        // Laplacian kernel: center*4 - (top + bottom + left + right)
+        const laplacian = Math.abs(center * 4 - (top + bottom + left + right));
+
+        mean += laplacian;
+        pixelCount++;
+      }
+    }
+
+    mean = mean / pixelCount;
+
+    // Calculate variance
+    for (let y = 1; y < height - 1; y++) {
+      for (let x = 1; x < width - 1; x++) {
+        const idx = (y * width + x) * 4;
+        const center = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
+        const top = (data[((y-1) * width + x) * 4] + data[((y-1) * width + x) * 4 + 1] + data[((y-1) * width + x) * 4 + 2]) / 3;
+        const bottom = (data[((y+1) * width + x) * 4] + data[((y+1) * width + x) * 4 + 1] + data[((y+1) * width + x) * 4 + 2]) / 3;
+        const left = (data[(y * width + (x-1)) * 4] + data[(y * width + (x-1)) * 4 + 1] + data[(y * width + (x-1)) * 4 + 2]) / 3;
+        const right = (data[(y * width + (x+1)) * 4] + data[(y * width + (x+1)) * 4 + 1] + data[(y * width + (x+1)) * 4 + 2]) / 3;
+
+        const laplacian = Math.abs(center * 4 - (top + bottom + left + right));
+        variance += Math.pow(laplacian - mean, 2);
+      }
+    }
+
+    variance = variance / pixelCount;
+    const blurScore = Math.round(variance);
+
+    // Higher variance = sharper image. Threshold around 100-200 typically
+    const isSharp = variance > 150;
+
+    return { isSharp, score: blurScore };
   }
 
   private _analyzeTexture(imageData: ImageData): { hasTexture: boolean; confidence: number; edgeCount: number; totalSamples: number; textureRatio: number } {
@@ -243,7 +344,7 @@ export class CarpetRecognitionService {
     });
   }
 
-  private _updateData(updates: Partial<CarpetRecognitionData>): void {
+private _updateData(updates: Partial<CarpetRecognitionData>): void {
     this._data.update(current => ({ ...current, ...updates }));
   }
 

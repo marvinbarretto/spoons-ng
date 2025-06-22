@@ -19,4 +19,9 @@ export type CarpetRecognitionData = {
   overallConfidence: number;
   canCheckIn: boolean;
   debugInfo: string;
+
+  isSharp: boolean;
+  blurScore: number;
+  capturedPhoto: string | null; // Base64 image data
+  photoTaken: boolean;
 };

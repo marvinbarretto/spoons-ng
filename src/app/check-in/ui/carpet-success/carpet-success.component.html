@@ -1,0 +1,30 @@
+<div class="success-screen">
+  <div class="success-content">
+    <div class="success-animation">
+      <div class="success-icon">✅</div>
+      <div class="success-pulse"></div>
+    </div>
+
+    <h2>Carpet Detected!</h2>
+    <p>Perfect scan captured</p>
+
+    @if (carpetData().capturedPhoto) {
+      <div class="captured-photo">
+        <img [src]="carpetData().capturedPhoto" alt="Captured carpet" />
+        <div class="photo-stats">
+          <span>📊 {{ carpetData().edgeCount }} edges detected</span>
+          <span>📷 Blur score: {{ carpetData().blurScore }}</span>
+        </div>
+      </div>
+    }
+
+    <div class="success-actions">
+      <button class="btn-primary" (click)="onConfirm()">
+        Use This Scan
+      </button>
+      <button class="btn-secondary" (click)="onScanAgain()">
+        Scan Again
+      </button>
+    </div>
+  </div>
+</div>
