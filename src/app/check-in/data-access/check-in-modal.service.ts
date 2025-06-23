@@ -5,18 +5,7 @@ import { OverlayService } from '@shared/data-access/overlay.service';
 import { UserProgressionService } from '@shared/data-access/user-progression.service';
 import { ModalCheckinSuccessComponent } from '../ui/modal-checkin-success/modal-checkin-success.component';
 import { ModalCheckinLandlordComponent } from '../ui/modal-checkin-landlord/modal-checkin-landlord.component';
-
-type CheckInResultData = {
-  success: boolean;
-  checkin?: any;
-  pub?: any;
-  points?: any;
-  isNewLandlord?: boolean;
-  landlordMessage?: string;
-  badges?: any[];
-  carpetCaptured?: boolean;
-  error?: string;
-};
+import { CheckInResultData } from '../utils/check-in.models';
 
 @Injectable({ providedIn: 'root' })
 export class CheckInModalService {

@@ -44,6 +44,10 @@ export type CheckInResultData = {
   // Badges and achievements
   badges?: CheckInBadgeData[];
 
+  // Carpet detection
+  carpetCaptured?: boolean;
+  points?: any;
+
   // User context
   userWhoCheckedIn?: string;
 

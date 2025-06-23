@@ -3,7 +3,7 @@ import { Component, inject, input, output, computed, signal, effect } from '@ang
 import { CommonModule } from '@angular/common';
 import { ButtonComponent } from '@shared/ui/button/button.component';
 import { BadgeIconComponent } from '@badges/ui/badge-icon/badge-icon.component';
-import { CheckinStore } from '../../data-access/check-in.store';
+import { NewCheckinStore } from '../../../new-checkin/data-access/new-checkin.store';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { PubStore } from '@pubs/data-access/pub.store';
 import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-carpet-storage.service';
@@ -475,7 +475,7 @@ export class ModalCheckinSuccessComponent {
   readonly nextModal = output<void>();
 
   // Store injections
-  private readonly checkinStore = inject(CheckinStore);
+  private readonly newCheckinStore = inject(NewCheckinStore);
   private readonly authStore = inject(AuthStore);
   private readonly pubStore = inject(PubStore);
   private readonly carpetStorageService = inject(DeviceCarpetStorageService);
@@ -485,10 +485,35 @@ export class ModalCheckinSuccessComponent {
   readonly carpetImageUrl = this._carpetImageUrl.asReadonly();
 
   constructor() {
+    // Debug effect to log when modal data changes
+    effect(() => {
+      const data = this.data();
+      const allCheckins = this.newCheckinStore.checkins();
+      const storeLoading = this.newCheckinStore.loading();
+      
+      console.log('[ModalCheckinSuccess] Modal data changed:', {
+        success: data.success,
+        pubId: data.pub?.id,
+        pubName: data.pub?.name,
+        carpetCaptured: data.carpetCaptured,
+        carpetImageKey: data.checkin?.carpetImageKey,
+        checkinId: data.checkin?.id,
+        timestamp: data.checkin?.timestamp
+      });
+      
+      console.log('[ModalCheckinSuccess] NewCheckinStore state:', {
+        allCheckinsCount: allCheckins.length,
+        storeLoading,
+        checkinIds: allCheckins.map(c => c.id),
+        storeHasLoadMethod: typeof this.newCheckinStore.load === 'function'
+      });
+    });
+
     // Load carpet image when data changes
     effect(() => {
       const carpetKey = this.data().checkin?.carpetImageKey;
       if (carpetKey && this.data().carpetCaptured) {
+        console.log('[ModalCheckinSuccess] Loading carpet image for key:', carpetKey);
         this.loadCarpetImage(carpetKey);
       }
     });
@@ -511,45 +536,88 @@ export class ModalCheckinSuccessComponent {
     this.data().badges || []
   );
 
-  // Personalized stats computations
+  // Personalized stats computations - now using NewCheckinStore's computed signals
   readonly totalCheckinsCount = computed(() => {
-    const userCheckins = this.checkinStore.checkins().filter(
-      c => c.userId === this.authStore.uid()
-    );
+    const userId = this.authStore.uid();
+    if (!userId) return 0;
+    
+    const allCheckins = this.newCheckinStore.checkins();
+    const userCheckins = allCheckins.filter(c => c.userId === userId);
+    
+    console.log('[ModalCheckinSuccess] totalCheckinsCount computed:', {
+      allCheckinsCount: allCheckins.length,
+      userId,
+      userCheckinsCount: userCheckins.length,
+      userCheckins: userCheckins.map(c => ({ id: c.id, pubId: c.pubId, timestamp: c.timestamp }))
+    });
+    
     return userCheckins.length;
   });
 
   readonly totalPubsCount = computed(() => {
-    const userCheckins = this.checkinStore.checkins().filter(
-      c => c.userId === this.authStore.uid()
-    );
+    const userId = this.authStore.uid();
+    if (!userId) return 0;
+    
+    const allCheckins = this.newCheckinStore.checkins();
+    const userCheckins = allCheckins.filter(c => c.userId === userId);
     const uniquePubIds = new Set(userCheckins.map(c => c.pubId));
+    
+    console.log('[ModalCheckinSuccess] totalPubsCount computed:', {
+      allCheckinsCount: allCheckins.length,
+      userId,
+      userCheckinsCount: userCheckins.length,
+      uniquePubIds: Array.from(uniquePubIds),
+      uniquePubsCount: uniquePubIds.size
+    });
+    
     return uniquePubIds.size;
   });
 
   readonly isFirstTimeAtPub = computed(() => {
     const currentPubId = this.data().pub?.id;
-    if (!currentPubId) return false;
+    const allCheckins = this.newCheckinStore.checkins();
+    const userId = this.authStore.uid();
+    
+    if (!currentPubId || !userId) {
+      console.log('[ModalCheckinSuccess] isFirstTimeAtPub: No current pub ID or user ID');
+      return false;
+    }
 
-    const userCheckins = this.checkinStore.checkins().filter(
-      c => c.userId === this.authStore.uid() && c.pubId === currentPubId
+    const userCheckins = allCheckins.filter(
+      c => c.userId === userId && c.pubId === currentPubId
     );
-    return userCheckins.length === 1;
+    
+    const isFirst = userCheckins.length === 1;
+    
+    console.log('[ModalCheckinSuccess] isFirstTimeAtPub computed:', {
+      currentPubId,
+      userId,
+      allCheckinsCount: allCheckins.length,
+      userCheckinsForThisPub: userCheckins.length,
+      isFirstTime: isFirst,
+      userCheckinsForThisPubData: userCheckins.map(c => ({ id: c.id, timestamp: c.timestamp }))
+    });
+    
+    return isFirst;
   });
 
   readonly getCurrentPubCheckinsCount = computed(() => {
     const currentPubId = this.data().pub?.id;
-    if (!currentPubId) return 0;
+    const userId = this.authStore.uid();
+    if (!currentPubId || !userId) return 0;
 
-    const userCheckins = this.checkinStore.checkins().filter(
-      c => c.userId === this.authStore.uid() && c.pubId === currentPubId
+    const userCheckins = this.newCheckinStore.checkins().filter(
+      c => c.userId === userId && c.pubId === currentPubId
     );
     return userCheckins.length;
   });
 
   readonly consecutiveDaysCount = computed(() => {
-    const userCheckins = this.checkinStore.checkins()
-      .filter(c => c.userId === this.authStore.uid())
+    const userId = this.authStore.uid();
+    if (!userId) return 0;
+    
+    const userCheckins = this.newCheckinStore.checkins()
+      .filter(c => c.userId === userId)
       .sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis());
 
     if (userCheckins.length === 0) return 0;
@@ -650,11 +718,11 @@ export class ModalCheckinSuccessComponent {
 
   debugInfo(): any {
     return {
-      loading: this.checkinStore.loading(),
-      error: this.checkinStore.error(),
-      checkinSuccess: this.checkinStore.checkinSuccess(),
-      landlordMessage: this.checkinStore.landlordMessage(),
-      dataCount: this.checkinStore.data().length,
+      loading: this.newCheckinStore.loading(),
+      error: this.newCheckinStore.error(),
+      checkinSuccess: this.newCheckinStore.checkinSuccess(),
+      landlordMessage: this.newCheckinStore.landlordMessage(),
+      dataCount: this.newCheckinStore.data().length,
       totalCheckins: this.totalCheckinsCount(),
       totalPubs: this.totalPubsCount(),
       isFirstTime: this.isFirstTimeAtPub(),

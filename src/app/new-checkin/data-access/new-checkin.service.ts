@@ -161,9 +161,9 @@ export class NewCheckinService extends FirestoreCrudService<CheckIn> {
  *
  * @param pubId - The pub to check into
  * @param carpetImageKey - Optional key for captured carpet image
- * @returns Promise<void>
+ * @returns Promise<string> - The ID of the created check-in document
  */
-async createCheckin(pubId: string, carpetImageKey?: string): Promise<void> {
+async createCheckin(pubId: string, carpetImageKey?: string): Promise<string> {
   console.log('[NewCheckinService] 💾 Creating REAL check-in for pub:', pubId);
 
   if (carpetImageKey) {
@@ -214,7 +214,34 @@ async createCheckin(pubId: string, carpetImageKey?: string): Promise<void> {
     documentId: docId,
     data: checkinData
   });
+
+  return docId;
 }
+
+  /**
+   * Load all check-ins for a specific user
+   */
+  async loadUserCheckins(userId: string): Promise<CheckIn[]> {
+    console.log('[NewCheckinService] 📡 Loading check-ins for user:', userId);
+    
+    try {
+      const checkins = await this.getDocsWhere<CheckIn>(
+        'checkins',
+        where('userId', '==', userId)
+      );
+      
+      console.log('[NewCheckinService] 📡 Loaded check-ins:', {
+        userId,
+        count: checkins.length
+      });
+      
+      return checkins;
+    } catch (error) {
+      console.error('[NewCheckinService] ❌ Failed to load user check-ins:', error);
+      throw error;
+    }
+  }
+
   /**
    * Convert Firebase errors to user-friendly messages
    */

@@ -3,7 +3,7 @@
 // =====================================
 
 // src/app/new-checkin/data-access/new-checkin.store.ts
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject, signal, computed, effect } from '@angular/core';
 import { NewCheckinService } from './new-checkin.service';
 import { OverlayService } from '../../shared/data-access/overlay.service';
 import { AuthStore } from '../../auth/data-access/auth.store';
@@ -11,25 +11,138 @@ import { PubStore } from '../../pubs/data-access/pub.store';
 import { PointsStore } from '../../points/data-access/points.store';
 import { BadgeAwardService } from '../../badges/data-access/badge-award.service';
 import { CheckInModalService } from '../../check-in/data-access/check-in-modal.service';
+import { BaseStore } from '../../shared/data-access/base.store';
+import type { CheckIn } from '../../check-in/utils/check-in.models';
+import { Timestamp } from 'firebase/firestore';
 
 
 @Injectable({ providedIn: 'root' })
-export class NewCheckinStore {
+export class NewCheckinStore extends BaseStore<CheckIn> {
   private readonly newCheckinService = inject(NewCheckinService);
   private readonly overlayService = inject(OverlayService);
-  private readonly authStore = inject(AuthStore);
   private readonly pubStore = inject(PubStore);
   private readonly pointsStore = inject(PointsStore);
   private readonly badgeAwardService = inject(BadgeAwardService);
   private readonly checkInModalService = inject(CheckInModalService);
 
+  // Check-in process state
   private readonly _isProcessing = signal(false);
-  private readonly _carpetDetectionEnabled = signal(true); // Feature flag
-  private readonly _needsCarpetScan = signal<string | null>(null); // Pub ID when carpet scan is needed
+  private readonly _carpetDetectionEnabled = signal(true);
+  private readonly _needsCarpetScan = signal<string | null>(null);
+  
+  // Check-in success state
+  private readonly _checkinSuccess = signal<CheckIn | null>(null);
+  private readonly _landlordMessage = signal<string | null>(null);
 
+  // Auth-reactive state
+  private lastLoadedUserId: string | null = null;
+
+  // Public readonly signals
   readonly isProcessing = this._isProcessing.asReadonly();
   readonly carpetDetectionEnabled = this._carpetDetectionEnabled.asReadonly();
   readonly needsCarpetScan = this._needsCarpetScan.asReadonly();
+  readonly checkinSuccess = this._checkinSuccess.asReadonly();
+  readonly landlordMessage = this._landlordMessage.asReadonly();
+
+  // Main data - expose with clean name
+  readonly checkins = this.data;
+
+  // Computed signals for derived state
+  readonly userCheckins = computed(() =>
+    this.checkins().map(c => c.pubId)
+  );
+
+  readonly checkedInPubIds = computed(() =>
+    new Set(this.data().map(checkIn => checkIn.pubId))
+  );
+
+  readonly landlordPubs = computed(() =>
+    this.checkins().filter(c => c.madeUserLandlord).map(c => c.pubId)
+  );
+
+  readonly todayCheckins = computed(() => {
+    const today = new Date().toISOString().split('T')[0];
+    return this.checkins().filter(c => c.dateKey === today);
+  });
+
+  readonly totalCheckins = computed(() => this.checkins().length);
+
+  readonly totalPubsCount = computed(() => {
+    const userId = this.authStore.uid();
+    if (!userId) return 0;
+    const userCheckins = this.checkins().filter(c => c.userId === userId);
+    const uniquePubIds = new Set(userCheckins.map(c => c.pubId));
+    return uniquePubIds.size;
+  });
+
+  constructor() {
+    super();
+    console.log('[NewCheckinStore] ✅ Initialized');
+
+    // Auth-Reactive Pattern: Auto-load when user changes
+    effect(() => {
+      const user = this.authStore.user();
+
+      console.log('[NewCheckinStore] Auth state changed:', {
+        userId: user?.uid,
+        isAnonymous: user?.isAnonymous,
+        lastLoaded: this.lastLoadedUserId
+      });
+
+      // Handle logout
+      if (!user) {
+        console.log('[NewCheckinStore] Clearing data (logout/anonymous)');
+        this.reset();
+        this.lastLoadedUserId = null;
+        return;
+      }
+
+      // Deduplication: Don't reload same user
+      if (user.uid === this.lastLoadedUserId) {
+        console.log('[NewCheckinStore] Same user, skipping reload');
+        return;
+      }
+
+      // Load: New authenticated user detected
+      console.log('[NewCheckinStore] Loading check-ins for new user:', user.uid);
+      this.lastLoadedUserId = user.uid;
+      this.load();
+    });
+  }
+
+  protected async fetchData(): Promise<CheckIn[]> {
+    const userId = this.authStore.uid();
+    if (!userId) throw new Error('No authenticated user');
+
+    console.log('[NewCheckinStore] 📡 Fetching check-ins for user:', userId);
+    return this.newCheckinService.loadUserCheckins(userId);
+  }
+
+  // Utility methods
+  hasCheckedIn(pubId: string): boolean {
+    return this.data().some(checkIn => checkIn.pubId === pubId);
+  }
+
+  canCheckInToday(pubId: string | null): boolean {
+    if (!pubId) return false;
+    const today = new Date().toISOString().split('T')[0];
+    const existingCheckin = this.checkins().find(
+      c => c.pubId === pubId && c.dateKey === today
+    );
+    return !existingCheckin;
+  }
+
+  hasCheckedInToday(pubId: string): boolean {
+    const today = new Date().toISOString().split('T')[0];
+    return this.checkins().some(c => c.pubId === pubId && c.dateKey === today);
+  }
+
+  getLatestCheckinForPub(pubId: string): CheckIn | null {
+    const pubCheckins = this.checkins()
+      .filter(c => c.pubId === pubId)
+      .sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis());
+    return pubCheckins[0] || null;
+  }
 
  /**
    * Check in to a pub with optional carpet detection
@@ -90,8 +203,32 @@ export class NewCheckinStore {
 
     // Creation phase with carpet data
     console.log('[NewCheckinStore] 💾 Starting check-in creation...');
-    await this.newCheckinService.createCheckin(pubId, carpetImageKey);
+    const newCheckinId = await this.newCheckinService.createCheckin(pubId, carpetImageKey);
     console.log('[NewCheckinStore] ✅ Check-in creation completed successfully');
+
+    // Add to local store immediately
+    const userId = this.authStore.uid();
+    console.log('[NewCheckinStore] 🔄 Adding to local store:', { userId, newCheckinId, hasUserId: !!userId, hasId: !!newCheckinId });
+    
+    if (userId && newCheckinId) {
+      const newCheckin: CheckIn = {
+        id: newCheckinId,
+        userId,
+        pubId,
+        timestamp: Timestamp.now(),
+        dateKey: new Date().toISOString().split('T')[0],
+        ...(carpetImageKey && { carpetImageKey })
+      };
+      
+      console.log('[NewCheckinStore] 🔄 Before addItem - current data count:', this.data().length);
+      this.addItem(newCheckin);
+      console.log('[NewCheckinStore] 🔄 After addItem - new data count:', this.data().length);
+      
+      this._checkinSuccess.set(newCheckin);
+      console.log('[NewCheckinStore] ✅ Added new check-in to local store:', newCheckin);
+    } else {
+      console.warn('[NewCheckinStore] ❌ Cannot add to local store - missing userId or newCheckinId');
+    }
 
     // Success flow - gather data and show overlay
     console.log('[NewCheckinStore] 🎉 Starting success flow...');
@@ -331,15 +468,16 @@ export class NewCheckinStore {
       this.checkInModalService.showCheckInResults({
         success: true,
         checkin: {
-          id: 'temp-id', // TODO: Get real ID from service
+          id: data.checkin.id,
+          userId: data.checkin.userId,
           pubId: data.checkin.pubId,
           timestamp: data.checkin.timestamp,
+          dateKey: data.checkin.dateKey,
           carpetImageKey: data.checkin.carpetImageKey
         },
         pub: {
           id: data.checkin.pubId,
-          name: data.pub.name,
-          location: data.pub.location
+          name: data.pub.name
         },
         points: data.points,
         badges: data.badges || [],
