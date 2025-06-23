@@ -3,8 +3,9 @@ import { BaseComponent } from '@shared/data-access/base.component';
 import { CarpetRecognitionService } from '../../data-access/carpet-recognition.service';
 import { CARPET_RECOGNITION_CONFIG } from '../../data-access/carpet-recognition.config';
 import { CarpetSuccessComponent } from '../../ui/carpet-success/carpet-success.component';
-import { CarpetPhotoData, PhotoStorageService } from '../../../shared/data-access/photo-storage.service';
 import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-carpet-storage.service';
+import { CarpetPhotoData, PhotoStats } from '@shared/utils/carpet-photo.models';
+
 
 @Component({
   selector: 'app-carpet-scanner',
@@ -16,8 +17,7 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
   @ViewChild('videoElement', { static: false }) videoElement!: ElementRef<HTMLVideoElement>;
 
   private readonly _carpetService = inject(CarpetRecognitionService);
-  private readonly photoStorage = inject(PhotoStorageService);
-  private readonly carpetStorage = inject(DeviceCarpetStorageService);
+  private readonly photoStorage = inject(DeviceCarpetStorageService);
 
 
 
@@ -106,7 +106,7 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
 
       // ✅ ADD THIS LINE: Save directly to IndexedDB
       await this.photoStorage.savePhotoFromCarpetData(photoData);
-      console.log('✅ [CarpetScanner] Photo saved to IndexedDB database: spoons_photos_v2');
+      console.log('✅ [CarpetScanner] Photo saved to IndexedDB database');
 
       // TODO: Do we still need this event?
       console.log('📤 [CarpetScanner] Emitting carpetConfirmed event...');

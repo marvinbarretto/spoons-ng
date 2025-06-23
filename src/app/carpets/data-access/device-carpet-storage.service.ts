@@ -3,6 +3,8 @@ import { Injectable, inject, signal } from '@angular/core';
 import { IndexedDbService } from '@shared/data-access/indexed-db.service';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { environment } from '../../../environments/environment';
+import { CarpetPhotoData, PhotoStats } from '@shared/utils/carpet-photo.models';
+
 
 type CarpetImageData = {
   userId: string;        // ✅ Associate carpet with user
@@ -106,6 +108,153 @@ export class DeviceCarpetStorageService {
 
     console.log('[CarpetStorage] Supported formats:', Array.from(this.supportedFormats));
   }
+
+
+/**
+ * ✅ Save photo from carpet data (replaces PhotoStorageService method)
+ */
+async savePhotoFromCarpetData(photoData: CarpetPhotoData, checkInId?: string): Promise<void> {
+  console.log('📸 [CarpetStorage] === SAVE PHOTO FROM CARPET DATA ===');
+  console.log('📸 [CarpetStorage] Input data:', {
+    filename: photoData.filename,
+    format: photoData.format,
+    sizeKB: photoData.sizeKB,
+    blobActualSize: photoData.blob.size,
+    blobType: photoData.blob.type,
+    checkInId: checkInId || 'none',
+    hasMetadata: !!photoData.metadata
+  });
+
+  try {
+    await this.ensureInitialized();
+
+    const userId = this.authStore.uid();
+    if (!userId) {
+      throw new Error('User must be authenticated to save photos');
+    }
+
+    // Create carpet data compatible with existing format
+    const carpetData: CarpetImageData = {
+      userId: userId,
+      pubId: checkInId || 'unknown_pub', // Use checkInId or default
+      pubName: 'Unknown Pub', // Could be enhanced later
+      date: new Date().toISOString(),
+      dateKey: photoData.filename.replace('.webp', '').replace('.jpeg', ''),
+      blob: photoData.blob,
+      size: photoData.blob.size,
+      type: photoData.blob.type || `image/${photoData.format}`,
+      width: 400, // Default values - could be extracted from metadata
+      height: 400
+    };
+
+    // Use existing save method
+    const key = `${userId}_${carpetData.pubId}_${carpetData.dateKey}`;
+    await this.indexedDb.put(
+      environment.database.name,
+      environment.database.stores.carpets,
+      carpetData,
+      key
+    );
+    await this.updateStats();
+    console.log('✅ [CarpetStorage] Photo saved successfully');
+
+  } catch (error) {
+    console.error('❌ [CarpetStorage] Save photo failed:', error);
+    throw error;
+  }
+}
+
+
+/**
+ * ✅ Get storage statistics (replaces PhotoStorageService method)
+ */
+async getStorageStats(): Promise<PhotoStats> {
+  console.log('📊 [CarpetStorage] Getting storage stats...');
+
+  try {
+    await this.ensureInitialized();
+
+    const userCarpets = await this.getUserCarpets();
+    const totalSize = userCarpets.reduce((sum, carpet) => sum + carpet.size, 0);
+
+    // Format breakdown
+    const formats = userCarpets.reduce((acc, carpet) => {
+      const format = carpet.type.includes('webp') ? 'webp' : 'jpeg';
+      if (!acc[format]) {
+        acc[format] = { count: 0, sizeKB: 0 };
+      }
+      acc[format].count++;
+      acc[format].sizeKB += Math.round(carpet.size / 1024);
+      return acc;
+    }, {} as Record<string, { count: number; sizeKB: number }>);
+
+    // Calculate estimated savings vs Base64 JPEG
+    const estimatedBase64Size = totalSize * 1.33; // Base64 overhead
+    const webpCount = formats['webp']?.count || 0;
+    const totalSavingsKB = Math.round((estimatedBase64Size - totalSize) / 1024);
+
+    const stats: PhotoStats = {
+      count: userCarpets.length,
+      totalSizeKB: Math.round(totalSize / 1024),
+      formats,
+      estimatedSavings: `${totalSavingsKB}KB saved vs Base64 JPEG`,
+      averageSizeKB: userCarpets.length > 0 ? Math.round(totalSize / 1024 / userCarpets.length) : 0
+    };
+
+    console.log('📊 [CarpetStorage] Stats:', stats);
+    return stats;
+
+  } catch (error) {
+    console.error('❌ [CarpetStorage] Failed to get stats:', error);
+    return {
+      count: 0,
+      totalSizeKB: 0,
+      formats: {},
+      estimatedSavings: '0KB',
+      averageSizeKB: 0
+    };
+  }
+}
+
+
+/**
+ * ✅ Get photo as displayable URL (replaces PhotoStorageService method)
+ */
+async getPhotoUrl(filename: string): Promise<string | null> {
+  console.log(`🖼️ [CarpetStorage] Getting photo URL for: ${filename}`);
+
+  try {
+    // For carpet storage, we need to find by filename pattern
+    const userCarpets = await this.getUserCarpets();
+    const carpet = userCarpets.find(c =>
+      c.dateKey.includes(filename.replace('.webp', '').replace('.jpeg', ''))
+    );
+
+    if (!carpet) {
+      console.log(`❌ [CarpetStorage] Photo not found: ${filename}`);
+      return null;
+    }
+
+    const url = URL.createObjectURL(carpet.blob);
+    console.log(`✅ [CarpetStorage] Created display URL for: ${filename}`);
+    return url;
+
+  } catch (error) {
+    console.error('❌ [CarpetStorage] Failed to get photo URL:', error);
+    return null;
+  }
+}
+
+
+/**
+ * ✅ Helper to revoke object URLs (prevent memory leaks)
+ */
+revokePhotoUrl(url: string): void {
+  URL.revokeObjectURL(url);
+  console.log(`🧹 [CarpetStorage] Revoked object URL`);
+}
+
+
 
   /**
    * Get best available image format

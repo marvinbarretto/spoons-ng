@@ -22,7 +22,7 @@ import { CheckinButtonComponent } from '../../../new-checkin/feature/checkin-but
 import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-carpet-storage.service';
 import { CarpetGridComponent, type CarpetDisplayData } from '../../../carpets/ui/carpet-grid/carpet-grid.component';
 import { CarpetScannerComponent } from '../../../check-in/feature/carpet-scanner/carpet-scanner.component';
-import { CarpetPhotoData, PhotoStorageService } from '../../../shared/data-access/photo-storage.service';
+import { CarpetPhotoData, PhotoStats } from '@shared/utils/carpet-photo.models';
 
 
 
@@ -48,8 +48,9 @@ import { CarpetPhotoData, PhotoStorageService } from '../../../shared/data-acces
 export class HomeComponent extends BaseComponent {
   private readonly overlayService = inject(OverlayService);
 
+  private readonly carpetStorageService = inject(DeviceCarpetStorageService); // ✅ Updated injection
 
-  private readonly _photoStorage = inject(PhotoStorageService);
+
 
     // ✅ Simple signals for testing
     protected readonly showCarpetTest = signal(false);
@@ -70,7 +71,7 @@ export class HomeComponent extends BaseComponent {
       console.log('💾 [Home] About to save photo using PhotoStorageService...');
 
       // ✅ Save the WebP/JPEG binary photo
-      await this._photoStorage.savePhotoFromCarpetData(photoData);
+      await this.carpetStorageService.savePhotoFromCarpetData(photoData);
 
       console.log('✅ [Home] Photo saved successfully via PhotoStorageService');
 
@@ -99,14 +100,14 @@ export class HomeComponent extends BaseComponent {
 
   // ✅ Helper to see storage stats
   protected async updatePhotoStats(): Promise<void> {
-    const stats = await this._photoStorage.getStorageStats();
+    const stats = await this.carpetStorageService.getStorageStats();
     this.photoStats.set(stats);
     console.log('📊 [Home] Photo stats:', stats);
   }
 
   // ✅ Helper to clear all photos (for testing)
   protected async clearAllPhotos(): Promise<void> {
-    await this._photoStorage.clearAllPhotos();
+    await this.carpetStorageService.clearUserCarpets();
     this.photoStats.set(null);
     this.lastCapturedPhoto.set(null);
     console.log('🧹 [Home] All photos cleared');
@@ -114,14 +115,14 @@ export class HomeComponent extends BaseComponent {
 
   // ✅ Helper to display a saved photo
   protected async displaySavedPhoto(filename: string): Promise<void> {
-    const photoUrl = await this._photoStorage.getPhotoUrl(filename);
+    const photoUrl = await this.carpetStorageService.getPhotoUrl(filename);
     if (photoUrl) {
       // Open in new tab or display in modal
       window.open(photoUrl, '_blank');
 
       // Clean up URL after a delay
       setTimeout(() => {
-        this._photoStorage.revokePhotoUrl(photoUrl);
+        this.carpetStorageService.revokePhotoUrl(photoUrl);
       }, 5000);
     }
   }
@@ -139,8 +140,6 @@ export class HomeComponent extends BaseComponent {
   protected readonly checkinStore = inject(CheckinStore);
 
 
-  // TODO: just have a carpetstore soon...
-  private readonly carpetStorage = inject(DeviceCarpetStorageService);
 
    protected readonly carpets = signal<CarpetDisplayData[]>([]);
    protected readonly carpetsLoading = signal(false);
@@ -301,10 +300,10 @@ handleOpenProfile(): void {
 
     try {
       // Initialize storage if needed
-      await this.carpetStorage.initialize();
+      await this.carpetStorageService.initialize();
 
       // Get all carpet data
-      const carpetData = await this.carpetStorage.getAllCarpets();
+      const carpetData = await this.carpetStorageService.getAllCarpets();
       console.log('[HomeComponent] Found', carpetData.length, 'carpets');
 
       // Convert to display format
