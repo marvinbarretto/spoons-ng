@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.56](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.55...v0.0.56) (2025-06-23)
+
+
+### Features
+
+* CameraService to handle camera ops and fix camera stream linger bug ([7ed4db9](https://github.com/marvinbarretto/spoons-ng/commit/7ed4db98e55159ca5c0742c4a3f432125731f8ba))
+* Update DevDebug so it actually wipes indexedDb too ([744b0af](https://github.com/marvinbarretto/spoons-ng/commit/744b0afecc3b4276a90d167e7904869b0e1a551a))
+
 ### [0.0.55](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.54...v0.0.55) (2025-06-23)
 
 

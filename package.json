@@ -1,7 +1,7 @@
 {
   "name": "spoons",
   "description": "Gamified pub check-in app",
-  "version": "0.0.55",
+  "version": "0.0.56",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
