@@ -15,7 +15,6 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
 type NavItem = {
   label: string;
   route?: string;
-  isDebugCarpet?: boolean;
   iconName: string;
   isActive: boolean;
   isCheckIn?: boolean;
@@ -32,22 +31,7 @@ type NavItem = {
       <nav class="footer-nav" role="navigation" aria-label="Main navigation">
         @for (item of navItems(); track item.label) {
 
-          @if (item.isDebugCarpet) {
-            <!-- ✅ NEW: Debug carpet recognition button -->
-            <button
-              class="nav-item nav-item--debug-carpet"
-              (click)="handleDebugCarpet()"
-              type="button"
-            >
-              <div class="nav-item__icon">
-                <app-icon
-                  [name]="item.iconName"
-                  size="md"
-                  weight="medium" />
-              </div>
-            </button>
-          }
-          @else if (item.isCheckIn) {
+          @if (item.isCheckIn) {
             <!-- ✅ Check-in button - use click handler -->
             <button
               class="nav-item nav-item--check-in"
@@ -305,12 +289,6 @@ export class FooterNavComponent extends BaseComponent {
         route: '/missions',
         iconName: 'flag',
         isActive: this.isOnRoute('/missions')()
-      },
-      {
-        label: '🔬 Debug Carpet',
-        iconName: 'science',
-        isActive: false,
-        isDebugCarpet: true
       },
       {
         label: 'Check In',

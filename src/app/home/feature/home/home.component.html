@@ -2,87 +2,17 @@
 
   <app-checkin-button [pubId]="'jj-moons-wembley'" />
 
-  <h2>temp test check in</h2>
-  <!-- button to go to /test-carpet screen -->
-   <button routerLink="/test-carpet">Tets carpet</button>
+  <h2>Check-in (with carpet detection)</h2>
 
 
 
-   <!-- ✅ Temporary carpet testing section -->
-  <div class="carpet-testing-section" style="margin-top: 2rem; padding: 1rem; border: 2px dashed #ccc; border-radius: 8px;">
-    <h3>🧪 Carpet Scanner Testing</h3>
-
-    @if (!showCarpetTest()) {
-      <!-- Test controls -->
-      <div class="test-controls">
-        <button
-          class="btn-primary"
-          (click)="startCarpetTest()">
-          🎯 Test Carpet Scanner
-        </button>
-
-        <button
-          class="btn-secondary"
-          (click)="updatePhotoStats()">
-          📊 Check Storage Stats
-        </button>
-
-        <button
-          class="btn-danger"
-          (click)="clearAllPhotos()">
-          🧹 Clear All Photos
-        </button>
-      </div>
-
-      <!-- Show last captured photo info -->
-      @if (lastCapturedPhoto()) {
-        <div class="last-photo-info" style="margin-top: 1rem; padding: 1rem; background: #f0f0f0; border-radius: 8px;">
-          <h4>📸 Last Captured Photo</h4>
-          <p><strong>File:</strong> {{ lastCapturedPhoto()!.filename }}</p>
-          <p><strong>Format:</strong> {{ lastCapturedPhoto()!.format.toUpperCase() }}</p>
-          <p><strong>Size:</strong> {{ lastCapturedPhoto()!.sizeKB }}KB</p>
-          @if (lastCapturedPhoto()!.metadata) {
-            <p><strong>Edges:</strong> {{ lastCapturedPhoto()!.metadata!.edgeCount }}</p>
-            <p><strong>Blur Score:</strong> {{ lastCapturedPhoto()!.metadata!.blurScore }}</p>
-            <p><strong>Confidence:</strong> {{ (lastCapturedPhoto()!.metadata!.confidence! * 100).toFixed(0) }}%</p>
-          }
-
-          <button
-            class="btn-small"
-            (click)="displaySavedPhoto(lastCapturedPhoto()!.filename)">
-            👁️ View Photo
-          </button>
-        </div>
-      }
-
-      <!-- Show storage stats -->
-      @if (photoStats()) {
-        <div class="storage-stats" style="margin-top: 1rem; padding: 1rem; background: #e8f5e8; border-radius: 8px;">
-          <h4>💾 Storage Statistics</h4>
-          <p><strong>Total Photos:</strong> {{ photoStats().count }}</p>
-          <p><strong>Total Size:</strong> {{ photoStats().totalSizeKB }}KB</p>
-          <p><strong>Average Size:</strong> {{ photoStats().averageSizeKB }}KB</p>
-          <p><strong>Savings:</strong> {{ photoStats().estimatedSavings }}</p>
-
-          @if (photoStats().formats) {
-            <div class="format-breakdown">
-              <h5>📊 Format Breakdown:</h5>
-
-              {{ photoStats() | json }}
-
-            </div>
-          }
-        </div>
-      }
-
-    } @else {
-      <!-- Carpet Scanner (fullscreen) -->
-      <app-carpet-scanner
-        (carpetConfirmed)="onCarpetConfirmed($event)"
-        (exitScanner)="onExitCarpetTest()">
-      </app-carpet-scanner>
-    }
-  </div>
+  <!-- Carpet Scanner (fullscreen when triggered) -->
+  @if (showCarpetTest()) {
+    <app-carpet-scanner
+      (carpetConfirmed)="onCarpetConfirmed($event)"
+      (exitScanner)="onExitCarpetTest()">
+    </app-carpet-scanner>
+  }
 
 
 

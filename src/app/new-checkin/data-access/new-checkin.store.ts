@@ -10,7 +10,6 @@ import { AuthStore } from '../../auth/data-access/auth.store';
 import { PubStore } from '../../pubs/data-access/pub.store';
 import { PointsStore } from '../../points/data-access/points.store';
 import { BadgeAwardService } from '../../badges/data-access/badge-award.service';
-import { CarpetCheckinIntegrationService } from '../../carpets/data-access/carpet-checkin-integration.service';
 
 
 @Injectable({ providedIn: 'root' })
@@ -21,13 +20,14 @@ export class NewCheckinStore {
   private readonly pubStore = inject(PubStore);
   private readonly pointsStore = inject(PointsStore);
   private readonly badgeAwardService = inject(BadgeAwardService);
-  private readonly carpetIntegrationService = inject(CarpetCheckinIntegrationService);
 
   private readonly _isProcessing = signal(false);
   private readonly _carpetDetectionEnabled = signal(true); // Feature flag
+  private readonly _needsCarpetScan = signal<string | null>(null); // Pub ID when carpet scan is needed
 
   readonly isProcessing = this._isProcessing.asReadonly();
   readonly carpetDetectionEnabled = this._carpetDetectionEnabled.asReadonly();
+  readonly needsCarpetScan = this._needsCarpetScan.asReadonly();
 
  /**
    * Check in to a pub with optional carpet detection
@@ -61,12 +61,26 @@ export class NewCheckinStore {
     let carpetImageKey: string | undefined;
     if (this._carpetDetectionEnabled()) {
       console.log('[NewCheckinStore] 📸 Starting carpet detection phase...');
-      carpetImageKey = await this.detectAndCaptureCarpet(pubId);
-
-      if (carpetImageKey) {
-        console.log('[NewCheckinStore] ✅ Carpet captured successfully:', carpetImageKey);
+      
+      // Check if pub has carpet references (for now always true)
+      const hasReferences = await this.pubHasCarpetReferences(pubId);
+      
+      if (hasReferences) {
+        console.log('[NewCheckinStore] 📸 Requesting carpet scan for pub:', pubId);
+        
+        // Signal that we need carpet scanning
+        this._needsCarpetScan.set(pubId);
+        
+        // Wait for carpet scan result
+        carpetImageKey = await this.waitForCarpetScanResult();
+        
+        if (carpetImageKey) {
+          console.log('[NewCheckinStore] ✅ Carpet captured successfully:', carpetImageKey);
+        } else {
+          console.log('[NewCheckinStore] ℹ️ No carpet detected or capture skipped');
+        }
       } else {
-        console.log('[NewCheckinStore] ℹ️ No carpet detected or capture skipped');
+        console.log('[NewCheckinStore] ℹ️ No carpet references for this pub, skipping detection');
       }
     } else {
       console.log('[NewCheckinStore] ⏭️ Carpet detection disabled, skipping');
@@ -100,44 +114,53 @@ export class NewCheckinStore {
 
 
   /**
-   * 🆕 Detect and capture carpet image
+   * Check if pub has carpet references
    */
-  private async detectAndCaptureCarpet(pubId: string): Promise<string | undefined> {
-    console.log('[NewCheckinStore] 📸 Initiating carpet detection for pub:', pubId);
+  private async pubHasCarpetReferences(pubId: string): Promise<boolean> {
+    console.log('[NewCheckinStore] Checking carpet references for pub:', pubId);
+    // TODO: Implement actual reference checking when service is ready
+    // For now, assume all pubs have carpet references
+    return true;
+  }
 
-    try {
-      // Check if pub has carpet references
-      const hasReferences = await this.carpetIntegrationService.pubHasCarpetReferences(pubId);
+  /**
+   * Wait for carpet scan result from UI component
+   */
+  private async waitForCarpetScanResult(): Promise<string | undefined> {
+    console.log('[NewCheckinStore] Waiting for carpet scan result...');
+    
+    // Create a promise that will be resolved when we receive the scan result
+    return new Promise<string | undefined>((resolve) => {
+      // Store the resolver so we can call it from processCarpetScanResult
+      this.carpetScanResolver = resolve;
+      
+      // Set a timeout to auto-resolve if user takes too long or cancels
+      setTimeout(() => {
+        if (this.carpetScanResolver) {
+          console.log('[NewCheckinStore] Carpet scan timeout - proceeding without carpet');
+          this.carpetScanResolver(undefined);
+          this.carpetScanResolver = null;
+          this._needsCarpetScan.set(null);
+        }
+      }, 120000); // 2 minute timeout
+    });
+  }
 
-      if (!hasReferences) {
-        console.log('[NewCheckinStore] ℹ️ No carpet references for this pub, skipping detection');
-        return undefined;
-      }
+  private carpetScanResolver: ((value: string | undefined) => void) | null = null;
 
-      console.log('[NewCheckinStore] 🎯 Pub has carpet references, starting detection...');
-
-      // Initialize carpet detection
-      const result = await this.carpetIntegrationService.detectAndCaptureCarpet(pubId);
-
-      if (result.success && result.imageKey) {
-        console.log('[NewCheckinStore] 🎉 Carpet detection successful:', {
-          imageKey: result.imageKey,
-          confidence: result.confidence,
-          matchType: result.matchType
-        });
-        return result.imageKey;
-      } else {
-        console.log('[NewCheckinStore] 📷 Carpet detection completed without match:', {
-          reason: result.error || 'No confident match',
-          confidence: result.confidence
-        });
-        return undefined;
-      }
-    } catch (error) {
-      // Don't let carpet detection failures block check-in
-      console.error('[NewCheckinStore] ⚠️ Carpet detection error (non-blocking):', error);
-      return undefined;
+  /**
+   * Process carpet scan result from UI component
+   */
+  processCarpetScanResult(imageKey: string | undefined): void {
+    console.log('[NewCheckinStore] Processing carpet scan result:', imageKey);
+    
+    if (this.carpetScanResolver) {
+      this.carpetScanResolver(imageKey);
+      this.carpetScanResolver = null;
     }
+    
+    // Clear the signal
+    this._needsCarpetScan.set(null);
   }
 
 

@@ -1,5 +1,5 @@
 // src/app/home/feature/home/home.component.ts
-import { Component, computed, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, computed, inject, signal, ChangeDetectionStrategy, effect } from '@angular/core';
 import { JsonPipe } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { BaseComponent } from '@shared/data-access/base.component';
@@ -10,6 +10,7 @@ import { MissionStore } from '@missions/data-access/mission.store';
 import { OverlayService } from '@shared/data-access/overlay.service';
 import { PointsStore } from '@points/data-access/points.store';
 import { CheckinStore } from '@check-in/data-access/check-in.store';
+import { NewCheckinStore } from '../../../new-checkin/data-access/new-checkin.store';
 
 // Import micro-widget components
 import { ScoreboardData, ScoreboardHeroComponent } from '@home/ui/scoreboard-hero/scoreboard-hero.component';
@@ -48,20 +49,25 @@ import { CarpetPhotoData, PhotoStats } from '@shared/utils/carpet-photo.models';
 export class HomeComponent extends BaseComponent {
   private readonly overlayService = inject(OverlayService);
 
+  constructor() {
+    super();
+    
+    // Watch for when check-in needs carpet scanning
+    effect(() => {
+      const needsCarpetForPub = this.newCheckinStore.needsCarpetScan();
+      if (needsCarpetForPub) {
+        console.log('[Home] Check-in needs carpet scan for pub:', needsCarpetForPub);
+        this.showCarpetTest.set(true);
+      }
+    });
+  }
+
   private readonly carpetStorageService = inject(DeviceCarpetStorageService); // ✅ Updated injection
 
 
 
-    // ✅ Simple signals for testing
+    // Signal for controlling carpet scanner display
     protected readonly showCarpetTest = signal(false);
-    protected readonly lastCapturedPhoto = signal<CarpetPhotoData | null>(null);
-    protected readonly photoStats = signal<any>(null);
-
-      // ✅ Simple test methods
-  protected startCarpetTest(): void {
-    console.log('🧪 [Home] Starting carpet test...');
-    this.showCarpetTest.set(true);
-  }
 
   protected async onCarpetConfirmed(photoData: CarpetPhotoData): Promise<void> {
     console.log('🎯 [Home] === CARPET CONFIRMED EVENT RECEIVED ===');
@@ -70,19 +76,20 @@ export class HomeComponent extends BaseComponent {
     try {
       console.log('💾 [Home] About to save photo using PhotoStorageService...');
 
-      // ✅ Save the WebP/JPEG binary photo
+      // ✅ Save the WebP/JPEG binary photo  
       await this.carpetStorageService.savePhotoFromCarpetData(photoData);
 
       console.log('✅ [Home] Photo saved successfully via PhotoStorageService');
 
-      // Store for display
-      this.lastCapturedPhoto.set(photoData);
+
+      // Check if this was part of a check-in flow
+      if (this.newCheckinStore.needsCarpetScan()) {
+        // Send result back to check-in store using filename as imageKey
+        this.newCheckinStore.processCarpetScanResult(photoData.filename);
+      }
 
       // Hide scanner
       this.showCarpetTest.set(false);
-
-      // Get updated stats
-      await this.updatePhotoStats();
 
       console.log('✅ [Home] === CARPET PROCESSING COMPLETE ===');
 
@@ -95,37 +102,16 @@ export class HomeComponent extends BaseComponent {
 
   protected onExitCarpetTest(): void {
     console.log('🚪 [Home] Exiting carpet test');
+    
+    // Check if this was part of a check-in flow
+    if (this.newCheckinStore.needsCarpetScan()) {
+      // Tell check-in store to proceed without carpet
+      this.newCheckinStore.processCarpetScanResult(undefined);
+    }
+    
     this.showCarpetTest.set(false);
   }
 
-  // ✅ Helper to see storage stats
-  protected async updatePhotoStats(): Promise<void> {
-    const stats = await this.carpetStorageService.getStorageStats();
-    this.photoStats.set(stats);
-    console.log('📊 [Home] Photo stats:', stats);
-  }
-
-  // ✅ Helper to clear all photos (for testing)
-  protected async clearAllPhotos(): Promise<void> {
-    await this.carpetStorageService.clearUserCarpets();
-    this.photoStats.set(null);
-    this.lastCapturedPhoto.set(null);
-    console.log('🧹 [Home] All photos cleared');
-  }
-
-  // ✅ Helper to display a saved photo
-  protected async displaySavedPhoto(filename: string): Promise<void> {
-    const photoUrl = await this.carpetStorageService.getPhotoUrl(filename);
-    if (photoUrl) {
-      // Open in new tab or display in modal
-      window.open(photoUrl, '_blank');
-
-      // Clean up URL after a delay
-      setTimeout(() => {
-        this.carpetStorageService.revokePhotoUrl(photoUrl);
-      }, 5000);
-    }
-  }
 
 
 
@@ -138,6 +124,7 @@ export class HomeComponent extends BaseComponent {
   protected readonly missionStore = inject(MissionStore, { optional: true });
   protected readonly pointsStore = inject(PointsStore);
   protected readonly checkinStore = inject(CheckinStore);
+  protected readonly newCheckinStore = inject(NewCheckinStore);
 
 
 
