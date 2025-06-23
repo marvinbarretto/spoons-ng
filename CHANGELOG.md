@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.53](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.52...v0.0.53) (2025-06-23)
+
+
+### Features
+
+* Add success modal after new check in ([e3989b5](https://github.com/marvinbarretto/spoons-ng/commit/e3989b5caa94d4eafd236a5ebd18c87fadd8e9e0))
+* Remove old camera code ([6c4cc79](https://github.com/marvinbarretto/spoons-ng/commit/6c4cc794f69d51a490ddfdbfb8ae799d71082a11))
+
+
+### Bug Fixes
+
+* Resolve recurring loops in carpet scanning ([3c40e10](https://github.com/marvinbarretto/spoons-ng/commit/3c40e1021433979987f2b37dcbb58bf478b704e3))
+
 ### [0.0.52](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.51...v0.0.52) (2025-06-22)
 
 
