@@ -1,7 +1,7 @@
 // src/app/home/feature/home/home.component.ts
 import { Component, computed, inject, signal, ChangeDetectionStrategy, effect } from '@angular/core';
 import { JsonPipe } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { BaseComponent } from '@shared/data-access/base.component';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { UserStore } from '@users/data-access/user.store';
@@ -11,15 +11,14 @@ import { OverlayService } from '@shared/data-access/overlay.service';
 import { PointsStore } from '@points/data-access/points.store';
 import { CheckinStore } from '@check-in/data-access/check-in.store';
 import { NewCheckinStore } from '../../../new-checkin/data-access/new-checkin.store';
+import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
 
 // Import micro-widget components
 import { ScoreboardData, ScoreboardHeroComponent } from '@home/ui/scoreboard-hero/scoreboard-hero.component';
 import { BadgesShowcaseComponent } from '@home/ui/badges-showcase/badges-showcase.component';
 import { MissionsSectionComponent } from '../../ui/missions-widget/missions-widget.component';
-import { ActionCardsComponent } from '@home/ui/action-cards/action-cards.component';
 import { UserProfileWidgetComponent } from '@home/ui/user-profile-widget/user-profile-widget.component';
 import { ProfileCustomisationModalComponent } from '@home/ui/profile-customisation-modal/profile-customisation-modal.component';
-import { CheckinButtonComponent } from '../../../new-checkin/feature/checkin-button/checkin-button.component';
 import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-carpet-storage.service';
 import { CarpetGridComponent, type CarpetDisplayData } from '../../../carpets/ui/carpet-grid/carpet-grid.component';
 import { CarpetScannerComponent } from '../../../check-in/feature/carpet-scanner/carpet-scanner.component';
@@ -34,14 +33,10 @@ import { CarpetPhotoData, PhotoStats } from '@shared/utils/carpet-photo.models';
     ScoreboardHeroComponent,
     BadgesShowcaseComponent,
     MissionsSectionComponent,
-    ActionCardsComponent,
     UserProfileWidgetComponent,
-    CheckinButtonComponent,
     CarpetGridComponent,
     RouterModule,
     CarpetScannerComponent,
-
-    JsonPipe
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
@@ -51,7 +46,7 @@ export class HomeComponent extends BaseComponent {
 
   constructor() {
     super();
-    
+
     // Watch for when check-in needs carpet scanning
     effect(() => {
       const needsCarpetForPub = this.newCheckinStore.needsCarpetScan();
@@ -76,7 +71,7 @@ export class HomeComponent extends BaseComponent {
     try {
       console.log('💾 [Home] About to save photo using PhotoStorageService...');
 
-      // ✅ Save the WebP/JPEG binary photo  
+      // ✅ Save the WebP/JPEG binary photo
       await this.carpetStorageService.savePhotoFromCarpetData(photoData);
 
       console.log('✅ [Home] Photo saved successfully via PhotoStorageService');
@@ -102,13 +97,13 @@ export class HomeComponent extends BaseComponent {
 
   protected onExitCarpetTest(): void {
     console.log('🚪 [Home] Exiting carpet test');
-    
+
     // Check if this was part of a check-in flow
     if (this.newCheckinStore.needsCarpetScan()) {
       // Tell check-in store to proceed without carpet
       this.newCheckinStore.processCarpetScanResult(undefined);
     }
-    
+
     this.showCarpetTest.set(false);
   }
 
@@ -125,6 +120,7 @@ export class HomeComponent extends BaseComponent {
   protected readonly pointsStore = inject(PointsStore);
   protected readonly checkinStore = inject(CheckinStore);
   protected readonly newCheckinStore = inject(NewCheckinStore);
+  protected readonly dataAggregator = inject(DataAggregatorService);
 
 
 
@@ -135,23 +131,13 @@ export class HomeComponent extends BaseComponent {
   // ✅ Data Signals
   readonly user = this.userStore.user;
 
-  readonly scoreboardData = computed((): ScoreboardData => {
-    const user = this.user();
-
-    // Get unique pubs from check-ins (most reliable source)
-    const uniquePubIds = new Set(this.checkinStore.checkins().map(c => c.pubId));
-
-    return {
-      totalPoints: this.pointsStore.totalPoints(),
-      todaysPoints: this.pointsStore.todaysPoints(),
-      pubsVisited: uniquePubIds.size,
-      totalPubs: 856, // Could make this configurable later
-      badgeCount: user?.badgeCount || 0,
-      landlordCount: user?.landlordCount || 0,
-      totalCheckins: this.checkinStore.checkins().length,
-      isLoading: this.pointsStore.loading() || this.checkinStore.loading()
-    };
-  });
+  /**
+   * Scoreboard data aggregated via DataAggregatorService
+   * @description Clean, dependency-free aggregation from multiple stores.
+   * DataAggregatorService eliminates circular dependencies and provides
+   * reactive computed signals for complex cross-store data.
+   */
+  readonly scoreboardData = this.dataAggregator.scoreboardData;
 
   readonly earnedBadges = computed(() => {
     return this.badgeStore?.earnedBadgesWithDefinitions?.() || [];

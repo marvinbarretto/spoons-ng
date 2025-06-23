@@ -1,36 +1,34 @@
-// src/app/points/data-access/points.store.ts
+/**
+ * @fileoverview PointsStore - Points calculation and transaction management
+ * 
+ * RESPONSIBILITIES:
+ * - Points calculation algorithms and business logic
+ * - Points transaction creation and persistence
+ * - Recent transactions history for UI/debugging
+ * - Coordinating with UserStore for display data sync
+ * 
+ * DATA FLOW:
+ * - CheckinStore requests points award → calculates points → updates UserStore immediately
+ * - Creates transaction records in Firestore for audit trail
+ * - Provides transaction history for user activity display
+ * 
+ * CRITICAL COORDINATION:
+ * - MUST update UserStore.totalPoints immediately after awarding points
+ * - UserStore becomes single source of truth for scoreboard display
+ * - This store provides the "operational" layer, UserStore provides "display" layer
+ * 
+ * AUTH-REACTIVE PATTERN:
+ * - Auto-loads when user authenticates
+ * - Clears data on logout to prevent stale state
+ * - Deduplicates loads for same user to prevent race conditions
+ * 
+ * @architecture Operations store that coordinates with UserStore for display consistency
+ */
 import { Injectable, signal, computed, inject, effect } from '@angular/core';
 import { AuthStore } from '../../auth/data-access/auth.store';
 import { PointsService } from './points.service';
 import type { PointsTransaction, PointsBreakdown, CheckInPointsData } from '../utils/points.models';
 import { UserStore } from '../../users/data-access/user.store';
-
-/**
- * PointsStore
- *
- * ✅ RESPONSIBILITIES:
- * - Points state management (signals, loading, error)
- * - Orchestrating points awarding (calculation + persistence)
- * - Reactive points computations and derived state
- * - User session management for points
- *
- * ❌ NOT RESPONSIBLE FOR:
- * - Points calculation logic (PointsService handles this)
- * - Direct Firestore operations (PointsService handles this)
- * - Check-in flow details
- *
- * 🔧 ARCHITECTURE NOTES:
- * - Auto-loads points when user becomes available (including anonymous users)
- * - Only resets when user becomes null/undefined (true logout)
- * - Maintains points persistence across page refreshes for same user
- * - Uses optimistic updates for immediate UI feedback
- *
- * 🐛 DEBUGGING:
- * - Extensive console logging for tracking state changes
- * - Stack traces on points modifications to identify sources
- * - Transaction ID tracking for duplicate detection
- * - Load state monitoring to prevent race conditions
- */
 @Injectable({ providedIn: 'root' })
 export class PointsStore {
   private readonly authStore = inject(AuthStore);
@@ -228,17 +226,19 @@ export class PointsStore {
   // ===================================
 
   /**
-   * Award points for a check-in
-   *
+   * Award points for a check-in (CRITICAL for scoreboard accuracy)
    * @param pointsData - Check-in context data for points calculation
    * @returns Promise<PointsBreakdown> - Detailed breakdown of awarded points
-   *
-   * @description
-   * - Calculates points based on distance, bonuses, streaks
-   * - Creates permanent transaction record in Firestore
-   * - Updates local state optimistically for immediate UI feedback
-   * - Updates user's total points in their profile document
-   * - Prevents duplicate calls with loading state guard
+   * @description CRITICAL PATH for real-time scoreboard updates:
+   * 1. Calculates points based on distance, bonuses, streaks
+   * 2. Creates transaction record in Firestore
+   * 3. Updates local PointsStore state
+   * 4. ✅ IMMEDIATELY updates UserStore.totalPoints (for scoreboard)
+   * 5. Updates user document in Firestore
+   * 6. Adds transaction to local history
+   * 
+   * @throws Error if user not authenticated or points award already in progress
+   * @sideEffects Updates UserStore.totalPoints immediately for real-time UI
    */
   async awardCheckInPoints(pointsData: CheckInPointsData): Promise<PointsBreakdown> {
     const callId = Date.now();
@@ -283,16 +283,20 @@ export class PointsStore {
       const newTotal = currentTotal + breakdown.total;
       this._totalPoints.set(newTotal);
 
-      console.log(`[PointsStore] 📈 Local points updated (${callId}):`, {
+      // 4. ✅ CRITICAL: Update UserStore immediately for real-time scoreboard
+      this.userStore.patchUser({ totalPoints: newTotal });
+
+      console.log(`[PointsStore] 📈 Points updated everywhere (${callId}):`, {
         from: currentTotal,
         to: newTotal,
-        added: breakdown.total
+        added: breakdown.total,
+        userStoreUpdated: true
       });
 
-      // 4. Update user's total in Firebase
+      // 5. Update user's total in Firebase
       await this.pointsService.updateUserTotalPoints(user.uid, newTotal);
 
-      // 5. Add transaction to local array
+      // 6. Add transaction to local array
       this._recentTransactions.update(current => [transaction, ...current].slice(0, 20));
 
       console.log(`[PointsStore] ✅ Award check-in points COMPLETED (${callId}):`, {
@@ -313,10 +317,11 @@ export class PointsStore {
 
   /**
    * Award points for social actions (sharing, photos)
-   *
    * @param action - Type of social action ('share' | 'photo')
    * @param pubId - Optional pub ID if action is pub-specific
    * @returns Promise<PointsBreakdown> - Points breakdown for the social action
+   * @description Awards points for social engagement and updates UserStore immediately
+   * @sideEffects Updates UserStore.totalPoints for real-time scoreboard updates
    */
   async awardSocialPoints(action: 'share' | 'photo', pubId?: string): Promise<PointsBreakdown> {
     const user = this.authStore.user();
@@ -337,9 +342,10 @@ export class PointsStore {
         createdAt: new Date()
       });
 
-      // Update local state
+      // Update local state and UserStore immediately
       const newTotal = this.totalPoints() + breakdown.total;
       this._totalPoints.set(newTotal);
+      this.userStore.patchUser({ totalPoints: newTotal }); // ✅ Real-time scoreboard update
       await this.pointsService.updateUserTotalPoints(user.uid, newTotal);
 
       console.log('[PointsStore] ✅ Social points awarded:', breakdown.total);

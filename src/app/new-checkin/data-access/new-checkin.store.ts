@@ -9,6 +9,7 @@ import { OverlayService } from '../../shared/data-access/overlay.service';
 import { AuthStore } from '../../auth/data-access/auth.store';
 import { PubStore } from '../../pubs/data-access/pub.store';
 import { PointsStore } from '../../points/data-access/points.store';
+import { UserStore } from '../../users/data-access/user.store';
 import { BadgeAwardService } from '../../badges/data-access/badge-award.service';
 import { CheckInModalService } from '../../check-in/data-access/check-in-modal.service';
 import { BaseStore } from '../../shared/data-access/base.store';
@@ -22,6 +23,7 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
   private readonly overlayService = inject(OverlayService);
   private readonly pubStore = inject(PubStore);
   private readonly pointsStore = inject(PointsStore);
+  private readonly userStore = inject(UserStore);
   private readonly badgeAwardService = inject(BadgeAwardService);
   private readonly checkInModalService = inject(CheckInModalService);
 
@@ -226,6 +228,11 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
       
       this._checkinSuccess.set(newCheckin);
       console.log('[NewCheckinStore] ✅ Added new check-in to local store:', newCheckin);
+
+      // ✅ No need to update UserStore with checkedInPubIds anymore!
+      // UserStore.pubsVisited now computes from NewCheckinStore.checkins() data
+      // This eliminates redundant UserStore updates and reduces Firebase writes
+      console.log('[NewCheckinStore] ✅ Pub count will update automatically via UserStore computed signal');
     } else {
       console.warn('[NewCheckinStore] ❌ Cannot add to local store - missing userId or newCheckinId');
     }

@@ -1,24 +1,29 @@
-// src/app/users/data-access/user.store.ts
 /**
- * UserStore - User Profile Management
- *
- * SINGLE RESPONSIBILITY: Manages user profile data and operations
- * - Load user profile from Firestore
- * - CREATE user documents if they don't exist
- * - Update user profile (avatar, display name, preferences)
- * - User-specific computed values (badges, stats, etc.)
- * - Sync with Firebase Auth profile when needed
- *
- * DOES NOT:
- * - Handle authentication (login/logout)
- * - Manage auth tokens or session state
- *
- * LINKS TO:
- * - Listens to AuthStore.user() changes via effect()
- * - When AuthStore.uid changes → loads user/{uid} from Firestore
- * - If user document doesn't exist → creates it using AuthStore data
- * - When user logs out → clears profile data
- * - Updates Firebase Auth profile when display name/avatar changes
+ * @fileoverview UserStore - Single source of truth for user display data
+ * 
+ * RESPONSIBILITIES:
+ * - User profile state management (auth-reactive pattern)
+ * - Display data for scoreboard (totalPoints, pubsVisited, badges, landlord status)
+ * - User document CRUD operations in Firestore
+ * - Sync with Firebase Auth profile updates
+ * 
+ * DATA FLOW IN:
+ * - AuthStore.user() changes → triggers loadOrCreateUser()
+ * - PointsStore.awardPoints() → updates totalPoints via patchUser()
+ * - CheckinStore.checkinToPub() → updates checkedInPubIds via patchUser()
+ * - BadgeStore awards → updates badgeCount/badgeIds via updateBadgeSummary()
+ * - LandlordStore → updates landlordCount/landlordPubIds via updateLandlordSummary()
+ * 
+ * DATA FLOW OUT:
+ * - HomeComponent.scoreboardData → reads totalPoints, pubsVisited from here
+ * - All UI components → read user profile data from here
+ * - Other stores → read user context for operations
+ * 
+ * CRITICAL: This store must stay in sync with all user data changes
+ * to ensure scoreboard and UI accuracy. Any operation that changes user
+ * stats must update this store immediately.
+ * 
+ * @architecture Auth-Reactive Pattern - automatically loads/clears based on auth state
  */
 import { Injectable, signal, computed, inject, effect } from '@angular/core';
 import { getAuth, updateProfile } from 'firebase/auth';
@@ -64,6 +69,18 @@ export class UserStore {
   readonly landlordCount = computed(() => this.user()?.landlordCount || 0);
   readonly landlordPubIds = computed(() => this.user()?.landlordPubIds || []);
 
+  /**
+   * REMOVED: pubsVisited computation moved to ScoreboardOrchestratorService
+   * @description This eliminates circular dependency between UserStore and NewCheckinStore.
+   * Use ScoreboardOrchestratorService.pubsVisited instead.
+   */
+
+  /**
+   * User's total points (for scoreboard display)
+   * @description Updated by PointsStore when points are awarded
+   */
+  readonly totalPoints = computed(() => this.user()?.totalPoints || 0);
+
   // 🔄 Track auth user changes
   private lastLoadedUserId: string | null = null;
 
@@ -96,8 +113,10 @@ export class UserStore {
   // ===================================
 
   /**
-   * Public method to load user data for a specific user ID
-   * (Called by components when needed)
+   * Load user data for a specific user ID
+   * @param userId - Firebase Auth user ID
+   * @description Called by components when needed. Triggers loadOrCreateUser() internally.
+   * Usually not needed since auth-reactive pattern handles loading automatically.
    */
   async loadUser(userId: string): Promise<void> {
     console.log('[UserStore] 🔄 Public loadUser called for:', userId);
@@ -120,7 +139,11 @@ export class UserStore {
   // ===================================
 
   /**
-   * Update user profile - handles both Firestore and Firebase Auth
+   * Update user profile (handles both Firestore and Firebase Auth)
+   * @param updates - Partial user data to update
+   * @description Updates Firestore user document and Firebase Auth profile.
+   * Uses optimistic updates - immediately updates local state, rollback on error.
+   * @throws Error if update fails (after rollback)
    */
   async updateProfile(updates: Partial<User>): Promise<void> {
     const current = this._user();
@@ -264,7 +287,17 @@ export class UserStore {
   }
 
   /**
-   * Patch user data (optimistic local update)
+   * Patch user data (optimistic local update only)
+   * @param updates - Partial user data to merge with current user
+   * @description CRITICAL for scoreboard accuracy. Used by other stores
+   * to immediately update user stats (points, badges, check-ins).
+   * Only updates local state - does not persist to Firestore.
+   * @example 
+   * // PointsStore awards points
+   * userStore.patchUser({ totalPoints: newTotal });
+   * 
+   * // CheckinStore adds pub visit
+   * userStore.patchUser({ checkedInPubIds: [...existing, newPubId] });
    */
   patchUser(updates: Partial<User>): void {
     const current = this._user();

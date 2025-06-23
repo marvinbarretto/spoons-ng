@@ -19,15 +19,18 @@ import {
 } from '@angular/fire/firestore';
 import { Observable, from } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { FirebaseMetricsService } from './firebase-metrics.service';
 
 export abstract class FirestoreService {
   private injector = inject(Injector);
   protected firestore = inject(Firestore);
+  private metricsService = inject(FirebaseMetricsService);
 
   /**
    * One-time fetch of all documents in a collection.
    */
   protected collection$<T>(path: string): Observable<T[]> {
+    this.metricsService.trackCall('read', path, 'collection$');
     return runInInjectionContext(this.injector, () => {
       const col = collection(this.firestore, path) as CollectionReference<T>;
       return from(getDocs(col)).pipe(
@@ -40,6 +43,7 @@ export abstract class FirestoreService {
    * One-time fetch of a single document by full path.
    */
   protected doc$<T>(path: string): Observable<T | undefined> {
+    this.metricsService.trackCall('read', this.extractCollectionFromPath(path), 'doc$');
     return runInInjectionContext(this.injector, () => {
       const ref = doc(this.firestore, path) as DocumentReference<T>;
       return from(getDoc(ref)).pipe(map(snapshot => snapshot.data()));
@@ -50,6 +54,7 @@ export abstract class FirestoreService {
    * Set a document by path (overwrites if exists).
    */
   protected setDoc<T>(path: string, data: T): Promise<void> {
+    this.metricsService.trackCall('write', this.extractCollectionFromPath(path), 'setDoc');
     return runInInjectionContext(this.injector, () => {
       const ref = doc(this.firestore, path) as DocumentReference<T>;
       return setDoc(ref, data);
@@ -60,6 +65,7 @@ export abstract class FirestoreService {
    * Update a document by path (merges fields).
    */
   protected updateDoc<T>(path: string, data: Partial<T>): Promise<void> {
+    this.metricsService.trackCall('write', this.extractCollectionFromPath(path), 'updateDoc');
     return runInInjectionContext(this.injector, () => {
       const ref = doc(this.firestore, path) as DocumentReference<T>;
       return updateDoc(ref, data);
@@ -70,6 +76,7 @@ export abstract class FirestoreService {
    * Delete a document by path.
    */
   protected deleteDoc(path: string): Promise<void> {
+    this.metricsService.trackCall('delete', this.extractCollectionFromPath(path), 'deleteDoc');
     return runInInjectionContext(this.injector, () => {
       const ref = doc(this.firestore, path);
       return deleteDoc(ref);
@@ -80,6 +87,7 @@ export abstract class FirestoreService {
    * Add a document to a collection (auto-generates ID).
    */
   protected addDocToCollection<T>(path: string, data: T): Promise<DocumentReference<T>> {
+    this.metricsService.trackCall('write', path, 'addDoc');
     return runInInjectionContext(this.injector, () => {
       const col = collection(this.firestore, path) as CollectionReference<T>;
       return addDoc(col, data);
@@ -102,6 +110,7 @@ export abstract class FirestoreService {
    * One-time fetch of a subcollection under a parent document.
    */
   protected async getDocByPath<T>(path: string): Promise<T | undefined> {
+    this.metricsService.trackCall('read', this.extractCollectionFromPath(path), 'getDocByPath');
     return runInInjectionContext(this.injector, async () => {
       const ref = doc(this.firestore, path) as DocumentReference<T>;
       const snap = await getDoc(ref);
@@ -113,6 +122,7 @@ export abstract class FirestoreService {
     path: string,
     ...conditions: QueryConstraint[]
   ): Promise<(T & { id: string })[]> {
+    this.metricsService.trackCall('read', path, 'getDocsWhere');
     return runInInjectionContext(this.injector, async () => {
       const ref = collection(this.firestore, path);
       const q = query(ref, ...conditions);
@@ -122,6 +132,7 @@ export abstract class FirestoreService {
   }
 
   protected async exists(path: string): Promise<boolean> {
+    this.metricsService.trackCall('read', this.extractCollectionFromPath(path), 'exists');
     return runInInjectionContext(this.injector, async () => {
       const ref = doc(this.firestore, path);
       const snap = await getDoc(ref);
@@ -129,5 +140,12 @@ export abstract class FirestoreService {
     });
   }
 
-
+  /**
+   * Extract collection name from a document path
+   * @param path - Document path like "users/123" or "checkins/abc"
+   * @returns Collection name like "users" or "checkins"
+   */
+  private extractCollectionFromPath(path: string): string {
+    return path.split('/')[0];
+  }
 }

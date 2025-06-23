@@ -1,8 +1,28 @@
-// Update: src/app/home/ui/scoreboard-hero/scoreboard-hero.component.ts
-// Dumb component with built-in count-up animations and theme support
+/**
+ * @fileoverview ScoreboardHeroComponent - Main stats display with smart animations
+ * 
+ * RESPONSIBILITIES:
+ * - Display user stats (points, pubs, badges) with visual impact
+ * - Smart animations: skip count-up for small changes, use fade-in instead
+ * - Loading states and error handling
+ * - Responsive design for mobile/desktop
+ * 
+ * ANIMATION STRATEGY:
+ * - Small changes (0→1, 1→2): Instant fade-in, feels responsive
+ * - Medium changes (10+): Short count-up animation for satisfaction
+ * - Large changes (100+): Full count-up animation for excitement
+ * 
+ * DATA FLOW:
+ * - Receives ScoreboardData from HomeComponent as input
+ * - HomeComponent gets data from UserStore (single source of truth)
+ * - Real-time updates when stores change user stats
+ * 
+ * @architecture Dumb component - all data via inputs, animations self-contained
+ */
 
-import { Component, input, computed, effect, signal, ChangeDetectionStrategy, OnDestroy, WritableSignal } from '@angular/core';
+import { Component, input, computed, effect, signal, ChangeDetectionStrategy, OnDestroy, WritableSignal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DebugService } from '../../../shared/utils/debug.service';
 
 export type ScoreboardData = {
   totalPoints: number;
@@ -280,6 +300,9 @@ export type ScoreboardData = {
 export class ScoreboardHeroComponent implements OnDestroy {
   // ✅ Dumb component - receives all data as input
   readonly data = input.required<ScoreboardData>();
+  
+  // 🔧 Dependencies
+  private readonly debug = inject(DebugService);
 
   // ✅ Count-up animation signals
   private readonly animatedPointsValue = signal(0);
@@ -304,21 +327,27 @@ export class ScoreboardHeroComponent implements OnDestroy {
   });
 
   constructor() {
-    // ✅ Set up count-up animations when data changes
+    // ✅ Set up smart animations when data changes
     effect(() => {
       const data = this.data();
 
+      this.debug.extreme('[ScoreboardHero] Data changed:', {
+        totalPoints: data.totalPoints,
+        pubsVisited: data.pubsVisited,
+        isLoading: data.isLoading,
+        timestamp: Date.now()
+      });
 
       if (!data.isLoading) {
-        // ✅ FIXED: Cancel all previous animations before starting new ones
+        // ✅ Cancel all previous animations before starting new ones
         this.cancelAllAnimations();
 
-        // Stagger the animations for a nice cascade effect
-        this.animateValue('points', this.animatedPointsValue, data.totalPoints, 1200);
-        setTimeout(() => this.animateValue('pubs', this.animatedPubsValue, data.pubsVisited, 800), 100);
-        setTimeout(() => this.animateValue('badges', this.animatedBadgesValue, data.badgeCount, 600), 200);
-        setTimeout(() => this.animateValue('landlord', this.animatedLandlordValue, data.landlordCount, 700), 250);
-        setTimeout(() => this.animateValue('checkins', this.animatedCheckinsValue, data.totalCheckins, 900), 300);
+        // ✅ Smart animation strategy based on change size
+        this.smartAnimateValue('points', this.animatedPointsValue, data.totalPoints, 1200);
+        setTimeout(() => this.smartAnimateValue('pubs', this.animatedPubsValue, data.pubsVisited, 800), 100);
+        setTimeout(() => this.smartAnimateValue('badges', this.animatedBadgesValue, data.badgeCount, 600), 200);
+        setTimeout(() => this.smartAnimateValue('landlord', this.animatedLandlordValue, data.landlordCount, 700), 250);
+        setTimeout(() => this.smartAnimateValue('checkins', this.animatedCheckinsValue, data.totalCheckins, 900), 300);
       }
     });
   }
@@ -336,7 +365,56 @@ export class ScoreboardHeroComponent implements OnDestroy {
     this.activeAnimations.clear();
   }
 
-  // ✅ FIXED: Built-in count-up animation with proper cleanup
+  /**
+   * Smart animation that chooses strategy based on change size
+   * @param key - Animation key for tracking
+   * @param signalRef - Signal to animate
+   * @param targetValue - Target number to animate to
+   * @param baseDuration - Base duration for large changes
+   * @description Decides animation strategy:
+   * - Small changes (0-3): Instant update with fade-in
+   * - Medium changes (4-20): Quick count-up
+   * - Large changes (20+): Full count-up animation
+   */
+  private smartAnimateValue(
+    key: string,
+    signalRef: WritableSignal<number>,
+    targetValue: number,
+    baseDuration: number = 1000
+  ): void {
+    const currentValue = signalRef();
+    const change = Math.abs(targetValue - currentValue);
+    
+    this.debug.extreme(`[ScoreboardHero] Smart animate ${key}:`, {
+      from: currentValue,
+      to: targetValue,
+      change,
+      strategy: change <= 3 ? 'instant' : change <= 20 ? 'quick' : 'full'
+    });
+
+    // Strategy 1: Small changes (0→1, 1→2, etc.) - instant update feels more responsive
+    if (change <= 3) {
+      signalRef.set(targetValue);
+      return;
+    }
+
+    // Strategy 2: Medium changes - quick animation
+    if (change <= 20) {
+      this.animateValue(key, signalRef, targetValue, baseDuration * 0.3);
+      return;
+    }
+
+    // Strategy 3: Large changes - full animation for excitement
+    this.animateValue(key, signalRef, targetValue, baseDuration);
+  }
+
+  /**
+   * Traditional count-up animation with easing
+   * @param key - Animation key for tracking/cleanup
+   * @param signalRef - Signal to animate
+   * @param targetValue - Target number to animate to
+   * @param duration - Animation duration in milliseconds
+   */
   private animateValue(
     key: string,
     signalRef: WritableSignal<number>,

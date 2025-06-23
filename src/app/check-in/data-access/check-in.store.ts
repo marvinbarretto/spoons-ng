@@ -1,4 +1,31 @@
-// src/app/check-in/data-access/check-in.store.ts
+/**
+ * @fileoverview CheckinStore - Check-in workflow orchestration and multi-store coordination
+ * 
+ * RESPONSIBILITIES:
+ * - Check-in workflow management (geolocation, validation, completion)
+ * - Multi-store coordination during check-ins
+ * - Badge evaluation after successful check-ins
+ * - Landlord status determination and updates
+ * 
+ * MULTI-STORE COORDINATION WORKFLOW:
+ * 1. User initiates check-in → validates location + distance
+ * 2. PointsStore.awardCheckInPoints() → calculates & awards points
+ * 3. Creates check-in record in Firestore
+ * 4. UserStore.patchUser() → updates checkedInPubIds (for pubsVisited)
+ * 5. LandlordStore.set() → updates landlord status if won
+ * 6. BadgeAwardService.evaluateAndAwardBadges() → checks for new badges
+ * 
+ * CRITICAL REAL-TIME UPDATES:
+ * - MUST update UserStore.checkedInPubIds immediately after check-in
+ * - PointsStore handles totalPoints updates automatically
+ * - All updates must be immediate for scoreboard accuracy
+ * 
+ * AUTH-REACTIVE PATTERN:
+ * - Auto-loads user's check-ins when user authenticates
+ * - Clears data on logout to prevent stale state
+ * 
+ * @architecture Orchestrator store that coordinates multiple stores during check-in flow
+ */
 import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { CheckInService } from './check-in.service';
 import type { CheckIn } from '../utils/check-in.models';
@@ -135,8 +162,19 @@ export class CheckinStore extends BaseStore<CheckIn> {
   }
 
   /**
-   * ✅ PRIMARY CHECK-IN METHOD
-   * Handles geolocation, validation, and check-in process automatically
+   * Primary check-in method - orchestrates complete workflow
+   * @param pubId - ID of pub to check into
+   * @param photoDataUrl - Optional base64 photo data
+   * @description CRITICAL multi-store coordination workflow:
+   * 1. Validates user location (geolocation + distance check)
+   * 2. Awards points via PointsStore (updates UserStore.totalPoints)
+   * 3. Creates check-in record in Firestore
+   * 4. Updates UserStore.checkedInPubIds (for real-time pubsVisited)
+   * 5. Updates LandlordStore if user becomes landlord
+   * 6. Evaluates and awards badges via BadgeAwardService
+   * 
+   * @throws Error if location denied, too far, or check-in fails
+   * @sideEffects Updates multiple stores for real-time scoreboard accuracy
    */
   async checkinToPub(pubId: string, photoDataUrl: string | null = null): Promise<void> {
     console.log('[CheckinStore] 🎯 Starting check-in for:', pubId);
