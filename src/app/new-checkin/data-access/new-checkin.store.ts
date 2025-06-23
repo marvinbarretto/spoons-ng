@@ -13,6 +13,7 @@ import { UserStore } from '../../users/data-access/user.store';
 import { BadgeAwardService } from '../../badges/data-access/badge-award.service';
 import { CheckInModalService } from '../../check-in/data-access/check-in-modal.service';
 import { BaseStore } from '../../shared/data-access/base.store';
+import { CameraService } from '../../shared/data-access/camera.service';
 import type { CheckIn } from '../../check-in/utils/check-in.models';
 import { Timestamp } from 'firebase/firestore';
 
@@ -26,6 +27,7 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
   private readonly userStore = inject(UserStore);
   private readonly badgeAwardService = inject(BadgeAwardService);
   private readonly checkInModalService = inject(CheckInModalService);
+  private readonly cameraService = inject(CameraService);
 
   // Check-in process state
   private readonly _isProcessing = signal(false);
@@ -317,46 +319,24 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
    * 🎥 CAMERA CLEANUP: Stop all active camera streams
    */
   private stopAllCameraStreams(): void {
-    console.log('%c*** CAMERA: 🚨 AGGRESSIVE CAMERA CLEANUP STARTING 🚨', 'color: red; font-weight: bold; font-size: 14px;');
+    console.log('%c*** CAMERA: NewCheckinStore requesting camera cleanup via CameraService...', 'color: red; font-weight: bold;');
     
-    // 1. Stop all video elements first
+    // Use centralized camera service + keep defensive manual cleanup for now
+    this.cameraService.releaseCamera();
+    
+    // Defensive: Also do manual cleanup (remove this if CameraService works well)
+    console.log('%c*** CAMERA: Also doing defensive manual cleanup...', 'color: orange; font-weight: bold;');
     document.querySelectorAll('video').forEach((video, index) => {
-      console.log(`%c*** CAMERA: Found video element #${index}:`, 'color: red; font-weight: bold;', video.srcObject ? 'HAS STREAM' : 'NO STREAM');
       if (video.srcObject) {
+        console.log(`%c*** CAMERA: Manual cleanup of video element #${index}`, 'color: orange; font-weight: bold;');
         const stream = video.srcObject as MediaStream;
-        console.log(`%c*** CAMERA: Video #${index} has ${stream.getTracks().length} tracks`, 'color: red; font-weight: bold;');
-        stream.getTracks().forEach((track, trackIndex) => {
-          console.log(`%c*** CAMERA: Stopping video #${index} track #${trackIndex}: ${track.kind} (${track.label}) - readyState: ${track.readyState}`, 'color: red; font-weight: bold;');
-          track.stop();
-        });
+        stream.getTracks().forEach(track => track.stop());
         video.srcObject = null;
         video.pause();
-        console.log(`%c*** CAMERA: Video element #${index} cleaned up`, 'color: red; font-weight: bold;');
       }
     });
     
-    // 2. Stop any tracks that might still be active
-    console.log('%c*** CAMERA: Attempting to enumerate and stop all media devices...', 'color: red; font-weight: bold;');
-    
-    // Try multiple approaches to stop camera
-    try {
-      // Approach 1: Get fresh camera access and immediately stop it
-      navigator.mediaDevices?.getUserMedia({ video: true, audio: false })
-        .then(stream => {
-          console.log(`%c*** CAMERA: Got fresh camera stream with ${stream.getTracks().length} tracks - stopping immediately`, 'color: red; font-weight: bold;');
-          stream.getTracks().forEach((track, index) => {
-            console.log(`%c*** CAMERA: Emergency stop track #${index}: ${track.kind} (${track.label})`, 'color: red; font-weight: bold;');
-            track.stop();
-          });
-        })
-        .catch(error => {
-          console.log('%c*** CAMERA: Could not get fresh camera stream (this is probably good):', 'color: green; font-weight: bold;', error.message);
-        });
-    } catch (error) {
-      console.log('%c*** CAMERA: Error during emergency camera cleanup:', 'color: red; font-weight: bold;', error);
-    }
-    
-    console.log('%c*** CAMERA: 🚨 AGGRESSIVE CAMERA CLEANUP COMPLETE 🚨', 'color: red; font-weight: bold; font-size: 14px;');
+    console.log('%c*** CAMERA: NewCheckinStore camera cleanup complete', 'color: red; font-weight: bold;');
   }
 
   /**

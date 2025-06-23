@@ -9,7 +9,6 @@ import { ButtonComponent } from '@shared/ui/button/button.component';
 import { ThemeSelectionWidgetComponent } from './widgets/theme-selection-widget/theme-selection-widget.component';
 import { AvatarSelectionWidgetComponent } from './widgets/avatar-selection-widget/avatar-selection-widget.component';
 import { DisplayNameWidgetComponent } from './widgets/display-name-widget/display-name-widget.component';
-import { AccountUpgradeWidgetComponent } from './widgets/account-upgrade-widget/account-upgrade-widget.component';
 
 @Component({
   selector: 'app-profile-customisation-modal',
@@ -20,7 +19,6 @@ import { AccountUpgradeWidgetComponent } from './widgets/account-upgrade-widget/
     ThemeSelectionWidgetComponent,
     AvatarSelectionWidgetComponent,
     DisplayNameWidgetComponent,
-    AccountUpgradeWidgetComponent
   ],
   template: `
     <div class="modal-container">

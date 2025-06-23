@@ -1,6 +1,7 @@
 import { Component, inject, OnDestroy, signal, ElementRef, ViewChild, OnInit, effect, output } from '@angular/core';
 import { BaseComponent } from '@shared/data-access/base.component';
 import { CarpetRecognitionService } from '../../data-access/carpet-recognition.service';
+import { CameraService } from '../../../shared/data-access/camera.service';
 import { CARPET_RECOGNITION_CONFIG } from '../../data-access/carpet-recognition.config';
 import { CarpetSuccessComponent } from '../../ui/carpet-success/carpet-success.component';
 import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-carpet-storage.service';
@@ -17,6 +18,7 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
   @ViewChild('videoElement', { static: false }) videoElement!: ElementRef<HTMLVideoElement>;
 
   private readonly _carpetService = inject(CarpetRecognitionService);
+  private readonly _cameraService = inject(CameraService);
   private readonly photoStorage = inject(DeviceCarpetStorageService);
 
 
@@ -208,28 +210,21 @@ protected onScanAgain(): void {
     try {
       this.cameraError.set(null);
 
-      // Get high-resolution camera stream for better photo quality
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: 'environment',
-          width: { ideal: CARPET_RECOGNITION_CONFIG.photo.maxWidth },
-          height: { ideal: CARPET_RECOGNITION_CONFIG.photo.maxHeight }
-        }
-      });
+      // Start recognition - this will handle camera access via CameraService
+      await this._carpetService.startRecognition();
+      console.log('✅ [CarpetScanner] Recognition started');
 
-      console.log('📹 [CarpetScanner] Camera stream obtained');
-
-      // Set up video element
-      if (this.videoElement?.nativeElement) {
+      // Get the stream from CameraService to display in our video element
+      const stream = this._cameraService.currentStream;
+      
+      if (stream && this.videoElement?.nativeElement) {
         this.videoElement.nativeElement.srcObject = stream;
         await this.videoElement.nativeElement.play();
         this.cameraReady.set(true);
-        console.log('📹 [CarpetScanner] Video element ready');
+        console.log('📹 [CarpetScanner] Video element ready with CameraService stream');
+      } else {
+        console.warn('❌ [CarpetScanner] No stream available from CameraService');
       }
-
-      // Start recognition
-      await this._carpetService.startRecognition();
-      console.log('✅ [CarpetScanner] Recognition started');
 
     } catch (error: any) {
       console.error('❌ [CarpetScanner] Camera error:', error);

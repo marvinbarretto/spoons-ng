@@ -1,9 +1,12 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
 import { CarpetRecognitionData } from '../utils/carpet.models';
 import { CARPET_RECOGNITION_CONFIG } from './carpet-recognition.config';
+import { CameraService } from '../../shared/data-access/camera.service';
 
 @Injectable({ providedIn: 'root' })
 export class CarpetRecognitionService {
+  private readonly cameraService = inject(CameraService);
+  
   private readonly _data = signal<CarpetRecognitionData>({
     isPhoneDown: false,
     orientationAngle: 0,
@@ -38,23 +41,24 @@ export class CarpetRecognitionService {
 
 
   async startRecognition(): Promise<void> {
-    console.log('🎥 [CarpetService] Starting recognition...');
+    console.log('%c*** CAMERA: [CarpetService] Starting recognition via CameraService...', 'color: blue; font-weight: bold;');
 
     try {
-      this.cleanup();
-
-      console.log('📹 [CarpetService] Requesting camera access...');
-      this._mediaStream = await navigator.mediaDevices.getUserMedia({
+      // Use centralized camera service
+      this._mediaStream = await this.cameraService.requestCamera({
         video: {
           facingMode: 'environment',
           width: { ideal: CARPET_RECOGNITION_CONFIG.photo.maxWidth },
           height: { ideal: CARPET_RECOGNITION_CONFIG.photo.maxHeight }
         }
       });
-      console.log('✅ [CarpetService] Camera access granted');
+      
+      console.log('%c*** CAMERA: [CarpetService] Camera stream received from service', 'color: blue; font-weight: bold;');
 
       this._videoElement = document.createElement('video');
-      this._videoElement.srcObject = this._mediaStream;
+      
+      // Use camera service to manage video element attachment
+      this.cameraService.attachToVideoElement(this._videoElement, this._mediaStream);
       this._videoElement.play();
 
       this._startOrientationMonitoring();
@@ -77,17 +81,23 @@ export class CarpetRecognitionService {
 
   stopRecognition(): void {
     console.log('%c*** CAMERA: [CarpetService] stopRecognition() called', 'color: red; font-weight: bold;');
-    console.log('%c*** CAMERA: 🚨 CAMERA SHOULD STOP NOW 🚨', 'color: red; font-weight: bold; font-size: 14px;');
+    console.log('%c*** CAMERA: 🚨 CAMERA SHOULD STOP NOW VIA SERVICE 🚨', 'color: red; font-weight: bold; font-size: 14px;');
+    
+    // Use centralized camera service for cleanup
+    this.cameraService.releaseCamera();
+    
+    // Local cleanup
     this.cleanup();
+    
     this._updateData({
       debugInfo: 'Recognition stopped',
       canCheckIn: false
     });
-    console.log('%c*** CAMERA: [CarpetService] Recognition stopped and camera cleaned up', 'color: red; font-weight: bold;');
+    console.log('%c*** CAMERA: [CarpetService] Recognition stopped via CameraService', 'color: red; font-weight: bold;');
   }
 
   private cleanup(): void {
-    console.log('%c*** CAMERA: [CarpetService] cleanup() starting...', 'color: red; font-weight: bold;');
+    console.log('%c*** CAMERA: [CarpetService] Local cleanup starting...', 'color: red; font-weight: bold;');
 
     if (this._animationFrame) {
       console.log('%c*** CAMERA: Cancelling animation frame', 'color: red; font-weight: bold;');
@@ -95,14 +105,11 @@ export class CarpetRecognitionService {
       this._animationFrame = null;
     }
 
+    // Camera stream cleanup is now handled by CameraService
+    // Just clear our local reference
     if (this._mediaStream) {
-      console.log('%c*** CAMERA: Stopping camera stream with ' + this._mediaStream.getTracks().length + ' tracks', 'color: red; font-weight: bold;');
-      this._mediaStream.getTracks().forEach(track => {
-        console.log(`%c*** CAMERA: Stopping track: ${track.kind} (${track.label})`, 'color: red; font-weight: bold;');
-        track.stop();
-      });
+      console.log('%c*** CAMERA: Clearing local stream reference (CameraService handles actual cleanup)', 'color: red; font-weight: bold;');
       this._mediaStream = null;
-      console.log('%c*** CAMERA: Camera stream stopped and cleared', 'color: red; font-weight: bold;');
     }
 
     if (this._videoElement) {
