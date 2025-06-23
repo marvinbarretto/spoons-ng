@@ -76,28 +76,33 @@ export class CarpetRecognitionService {
   }
 
   stopRecognition(): void {
-    console.log('🛑 [CarpetService] Stopping recognition...');
+    console.log('%c*** CAMERA: [CarpetService] stopRecognition() called', 'color: red; font-weight: bold;');
+    console.log('%c*** CAMERA: 🚨 CAMERA SHOULD STOP NOW 🚨', 'color: red; font-weight: bold; font-size: 14px;');
     this.cleanup();
     this._updateData({
       debugInfo: 'Recognition stopped',
       canCheckIn: false
     });
+    console.log('%c*** CAMERA: [CarpetService] Recognition stopped and camera cleaned up', 'color: red; font-weight: bold;');
   }
 
   private cleanup(): void {
-    console.log('🧹 [CarpetService] Cleaning up resources...');
+    console.log('%c*** CAMERA: [CarpetService] cleanup() starting...', 'color: red; font-weight: bold;');
 
     if (this._animationFrame) {
+      console.log('%c*** CAMERA: Cancelling animation frame', 'color: red; font-weight: bold;');
       cancelAnimationFrame(this._animationFrame);
       this._animationFrame = null;
     }
 
     if (this._mediaStream) {
+      console.log('%c*** CAMERA: Stopping camera stream with ' + this._mediaStream.getTracks().length + ' tracks', 'color: red; font-weight: bold;');
       this._mediaStream.getTracks().forEach(track => {
-        console.log(`🔇 [CarpetService] Stopping track: ${track.kind}`);
+        console.log(`%c*** CAMERA: Stopping track: ${track.kind} (${track.label})`, 'color: red; font-weight: bold;');
         track.stop();
       });
       this._mediaStream = null;
+      console.log('%c*** CAMERA: Camera stream stopped and cleared', 'color: red; font-weight: bold;');
     }
 
     if (this._videoElement) {

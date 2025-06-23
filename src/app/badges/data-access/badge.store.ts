@@ -99,9 +99,23 @@ export class BadgeStore extends BaseStore<EarnedBadge> {
   // ===================================
 
   async loadDefinitions(): Promise<void> {
-    if (this._definitionsLoaded || this._definitionsLoading()) {
-      console.log('[BadgeStore] ⏭ Badge definitions already loaded/loading');
+    // Check if definitions are actually loaded (not just the flag)
+    const currentDefinitions = this._definitions();
+    
+    if (this._definitionsLoaded && currentDefinitions.length > 0) {
+      console.log('[BadgeStore] ⏭ Badge definitions already loaded:', currentDefinitions.length, 'definitions');
       return;
+    }
+    
+    if (this._definitionsLoading()) {
+      console.log('[BadgeStore] ⏳ Badge definitions currently loading...');
+      return;
+    }
+    
+    // Reset flag if definitions are empty
+    if (currentDefinitions.length === 0) {
+      console.log('[BadgeStore] ⚠️ Definitions flag was true but array is empty, resetting...');
+      this._definitionsLoaded = false;
     }
 
     this._definitionsLoading.set(true);
@@ -118,14 +132,22 @@ export class BadgeStore extends BaseStore<EarnedBadge> {
           console.log('[BadgeStore] 🌐 Fetching badge definitions from network...');
           const defs = await this._badgeService.getBadges();
           console.log('[BadgeStore] ✅ Network fetch complete:', defs.length, 'badge definitions');
+          console.log('[BadgeStore] 📋 Badge definitions:', defs.map(d => ({ id: d.id, name: d.name })));
           return defs;
         }
         // No userId - global cache
       });
 
+      console.log('[BadgeStore] 📦 Cache returned:', definitions.length, 'definitions');
+      
+      if (!definitions || definitions.length === 0) {
+        console.warn('[BadgeStore] ⚠️ No badge definitions returned from cache/network!');
+      }
+      
       this._definitions.set(definitions);
       this._definitionsLoaded = true;
       console.log('[BadgeStore] ✅ Badge definitions loaded:', definitions.length);
+      console.log('[BadgeStore] ✅ Badge IDs:', definitions.map(d => d.id));
     } catch (error: any) {
       this._definitionsError.set(error?.message || 'Failed to load badge definitions');
       console.error('[BadgeStore] ❌ Failed to load badge definitions:', error);
@@ -253,10 +275,17 @@ export class BadgeStore extends BaseStore<EarnedBadge> {
     }
 
     console.log('[BadgeStore] 🏅 Awarding badge:', badgeId, 'to user:', user.uid);
+    
+    // Log current state
+    const currentDefinitions = this._definitions();
+    console.log('[BadgeStore] 📊 Current definitions count:', currentDefinitions.length);
+    console.log('[BadgeStore] 📊 Available badge IDs:', currentDefinitions.map(d => d.id));
 
     // Check if badge definition exists
     const badgeDefinition = this.getBadge(badgeId);
     if (!badgeDefinition) {
+      console.error('[BadgeStore] ❌ Badge not found in definitions:', badgeId);
+      console.error('[BadgeStore] ❌ Loaded flag:', this._definitionsLoaded);
       throw new Error(`Badge definition not found: ${badgeId}`);
     }
 

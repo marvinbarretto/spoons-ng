@@ -82,6 +82,16 @@ async checkAndAwardBadges(userId: string): Promise<string[]> {
     });
 
     try {
+      // 0. Ensure badge definitions are loaded (force clear cache first)
+      console.log('[BadgeAward] 🔄 Clearing badge definitions cache...');
+      // Force clear the cache to ensure fresh data
+      this._badgeStore['cacheService'].clear('badge-definitions');
+      this._badgeStore['_definitionsLoaded'] = false;
+      
+      console.log('[BadgeAward] 🔄 Loading badge definitions...');
+      await this._badgeStore.loadDefinitions();
+      console.log('[BadgeAward] ✅ Badge definitions load complete. Available badges:', this._badgeStore.definitions().length);
+      
       // 1. Build the context with provided user data
       const context = this.buildTriggerContext(userId, newCheckIn, allUserCheckIns);
 

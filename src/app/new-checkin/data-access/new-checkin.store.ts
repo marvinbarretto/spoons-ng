@@ -300,6 +300,10 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
   processCarpetScanResult(imageKey: string | undefined): void {
     console.log('[NewCheckinStore] Processing carpet scan result:', imageKey);
     
+    // 🎥 STOP CAMERA IMMEDIATELY - carpet scan is complete
+    console.log('%c*** CAMERA: Carpet scan complete, stopping camera immediately...', 'color: red; font-weight: bold;');
+    this.stopAllCameraStreams();
+    
     if (this.carpetScanResolver) {
       this.carpetScanResolver(imageKey);
       this.carpetScanResolver = null;
@@ -309,7 +313,51 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
     this._needsCarpetScan.set(null);
   }
 
-
+  /**
+   * 🎥 CAMERA CLEANUP: Stop all active camera streams
+   */
+  private stopAllCameraStreams(): void {
+    console.log('%c*** CAMERA: 🚨 AGGRESSIVE CAMERA CLEANUP STARTING 🚨', 'color: red; font-weight: bold; font-size: 14px;');
+    
+    // 1. Stop all video elements first
+    document.querySelectorAll('video').forEach((video, index) => {
+      console.log(`%c*** CAMERA: Found video element #${index}:`, 'color: red; font-weight: bold;', video.srcObject ? 'HAS STREAM' : 'NO STREAM');
+      if (video.srcObject) {
+        const stream = video.srcObject as MediaStream;
+        console.log(`%c*** CAMERA: Video #${index} has ${stream.getTracks().length} tracks`, 'color: red; font-weight: bold;');
+        stream.getTracks().forEach((track, trackIndex) => {
+          console.log(`%c*** CAMERA: Stopping video #${index} track #${trackIndex}: ${track.kind} (${track.label}) - readyState: ${track.readyState}`, 'color: red; font-weight: bold;');
+          track.stop();
+        });
+        video.srcObject = null;
+        video.pause();
+        console.log(`%c*** CAMERA: Video element #${index} cleaned up`, 'color: red; font-weight: bold;');
+      }
+    });
+    
+    // 2. Stop any tracks that might still be active
+    console.log('%c*** CAMERA: Attempting to enumerate and stop all media devices...', 'color: red; font-weight: bold;');
+    
+    // Try multiple approaches to stop camera
+    try {
+      // Approach 1: Get fresh camera access and immediately stop it
+      navigator.mediaDevices?.getUserMedia({ video: true, audio: false })
+        .then(stream => {
+          console.log(`%c*** CAMERA: Got fresh camera stream with ${stream.getTracks().length} tracks - stopping immediately`, 'color: red; font-weight: bold;');
+          stream.getTracks().forEach((track, index) => {
+            console.log(`%c*** CAMERA: Emergency stop track #${index}: ${track.kind} (${track.label})`, 'color: red; font-weight: bold;');
+            track.stop();
+          });
+        })
+        .catch(error => {
+          console.log('%c*** CAMERA: Could not get fresh camera stream (this is probably good):', 'color: green; font-weight: bold;', error.message);
+        });
+    } catch (error) {
+      console.log('%c*** CAMERA: Error during emergency camera cleanup:', 'color: red; font-weight: bold;', error);
+    }
+    
+    console.log('%c*** CAMERA: 🚨 AGGRESSIVE CAMERA CLEANUP COMPLETE 🚨', 'color: red; font-weight: bold; font-size: 14px;');
+  }
 
   /**
    * Handle successful check-in flow
@@ -349,7 +397,30 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
       const pointsData = await this.calculatePoints(pubId, !!carpetImageKey);
 
       // Check for new badges
-      const newBadges = await this.badgeAwardService.checkAndAwardBadges(userId);
+      // Get the newly created check-in from our success signal
+      const newCheckin = this._checkinSuccess();
+      if (!newCheckin) {
+        console.error('[NewCheckinStore] No check-in data available for badge evaluation');
+        return;
+      }
+
+      // Get all user check-ins including the new one
+      const allUserCheckIns = this.checkins().filter(c => c.userId === userId);
+      
+      // Evaluate and award badges using the same method as legacy flow
+      let awardedBadges: any[] = [];
+      try {
+        awardedBadges = await this.badgeAwardService.evaluateAndAwardBadges(
+          userId,
+          newCheckin,
+          allUserCheckIns
+        );
+        console.log('[NewCheckinStore] 🏅 Badges evaluated, awarded:', awardedBadges);
+      } catch (error) {
+        console.error('[NewCheckinStore] Badge evaluation error:', error);
+        // Don't let badge errors break the check-in flow
+        awardedBadges = [];
+      }
 
       // Check landlord status
       // TODO: Implement landlord check
@@ -367,7 +438,7 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
           location: pub?.location
         },
         points: pointsData,
-        badges: newBadges,
+        badges: awardedBadges,
         isFirstEver,
         carpetCaptured: !!carpetImageKey
       };

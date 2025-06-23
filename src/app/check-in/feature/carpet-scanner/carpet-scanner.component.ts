@@ -50,8 +50,8 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
       if (data.photoTaken && data.capturedPhoto) {
         console.log('✅ [CarpetScanner] WebP photo captured, showing success screen');
         this.showSuccessScreen.set(true);
-        // Auto-stop scanning to save battery
-        setTimeout(() => this.stopScanning(), 1000);
+        // Camera should already be stopped by autoSaveCarpet() - no need for delayed stop
+        console.log('%c*** CAMERA: Success screen shown - camera should already be stopped', 'color: orange; font-weight: bold;');
       }
     });
   }
@@ -108,6 +108,10 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
       await this.photoStorage.savePhotoFromCarpetData(photoData);
       console.log('✅ [CarpetScanner] Photo saved to IndexedDB database');
 
+      // 🎥 STOP CAMERA IMMEDIATELY - photo captured and saved
+      console.log('%c*** CAMERA: 🚨 AUTO-SAVE COMPLETE - STOPPING CAMERA NOW 🚨', 'color: red; font-weight: bold; font-size: 14px;');
+      this.stopScanning();
+      
       // TODO: Do we still need this event?
       console.log('📤 [CarpetScanner] Emitting carpetConfirmed event...');
       this.carpetConfirmed.emit(photoData);
@@ -160,12 +164,16 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
 
 // ✅ REPLACE your stopScanning method with this:
 protected stopScanning(): void {
-  console.log('🛑 [CarpetScanner] Stopping scanning...');
+  console.log('%c*** CAMERA: [CarpetScanner] stopScanning() called', 'color: red; font-weight: bold;');
+  
+  const data = this._carpetService.data();
+  console.log('%c*** CAMERA: Current state - photoTaken:', 'color: red; font-weight: bold;', data.photoTaken);
 
-  // ✅ Prevent multiple calls
-  if (!this._carpetService.data().photoTaken) {
-    this._carpetService.stopRecognition();
-  }
+  // ✅ Always stop recognition - regardless of photo state
+  console.log('%c*** CAMERA: Calling _carpetService.stopRecognition()...', 'color: red; font-weight: bold;');
+  this._carpetService.stopRecognition();
+  
+  console.log('%c*** CAMERA: [CarpetScanner] stopScanning() complete', 'color: red; font-weight: bold;');
 }
 
 // ✅ REPLACE your onScanAgain method with this:

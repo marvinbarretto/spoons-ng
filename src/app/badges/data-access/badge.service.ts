@@ -16,8 +16,11 @@ export class BadgeService extends FirestoreCrudService<Badge> {
   // ===================================
 
   async getBadges(): Promise<Badge[]> {
-    console.log('[BadgeService] getBadges');
-    return this.getAll();
+    console.log('[BadgeService] getBadges - fetching from badges collection');
+    const badges = await this.getAll();
+    console.log('[BadgeService] getBadges result:', badges.length, 'badges found');
+    console.log('[BadgeService] Badge IDs:', badges.map(b => b.id));
+    return badges;
   }
 
   async getBadge(badgeId: string): Promise<Badge | null> {
