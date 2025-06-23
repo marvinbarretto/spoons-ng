@@ -96,13 +96,34 @@ export class PhotoStorageService {
   }
 
   async savePhotoFromCarpetData(photoData: CarpetPhotoData, checkInId?: string): Promise<void> {
-    return this.savePhoto(
-      photoData.filename,
-      photoData.blob,
-      photoData.format,
-      checkInId,
-      photoData.metadata
-    );
+    console.log('📸 [PhotoStorage] === SAVE PHOTO FROM CARPET DATA ===');
+    console.log('📸 [PhotoStorage] Input data:', {
+      filename: photoData.filename,
+      format: photoData.format,
+      sizeKB: photoData.sizeKB,
+      blobActualSize: photoData.blob.size,
+      blobType: photoData.blob.type,
+      checkInId: checkInId || 'none',
+      hasMetadata: !!photoData.metadata
+    });
+
+    try {
+      console.log('🔄 [PhotoStorage] Calling savePhoto method...');
+
+      await this.savePhoto(
+        photoData.filename,
+        photoData.blob,
+        photoData.format,
+        checkInId,
+        photoData.metadata
+      );
+
+      console.log('✅ [PhotoStorage] savePhoto completed successfully');
+
+    } catch (error) {
+      console.error('❌ [PhotoStorage] savePhoto failed:', error);
+      throw error;
+    }
   }
 
   async getPhoto(filename: string): Promise<PhotoRecord | null> {
@@ -191,7 +212,7 @@ export class PhotoStorageService {
         checkInId
       );
 
-      const totalSizeKB = Math.round(photos.reduce((sum, p) => sum + p.size, 0) / 1024);
+      const totalSizeKB = Math.round(photos.reduce((sum: number, p: PhotoRecord) => sum + p.size, 0) / 1024);
       console.log(`✅ [PhotoStorage] Found ${photos.length} photos for check-in: ${checkInId} (${totalSizeKB}KB total)`);
       return photos;
 
@@ -212,7 +233,7 @@ export class PhotoStorageService {
         this.STORE_NAME
       );
 
-      const totalSizeKB = Math.round(photos.reduce((sum, p) => sum + p.size, 0) / 1024);
+      const totalSizeKB = Math.round(photos.reduce((sum: number, p: PhotoRecord) => sum + p.size, 0) / 1024);
       console.log(`✅ [PhotoStorage] Found ${photos.length} total photos (${totalSizeKB}KB)`);
       return photos;
 
@@ -236,7 +257,7 @@ export class PhotoStorageService {
 
       const photos = await this.getAllPhotos();
 
-      const totalSize = photos.reduce((sum, photo) => sum + photo.size, 0);
+      const totalSize = photos.reduce((sum: number, photo: PhotoRecord) => sum + photo.size, 0);
       const formats = photos.reduce((acc, photo) => {
         if (!acc[photo.format]) {
           acc[photo.format] = { count: 0, sizeKB: 0 };

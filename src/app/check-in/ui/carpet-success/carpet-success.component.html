@@ -1,3 +1,11 @@
+<!-- Update your existing CarpetSuccessComponent template to this: -->
+
+<div class="carpet-success-header">
+  <div class="success-icon">✅</div>
+  <h3>Carpet Saved!</h3>
+  <p>Added to your collection</p>
+</div>
+
 @if (carpetData().photoDisplayUrl) {
   <div class="captured-photo">
     <img
@@ -24,3 +32,14 @@
     <small>{{ carpetData().debugInfo }}</small>
   </div>
 }
+
+<!-- ✅ NEW: Add these action buttons -->
+<div class="action-buttons">
+  <button (click)="onContinue()" class="continue-btn">
+    Continue
+  </button>
+
+  <button (click)="onViewCollection()" class="view-collection-btn">
+    View Collection
+  </button>
+</div>

@@ -63,16 +63,16 @@ export class HomeComponent extends BaseComponent {
   }
 
   protected async onCarpetConfirmed(photoData: CarpetPhotoData): Promise<void> {
-    console.log('✅ [Home] Carpet photo confirmed!', {
-      filename: photoData.filename,
-      format: photoData.format,
-      sizeKB: photoData.sizeKB,
-      metadata: photoData.metadata
-    });
+    console.log('🎯 [Home] === CARPET CONFIRMED EVENT RECEIVED ===');
+    console.log('🎯 [Home] Photo data received:', photoData);
 
     try {
+      console.log('💾 [Home] About to save photo using PhotoStorageService...');
+
       // ✅ Save the WebP/JPEG binary photo
       await this._photoStorage.savePhotoFromCarpetData(photoData);
+
+      console.log('✅ [Home] Photo saved successfully via PhotoStorageService');
 
       // Store for display
       this.lastCapturedPhoto.set(photoData);
@@ -83,10 +83,12 @@ export class HomeComponent extends BaseComponent {
       // Get updated stats
       await this.updatePhotoStats();
 
-      console.log('✅ [Home] Photo saved successfully!');
+      console.log('✅ [Home] === CARPET PROCESSING COMPLETE ===');
 
     } catch (error) {
-      console.error('❌ [Home] Failed to save photo:', error);
+      console.error('❌ [Home] === CARPET PROCESSING FAILED ===');
+      console.error('❌ [Home] Error details:', error);
+      console.error('❌ [Home] Photo data when error occurred:', photoData);
     }
   }
 

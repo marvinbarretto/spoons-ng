@@ -1,11 +1,13 @@
+<!-- TODO: should we show success like this, or just route to another section? -->
+
 <div class="carpet-scanner">
   @if (showSuccessScreen()) {
     <!-- ✅ Success Screen Component -->
     <app-carpet-success
-      [carpetData]="carpetData()"
-      (confirmed)="onCarpetConfirmed()"
-      (scanAgain)="onScanAgain()">
-    </app-carpet-success>
+    [carpetData]="carpetData()"
+    (continueScanning)="onContinueScanning()"
+    (viewCollection)="onViewCollection()" />
+
   } @else {
     <!-- Camera Scanner View -->
     <div class="scanner-view">

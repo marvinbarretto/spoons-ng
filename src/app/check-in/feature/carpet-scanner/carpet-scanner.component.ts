@@ -2,9 +2,9 @@ import { Component, inject, OnDestroy, signal, ElementRef, ViewChild, OnInit, ef
 import { BaseComponent } from '@shared/data-access/base.component';
 import { CarpetRecognitionService } from '../../data-access/carpet-recognition.service';
 import { CARPET_RECOGNITION_CONFIG } from '../../data-access/carpet-recognition.config';
-import { DecimalPipe } from '@angular/common';
 import { CarpetSuccessComponent } from '../../ui/carpet-success/carpet-success.component';
-import { CarpetPhotoData } from '../../../shared/data-access/photo-storage.service';
+import { CarpetPhotoData, PhotoStorageService } from '../../../shared/data-access/photo-storage.service';
+import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-carpet-storage.service';
 
 @Component({
   selector: 'app-carpet-scanner',
@@ -16,6 +16,10 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
   @ViewChild('videoElement', { static: false }) videoElement!: ElementRef<HTMLVideoElement>;
 
   private readonly _carpetService = inject(CarpetRecognitionService);
+  private readonly photoStorage = inject(PhotoStorageService);
+  private readonly carpetStorage = inject(DeviceCarpetStorageService);
+
+
 
   // Signals
   protected readonly carpetData = this._carpetService.data;
@@ -24,6 +28,8 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
   protected readonly showDebug = signal(false);
   protected readonly showSuccessScreen = signal(false);
 
+  private photoAlreadySaved = false;
+
   // Outputs - now emits structured photo data
   readonly carpetConfirmed = output<CarpetPhotoData>();
   readonly exitScanner = output<void>();
@@ -31,18 +37,21 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
   constructor() {
     super();
 
-    // ✅ Fixed effect - prevent loops with proper guards
     effect(() => {
       const data = this.carpetData();
-      const currentlyShowingSuccess = this.showSuccessScreen();
+      if (data.photoTaken && data.capturedPhoto && !this.photoAlreadySaved) {
+        console.log('🔥 [CarpetScanner] Photo captured - auto-saving...');
+        this.autoSaveCarpet(data);
+      }
+    });
 
-      // ✅ Only show success screen if photo was taken AND we're not already showing it
-      if (data.photoTaken && data.capturedPhoto && !currentlyShowingSuccess) {
+    effect(() => {
+      const data = this.carpetData();
+      if (data.photoTaken && data.capturedPhoto) {
         console.log('✅ [CarpetScanner] WebP photo captured, showing success screen');
         this.showSuccessScreen.set(true);
-
-        // ✅ Stop scanning immediately but safely
-        this.stopScanning();
+        // Auto-stop scanning to save battery
+        setTimeout(() => this.stopScanning(), 1000);
       }
     });
   }
@@ -51,20 +60,38 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
     await this.startScanning();
   }
 
-  // Success component events
-  protected onCarpetConfirmed(): void {
-    const data = this.carpetData();
+    // ✅ NEW: Handle continue from success screen
+    protected onContinueScanning(): void {
+      console.log('🔄 [CarpetScanner] User chose to continue - exiting scanner');
+      this.exitScanner.emit();
+    }
 
-    if (data.capturedPhoto && data.photoFilename && data.photoDisplayUrl) {
-      console.log('[CarpetScanner] ✅ Creating CarpetPhotoData object:', {
+    // ✅ NEW: Handle view collection request
+    protected onViewCollection(): void {
+      console.log('📋 [CarpetScanner] User wants to view collection - navigating to home');
+      this.exitScanner.emit();
+    }
+
+
+
+  private async autoSaveCarpet(data: any): Promise<void> {
+    try {
+      this.photoAlreadySaved = true; // Prevent duplicate saves
+
+      console.log('💾 [CarpetScanner] === AUTO-SAVING CARPET ===');
+      console.log('💾 [CarpetScanner] Photo data:', {
         filename: data.photoFilename,
         format: data.photoFormat,
         sizeKB: data.photoSizeKB,
-        blobSize: data.capturedPhoto.size
+        blobSize: data.capturedPhoto?.size,
+        quality: {
+          edges: data.edgeCount,
+          blur: data.blurScore,
+          confidence: data.overallConfidence
+        }
       });
 
-      // ✅ Create the complete CarpetPhotoData object
-      const carpetPhotoData: CarpetPhotoData = {
+      const photoData: CarpetPhotoData = {
         filename: data.photoFilename,
         format: data.photoFormat,
         sizeKB: data.photoSizeKB,
@@ -77,15 +104,56 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
         }
       };
 
-      console.log('[CarpetScanner] ✅ Emitting CarpetPhotoData:', carpetPhotoData);
-      this.carpetConfirmed.emit(carpetPhotoData);
+      // ✅ ADD THIS LINE: Save directly to IndexedDB
+      await this.photoStorage.savePhotoFromCarpetData(photoData);
+      console.log('✅ [CarpetScanner] Photo saved to IndexedDB database: spoons_photos_v2');
 
-    } else {
-      console.error('[CarpetScanner] ❌ Missing required data for CarpetPhotoData:', {
-        hasBlob: !!data.capturedPhoto,
-        hasFilename: !!data.photoFilename,
-        hasDisplayUrl: !!data.photoDisplayUrl
-      });
+      // TODO: Do we still need this event?
+      console.log('📤 [CarpetScanner] Emitting carpetConfirmed event...');
+      this.carpetConfirmed.emit(photoData);
+      console.log('✅ [CarpetScanner] Carpet auto-saved and event emitted!');
+
+      // ✅ Show success message
+      setTimeout(() => {
+        console.log('🎉 [CarpetScanner] Auto-save complete - photo saved to collection');
+      }, 1000);
+
+    } catch (error) {
+      console.error('❌ [CarpetScanner] Auto-save failed:', error);
+      this.photoAlreadySaved = false; // Allow retry
+    }
+  }
+
+  // Success component events
+  protected onCarpetConfirmed(): void {
+    console.log('🔥 [CarpetScanner] === CARPET CONFIRMED BY USER ===');
+    console.log('🔥 [CarpetScanner] Button clicked - about to emit event');
+
+    const data = this.carpetData();
+    console.log('🔥 [CarpetScanner] Current carpet data:', {
+      photoTaken: data.photoTaken,
+      hasBlob: !!data.capturedPhoto,
+      blobSize: data.capturedPhoto?.size,
+      filename: data.photoFilename
+    });
+
+    if (data.capturedPhoto && data.photoFilename) {
+      const photoData: CarpetPhotoData = {
+        filename: data.photoFilename,
+        format: data.photoFormat,
+        sizeKB: data.photoSizeKB,
+        blob: data.capturedPhoto,
+        metadata: {
+          edgeCount: data.edgeCount,
+          blurScore: data.blurScore,
+          confidence: data.overallConfidence,
+          orientationAngle: data.orientationAngle
+        }
+      };
+
+      console.log('🔥 [CarpetScanner] About to emit carpetConfirmed with:', photoData);
+      this.carpetConfirmed.emit(photoData);
+      console.log('🔥 [CarpetScanner] carpetConfirmed event emitted!');
     }
   }
 
@@ -220,11 +288,18 @@ protected onScanAgain(): void {
 
   ngOnDestroy(): void {
     console.log('💀 [CarpetScanner] Component destroying...');
-    const data = this.carpetData();
-    if (data.photoDisplayUrl) {
-      URL.revokeObjectURL(data.photoDisplayUrl);
+
+    // Clean up photo display URL
+    const currentData = this.carpetData();
+    if (currentData.photoDisplayUrl) {
+      URL.revokeObjectURL(currentData.photoDisplayUrl);
       console.log('[CarpetScanner] 🧹 Cleaned up photo display URL');
     }
+
+    // Reset save state
+    this.photoAlreadySaved = false;
+
+    // Stop recognition
     this._carpetService.stopRecognition();
   }
 }

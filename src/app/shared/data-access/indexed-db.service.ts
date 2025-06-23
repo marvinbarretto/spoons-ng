@@ -25,26 +25,34 @@ export class IndexedDbService {
    * Open or create a database with specified configuration
    */
   async openDatabase(config: DatabaseConfig): Promise<IDBDatabase> {
-    console.log('[IndexedDB] Opening database:', config.name, 'v' + config.version);
+    console.log(`🔧 [IndexedDB] === OPENING DATABASE ===`);
+    console.log(`🔧 [IndexedDB] Database: ${config.name} v${config.version}`);
+    console.log(`🔧 [IndexedDB] Stores: ${config.stores.map(s => s.name).join(', ')}`);
 
     // Check if already open
     const existing = this.databases.get(config.name);
     if (existing && existing.version >= config.version) {
-      console.log('[IndexedDB] Database already open:', config.name);
+      console.log(`✅ [IndexedDB] Database already open: ${config.name} v${existing.version}`);
       return existing;
     }
 
     return new Promise((resolve, reject) => {
+      console.log(`⏳ [IndexedDB] Requesting database open: ${config.name}`);
       const request = indexedDB.open(config.name, config.version);
 
       request.onupgradeneeded = (event) => {
-        console.log('[IndexedDB] Upgrade needed for:', config.name);
+        console.log(`🔄 [IndexedDB] === UPGRADE NEEDED ===`);
+        console.log(`🔄 [IndexedDB] Upgrading ${config.name} from v${(event as any).oldVersion} to v${config.version}`);
+
         const db = (event.target as IDBOpenDBRequest).result;
+        console.log(`🔄 [IndexedDB] Existing stores: [${Array.from(db.objectStoreNames).join(', ')}]`);
 
         // Create stores that don't exist
         for (const storeConfig of config.stores) {
           if (!db.objectStoreNames.contains(storeConfig.name)) {
-            console.log('[IndexedDB] Creating store:', storeConfig.name);
+            console.log(`🆕 [IndexedDB] Creating store: ${storeConfig.name}`);
+            console.log(`🆕 [IndexedDB] Store config:`, storeConfig);
+
             const store = db.createObjectStore(
               storeConfig.name,
               storeConfig.keyPath ? { keyPath: storeConfig.keyPath } : undefined
@@ -53,24 +61,36 @@ export class IndexedDbService {
             // Create indexes if specified
             if (storeConfig.indexes) {
               for (const index of storeConfig.indexes) {
-                console.log('[IndexedDB] Creating index:', index.name);
+                console.log(`📇 [IndexedDB] Creating index: ${index.name} on ${index.keyPath}`);
                 store.createIndex(index.name, index.keyPath, { unique: index.unique });
               }
             }
+            console.log(`✅ [IndexedDB] Store created: ${storeConfig.name}`);
+          } else {
+            console.log(`ℹ️ [IndexedDB] Store already exists: ${storeConfig.name}`);
           }
         }
+        console.log(`🔄 [IndexedDB] === UPGRADE COMPLETE ===`);
       };
 
       request.onsuccess = () => {
         const db = request.result;
         this.databases.set(config.name, db);
-        console.log('[IndexedDB] Database opened successfully:', config.name);
+        console.log(`✅ [IndexedDB] === DATABASE OPENED SUCCESSFULLY ===`);
+        console.log(`✅ [IndexedDB] Database: ${config.name} v${db.version}`);
+        console.log(`✅ [IndexedDB] Available stores: [${Array.from(db.objectStoreNames).join(', ')}]`);
         resolve(db);
       };
 
       request.onerror = () => {
-        console.error('[IndexedDB] Failed to open database:', config.name, request.error);
+        console.error(`❌ [IndexedDB] === DATABASE OPEN FAILED ===`);
+        console.error(`❌ [IndexedDB] Database: ${config.name}`);
+        console.error(`❌ [IndexedDB] Error:`, request.error);
         reject(request.error);
+      };
+
+      request.onblocked = () => {
+        console.warn(`⚠️ [IndexedDB] Database open blocked: ${config.name} (another tab may be using an older version)`);
       };
     });
   }
@@ -84,23 +104,76 @@ export class IndexedDbService {
     data: T,
     key?: IDBValidKey
   ): Promise<IDBValidKey> {
-    console.log('[IndexedDB] Storing data in:', `${dbName}/${storeName}`, key ? `with key: ${key}` : '');
+    const startTime = performance.now();
+
+    console.log(`💾 [IndexedDB] === PUT OPERATION STARTED ===`);
+    console.log(`💾 [IndexedDB] Target: ${dbName}/${storeName}`);
+    console.log(`💾 [IndexedDB] Key: ${key || 'auto-generated'}`);
+    console.log(`💾 [IndexedDB] Data type: ${typeof data}`);
+
+    // Log data size if it's a blob or large object
+    if (data instanceof Blob) {
+      console.log(`💾 [IndexedDB] Blob size: ${(data.size / 1024).toFixed(1)}KB (${data.type})`);
+    } else if (typeof data === 'object' && data !== null) {
+      try {
+        const jsonSize = JSON.stringify(data).length;
+        console.log(`💾 [IndexedDB] Object size: ~${(jsonSize / 1024).toFixed(1)}KB`);
+      } catch {
+        console.log(`💾 [IndexedDB] Object size: [unable to estimate]`);
+      }
+    }
 
     const db = await this.ensureDatabase(dbName);
+    console.log(`📊 [IndexedDB] Database connection confirmed`);
 
     return new Promise((resolve, reject) => {
+      console.log(`🔄 [IndexedDB] Creating transaction: ${storeName} (readwrite)`);
+
       const transaction = db.transaction([storeName], 'readwrite');
+
+      transaction.onabort = () => {
+        const duration = performance.now() - startTime;
+        console.error(`❌ [IndexedDB] Transaction aborted after ${duration.toFixed(1)}ms`);
+        console.error(`❌ [IndexedDB] Abort reason:`, transaction.error);
+      };
+
+      transaction.oncomplete = () => {
+        const duration = performance.now() - startTime;
+        console.log(`✅ [IndexedDB] Transaction completed successfully in ${duration.toFixed(1)}ms`);
+      };
+
+      transaction.onerror = () => {
+        const duration = performance.now() - startTime;
+        console.error(`❌ [IndexedDB] Transaction error after ${duration.toFixed(1)}ms:`, transaction.error);
+      };
+
       const store = transaction.objectStore(storeName);
+      console.log(`📂 [IndexedDB] Object store accessed: ${storeName}`);
 
       const request = key ? store.put(data, key) : store.put(data);
+      console.log(`⏳ [IndexedDB] Put request initiated...`);
 
       request.onsuccess = () => {
-        console.log('[IndexedDB] Data stored successfully, key:', request.result);
-        resolve(request.result);
+        const duration = performance.now() - startTime;
+        const resultKey = request.result;
+
+        console.log(`✅ [IndexedDB] === PUT OPERATION SUCCESS ===`);
+        console.log(`✅ [IndexedDB] Duration: ${duration.toFixed(1)}ms`);
+        console.log(`✅ [IndexedDB] Result key: ${resultKey}`);
+        console.log(`✅ [IndexedDB] Target: ${dbName}/${storeName}`);
+
+        resolve(resultKey);
       };
 
       request.onerror = () => {
-        console.error('[IndexedDB] Failed to store data:', request.error);
+        const duration = performance.now() - startTime;
+        console.error(`❌ [IndexedDB] === PUT OPERATION FAILED ===`);
+        console.error(`❌ [IndexedDB] Duration: ${duration.toFixed(1)}ms`);
+        console.error(`❌ [IndexedDB] Target: ${dbName}/${storeName}`);
+        console.error(`❌ [IndexedDB] Error:`, request.error);
+        console.error(`❌ [IndexedDB] Error name:`, request.error?.name);
+        console.error(`❌ [IndexedDB] Error message:`, request.error?.message);
+
         reject(request.error);
       };
     });
@@ -114,7 +187,11 @@ export class IndexedDbService {
     storeName: string,
     key: IDBValidKey
   ): Promise<T | undefined> {
-    console.log('[IndexedDB] Getting data from:', `${dbName}/${storeName}`, 'key:', key);
+    const startTime = performance.now();
+
+    console.log(`🔍 [IndexedDB] === GET OPERATION STARTED ===`);
+    console.log(`🔍 [IndexedDB] Target: ${dbName}/${storeName}`);
+    console.log(`🔍 [IndexedDB] Key: ${key}`);
 
     const db = await this.ensureDatabase(dbName);
 
@@ -124,107 +201,140 @@ export class IndexedDbService {
       const request = store.get(key);
 
       request.onsuccess = () => {
+        const duration = performance.now() - startTime;
         const result = request.result as T | undefined;
-        console.log('[IndexedDB] Data retrieved:', result ? 'found' : 'not found');
+
+        console.log(`✅ [IndexedDB] === GET OPERATION COMPLETE ===`);
+        console.log(`✅ [IndexedDB] Duration: ${duration.toFixed(1)}ms`);
+        console.log(`✅ [IndexedDB] Result: ${result ? 'found' : 'not found'}`);
+
+        if (result && result instanceof Blob) {
+          console.log(`✅ [IndexedDB] Retrieved blob: ${(result.size / 1024).toFixed(1)}KB (${result.type})`);
+        }
+
         resolve(result);
       };
 
       request.onerror = () => {
-        console.error('[IndexedDB] Failed to get data:', request.error);
+        const duration = performance.now() - startTime;
+        console.error(`❌ [IndexedDB] === GET OPERATION FAILED ===`);
+        console.error(`❌ [IndexedDB] Duration: ${duration.toFixed(1)}ms`);
+        console.error(`❌ [IndexedDB] Error:`, request.error);
         reject(request.error);
       };
     });
   }
 
-/**
- * Get all items from a store
- */
-async getAll<T>(
-  dbName: string,
-  storeName: string
-): Promise<T[]> {
-  console.log('[IndexedDB] Getting all items from:', `${dbName}/${storeName}`);
+  /**
+   * Get all items from a store
+   */
+  async getAll<T>(
+    dbName: string,
+    storeName: string
+  ): Promise<T[]> {
+    const startTime = performance.now();
 
-  const db = await this.ensureDatabase(dbName);
+    console.log(`📋 [IndexedDB] === GET ALL OPERATION STARTED ===`);
+    console.log(`📋 [IndexedDB] Target: ${dbName}/${storeName}`);
 
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([storeName], 'readonly');
-    const store = transaction.objectStore(storeName);
-    const request = store.getAll();
+    const db = await this.ensureDatabase(dbName);
 
-    request.onsuccess = () => {
-      console.log('[IndexedDB] Retrieved all items:', request.result.length);
-      resolve(request.result);
-    };
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([storeName], 'readonly');
+      const store = transaction.objectStore(storeName);
+      const request = store.getAll();
 
-    request.onerror = () => {
-      console.error('[IndexedDB] Failed to get all items:', request.error);
-      reject(request.error);
-    };
-  });
-}
+      request.onsuccess = () => {
+        const duration = performance.now() - startTime;
+        const results = request.result;
 
-/**
- * Get all keys from a store
- */
-async getAllKeys(
-  dbName: string,
-  storeName: string
-): Promise<IDBValidKey[]> {
-  console.log('[IndexedDB] Getting all keys from:', `${dbName}/${storeName}`);
+        console.log(`✅ [IndexedDB] === GET ALL OPERATION COMPLETE ===`);
+        console.log(`✅ [IndexedDB] Duration: ${duration.toFixed(1)}ms`);
+        console.log(`✅ [IndexedDB] Items retrieved: ${results.length}`);
 
-  const db = await this.ensureDatabase(dbName);
+        // Log data sizes if they're blobs
+        const blobCount = results.filter(item => item instanceof Blob).length;
+        if (blobCount > 0) {
+          const totalSize = results
+            .filter(item => item instanceof Blob)
+            .reduce((sum, blob) => sum + (blob as Blob).size, 0);
+          console.log(`✅ [IndexedDB] Total blob data: ${blobCount} blobs, ${(totalSize / 1024).toFixed(1)}KB`);
+        }
 
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([storeName], 'readonly');
-    const store = transaction.objectStore(storeName);
-    const request = store.getAllKeys();
+        resolve(results);
+      };
 
-    request.onsuccess = () => {
-      console.log('[IndexedDB] Retrieved all keys:', request.result.length);
-      resolve(request.result);
-    };
+      request.onerror = () => {
+        const duration = performance.now() - startTime;
+        console.error(`❌ [IndexedDB] === GET ALL OPERATION FAILED ===`);
+        console.error(`❌ [IndexedDB] Duration: ${duration.toFixed(1)}ms`);
+        console.error(`❌ [IndexedDB] Error:`, request.error);
+        reject(request.error);
+      };
+    });
+  }
 
-    request.onerror = () => {
-      console.error('[IndexedDB] Failed to get all keys:', request.error);
-      reject(request.error);
-    };
-  });
-}
+  /**
+   * Get all keys from a store
+   */
+  async getAllKeys(
+    dbName: string,
+    storeName: string
+  ): Promise<IDBValidKey[]> {
+    console.log(`🔑 [IndexedDB] Getting all keys from: ${dbName}/${storeName}`);
 
+    const db = await this.ensureDatabase(dbName);
 
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([storeName], 'readonly');
+      const store = transaction.objectStore(storeName);
+      const request = store.getAllKeys();
 
+      request.onsuccess = () => {
+        console.log(`✅ [IndexedDB] Retrieved ${request.result.length} keys`);
+        resolve(request.result);
+      };
 
-/**
- * Query items by index
- */
-async getByIndex<T>(
-  dbName: string,
-  storeName: string,
-  indexName: string,
-  value: IDBValidKey
-): Promise<T[]> {
-  console.log('[IndexedDB] Querying by index:', `${dbName}/${storeName}/${indexName}`, 'value:', value);
+      request.onerror = () => {
+        console.error(`❌ [IndexedDB] Failed to get all keys:`, request.error);
+        reject(request.error);
+      };
+    });
+  }
 
-  const db = await this.ensureDatabase(dbName);
+  /**
+   * Query items by index
+   */
+  async getByIndex<T>(
+    dbName: string,
+    storeName: string,
+    indexName: string,
+    value: IDBValidKey
+  ): Promise<T[]> {
+    console.log(`🔍 [IndexedDB] === QUERY BY INDEX ===`);
+    console.log(`🔍 [IndexedDB] Target: ${dbName}/${storeName}/${indexName}`);
+    console.log(`🔍 [IndexedDB] Value: ${value}`);
 
-  return new Promise((resolve, reject) => {
-    const transaction = db.transaction([storeName], 'readonly');
-    const store = transaction.objectStore(storeName);
-    const index = store.index(indexName);
-    const request = index.getAll(value);
+    const db = await this.ensureDatabase(dbName);
 
-    request.onsuccess = () => {
-      console.log('[IndexedDB] Found items by index:', request.result.length);
-      resolve(request.result);
-    };
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([storeName], 'readonly');
+      const store = transaction.objectStore(storeName);
+      const index = store.index(indexName);
+      const request = index.getAll(value);
 
-    request.onerror = () => {
-      console.error('[IndexedDB] Failed to query by index:', request.error);
-      reject(request.error);
-    };
-  });
-}
+      request.onsuccess = () => {
+        console.log(`✅ [IndexedDB] Found ${request.result.length} items by index`);
+        resolve(request.result);
+      };
+
+      request.onerror = () => {
+        console.error(`❌ [IndexedDB] Failed to query by index:`, request.error);
+        reject(request.error);
+      };
+    });
+  }
+
   /**
    * Delete data from IndexedDB
    */
@@ -233,7 +343,9 @@ async getByIndex<T>(
     storeName: string,
     key: IDBValidKey
   ): Promise<void> {
-    console.log('[IndexedDB] Deleting from:', `${dbName}/${storeName}`, 'key:', key);
+    console.log(`🗑️ [IndexedDB] === DELETE OPERATION STARTED ===`);
+    console.log(`🗑️ [IndexedDB] Target: ${dbName}/${storeName}`);
+    console.log(`🗑️ [IndexedDB] Key: ${key}`);
 
     const db = await this.ensureDatabase(dbName);
 
@@ -243,12 +355,12 @@ async getByIndex<T>(
       const request = store.delete(key);
 
       request.onsuccess = () => {
-        console.log('[IndexedDB] Data deleted successfully');
+        console.log(`✅ [IndexedDB] Delete successful: ${key}`);
         resolve();
       };
 
       request.onerror = () => {
-        console.error('[IndexedDB] Failed to delete data:', request.error);
+        console.error(`❌ [IndexedDB] Delete failed:`, request.error);
         reject(request.error);
       };
     });
@@ -261,7 +373,8 @@ async getByIndex<T>(
     dbName: string,
     storeName: string
   ): Promise<void> {
-    console.log('[IndexedDB] Clearing store:', `${dbName}/${storeName}`);
+    console.log(`🧹 [IndexedDB] === CLEAR OPERATION STARTED ===`);
+    console.log(`🧹 [IndexedDB] Target: ${dbName}/${storeName}`);
 
     const db = await this.ensureDatabase(dbName);
 
@@ -271,12 +384,12 @@ async getByIndex<T>(
       const request = store.clear();
 
       request.onsuccess = () => {
-        console.log('[IndexedDB] Store cleared successfully');
+        console.log(`✅ [IndexedDB] Store cleared: ${storeName}`);
         resolve();
       };
 
       request.onerror = () => {
-        console.error('[IndexedDB] Failed to clear store:', request.error);
+        console.error(`❌ [IndexedDB] Clear failed:`, request.error);
         reject(request.error);
       };
     });
@@ -289,7 +402,7 @@ async getByIndex<T>(
     dbName: string,
     storeName: string
   ): Promise<number> {
-    console.log('[IndexedDB] Counting items in:', `${dbName}/${storeName}`);
+    console.log(`🔢 [IndexedDB] Counting items in: ${dbName}/${storeName}`);
 
     const db = await this.ensureDatabase(dbName);
 
@@ -299,12 +412,12 @@ async getByIndex<T>(
       const request = store.count();
 
       request.onsuccess = () => {
-        console.log('[IndexedDB] Count:', request.result);
+        console.log(`✅ [IndexedDB] Count result: ${request.result} items`);
         resolve(request.result);
       };
 
       request.onerror = () => {
-        console.error('[IndexedDB] Failed to count items:', request.error);
+        console.error(`❌ [IndexedDB] Count failed:`, request.error);
         reject(request.error);
       };
     });
@@ -328,7 +441,7 @@ async getByIndex<T>(
   closeDatabase(dbName: string): void {
     const db = this.databases.get(dbName);
     if (db) {
-      console.log('[IndexedDB] Closing database:', dbName);
+      console.log(`🔒 [IndexedDB] Closing database: ${dbName}`);
       db.close();
       this.databases.delete(dbName);
     }
@@ -338,7 +451,8 @@ async getByIndex<T>(
    * Delete an entire database
    */
   async deleteDatabase(dbName: string): Promise<void> {
-    console.log('[IndexedDB] Deleting database:', dbName);
+    console.log(`💥 [IndexedDB] === DELETING DATABASE ===`);
+    console.log(`💥 [IndexedDB] Database: ${dbName}`);
 
     // Close if open
     this.closeDatabase(dbName);
@@ -347,13 +461,17 @@ async getByIndex<T>(
       const request = indexedDB.deleteDatabase(dbName);
 
       request.onsuccess = () => {
-        console.log('[IndexedDB] Database deleted successfully');
+        console.log(`✅ [IndexedDB] Database deleted successfully: ${dbName}`);
         resolve();
       };
 
       request.onerror = () => {
-        console.error('[IndexedDB] Failed to delete database:', request.error);
+        console.error(`❌ [IndexedDB] Failed to delete database: ${dbName}`, request.error);
         reject(request.error);
+      };
+
+      request.onblocked = () => {
+        console.warn(`⚠️ [IndexedDB] Database deletion blocked: ${dbName} (close all tabs using this database)`);
       };
     });
   }
@@ -364,12 +482,15 @@ async getByIndex<T>(
   async getStorageEstimate(): Promise<{ usage?: number; quota?: number } | null> {
     if ('storage' in navigator && 'estimate' in navigator.storage) {
       const estimate = await navigator.storage.estimate();
-      console.log('[IndexedDB] Storage estimate:', {
+      console.log(`📊 [IndexedDB] Storage estimate:`, {
         usage: estimate.usage ? `${(estimate.usage / 1024 / 1024).toFixed(2)} MB` : 'unknown',
-        quota: estimate.quota ? `${(estimate.quota / 1024 / 1024).toFixed(2)} MB` : 'unknown'
+        quota: estimate.quota ? `${(estimate.quota / 1024 / 1024).toFixed(2)} MB` : 'unknown',
+        percentage: estimate.usage && estimate.quota ?
+          `${((estimate.usage / estimate.quota) * 100).toFixed(1)}%` : 'unknown'
       });
       return estimate;
     }
+    console.warn(`⚠️ [IndexedDB] Storage estimate API not available`);
     return null;
   }
 
@@ -379,8 +500,11 @@ async getByIndex<T>(
   private async ensureDatabase(dbName: string): Promise<IDBDatabase> {
     const db = this.databases.get(dbName);
     if (!db) {
+      console.error(`❌ [IndexedDB] Database not opened: ${dbName}`);
+      console.error(`❌ [IndexedDB] Available databases: [${Array.from(this.databases.keys()).join(', ')}]`);
       throw new Error(`[IndexedDB] Database not opened: ${dbName}. Call openDatabase() first.`);
     }
+    console.log(`✅ [IndexedDB] Database connection verified: ${dbName}`);
     return db;
   }
 }

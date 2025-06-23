@@ -45,78 +45,75 @@ export class CarpetCheckinIntegrationService {
     }
   }
 
-/**
+  /**
    * Main detection and capture flow - now with UI
    */
-async detectAndCaptureCarpet(pubId: string): Promise<CarpetDetectionResult> {
-  console.log('[CarpetIntegration] Starting carpet detection for pub:', pubId);
+  async detectAndCaptureCarpet(pubId: string): Promise<CarpetDetectionResult> {
+    console.log('[CarpetIntegration] Starting carpet detection for pub:', pubId);
 
-  try {
-    // Initialize storage
-    await this.deviceStorageService.initialize();
+    try {
+      // Initialize storage
+      await this.deviceStorageService.initialize();
 
-    // Dynamically import and open camera component
-    const { CarpetCameraComponent } = await import('../ui/carpet-camera/carpet-camera.component');
+      // Dynamically import and open camera component
+      const { CarpetCameraComponent } = await import('../ui/carpet-camera/carpet-camera.component');
 
-    console.log('[CarpetIntegration] Opening carpet camera UI...');
+      console.log('[CarpetIntegration] Opening carpet camera UI...');
 
-    const { componentRef, result } = this.overlayService.open<CarpetCameraComponent, CarpetCameraResult>(
-      CarpetCameraComponent,
-      {}, // overlay config
-      { pubId } // component inputs
-    );
+      const { componentRef, result } = this.overlayService.open<CarpetCameraComponent, CarpetCameraResult>(
+        CarpetCameraComponent,
+        {}, // overlay config
+        { pubId } // component inputs
+      );
 
-    // Wait for camera result
-    const cameraResult = await result;
-    console.log('[CarpetIntegration] Camera result:', cameraResult);
+      // Wait for camera result
+      const cameraResult = await result;
+      console.log('[CarpetIntegration] Camera result:', cameraResult);
 
-    if (!cameraResult || !cameraResult.success || cameraResult.cancelled) {
-      console.log('[CarpetIntegration] User cancelled or camera failed');
+      if (!cameraResult || !cameraResult.success || cameraResult.cancelled) {
+        console.log('[CarpetIntegration] User cancelled or camera failed');
+        return {
+          success: false,
+          error: 'Camera cancelled by user'
+        };
+      }
+
+      // Get the captured canvas from the component
+      const canvas = componentRef.instance.getCapturedCanvas();
+
+      if (!canvas) {
+        console.log('[CarpetIntegration] No canvas captured');
+        return {
+          success: false,
+          error: 'No image captured'
+        };
+      }
+
+      // ✅ FIXED: Use correct method name
+      const pub = this.pubStore.get(pubId);
+      const imageKey = await this.deviceStorageService.saveCarpetImage(
+        canvas,
+        pubId,
+        pub?.name || 'Unknown Pub'
+      );
+
+      console.log('[CarpetIntegration] Image saved successfully:', imageKey);
+
+      return {
+        success: true,
+        imageKey,
+        confidence: cameraResult.confidence || 0,
+        matchType: 'user-captured'
+      };
+
+    } catch (error: any) {
+      console.error('[CarpetIntegration] Detection error:', error);
       return {
         success: false,
-        error: 'Camera cancelled by user'
+        error: error.message || 'Camera access failed'
       };
     }
-
-    // Get the captured canvas from the component
-    const canvas = componentRef.instance.getCapturedCanvas();
-
-    if (!canvas) {
-      console.log('[CarpetIntegration] No canvas captured');
-      return {
-        success: false,
-        error: 'No image captured'
-      };
-    }
-
-    // Save the captured image
-    const pub = this.pubStore.get(pubId);
-    const imageKey = await this.deviceStorageService.captureCarpetImage(
-      canvas,
-      pubId,
-      pub?.name || 'Unknown Pub'
-    );
-
-    console.log('[CarpetIntegration] Image saved successfully:', imageKey);
-
-    return {
-      success: true,
-      imageKey,
-      confidence: cameraResult.confidence || 0,
-      matchType: 'user-captured'
-    };
-
-  } catch (error: any) {
-    console.error('[CarpetIntegration] Detection error:', error);
-    return {
-      success: false,
-      error: error.message || 'Camera access failed'
-    };
   }
-}
-
-
-
 
   /**
    * Stop detection manually
@@ -128,21 +125,20 @@ async detectAndCaptureCarpet(pubId: string): Promise<CarpetDetectionResult> {
   }
 
   /**
- * Simple confidence calculation for carpet matching
- */
-private async calculateCarpetConfidence(canvas: HTMLCanvasElement, pubId: string): Promise<number> {
-  // For now, return a random confidence for testing
-  // TODO: Implement actual carpet matching logic
-  const baseConfidence = 0.3 + Math.random() * 0.5; // 0.3 to 0.8
+   * Simple confidence calculation for carpet matching
+   */
+  private async calculateCarpetConfidence(canvas: HTMLCanvasElement, pubId: string): Promise<number> {
+    // For now, return a random confidence for testing
+    // TODO: Implement actual carpet matching logic
+    const baseConfidence = 0.3 + Math.random() * 0.5; // 0.3 to 0.8
 
-  // Simulate some variability
-  if (Math.random() > 0.7) {
-    return Math.min(0.95, baseConfidence + 0.2); // Sometimes get a good match
+    // Simulate some variability
+    if (Math.random() > 0.7) {
+      return Math.min(0.95, baseConfidence + 0.2); // Sometimes get a good match
+    }
+
+    return baseConfidence;
   }
-
-  return baseConfidence;
-}
-
 
   /**
    * Clean up resources

@@ -1,8 +1,11 @@
 // src/app/carpets/data-access/device-carpet-storage.service.ts
 import { Injectable, inject, signal } from '@angular/core';
 import { IndexedDbService } from '@shared/data-access/indexed-db.service';
+import { AuthStore } from '@auth/data-access/auth.store';
+import { environment } from '../../../environments/environment';
 
 type CarpetImageData = {
+  userId: string;        // ✅ Associate carpet with user
   pubId: string;
   pubName: string;
   date: string;
@@ -19,6 +22,7 @@ type ImageFormat = 'avif' | 'webp' | 'jpeg';
 @Injectable({ providedIn: 'root' })
 export class DeviceCarpetStorageService {
   private readonly indexedDb = inject(IndexedDbService);
+  private readonly authStore = inject(AuthStore);
 
   // Signals for reactive state
   private readonly _carpetCount = signal(0);
@@ -43,13 +47,14 @@ export class DeviceCarpetStorageService {
 
     console.log('[CarpetStorage] Initializing IndexedDB for carpet storage...');
 
-    // Open database with carpet store
+    // ✅ Using environment configuration
     await this.indexedDb.openDatabase({
-      name: 'SpoonsCarpets',
-      version: 1,
+      name: environment.database.name,
+      version: environment.database.version,
       stores: [{
-        name: 'carpets',
+        name: environment.database.stores.carpets,
         indexes: [
+          { name: 'userId', keyPath: 'userId' },     // ✅ Index by user
           { name: 'pubId', keyPath: 'pubId' },
           { name: 'dateKey', keyPath: 'dateKey' },
           { name: 'date', keyPath: 'date' }
@@ -60,7 +65,10 @@ export class DeviceCarpetStorageService {
     // Detect supported image formats
     await this.detectSupportedFormats();
 
-    // Load initial stats
+    // ✅ Run migration if needed
+    await this.migrateFromOldDatabase();
+
+    // Load initial stats for current user
     await this.updateStats();
 
     this.initialized = true;
@@ -77,186 +85,132 @@ export class DeviceCarpetStorageService {
     try {
       const canvas = document.createElement('canvas');
       canvas.width = canvas.height = 1;
-      const blob = await new Promise<Blob | null>((resolve) => {
-        canvas.toBlob(resolve, 'image/avif', 0.8);
-      });
-      if (blob && blob.type === 'image/avif') {
-        this.supportedFormats.add('avif');
-        console.log('[CarpetStorage] ✅ AVIF supported');
-      }
-    } catch {
-      console.log('[CarpetStorage] ❌ AVIF not supported');
-    }
+      const blob = await new Promise<Blob | null>(resolve =>
+        canvas.toBlob(resolve, 'image/avif', 0.8)
+      );
+      if (blob) this.supportedFormats.add('avif');
+    } catch {}
 
     // Test WebP support
     try {
       const canvas = document.createElement('canvas');
       canvas.width = canvas.height = 1;
-      const blob = await new Promise<Blob | null>((resolve) => {
-        canvas.toBlob(resolve, 'image/webp', 0.8);
-      });
-      if (blob && blob.type === 'image/webp') {
-        this.supportedFormats.add('webp');
-        console.log('[CarpetStorage] ✅ WebP supported');
-      }
-    } catch {
-      console.log('[CarpetStorage] ❌ WebP not supported');
-    }
+      const blob = await new Promise<Blob | null>(resolve =>
+        canvas.toBlob(resolve, 'image/webp', 0.8)
+      );
+      if (blob) this.supportedFormats.add('webp');
+    } catch {}
 
     // JPEG is always supported
     this.supportedFormats.add('jpeg');
-    console.log('[CarpetStorage] ✅ JPEG supported (fallback)');
+
+    console.log('[CarpetStorage] Supported formats:', Array.from(this.supportedFormats));
   }
 
   /**
-   * Get the best supported image format
+   * Get best available image format
    */
   private getBestFormat(): { format: ImageFormat; mimeType: string; quality: number } {
     if (this.supportedFormats.has('avif')) {
-      return { format: 'avif', mimeType: 'image/avif', quality: 0.75 };
+      return { format: 'avif', mimeType: 'image/avif', quality: 0.8 };
     }
     if (this.supportedFormats.has('webp')) {
-      return { format: 'webp', mimeType: 'image/webp', quality: 0.75 };
+      return { format: 'webp', mimeType: 'image/webp', quality: 0.8 };
     }
-    return { format: 'jpeg', mimeType: 'image/jpeg', quality: 0.75 };
+    return { format: 'jpeg', mimeType: 'image/jpeg', quality: 0.85 };
   }
 
-  /**
-   * Capture and save a carpet image from canvas
+/**
+   * Save carpet image with user association
    */
-  async captureCarpetImage(
-    canvas: HTMLCanvasElement,
-    pubId: string,
-    pubName: string
-  ): Promise<string> {
-    console.log('[CarpetStorage] Capturing carpet image for pub:', pubId);
+async saveCarpetImage(
+  canvas: HTMLCanvasElement,
+  pubId: string,
+  pubName: string
+): Promise<string> {
+  console.log('[CarpetStorage] Saving carpet image for pub:', pubName);
 
+  // ✅ Get current user ID
+  const userId = this.authStore.uid();
+  if (!userId) {
+    throw new Error('[CarpetStorage] No authenticated user found');
+  }
+
+  this._loading.set(true);
+
+  try {
     await this.ensureInitialized();
 
-    this._loading.set(true);
+    // Create square crop canvas
+    const captureCanvas = document.createElement('canvas');
+    captureCanvas.width = captureCanvas.height = 400;
+    const ctx = captureCanvas.getContext('2d')!;
 
-    try {
-      // Create a 400x400 canvas for the captured image
-      const captureCanvas = document.createElement('canvas');
-      captureCanvas.width = 400;
-      captureCanvas.height = 400;
-      const ctx = captureCanvas.getContext('2d');
+    // Draw centered square crop - scaled to fit
+    const sourceSize = Math.min(canvas.width, canvas.height);
+    const sx = (canvas.width - sourceSize) / 2;
+    const sy = (canvas.height - sourceSize) / 2;
 
-      if (!ctx) {
-        throw new Error('Failed to get canvas context');
-      }
+    ctx.drawImage(
+      canvas,
+      sx, sy, sourceSize, sourceSize,  // Source rectangle
+      0, 0, 400, 400                     // Destination rectangle
+    );
 
-      // Draw the source canvas centered and scaled to fit
-      const sourceSize = Math.min(canvas.width, canvas.height);
-      const sx = (canvas.width - sourceSize) / 2;
-      const sy = (canvas.height - sourceSize) / 2;
+    // Convert to blob with best supported format
+    const { format, mimeType, quality } = this.getBestFormat();
+    console.log('[CarpetStorage] Using format:', format, 'quality:', quality);
 
-      ctx.drawImage(
-        canvas,
-        sx, sy, sourceSize, sourceSize,  // Source rectangle
-        0, 0, 400, 400                     // Destination rectangle
+    const blob = await new Promise<Blob>((resolve, reject) => {
+      captureCanvas.toBlob(
+        (blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error('Failed to create blob'));
+          }
+        },
+        mimeType,
+        quality
       );
-
-      // Convert to blob with best supported format
-      const { format, mimeType, quality } = this.getBestFormat();
-      console.log('[CarpetStorage] Using format:', format, 'quality:', quality);
-
-      const blob = await new Promise<Blob>((resolve, reject) => {
-        captureCanvas.toBlob(
-          (blob) => {
-            if (blob) {
-              resolve(blob);
-            } else {
-              reject(new Error('Failed to create blob'));
-            }
-          },
-          mimeType,
-          quality
-        );
-      });
-
-      // Generate key and save
-      const dateKey = new Date().toISOString().split('T')[0];
-      const key = `${pubId}_${dateKey}`;
-
-      const data: CarpetImageData = {
-        pubId,
-        pubName,
-        date: new Date().toISOString(),
-        dateKey,
-        blob,
-        size: blob.size,
-        type: blob.type,
-        width: 400,
-        height: 400
-      };
-
-      await this.indexedDb.put('SpoonsCarpets', 'carpets', data, key);
-
-      console.log('[CarpetStorage] Image saved successfully:', {
-        key,
-        format,
-        size: `${(blob.size / 1024).toFixed(1)}KB`
-      });
-
-      // Update stats
-      await this.updateStats();
-
-      return key;
-
-    } finally {
-      this._loading.set(false);
-    }
-  }
-
-
-  async storeCarpetBlob(
-    photoBlob: Blob,
-    pubId: string,
-    pubName: string
-  ): Promise<string> {
-    console.log('[CarpetStorage] 💾 Storing carpet blob for:', pubName);
-
-    try {
-      // Create storage key
-      const timestamp = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-      const slugName = pubName.toLowerCase().replace(/[^a-z0-9]/g, '-');
-      const imageKey = `${slugName}_${timestamp}`;
-
-      console.log('[CarpetStorage] 🔑 Generated storage key:', imageKey);
-
-      // Convert blob to base64 for localStorage (temporary)
-      const base64Data = await this._blobToBase64(photoBlob);
-
-      console.log('[CarpetStorage] 📊 Image stats:', {
-        size: `${Math.round(photoBlob.size / 1024)}KB`,
-        type: photoBlob.type
-      });
-
-      // Store in localStorage for now
-      localStorage.setItem(`carpet_${imageKey}`, base64Data);
-
-      console.log('[CarpetStorage] ✅ Blob stored successfully with key:', imageKey);
-
-      return imageKey;
-
-    } catch (error) {
-      console.error('[CarpetStorage] ❌ Failed to store blob:', error);
-      throw error;
-    }
-  }
-
-  
-
-  private _blobToBase64(blob: Blob): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
     });
-  }
 
+    // Generate key with user prefix for organization
+    const dateKey = new Date().toISOString().split('T')[0];
+    const key = `${userId}_${pubId}_${dateKey}`;
+
+    // ✅ Include userId in data
+    const data: CarpetImageData = {
+      userId,                                      // ✅ User association
+      pubId,
+      pubName,
+      date: new Date().toISOString(),
+      dateKey,
+      blob,
+      size: blob.size,
+      type: blob.type,
+      width: 400,
+      height: 400
+    };
+
+    await this.indexedDb.put(environment.database.name, environment.database.stores.carpets, data, key);
+
+    console.log('[CarpetStorage] Image saved successfully:', {
+      key,
+      userId,
+      format,
+      size: `${(blob.size / 1024).toFixed(1)}KB`
+    });
+
+    // Update stats
+    await this.updateStats();
+
+    return key;
+
+  } finally {
+    this._loading.set(false);
+  }
+}
   /**
    * Get a carpet image by key
    */
@@ -265,31 +219,61 @@ export class DeviceCarpetStorageService {
 
     await this.ensureInitialized();
 
-    const data = await this.indexedDb.get<CarpetImageData>('SpoonsCarpets', 'carpets', key);
+    const data = await this.indexedDb.get<CarpetImageData>(environment.database.name, environment.database.stores.carpets, key);
     return data?.blob;
   }
 
   /**
-   * Get all carpet images for a pub
+   * ✅ Get carpets for current user only
    */
-  async getCarpetsByPub(pubId: string): Promise<CarpetImageData[]> {
-    console.log('[CarpetStorage] Getting all carpets for pub:', pubId);
+  async getUserCarpets(): Promise<CarpetImageData[]> {
+    const userId = this.authStore.uid();
+    if (!userId) {
+      console.warn('[CarpetStorage] No authenticated user, returning empty array');
+      return [];
+    }
 
+    console.log('[CarpetStorage] Getting carpets for user:', userId);
     await this.ensureInitialized();
 
-    const allCarpets = await this.indexedDb.getAll<CarpetImageData>('SpoonsCarpets', 'carpets');
-    return allCarpets.filter(carpet => carpet.pubId === pubId);
+    const allCarpets = await this.indexedDb.getAll<CarpetImageData>(environment.database.name, environment.database.stores.carpets);
+    return allCarpets.filter(carpet => carpet.userId === userId);
   }
 
   /**
-   * Get all carpet images
+   * ✅ Get carpets for specific user
+   */
+  async getCarpetsForUser(userId: string): Promise<CarpetImageData[]> {
+    console.log('[CarpetStorage] Getting carpets for user:', userId);
+    await this.ensureInitialized();
+
+    const allCarpets = await this.indexedDb.getAll<CarpetImageData>(environment.database.name, environment.database.stores.carpets);
+    return allCarpets.filter(carpet => carpet.userId === userId);
+  }
+
+  /**
+   * ✅ Get carpets by pub for current user only
+   */
+  async getCarpetsByPub(pubId: string): Promise<CarpetImageData[]> {
+    const userId = this.authStore.uid();
+    if (!userId) return [];
+
+    console.log('[CarpetStorage] Getting carpets for pub:', pubId, 'user:', userId);
+    await this.ensureInitialized();
+
+    const userCarpets = await this.getUserCarpets();
+    return userCarpets.filter(carpet => carpet.pubId === pubId);
+  }
+
+  /**
+   * Get all carpet images (admin/debug use)
    */
   async getAllCarpets(): Promise<CarpetImageData[]> {
-    console.log('[CarpetStorage] Getting all carpets');
+    console.log('[CarpetStorage] Getting all carpets (admin mode)');
 
     await this.ensureInitialized();
 
-    return this.indexedDb.getAll<CarpetImageData>('SpoonsCarpets', 'carpets');
+    return this.indexedDb.getAll<CarpetImageData>(environment.database.name, environment.database.stores.carpets);
   }
 
   /**
@@ -300,96 +284,9 @@ export class DeviceCarpetStorageService {
 
     await this.ensureInitialized();
 
-    const keys = await this.indexedDb.getAllKeys('SpoonsCarpets', 'carpets');
+    const keys = await this.indexedDb.getAllKeys(environment.database.name, environment.database.stores.carpets);
     return keys as string[];
   }
-
-
-
-// Add this method to DeviceCarpetStorageService
-
-/**
- * Store a carpet image from base64 data (for check-in integration)
- * @param photoData - Base64 image data from scanner
- * @param pubId - Pub ID for naming
- * @param pubName - Pub name for naming
- * @returns Promise<string> - Storage key for the saved image
- */
-async storeCarpetImage(
-  photoData: string,
-  pubId: string,
-  pubName: string
-): Promise<string> {
-  console.log('[CarpetStorage] 💾 Storing carpet image for:', pubName);
-
-  await this.ensureInitialized();
-  this._loading.set(true);
-
-  try {
-    // Create storage key
-    const timestamp = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-    const slugName = pubName.toLowerCase().replace(/[^a-z0-9]/g, '-');
-    const imageKey = `${slugName}_${timestamp}`;
-
-    console.log('[CarpetStorage] 🔑 Generated storage key:', imageKey);
-
-    // Convert base64 to blob
-    const response = await fetch(photoData);
-    const blob = await response.blob();
-
-    // Compress if needed
-    const format = 'jpeg'; // Default to JPEG for simplicity
-    const mimeType = 'image/jpeg';
-    const quality = 0.8;
-    const compressedBlob = await this._compressImage(blob, mimeType, quality);
-
-    console.log('[CarpetStorage] 📊 Image stats:', {
-      originalSize: `${Math.round(blob.size / 1024)}KB`,
-      compressedSize: `${Math.round(compressedBlob.size / 1024)}KB`,
-      format
-    });
-
-    // Store in IndexedDB (or localStorage for now)
-    const compressedDataUrl = await this._blobToDataUrl(compressedBlob);
-
-    // TODO: Switch to IndexedDB when implemented
-    localStorage.setItem(`carpet_${imageKey}`, compressedDataUrl);
-
-    console.log('[CarpetStorage] ✅ Image stored successfully with key:', imageKey);
-
-    return imageKey;
-
-  } catch (error) {
-    console.error('[CarpetStorage] ❌ Failed to store image:', error);
-    throw error;
-  } finally {
-    this._loading.set(false);
-  }
-}
-
-/**
- * Convert blob to data URL
- */
-private _blobToDataUrl(blob: Blob): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-}
-
-/**
- * Compress image blob
- */
-private async _compressImage(blob: Blob, mimeType: string, quality: number): Promise<Blob> {
-  // For now, return original blob
-  // TODO: Implement actual compression when needed
-  console.log('[CarpetStorage] 📐 Image compression skipped (returning original)');
-  return blob;
-}
-
-
 
   /**
    * Delete a carpet image
@@ -399,34 +296,136 @@ private async _compressImage(blob: Blob, mimeType: string, quality: number): Pro
 
     await this.ensureInitialized();
 
-    await this.indexedDb.delete('SpoonsCarpets', 'carpets', key);
+    await this.indexedDb.delete(environment.database.name, environment.database.stores.carpets, key);
     await this.updateStats();
   }
 
   /**
-   * Clear all carpet images
+   * ✅ Clear all carpets for current user only
+   */
+  async clearUserCarpets(): Promise<void> {
+    const userId = this.authStore.uid();
+    if (!userId) return;
+
+    console.log('[CarpetStorage] Clearing carpets for user:', userId);
+    await this.ensureInitialized();
+
+    const userCarpets = await this.getUserCarpets();
+    for (const carpet of userCarpets) {
+      const key = `${carpet.userId}_${carpet.pubId}_${carpet.dateKey}`;
+      await this.indexedDb.delete(environment.database.name, environment.database.stores.carpets, key);
+    }
+
+    await this.updateStats();
+  }
+
+  /**
+   * Clear all carpet images (admin/debug use)
    */
   async clearAllCarpets(): Promise<void> {
-    console.log('[CarpetStorage] Clearing all carpets');
+    console.log('[CarpetStorage] Clearing all carpets (admin mode)');
 
     await this.ensureInitialized();
 
-    await this.indexedDb.clear('SpoonsCarpets', 'carpets');
+    await this.indexedDb.clear(environment.database.name, environment.database.stores.carpets);
     await this.updateStats();
   }
 
   /**
-   * Update statistics
+   * ✅ MIGRATION: Handle existing carpet data from old database
+   */
+  private async migrateFromOldDatabase(): Promise<void> {
+    console.log('[CarpetStorage] 🔄 Checking for legacy carpet data...');
+
+    const currentUser = this.authStore.user();
+    if (!currentUser) {
+      console.log('[CarpetStorage] No user authenticated, skipping migration');
+      return;
+    }
+
+    try {
+      // Try to open old database
+      await this.indexedDb.openDatabase({
+        name: environment.database.legacy.oldCarpetsDb, // Old database name
+        version: 1,
+        stores: [{
+          name: environment.database.stores.carpets,
+          indexes: [
+            { name: 'pubId', keyPath: 'pubId' },
+            { name: 'dateKey', keyPath: 'dateKey' },
+            { name: 'date', keyPath: 'date' }
+          ]
+        }]
+      });
+
+      // Get all data from old database
+      const oldCarpets = await this.indexedDb.getAll<any>(environment.database.legacy.oldCarpetsDb, environment.database.stores.carpets);
+
+      if (oldCarpets.length === 0) {
+        console.log('[CarpetStorage] No legacy data found');
+        return;
+      }
+
+      console.log('[CarpetStorage] 📦 Found', oldCarpets.length, 'legacy carpets to migrate');
+
+      // Migrate each carpet to new format with user association
+      let migratedCount = 0;
+      for (const oldCarpet of oldCarpets) {
+        try {
+          // Create new carpet data with userId
+          const newCarpetData: CarpetImageData = {
+            userId: currentUser.uid,  // Associate with current user
+            pubId: oldCarpet.pubId,
+            pubName: oldCarpet.pubName,
+            date: oldCarpet.date,
+            dateKey: oldCarpet.dateKey,
+            blob: oldCarpet.blob,
+            size: oldCarpet.size,
+            type: oldCarpet.type,
+            width: oldCarpet.width || 400,
+            height: oldCarpet.height || 400
+          };
+
+          // Save to new database with new key format
+          const newKey = `${currentUser.uid}_${oldCarpet.pubId}_${oldCarpet.dateKey}`;
+          await this.indexedDb.put(environment.database.name, environment.database.stores.carpets, newCarpetData, newKey);
+
+          migratedCount++;
+        } catch (error) {
+          console.warn('[CarpetStorage] Failed to migrate carpet:', oldCarpet, error);
+        }
+      }
+
+      console.log('[CarpetStorage] ✅ Successfully migrated', migratedCount, 'carpets');
+
+      // Optional: Clean up old database
+      // await this.indexedDb.clear(environment.database.legacy.oldCarpetsDb, environment.database.stores.carpets);
+
+    } catch (error) {
+      console.log('[CarpetStorage] No legacy database found or migration failed:', error);
+    }
+  }
+
+  /**
+   * ✅ Update statistics for current user
    */
   private async updateStats(): Promise<void> {
-    const count = await this.indexedDb.count('SpoonsCarpets', 'carpets');
-    this._carpetCount.set(count);
+    const userId = this.authStore.uid();
+    if (!userId) {
+      this._carpetCount.set(0);
+      this._totalSize.set(0);
+      return;
+    }
 
-    const allCarpets = await this.indexedDb.getAll<CarpetImageData>('SpoonsCarpets', 'carpets');
-    const totalSize = allCarpets.reduce((sum, carpet) => sum + carpet.size, 0);
+    const userCarpets = await this.getUserCarpets();
+    const count = userCarpets.length;
+    const totalSize = userCarpets.reduce((sum, carpet) => sum + carpet.size, 0);
+
+    this._carpetCount.set(count);
     this._totalSize.set(totalSize);
 
-    console.log('[CarpetStorage] Stats updated:', {
+    console.log('[CarpetStorage] User stats updated:', {
+      userId,
       count,
       totalSize: `${(totalSize / 1024 / 1024).toFixed(2)}MB`
     });
@@ -454,67 +453,7 @@ private async _compressImage(blob: Blob, mimeType: string, quality: number): Pro
   }
 
   /**
-   * Migrate from localStorage if needed (one-time operation)
-   */
-  async migrateFromLocalStorage(): Promise<void> {
-    console.log('[CarpetStorage] Checking for localStorage migration...');
-
-    await this.ensureInitialized();
-
-    let migrated = 0;
-    const keysToRemove: string[] = [];
-
-    // Look for carpet entries in localStorage
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && key.startsWith('carpet_')) {
-        try {
-          const dataUrl = localStorage.getItem(key);
-          if (dataUrl) {
-            // Convert data URL to blob
-            const response = await fetch(dataUrl);
-            const blob = await response.blob();
-
-            // Extract pub ID and date from key
-            const [, pubId, dateKey] = key.split('_');
-
-            if (pubId && dateKey) {
-              const data: CarpetImageData = {
-                pubId,
-                pubName: '', // We don't have this in old data
-                date: new Date().toISOString(),
-                dateKey,
-                blob,
-                size: blob.size,
-                type: blob.type,
-                width: 400,
-                height: 400
-              };
-
-              await this.indexedDb.put('SpoonsCarpets', 'carpets', data, `${pubId}_${dateKey}`);
-              keysToRemove.push(key);
-              migrated++;
-            }
-          }
-        } catch (error) {
-          console.error('[CarpetStorage] Failed to migrate:', key, error);
-        }
-      }
-    }
-
-    // Remove migrated items from localStorage
-    keysToRemove.forEach(key => localStorage.removeItem(key));
-
-    if (migrated > 0) {
-      console.log('[CarpetStorage] Migrated', migrated, 'carpets from localStorage');
-      await this.updateStats();
-    } else {
-      console.log('[CarpetStorage] No carpets to migrate');
-    }
-  }
-
-  /**
-   * Ensure service is initialized
+   * Ensure database is initialized
    */
   private async ensureInitialized(): Promise<void> {
     if (!this.initialized) {

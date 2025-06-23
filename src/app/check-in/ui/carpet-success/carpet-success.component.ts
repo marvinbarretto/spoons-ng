@@ -14,6 +14,9 @@ export class CarpetSuccessComponent {
   readonly confirmed = output<void>();
   readonly scanAgain = output<void>();
 
+  readonly continueScanning = output<void>();
+  readonly viewCollection = output<void>();
+
   // ✅ Development debugging
   protected readonly showDebugInfo = signal(true); // Set to false for production
 
@@ -26,6 +29,17 @@ export class CarpetSuccessComponent {
     console.log('[CarpetSuccess] 🔄 User wants to scan again');
     this.scanAgain.emit();
   }
+
+protected onContinue(): void {
+  console.log('🚪 [CarpetSuccess] User clicked Continue');
+  this.continueScanning.emit();
+}
+
+protected onViewCollection(): void {
+  console.log('📋 [CarpetSuccess] User wants to view collection');
+  this.viewCollection.emit();
+}
+
 
   // ✅ Debug helpers
   protected onImageLoaded(): void {

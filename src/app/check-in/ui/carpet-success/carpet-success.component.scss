@@ -1,5 +1,58 @@
 // check-in/ui/carpet-success/carpet-success.component.scss
 
+
+  .carpet-success-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .success-icon {
+    font-size: 48px;
+    margin-bottom: 10px;
+  }
+
+  .carpet-success-header h3 {
+    color: #22c55e;
+    margin: 10px 0 5px 0;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 20px;
+    padding: 0 20px;
+  }
+
+  .continue-btn, .view-collection-btn {
+    flex: 1;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    max-width: 150px;
+  }
+
+  .continue-btn {
+    background: #22c55e;
+    color: white;
+  }
+
+  .continue-btn:hover {
+    background: #16a34a;
+  }
+
+  .view-collection-btn {
+    background: #f3f4f6;
+    color: #374151;
+  }
+
+  .view-collection-btn:hover {
+    background: #e5e7eb;
+  }
+
+
 .success-screen {
   position: absolute;
   top: 0;
@@ -191,4 +244,78 @@
   50% {
     box-shadow: 0 0 20px rgba(255, 107, 107, 0.8), 0 0 30px rgba(255, 142, 83, 0.6);
   }
+}
+
+
+.carpet-success {
+  text-align: center;
+  padding: 20px;
+}
+
+.success-header {
+  margin-bottom: 20px;
+}
+
+.success-icon {
+  font-size: 48px;
+  margin-bottom: 10px;
+}
+
+.success-header h3 {
+  color: #22c55e;
+  margin-bottom: 5px;
+}
+
+.captured-photo {
+  margin-bottom: 20px;
+}
+
+.captured-photo img {
+  max-width: 300px;
+  max-height: 300px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.photo-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 10px;
+  font-size: 14px;
+  color: #666;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.continue-btn {
+  background: #22c55e;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.secondary-btn {
+  background: #f3f4f6;
+  color: #374151;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.continue-btn:hover {
+  background: #16a34a;
+}
+
+.secondary-btn:hover {
+  background: #e5e7eb;
 }
