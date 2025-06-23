@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.55](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.54...v0.0.55) (2025-06-23)
+
+
+### Features
+
+* award badges on new check in ([194fef8](https://github.com/marvinbarretto/spoons-ng/commit/194fef8d17522c7d97dd6b9e12d43390c8dc20a9))
+
 ### [0.0.54](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.53...v0.0.54) (2025-06-23)
 
 
