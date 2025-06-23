@@ -1,11 +1,12 @@
 // src/app/check-in/ui/modal-checkin-success/modal-checkin-success.component.ts
-import { Component, inject, input, output, computed } from '@angular/core';
+import { Component, inject, input, output, computed, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonComponent } from '@shared/ui/button/button.component';
 import { BadgeIconComponent } from '@badges/ui/badge-icon/badge-icon.component';
 import { CheckinStore } from '../../data-access/check-in.store';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { PubStore } from '@pubs/data-access/pub.store';
+import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-carpet-storage.service';
 import { BADGE_DEFINITIONS } from '@badges/utils/badge.config';
 import { ButtonVariant } from '@shared/ui/button/button.params';
 import { environment } from '../../../../environments/environment';
@@ -72,6 +73,28 @@ import { CheckInResultData } from '../../utils/check-in.models';
                 </div>
               }
             </div>
+            
+            <!-- Carpet Section -->
+            @if (data().carpetCaptured && data().checkin?.carpetImageKey) {
+              <div class="carpet-section">
+                <h3>📸 Carpet Captured!</h3>
+                <div class="carpet-display">
+                  @if (carpetImageUrl()) {
+                    <img 
+                      [src]="carpetImageUrl()" 
+                      alt="Captured carpet"
+                      class="carpet-image"
+                      (error)="onCarpetImageError()"
+                    />
+                  } @else {
+                    <div class="carpet-placeholder">
+                      <span>🎨</span>
+                      <p>Carpet photo saved to your collection</p>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
 
             <!-- Badges Section -->
             @if (hasNewBadges()) {
@@ -380,6 +403,62 @@ import { CheckInResultData } from '../../utils/check-in.models';
         font-size: 2rem;
         margin-bottom: 0.5rem;
       }
+      
+      .carpet-image {
+        max-width: 120px;
+        max-height: 120px;
+      }
+    }
+
+    /* Carpet Section Styles */
+    .carpet-section {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: var(--color-surface-elevated);
+      border-radius: 8px;
+      border: 1px solid var(--color-border);
+    }
+
+    .carpet-section h3 {
+      margin: 0 0 0.75rem 0;
+      color: var(--color-success);
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .carpet-display {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .carpet-image {
+      max-width: 150px;
+      max-height: 150px;
+      width: auto;
+      height: auto;
+      border-radius: 8px;
+      border: 1px solid var(--color-border);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .carpet-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1rem;
+      color: var(--color-text-muted);
+    }
+
+    .carpet-placeholder span {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .carpet-placeholder p {
+      margin: 0;
+      font-size: 0.875rem;
+      text-align: center;
     }
   `]
 })
@@ -399,6 +478,21 @@ export class ModalCheckinSuccessComponent {
   private readonly checkinStore = inject(CheckinStore);
   private readonly authStore = inject(AuthStore);
   private readonly pubStore = inject(PubStore);
+  private readonly carpetStorageService = inject(DeviceCarpetStorageService);
+
+  // Carpet image state
+  private readonly _carpetImageUrl = signal<string | null>(null);
+  readonly carpetImageUrl = this._carpetImageUrl.asReadonly();
+
+  constructor() {
+    // Load carpet image when data changes
+    effect(() => {
+      const carpetKey = this.data().checkin?.carpetImageKey;
+      if (carpetKey && this.data().carpetCaptured) {
+        this.loadCarpetImage(carpetKey);
+      }
+    });
+  }
 
   // Computed properties for UI logic
   readonly title = computed(() =>
@@ -496,6 +590,26 @@ export class ModalCheckinSuccessComponent {
   handleNext(): void {
     console.log('[ModalCheckinSuccess] Next modal requested');
     this.nextModal.emit();
+  }
+
+  // Carpet image methods
+  private async loadCarpetImage(carpetKey: string): Promise<void> {
+    try {
+      console.log('[ModalCheckinSuccess] Loading carpet image:', carpetKey);
+      const imageUrl = await this.carpetStorageService.getPhotoUrl(carpetKey);
+      if (imageUrl) {
+        this._carpetImageUrl.set(imageUrl);
+        console.log('[ModalCheckinSuccess] Carpet image loaded successfully');
+      }
+    } catch (error) {
+      console.error('[ModalCheckinSuccess] Failed to load carpet image:', error);
+      this._carpetImageUrl.set(null);
+    }
+  }
+
+  onCarpetImageError(): void {
+    console.log('[ModalCheckinSuccess] Carpet image failed to load, showing placeholder');
+    this._carpetImageUrl.set(null);
   }
 
   // Utility methods

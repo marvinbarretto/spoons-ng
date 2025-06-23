@@ -32,7 +32,7 @@ export class CarpetRecognitionService {
   private _stableFrameCount = 0;
   private _lastDecision = false;
   private _scanStartTime = 0;
-  private _minThinkingTime = 2000; // 2 seconds minimum
+  private _minThinkingTime = 3000; // 3 seconds minimum
   private _maxThinkingTime = 10000; // 10 seconds maximum
   private _hasTimedOut = false;
 

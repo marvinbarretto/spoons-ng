@@ -10,9 +10,11 @@ type CheckInResultData = {
   success: boolean;
   checkin?: any;
   pub?: any;
+  points?: any;
   isNewLandlord?: boolean;
   landlordMessage?: string;
   badges?: any[];
+  carpetCaptured?: boolean;
   error?: string;
 };
 

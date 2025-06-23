@@ -10,6 +10,7 @@ import { AuthStore } from '../../auth/data-access/auth.store';
 import { PubStore } from '../../pubs/data-access/pub.store';
 import { PointsStore } from '../../points/data-access/points.store';
 import { BadgeAwardService } from '../../badges/data-access/badge-award.service';
+import { CheckInModalService } from '../../check-in/data-access/check-in-modal.service';
 
 
 @Injectable({ providedIn: 'root' })
@@ -20,6 +21,7 @@ export class NewCheckinStore {
   private readonly pubStore = inject(PubStore);
   private readonly pointsStore = inject(PointsStore);
   private readonly badgeAwardService = inject(BadgeAwardService);
+  private readonly checkInModalService = inject(CheckInModalService);
 
   private readonly _isProcessing = signal(false);
   private readonly _carpetDetectionEnabled = signal(true); // Feature flag
@@ -322,13 +324,39 @@ export class NewCheckinStore {
   private showCheckinResults(data: any): void {
     console.log('[NewCheckinStore] 📱 Showing check-in results:', data);
 
-    // TODO: Implement actual overlay
-    console.log('[NewCheckinStore] 📱 OVERLAY WOULD SHOW:');
-    console.log('  🎉 Success:', data.success);
-    console.log('  🏠 Pub:', data.pub.name);
-    console.log('  🎯 Points:', data.points);
-    console.log('  🏅 Badges:', data.badges);
-    console.log('  🎨 Carpet:', data.carpetCaptured ? 'Captured!' : 'None');
+    if (data.success) {
+      console.log('[NewCheckinStore] 🎉 Calling CheckInModalService.showCheckInResults for SUCCESS');
+      
+      // Show success modal like the old flow
+      this.checkInModalService.showCheckInResults({
+        success: true,
+        checkin: {
+          id: 'temp-id', // TODO: Get real ID from service
+          pubId: data.checkin.pubId,
+          timestamp: data.checkin.timestamp,
+          carpetImageKey: data.checkin.carpetImageKey
+        },
+        pub: {
+          id: data.checkin.pubId,
+          name: data.pub.name,
+          location: data.pub.location
+        },
+        points: data.points,
+        badges: data.badges || [],
+        isNewLandlord: false, // TODO: Implement landlord check
+        carpetCaptured: data.carpetCaptured
+      });
+      
+      console.log('[NewCheckinStore] ✅ CheckInModalService.showCheckInResults called');
+    } else {
+      console.log('[NewCheckinStore] ❌ Calling CheckInModalService.showCheckInResults for ERROR');
+      
+      // Show error modal
+      this.checkInModalService.showCheckInResults({
+        success: false,
+        error: data.error || 'Check-in failed'
+      });
+    }
   }
 
 

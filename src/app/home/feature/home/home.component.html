@@ -1,11 +1,5 @@
 <div class="home-container">
 
-  <app-checkin-button [pubId]="'jj-moons-wembley'" />
-
-  <h2>Check-in (with carpet detection)</h2>
-
-
-
   <!-- Carpet Scanner (fullscreen when triggered) -->
   @if (showCarpetTest()) {
     <app-carpet-scanner
@@ -13,9 +7,6 @@
       (exitScanner)="onExitCarpetTest()">
     </app-carpet-scanner>
   }
-
-
-
 
 
   <app-user-profile-widget

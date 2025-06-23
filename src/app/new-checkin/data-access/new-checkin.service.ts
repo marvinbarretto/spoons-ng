@@ -84,19 +84,19 @@ export class NewCheckinService extends FirestoreCrudService<CheckIn> {
         resultCount: existingCheckins.length
       });
 
-      // if (existingCheckins.length > 0) {
-      //   const existingCheckin = existingCheckins[0];
-      //   console.log('[NewCheckinService] ❌ Found existing check-in today:', {
-      //     checkinId: existingCheckin.id,
-      //     timestamp: existingCheckin.timestamp,
-      //     dateKey: existingCheckin.dateKey
-      //   });
+      if (existingCheckins.length > 0) {
+        const existingCheckin = existingCheckins[0];
+        console.log('[NewCheckinService] ❌ Found existing check-in today:', {
+          checkinId: existingCheckin.id,
+          timestamp: existingCheckin.timestamp,
+          dateKey: existingCheckin.dateKey
+        });
 
-      //   return {
-      //     passed: false,
-      //     reason: 'You have already checked into this pub today'
-      //   };
-      // }
+        return {
+          passed: false,
+          reason: 'You have already checked into this pub today. Try again tomorrow!'
+        };
+      }
 
       console.log('[NewCheckinService] ✅ No existing check-in found for today - user can check in');
       return { passed: true };
