@@ -1,30 +1,26 @@
-<div class="success-screen">
-  <div class="success-content">
-    <div class="success-animation">
-      <div class="success-icon">✅</div>
-      <div class="success-pulse"></div>
-    </div>
+@if (carpetData().photoDisplayUrl) {
+  <div class="captured-photo">
+    <img
+      [src]="carpetData().photoDisplayUrl"
+      alt="Captured carpet"
+      (load)="onImageLoaded()"
+      (error)="onImageError($event)" />
 
-    <h2>Carpet Detected!</h2>
-    <p>Perfect scan captured</p>
-
-    @if (carpetData().capturedPhoto) {
-      <div class="captured-photo">
-        <img [src]="carpetData().capturedPhoto" alt="Captured carpet" />
-        <div class="photo-stats">
-          <span>📊 {{ carpetData().edgeCount }} edges detected</span>
-          <span>📷 Blur score: {{ carpetData().blurScore }}</span>
-        </div>
+    @if (showDebugInfo()) {
+      <div class="debug-info">
+        <small>Photo size: {{ getImageDebugInfo() }}</small>
       </div>
     }
 
-    <div class="success-actions">
-      <button class="btn-primary" (click)="onConfirm()">
-        Use This Scan
-      </button>
-      <button class="btn-secondary" (click)="onScanAgain()">
-        Scan Again
-      </button>
+    <div class="photo-stats">
+      <span>📊 {{ carpetData().edgeCount }} edges detected</span>
+      <span>📷 Blur score: {{ carpetData().blurScore }}</span>
+      <span>💾 Size: {{ carpetData().photoSizeKB }}KB</span>
     </div>
   </div>
-</div>
+} @else {
+  <div class="no-photo">
+    <p>⚠️ No photo display URL available</p>
+    <small>{{ carpetData().debugInfo }}</small>
+  </div>
+}

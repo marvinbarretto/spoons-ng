@@ -31,18 +31,21 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
   constructor() {
     super();
 
-    // Auto-show success screen when photo is captured
+    // ✅ Fixed effect - prevent loops with proper guards
     effect(() => {
       const data = this.carpetData();
-      if (data.photoTaken && data.capturedPhoto) {
+      const currentlyShowingSuccess = this.showSuccessScreen();
+
+      // ✅ Only show success screen if photo was taken AND we're not already showing it
+      if (data.photoTaken && data.capturedPhoto && !currentlyShowingSuccess) {
         console.log('✅ [CarpetScanner] WebP photo captured, showing success screen');
         this.showSuccessScreen.set(true);
-        // Auto-stop scanning to save battery
-        setTimeout(() => this.stopScanning(), 1000);
+
+        // ✅ Stop scanning immediately but safely
+        this.stopScanning();
       }
     });
   }
-
   override async ngOnInit(): Promise<void> {
     console.log('🎬 [CarpetScanner] Component initializing...');
     await this.startScanning();
@@ -50,12 +53,18 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
 
   // Success component events
   protected onCarpetConfirmed(): void {
-    console.log('✅ [CarpetScanner] Carpet confirmed by user');
     const data = this.carpetData();
 
-    if (data.capturedPhoto && data.photoFilename) {
-      // ✅ Emit structured photo data
-      const photoData: CarpetPhotoData = {
+    if (data.capturedPhoto && data.photoFilename && data.photoDisplayUrl) {
+      console.log('[CarpetScanner] ✅ Creating CarpetPhotoData object:', {
+        filename: data.photoFilename,
+        format: data.photoFormat,
+        sizeKB: data.photoSizeKB,
+        blobSize: data.capturedPhoto.size
+      });
+
+      // ✅ Create the complete CarpetPhotoData object
+      const carpetPhotoData: CarpetPhotoData = {
         filename: data.photoFilename,
         format: data.photoFormat,
         sizeKB: data.photoSizeKB,
@@ -68,31 +77,42 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
         }
       };
 
-      console.log(`📸 [CarpetScanner] Emitting photo data:`, {
-        filename: photoData.filename,
-        format: photoData.format,
-        sizeKB: photoData.sizeKB,
-        metadata: photoData.metadata
-      });
+      console.log('[CarpetScanner] ✅ Emitting CarpetPhotoData:', carpetPhotoData);
+      this.carpetConfirmed.emit(carpetPhotoData);
 
-      this.carpetConfirmed.emit(photoData);
+    } else {
+      console.error('[CarpetScanner] ❌ Missing required data for CarpetPhotoData:', {
+        hasBlob: !!data.capturedPhoto,
+        hasFilename: !!data.photoFilename,
+        hasDisplayUrl: !!data.photoDisplayUrl
+      });
     }
   }
 
-  protected async onScanAgain(): Promise<void> {
-    console.log('🔄 [CarpetScanner] Scan again requested');
 
-    // Reset state
-    this._carpetService.resetCapture();
-    this.showSuccessScreen.set(false);
-    this.cameraError.set(null);
+// ✅ REPLACE your stopScanning method with this:
+protected stopScanning(): void {
+  console.log('🛑 [CarpetScanner] Stopping scanning...');
 
-    // Wait a bit for cleanup
-    setTimeout(async () => {
-      console.log('🔄 [CarpetScanner] Restarting scanner...');
-      await this.startScanning();
-    }, 500);
+  // ✅ Prevent multiple calls
+  if (!this._carpetService.data().photoTaken) {
+    this._carpetService.stopRecognition();
   }
+}
+
+// ✅ REPLACE your onScanAgain method with this:
+protected onScanAgain(): void {
+  console.log('[CarpetSuccess] 🔄 User wants to scan again');
+
+  // ✅ Reset everything properly
+  this._carpetService.resetCapture();
+  this.showSuccessScreen.set(false);
+
+  // ✅ Restart scanning after a brief delay
+  setTimeout(() => {
+    this.startScanning();
+  }, 100);
+}
 
   protected onExitScanner(): void {
     console.log('🚪 [CarpetScanner] Exit scanner requested');
@@ -156,22 +176,6 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
     this.cameraError.set(errorMessage);
   }
 
-  protected stopScanning(): void {
-    console.log('🛑 [CarpetScanner] Stopping scanning...');
-
-    this.cameraReady.set(false);
-    this._carpetService.stopRecognition();
-
-    // Stop video stream
-    if (this.videoElement?.nativeElement?.srcObject) {
-      const stream = this.videoElement.nativeElement.srcObject as MediaStream;
-      stream.getTracks().forEach(track => {
-        console.log(`🔇 [CarpetScanner] Stopping video track: ${track.kind}`);
-        track.stop();
-      });
-      this.videoElement.nativeElement.srcObject = null;
-    }
-  }
 
   protected get statusMessage(): string {
     const data = this.carpetData();
@@ -216,6 +220,11 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
 
   ngOnDestroy(): void {
     console.log('💀 [CarpetScanner] Component destroying...');
-    this.stopScanning();
+    const data = this.carpetData();
+    if (data.photoDisplayUrl) {
+      URL.revokeObjectURL(data.photoDisplayUrl);
+      console.log('[CarpetScanner] 🧹 Cleaned up photo display URL');
+    }
+    this._carpetService.stopRecognition();
   }
 }

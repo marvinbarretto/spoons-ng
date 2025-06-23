@@ -209,6 +209,54 @@ export class DeviceCarpetStorageService {
     }
   }
 
+
+  async storeCarpetBlob(
+    photoBlob: Blob,
+    pubId: string,
+    pubName: string
+  ): Promise<string> {
+    console.log('[CarpetStorage] 💾 Storing carpet blob for:', pubName);
+
+    try {
+      // Create storage key
+      const timestamp = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+      const slugName = pubName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+      const imageKey = `${slugName}_${timestamp}`;
+
+      console.log('[CarpetStorage] 🔑 Generated storage key:', imageKey);
+
+      // Convert blob to base64 for localStorage (temporary)
+      const base64Data = await this._blobToBase64(photoBlob);
+
+      console.log('[CarpetStorage] 📊 Image stats:', {
+        size: `${Math.round(photoBlob.size / 1024)}KB`,
+        type: photoBlob.type
+      });
+
+      // Store in localStorage for now
+      localStorage.setItem(`carpet_${imageKey}`, base64Data);
+
+      console.log('[CarpetStorage] ✅ Blob stored successfully with key:', imageKey);
+
+      return imageKey;
+
+    } catch (error) {
+      console.error('[CarpetStorage] ❌ Failed to store blob:', error);
+      throw error;
+    }
+  }
+
+  
+
+  private _blobToBase64(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  }
+
   /**
    * Get a carpet image by key
    */
@@ -255,6 +303,93 @@ export class DeviceCarpetStorageService {
     const keys = await this.indexedDb.getAllKeys('SpoonsCarpets', 'carpets');
     return keys as string[];
   }
+
+
+
+// Add this method to DeviceCarpetStorageService
+
+/**
+ * Store a carpet image from base64 data (for check-in integration)
+ * @param photoData - Base64 image data from scanner
+ * @param pubId - Pub ID for naming
+ * @param pubName - Pub name for naming
+ * @returns Promise<string> - Storage key for the saved image
+ */
+async storeCarpetImage(
+  photoData: string,
+  pubId: string,
+  pubName: string
+): Promise<string> {
+  console.log('[CarpetStorage] 💾 Storing carpet image for:', pubName);
+
+  await this.ensureInitialized();
+  this._loading.set(true);
+
+  try {
+    // Create storage key
+    const timestamp = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const slugName = pubName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+    const imageKey = `${slugName}_${timestamp}`;
+
+    console.log('[CarpetStorage] 🔑 Generated storage key:', imageKey);
+
+    // Convert base64 to blob
+    const response = await fetch(photoData);
+    const blob = await response.blob();
+
+    // Compress if needed
+    const format = 'jpeg'; // Default to JPEG for simplicity
+    const mimeType = 'image/jpeg';
+    const quality = 0.8;
+    const compressedBlob = await this._compressImage(blob, mimeType, quality);
+
+    console.log('[CarpetStorage] 📊 Image stats:', {
+      originalSize: `${Math.round(blob.size / 1024)}KB`,
+      compressedSize: `${Math.round(compressedBlob.size / 1024)}KB`,
+      format
+    });
+
+    // Store in IndexedDB (or localStorage for now)
+    const compressedDataUrl = await this._blobToDataUrl(compressedBlob);
+
+    // TODO: Switch to IndexedDB when implemented
+    localStorage.setItem(`carpet_${imageKey}`, compressedDataUrl);
+
+    console.log('[CarpetStorage] ✅ Image stored successfully with key:', imageKey);
+
+    return imageKey;
+
+  } catch (error) {
+    console.error('[CarpetStorage] ❌ Failed to store image:', error);
+    throw error;
+  } finally {
+    this._loading.set(false);
+  }
+}
+
+/**
+ * Convert blob to data URL
+ */
+private _blobToDataUrl(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+/**
+ * Compress image blob
+ */
+private async _compressImage(blob: Blob, mimeType: string, quality: number): Promise<Blob> {
+  // For now, return original blob
+  // TODO: Implement actual compression when needed
+  console.log('[CarpetStorage] 📐 Image compression skipped (returning original)');
+  return blob;
+}
+
+
 
   /**
    * Delete a carpet image

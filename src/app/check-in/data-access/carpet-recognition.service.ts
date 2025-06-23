@@ -27,6 +27,15 @@ export class CarpetRecognitionService {
   private _mediaStream: MediaStream | null = null;
   private _videoElement: HTMLVideoElement | null = null;
   private _animationFrame: number | null = null;
+  private _lastAnalysisTime = 0;
+  private _analysisInterval = 250; // Analysis every 250ms (4fps)
+  private _stableFrameCount = 0;
+  private _lastDecision = false;
+  private _scanStartTime = 0;
+  private _minThinkingTime = 2000; // 2 seconds minimum
+  private _maxThinkingTime = 10000; // 10 seconds maximum
+  private _hasTimedOut = false;
+
 
   async startRecognition(): Promise<void> {
     console.log('🎥 [CarpetService] Starting recognition...');
@@ -127,7 +136,7 @@ export class CarpetRecognitionService {
     const orientationConfidence = Math.max(0, 1 - (angleDiff / tolerance));
     const hasGoodOrientation = isPhoneDown && orientationConfidence > minConfidence;
 
-    console.log(`📱 [CarpetService] Orientation: β:${beta.toFixed(1)}° diff:${angleDiff.toFixed(1)}° conf:${orientationConfidence.toFixed(2)} good:${hasGoodOrientation}`);
+    // console.log(`📱 [CarpetService] Orientation: β:${beta.toFixed(1)}° diff:${angleDiff.toFixed(1)}° conf:${orientationConfidence.toFixed(2)} good:${hasGoodOrientation}`);
 
     this._updateData({
       isPhoneDown,
@@ -141,51 +150,6 @@ export class CarpetRecognitionService {
     });
   }
 
-  private _startVideoAnalysis(): void {
-    if (!this._videoElement) return;
-
-    const analyzeFrame = () => {
-      if (!this._videoElement) return;
-
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-
-      if (!ctx) {
-        this._animationFrame = requestAnimationFrame(analyzeFrame);
-        return;
-      }
-
-      canvas.width = this._videoElement.videoWidth || 320;
-      canvas.height = this._videoElement.videoHeight || 240;
-
-      ctx.drawImage(this._videoElement, 0, 0, canvas.width, canvas.height);
-
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const textureResult = this._analyzeTexture(imageData);
-      const blurResult = this._analyzeBlur(imageData);
-
-      this._updateData({
-        hasTexture: textureResult.hasTexture,
-        textureConfidence: textureResult.confidence,
-        edgeCount: textureResult.edgeCount,
-        totalSamples: textureResult.totalSamples,
-        textureRatio: textureResult.textureRatio,
-        isSharp: blurResult.isSharp,
-        blurScore: blurResult.score
-      });
-
-      this._calculateDecision();
-
-      const current = this._data();
-      if (current.canCheckIn && current.isSharp && !current.photoTaken) {
-        this._capturePhoto(canvas);
-      }
-
-      this._animationFrame = requestAnimationFrame(analyzeFrame);
-    };
-
-    analyzeFrame();
-  }
 
   private _analyzeTexture(imageData: ImageData): { hasTexture: boolean; confidence: number; edgeCount: number; totalSamples: number; textureRatio: number } {
     const data = imageData.data;
@@ -219,10 +183,12 @@ export class CarpetRecognitionService {
     const textureRatio = totalSamples > 0 ? edgeCount / totalSamples : 0;
     const confidence = Math.min(1, textureRatio * 3);
 
-    console.log(`🏠 [CarpetService] Texture: edges:${edgeCount}/${totalSamples} ratio:${textureRatio.toFixed(3)} conf:${confidence.toFixed(2)}`);
+    // ✅ TESTING: Very low threshold and detailed logging
+    const hasTexture = confidence > 0.05; // Changed from 0.1 to 0.02
+    console.log(`🏠 [CarpetService] Texture: edges:${edgeCount}/${totalSamples} ratio:${textureRatio.toFixed(3)} conf:${confidence.toFixed(2)} hasTexture:${hasTexture}`);
 
     return {
-      hasTexture: confidence > 0.1,
+      hasTexture,
       confidence: Math.round(confidence * 100) / 100,
       edgeCount,
       totalSamples,
@@ -278,42 +244,11 @@ export class CarpetRecognitionService {
     const blurScore = Math.round(variance);
     const isSharp = variance > CARPET_RECOGNITION_CONFIG.blur.sharpnessThreshold;
 
-    console.log(`📷 [CarpetService] Blur: score:${blurScore} sharp:${isSharp}`);
+    // console.log(`📷 [CarpetService] Blur: score:${blurScore} sharp:${isSharp}`);
 
     return { isSharp, score: blurScore };
   }
 
-  // ✅ WebP + Binary photo capture
-  private async _capturePhoto(canvas: HTMLCanvasElement): Promise<void> {
-    try {
-      console.log('📸 [CarpetService] Capturing WebP photo...');
-
-      const timestamp = Date.now();
-      const { blob, format, filename } = await this._captureOptimalFormat(canvas, timestamp);
-
-      const sizeKB = Math.round(blob.size / 1024);
-      const displayUrl = URL.createObjectURL(blob);
-
-      // Calculate savings vs Base64 JPEG
-      const estimatedBase64Size = blob.size * 1.33; // Base64 overhead
-      const savingsKB = Math.round((estimatedBase64Size - blob.size) / 1024);
-
-      console.log(`📸 [CarpetService] Photo captured: ${filename} (${sizeKB}KB ${format.toUpperCase()}, ${savingsKB}KB saved vs Base64)`);
-
-      this._updateData({
-        capturedPhoto: blob,
-        photoTaken: true,
-        photoFilename: filename,
-        photoFormat: format,
-        photoSizeKB: sizeKB,
-        photoDisplayUrl: displayUrl,
-        debugInfo: `Photo: ${filename} (${sizeKB}KB ${format}, ${savingsKB}KB saved)`
-      });
-
-    } catch (error) {
-      console.error('❌ [CarpetService] Photo capture failed:', error);
-    }
-  }
 
   private async _captureOptimalFormat(
     canvas: HTMLCanvasElement,
@@ -352,15 +287,250 @@ export class CarpetRecognitionService {
     };
   }
 
-  private _canvasToBlob(
-    canvas: HTMLCanvasElement,
-    type: string,
-    quality: number
-  ): Promise<Blob | null> {
+  private _canvasToBlob(canvas: HTMLCanvasElement, type: string, quality: number): Promise<Blob | null> {
     return new Promise((resolve) => {
       canvas.toBlob(resolve, type, quality);
     });
   }
+
+  private _startVideoAnalysis(): void {
+    if (!this._videoElement) return;
+
+    // ✅ Record scan start time
+    this._scanStartTime = Date.now();
+    this._hasTimedOut = false;
+
+    const analyzeFrame = () => {
+      if (!this._videoElement) return;
+
+      // ✅ STOP ANALYSIS if photo already taken
+      const current = this._data();
+      if (current.photoTaken) {
+        console.log('🛑 [CarpetService] Photo taken, stopping video analysis loop');
+        if (this._animationFrame) {
+          cancelAnimationFrame(this._animationFrame);
+          this._animationFrame = null;
+        }
+        return; // Exit the loop completely
+      }
+
+      const now = performance.now();
+
+      // ✅ Throttle analysis to 4fps
+      if (now - this._lastAnalysisTime < this._analysisInterval) {
+        this._animationFrame = requestAnimationFrame(analyzeFrame);
+        return;
+      }
+
+      this._lastAnalysisTime = now;
+
+      // ✅ Check for timeout (10 seconds)
+      const elapsed = Date.now() - this._scanStartTime;
+      if (elapsed > this._maxThinkingTime && !this._hasTimedOut) {
+        this._hasTimedOut = true;
+        console.log('⏰ [CarpetService] Scan timeout after 10 seconds - no clear carpet detected');
+        console.log('📋 [CarpetService] Alternative flow: User can manually capture or skip carpet');
+
+        // ✅ Update state to show timeout
+        this._updateData({
+          debugInfo: 'Scan timeout - manual capture available',
+          canCheckIn: false
+        });
+
+        // ✅ Continue analyzing but don't auto-capture
+        this._animationFrame = requestAnimationFrame(analyzeFrame);
+        return;
+      }
+
+      console.log('🔍 [CarpetService] Running analysis frame...');
+
+      // ✅ Standard analysis
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+
+      if (!ctx) {
+        this._animationFrame = requestAnimationFrame(analyzeFrame);
+        return;
+      }
+
+      canvas.width = 160;
+      canvas.height = 120;
+      ctx.drawImage(this._videoElement, 0, 0, canvas.width, canvas.height);
+
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const textureResult = this._analyzeTexture(imageData);
+      const blurResult = this._analyzeBlur(imageData);
+
+      this._updateData({
+        hasTexture: textureResult.hasTexture,
+        textureConfidence: textureResult.confidence,
+        edgeCount: textureResult.edgeCount,
+        totalSamples: textureResult.totalSamples,
+        textureRatio: textureResult.textureRatio,
+        isSharp: blurResult.isSharp,
+        blurScore: blurResult.score
+      });
+
+      const prevDecision = this._lastDecision;
+      this._calculateDecision();
+      const updatedCurrent = this._data();
+      this._lastDecision = updatedCurrent.canCheckIn;
+
+      if (prevDecision !== updatedCurrent.canCheckIn) {
+        console.log(`🎯 [CarpetService] Decision CHANGED: orient:${updatedCurrent.isPhoneDown} texture:${updatedCurrent.hasTexture} canCheckIn:${updatedCurrent.canCheckIn}`);
+      }
+
+      // ✅ Enhanced capture logic with timing controls
+      if (updatedCurrent.canCheckIn && updatedCurrent.isSharp && !updatedCurrent.photoTaken && !this._hasTimedOut) {
+        this._stableFrameCount++;
+        console.log(`📸 [CarpetService] Capture conditions met! Stable frames: ${this._stableFrameCount} (elapsed: ${elapsed}ms)`);
+
+        // ✅ Check minimum thinking time (2 seconds)
+        const hasMinTime = elapsed >= this._minThinkingTime;
+        const hasStableFrames = this._stableFrameCount >= 2;
+
+        if (hasMinTime && hasStableFrames) {
+          console.log('🚀 [CarpetService] TRIGGERING PHOTO CAPTURE! (Min time + stable frames achieved)');
+
+          const captureCanvas = document.createElement('canvas');
+          const captureCtx = captureCanvas.getContext('2d');
+
+          if (captureCtx) {
+            captureCanvas.width = this._videoElement.videoWidth || 640;
+            captureCanvas.height = this._videoElement.videoHeight || 480;
+            captureCtx.drawImage(this._videoElement, 0, 0, captureCanvas.width, captureCanvas.height);
+
+            console.log('📷 [CarpetService] Calling _capturePhoto with full-size canvas:', {
+              width: captureCanvas.width,
+              height: captureCanvas.height,
+              thinkingTime: `${elapsed}ms`
+            });
+
+            this._capturePhoto(captureCanvas);
+            // ✅ Note: _capturePhoto will set photoTaken=true, causing this loop to exit on next iteration
+          } else {
+            console.error('❌ [CarpetService] Failed to create capture canvas context');
+          }
+        } else if (!hasMinTime) {
+          console.log(`⏳ [CarpetService] Conditions met but waiting for minimum thinking time (${elapsed}/${this._minThinkingTime}ms)`);
+        }
+      } else {
+        // Reset stable frame count if conditions not met
+        if (this._stableFrameCount > 0) {
+          console.log(`🔄 [CarpetService] Conditions lost, resetting stable frames (was ${this._stableFrameCount})`);
+          this._stableFrameCount = 0;
+        }
+
+        // ✅ Reduced debug logging to prevent spam
+        if (!updatedCurrent.photoTaken && !this._hasTimedOut) {
+          if (!updatedCurrent.canCheckIn) {
+            console.log(`❌ [CarpetService] Cannot check in: orient:${updatedCurrent.isPhoneDown} texture:${updatedCurrent.hasTexture}`);
+          } else if (!updatedCurrent.isSharp) {
+            console.log(`❌ [CarpetService] Image not sharp enough: score:${updatedCurrent.blurScore}`);
+          }
+        }
+      }
+
+      this._animationFrame = requestAnimationFrame(analyzeFrame);
+    };
+
+    console.log('🎬 [CarpetService] Starting optimized video analysis (4fps) with 2s min / 10s max timing');
+    analyzeFrame();
+  }
+
+
+
+  // ✅ REPLACE your _capturePhoto method with this:
+  private async _capturePhoto(canvas: HTMLCanvasElement): Promise<void> {
+    try {
+      console.log('[CarpetRecognition] 📸 === PHOTO CAPTURE STARTED ===');
+      console.log('[CarpetRecognition] Input canvas size:', {
+        width: canvas.width,
+        height: canvas.height
+      });
+
+      // Create a high-quality capture canvas
+      const captureCanvas = document.createElement('canvas');
+      const ctx = captureCanvas.getContext('2d');
+
+      if (!ctx) {
+        throw new Error('Failed to get canvas context');
+      }
+
+      // Set capture size (400x400 for consistency)
+      captureCanvas.width = 400;
+      captureCanvas.height = 400;
+
+      // Calculate source dimensions to center crop
+      const sourceSize = Math.min(canvas.width, canvas.height);
+      const sourceX = (canvas.width - sourceSize) / 2;
+      const sourceY = (canvas.height - sourceSize) / 2;
+
+      console.log('[CarpetRecognition] Crop calculations:', {
+        sourceSize,
+        sourceX,
+        sourceY,
+        targetSize: '400x400'
+      });
+
+      // Draw centered crop
+      ctx.drawImage(
+        canvas,
+        sourceX, sourceY, sourceSize, sourceSize,  // source
+        0, 0, 400, 400                             // destination
+      );
+
+      console.log('[CarpetRecognition] Canvas drawn, starting blob conversion...');
+
+      // ✅ Convert to Blob (WebP with fallback to JPEG)
+      const photoBlob = await this._canvasToBlob(captureCanvas, 'image/webp', 0.8) ||
+                        await this._canvasToBlob(captureCanvas, 'image/jpeg', 0.8);
+
+      if (!photoBlob) {
+        throw new Error('Failed to create photo blob');
+      }
+
+      console.log('[CarpetRecognition] Blob created:', {
+        size: photoBlob.size,
+        type: photoBlob.type
+      });
+
+      // ✅ Create display URL for the blob
+      const photoDisplayUrl = URL.createObjectURL(photoBlob);
+      console.log('[CarpetRecognition] Display URL created:', photoDisplayUrl);
+
+      // ✅ Generate filename
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const photoFilename = `carpet_${timestamp}.${photoBlob.type.split('/')[1]}`;
+
+      console.log('[CarpetRecognition] ✅ === PHOTO CAPTURE SUCCESS ===', {
+        filename: photoFilename,
+        size: `${captureCanvas.width}x${captureCanvas.height}`,
+        blobSize: `${Math.round(photoBlob.size / 1024)}KB`,
+        format: photoBlob.type,
+        blurScore: this._data().blurScore,
+        edgeCount: this._data().edgeCount
+      });
+
+      this._updateData({
+        capturedPhoto: photoBlob,
+        photoDisplayUrl,
+        photoFilename,
+        photoFormat: photoBlob.type.includes('webp') ? 'webp' : 'jpeg',
+        photoSizeKB: Math.round(photoBlob.size / 1024),
+        photoTaken: true,
+        debugInfo: 'Photo captured successfully!'
+      });
+
+    } catch (error) {
+      console.error('[CarpetRecognition] ❌ === PHOTO CAPTURE FAILED ===', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      this._updateData({
+        debugInfo: `Photo capture failed: ${errorMessage}`
+      });
+    }
+  }
+
 
   private _calculateDecision(): void {
     const current = this._data();
@@ -368,7 +538,8 @@ export class CarpetRecognitionService {
     const { edgeThreshold } = CARPET_RECOGNITION_CONFIG.texture;
     const { minConfidence } = CARPET_RECOGNITION_CONFIG.orientation;
 
-    const hasGoodTexture = (current.edgeCount || 0) > edgeThreshold;
+    // ✅ MUCH LOWER edge threshold for testing - use the texture analysis result directly
+    const hasGoodTexture = current.hasTexture; // Just use what _analyzeTexture already determined
     const hasGoodOrientation = current.isPhoneDown && current.orientationConfidence > minConfidence;
 
     const canCheckIn = hasGoodOrientation && hasGoodTexture;
@@ -381,23 +552,28 @@ export class CarpetRecognitionService {
       (current.orientationConfidence * orientationWeight) +
       (normalizedTextureScore * textureWeight);
 
-    console.log(`🎯 [CarpetService] Decision: orient:${hasGoodOrientation} texture:${hasGoodTexture} canCheckIn:${canCheckIn}`);
+    // ✅ Enhanced logging
+    console.log(`🎯 [CarpetService] Decision: orient:${hasGoodOrientation} texture:${hasGoodTexture} canCheckIn:${canCheckIn} (edges:${current.edgeCount}, analyzeTexture says: ${current.hasTexture})`);
 
     this._updateData({
       overallConfidence,
       canCheckIn,
-      debugInfo: `Orient: ${current.orientationConfidence.toFixed(2)} | Edges: ${current.edgeCount}/${edgeThreshold} | Can: ${canCheckIn}`
+      debugInfo: `Orient: ${current.orientationConfidence.toFixed(2)} | HasTexture: ${current.hasTexture} | Can: ${canCheckIn}`
     });
   }
 
   resetCapture(): void {
     console.log('🔄 [CarpetService] Resetting capture state...');
 
-    // Clean up old display URL
+    // ✅ Clean up old display URL
     const current = this._data();
     if (current.photoDisplayUrl) {
       URL.revokeObjectURL(current.photoDisplayUrl);
     }
+
+    // ✅ Reset counters
+    this._stableFrameCount = 0;
+    this._lastDecision = false;
 
     this._updateData({
       capturedPhoto: null,
