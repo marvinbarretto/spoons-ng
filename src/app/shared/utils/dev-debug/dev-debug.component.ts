@@ -5,6 +5,7 @@ import { DatePipe, JsonPipe } from '@angular/common';
 // Base and Services
 import { BaseComponent } from '@shared/data-access/base.component';
 import { CleanupService, type CleanupResult } from '@shared/utils/cleanup.service';
+import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-carpet-storage.service';
 
 // Stores
 import { AuthStore } from '@auth/data-access/auth.store';
@@ -37,6 +38,7 @@ export class DevDebugComponent extends BaseComponent {
   protected readonly badgeStore = inject(BadgeStore);
 
   private readonly cleanupService = inject(CleanupService);
+  private readonly deviceCarpetStorage = inject(DeviceCarpetStorageService);
 
   // ===================================
   // 📊 STATE MANAGEMENT
@@ -214,94 +216,73 @@ export class DevDebugComponent extends BaseComponent {
     }
   }
 
+
   /**
-   * Clear all test data (keeps badge definitions)
+   * Clear users and ALL their cached data (Firestore + IndexedDB)
    */
-  protected async clearAll(): Promise<void> {
-    if (!confirm('Delete ALL test data? (keeps badge definitions)')) return;
-    if (!confirm('This will clear users, check-ins, landlords, and earned badges.')) return;
+  protected async clearAllUsers(): Promise<void> {
+    if (!confirm('🧹 Clear ALL test data and cached images? This includes:')) return;
+    if (!confirm('• Firestore: Users, check-ins, landlords, earned badges\n• IndexedDB: All cached carpet images\n• Keeps: Badge definitions, pub data\n\nThis cannot be undone!')) return;
 
     this.cleanupLoading.set(true);
     this.lastCleanupResult.set(null);
 
     try {
-      const results = await this.cleanupService.clearAllTestData();
+      console.log('[DevDebugComponent] 🧹 Starting comprehensive user cleanup...');
 
-      const totalDeleted = results.users.deletedCount +
-        results.checkIns.deletedCount +
-        results.landlords.deletedCount +
-        results.earnedBadges.deletedCount;
+      // 1. Clear Firestore data (all test data except badge definitions)
+      const firestoreResults = await this.cleanupService.clearAllTestData();
+      console.log('[DevDebugComponent] ✅ Firestore cleanup completed:', firestoreResults);
 
-      const allSuccess = results.users.success &&
-        results.checkIns.success &&
-        results.landlords.success &&
-        results.earnedBadges.success;
+      // 2. Clear IndexedDB carpet images
+      let indexedDbSuccess = true;
+      let indexedDbError: string | undefined;
+      try {
+        await this.deviceCarpetStorage.clearAllCarpets();
+        console.log('[DevDebugComponent] ✅ IndexedDB carpet cleanup completed');
+      } catch (error: any) {
+        console.error('[DevDebugComponent] ❌ IndexedDB carpet cleanup failed:', error);
+        indexedDbSuccess = false;
+        indexedDbError = error?.message || 'IndexedDB cleanup failed';
+      }
+
+      // 3. Calculate results
+      const firestoreDeleted = firestoreResults.users.deletedCount + 
+        firestoreResults.checkIns.deletedCount + 
+        firestoreResults.landlords.deletedCount + 
+        firestoreResults.earnedBadges.deletedCount;
+      const firestoreSuccess = firestoreResults.users.success && 
+        firestoreResults.checkIns.success && 
+        firestoreResults.landlords.success && 
+        firestoreResults.earnedBadges.success;
+      const overallSuccess = firestoreSuccess && indexedDbSuccess;
 
       this.lastCleanupResult.set({
-        success: allSuccess,
-        deletedCount: totalDeleted,
-        error: allSuccess ? undefined : 'Some operations failed - check console'
+        success: overallSuccess,
+        deletedCount: firestoreDeleted,
+        error: overallSuccess ? undefined : 
+          `${!firestoreSuccess ? 'Firestore cleanup issues. ' : ''}${!indexedDbSuccess ? `IndexedDB error: ${indexedDbError}` : ''}`
       });
 
+      // 4. Refresh data and reset stores
       await this.refreshCounts();
       await this.refreshDatabaseSummary();
 
-      // Reset relevant stores
+      // Reset ALL relevant stores (matching nuclear option pattern)
       this.userStore.reset();
       this.checkinStore.reset();
-      this.landlordStore.reset();
       this.badgeStore.reset();
+      this.pubStore.reset();
+      this.landlordStore.reset();
 
-      console.log('[DevDebugComponent] ✅ Complete cleanup finished:', results);
+      console.log('[DevDebugComponent] ✅ Comprehensive user cleanup finished');
 
     } catch (error: any) {
-      console.error('[DevDebugComponent] ❌ Cleanup failed:', error);
+      console.error('[DevDebugComponent] ❌ Comprehensive user cleanup failed:', error);
       this.lastCleanupResult.set({
         success: false,
         deletedCount: 0,
-        error: error?.message || 'Unknown cleanup error'
-      });
-    } finally {
-      this.cleanupLoading.set(false);
-    }
-  }
-
-  /**
-   * Clear users and their earned badges
-   */
-  protected async clearUsers(): Promise<void> {
-    if (!confirm('Delete ALL users and their earned badges?')) return;
-
-    this.cleanupLoading.set(true);
-    this.lastCleanupResult.set(null);
-
-    try {
-      const results = await this.cleanupService.clearUserData();
-
-      const totalDeleted = results.users.deletedCount + results.earnedBadges.deletedCount;
-      const allSuccess = results.users.success && results.earnedBadges.success;
-
-      this.lastCleanupResult.set({
-        success: allSuccess,
-        deletedCount: totalDeleted,
-        error: allSuccess ? undefined : 'Some user cleanup operations failed'
-      });
-
-      await this.refreshCounts();
-      await this.refreshDatabaseSummary();
-
-      // Reset user-related stores
-      this.userStore.reset();
-      this.badgeStore.reset(); // ✅ Critical for clearing earned badges
-
-      console.log('[DevDebugComponent] ✅ User cleanup finished:', results);
-
-    } catch (error: any) {
-      console.error('[DevDebugComponent] ❌ User cleanup failed:', error);
-      this.lastCleanupResult.set({
-        success: false,
-        deletedCount: 0,
-        error: error?.message || 'User cleanup failed'
+        error: error?.message || 'Comprehensive user cleanup failed'
       });
     } finally {
       this.cleanupLoading.set(false);
@@ -354,6 +335,38 @@ export class DevDebugComponent extends BaseComponent {
       this.lastCleanupResult.set(result);
       await this.refreshCounts();
       this.badgeStore.reset();
+    } finally {
+      this.cleanupLoading.set(false);
+    }
+  }
+
+  protected async clearPubs(): Promise<void> {
+    if (!confirm('Delete ALL pubs? This cannot be undone.')) return;
+
+    this.cleanupLoading.set(true);
+    this.lastCleanupResult.set(null);
+
+    try {
+      const result = await this.cleanupService.clearCollection('pubs');
+      this.lastCleanupResult.set(result);
+      await this.refreshCounts();
+      this.pubStore.reset();
+    } finally {
+      this.cleanupLoading.set(false);
+    }
+  }
+
+  protected async clearUsersOnly(): Promise<void> {
+    if (!confirm('Delete ALL users only? (keeps badges, check-ins, etc.)')) return;
+
+    this.cleanupLoading.set(true);
+    this.lastCleanupResult.set(null);
+
+    try {
+      const result = await this.cleanupService.clearUsers();
+      this.lastCleanupResult.set(result);
+      await this.refreshCounts();
+      this.userStore.reset();
     } finally {
       this.cleanupLoading.set(false);
     }

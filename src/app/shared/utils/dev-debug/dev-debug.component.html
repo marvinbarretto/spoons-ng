@@ -104,20 +104,13 @@
               ☢️ Nuclear Reset
             </button>
 
-            <button
-              class="btn danger"
-              (click)="clearAll()"
-              [disabled]="cleanupLoading()"
-              title="Clear all test data, keep badge definitions">
-              🚨 Clear All Test Data
-            </button>
 
             <button
               class="btn warning"
-              (click)="clearUsers()"
+              (click)="clearAllUsers()"
               [disabled]="cleanupLoading()"
-              title="Clear users and their earned badges">
-              👥 Clear Users & Badges
+              title="Clear users, check-ins, landlords, earned badges, and cached carpet images (keeps badge definitions and pubs)">
+              🧹 Clear All Test Data & Cache
             </button>
           </div>
 
@@ -144,6 +137,20 @@
               (click)="clearEarnedBadges()"
               [disabled]="cleanupLoading()">
               🏆 Clear Earned Badges
+            </button>
+
+            <button
+              class="btn secondary"
+              (click)="clearPubs()"
+              [disabled]="cleanupLoading()">
+              🏢 Clear Pubs
+            </button>
+
+            <button
+              class="btn secondary"
+              (click)="clearUsersOnly()"
+              [disabled]="cleanupLoading()">
+              👤 Clear Users Only
             </button>
           </div>
         </div>
