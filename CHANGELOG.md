@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.54](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.53...v0.0.54) (2025-06-23)
+
+
+### Features
+
+* Create DebugService to handle noisy logging ([e9ea4c0](https://github.com/marvinbarretto/spoons-ng/commit/e9ea4c051d1e4c7cb819e6b7dda9e5cb1a3c2640))
+* New DataAggregatorService for reactive data ([bfc3135](https://github.com/marvinbarretto/spoons-ng/commit/bfc3135a1f310ef8b41f042e238c0e3624029d9e))
+* New FirebaseMetrics to track read/write abuse ([0a87547](https://github.com/marvinbarretto/spoons-ng/commit/0a875471b970e2d7bd127800654bf364567e8420))
+* Update Scoreboard, make more resilient ([df55125](https://github.com/marvinbarretto/spoons-ng/commit/df55125ebdb19a7e606087f6fb359883ebf50ce3))
+
 ### [0.0.53](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.52...v0.0.53) (2025-06-23)
 
 
