@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.58](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.57...v0.0.58) (2025-06-25)
+
+
+### Features
+
+* Update leaderboards ([3f2ca33](https://github.com/marvinbarretto/spoons-ng/commit/3f2ca33e8fd5836c20f2ecf2a48ac19cf9177692))
+
 ### [0.0.57](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.56...v0.0.57) (2025-06-23)
 
 ### [0.0.56](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.55...v0.0.56) (2025-06-23)
