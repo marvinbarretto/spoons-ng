@@ -1,10 +1,17 @@
 // src/app/shared/ui/data-table/data-table.component.ts
-import { Component, input, computed } from "@angular/core";
+import { Component, input, computed, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
+import { TableColumn } from './data-table.model';
+
+export type SortDirection = 'asc' | 'desc' | null;
+export type SortState = {
+  column: string | null;
+  direction: SortDirection;
+};
 
 @Component({
   selector: 'app-data-table',
-  imports: [],
+  imports: [CommonModule],
   template: `
     <div class="data-table">
       @if (loading()) {
@@ -13,31 +20,35 @@ import { CommonModule } from "@angular/common";
         <table>
           <thead>
             <tr>
-              <th>Rank</th>
-              <th>Pub Crawler</th>
-              <th>Total Visits</th>
-              <th>Unique Pubs</th>
-              <th>Joined</th>
+              @for (column of columns(); track column.key) {
+                <th 
+                  [class]="getHeaderClass(column)" 
+                  [style.width]="column.width"
+                  (click)="handleHeaderClick(column)"
+                >
+                  <div class="header-content">
+                    <span>{{ column.label }}</span>
+                    @if (column.sortable && sortState().column === column.key) {
+                      <span class="sort-indicator">
+                        {{ sortState().direction === 'asc' ? '↑' : '↓' }}
+                      </span>
+                    }
+                  </div>
+                </th>
+              }
             </tr>
           </thead>
           <tbody>
-            @for (entry of sortedData(); track entry.userId; let i = $index) {
-              <tr [class.highlight]="entry.displayName.includes('(You)')">
-                <td class="rank">#{{ i + 1 }}</td>
-                <td class="name">
-                  <div class="user-info">
-                    <img
-                      [src]="getUserAvatar(entry)"
-                      [alt]="entry.displayName"
-                      class="avatar"
-                      (error)="onImageError($event)"
-                    />
-                    <span class="user-name">{{ entry.displayName }}</span>
-                  </div>
-                </td>
-                <td class="number">{{ entry.totalVisits }}</td>
-                <td class="number">{{ entry.uniquePubs }}</td>
-                <td class="date">{{ formatDate(entry.joinedDate) }}</td>
+            @for (row of displayData(); track getTrackByValue(row); let i = $index) {
+              <tr 
+                [class.highlight]="shouldHighlightRow(row)"
+                [class]="getRowClassName(row)"
+                (click)="handleRowClick(row)"
+              >
+                @for (column of columns(); track column.key) {
+                  <td [class]="column.className" [innerHTML]="getCellValue(column, row, i)">
+                  </td>
+                }
               </tr>
             }
           </tbody>
@@ -67,6 +78,28 @@ import { CommonModule } from "@angular/common";
       font-weight: 600;
       background: var(--color-subtleLighter);
       color: var(--color-text);
+      position: relative;
+    }
+
+    th.sortable {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    th.sortable:hover {
+      background: var(--color-subtle);
+    }
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .sort-indicator {
+      font-size: 0.8rem;
+      opacity: 0.7;
     }
 
     td {
@@ -81,6 +114,34 @@ import { CommonModule } from "@angular/common";
     .rank {
       font-weight: 600;
       color: var(--color-buttonPrimaryBase);
+      text-align: center;
+    }
+
+    .points-primary {
+      font-weight: 700;
+      color: var(--color-buttonPrimaryBase);
+    }
+
+    .user-cell .user-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .user-cell .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
+      border: 2px solid var(--color-subtleLighter);
+    }
+
+    .user-cell .user-name {
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .highlight {
@@ -153,51 +214,118 @@ import { CommonModule } from "@angular/common";
 })
 export class DataTableComponent {
   readonly data = input.required<any[]>();
+  readonly columns = input.required<TableColumn[]>();
   readonly loading = input(false);
+  readonly trackBy = input<string>('id');
+  readonly highlightRow = input<(row: any) => boolean>();
+  readonly getRowClass = input<(row: any) => string>();
+  readonly onRowClick = input<(row: any) => void>();
+  readonly searchTerm = input<string>('');
 
-  // Sort by total visits (descending), then by unique pubs
-  readonly sortedData = computed(() => {
-    return [...this.data()].sort((a, b) => {
-      if (b.totalVisits !== a.totalVisits) {
-        return b.totalVisits - a.totalVisits;
+  // Sort state
+  readonly sortState = signal<SortState>({ column: null, direction: null });
+
+  // Filtered data based on search
+  readonly filteredData = computed(() => {
+    const search = this.searchTerm().toLowerCase();
+    if (!search) return this.data();
+    
+    return this.data().filter(row => 
+      Object.values(row).some(value => 
+        String(value).toLowerCase().includes(search)
+      )
+    );
+  });
+
+  // Sorted and filtered data
+  readonly displayData = computed(() => {
+    const filtered = this.filteredData();
+    const sort = this.sortState();
+    
+    if (!sort.column || !sort.direction) {
+      return filtered;
+    }
+
+    return [...filtered].sort((a, b) => {
+      const aValue = a[sort.column!];
+      const bValue = b[sort.column!];
+      
+      // Handle different data types
+      let comparison = 0;
+      
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        comparison = aValue - bValue;
+      } else {
+        const aStr = String(aValue || '').toLowerCase();
+        const bStr = String(bValue || '').toLowerCase();
+        comparison = aStr.localeCompare(bStr);
       }
-      return b.uniquePubs - a.uniquePubs;
+      
+      return sort.direction === 'asc' ? comparison : -comparison;
     });
   });
 
-  formatDate(dateString: string): string {
-    try {
-      return new Date(dateString).toLocaleDateString('en-GB', {
-        day: 'numeric',
-        month: 'short'
+  getCellValue(column: TableColumn, row: any, index: number): string {
+    const value = row[column.key];
+    
+    if (column.formatter) {
+      return column.formatter(value, row, index);
+    }
+    
+    return String(value ?? '');
+  }
+
+  getTrackByValue(row: any): any {
+    const trackByKey = this.trackBy();
+    return row[trackByKey] ?? row;
+  }
+
+  shouldHighlightRow(row: any): boolean {
+    const highlightFn = this.highlightRow();
+    return highlightFn ? highlightFn(row) : false;
+  }
+
+  getRowClassName(row: any): string {
+    const classFn = this.getRowClass();
+    return classFn ? classFn(row) : '';
+  }
+
+  handleRowClick(row: any): void {
+    const clickHandler = this.onRowClick();
+    if (clickHandler) {
+      clickHandler(row);
+    }
+  }
+
+  handleHeaderClick(column: TableColumn): void {
+    if (!column.sortable) return;
+
+    const currentSort = this.sortState();
+    
+    if (currentSort.column === column.key) {
+      // Cycle through: asc -> desc -> null
+      const newDirection: SortDirection = 
+        currentSort.direction === 'asc' ? 'desc' :
+        currentSort.direction === 'desc' ? null : 'asc';
+      
+      this.sortState.set({
+        column: newDirection ? column.key : null,
+        direction: newDirection
       });
-    } catch {
-      return 'Unknown';
-    }
-  }
-
-  getUserAvatar(entry: any): string {
-    // Check if this user has a profile photo (Google users)
-    if (entry.photoURL) {
-      return entry.photoURL;
-    }
-
-    // Check if it's a real user (has email/displayName) vs anonymous
-    const isAnonymousUser = !entry.email && !entry.realDisplayName &&
-                           (entry.displayName?.includes('-') || entry.displayName?.includes('(You)'));
-
-    if (isAnonymousUser) {
-      // Use NPC image for anonymous users
-      return 'assets/avatars/npc.webp';
     } else {
-      // Fallback avatar for Google users without profile photos
-      return 'assets/images/default-user-avatar.png';
+      // New column, start with descending
+      this.sortState.set({
+        column: column.key,
+        direction: 'desc'
+      });
     }
   }
 
-  onImageError(event: Event): void {
-    // Fallback to NPC image if any avatar fails to load
-    const img = event.target as HTMLImageElement;
-    img.src = 'assets/avatars/npc.webp';
+  getHeaderClass(column: TableColumn): string {
+    const classes = [column.className || ''];
+    if (column.sortable) {
+      classes.push('sortable');
+    }
+    return classes.filter(Boolean).join(' ');
   }
 }

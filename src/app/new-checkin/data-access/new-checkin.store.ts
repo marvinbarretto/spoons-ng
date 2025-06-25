@@ -11,6 +11,7 @@ import { PubStore } from '../../pubs/data-access/pub.store';
 import { PointsStore } from '../../points/data-access/points.store';
 import { UserStore } from '../../users/data-access/user.store';
 import { BadgeAwardService } from '../../badges/data-access/badge-award.service';
+import { LandlordStore, type LandlordResult } from '../../landlord/data-access/landlord.store';
 import { CheckInModalService } from '../../check-in/data-access/check-in-modal.service';
 import { BaseStore } from '../../shared/data-access/base.store';
 import { CameraService } from '../../shared/data-access/camera.service';
@@ -26,6 +27,7 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
   private readonly pointsStore = inject(PointsStore);
   private readonly userStore = inject(UserStore);
   private readonly badgeAwardService = inject(BadgeAwardService);
+  private readonly landlordStore = inject(LandlordStore);
   private readonly checkInModalService = inject(CheckInModalService);
   private readonly cameraService = inject(CameraService);
 
@@ -118,8 +120,23 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
     const userId = this.authStore.uid();
     if (!userId) throw new Error('No authenticated user');
 
-    console.log('[NewCheckinStore] 📡 Fetching check-ins for user:', userId);
-    return this.newCheckinService.loadUserCheckins(userId);
+    console.log('📡 [NewCheckinStore] === FETCHING CHECK-INS ===');
+    console.log('📡 [NewCheckinStore] User ID:', userId?.slice(0, 8));
+    console.log('📡 [NewCheckinStore] Timestamp:', new Date().toISOString());
+    
+    const checkins = await this.newCheckinService.loadUserCheckins(userId);
+    
+    console.log('📡 [NewCheckinStore] === CHECK-INS LOADED ===');
+    console.log('📡 [NewCheckinStore] Total checkins received:', checkins.length);
+    console.log('📡 [NewCheckinStore] Unique pubs from checkins:', new Set(checkins.map(c => c.pubId)).size);
+    console.log('📡 [NewCheckinStore] Sample checkins:', checkins.slice(0, 3).map(c => ({
+      pubId: c.pubId,
+      timestamp: c.timestamp.toDate().toISOString(),
+      userId: c.userId?.slice(0, 8),
+      dateKey: c.dateKey
+    })));
+    
+    return checkins;
   }
 
   // Utility methods
@@ -205,6 +222,11 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
       console.log('[NewCheckinStore] ⏭️ Carpet detection disabled, skipping');
     }
 
+    // Calculate points before creation
+    console.log('[NewCheckinStore] 🎯 Calculating points before check-in creation...');
+    const pointsData = await this.calculatePoints(pubId, !!carpetImageKey);
+    console.log('[NewCheckinStore] 🎯 Points calculated:', pointsData);
+
     // Creation phase with carpet data
     console.log('[NewCheckinStore] 💾 Starting check-in creation...');
     const newCheckinId = await this.newCheckinService.createCheckin(pubId, carpetImageKey);
@@ -221,7 +243,10 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
         pubId,
         timestamp: Timestamp.now(),
         dateKey: new Date().toISOString().split('T')[0],
-        ...(carpetImageKey && { carpetImageKey })
+        ...(carpetImageKey && { carpetImageKey }),
+        // Add points data to the checkin object
+        pointsEarned: pointsData?.total || 0,
+        pointsBreakdown: pointsData ? JSON.stringify(pointsData) : undefined
       };
       
       console.log('[NewCheckinStore] 🔄 Before addItem - current data count:', this.data().length);
@@ -241,7 +266,7 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
 
     // Success flow - gather data and show overlay
     console.log('[NewCheckinStore] 🎉 Starting success flow...');
-    await this.handleSuccessFlow(pubId, carpetImageKey);
+    await this.handleSuccessFlow(pubId, carpetImageKey, pointsData);
 
   } catch (error: any) {
     console.error('[NewCheckinStore] ❌ Check-in process failed:', error);
@@ -342,7 +367,7 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
   /**
    * Handle successful check-in flow
    */
-  private async handleSuccessFlow(pubId: string, carpetImageKey?: string): Promise<void> {
+  private async handleSuccessFlow(pubId: string, carpetImageKey?: string, pointsData?: any): Promise<void> {
     console.log('[NewCheckinStore] 🎉 Gathering success data for pub:', pubId);
 
     try {
@@ -373,8 +398,8 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
         // TODO: Implement home pub selection logic
       }
 
-      // Calculate points (including carpet bonus if applicable)
-      const pointsData = await this.calculatePoints(pubId, !!carpetImageKey);
+      // Points already calculated in main flow
+      console.log('[NewCheckinStore] 🎯 Using pre-calculated points data:', pointsData);
 
       // Check for new badges
       // Get the newly created check-in from our success signal
@@ -402,8 +427,16 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
         awardedBadges = [];
       }
 
-      // Check landlord status
-      // TODO: Implement landlord check
+      // ✅ STEP 6: Handle landlord logic via LandlordStore
+      console.log('[NewCheckinStore] 👑 Processing landlord logic...');
+      const landlordResult = await this.landlordStore.tryAwardLandlordForCheckin(pubId, userId, new Date());
+      
+      // Set landlord message signal
+      const landlordMessage = landlordResult.isNewLandlord ? '👑 You\'re the landlord today!' : '✅ Check-in complete!';
+      this._landlordMessage.set(landlordMessage);
+
+      // ✅ STEP 7: UserStore updates (DataAggregatorService computes pubsVisited from our data)
+      console.log('[NewCheckinStore] 👤 UserStore.checkedInPubIds updates not needed - DataAggregatorService computes from our check-ins');
 
       // Assemble success data
       const successData = {
@@ -411,7 +444,8 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
         checkin: {
           pubId,
           timestamp: new Date().toISOString(),
-          carpetImageKey
+          carpetImageKey,
+          madeUserLandlord: landlordResult.isNewLandlord
         },
         pub: {
           name: pub?.name || 'Unknown Pub',
@@ -419,11 +453,14 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
         },
         points: pointsData,
         badges: awardedBadges,
+        isNewLandlord: landlordResult.isNewLandlord,
+        landlordMessage: landlordMessage,
         isFirstEver,
         carpetCaptured: !!carpetImageKey
       };
 
       console.log('[NewCheckinStore] 🎉 Success data assembled:', successData);
+      console.log('[NewCheckinStore] ✅ Check-in workflow complete - showing modals');
 
       // Show success overlay
       this.showCheckinResults(successData);
@@ -522,6 +559,13 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
     if (data.success) {
       console.log('[NewCheckinStore] 🎉 Calling CheckInModalService.showCheckInResults for SUCCESS');
       
+      // Log modal coordination decision
+      if (data.isNewLandlord) {
+        console.log('[NewCheckinStore] 🎭 ✅ CELEBRATORY: User became landlord → Second modal will show');
+      } else {
+        console.log('[NewCheckinStore] 🎭 ❌ ROUTINE: Normal check-in → First modal only');
+      }
+      
       // Show success modal like the old flow
       this.checkInModalService.showCheckInResults({
         success: true,
@@ -531,7 +575,10 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
           pubId: data.checkin.pubId,
           timestamp: data.checkin.timestamp,
           dateKey: data.checkin.dateKey,
-          carpetImageKey: data.checkin.carpetImageKey
+          carpetImageKey: data.checkin.carpetImageKey,
+          // Add points data to checkin object for modal
+          pointsEarned: data.points?.total || 0,
+          pointsBreakdown: data.points ? JSON.stringify(data.points) : undefined
         },
         pub: {
           id: data.checkin.pubId,
@@ -539,7 +586,8 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
         },
         points: data.points,
         badges: data.badges || [],
-        isNewLandlord: false, // TODO: Implement landlord check
+        isNewLandlord: data.isNewLandlord,
+        landlordMessage: data.landlordMessage,
         carpetCaptured: data.carpetCaptured
       });
       
@@ -583,7 +631,7 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
         pubId,
         distanceFromHome,
         isFirstVisit,
-        isFirstEver: totalCheckins === 1,
+        isFirstEver: totalCheckins === 0,
         currentStreak: 0, // TODO: Calculate streak
         hasPhoto: false,
         sharedSocial: false,
@@ -598,18 +646,9 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
 
       console.log('[NewCheckinStore] 🎯 PointsStore returned breakdown:', pointsBreakdown);
 
-      // Convert to display format
-      const result = {
-        total: pointsBreakdown.total,
-        breakdown: [
-          { reason: 'Base check-in', points: pointsBreakdown.base },
-          ...(pointsBreakdown.distance > 0 ? [{ reason: 'Distance bonus', points: pointsBreakdown.distance }] : []),
-          ...(pointsBreakdown.bonus > 0 ? [{ reason: 'Bonus points', points: pointsBreakdown.bonus }] : [])
-        ]
-      };
-
-      console.log('[NewCheckinStore] 🎯 Points calculated and awarded:', result);
-      return result;
+      // Return the breakdown directly - it already has total and structured data
+      console.log('[NewCheckinStore] 🎯 Points calculated and awarded:', pointsBreakdown);
+      return pointsBreakdown;
 
     } catch (error) {
       console.error('[NewCheckinStore] ❌ Points calculation failed:', error);
@@ -649,26 +688,4 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
   }
 
 
-  /**
-   * 🚧 STUB: Check landlord status
-   */
-  private async checkLandlordStatus(pubId: string): Promise<any> {
-    console.log('[NewCheckinStore] 👑 [STUB] Checking landlord status for pub:', pubId);
-
-    // Simulate landlord check delay
-    await new Promise(resolve => setTimeout(resolve, 75));
-
-    const stubData = {
-      isNewLandlord: false, // TODO: Check if user became landlord today
-      currentLandlord: null, // TODO: Get current landlord
-      message: null,
-      debug: {
-        todayDateKey: new Date().toISOString().split('T')[0],
-        firstCheckinToday: false // TODO: Check if this was first check-in today
-      }
-    };
-
-    console.log('[NewCheckinStore] 👑 [STUB] Landlord check complete:', stubData);
-    return stubData;
-  }
 }

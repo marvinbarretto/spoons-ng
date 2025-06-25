@@ -272,10 +272,7 @@ handleOpenProfile(): void {
     this.carpetsLoading.set(true);
 
     try {
-      // Initialize storage if needed
-      await this.carpetStorageService.initialize();
-
-      // Get carpet data for current user only
+      // Get carpet data for current user only (getUserCarpets handles initialization internally)
       const carpetData = await this.carpetStorageService.getUserCarpets();
       console.log('[HomeComponent] Found', carpetData.length, 'carpets');
 

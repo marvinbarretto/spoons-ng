@@ -36,6 +36,7 @@ export class DeviceCarpetStorageService {
   readonly loading = this._loading.asReadonly();
 
   private initialized = false;
+  private initializing = false; // ✅ Guard against multiple simultaneous initializations
   private supportedFormats: Set<ImageFormat> = new Set();
 
   /**
@@ -47,34 +48,54 @@ export class DeviceCarpetStorageService {
       return;
     }
 
+    if (this.initializing) {
+      console.log('[CarpetStorage] ⚠️ Initialization already in progress, waiting...');
+      // Wait for initialization to complete
+      while (this.initializing && !this.initialized) {
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+      return;
+    }
+
+    this.initializing = true;
     console.log('[CarpetStorage] Initializing IndexedDB for carpet storage...');
 
-    // ✅ Using environment configuration
-    await this.indexedDb.openDatabase({
-      name: environment.database.name,
-      version: environment.database.version,
-      stores: [{
-        name: environment.database.stores.carpets,
-        indexes: [
-          { name: 'userId', keyPath: 'userId' },     // ✅ Index by user
-          { name: 'pubId', keyPath: 'pubId' },
-          { name: 'dateKey', keyPath: 'dateKey' },
-          { name: 'date', keyPath: 'date' }
-        ]
-      }]
-    });
+    try {
+      // ✅ Using environment configuration
+      await this.indexedDb.openDatabase({
+        name: environment.database.name,
+        version: environment.database.version,
+        stores: [{
+          name: environment.database.stores.carpets,
+          indexes: [
+            { name: 'userId', keyPath: 'userId' },     // ✅ Index by user
+            { name: 'pubId', keyPath: 'pubId' },
+            { name: 'dateKey', keyPath: 'dateKey' },
+            { name: 'date', keyPath: 'date' }
+          ]
+        }]
+      });
 
-    // Detect supported image formats
-    await this.detectSupportedFormats();
+      // Detect supported image formats
+      await this.detectSupportedFormats();
 
-    // ✅ Run migration if needed
-    await this.migrateFromOldDatabase();
+      // ✅ Run migration if needed
+      await this.migrateFromOldDatabase();
 
-    // Load initial stats for current user
-    await this.updateStats();
+      // Load initial stats for current user
+      await this.updateStats();
 
-    this.initialized = true;
-    console.log('[CarpetStorage] Initialization complete');
+      this.initialized = true;
+      this.initializing = false; // ✅ Clear initializing flag
+      console.log('[CarpetStorage] Initialization complete');
+      
+      // ✅ Update stats after initialization is complete (safe to call getUserCarpets now)
+      await this.updateStats();
+    } catch (error) {
+      this.initializing = false; // ✅ Clear flag on error
+      console.error('[CarpetStorage] Initialization failed:', error);
+      throw error;
+    }
   }
 
   /**
@@ -561,6 +582,14 @@ async saveCarpetImage(
   private async updateStats(): Promise<void> {
     const userId = this.authStore.uid();
     if (!userId) {
+      this._carpetCount.set(0);
+      this._totalSize.set(0);
+      return;
+    }
+
+    // ✅ Guard against calling getUserCarpets during initialization to prevent circular dependency
+    if (!this.initialized) {
+      console.log('[CarpetStorage] Skipping stats update during initialization');
       this._carpetCount.set(0);
       this._totalSize.set(0);
       return;

@@ -271,9 +271,15 @@ export class DevDebugComponent extends BaseComponent {
       // Reset ALL relevant stores (matching nuclear option pattern)
       this.userStore.reset();
       this.checkinStore.reset();
-      this.badgeStore.reset();
-      this.pubStore.reset();
       this.landlordStore.reset();
+      
+      // For badge store, also clear the cache to ensure complete reset
+      this.badgeStore.reset();
+      
+      // Force reload badge definitions but clear earned badges
+      setTimeout(() => {
+        this.badgeStore.loadDefinitions();
+      }, 100);
 
       console.log('[DevDebugComponent] ✅ Comprehensive user cleanup finished');
 

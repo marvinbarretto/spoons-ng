@@ -46,9 +46,9 @@ export const appRoutes: Routes = [
   },
   {
     path: 'leaderboard',
-    loadComponent: () =>
-      import('./leaderboard/feature/leaderboard-container/leaderboard-container.component')
-        .then(m => m.LeaderboardContainerComponent)
+    title: 'Leaderboard',
+    loadChildren: () =>
+      import('./leaderboard/data-access/leaderboard.routes').then((m) => m.LEADERBOARD_ROUTES),
   },
   {
     path: 'admin/badges',

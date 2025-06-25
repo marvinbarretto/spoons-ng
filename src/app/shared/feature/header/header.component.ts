@@ -18,7 +18,6 @@ import { BaseComponent } from '../../data-access/base.component';
 import { FeatureFlagPipe } from '../../utils/feature-flag.pipe';
 import { PanelStore, PanelType } from '../../ui/panel/panel.store';
 import { ViewportService } from '../../data-access/viewport.service';
-import { UserInfoComponent } from "../../ui/user-info/user-info.component";
 import { NavComponent } from "../nav/nav.component";
 import { LandlordStore } from '../../../landlord/data-access/landlord.store';
 import { NearbyPubStore } from '../../../pubs/data-access/nearby-pub.store';
@@ -48,7 +47,6 @@ import { UserStore } from '../../../users/data-access/user.store';
     RouterModule,
     CommonModule,
     FeatureFlagPipe,
-    UserInfoComponent,
     NavComponent,
   ],
 })

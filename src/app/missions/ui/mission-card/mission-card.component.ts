@@ -16,9 +16,15 @@ import type { Mission } from '../../utils/mission.model';
         <h3 class="mission-card__title">{{ mission().name }}</h3>
         <div class="mission-card__status">
           @if (isJoined()) {
-            <span class="status-badge status-badge--joined">✅ Joined</span>
+            <span class="status-badge status-badge--joined">
+              <span class="status-badge__icon">🎯</span>
+              <span class="status-badge__text">In Progress</span>
+            </span>
           } @else {
-            <span class="status-badge status-badge--available">📝 Available</span>
+            <span class="status-badge status-badge--available">
+              <span class="status-badge__icon">🚀</span>
+              <span class="status-badge__text">Start Mission</span>
+            </span>
           }
         </div>
       </header>
@@ -34,8 +40,8 @@ import type { Mission } from '../../utils/mission.model';
 
           @if (mission().badgeRewardId) {
             <div class="stat">
-              <span class="stat__label">Badge reward:</span>
-              <span class="stat__value">🏅 Yes</span>
+              <span class="stat__label">🏆 Reward:</span>
+              <span class="stat__value">Epic Badge</span>
             </div>
           }
 
@@ -56,39 +62,58 @@ import type { Mission } from '../../utils/mission.model';
               [style.width.%]="progressPercentage()"
             ></div>
           </div>
-          <span class="progress-text">{{ progressPercentage() }}% complete</span>
+          <span class="progress-text">
+            <span class="progress-text__percentage">{{ progressPercentage() }}%</span>
+            <span class="progress-text__label">Complete</span>
+          </span>
         </div>
       }
 
-      <!-- Development debug info -->
-      @if (isDevelopment()) {
-        <details class="debug-info">
-          <summary>Debug Info</summary>
-          <pre>{{ debugInfo() | json }}</pre>
-        </details>
-      }
     </article>
   `,
   styles: `
     .mission-card {
-      background: var(--color-surface, #ffffff);
-      border: 1px solid var(--color-border, #e5e7eb);
-      border-radius: 8px;
-      padding: 1rem;
+      background: linear-gradient(135deg, var(--color-surface, #ffffff) 0%, rgba(59, 130, 246, 0.02) 100%);
+      border: 2px solid transparent;
+      border-radius: 16px;
+      padding: 1.5rem;
       cursor: pointer;
-      transition: all 0.2s ease;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .mission-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
     }
 
     .mission-card:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-      border-color: var(--color-primary, #3b82f6);
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      border-color: rgba(59, 130, 246, 0.3);
+    }
+
+    .mission-card:hover::before {
+      opacity: 1;
     }
 
     .mission-card--joined {
-      border-color: var(--color-success, #10b981);
-      background: var(--color-success-subtle, rgba(16, 185, 129, 0.05));
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%);
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .mission-card--joined::before {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.1) 100%);
     }
 
     .mission-card__header {
@@ -100,10 +125,15 @@ import type { Mission } from '../../utils/mission.model';
     }
 
     .mission-card__title {
-      font-size: 1.125rem;
-      font-weight: 600;
+      font-size: 1.375rem;
+      font-weight: 700;
       margin: 0;
       color: var(--color-text-primary, #111827);
+      background: linear-gradient(135deg, #1f2937 0%, #3b82f6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.2;
     }
 
     .mission-card__status {
@@ -112,25 +142,56 @@ import type { Mission } from '../../utils/mission.model';
 
     .status-badge {
       font-size: 0.75rem;
-      padding: 0.25rem 0.5rem;
-      border-radius: 12px;
-      font-weight: 500;
+      padding: 0.5rem 0.75rem;
+      border-radius: 20px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.375rem;
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s ease;
+    }
+
+    .status-badge__icon {
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+    }
+
+    .status-badge__text {
+      font-weight: 700;
     }
 
     .status-badge--available {
-      background: var(--color-warning-subtle, rgba(245, 158, 11, 0.1));
-      color: var(--color-warning, #f59e0b);
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      color: white;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .status-badge--available:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3);
     }
 
     .status-badge--joined {
-      background: var(--color-success-subtle, rgba(16, 185, 129, 0.1));
-      color: var(--color-success, #10b981);
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .status-badge--joined:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
     }
 
     .mission-card__description {
       color: var(--color-text-secondary, #6b7280);
-      margin: 0 0 1rem;
-      line-height: 1.5;
+      margin: 0 0 1.5rem;
+      line-height: 1.6;
+      font-size: 0.95rem;
+      font-weight: 400;
     }
 
     .mission-card__stats {
@@ -149,13 +210,15 @@ import type { Mission } from '../../utils/mission.model';
     .stat__label {
       font-size: 0.75rem;
       color: var(--color-text-secondary, #6b7280);
-      font-weight: 500;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
     }
 
     .stat__value {
-      font-size: 0.875rem;
+      font-size: 0.95rem;
       color: var(--color-text-primary, #111827);
-      font-weight: 600;
+      font-weight: 700;
     }
 
     .mission-card__progress {
@@ -165,37 +228,61 @@ import type { Mission } from '../../utils/mission.model';
     }
 
     .progress-bar {
-      height: 6px;
+      height: 10px;
       background: var(--color-gray-200, #e5e7eb);
-      border-radius: 3px;
+      border-radius: 8px;
       overflow: hidden;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.75rem;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+      position: relative;
     }
 
     .progress-bar__fill {
       height: 100%;
-      background: var(--color-success, #10b981);
-      transition: width 0.3s ease;
+      background: linear-gradient(90deg, #10b981 0%, #059669 50%, #047857 100%);
+      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .progress-bar__fill::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+      animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
     }
 
     .progress-text {
-      font-size: 0.75rem;
+      font-size: 0.875rem;
       color: var(--color-text-secondary, #6b7280);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 600;
     }
 
-    .debug-info {
-      margin-top: 1rem;
-      padding-top: 0.75rem;
-      border-top: 1px solid var(--color-border, #e5e7eb);
+    .progress-text__percentage {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--color-success, #10b981);
+    }
+
+    .progress-text__label {
       font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
     }
 
-    .debug-info pre {
-      background: var(--color-gray-50, #f9fafb);
-      padding: 0.5rem;
-      border-radius: 4px;
-      overflow-x: auto;
-    }
 
     /* Responsive design */
     @media (max-width: 640px) {
@@ -214,11 +301,20 @@ import type { Mission } from '../../utils/mission.model';
     /* Dark mode support */
     @media (prefers-color-scheme: dark) {
       .mission-card {
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        background: linear-gradient(135deg, rgba(31, 41, 55, 0.9) 0%, rgba(17, 24, 39, 0.95) 100%);
+        border-color: rgba(75, 85, 99, 0.3);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
       }
 
       .mission-card:hover {
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+      }
+
+      .mission-card__title {
+        background: linear-gradient(135deg, #f3f4f6 0%, #60a5fa 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
       }
     }
   `
@@ -242,19 +338,6 @@ export class MissionCardComponent {
     return Math.round((prog / total) * 100);
   });
 
-  // ✅ Development helper
-  readonly isDevelopment = computed(() => true); // Set based on environment
-
-  // ✅ Debug info for development
-  readonly debugInfo = computed(() => ({
-    missionId: this.mission().id,
-    missionName: this.mission().name,
-    isJoined: this.isJoined(),
-    progress: this.progress(),
-    totalPubs: this.mission().pubIds.length,
-    progressPercentage: this.progressPercentage(),
-    hasBadgeReward: !!this.mission().badgeRewardId
-  }));
 
   // ✅ Event handlers
   handleClick(event: Event): void {

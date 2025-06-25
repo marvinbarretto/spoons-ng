@@ -9,12 +9,16 @@ export type LeaderboardEntry = {
   email?: string;
   realDisplayName?: string;
   isAnonymous?: boolean;
-  // Later: totalPoints, badges, streaks, etc.
+  totalPoints: number;
+  totalCheckins: number;
+  lastActive?: string;
+  currentStreak?: number;
+  positionChange?: number; // +5 means moved up 5 spots, -3 means down 3
 };
 
 export type LeaderboardType = 'visits' | 'unique-pubs' | 'points';
 
-export type LeaderboardTimeRange = 'all-time' | 'monthly' | 'weekly';
+export type LeaderboardTimeRange = 'all-time' | 'this-month' | 'this-week';
 
 export type UserStats = {
   userId: string;

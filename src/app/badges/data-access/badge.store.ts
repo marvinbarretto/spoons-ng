@@ -5,6 +5,7 @@ import { CacheService } from '@shared/data-access/cache.service';
 import type { EarnedBadge, Badge } from '../utils/badge.model';
 import { BadgeService } from './badge.service';
 import { UserStore } from '@users/data-access/user.store';
+import { AuthStore } from '@auth/data-access/auth.store';
 
 @Injectable({ providedIn: 'root' })
 export class BadgeStore extends BaseStore<EarnedBadge> {
@@ -101,17 +102,17 @@ export class BadgeStore extends BaseStore<EarnedBadge> {
   async loadDefinitions(): Promise<void> {
     // Check if definitions are actually loaded (not just the flag)
     const currentDefinitions = this._definitions();
-    
+
     if (this._definitionsLoaded && currentDefinitions.length > 0) {
       console.log('[BadgeStore] ⏭ Badge definitions already loaded:', currentDefinitions.length, 'definitions');
       return;
     }
-    
+
     if (this._definitionsLoading()) {
       console.log('[BadgeStore] ⏳ Badge definitions currently loading...');
       return;
     }
-    
+
     // Reset flag if definitions are empty
     if (currentDefinitions.length === 0) {
       console.log('[BadgeStore] ⚠️ Definitions flag was true but array is empty, resetting...');
@@ -139,11 +140,11 @@ export class BadgeStore extends BaseStore<EarnedBadge> {
       });
 
       console.log('[BadgeStore] 📦 Cache returned:', definitions.length, 'definitions');
-      
+
       if (!definitions || definitions.length === 0) {
         console.warn('[BadgeStore] ⚠️ No badge definitions returned from cache/network!');
       }
-      
+
       this._definitions.set(definitions);
       this._definitionsLoaded = true;
       console.log('[BadgeStore] ✅ Badge definitions loaded:', definitions.length);
@@ -175,6 +176,24 @@ export class BadgeStore extends BaseStore<EarnedBadge> {
   // ===================================
   // 🧽 CACHE MANAGEMENT
   // ===================================
+
+  /**
+   * Override reset to also clear cache for current user
+   */
+  override reset(): void {
+    const currentUser = this.authStore.user();
+    console.log('[BadgeStore] 🧽 Resetting badge store, current user:', currentUser?.uid || 'none');
+
+    // Clear cache for current user if exists
+    if (currentUser?.uid) {
+      this.cacheService.clear('earned-badges', currentUser.uid);
+    }
+
+    // Call parent reset to clear data and state
+    super.reset();
+
+    console.log('[BadgeStore] ✅ Badge store reset complete');
+  }
 
   protected override onUserReset(userId?: string): void {
     if (userId) {
@@ -275,7 +294,7 @@ export class BadgeStore extends BaseStore<EarnedBadge> {
     }
 
     console.log('[BadgeStore] 🏅 Awarding badge:', badgeId, 'to user:', user.uid);
-    
+
     // Log current state
     const currentDefinitions = this._definitions();
     console.log('[BadgeStore] 📊 Current definitions count:', currentDefinitions.length);

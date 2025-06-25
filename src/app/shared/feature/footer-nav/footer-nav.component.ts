@@ -8,7 +8,6 @@ import { BaseComponent } from '@shared/data-access/base.component';
 import { ViewportService } from '@shared/data-access/viewport.service';
 import { NearbyPubStore } from '@pubs/data-access/nearby-pub.store';
 import { AuthStore } from '@auth/data-access/auth.store';
-import { CheckinStore } from '@check-in/data-access/check-in.store';
 import { CheckInModalService } from '@check-in/data-access/check-in-modal.service';
 import { NewCheckinStore } from '../../../new-checkin/data-access/new-checkin.store';
 import { IconComponent } from '@shared/ui/icon/icon.component';
@@ -18,7 +17,6 @@ type NavItem = {
   route?: string;
   iconName: string;
   isActive: boolean;
-  isCheckIn?: boolean;
   isNewCheckIn?: boolean;
   action?: () => void;
 };
@@ -33,8 +31,8 @@ type NavItem = {
       <nav class="footer-nav" role="navigation" aria-label="Main navigation">
         @for (item of navItems(); track item.label) {
 
-          @if (item.isCheckIn) {
-            <!-- ✅ Check-in button - use click handler -->
+          @if (item.isNewCheckIn) {
+            <!-- ✅ Check-in button - uses NewCheckinStore -->
             <button
               class="nav-item nav-item--check-in"
               [class.nav-item--pulse]="canCheckIn()"
@@ -51,28 +49,7 @@ type NavItem = {
                   customClass="check-in-icon" />
               </div>
               <span class="nav-item__label">
-                {{ isCheckingIn() ? 'Checking...' : item.label }}
-              </span>
-            </button>
-          } @else if (item.isNewCheckIn) {
-            <!-- ✅ NEW Check-in button - use new flow -->
-            <button
-              class="nav-item nav-item--new-check-in"
-              [class.nav-item--pulse]="canNewCheckIn()"
-              [disabled]="!canNewCheckIn() || isNewCheckingIn()"
-              (click)="handleNewCheckIn()"
-              type="button"
-            >
-              <div class="nav-item__icon">
-                <app-icon
-                  [name]="item.iconName"
-                  size="lg"
-                  [filled]="canNewCheckIn()"
-                  weight="medium"
-                  customClass="new-check-in-icon" />
-              </div>
-              <span class="nav-item__label">
-                {{ isNewCheckingIn() ? 'Scanning...' : item.label }}
+                {{ isCheckingIn() ? 'Scanning...' : item.label }}
               </span>
             </button>
           } @else {
@@ -159,52 +136,7 @@ type NavItem = {
     }
 
     .nav-item--check-in {
-      /* ✅ Make check-in button stand out */
-      position: relative;
-
-      .nav-item__icon {
-        background: var(--color-success);
-        color: var(--color-success-text);
-        border-radius: 50%;
-        width: 48px;
-        height: 48px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        transform: translateY(-8px);
-        transition: all 0.3s ease;
-
-        /* ✅ Icon color override for check-in */
-        .check-in-icon {
-          color: var(--color-success-text) !important;
-        }
-      }
-
-      .nav-item__label {
-        margin-top: 4px;
-        font-weight: 600;
-        font-size: 0.75rem;
-        color: var(--color-success);
-      }
-
-      /* ✅ Disabled state when can't check in */
-      &:disabled {
-        .nav-item__icon {
-          background: var(--color-text-muted);
-          opacity: 0.6;
-        }
-
-        .nav-item__label {
-          color: var(--color-text-muted);
-        }
-
-        cursor: not-allowed;
-      }
-    }
-
-    .nav-item--new-check-in {
-      /* ✅ Make NEW check-in button stand out with different color */
+      /* ✅ Check-in button with camera/carpet functionality */
       position: relative;
 
       .nav-item__icon {
@@ -220,8 +152,8 @@ type NavItem = {
         transform: translateY(-8px);
         transition: all 0.3s ease;
 
-        /* ✅ Icon color override for new check-in */
-        .new-check-in-icon {
+        /* ✅ Icon color override for check-in */
+        .check-in-icon {
           color: var(--color-primary-text) !important;
         }
       }
@@ -243,6 +175,8 @@ type NavItem = {
         .nav-item__label {
           color: var(--color-text-muted);
         }
+
+        cursor: not-allowed;
       }
     }
 
@@ -319,17 +253,12 @@ export class FooterNavComponent extends BaseComponent {
   private readonly viewportService = inject(ViewportService);
   private readonly nearbyPubStore = inject(NearbyPubStore);
   private readonly authStore = inject(AuthStore);
-  private readonly checkinStore = inject(CheckinStore);
   private readonly checkInModalService = inject(CheckInModalService);
   private readonly newCheckinStore = inject(NewCheckinStore);
 
   // ✅ Local state for check-in process
   private readonly _isCheckingIn = signal(false);
   readonly isCheckingIn = this._isCheckingIn.asReadonly();
-  
-  // ✅ Local state for NEW check-in process
-  private readonly _isNewCheckingIn = signal(false);
-  readonly isNewCheckingIn = this._isNewCheckingIn.asReadonly();
 
   // ✅ Signals for reactivity
   readonly isMobile = this.viewportService.isMobile;
@@ -341,14 +270,9 @@ export class FooterNavComponent extends BaseComponent {
     return this.isMobile();
   });
 
-  // ✅ Check if user can check in
+  // ✅ Check if user can check in (uses NewCheckinStore)
   readonly canCheckIn = computed(() => {
-    return !!this.closestPub() && !!this.user() && !this.isCheckingIn();
-  });
-
-  // ✅ Check if user can use new check in
-  readonly canNewCheckIn = computed(() => {
-    return !!this.closestPub() && !!this.user() && !this.isNewCheckingIn() && !this.newCheckinStore.isProcessing();
+    return !!this.closestPub() && !!this.user() && !this.isCheckingIn() && !this.newCheckinStore.isProcessing();
   });
 
   // ✅ Navigation items with Material Symbols
@@ -368,12 +292,6 @@ export class FooterNavComponent extends BaseComponent {
       },
       {
         label: 'Check In',
-        iconName: 'location_on',
-        isActive: false, // Check-in is not a route
-        isCheckIn: true
-      },
-      {
-        label: 'New Check',
         iconName: 'photo_camera',
         isActive: false, // New Check-in is not a route
         isNewCheckIn: true
@@ -398,7 +316,7 @@ export class FooterNavComponent extends BaseComponent {
     this.router.navigate(['/debug-carpet-camera']);
   }
 
-  // ✅ Handle check-in button click
+  // ✅ Handle check-in button click (uses NewCheckinStore)
   async handleCheckIn(): Promise<void> {
     if (!this.canCheckIn() || this.isCheckingIn()) {
       console.log('[FooterNav] Check-in not available');
@@ -415,79 +333,18 @@ export class FooterNavComponent extends BaseComponent {
     this._isCheckingIn.set(true);
 
     try {
-      // ✅ Perform check-in via store
-      await this.checkinStore.checkinToPub(pub.id);
+      // ✅ Perform check-in via NewCheckinStore - handles carpet scanning, landlord logic, etc.
+      await this.newCheckinStore.checkinToPub(pub.id);
 
-      // ✅ Get results from store
-      const latestCheckin = this.checkinStore.checkinSuccess();
-      const landlordMessage = this.checkinStore.landlordMessage();
-
-      if (latestCheckin) {
-        const isNewLandlord = latestCheckin.madeUserLandlord === true;
-
-        // ✅ Use CheckInModalService for result flow
-        this.checkInModalService.showCheckInResults({
-          success: true,
-          checkin: latestCheckin,
-          pub: pub,
-          isNewLandlord,
-          landlordMessage: landlordMessage || undefined,
-          badges: [], // TODO: Add badges when available
-        });
-
-        console.log('[FooterNav] ✅ Check-in successful, modals shown');
-      } else {
-        // ✅ Show error modal
-        this.checkInModalService.showCheckInResults({
-          success: false,
-          error: 'Check-in completed but no result returned'
-        });
-      }
+      console.log('[FooterNav] ✅ Check-in flow completed successfully');
 
     } catch (error: any) {
       console.error('[FooterNav] Check-in failed:', error);
 
-      // ✅ Show error modal
-      this.checkInModalService.showCheckInResults({
-        success: false,
-        error: error?.message || 'Check-in failed. Please try again.'
-      });
+      // ✅ NewCheckinStore handles its own error flow and modals
 
     } finally {
       this._isCheckingIn.set(false);
-    }
-  }
-
-  // ✅ Handle NEW check-in button click
-  async handleNewCheckIn(): Promise<void> {
-    if (!this.canNewCheckIn() || this.isNewCheckingIn()) {
-      console.log('[FooterNav] New check-in not available');
-      return;
-    }
-
-    const pub = this.closestPub();
-    if (!pub) {
-      console.warn('[FooterNav] No pub available for new check-in');
-      return;
-    }
-
-    console.log('[FooterNav] Starting NEW check-in for:', pub.name);
-    this._isNewCheckingIn.set(true);
-
-    try {
-      // ✅ Perform check-in via NEW store - it will handle carpet scanning automatically
-      await this.newCheckinStore.checkinToPub(pub.id);
-
-      console.log('[FooterNav] ✅ NEW Check-in flow completed successfully');
-
-    } catch (error: any) {
-      console.error('[FooterNav] NEW Check-in failed:', error);
-
-      // ✅ Show error message (could integrate with modal service if needed)
-      // For now just log the error - the NewCheckinStore handles its own error flow
-
-    } finally {
-      this._isNewCheckingIn.set(false);
     }
   }
 }

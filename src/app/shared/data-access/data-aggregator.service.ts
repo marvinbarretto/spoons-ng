@@ -55,13 +55,16 @@ export class DataAggregatorService {
   readonly pubsVisited = computed(() => {
     const currentUser = this.authStore.user();
     
-    this.debug.standard('[DataAggregator] Computing pubsVisited', {
+    console.log('🔍 [DataAggregator] === COMPUTING PUBS VISITED ===');
+    console.log('🔍 [DataAggregator] Current user:', {
       hasUser: !!currentUser,
-      userId: currentUser?.uid
+      userId: currentUser?.uid?.slice(0, 8),
+      isAnonymous: currentUser?.isAnonymous,
+      timestamp: new Date().toISOString()
     });
     
     if (!currentUser) {
-      this.debug.standard('[DataAggregator] No current user - returning 0 pubs visited');
+      console.log('❌ [DataAggregator] No current user - returning 0 pubs visited');
       return 0;
     }
     
@@ -72,12 +75,29 @@ export class DataAggregatorService {
     
     const pubCount = uniquePubIds.size;
     
-    this.debug.standard('[DataAggregator] PubsVisited computed', {
-      totalCheckins: checkins.length,
-      userCheckins: userCheckins.length,
-      uniquePubs: pubCount,
-      pubIds: Array.from(uniquePubIds).slice(0, 5) // Log first 5 for debugging
+    console.log('📊 [DataAggregator] PubsVisited DETAILED BREAKDOWN:', {
+      totalCheckinsInSystem: checkins.length,
+      userSpecificCheckins: userCheckins.length,
+      uniquePubsCalculated: pubCount,
+      allUniquePubIds: Array.from(uniquePubIds),
+      sampleUserCheckins: userCheckins.slice(0, 3).map(c => ({
+        pubId: c.pubId,
+        timestamp: c.timestamp.toDate().toISOString(),
+        userId: c.userId?.slice(0, 8)
+      })),
+      newCheckinStoreLoading: this.newCheckinStore.loading(),
+      newCheckinStoreError: this.newCheckinStore.error()
     });
+    
+    // Additional verification logging
+    if (userCheckins.length > 0 && pubCount === 0) {
+      console.warn('⚠️ [DataAggregator] ANOMALY: User has check-ins but 0 unique pubs!');
+      console.warn('⚠️ [DataAggregator] Checkin pub IDs:', userCheckins.map(c => c.pubId));
+    }
+    
+    if (pubCount > 0) {
+      console.log('✅ [DataAggregator] Successfully calculated pubs visited:', pubCount);
+    }
     
     return pubCount;
   });
@@ -87,10 +107,21 @@ export class DataAggregatorService {
    * @description Single source for all scoreboard metrics
    */
   readonly scoreboardData = computed(() => {
-    this.debug.standard('[DataAggregator] Computing scoreboardData from all stores');
+    console.log('📊 [DataAggregator] === COMPUTING SCOREBOARD DATA ===');
     
     const user = this.userStore.user();
+    const currentUser = this.authStore.user();
     const isLoading = this.userStore.loading() || this.newCheckinStore.loading() || this.pointsStore.loading();
+    
+    console.log('📊 [DataAggregator] Store states:', {
+      userStoreLoading: this.userStore.loading(),
+      newCheckinStoreLoading: this.newCheckinStore.loading(),
+      pointsStoreLoading: this.pointsStore.loading(),
+      overallLoading: isLoading,
+      hasUser: !!user,
+      hasCurrentUser: !!currentUser,
+      userId: currentUser?.uid?.slice(0, 8)
+    });
     
     const data = {
       totalPoints: this.userStore.totalPoints(),
@@ -103,7 +134,7 @@ export class DataAggregatorService {
       isLoading
     };
     
-    this.debug.standard('[DataAggregator] ScoreboardData aggregated', {
+    console.log('📊 [DataAggregator] === SCOREBOARD DATA FINAL ===', {
       totalPoints: data.totalPoints,
       todaysPoints: data.todaysPoints,
       pubsVisited: data.pubsVisited,
@@ -111,8 +142,20 @@ export class DataAggregatorService {
       landlordCount: data.landlordCount,
       totalCheckins: data.totalCheckins,
       isLoading: data.isLoading,
-      hasUser: !!user
+      
+      // Additional debugging
+      userStorePubsFromObject: user?.checkedInPubIds?.length || 0,
+      newCheckinStoreTotalCheckins: this.newCheckinStore.checkins().length,
+      pubsVisitedVsUserObject: {
+        fromDataAggregator: data.pubsVisited,
+        fromUserObject: user?.checkedInPubIds?.length || 0,
+        match: data.pubsVisited === (user?.checkedInPubIds?.length || 0)
+      }
     });
+    
+    if (data.pubsVisited !== (user?.checkedInPubIds?.length || 0)) {
+      console.warn('⚠️ [DataAggregator] MISMATCH: PubsVisited calculation differs from user object!');
+    }
     
     return data;
   });

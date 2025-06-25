@@ -5,7 +5,7 @@ import { BaseComponent } from '../../../shared/data-access/base.component';
 import { PubStore } from '../../data-access/pub.store';
 import { CheckinStore } from '../../../check-in/data-access/check-in.store';
 import { AdvancedListControlsComponent, type ListControlsConfig, type ListControlsState, type ViewMode } from '../../../shared/ui/advanced-list-controls/advanced-list-controls.component';
-import { VirtualListComponent, type VirtualListConfig } from '../../../shared/ui/virtual-list/virtual-list.component';
+import { type VirtualListConfig } from '../../../shared/ui/virtual-list/virtual-list.component';
 import { PubCardComponent } from '../../ui/pub-card/pub-card.component';
 import type { Pub, PubWithDistance } from '../../utils/pub.models';
 import { environment } from '../../../../environments/environment';
@@ -18,7 +18,6 @@ import { ScrollingModule } from '@angular/cdk/scrolling';
     CommonModule,
     AdvancedListControlsComponent,
     ScrollingModule,
-    VirtualListComponent,
     PubCardComponent
   ],
   templateUrl: './comprehensive-pubs-list.component.html',

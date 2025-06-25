@@ -3,6 +3,12 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { Landlord } from '../utils/landlord.model';
 import { LandlordService } from './landlord.service';
 
+export type LandlordResult = {
+  landlord: Landlord | null;
+  wasAwarded: boolean;
+  isNewLandlord: boolean;
+};
+
 export type TodayLandlordMap = Record<string, Landlord | null>;
 
 @Injectable({ providedIn: 'root' })
@@ -106,6 +112,43 @@ export class LandlordStore {
     this._loading.set(false);
     this._error.set(null);
     console.log('[LandlordStore] 🔄 Reset all landlord data');
+  }
+
+  // --- CHECK-IN INTEGRATION ---
+
+  /**
+   * Handle landlord logic for a check-in
+   * Encapsulates all landlord service calls and state updates
+   */
+  async tryAwardLandlordForCheckin(pubId: string, userId: string, checkinDate: Date): Promise<LandlordResult> {
+    console.log(`[LandlordStore] 👑 Processing landlord logic for check-in`, { pubId, userId });
+
+    try {
+      // Use landlord service to determine if user becomes landlord
+      const serviceResult = await this.landlordService.tryAwardLandlord(pubId, checkinDate);
+      
+      // Update local state if landlord was awarded
+      if (serviceResult.landlord) {
+        this.set(pubId, serviceResult.landlord);
+      }
+
+      const result: LandlordResult = {
+        landlord: serviceResult.landlord,
+        wasAwarded: serviceResult.wasAwarded,
+        isNewLandlord: serviceResult.wasAwarded && serviceResult.landlord?.userId === userId
+      };
+
+      console.log(`[LandlordStore] 👑 Landlord result:`, result);
+      return result;
+
+    } catch (error) {
+      console.error(`[LandlordStore] ❌ Error in landlord check-in logic:`, error);
+      return {
+        landlord: null,
+        wasAwarded: false,
+        isNewLandlord: false
+      };
+    }
   }
 
   // --- UTILITY METHODS ---
