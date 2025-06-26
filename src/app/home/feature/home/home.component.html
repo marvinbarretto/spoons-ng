@@ -11,18 +11,17 @@
 
   <app-user-profile-widget
   [user]="user()"
-  [leaderboardPosition]="userLeaderboardPosition()"
   (openProfile)="handleOpenProfile()" />
 
     <!-- ✅ Onboarding Hint -->
-    @if (isNewUser()) {
+    <!-- @if (isNewUser()) {
       <div class="onboarding-hint">
         <span class="hint-icon">💡</span>
         <span class="hint-text">
-          Welcome to Spoonscount! Start a mission to begin your pub adventure.
+          Onboarding message.
         </span>
       </div>
-    }
+    } -->
 
   <app-scoreboard-hero [data]="scoreboardData()" />
 
