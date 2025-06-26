@@ -5,7 +5,6 @@ import { RouterModule } from '@angular/router';
 import { BaseComponent } from '@shared/data-access/base.component';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { UserStore } from '@users/data-access/user.store';
-import { BadgeStore } from '@badges/data-access/badge.store';
 import { MissionStore } from '@missions/data-access/mission.store';
 import { OverlayService } from '@shared/data-access/overlay.service';
 import { PointsStore } from '@points/data-access/points.store';
@@ -115,7 +114,6 @@ export class HomeComponent extends BaseComponent {
   // ✅ Store Injections
   protected readonly authStore = inject(AuthStore);
   protected readonly userStore = inject(UserStore);
-  protected readonly badgeStore = inject(BadgeStore, { optional: true });
   protected readonly missionStore = inject(MissionStore, { optional: true });
   protected readonly pointsStore = inject(PointsStore);
   protected readonly checkinStore = inject(CheckinStore);
@@ -139,9 +137,6 @@ export class HomeComponent extends BaseComponent {
    */
   readonly scoreboardData = this.dataAggregator.scoreboardData;
 
-  readonly earnedBadges = computed(() => {
-    return this.badgeStore?.earnedBadgesWithDefinitions?.() || [];
-  });
 
   readonly activeMissions = computed(() => {
     const user = this.user();
@@ -211,10 +206,6 @@ export class HomeComponent extends BaseComponent {
     this.router.navigate(['/missions', missionId]);
   }
 
-  handleViewAllBadges(): void {
-    console.log('[Home] Viewing all badges');
-    this.router.navigate(['/admin/badges']);
-  }
 
 // ✅ Event Handlers
 handleOpenProfile(): void {
@@ -255,10 +246,6 @@ handleOpenProfile(): void {
     userStore: {
       hasUser: !!this.userStore.user(),
       loading: this.userStore.loading?.() || false
-    },
-    badgeStore: {
-      available: !!this.badgeStore,
-      badgeCount: this.earnedBadges().length
     },
     missionStore: {
       available: !!this.missionStore,
@@ -316,7 +303,6 @@ handleOpenProfile(): void {
 
     // Load only the stores we have available
     try {
-      this.badgeStore?.loadOnce?.();
       this.missionStore?.loadOnce?.();
     } catch (error) {
       console.warn('[Home] Some stores not available:', error);

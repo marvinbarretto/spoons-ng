@@ -235,10 +235,10 @@ export class BadgeAdminComponent implements OnInit {
   private readonly overlayService = inject(OverlayService);
   private readonly badgeStore = inject(BadgeStore);
 
-  // ✅ Use BadgeStore instead of local signals
+  // ✅ Use BadgeStore definition signals (not earned badge signals)
   protected readonly badges = this.badgeStore.definitions;
-  protected readonly loading = this.badgeStore.loading;
-  protected readonly error = this.badgeStore.error;
+  protected readonly loading = this.badgeStore.definitionsLoading;
+  protected readonly error = this.badgeStore.definitionsError;
 
   ngOnInit(): void {
     console.log('[BadgeAdminPageComponent] ngOnInit');

@@ -35,12 +35,7 @@
 
 
   <!-- ✅ Badges Showcase -->
-  @if (earnedBadges().length > 0) {
-    <app-badges-showcase
-      [badges]="earnedBadges()"
-      [maxDisplay]="6"
-      (viewAllBadges)="handleViewAllBadges()" />
-  }
+  <app-badges-showcase />
 
   <!-- ✅ Active Missions -->
   @if (activeMissions().length > 0) {
