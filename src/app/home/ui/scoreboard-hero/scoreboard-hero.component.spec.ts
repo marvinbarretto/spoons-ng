@@ -138,59 +138,54 @@ describe('ScoreboardHeroComponent', () => {
       component = fixture.componentInstance;
     });
 
-    // ✅ TEST 1: Core calculations work correctly
-    describe('Progress Calculation', () => {
-      it('should calculate progress percentage correctly', () => {
-        const data = createData({ pubsVisited: 43, totalPubs: 856 });
+    // ✅ TEST 1: Component renders with basic data
+    describe('Basic Rendering', () => {
+      it('should render points and stats correctly', () => {
+        const data = createData({ totalPoints: 110, pubsVisited: 7, totalCheckins: 12 });
         fixture.componentRef.setInput('data', data);
+        fixture.detectChanges();
 
-        expect(component.progressPercentage()).toBe(5); // Math.round(43/856 * 100)
-      });
-
-      it('should handle edge case: zero total pubs', () => {
-        const data = createData({ pubsVisited: 5, totalPubs: 0 });
-        fixture.componentRef.setInput('data', data);
-
-        expect(component.progressPercentage()).toBe(0);
+        const compiled = fixture.nativeElement;
+        expect(compiled.querySelector('.points-value')).toBeTruthy();
+        expect(compiled.querySelector('.stats-row')).toBeTruthy();
       });
     });
 
     // ✅ TEST 2: Values actually appear in the DOM
     describe('Template Rendering', () => {
-      it('should display animated points value in template', () => {
+      it('should display total points in template', () => {
         const data = createData({ totalPoints: 150 });
         fixture.componentRef.setInput('data', data);
         fixture.detectChanges();
 
-        const pointsElement = fixture.nativeElement.querySelector('.score-number');
+        const pointsElement = fixture.nativeElement.querySelector('.points-value');
         expect(pointsElement?.textContent?.trim()).toBe('150');
       });
 
-      it('should display progress percentage in template', () => {
-        const data = createData({ pubsVisited: 43, totalPubs: 856 });
+      it('should display pubs and check-ins in stats row', () => {
+        const data = createData({ pubsVisited: 7, totalCheckins: 12 });
         fixture.componentRef.setInput('data', data);
         fixture.detectChanges();
 
-        const progressText = fixture.nativeElement.querySelector('.progress-text');
-        expect(progressText?.textContent?.trim()).toBe('5% explored');
+        const statsRow = fixture.nativeElement.querySelector('.stats-row');
+        expect(statsRow).toBeTruthy();
+        
+        const statValues = fixture.nativeElement.querySelectorAll('.stat-value');
+        expect(statValues[0]?.textContent?.trim()).toBe('7');
+        expect(statValues[1]?.textContent?.trim()).toBe('12');
       });
 
-      it('should show today\'s points bonus when present', () => {
-        const data = createData({ todaysPoints: 25 });
+      it('should display correct labels', () => {
+        const data = createData();
         fixture.componentRef.setInput('data', data);
         fixture.detectChanges();
 
-        const bonusElement = fixture.nativeElement.querySelector('.score-bonus');
-        expect(bonusElement?.textContent?.trim()).toBe('+25 today');
-      });
-
-      it('should hide today\'s points bonus when zero', () => {
-        const data = createData({ todaysPoints: 0 });
-        fixture.componentRef.setInput('data', data);
-        fixture.detectChanges();
-
-        const bonusElement = fixture.nativeElement.querySelector('.score-bonus');
-        expect(bonusElement).toBeFalsy();
+        const pointsLabel = fixture.nativeElement.querySelector('.points-label');
+        expect(pointsLabel?.textContent?.trim()).toBe('POINTS');
+        
+        const statLabels = fixture.nativeElement.querySelectorAll('.stat-label');
+        expect(statLabels[0]?.textContent?.trim()).toBe('PUBS');
+        expect(statLabels[1]?.textContent?.trim()).toBe('CHECK-INS');
       });
     });
 

@@ -40,45 +40,22 @@ export type ScoreboardData = {
   template: `
     <div class="scoreboard-hero" [class.loading]="data().isLoading">
       <div class="scoreboard-content">
-        <!-- Main Score Display -->
-        <div class="main-scores">
-          <div class="score-item primary">
-            <div class="score-number">{{ animatedPoints() }}</div>
-            <div class="score-label">Points</div>
-            @if (data().todaysPoints > 0) {
-              <div class="score-bonus">+{{ data().todaysPoints }} today</div>
-            }
-          </div>
-
-          <div class="score-divider">•</div>
-
-          <div class="score-item primary">
-            <div class="score-number">{{ animatedPubs() }}</div>
-            <div class="score-label">of {{ data().totalPubs }} Pubs</div>
-          </div>
+        <!-- Main Points Display -->
+        <div class="points-section">
+          <div class="points-value">{{ animatedPoints() }}</div>
+          <div class="points-label">POINTS</div>
         </div>
 
-        <!-- Progress Bar -->
-        <div class="progress-section">
-          <div class="progress-bar">
-            <div class="progress-fill" [style.width.%]="progressPercentage()"></div>
+        <!-- Stats Row -->
+        <div class="stats-row">
+          <div class="stat-item">
+            <div class="stat-label">PUBS</div>
+            <div class="stat-value">{{ animatedPubs() }}</div>
           </div>
-          <div class="progress-text">{{ progressPercentage() }}% explored</div>
-        </div>
-
-        <!-- Quick Stats -->
-        <div class="quick-stats">
-          <div class="stat">
-            <span class="stat-number">{{ animatedBadges() }}</span>
-            <span class="stat-label">Badges</span>
-          </div>
-          <div class="stat">
-            <span class="stat-number">{{ animatedLandlord() }}</span>
-            <span class="stat-label">Landlord</span>
-          </div>
-          <div class="stat">
-            <span class="stat-number">{{ animatedCheckins() }}</span>
-            <span class="stat-label">Total</span>
+          <div class="stat-divider">|</div>
+          <div class="stat-item">
+            <div class="stat-label">CHECK-INS</div>
+            <div class="stat-value">{{ animatedCheckins() }}</div>
           </div>
         </div>
       </div>
@@ -86,174 +63,84 @@ export type ScoreboardData = {
   `,
   styles: [`
     .scoreboard-hero {
-      /* ✅ Theme-aware background using existing theme properties */
-      background: linear-gradient(135deg,
-        var(--color-accent) 0%,
-        var(--color-primary) 50%,
-        var(--color-dark) 100%);
+      background: var(--color-surface);
       color: var(--color-text);
+      border: 1px solid var(--color-border);
       border-radius: 12px;
-      padding: 1.25rem;
+      padding: 1.5rem;
       margin-bottom: 1.5rem;
-      box-shadow: 0 4px 12px var(--color-shadow);
+      box-shadow: 0 2px 8px var(--color-shadow);
       transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* ✅ Subtle background pattern */
-    .scoreboard-hero::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: radial-gradient(circle at 70% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
-      pointer-events: none;
     }
 
     .scoreboard-content {
-      position: relative;
-      z-index: 1;
+      text-align: center;
     }
 
-    .main-scores {
+    /* Points Section */
+    .points-section {
+      margin-bottom: 1.5rem;
+    }
+
+    .points-value {
+      font-size: 3rem;
+      font-weight: 800;
+      line-height: 1;
+      margin-bottom: 0.5rem;
+      color: var(--color-text);
+      font-variant-numeric: tabular-nums;
+      transition: all 0.3s ease;
+    }
+
+    .points-label {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--color-textSecondary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Stats Row */
+    .stats-row {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 1.5rem;
-      margin-bottom: 1rem;
+      gap: 2rem;
     }
 
-    .score-item {
+    .stat-item {
       text-align: center;
-      flex: 1;
-      max-width: 120px;
-    }
-
-    .score-number {
-      font-size: 2.25rem;
-      font-weight: 800;
-      line-height: 1;
-      margin-bottom: 0.25rem;
-      background: linear-gradient(45deg, #ffd700, #ffed4e);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-
-      /* ✅ Count-up animation styling */
-      font-variant-numeric: tabular-nums;
-      transition: all 0.3s ease;
-    }
-
-    .score-label {
-      font-size: 0.75rem;
-      font-weight: 600;
-      opacity: 0.9;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .score-bonus {
-      font-size: 0.625rem;
-      margin-top: 0.25rem;
-      padding: 0.125rem 0.375rem;
-      background: var(--color-lighter);
-      border-radius: 8px;
-      font-weight: 600;
-      display: inline-block;
-      animation: slideInUp 0.5s ease-out 0.5s both;
-    }
-
-    @keyframes slideInUp {
-      from {
-        opacity: 0;
-        transform: translateY(10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .score-divider {
-      font-size: 1.5rem;
-      opacity: 0.5;
-      font-weight: bold;
-    }
-
-    .progress-section {
-      margin-bottom: 1rem;
-    }
-
-    .progress-bar {
-      background: var(--color-lighter);
-      border-radius: 6px;
-      height: 6px;
-      overflow: hidden;
-      margin-bottom: 0.375rem;
-    }
-
-    .progress-fill {
-      background: linear-gradient(90deg, var(--color-accent), var(--color-accentLight));
-      height: 100%;
-      border-radius: 6px;
-      transition: width 1.2s ease-out 0.3s;
-    }
-
-    .progress-text {
-      font-size: 0.75rem;
-      font-weight: 500;
-      opacity: 0.8;
-      text-align: center;
-    }
-
-    .quick-stats {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0.75rem;
-    }
-
-    .stat {
-      text-align: center;
-      padding: 0.5rem;
-      background: var(--color-lighter);
-      border-radius: 6px;
-      backdrop-filter: blur(10px);
-      transition: background-color 0.3s ease;
-    }
-
-    .stat:hover {
-      background: var(--color-lighter);
-    }
-
-    .stat-number {
-      display: block;
-      font-size: 1rem;
-      font-weight: 700;
-      margin-bottom: 0.125rem;
-
-      /* ✅ Count-up animation styling */
-      font-variant-numeric: tabular-nums;
-      transition: all 0.3s ease;
     }
 
     .stat-label {
-      font-size: 0.625rem;
-      opacity: 0.7;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--color-textSecondary);
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      margin-bottom: 0.25rem;
     }
 
-    /* ✅ Loading state */
-    .loading .score-number,
-    .loading .stat-number {
-      background: var(--color-lighter);
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--color-text);
+      font-variant-numeric: tabular-nums;
+      transition: all 0.3s ease;
+    }
+
+    .stat-divider {
+      font-size: 1.5rem;
+      color: var(--color-textMuted);
+      font-weight: 300;
+    }
+
+    /* Loading state */
+    .loading .points-value,
+    .loading .stat-value {
+      background: var(--color-surfaceElevated);
       border-radius: 4px;
       color: transparent;
-      -webkit-text-fill-color: transparent;
       animation: pulse 1.5s ease-in-out infinite;
     }
 
@@ -262,37 +149,31 @@ export type ScoreboardData = {
       50% { opacity: 1; }
     }
 
-    /* ✅ Responsive design */
+    /* Responsive design */
     @media (max-width: 480px) {
       .scoreboard-hero {
-        padding: 1rem;
+        padding: 1.25rem;
         margin-bottom: 1rem;
       }
 
-      .main-scores {
-        flex-direction: column;
-        gap: 1rem;
+      .points-value {
+        font-size: 2.5rem;
       }
 
-      .score-item {
-        max-width: none;
+      .points-label {
+        font-size: 0.875rem;
       }
 
-      .score-number {
-        font-size: 2rem;
+      .stats-row {
+        gap: 1.5rem;
       }
 
-      .quick-stats {
-        gap: 0.5rem;
-      }
-
-      .stat {
-        padding: 0.375rem;
-      }
-
-      .score-divider {
-        transform: rotate(90deg);
+      .stat-value {
         font-size: 1.25rem;
+      }
+
+      .stat-label {
+        font-size: 0.75rem;
       }
     }
   `]
@@ -304,27 +185,19 @@ export class ScoreboardHeroComponent implements OnDestroy {
   // 🔧 Dependencies
   private readonly debug = inject(DebugService);
 
-  // ✅ Count-up animation signals
+  // ✅ Count-up animation signals - simplified for new design
   private readonly animatedPointsValue = signal(0);
   private readonly animatedPubsValue = signal(0);
-  private readonly animatedBadgesValue = signal(0);
-  private readonly animatedLandlordValue = signal(0);
   private readonly animatedCheckinsValue = signal(0);
 
   readonly animatedPoints = this.animatedPointsValue.asReadonly();
   readonly animatedPubs = this.animatedPubsValue.asReadonly();
-  readonly animatedBadges = this.animatedBadgesValue.asReadonly();
-  readonly animatedLandlord = this.animatedLandlordValue.asReadonly();
   readonly animatedCheckins = this.animatedCheckinsValue.asReadonly();
 
   // ✅ Animation tracking - CRITICAL for preventing overlaps
   private activeAnimations = new Map<string, number>();
 
-  // ✅ Computed values
-  readonly progressPercentage = computed(() => {
-    const data = this.data();
-    return data.totalPubs > 0 ? Math.round((data.pubsVisited / data.totalPubs) * 100) : 0;
-  });
+  // Removed progress percentage - not needed in simplified design
 
   constructor() {
     // ✅ Set up smart animations when data changes
@@ -342,12 +215,10 @@ export class ScoreboardHeroComponent implements OnDestroy {
         // ✅ Cancel all previous animations before starting new ones
         this.cancelAllAnimations();
 
-        // ✅ Smart animation strategy based on change size
+        // ✅ Smart animation strategy for simplified design
         this.smartAnimateValue('points', this.animatedPointsValue, data.totalPoints, 1200);
         setTimeout(() => this.smartAnimateValue('pubs', this.animatedPubsValue, data.pubsVisited, 800), 100);
-        setTimeout(() => this.smartAnimateValue('badges', this.animatedBadgesValue, data.badgeCount, 600), 200);
-        setTimeout(() => this.smartAnimateValue('landlord', this.animatedLandlordValue, data.landlordCount, 700), 250);
-        setTimeout(() => this.smartAnimateValue('checkins', this.animatedCheckinsValue, data.totalCheckins, 900), 300);
+        setTimeout(() => this.smartAnimateValue('checkins', this.animatedCheckinsValue, data.totalCheckins, 900), 200);
       }
     });
   }
