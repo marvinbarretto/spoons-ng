@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.59](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.58...v0.0.59) (2025-06-26)
+
+
+### Features
+
+* initial update to badge collection widget ([3e864a4](https://github.com/marvinbarretto/spoons-ng/commit/3e864a4ebcedb69b197a87e00a60ad4e53635e47))
+* Refine user profile widget ([7a57651](https://github.com/marvinbarretto/spoons-ng/commit/7a57651496a937d914743edcd41d3f63d91b3661))
+* Update scoreboard UI ([9eaf1f1](https://github.com/marvinbarretto/spoons-ng/commit/9eaf1f11758b9e2c8e98b8df92ea704e1fae4b16))
+
 ### [0.0.58](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.57...v0.0.58) (2025-06-25)
 
 
