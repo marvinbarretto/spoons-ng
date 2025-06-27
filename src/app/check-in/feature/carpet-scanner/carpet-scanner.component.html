@@ -10,13 +10,22 @@
 
   <!-- Main Scanner Interface -->
   @if (!showSuccessScreen()) {
-    <!-- Video Background -->
-    <video #videoElement
-           class="video-feed"
-           playsinline
-           muted
-           autoplay>
-    </video>
+    <!-- Video Background (hidden during story mode) -->
+    @if (!progressiveStoryMode()) {
+      <video #videoElement
+             class="video-feed"
+             playsinline
+             muted
+             autoplay>
+      </video>
+    }
+    
+    <!-- Captured Photo Background (shown during story mode) -->
+    @if (progressiveStoryMode() && capturedPhotoUrl()) {
+      <div class="captured-photo-background"
+           [style.background-image]="'url(' + capturedPhotoUrl() + ')'">
+      </div>
+    }
 
     <!-- Camera Error State -->
     @if (cameraError()) {

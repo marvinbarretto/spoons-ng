@@ -37,6 +37,7 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
   protected readonly persistentResultMessage = signal<string | null>(null);
   protected readonly progressiveStoryMode = signal(false);
   protected readonly storyMessage = signal<string | null>(null);
+  protected readonly capturedPhotoUrl = signal<string | null>(null);
 
   private photoAlreadySaved = false;
   private autoTriggerTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -107,6 +108,12 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
     console.log('🚪 [CarpetScanner] Component destroyed');
     this.clearTimeouts();
     this.stopScanning();
+    
+    // Clean up photo URL to prevent memory leak
+    const photoUrl = this.capturedPhotoUrl();
+    if (photoUrl) {
+      URL.revokeObjectURL(photoUrl);
+    }
   }
 
   private clearTimeouts(): void {
@@ -211,6 +218,20 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
     }
   }
 
+  private stopCameraStream(): void {
+    console.log('📹 [CarpetScanner] Stopping camera stream only');
+    
+    // Stop the video element
+    if (this.videoElement?.nativeElement) {
+      this.videoElement.nativeElement.pause();
+      this.videoElement.nativeElement.srcObject = null;
+    }
+    
+    // Stop camera service stream
+    this._cameraService.stopStream();
+    this.cameraReady.set(false);
+  }
+
   protected stopScanning(): void {
     console.log('🛑 [CarpetScanner] Stopping scanning...');
 
@@ -299,6 +320,15 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
     console.log('📖 [CarpetScanner] Starting progressive story mode');
     this.progressiveStoryMode.set(true);
     
+    // Store captured photo for background
+    if (data.capturedPhoto) {
+      const photoUrl = URL.createObjectURL(data.capturedPhoto);
+      this.capturedPhotoUrl.set(photoUrl);
+    }
+    
+    // Stop camera immediately for battery/privacy
+    this.stopCameraStream();
+    
     // Clear any existing story timeouts
     this.storyTimeouts.forEach(timeout => clearTimeout(timeout));
     this.storyTimeouts = [];
@@ -313,20 +343,25 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
     // Step 2: Cycle through carpet story observations
     this.storyTimeouts.push(setTimeout(() => {
       this.cycleStoryObservations();
-    }, 1000));
+    }, 800));
 
     // Step 3: Show pub information after all observations
-    const totalStoryTime = 1000 + (this.storyArray.length * 1500);
+    const totalStoryTime = 800 + (this.storyArray.length * 800);
     this.storyTimeouts.push(setTimeout(() => {
       const pubInfo = this.extractPubInfo(data);
       this.storyMessage.set(pubInfo);
     }, totalStoryTime));
 
-    // Step 4: Processing check-in
+    // Step 4: Processing check-in and quick exit
     this.storyTimeouts.push(setTimeout(() => {
       this.storyMessage.set('✨ Processing your check-in...');
       this.processCheckIn(data);
-    }, totalStoryTime + 1500));
+      
+      // Exit scanner quickly for homepage widget approach
+      setTimeout(() => {
+        this.onExitScanner();
+      }, 800);
+    }, totalStoryTime + 800));
   }
 
   private cycleStoryObservations(): void {
@@ -337,7 +372,7 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
       // Schedule next observation
       this.storyTimeouts.push(setTimeout(() => {
         this.cycleStoryObservations();
-      }, 1500)); // 1.5 seconds per observation
+      }, 800)); // 0.8 seconds per observation for faster experience
     }
   }
 
