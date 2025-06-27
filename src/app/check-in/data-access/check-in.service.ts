@@ -11,6 +11,10 @@ import { AuthStore } from '../../auth/data-access/auth.store';
 import { LandlordStore } from '../../landlord/data-access/landlord.store';
 import { Landlord } from '../../landlord/utils/landlord.model';
 
+/**
+ * @deprecated Use NewCheckinService instead. This service will be removed in a future version.
+ * @see NewCheckinService
+ */
 @Injectable({
   providedIn: 'root'
 })

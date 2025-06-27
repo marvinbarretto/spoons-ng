@@ -1,5 +1,7 @@
 /**
  * @fileoverview CheckinStore - Check-in workflow orchestration and multi-store coordination
+ * @deprecated Use NewCheckinStore instead. This store will be removed in a future version.
+ * @see NewCheckinStore
  * 
  * RESPONSIBILITIES:
  * - Check-in workflow management (geolocation, validation, completion)
