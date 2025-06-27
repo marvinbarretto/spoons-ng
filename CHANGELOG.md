@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.60](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.59...v0.0.60) (2025-06-27)
+
+
+### Features
+
+* Add chips and include them in UserProfile ([d7442bd](https://github.com/marvinbarretto/spoons-ng/commit/d7442bdfe58a6b31722cfd699b717c381cb919c7))
+* Add LLMService and hook up Gemini ([156ae65](https://github.com/marvinbarretto/spoons-ng/commit/156ae65fb21618fa82afdde52f63df48da9deb67))
+* Update CarpetRecognitionService to use LLMService ([e87ddff](https://github.com/marvinbarretto/spoons-ng/commit/e87ddffb5e8887a5d43d1603aa7cff053968856d))
+
 ### [0.0.59](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.58...v0.0.59) (2025-06-26)
 
 
