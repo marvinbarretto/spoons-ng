@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.65](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.64...v0.0.65) (2025-06-27)
+
+
+### Bug Fixes
+
+* stop camera stream ([9d90338](https://github.com/marvinbarretto/spoons-ng/commit/9d90338ff431955f1fb7ccdb03710c2ca6c230be))
+
 ### [0.0.64](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.63...v0.0.64) (2025-06-27)
 
 
