@@ -1,0 +1,100 @@
+<section class="pub-list-page">
+  <!-- ✅ Compact header using your existing signals -->
+  <header class="page-header">
+    <h1>Spoons ({{ pubStore.totalCount() }})</h1>
+    <p class="page-subtitle">
+      @if (hasLocationData()) {
+        📍 Sorted by proximity
+      } @else {
+        📄 Sorted alphabetically
+      }
+    </p>
+  </header>
+
+  <!-- ✅ Condensed controls using your exact signal structure -->
+  <section class="controls-section">
+    <div class="search-group">
+      <input
+        type="search"
+        class="search-input"
+        placeholder="Search pubs by name or location..."
+        [value]="searchTerm()"
+        (input)="setSearchTerm($event)"
+        autocomplete="off"
+      />
+      @if (searchTerm()) {
+        <button class="clear-search-btn" (click)="clearSearch()" type="button">
+          ✕
+        </button>
+      }
+    </div>
+
+    <div class="filter-group">
+      <div class="filter-pills">
+        @for (option of filterOptions; track option.value) {
+          <button
+            class="filter-pill"
+            [class.active]="filterMode() === option.value"
+            (click)="setFilter(option.value)"
+            type="button"
+          >
+            {{ option.label }} ({{ getFilterCount(option.value) }})
+          </button>
+        }
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ✅ Main content area with better space usage -->
+  <section class="pub-list-container">
+    @if (pubStore.loading()) {
+      <div class="loading-state">
+        <p>🍺 Loading pubs...</p>
+      </div>
+    } @else if (pubStore.error()) {
+      <div class="error-state">
+        <p>❌ {{ pubStore.error() }}</p>
+        <button class="retry-btn" (click)="retryLoad()">
+          Try Again
+        </button>
+      </div>
+    } @else if (filteredPubs().length === 0) {
+      <div class="empty-state">
+        <h3>No pubs found</h3>
+        <p>Try adjusting your search or filters.</p>
+        <button class="clear-filters-btn" (click)="resetFilters()">
+          Clear Filters
+        </button>
+      </div>
+    } @else {
+      <div class="pub-grid">
+        @for (pub of filteredPubs(); track pub.id) {
+          <a
+            [routerLink]="['/pubs', pub.id]"
+            class="pub-card-link"
+            [attr.aria-label]="'View details for ' + pub.name"
+          >
+            <app-pub-card
+              [pub]="pub"
+            />
+          </a>
+        }
+      </div>
+    }
+  </section>
+
+  <!-- ✅ Development debug info (only shows when isDevelopment) -->
+  @if (isDevelopment()) {
+    <details class="debug-section">
+      <summary>🔧 Debug Info</summary>
+      <div class="debug-content">
+        <h4>Filter State:</h4>
+        <pre>{{ debugFilterInfo() | json }}</pre>
+
+        <h4>Pub Stats:</h4>
+        <pre>{{ debugPubStats() | json }}</pre>
+      </div>
+    </details>
+  }
+</section>
