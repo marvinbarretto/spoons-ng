@@ -12,6 +12,7 @@
       "@auth/*": ["app/auth/*"],
       "@pubs/*": ["app/pubs/*"],
       "@points/*": ["app/points/*"],
+      "@carpets/*": ["app/carpets/*"],
       "@missions/*": ["app/missions/*"],
       "@check-in/*": ["app/check-in/*"],
       "@badges/*": ["app/badges/*"],
