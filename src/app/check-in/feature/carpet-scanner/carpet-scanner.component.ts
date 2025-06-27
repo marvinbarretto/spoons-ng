@@ -2,26 +2,26 @@ import { Component, inject, OnDestroy, signal, ElementRef, ViewChild, OnInit, ef
 import { BaseComponent } from '@shared/data-access/base.component';
 import { CarpetRecognitionService } from '../../data-access/carpet-recognition.service';
 import { CameraService } from '../../../shared/data-access/camera.service';
+import { SsrPlatformService } from '../../../shared/utils/ssr/ssr-platform.service';
 import { CARPET_RECOGNITION_CONFIG } from '../../data-access/carpet-recognition.config';
+import { CARPET_SCANNER_MESSAGES } from '../../utils/carpet-scanner.messages';
 import { CarpetSuccessComponent } from '../../ui/carpet-success/carpet-success.component';
 import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-carpet-storage.service';
 import { CarpetPhotoData, PhotoStats } from '@shared/utils/carpet-photo.models';
-
 
 @Component({
   selector: 'app-carpet-scanner',
   templateUrl: './carpet-scanner.component.html',
   styleUrl: './carpet-scanner.component.scss',
-  imports: [ CarpetSuccessComponent]
+  imports: [CarpetSuccessComponent]
 })
 export class CarpetScannerComponent extends BaseComponent implements OnInit, OnDestroy {
   @ViewChild('videoElement', { static: false }) videoElement!: ElementRef<HTMLVideoElement>;
 
   private readonly _carpetService = inject(CarpetRecognitionService);
   private readonly _cameraService = inject(CameraService);
+  private readonly _platform = inject(SsrPlatformService);
   private readonly photoStorage = inject(DeviceCarpetStorageService);
-
-
 
   // Signals
   protected readonly carpetData = this._carpetService.data;
@@ -50,147 +50,21 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
     effect(() => {
       const data = this.carpetData();
       if (data.photoTaken && data.capturedPhoto) {
-        console.log('✅ [CarpetScanner] WebP photo captured, showing success screen');
+        console.log('✅ [CarpetScanner] Photo captured successfully - showing success screen');
         this.showSuccessScreen.set(true);
-        // Camera should already be stopped by autoSaveCarpet() - no need for delayed stop
-        console.log('%c*** CAMERA: Success screen shown - camera should already be stopped', 'color: orange; font-weight: bold;');
       }
     });
   }
-  override async ngOnInit(): Promise<void> {
-    console.log('🎬 [CarpetScanner] Component initializing...');
-    await this.startScanning();
-  }
 
-    // ✅ NEW: Handle continue from success screen
-    protected onContinueScanning(): void {
-      console.log('🔄 [CarpetScanner] User chose to continue - exiting scanner');
-      this.exitScanner.emit();
-    }
-
-    // ✅ NEW: Handle view collection request
-    protected onViewCollection(): void {
-      console.log('📋 [CarpetScanner] User wants to view collection - navigating to home');
-      this.exitScanner.emit();
-    }
-
-
-
-  private async autoSaveCarpet(data: any): Promise<void> {
-    try {
-      this.photoAlreadySaved = true; // Prevent duplicate saves
-
-      console.log('💾 [CarpetScanner] === AUTO-SAVING CARPET ===');
-      console.log('💾 [CarpetScanner] Photo data:', {
-        filename: data.photoFilename,
-        format: data.photoFormat,
-        sizeKB: data.photoSizeKB,
-        blobSize: data.capturedPhoto?.size,
-        quality: {
-          edges: data.edgeCount,
-          blur: data.blurScore,
-          confidence: data.overallConfidence
-        }
-      });
-
-      const photoData: CarpetPhotoData = {
-        filename: data.photoFilename,
-        format: data.photoFormat,
-        sizeKB: data.photoSizeKB,
-        blob: data.capturedPhoto,
-        metadata: {
-          edgeCount: data.edgeCount,
-          blurScore: data.blurScore,
-          confidence: data.overallConfidence,
-          orientationAngle: data.orientationAngle
-        }
-      };
-
-      // ✅ ADD THIS LINE: Save directly to IndexedDB
-      await this.photoStorage.savePhotoFromCarpetData(photoData);
-      console.log('✅ [CarpetScanner] Photo saved to IndexedDB database');
-
-      // 🎥 STOP CAMERA IMMEDIATELY - photo captured and saved
-      console.log('%c*** CAMERA: 🚨 AUTO-SAVE COMPLETE - STOPPING CAMERA NOW 🚨', 'color: red; font-weight: bold; font-size: 14px;');
-      this.stopScanning();
-
-      // TODO: Do we still need this event?
-      console.log('📤 [CarpetScanner] Emitting carpetConfirmed event...');
-      this.carpetConfirmed.emit(photoData);
-      console.log('✅ [CarpetScanner] Carpet auto-saved and event emitted!');
-
-      // ✅ Show success message
-      setTimeout(() => {
-        console.log('🎉 [CarpetScanner] Auto-save complete - photo saved to collection');
-      }, 1000);
-
-    } catch (error) {
-      console.error('❌ [CarpetScanner] Auto-save failed:', error);
-      this.photoAlreadySaved = false; // Allow retry
-    }
-  }
-
-  // Success component events
-  protected onCarpetConfirmed(): void {
-    console.log('🔥 [CarpetScanner] === CARPET CONFIRMED BY USER ===');
-    console.log('🔥 [CarpetScanner] Button clicked - about to emit event');
-
-    const data = this.carpetData();
-    console.log('🔥 [CarpetScanner] Current carpet data:', {
-      photoTaken: data.photoTaken,
-      hasBlob: !!data.capturedPhoto,
-      blobSize: data.capturedPhoto?.size,
-      filename: data.photoFilename
-    });
-
-    if (data.capturedPhoto && data.photoFilename) {
-      const photoData: CarpetPhotoData = {
-        filename: data.photoFilename,
-        format: data.photoFormat,
-        sizeKB: data.photoSizeKB,
-        blob: data.capturedPhoto,
-        metadata: {
-          edgeCount: data.edgeCount,
-          blurScore: data.blurScore,
-          confidence: data.overallConfidence,
-          orientationAngle: data.orientationAngle
-        }
-      };
-
-      console.log('🔥 [CarpetScanner] About to emit carpetConfirmed with:', photoData);
-      this.carpetConfirmed.emit(photoData);
-      console.log('🔥 [CarpetScanner] carpetConfirmed event emitted!');
-    }
-  }
-
-
-// ✅ REPLACE your stopScanning method with this:
-protected stopScanning(): void {
-  console.log('%c*** CAMERA: [CarpetScanner] stopScanning() called', 'color: red; font-weight: bold;');
-
-  const data = this._carpetService.data();
-  console.log('%c*** CAMERA: Current state - photoTaken:', 'color: red; font-weight: bold;', data.photoTaken);
-
-  // ✅ Always stop recognition - regardless of photo state
-  console.log('%c*** CAMERA: Calling _carpetService.stopRecognition()...', 'color: red; font-weight: bold;');
-  this._carpetService.stopRecognition();
-
-  console.log('%c*** CAMERA: [CarpetScanner] stopScanning() complete', 'color: red; font-weight: bold;');
-}
-
-// ✅ REPLACE your onScanAgain method with this:
-protected onScanAgain(): void {
-  console.log('[CarpetSuccess] 🔄 User wants to scan again');
-
-  // ✅ Reset everything properly
-  this._carpetService.resetCapture();
-  this.showSuccessScreen.set(false);
-
-  // ✅ Restart scanning after a brief delay
-  setTimeout(() => {
+  override ngOnInit(): void {
+    console.log('🎬 [CarpetScanner] Component initialized');
     this.startScanning();
-  }, 100);
-}
+  }
+
+  ngOnDestroy(): void {
+    console.log('🚪 [CarpetScanner] Component destroyed');
+    this.stopScanning();
+  }
 
   protected onExitScanner(): void {
     console.log('🚪 [CarpetScanner] Exit scanner requested');
@@ -206,6 +80,12 @@ protected onScanAgain(): void {
 
   protected async startScanning(): Promise<void> {
     console.log('🎬 [CarpetScanner] Starting WebP scanning...');
+
+    // Block underlying page interaction with SSR safety
+    this._platform.onlyOnBrowser(() => {
+      document.body.classList.add('scanner-active');
+      document.body.style.overflow = 'hidden';
+    });
 
     try {
       this.cameraError.set(null);
@@ -232,6 +112,22 @@ protected onScanAgain(): void {
     }
   }
 
+  protected stopScanning(): void {
+    console.log('🛑 [CarpetScanner] Stopping scanning...');
+
+    // Restore normal page interaction with SSR safety
+    this._platform.onlyOnBrowser(() => {
+      document.body.classList.remove('scanner-active');
+      document.body.style.overflow = '';
+    });
+
+    this._carpetService.stopRecognition();
+    this.cameraReady.set(false);
+    this.cameraError.set(null);
+    this.showSuccessScreen.set(false);
+    this.photoAlreadySaved = false;
+  }
+
   private handleCameraError(error: any): void {
     let errorMessage = 'Camera unavailable';
 
@@ -247,76 +143,83 @@ protected onScanAgain(): void {
     this.cameraError.set(errorMessage);
   }
 
-
   protected get statusMessage(): string {
     const data = this.carpetData();
 
     if (this.cameraError()) {
-      return `❌ ${this.cameraError()}`;
+      return `${CARPET_SCANNER_MESSAGES.CAMERA_ERROR}: ${this.cameraError()}`;
     }
 
     if (!this.cameraReady()) {
-      return 'Starting camera...';
+      return CARPET_SCANNER_MESSAGES.STARTING_CAMERA;
+    }
+
+    if (data.llmProcessing) {
+      return CARPET_SCANNER_MESSAGES.ANALYZING_CARPET;
     }
 
     if (data.photoTaken) {
-      return `✅ Perfect! ${data.photoFormat.toUpperCase()} captured (${data.photoSizeKB}KB)`;
+      return CARPET_SCANNER_MESSAGES.PHOTO_CAPTURED(data.photoFormat, data.photoSizeKB);
     }
 
-    if (data.canCheckIn && !data.isSharp) {
-      return '📷 Hold steady... capturing WebP photo';
-    }
-
-    if (data.canCheckIn) {
-      return '✅ All conditions met! Capturing...';
-    }
-
-    // LLM processing status
-    if (data.llmProcessing) {
-      return '🤖 Processing...';
-    }
-
-    const hasGoodOrientation = data.isPhoneDown && data.orientationConfidence > CARPET_RECOGNITION_CONFIG.orientation.minConfidence;
-    const hasGoodTexture = data.llmCarpetDetected || (data.edgeCount || 0) > CARPET_RECOGNITION_CONFIG.texture.edgeThreshold;
-    const isDeviceStable = data.deviceStable;
-
-    // Check each condition individually with priority
-    if (!hasGoodOrientation) {
-      return '📱 Point and hold your phone at the carpet';
-    }
-
-    if (!isDeviceStable) {
-      return '⚖️ Hold still...';
-    }
-
-    if (!hasGoodTexture && !data.llmCarpetDetected) {
-      if (data.llmLastResult) {
-        return `🤖 ${data.llmLastResult} - Try repositioning`;
-      }
-      return '📱 Point and hold your phone at the carpet';
+    if (data.llmCarpetDetected && data.pubName) {
+      return CARPET_SCANNER_MESSAGES.WELCOME_TO_PUB(data.pubName);
     }
 
     if (data.llmCarpetDetected) {
-      return '🤖 AI detected carpet! Checking sharpness...';
+      return CARPET_SCANNER_MESSAGES.CARPET_DETECTED;
     }
 
-    return '📱 Point and hold your phone at the carpet';
+    if (data.canCheckIn && !data.isSharp) {
+      return CARPET_SCANNER_MESSAGES.HOLD_STEADY;
+    }
+
+    if (data.canCheckIn) {
+      return CARPET_SCANNER_MESSAGES.ALL_CONDITIONS_MET;
+    }
+
+    if (data.llmLastResult === 'No carpet detected') {
+      return CARPET_SCANNER_MESSAGES.STILL_SCANNING;
+    }
+
+    return CARPET_SCANNER_MESSAGES.POINT_AT_CARPET;
   }
 
-  ngOnDestroy(): void {
-    console.log('💀 [CarpetScanner] Component destroying...');
-
-    // Clean up photo display URL
-    const currentData = this.carpetData();
-    if (currentData.photoDisplayUrl) {
-      URL.revokeObjectURL(currentData.photoDisplayUrl);
-      console.log('[CarpetScanner] 🧹 Cleaned up photo display URL');
+  private async autoSaveCarpet(data: any): Promise<void> {
+    if (this.photoAlreadySaved) {
+      console.log('🔒 [CarpetScanner] Photo already saved, skipping duplicate save');
+      return;
     }
 
-    // Reset save state
-    this.photoAlreadySaved = false;
+    this.photoAlreadySaved = true;
 
-    // Stop recognition
-    this._carpetService.stopRecognition();
+    try {
+      console.log('💾 [CarpetScanner] Auto-saving carpet photo...');
+
+      if (!data.capturedPhoto) {
+        console.error('❌ [CarpetScanner] No photo blob available for saving');
+        return;
+      }
+
+      const carpetPhotoData: CarpetPhotoData = {
+        blob: data.capturedPhoto,
+        filename: data.photoFilename || `carpet_${Date.now()}.${data.photoFormat}`,
+        format: data.photoFormat,
+        sizeKB: data.photoSizeKB,
+        metadata: {
+          edgeCount: data.edgeCount || 0,
+          blurScore: data.blurScore,
+          confidence: data.overallConfidence,
+          orientationAngle: data.orientationAngle
+        }
+      };
+
+      console.log('📤 [CarpetScanner] Emitting carpet confirmed event...');
+      this.carpetConfirmed.emit(carpetPhotoData);
+
+    } catch (error) {
+      console.error('❌ [CarpetScanner] Failed to auto-save carpet:', error);
+      this.photoAlreadySaved = false;
+    }
   }
 }

@@ -39,4 +39,7 @@ export type CarpetRecognitionData = {
   llmCarpetDetected: boolean;
   llmProcessing: boolean;
   llmLastResult: string | null;
+
+  // Pub information
+  pubName?: string;
 };

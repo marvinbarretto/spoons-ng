@@ -10,7 +10,7 @@ export const CARPET_RECOGNITION_CONFIG = {
 
   // Texture detection
   texture: {
-    edgeThreshold: 600,    // Reduced from 800 - easier carpet detection
+    edgeThreshold: 80,     // Adjusted to match current edge detection values
     sampleStep: 10,        // Pixel sampling rate
     edgeDetectionThreshold: 30
   },

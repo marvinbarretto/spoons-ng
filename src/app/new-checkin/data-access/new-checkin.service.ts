@@ -26,14 +26,14 @@ export class NewCheckinService extends FirestoreCrudService<CheckIn> {
   async canCheckIn(pubId: string): Promise<{ allowed: boolean; reason?: string }> {
     console.log('[NewCheckinService] 🔍 Running check-in validations for pub:', pubId);
 
-    // Gate 1: Daily limit check (NOW REAL!)
-    console.log('[NewCheckinService] 📅 Starting REAL daily limit validation...');
-    const dailyCheck = await this.dailyLimitCheck(pubId);
-    if (!dailyCheck.passed) {
-      console.log('[NewCheckinService] ❌ Failed daily limit check:', dailyCheck.reason);
-      return { allowed: false, reason: dailyCheck.reason };
-    }
-    console.log('[NewCheckinService] ✅ Daily limit check passed');
+    // Gate 1: Daily limit check (DISABLED FOR DEVELOPMENT)
+    console.log('[NewCheckinService] 📅 Daily limit check DISABLED for development');
+    // const dailyCheck = await this.dailyLimitCheck(pubId);
+    // if (!dailyCheck.passed) {
+    //   console.log('[NewCheckinService] ❌ Failed daily limit check:', dailyCheck.reason);
+    //   return { allowed: false, reason: dailyCheck.reason };
+    // }
+    console.log('[NewCheckinService] ✅ Daily limit check SKIPPED (development mode)');
 
     // Gate 2: Proximity check
     console.log('[NewCheckinService] 📍 Starting proximity validation...');

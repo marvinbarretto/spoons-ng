@@ -4,6 +4,13 @@ Gamified pub check-in app built with Angular + Firebase
 
 
 
+## Development
+## Test on the phone
+`ng serve --host 0.0.0.0`
+`ifconfig | grep inet` // get the ip address
+`{ip address}:4200/` // open this in the phone
+
+
 ## Troubleshooting
 ### Firebase
 - Useful commands

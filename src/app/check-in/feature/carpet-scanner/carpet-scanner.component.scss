@@ -1,195 +1,129 @@
-// TODO: look at values, colours, tokens
+// Block underlying page scrolling when scanner is active
+:global(body.scanner-active) {
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100% !important;
+  height: 100% !important;
+}
 
-.carpet-scanner {
-  position: relative;
+.carpet-scanner-container {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100vw;
   height: 100vh;
   background: #000;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 
-  // Start Screen
-  .start-screen {
+  .video-feed {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+  }
+
+  .scanner-overlay {
+    position: relative;
+    z-index: 2;
+    height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100%;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    text-align: center;
     padding: 2rem;
+    background: linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.7) 0%,
+      rgba(0, 0, 0, 0.3) 30%,
+      rgba(0, 0, 0, 0.3) 70%,
+      rgba(0, 0, 0, 0.7) 100%
+    );
 
-    .scanner-header {
-      margin-bottom: 3rem;
-
-      h2 {
-        font-size: 2rem;
-        margin: 0 0 0.5rem 0;
-        font-weight: 300;
-      }
-
-      p {
-        font-size: 1rem;
-        opacity: 0.8;
-        margin: 0;
-      }
-    }
-
-    .start-illustration {
-      margin-bottom: 3rem;
-      font-size: 3rem;
-      line-height: 1.2;
-
-      .phone-icon {
-        animation: bounce 2s infinite;
-      }
-
-      .arrow-down {
-        margin: 0.5rem 0;
-        opacity: 0.7;
-      }
-
-      .carpet-icon {
-        animation: pulse 2s infinite;
-      }
-    }
-
-    .btn-primary {
-      background: rgba(255, 255, 255, 0.2);
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      color: white;
-      padding: 1rem 2rem;
-      border-radius: 50px;
-      font-size: 1.1rem;
-      cursor: pointer;
-      backdrop-filter: blur(10px);
-      transition: all 0.3s ease;
-
-      &:hover {
-        background: rgba(255, 255, 255, 0.3);
-        transform: translateY(-2px);
-      }
-    }
-  }
-
-  // Scanner View
-  .scanner-view {
-    position: relative;
-    width: 100%;
-    height: 100%;
-
-    .camera-feed {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      z-index: 1;
-    }
-
-    .viewfinder-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 2;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0, 0, 0, 0.3);
-    }
-
-    .scanner-frame {
+    .scan-frame {
       position: relative;
-      width: 280px;
-      height: 280px;
-      border: 2px solid rgba(255, 255, 255, 0.8);
-      border-radius: 20px;
+      width: 300px;
+      height: 300px;
       margin-bottom: 2rem;
-      transition: border-color 0.3s ease;
 
-      &.success {
-        border-color: #4CAF50;
-        box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
-      }
-
-      // Corner brackets
       .corner {
         position: absolute;
-        width: 30px;
-        height: 30px;
-        border: 3px solid #fff;
+        width: 40px;
+        height: 40px;
+        border: 3px solid #4CAF50;
 
         &.top-left {
-          top: -3px;
-          left: -3px;
+          top: 0;
+          left: 0;
           border-right: none;
           border-bottom: none;
-          border-radius: 20px 0 0 0;
         }
 
         &.top-right {
-          top: -3px;
-          right: -3px;
+          top: 0;
+          right: 0;
           border-left: none;
           border-bottom: none;
-          border-radius: 0 20px 0 0;
         }
 
         &.bottom-left {
-          bottom: -3px;
-          left: -3px;
+          bottom: 0;
+          left: 0;
           border-right: none;
           border-top: none;
-          border-radius: 0 0 0 20px;
         }
 
         &.bottom-right {
-          bottom: -3px;
-          right: -3px;
+          bottom: 0;
+          right: 0;
           border-left: none;
           border-top: none;
-          border-radius: 0 0 20px 0;
         }
       }
 
-      // Scanning line animation
-      .scan-line {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background: linear-gradient(90deg, transparent, #4CAF50, transparent);
-        opacity: 0;
-
-        &.scanning {
-          animation: scan 2s linear infinite;
-          opacity: 1;
-        }
-      }
-
-      // Center target
-      .center-target {
+      .center-indicator {
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        .processing-spinner {
+          width: 40px;
+          height: 40px;
+          border: 4px solid rgba(255, 255, 255, 0.3);
+          border-left: 4px solid #4CAF50;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+
+        .success-pulse {
+          font-size: 2rem;
+          color: #4CAF50;
+          animation: successPulse 1s ease-in-out;
+        }
 
         .scanning-dot {
           width: 20px;
           height: 20px;
-          background: rgba(255, 255, 255, 0.8);
+          background: #2196F3;
           border-radius: 50%;
-          animation: pulse 1.5s ease-in-out infinite;
+          animation: pulse 2s ease-in-out infinite;
         }
 
-        .success-pulse {
-          font-size: 3rem;
-          animation: successPulse 0.6s ease-out;
+        .loading-dot {
+          font-size: 1.5rem;
+          opacity: 0.7;
+          animation: bounce 1s ease-in-out infinite;
         }
       }
     }
@@ -209,26 +143,110 @@
       &.success {
         background: rgba(76, 175, 80, 0.9);
       }
+
+      &.error {
+        background: rgba(244, 67, 54, 0.9);
+      }
+
+      &.processing {
+        background: rgba(33, 150, 243, 0.9);
+      }
+
+      &.capturing {
+        background: rgba(255, 193, 7, 0.9);
+        color: #000;
+      }
     }
 
-    .quick-stats {
+    .metrics-dashboard {
       display: flex;
-      gap: 1rem;
+      flex-direction: column;
+      gap: 0.5rem;
       margin-bottom: 2rem;
+      background: rgba(0, 0, 0, 0.9);
+      padding: 1rem;
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+      font-family: 'Courier New', monospace;
 
-      .stat {
-        background: rgba(0, 0, 0, 0.7);
-        color: rgba(255, 255, 255, 0.7);
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        font-size: 0.9rem;
+      .metric {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.5rem;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.05);
         transition: all 0.3s ease;
 
-        &.active {
-          background: rgba(76, 175, 80, 0.8);
-          color: white;
+        .light {
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          background: #555;
+          border: 2px solid #666;
+          transition: all 0.3s ease;
+        }
+
+        .label {
+          font-size: 0.9rem;
+          color: #ccc;
+          font-weight: 600;
+          min-width: 60px;
+        }
+
+        .value {
+          font-size: 0.9rem;
+          color: #fff;
+          font-weight: 500;
+          margin-left: auto;
+        }
+
+        &.red {
+          .light {
+            background: #f44336;
+            border-color: #f44336;
+            box-shadow: 0 0 8px rgba(244, 67, 54, 0.6);
+          }
+          background: rgba(244, 67, 54, 0.1);
+          border-left: 3px solid #f44336;
+        }
+
+        &.yellow {
+          .light {
+            background: #ff9800;
+            border-color: #ff9800;
+            box-shadow: 0 0 8px rgba(255, 152, 0, 0.6);
+          }
+          background: rgba(255, 152, 0, 0.1);
+          border-left: 3px solid #ff9800;
+        }
+
+        &.green {
+          .light {
+            background: #4caf50;
+            border-color: #4caf50;
+            box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
+          }
+          background: rgba(76, 175, 80, 0.1);
+          border-left: 3px solid #4caf50;
+        }
+
+        &.processing {
+          .light {
+            background: #2196f3;
+            border-color: #2196f3;
+            box-shadow: 0 0 8px rgba(33, 150, 243, 0.6);
+            animation: pulse 1.5s ease-in-out infinite;
+          }
+          background: rgba(33, 150, 243, 0.1);
+          border-left: 3px solid #2196f3;
         }
       }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
     }
 
     .scanner-controls {
@@ -246,15 +264,53 @@
         font-size: 1rem;
         cursor: pointer;
         backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
 
         &:hover {
           background: rgba(244, 67, 54, 1);
+          transform: translateY(-2px);
         }
       }
     }
   }
 
-  // Debug Panel
+  // Processing Overlay
+  .processing-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    backdrop-filter: blur(10px);
+
+    .processing-content {
+      text-align: center;
+      color: white;
+
+      .spinner {
+        width: 60px;
+        height: 60px;
+        border: 6px solid rgba(255, 255, 255, 0.3);
+        border-left: 6px solid #4CAF50;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 1rem;
+      }
+
+      p {
+        font-size: 1.2rem;
+        margin: 0;
+        opacity: 0.9;
+      }
+    }
+  }
+
+  // Debug Toggle
   .debug-toggle {
     position: absolute;
     top: 1rem;
@@ -269,20 +325,31 @@
       border-radius: 15px;
       font-size: 0.8rem;
       cursor: pointer;
+      backdrop-filter: blur(5px);
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: rgba(0, 0, 0, 0.9);
+      }
     }
   }
 
+  // Debug Panel (Semi-transparent by default)
   .debug-panel {
     position: absolute;
     top: 4rem;
     right: 1rem;
-    background: rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.6); // More transparent
     color: white;
     padding: 1rem;
     border-radius: 10px;
     font-size: 0.8rem;
     min-width: 200px;
+    max-width: 300px;
     z-index: 3;
+    backdrop-filter: blur(5px);
+    max-height: 70vh;
+    overflow-y: auto;
 
     .section {
       margin-bottom: 1rem;
@@ -383,14 +450,11 @@
   }
 }
 
-.status-message {
-  &.error {
-    background: rgba(244, 67, 54, 0.9);
-    color: white;
-  }
+// Animations
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
-// Animations
 @keyframes bounce {
   0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
   40% { transform: translateY(-10px); }
@@ -403,15 +467,34 @@
   100% { opacity: 1; transform: scale(1); }
 }
 
-@keyframes scan {
-  0% { top: 0; opacity: 0; }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
-  100% { top: 100%; opacity: 0; }
-}
-
 @keyframes successPulse {
   0% { transform: scale(0.8); opacity: 0; }
   50% { transform: scale(1.2); opacity: 1; }
   100% { transform: scale(1); opacity: 1; }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .carpet-scanner-container {
+    .scanner-overlay {
+      .scan-frame {
+        width: 250px;
+        height: 250px;
+      }
+
+      .quick-stats {
+        .stat {
+          font-size: 0.8rem;
+          padding: 0.4rem 0.8rem;
+        }
+      }
+    }
+
+    .debug-panel {
+      right: 0.5rem;
+      left: 0.5rem;
+      min-width: auto;
+      max-width: none;
+    }
+  }
 }
