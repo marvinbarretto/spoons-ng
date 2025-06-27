@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.62](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.61...v0.0.62) (2025-06-27)
+
+
+### Features
+
+* Add favicon ([c30e863](https://github.com/marvinbarretto/spoons-ng/commit/c30e863d18e499578c85469133e79a7802a03f59))
+* Improve camera capture UX ([5ba3263](https://github.com/marvinbarretto/spoons-ng/commit/5ba32635c915060e1a6713fd733bc5c807dc027f))
+
 ### [0.0.61](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.60...v0.0.61) (2025-06-27)
 
 
