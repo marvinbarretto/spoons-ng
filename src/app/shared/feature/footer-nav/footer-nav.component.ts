@@ -279,16 +279,16 @@ export class FooterNavComponent extends BaseComponent {
   readonly navItems = computed((): NavItem[] => {
     return [
       {
-        label: 'Pubs',
-        route: '/pubs',
+        label: 'Dashboard',
+        route: '/',
         iconName: 'home',
-        isActive: this.isOnRoute('/pubs')()
+        isActive: this.isOnRoute('/')()
       },
       {
-        label: 'Missions',
-        route: '/missions',
-        iconName: 'flag',
-        isActive: this.isOnRoute('/missions')()
+        label: 'Pubs',
+        route: '/pubs',
+        iconName: 'local_bar',
+        isActive: this.isOnRoute('/pubs')()
       },
       {
         label: 'Check In',
