@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.61](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.60...v0.0.61) (2025-06-27)
+
+
+### Features
+
+* Tweak messaging and processing time ([37e7844](https://github.com/marvinbarretto/spoons-ng/commit/37e7844fe9eb8f4baa72213d15613af9053922bc))
+
 ### [0.0.60](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.59...v0.0.60) (2025-06-27)
 
 
