@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.63](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.62...v0.0.63) (2025-06-27)
+
+
+### Features
+
+* Add utility functions to help main code smaller ([4c894e3](https://github.com/marvinbarretto/spoons-ng/commit/4c894e3dfb58b9f7c7ef507d08a3dd99577cb700))
+* Adopt storytelling LLM style to mask loading ([afd907c](https://github.com/marvinbarretto/spoons-ng/commit/afd907cd51e3e6beb2dbb1fdaaac2be67de6b872))
+* Dashboard link on the nav ([30c0fcb](https://github.com/marvinbarretto/spoons-ng/commit/30c0fcb2569331960d1a7914b23fe3df9952ffa4))
+* PubListComponent render pub list nicely ([d4b90be](https://github.com/marvinbarretto/spoons-ng/commit/d4b90be8b7d2ec1dfe2d9f21de1a48eedf1d0595))
+
+
+### Bug Fixes
+
+* mishmash of bits, and more removing bits ([eb24b8c](https://github.com/marvinbarretto/spoons-ng/commit/eb24b8ca9163f1a05ed5756bb5987173d16c4761))
+* Show pub names on homepage carpet widget ([32a7d99](https://github.com/marvinbarretto/spoons-ng/commit/32a7d99490d3cafb4620b568e065ec79525a2a43))
+
 ### [0.0.62](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.61...v0.0.62) (2025-06-27)
 
 
