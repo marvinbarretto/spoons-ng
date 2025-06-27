@@ -1,0 +1,11 @@
+// SCSS Mixins Barrel File
+// Safe, reusable mixins that don't add bloat to compiled CSS
+// Only @forward mixins here - no actual CSS output
+
+// Component mixins
+@forward 'chip-mixins';
+
+// Add more mixin files here as needed:
+// @forward 'button-mixins';
+// @forward 'form-mixins';
+// @forward 'layout-mixins';

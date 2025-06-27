@@ -1,121 +1,76 @@
 // src/app/home/ui/user-profile-widget/user-profile-widget.component.ts
 import { Component, input, output, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ASSETS } from '@shared/utils/constants';
+import { UserChipComponent, UserChipData } from '@shared/ui/chips/user-chip/user-chip.component';
 import type { User } from '@users/utils/user.model';
 
 
 @Component({
   selector: 'app-user-profile-widget',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, UserChipComponent],
   template: `
-    <div class="user-profile-widget" (click)="handleOpenProfile()">
-      <!-- Avatar Section -->
-      <div class="avatar-section">
-        @if (avatarUrl()) {
-          <img
-            class="avatar"
-            [src]="avatarUrl()!"
-            [alt]="displayName() + ' avatar'"
-          />
-        } @else {
-          <img
-            class="avatar placeholder"
-            [src]="NPC_AVATAR"
-            [alt]="displayName() + ' default avatar'"
-          />
-        }
-      </div>
-
-      <!-- User Info -->
-      <div class="user-info">
-        <div class="user-name">{{ displayName() }}</div>
-      </div>
+    <div class="user-profile-widget">
+      @if (userChipData()) {
+        <app-user-chip
+          [user]="userChipData()!"
+          size="md"
+          variant="secondary"
+          [clickable]="true"
+          (clicked)="handleOpenProfile()"
+          customClass="profile-chip"
+        />
+      } @else {
+        <div class="guest-state">
+          <span class="guest-text">Guest User</span>
+        </div>
+      }
     </div>
   `,
   styles: `
     .user-profile-widget {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem;
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      box-shadow: 0 1px 3px var(--color-shadow);
+      width: 100%;
+    }
 
+    .profile-chip {
+      width: 100%;
+      justify-content: flex-start;
+      border: 1px solid var(--color-border);
+      box-shadow: 0 1px 3px var(--color-shadow);
+      
       &:hover {
-        background: var(--color-surfaceElevated);
         border-color: var(--color-primary);
-        transform: translateY(-1px);
         box-shadow: 0 4px 8px var(--color-shadow);
       }
-
-      &:active {
-        transform: translateY(0);
-      }
     }
 
-    .avatar-section {
-      flex-shrink: 0;
+    .guest-state {
+      display: flex;
+      align-items: center;
+      padding: 0.5rem 0.75rem;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 9999px;
+      width: 100%;
     }
 
-    .avatar {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid var(--color-border);
-      transition: border-color 0.2s ease;
-    }
-
-    .avatar.placeholder {
-      background: var(--color-surfaceElevated);
-    }
-
-    .user-profile-widget:hover .avatar {
-      border-color: var(--color-primary);
-    }
-
-    .user-info {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .user-name {
-      font-weight: 600;
+    .guest-text {
+      color: var(--color-textSecondary);
       font-size: 0.875rem;
-      color: var(--color-text);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      font-weight: 500;
     }
 
     /* Responsive Design */
     @media (max-width: 640px) {
-      .user-profile-widget {
-        padding: 0.375rem;
-        gap: 0.375rem;
-      }
-
-      .avatar {
-        width: 32px;
-        height: 32px;
-      }
-
-      .user-name {
+      .profile-chip {
         font-size: 0.8rem;
       }
     }
   `
 })
 export class UserProfileWidgetComponent {
-  // ✅ Asset reference
-  readonly NPC_AVATAR = ASSETS.NPC_AVATAR;
-
   // ✅ Inputs
   readonly user = input<User | null>(null);
 
@@ -123,23 +78,24 @@ export class UserProfileWidgetComponent {
   readonly openProfile = output<void>();
 
   // ✅ Computed Values
-  readonly displayName = computed(() => {
+  readonly userChipData = computed((): UserChipData | null => {
     const currentUser = this.user();
-    if (!currentUser) return 'Guest';
+    if (!currentUser) return null;
 
+    let displayName = currentUser.displayName || 'User';
+    
     // ✅ Handle anonymous users with better names
-    if (currentUser.isAnonymous && currentUser.displayName?.startsWith('Anonymous')) {
-      return currentUser.displayName.replace('Anonymous', 'Explorer');
+    if (currentUser.isAnonymous && displayName.startsWith('Anonymous')) {
+      displayName = displayName.replace('Anonymous', 'Explorer');
     }
 
-    return currentUser.displayName || 'User';
+    return {
+      displayName,
+      photoURL: currentUser.photoURL || undefined,
+      email: currentUser.email || undefined,
+      realDisplayName: currentUser.isAnonymous ? undefined : displayName
+    };
   });
-
-  readonly avatarUrl = computed(() => {
-    const currentUser = this.user();
-    return currentUser?.photoURL || null;
-  });
-
 
   // ✅ Event Handler
   handleOpenProfile(): void {

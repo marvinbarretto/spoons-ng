@@ -1,0 +1,30 @@
+@use 'styles/mixins' as *;
+
+.user-chip {
+  @include chip-base;
+  @include chip-size('md');
+  @include chip-variant('default');
+
+  &.clickable {
+    @include chip-clickable;
+  }
+
+  // Size variants
+  &.size--xs { @include chip-size('xs'); }
+  &.size--sm { @include chip-size('sm'); }
+  &.size--md { @include chip-size('md'); }
+  &.size--lg { @include chip-size('lg'); }
+
+  // Variant styles
+  &.variant--primary { @include chip-variant('primary'); }
+  &.variant--secondary { @include chip-variant('secondary'); }
+  &.variant--default { @include chip-variant('default'); }
+}
+
+.chip-avatar {
+  @include chip-avatar;
+}
+
+.chip-text {
+  @include chip-text;
+}

@@ -1,0 +1,92 @@
+@use 'styles/mixins' as *;
+
+.badge-chip {
+  @include chip-base;
+  @include chip-size('md');
+  position: relative;
+  
+  &.clickable {
+    @include chip-clickable;
+  }
+  
+  // Size variants
+  &.size--xs { @include chip-size('xs'); }
+  &.size--sm { @include chip-size('sm'); }
+  &.size--md { @include chip-size('md'); }
+  &.size--lg { @include chip-size('lg'); }
+  
+  // Earned state
+  &.earned {
+    @include chip-badge-earned;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+    }
+  }
+  
+  // Unearned state
+  &.unearned {
+    @include chip-badge-unearned;
+    
+    &:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+  }
+}
+
+.chip-icon {
+  @include chip-icon;
+  font-size: 1.2em;
+  line-height: 1;
+}
+
+.chip-text {
+  @include chip-text;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.earned-indicator {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: var(--color-success, #10b981);
+  color: white;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+  border: 2px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  
+  .size--xs & {
+    width: 12px;
+    height: 12px;
+    font-size: 8px;
+    top: -3px;
+    right: -3px;
+  }
+  
+  .size--sm & {
+    width: 14px;
+    height: 14px;
+    font-size: 9px;
+    top: -3px;
+    right: -3px;
+  }
+  
+  .size--lg & {
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
+    top: -5px;
+    right: -5px;
+  }
+}
