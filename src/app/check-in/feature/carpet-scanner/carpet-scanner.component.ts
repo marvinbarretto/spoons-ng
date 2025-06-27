@@ -228,7 +228,7 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
     }
     
     // Stop camera service stream
-    this._cameraService.stopStream();
+    this._cameraService.releaseCamera();
     this.cameraReady.set(false);
   }
 
