@@ -18,10 +18,11 @@ import { BadgesShowcaseComponent } from '@home/ui/badges-showcase/badges-showcas
 import { MissionsSectionComponent } from '../../ui/missions-widget/missions-widget.component';
 import { UserProfileWidgetComponent } from '@home/ui/user-profile-widget/user-profile-widget.component';
 import { ProfileCustomisationModalComponent } from '@home/ui/profile-customisation-modal/profile-customisation-modal.component';
-import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-carpet-storage.service';
-import { CarpetGridComponent, type CarpetDisplayData } from '../../../carpets/ui/carpet-grid/carpet-grid.component';
+import { SimpleCarpetWidgetComponent } from '../../ui/carpet-collection-widget/simple-carpet-widget.component';
 import { CarpetScannerComponent } from '../../../check-in/feature/carpet-scanner/carpet-scanner.component';
 import { CarpetPhotoData, PhotoStats } from '@shared/utils/carpet-photo.models';
+import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-carpet-storage.service';
+import { LLMTestComponent } from '../../../shared/ui/llm-test/llm-test.component';
 
 
 
@@ -33,9 +34,10 @@ import { CarpetPhotoData, PhotoStats } from '@shared/utils/carpet-photo.models';
     BadgesShowcaseComponent,
     MissionsSectionComponent,
     UserProfileWidgetComponent,
-    CarpetGridComponent,
+    SimpleCarpetWidgetComponent,
     RouterModule,
     CarpetScannerComponent,
+    LLMTestComponent
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
@@ -56,7 +58,7 @@ export class HomeComponent extends BaseComponent {
     });
   }
 
-  private readonly carpetStorageService = inject(DeviceCarpetStorageService); // ✅ Updated injection
+  private readonly carpetStorageService = inject(DeviceCarpetStorageService); // ✅ Still needed for carpet scanner
 
 
 
@@ -122,8 +124,6 @@ export class HomeComponent extends BaseComponent {
 
 
 
-   protected readonly carpets = signal<CarpetDisplayData[]>([]);
-   protected readonly carpetsLoading = signal(false);
 
 
   // ✅ Data Signals
@@ -254,44 +254,6 @@ handleOpenProfile(): void {
   }));
 
 
-  private async loadCarpets(): Promise<void> {
-    console.log('[HomeComponent] Loading carpet collection...');
-    this.carpetsLoading.set(true);
-
-    try {
-      // Get carpet data for current user only (getUserCarpets handles initialization internally)
-      const carpetData = await this.carpetStorageService.getUserCarpets();
-      console.log('[HomeComponent] Found', carpetData.length, 'carpets');
-
-      // Convert to display format
-      const displayData: CarpetDisplayData[] = await Promise.all(
-        carpetData.map(async (carpet) => {
-          // Create object URL for the blob
-          const imageUrl = URL.createObjectURL(carpet.blob);
-
-          return {
-            key: `${carpet.pubId}_${carpet.dateKey}`,
-            pubId: carpet.pubId,
-            pubName: carpet.pubName || 'Unknown Pub',
-            date: carpet.date,
-            imageUrl
-          };
-        })
-      );
-
-      // Sort by date, newest first
-      displayData.sort((a, b) =>
-        new Date(b.date).getTime() - new Date(a.date).getTime()
-      );
-
-      this.carpets.set(displayData);
-
-    } catch (error) {
-      console.error('[HomeComponent] Error loading carpets:', error);
-    } finally {
-      this.carpetsLoading.set(false);
-    }
-  }
 
 
   // ✅ Data Loading
@@ -299,7 +261,6 @@ handleOpenProfile(): void {
     console.log('[Home] Initializing home component with micro-widgets...');
 
 
-    await this.loadCarpets();
 
     // Load only the stores we have available
     try {

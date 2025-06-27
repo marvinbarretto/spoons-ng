@@ -25,13 +25,11 @@
 
   <app-scoreboard-hero [data]="scoreboardData()" />
 
+  <app-llm-test></app-llm-test>
 
-  @if (carpets().length > 0 || carpetsLoading()) {
-    <app-carpet-grid
-      [carpets]="carpets"
-      [loading]="carpetsLoading"
-    />
-  }
+  <!-- TODO: fix this - its broken af lol -->
+  <!-- ✅ Simple Carpet Widget -->
+  <app-simple-carpet-widget />
 
 
   <!-- ✅ Badges Showcase -->

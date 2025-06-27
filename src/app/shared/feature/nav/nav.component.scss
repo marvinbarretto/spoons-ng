@@ -19,14 +19,12 @@
     a {
       display: block;
       font-size: var(--font-size);
-
+      text-decoration: none;
+      transition: background-color 0.2s ease, color 0.2s ease;
       @media (min-width: $nav-breakpoint) {
         color: white;
         padding: 0.5rem 1rem;
       }
-
-      text-decoration: none;
-      transition: background-color 0.2s ease, color 0.2s ease;
 
       &:hover {
         background-color: var(--color-accent);

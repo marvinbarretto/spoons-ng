@@ -11,6 +11,9 @@ export const environment = {
     appId: 'APP_ID',
     measurementId: 'MEASUREMENT_ID',
   },
+  llm: {
+    gemini: 'GEMINI_API_KEY'
+  },
   featureFlags: {
     patchwork: false,
     landlord: false,
