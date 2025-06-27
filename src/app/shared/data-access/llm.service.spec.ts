@@ -14,6 +14,35 @@ jest.mock('@google/generative-ai', () => ({
   GoogleGenerativeAI: jest.fn().mockImplementation(() => mockGenAI)
 }));
 
+// Mock canvas and image operations since they're not available in test environment
+Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
+  value: jest.fn().mockReturnValue({
+    drawImage: jest.fn(),
+  }),
+});
+
+Object.defineProperty(HTMLCanvasElement.prototype, 'toDataURL', {
+  value: jest.fn().mockReturnValue('data:image/jpeg;base64,optimized-image-data'),
+});
+
+// Mock Image constructor to immediately trigger onload
+global.Image = class {
+  onload: (() => void) | null = null;
+  onerror: (() => void) | null = null;
+  src: string = '';
+  width: number = 512;
+  height: number = 384;
+
+  constructor() {
+    // Immediately trigger onload in next tick to simulate successful image loading
+    setTimeout(() => {
+      if (this.onload) {
+        this.onload();
+      }
+    }, 0);
+  }
+} as any;
+
 describe('LLMService', () => {
   let service: LLMService;
 

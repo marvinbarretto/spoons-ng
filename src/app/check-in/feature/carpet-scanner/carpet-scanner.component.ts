@@ -113,7 +113,7 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
       // 🎥 STOP CAMERA IMMEDIATELY - photo captured and saved
       console.log('%c*** CAMERA: 🚨 AUTO-SAVE COMPLETE - STOPPING CAMERA NOW 🚨', 'color: red; font-weight: bold; font-size: 14px;');
       this.stopScanning();
-      
+
       // TODO: Do we still need this event?
       console.log('📤 [CarpetScanner] Emitting carpetConfirmed event...');
       this.carpetConfirmed.emit(photoData);
@@ -167,14 +167,14 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
 // ✅ REPLACE your stopScanning method with this:
 protected stopScanning(): void {
   console.log('%c*** CAMERA: [CarpetScanner] stopScanning() called', 'color: red; font-weight: bold;');
-  
+
   const data = this._carpetService.data();
   console.log('%c*** CAMERA: Current state - photoTaken:', 'color: red; font-weight: bold;', data.photoTaken);
 
   // ✅ Always stop recognition - regardless of photo state
   console.log('%c*** CAMERA: Calling _carpetService.stopRecognition()...', 'color: red; font-weight: bold;');
   this._carpetService.stopRecognition();
-  
+
   console.log('%c*** CAMERA: [CarpetScanner] stopScanning() complete', 'color: red; font-weight: bold;');
 }
 
@@ -216,7 +216,7 @@ protected onScanAgain(): void {
 
       // Get the stream from CameraService to display in our video element
       const stream = this._cameraService.currentStream;
-      
+
       if (stream && this.videoElement?.nativeElement) {
         this.videoElement.nativeElement.srcObject = stream;
         await this.videoElement.nativeElement.play();
@@ -273,7 +273,7 @@ protected onScanAgain(): void {
 
     // LLM processing status
     if (data.llmProcessing) {
-      return '🤖 AI analyzing carpet...';
+      return '🤖 Processing...';
     }
 
     const hasGoodOrientation = data.isPhoneDown && data.orientationConfidence > CARPET_RECOGNITION_CONFIG.orientation.minConfidence;
@@ -282,25 +282,25 @@ protected onScanAgain(): void {
 
     // Check each condition individually with priority
     if (!hasGoodOrientation) {
-      return '📱 Point your phone down at the carpet';
+      return '📱 Point and hold your phone at the carpet';
     }
 
     if (!isDeviceStable) {
-      return '⚖️ Hold device still for 1 second...';
+      return '⚖️ Hold still...';
     }
 
     if (!hasGoodTexture && !data.llmCarpetDetected) {
       if (data.llmLastResult) {
         return `🤖 ${data.llmLastResult} - Try repositioning`;
       }
-      return `🔍 Scanning for carpet patterns... ${data.edgeCount || 0} edges`;
+      return '📱 Point and hold your phone at the carpet';
     }
 
     if (data.llmCarpetDetected) {
       return '🤖 AI detected carpet! Checking sharpness...';
     }
 
-    return '🔍 Analyzing...';
+    return '📱 Point and hold your phone at the carpet';
   }
 
   ngOnDestroy(): void {

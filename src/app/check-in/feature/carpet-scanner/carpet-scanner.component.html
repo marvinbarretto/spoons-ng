@@ -204,7 +204,7 @@
               <div class="metric">
                 <span class="label">Device Stable:</span>
                 <span class="value" [class.good]="carpetData().deviceStable">
-                  {{ carpetData().deviceStable ? '✅ STABLE (1s+)' : '❌ MOVING' }}
+                  {{ carpetData().deviceStable ? '✅ STABLE (3s+)' : '❌ MOVING' }}
                 </span>
               </div>
               <div class="metric">
@@ -213,7 +213,7 @@
               </div>
               <div class="metric">
                 <span class="label">Required Duration:</span>
-                <span class="value">1000ms</span>
+                <span class="value">3000ms</span>
               </div>
             </div>
 
@@ -238,7 +238,7 @@
               </div>
               <div class="metric">
                 <span class="label">Trigger:</span>
-                <span class="value">Device stable 1s → LLM analysis</span>
+                <span class="value">Device stable 3s → LLM analysis</span>
               </div>
             </div>
 

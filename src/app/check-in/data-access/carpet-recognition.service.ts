@@ -51,7 +51,7 @@ export class CarpetRecognitionService {
   private _lastBeta = 0;
   private _lastGamma = 0;
   private _stabilityThreshold = 5; // degrees
-  private _stabilityDuration = 1000; // 1 second
+  private _stabilityDuration = 3000; // 3 seconds
 
 
   async startRecognition(): Promise<void> {
