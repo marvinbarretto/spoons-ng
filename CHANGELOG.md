@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.64](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.63...v0.0.64) (2025-06-27)
+
+
+### Features
+
+* Improve Carpet scanner flow into homepage ([a947512](https://github.com/marvinbarretto/spoons-ng/commit/a947512ce4e96c7685fa0a9e905f9f828e236193))
+
 ### [0.0.63](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.62...v0.0.63) (2025-06-27)
 
 
