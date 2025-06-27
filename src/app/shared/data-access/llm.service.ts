@@ -358,20 +358,22 @@ export class LLMService {
 
   private buildCarpetPrompt(): string {
     return `
-      Analyze this image and determine if it shows a carpet or floor covering that might be found in a pub or restaurant.
+      You're helping someone check into a pub by analyzing their carpet photo. Look at this image and determine if it shows a pub carpet or floor covering.
 
-      Look for:
-      - Carpet patterns, textures, and colors
-      - Commercial-grade flooring
-      - Context clues that suggest a pub environment
+      If you see a carpet, provide 3-4 engaging observations that would interest a pub visitor. Each should be a short, vivid description focusing on different aspects like:
+      - Colors and patterns ("Deep burgundy with intricate golden paisley swirls")
+      - Texture and wear ("Plush velvet pile softened by countless conversations")  
+      - Character and history ("Classic pub carpet that's seen decades of good times")
+      - Atmosphere ("Creates that cozy traditional British pub feeling")
 
-      Be specific about what you see and provide your confidence level.
+      If it's not a carpet, provide encouraging observations about what you do see.
 
-      Respond in this format:
-      Is Carpet: [Yes/No]
-      Confidence: [0-100]%
-      Reasoning: [Brief explanation of what you see]
-      Visual Elements: [List key visual features you notice]
+      Respond with valid JSON only:
+      {
+        "isCarpet": true/false,
+        "confidence": 0-100,
+        "story": ["observation 1", "observation 2", "observation 3", "observation 4"]
+      }
     `;
   }
 
@@ -391,7 +393,20 @@ export class LLMService {
     console.log('[LLMService] Parsing response:', text);
 
     try {
-      // Try to extract structured data from the response
+      // First try to parse as JSON
+      const jsonMatch = text.match(/\{[^}]*\}/s);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        return {
+          isCarpet: parsed.isCarpet,
+          confidence: parsed.confidence || 75,
+          reasoning: parsed.story ? parsed.story[0] : 'Carpet analysis complete',
+          visualElements: [],
+          story: parsed.story || []
+        };
+      }
+
+      // Fallback to regex parsing for backward compatibility
       const isCarpetMatch = text.match(/Is Carpet:\s*(Yes|No)/i);
       const confidenceMatch = text.match(/Confidence:\s*(\d+)/i);
       const reasoningMatch = text.match(/Reasoning:\s*(.+?)(?=Visual Elements:|$)/i);
@@ -418,7 +433,7 @@ export class LLMService {
       };
 
     } catch (error) {
-      console.warn('[LLMService] Failed to parse structured response, using fallback');
+      console.warn('[LLMService] Failed to parse response, using fallback');
 
       return {
         isCarpet: /carpet|rug|floor/i.test(text),

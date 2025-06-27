@@ -9,7 +9,8 @@ export const CARPET_SCANNER_MESSAGES = {
   PROCESSING: 'Processing...',
 
   // Success states
-  CARPET_DETECTED: 'Carpet detected - capturing photo...',
+  CARPET_DETECTED: 'Carpet detected! Preparing check-in...',
+  PREPARING_CHECKIN: 'Preparing your check-in...',
   HOLD_STEADY: 'Hold steady... capturing photo',
   ALL_CONDITIONS_MET: 'All conditions met!',
 

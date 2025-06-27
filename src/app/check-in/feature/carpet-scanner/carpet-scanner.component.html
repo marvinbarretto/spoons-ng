@@ -61,7 +61,8 @@
              [class.success]="carpetData().canCheckIn"
              [class.error]="cameraError()"
              [class.processing]="carpetData().llmProcessing"
-             [class.capturing]="carpetData().canCheckIn && !carpetData().isSharp">
+             [class.capturing]="carpetData().canCheckIn && !carpetData().isSharp"
+             [class.story-mode]="progressiveStoryMode()">
           {{ statusMessage }}
         </div>
 

@@ -17,6 +17,7 @@ export type CarpetDetectionResult = {
   confidence: number;
   reasoning: string;
   visualElements: string[];
+  story?: string[]; // Array of engaging observations about the carpet
 };
 
 export type LLMStreamChunk = {
