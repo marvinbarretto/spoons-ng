@@ -89,7 +89,6 @@ export class AuthStore {
         displayName: displayName ?? generateAnonymousName(firebaseUser.uid),
         isAnonymous: firebaseUser.isAnonymous,
         emailVerified: firebaseUser.emailVerified,
-        checkedInPubIds: [],
         streaks: {},
         joinedAt: new Date().toISOString(),
         badgeCount: 0,

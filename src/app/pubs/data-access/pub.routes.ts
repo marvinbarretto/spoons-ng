@@ -5,19 +5,12 @@ export const PUBS_ROUTES: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('../feature/pubs-list/pubs-list.component').then(
+      import('../feature/pub-list/pub-list.component').then(
         (m) => m.PubListComponent
       ),
   },
   {
-    path: 'list',
-    loadComponent: () =>
-      import('../feature/comprehensive-pubs-list/comprehensive-pubs-list.component').then(
-        (m) => m.ComprehensivePubsListComponent
-      ),
-  },
-  {
-    path: ':id',
+    path: ':pubId',
     loadComponent: () =>
       import('../feature/pub-detail/pub-detail.component').then(
         (m) => m.PubDetailComponent

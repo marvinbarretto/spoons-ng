@@ -190,6 +190,12 @@
             <span class="label">LLM Detected:</span>
             <span class="value" [class.good]="carpetData().llmCarpetDetected">{{ carpetData().llmCarpetDetected }}</span>
           </div>
+          @if (carpetData().llmStreamingText) {
+            <div class="metric streaming-text">
+              <span class="label">LLM Analysis:</span>
+              <span class="value streaming">{{ carpetData().llmStreamingText }}</span>
+            </div>
+          }
           <div class="metric">
             <span class="label">Local Texture:</span>
             <span class="value" [class.good]="carpetData().hasTexture">{{ carpetData().hasTexture }}</span>

@@ -27,9 +27,11 @@
 
   <app-llm-test></app-llm-test>
 
-  <!-- TODO: fix this - its broken af lol -->
-  <!-- ✅ Simple Carpet Widget -->
-  <app-simple-carpet-widget />
+  <!-- ✅ Optimized Carpet Grid -->
+  <app-optimized-carpet-grid 
+    [carpets]="carpets" 
+    [loading]="carpetsLoading" 
+    [error]="carpetsError" />
 
 
   <!-- ✅ Badges Showcase -->

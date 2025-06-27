@@ -8,7 +8,6 @@ import { UserStore } from '@users/data-access/user.store';
 import { MissionStore } from '@missions/data-access/mission.store';
 import { OverlayService } from '@shared/data-access/overlay.service';
 import { PointsStore } from '@points/data-access/points.store';
-import { CheckinStore } from '@check-in/data-access/check-in.store';
 import { NewCheckinStore } from '../../../new-checkin/data-access/new-checkin.store';
 import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
 
@@ -18,7 +17,7 @@ import { BadgesShowcaseComponent } from '@home/ui/badges-showcase/badges-showcas
 import { MissionsSectionComponent } from '../../ui/missions-widget/missions-widget.component';
 import { UserProfileWidgetComponent } from '@home/ui/user-profile-widget/user-profile-widget.component';
 import { ProfileCustomisationModalComponent } from '@home/ui/profile-customisation-modal/profile-customisation-modal.component';
-import { SimpleCarpetWidgetComponent } from '../../ui/carpet-collection-widget/simple-carpet-widget.component';
+import { OptimizedCarpetGridComponent, CarpetDisplayData } from '../../ui/optimized-carpet-grid/optimized-carpet-grid.component';
 import { CarpetScannerComponent } from '../../../check-in/feature/carpet-scanner/carpet-scanner.component';
 import { CarpetPhotoData, PhotoStats } from '@shared/utils/carpet-photo.models';
 import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-carpet-storage.service';
@@ -34,7 +33,7 @@ import { LLMTestComponent } from '../../../shared/ui/llm-test/llm-test.component
     BadgesShowcaseComponent,
     MissionsSectionComponent,
     UserProfileWidgetComponent,
-    SimpleCarpetWidgetComponent,
+    OptimizedCarpetGridComponent,
     RouterModule,
     CarpetScannerComponent,
     LLMTestComponent
@@ -45,6 +44,12 @@ import { LLMTestComponent } from '../../../shared/ui/llm-test/llm-test.component
 export class HomeComponent extends BaseComponent {
   private readonly overlayService = inject(OverlayService);
 
+  // Carpet grid state management
+  protected readonly carpets = signal<CarpetDisplayData[]>([]);
+  protected readonly carpetsLoading = signal(false);
+  protected readonly carpetsError = signal<string | null>(null);
+  private lastLoadedUserId: string | null = null;
+
   constructor() {
     super();
 
@@ -54,6 +59,36 @@ export class HomeComponent extends BaseComponent {
       if (needsCarpetForPub) {
         console.log('[Home] Check-in needs carpet scan for pub:', needsCarpetForPub);
         this.showCarpetTest.set(true);
+      }
+    });
+
+    // Watch for auth changes and load carpets accordingly
+    effect(() => {
+      const user = this.authStore.user();
+      const userId = user?.uid;
+
+      console.log('[Home] Auth effect triggered for carpets:', {
+        hasUser: !!user,
+        userId: userId?.slice(0, 8),
+        isAnonymous: user?.isAnonymous,
+        previousUserId: this.lastLoadedUserId?.slice(0, 8)
+      });
+
+      // Clear carpets if no user
+      if (!user) {
+        console.log('[Home] No user, clearing carpets');
+        this.clearCarpets();
+        this.lastLoadedUserId = null;
+        return;
+      }
+
+      // Load carpets if user changed
+      if (userId !== this.lastLoadedUserId) {
+        console.log('[Home] User changed, loading carpets for:', userId?.slice(0, 8));
+        this.lastLoadedUserId = userId || null;
+        
+        // Use setTimeout to handle async operation outside effect
+        setTimeout(() => this.loadUserCarpets(), 0);
       }
     });
   }
@@ -118,7 +153,6 @@ export class HomeComponent extends BaseComponent {
   protected readonly userStore = inject(UserStore);
   protected readonly missionStore = inject(MissionStore, { optional: true });
   protected readonly pointsStore = inject(PointsStore);
-  protected readonly checkinStore = inject(CheckinStore);
   protected readonly newCheckinStore = inject(NewCheckinStore);
   protected readonly dataAggregator = inject(DataAggregatorService);
 
@@ -151,7 +185,7 @@ export class HomeComponent extends BaseComponent {
         title: mission.name,
         description: mission.description,
         progress: mission.pubIds?.filter(id =>
-          user.checkedInPubIds?.includes(id)
+          this.dataAggregator.hasVisitedPub(id)
         ).length || 0,
         total: mission.pubIds?.length || 0
       }))
@@ -160,7 +194,7 @@ export class HomeComponent extends BaseComponent {
 
   readonly isNewUser = computed(() => {
     const user = this.user();
-    return !user || (user.checkedInPubIds?.length || 0) === 0;
+    return !user || this.dataAggregator.pubsVisited() === 0;
   });
 
     // ✅ Placeholder for leaderboard position
@@ -169,7 +203,7 @@ export class HomeComponent extends BaseComponent {
       const user = this.user();
       if (!user) return null;
 
-      const pubs = user.checkedInPubIds?.length || 0;
+      const pubs = this.dataAggregator.pubsVisited();
       const badges = user.badgeCount || 0;
 
       // Fake calculation for demo - higher activity = better position
@@ -184,6 +218,73 @@ export class HomeComponent extends BaseComponent {
   readonly isDevelopment = computed(() => {
     return true; // Always show debug in development
   });
+
+  // ✅ Carpet management methods
+  private async loadUserCarpets(): Promise<void> {
+    console.log('[Home] Loading user carpets...');
+    
+    // Prevent multiple simultaneous loads
+    if (this.carpetsLoading()) {
+      console.log('[Home] Already loading carpets, skipping...');
+      return;
+    }
+    
+    this.carpetsLoading.set(true);
+    this.carpetsError.set(null);
+
+    try {
+      // Ensure carpet storage is initialized
+      await this.carpetStorageService.initialize();
+      
+      // Get carpet data from storage
+      const carpetData = await this.carpetStorageService.getUserCarpets();
+      console.log('[Home] Got carpet data from storage:', {
+        userId: this.authStore.user()?.uid?.slice(0, 8),
+        carpetCount: carpetData.length,
+        sampleCarpet: carpetData[0] ? {
+          pubId: carpetData[0].pubId,
+          pubName: carpetData[0].pubName,
+          date: carpetData[0].date,
+          blobSize: carpetData[0].blob.size
+        } : null
+      });
+
+      // Convert to display format - create object URLs here
+      const displayData: CarpetDisplayData[] = carpetData.map(carpet => ({
+        key: `${carpet.pubId}_${carpet.dateKey}`,
+        pubId: carpet.pubId,
+        pubName: carpet.pubName || 'Unknown Pub',
+        date: carpet.date,
+        imageUrl: URL.createObjectURL(carpet.blob)
+      }));
+
+      // Sort by date, newest first
+      displayData.sort((a, b) => 
+        new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+
+      this.carpets.set(displayData);
+      console.log('[Home] Carpets loaded successfully:', {
+        userId: this.authStore.user()?.uid?.slice(0, 8),
+        carpetCount: displayData.length,
+        rawData: displayData.map(c => ({ key: c.key, pubName: c.pubName, date: c.date }))
+      });
+
+    } catch (error) {
+      console.error('[Home] Error loading carpets:', error);
+      this.carpetsError.set(error instanceof Error ? error.message : 'Failed to load carpets');
+    } finally {
+      this.carpetsLoading.set(false);
+    }
+  }
+
+  private clearCarpets(): void {
+    console.log('[Home] Clearing carpet data');
+    
+    // Just clear the signal - OptimizedCarpetGridComponent handles URL cleanup
+    this.carpets.set([]);
+    this.carpetsError.set(null);
+  }
 
   // ✅ Event Handlers
   handleOpenSettings(): void {
@@ -232,7 +333,7 @@ handleOpenProfile(): void {
       uid: user.uid,
       displayName: user.displayName,
       isAnonymous: user.isAnonymous,
-      pubsVisited: user.checkedInPubIds?.length || 0,
+      pubsVisited: this.dataAggregator.pubsVisited(),
       badges: user.badgeCount || 0,
       missions: user.joinedMissionIds?.length || 0
     };
@@ -271,13 +372,9 @@ handleOpenProfile(): void {
 
     console.log('[Home] Component initialized');
   }
-}
 
-// TODO: DO i need to do this?
-// // Clean up object URLs when component destroys
-// ngOnDestroy() {
-//   // Revoke object URLs to free memory
-//   this.carpets().forEach(carpet => {
-//     URL.revokeObjectURL(carpet.imageUrl);
-//   });
-// }
+  // Clean up when component destroys
+  ngOnDestroy(): void {
+    this.clearCarpets();
+  }
+}

@@ -86,3 +86,4 @@ src/app/carpets/docs.ts
 CLAUDE.md
 firebase-debug.log
 TASKS.md
+.claude/settings.local.json

@@ -186,7 +186,7 @@ protected async fetchData(): Promise<LeaderboardEntry[]> {
       email: user.email,
       displayName: user.displayName,
       isAnonymous: user.isAnonymous,
-      checkedInPubIds: user.checkedInPubIds?.length || 0,
+      checkedInPubIds: 0, // Will be computed from actual check-ins below
       totalPoints: user.totalPoints || 0
     });
   });
@@ -209,7 +209,7 @@ protected async fetchData(): Promise<LeaderboardEntry[]> {
         isCurrentUser: true,
         userObject: {
           totalPoints: user.totalPoints,
-          checkedInPubIds: user.checkedInPubIds?.length || 0,
+          checkedInPubIds: 0, // Will be computed from actual check-ins below
           isAnonymous: user.isAnonymous
         }
       });
@@ -225,19 +225,12 @@ protected async fetchData(): Promise<LeaderboardEntry[]> {
         }))
       });
       
-      // Compare with user object data
-      const userStoredPubIds = user.checkedInPubIds || [];
-      console.log('🏆 [LeaderboardStore] Data source comparison:', {
-        fromCheckins: uniquePubIds.size,
-        fromUserObject: userStoredPubIds.length,
-        userStoredPubIds: userStoredPubIds.slice(0, 5),
-        checkinsSourcePubIds: Array.from(uniquePubIds),
-        dataMatch: uniquePubIds.size === userStoredPubIds.length
+      // Check-ins are now the single source of truth for pub visits
+      console.log('🏆 [LeaderboardStore] Pub visits calculated from check-ins:', {
+        userId: user.uid,
+        uniquePubsFromCheckins: uniquePubIds.size,
+        totalCheckinsForUser: userCheckins.length
       });
-      
-      if (uniquePubIds.size !== userStoredPubIds.length) {
-        console.warn('⚠️ [LeaderboardStore] DATA MISMATCH: Check-ins vs User object pub counts differ!');
-      }
     }
     
     // Calculate last active from check-ins
@@ -273,7 +266,7 @@ protected async fetchData(): Promise<LeaderboardEntry[]> {
     return {
       userId,
       displayName,
-      totalVisits: user.checkedInPubIds?.length || 0, // Keep for backward compatibility
+      totalVisits: uniquePubIds.size, // Computed from actual check-ins
       uniquePubs: uniquePubIds.size,
       totalCheckins: userCheckins.length,
       totalPoints: user.totalPoints || 0,

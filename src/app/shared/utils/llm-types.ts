@@ -18,3 +18,16 @@ export type CarpetDetectionResult = {
   reasoning: string;
   visualElements: string[];
 };
+
+export type LLMStreamChunk = {
+  text: string;
+  isComplete: boolean;
+  chunkIndex: number;
+};
+
+export type LLMStreamResponse<T = any> = {
+  success: boolean;
+  stream: AsyncIterable<LLMStreamChunk>;
+  error?: string;
+  cached: boolean;
+};

@@ -1,13 +1,13 @@
 // src/app/shared/data-access/user-progression.service.ts
 import { Injectable, Signal, computed, inject } from '@angular/core';
 import { UserStore } from '@users/data-access/user.store';
-import { CheckinStore } from '@check-in/data-access/check-in.store';
+import { NewCheckinStore } from '@new-checkin/data-access/new-checkin.store';
 import type { UserExperienceLevel, UserMilestone, UserProgressionStats, UserExperienceLevelUIFlags } from '@shared/utils/user-progression.models';
 
 @Injectable({ providedIn: 'root' })
 export class UserProgressionService {
   private readonly userStore = inject(UserStore);
-  private readonly checkinStore = inject(CheckinStore);
+  private readonly checkinStore = inject(NewCheckinStore);
 
   // ✅ Helper: Get user's total check-ins count
   readonly totalCheckinsCount = computed(() => {

@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { LLMResponse, CarpetDetectionResult, LLMRequest } from '../utils/llm-types';
+import { LLMResponse, CarpetDetectionResult, LLMRequest, LLMStreamResponse, LLMStreamChunk } from '../utils/llm-types';
 
 @Injectable({
   providedIn: 'root'
@@ -140,6 +140,135 @@ export class LLMService {
       console.error('[LLMService] Error in isCarpet:', error);
       return false;
     }
+  }
+
+  /**
+   * Streaming carpet detection with real-time feedback
+   */
+  async detectCarpetStream(imageData: string): Promise<LLMStreamResponse<CarpetDetectionResult>> {
+    console.log('[LLMService] Starting streaming carpet detection...');
+
+    // Optimize image first
+    const optimizedImage = await this.optimizeImageForAnalysis(imageData);
+    console.log('[LLMService] Image optimized for streaming analysis');
+
+    // Check cache
+    const cacheKey = this.hashString(optimizedImage.slice(0, 100));
+    if (this._cache.has(cacheKey)) {
+      console.log('[LLMService] ✅ Cache hit for streaming carpet detection');
+      const cachedResult = this._cache.get(cacheKey);
+      
+      // Return cached result as a single chunk stream
+      return {
+        success: true,
+        stream: this.createCachedStream(cachedResult),
+        cached: true
+      };
+    }
+
+    this._isProcessing.set(true);
+
+    try {
+      const prompt = this.buildCarpetPrompt();
+      const imagePart = this.prepareImagePart(optimizedImage);
+
+      // Use generateContentStream for real-time responses
+      const streamResult = await this._model.generateContentStream([prompt, imagePart]);
+      
+      return {
+        success: true,
+        stream: await this.processCarpetStream(streamResult, cacheKey),
+        cached: false
+      };
+
+    } catch (error: any) {
+      console.error('[LLMService] ❌ Streaming carpet detection failed:', error);
+      this._isProcessing.set(false);
+
+      return {
+        success: false,
+        stream: this.createErrorStream(error?.message || 'Streaming detection failed'),
+        error: error?.message || 'Streaming detection failed',
+        cached: false
+      };
+    }
+  }
+
+  /**
+   * Process streaming response for carpet detection
+   */
+  private async* processInternalStream(streamResult: any, cacheKey: string): AsyncGenerator<LLMStreamChunk> {
+    let chunkIndex = 0;
+    let fullText = '';
+
+    try {
+      for await (const chunk of streamResult.stream) {
+        const chunkText = chunk.text();
+        fullText += chunkText;
+        
+        yield {
+          text: chunkText,
+          isComplete: false,
+          chunkIndex: chunkIndex++
+        };
+      }
+
+      // Final chunk with complete response
+      yield {
+        text: '',
+        isComplete: true,
+        chunkIndex: chunkIndex
+      };
+
+      // Parse and cache the complete result
+      const carpetResult = this.parseCarpetResponse(fullText);
+      this._cache.set(cacheKey, carpetResult);
+      this._requestCount.update(count => count + 1);
+
+      console.log('[LLMService] ✅ Streaming carpet detection complete:', carpetResult);
+
+    } catch (error) {
+      console.error('[LLMService] Error in stream processing:', error);
+      yield {
+        text: `Error: ${error}`,
+        isComplete: true,
+        chunkIndex: chunkIndex
+      };
+    } finally {
+      this._isProcessing.set(false);
+    }
+  }
+
+  private async processInternalStreamWrapper(streamResult: any, cacheKey: string): Promise<AsyncIterable<LLMStreamChunk>> {
+    return this.processInternalStream(streamResult, cacheKey);
+  }
+
+  private async processCarpetStream(streamResult: any, cacheKey: string): Promise<AsyncIterable<LLMStreamChunk>> {
+    return this.processInternalStreamWrapper(streamResult, cacheKey);
+  }
+
+  /**
+   * Create a stream from cached result
+   */
+  private async* createCachedStream(cachedResult: CarpetDetectionResult): AsyncGenerator<LLMStreamChunk> {
+    const reasoningText = `Is Carpet: ${cachedResult.isCarpet ? 'Yes' : 'No'}\nConfidence: ${cachedResult.confidence}%\nReasoning: ${cachedResult.reasoning}`;
+    
+    yield {
+      text: reasoningText,
+      isComplete: true,
+      chunkIndex: 0
+    };
+  }
+
+  /**
+   * Create an error stream
+   */
+  private async* createErrorStream(errorMessage: string): AsyncGenerator<LLMStreamChunk> {
+    yield {
+      text: `Error: ${errorMessage}`,
+      isComplete: true,
+      chunkIndex: 0
+    };
   }
 
   /**

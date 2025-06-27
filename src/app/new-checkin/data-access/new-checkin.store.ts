@@ -12,7 +12,7 @@ import { PointsStore } from '../../points/data-access/points.store';
 import { UserStore } from '../../users/data-access/user.store';
 import { BadgeAwardService } from '../../badges/data-access/badge-award.service';
 import { LandlordStore, type LandlordResult } from '../../landlord/data-access/landlord.store';
-import { CheckInModalService } from '../../check-in/data-access/check-in-modal.service';
+// Remove CheckInModalService import to break circular dependency
 import { BaseStore } from '../../shared/data-access/base.store';
 import { CameraService } from '../../shared/data-access/camera.service';
 import type { CheckIn } from '../../check-in/utils/check-in.models';
@@ -28,7 +28,7 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
   private readonly userStore = inject(UserStore);
   private readonly badgeAwardService = inject(BadgeAwardService);
   private readonly landlordStore = inject(LandlordStore);
-  private readonly checkInModalService = inject(CheckInModalService);
+  // Modal service removed to break circular dependency - use event-based approach
   private readonly cameraService = inject(CameraService);
 
   // Check-in process state
@@ -39,6 +39,7 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
   // Check-in success state
   private readonly _checkinSuccess = signal<CheckIn | null>(null);
   private readonly _landlordMessage = signal<string | null>(null);
+  private readonly _checkinResults = signal<any | null>(null);
 
   // Auth-reactive state
   private lastLoadedUserId: string | null = null;
@@ -47,6 +48,7 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
   readonly isProcessing = this._isProcessing.asReadonly();
   readonly carpetDetectionEnabled = this._carpetDetectionEnabled.asReadonly();
   readonly needsCarpetScan = this._needsCarpetScan.asReadonly();
+  readonly checkinResults = this._checkinResults.asReadonly();
   readonly checkinSuccess = this._checkinSuccess.asReadonly();
   readonly landlordMessage = this._landlordMessage.asReadonly();
 
@@ -566,8 +568,8 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
         console.log('[NewCheckinStore] 🎭 ❌ ROUTINE: Normal check-in → First modal only');
       }
       
-      // Show success modal like the old flow
-      this.checkInModalService.showCheckInResults({
+      // Emit check-in results via signal instead of calling modal service directly
+      const resultsData = {
         success: true,
         checkin: {
           id: data.checkin.id,
@@ -576,7 +578,6 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
           timestamp: data.checkin.timestamp,
           dateKey: data.checkin.dateKey,
           carpetImageKey: data.checkin.carpetImageKey,
-          // Add points data to checkin object for modal
           pointsEarned: data.points?.total || 0,
           pointsBreakdown: data.points ? JSON.stringify(data.points) : undefined
         },
@@ -589,14 +590,16 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
         isNewLandlord: data.isNewLandlord,
         landlordMessage: data.landlordMessage,
         carpetCaptured: data.carpetCaptured
-      });
+      };
       
-      console.log('[NewCheckinStore] ✅ CheckInModalService.showCheckInResults called');
+      this._checkinResults.set(resultsData);
+      
+      console.log('[NewCheckinStore] ✅ Check-in results emitted via signal');
     } else {
-      console.log('[NewCheckinStore] ❌ Calling CheckInModalService.showCheckInResults for ERROR');
+      console.log('[NewCheckinStore] ❌ Emitting error results via signal');
       
-      // Show error modal
-      this.checkInModalService.showCheckInResults({
+      // Emit error results via signal
+      this._checkinResults.set({
         success: false,
         error: data.error || 'Check-in failed'
       });
@@ -687,5 +690,10 @@ export class NewCheckinStore extends BaseStore<CheckIn> {
     // }
   }
 
-
+  /**
+   * Clear check-in results after modal is shown
+   */
+  clearCheckinResults(): void {
+    this._checkinResults.set(null);
+  }
 }

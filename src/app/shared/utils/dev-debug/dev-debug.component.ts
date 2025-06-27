@@ -12,7 +12,7 @@ import { AuthStore } from '@auth/data-access/auth.store';
 import { UserStore } from '@users/data-access/user.store';
 import { PubStore } from '@pubs/data-access/pub.store';
 import { NearbyPubStore } from '@pubs/data-access/nearby-pub.store';
-import { CheckinStore } from '@check-in/data-access/check-in.store';
+import { NewCheckinStore } from '@new-checkin/data-access/new-checkin.store';
 import { LandlordStore } from '@landlord/data-access/landlord.store';
 import { BadgeStore } from '@badges/data-access/badge.store';
 
@@ -33,7 +33,7 @@ export class DevDebugComponent extends BaseComponent {
   protected readonly userStore = inject(UserStore);
   protected readonly pubStore = inject(PubStore);
   protected readonly nearbyPubStore = inject(NearbyPubStore);
-  protected readonly checkinStore = inject(CheckinStore);
+  protected readonly checkinStore = inject(NewCheckinStore);
   protected readonly landlordStore = inject(LandlordStore);
   protected readonly badgeStore = inject(BadgeStore);
 

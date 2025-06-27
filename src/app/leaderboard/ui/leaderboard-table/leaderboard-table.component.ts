@@ -1,23 +1,52 @@
-import { Component, input, inject, computed } from "@angular/core";
+import { Component, input, inject } from "@angular/core";
 import { AuthStore } from "../../../auth/data-access/auth.store";
-import { DataTableComponent } from "../../../shared/ui/data-table/data-table.component";
-import { TableColumn } from "../../../shared/ui/data-table/data-table.model";
 import { LeaderboardEntry } from "../../utils/leaderboard.models";
+import { UserChipComponent, UserChipData } from "../../../shared/ui/chips/user-chip/user-chip.component";
 
 // /leaderboard/ui/leaderboard-table.component.ts
 @Component({
   selector: 'app-leaderboard-table',
   template: `
-    <app-data-table
-      [data]="entries()"
-      [columns]="columns()"
-      [loading]="loading()"
-      [highlightRow]="isCurrentUser"
-      [trackBy]="'userId'"
-      [onRowClick]="onRowClick()"
-    />
+    <div class="data-table">
+      @if (loading()) {
+        <div class="loading">Loading...</div>
+      } @else {
+        <table>
+          <thead>
+            <tr>
+              <th class="rank" style="width: 80px;">#</th>
+              <th class="user-cell">Pub Crawler</th>
+              <th class="number points-primary" style="width: 120px;">Points</th>
+              <th class="number" style="width: 100px;">Pubs</th>
+              <th class="number" style="width: 120px;">Check-ins</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (entry of entries(); track entry.userId; let i = $index) {
+              <tr 
+                [class.highlight]="isCurrentUser(entry)"
+                (click)="handleRowClick(entry)"
+              >
+                <td class="rank">#{{ i + 1 }}</td>
+                <td class="user-cell">
+                  <app-user-chip 
+                    [user]="getUserChipData(entry)"
+                    size="sm"
+                    [clickable]="false"
+                  />
+                </td>
+                <td class="number points-primary">{{ entry.totalPoints?.toLocaleString() || '0' }}</td>
+                <td class="number">{{ entry.uniquePubs }}</td>
+                <td class="number">{{ entry.totalCheckins }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
   `,
-  imports: [DataTableComponent]
+  imports: [UserChipComponent],
+  styleUrl: './leaderboard-table.component.scss'
 })
 export class LeaderboardTableComponent {
   readonly entries = input.required<LeaderboardEntry[]>();
@@ -27,72 +56,25 @@ export class LeaderboardTableComponent {
 
   private readonly authStore = inject(AuthStore);
 
-  readonly columns = computed((): TableColumn[] => [
-    {
-      key: 'rank',
-      label: 'Rank',
-      className: 'rank',
-      width: '80px',
-      formatter: (_, row, index) => {
-        const rank = (index ?? 0) + 1;
-        return `#${rank}`;
-      }
-    },
-    {
-      key: 'displayName',
-      label: 'Pub Crawler',
-      className: 'user-cell',
-      formatter: (_, entry: LeaderboardEntry) => {
-        const avatar = this.getUserAvatar(entry);
-        
-        return `<div class="user-info">
-          <img src="${avatar}" alt="${entry.displayName}" class="avatar" onerror="this.src='assets/avatars/npc.webp'" />
-          <span class="user-name">${entry.displayName}</span>
-        </div>`;
-      }
-    },
-    {
-      key: 'totalPoints',
-      label: 'Points',
-      className: 'number points-primary',
-      width: '120px',
-      formatter: (points) => points?.toLocaleString() || '0'
-    },
-    {
-      key: 'uniquePubs',
-      label: 'Pubs',
-      className: 'number',
-      width: '100px'
-    },
-    {
-      key: 'totalCheckins',
-      label: 'Check-ins',
-      className: 'number',
-      width: '120px'
+  getUserChipData(entry: LeaderboardEntry): UserChipData {
+    return {
+      displayName: entry.displayName,
+      photoURL: entry.photoURL,
+      email: entry.email,
+      realDisplayName: entry.realDisplayName
+    };
+  }
+
+  handleRowClick(entry: LeaderboardEntry): void {
+    const clickHandler = this.onRowClick();
+    if (clickHandler) {
+      clickHandler(entry);
     }
-  ]);
+  }
 
   readonly isCurrentUser = (entry: LeaderboardEntry): boolean => {
     return entry.userId === this.authStore.user()?.uid;
   };
 
-  private getUserAvatar(entry: LeaderboardEntry): string {
-    // Check if this user has a profile photo (Google users)
-    if (entry.photoURL) {
-      return entry.photoURL;
-    }
-
-    // Check if it's a real user (has email/displayName) vs anonymous
-    const isAnonymousUser = !entry.email && !entry.realDisplayName &&
-                           (entry.displayName?.includes('-') || entry.displayName?.includes('(You)'));
-
-    if (isAnonymousUser) {
-      // Use NPC image for anonymous users
-      return 'assets/avatars/npc.webp';
-    } else {
-      // Fallback avatar for Google users without profile photos
-      return 'assets/images/default-user-avatar.png';
-    }
-  }
 
 }

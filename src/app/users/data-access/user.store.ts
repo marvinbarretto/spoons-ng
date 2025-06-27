@@ -10,7 +10,7 @@
  * DATA FLOW IN:
  * - AuthStore.user() changes → triggers loadOrCreateUser()
  * - PointsStore.awardPoints() → updates totalPoints via patchUser()
- * - CheckinStore.checkinToPub() → updates checkedInPubIds via patchUser()
+ * - NewCheckinStore data → computed via DataAggregatorService (no direct update needed)
  * - BadgeStore awards → updates badgeCount/badgeIds via updateBadgeSummary()
  * - LandlordStore → updates landlordCount/landlordPubIds via updateLandlordSummary()
  * 
@@ -235,7 +235,6 @@ export class UserStore {
             displayName: authUser.displayName,
             isAnonymous: authUser.isAnonymous,
             emailVerified: authUser.emailVerified,
-            checkedInPubIds: [],
             streaks: {},
             joinedAt: new Date().toISOString(),
             badgeCount: 0,
@@ -296,8 +295,7 @@ export class UserStore {
    * // PointsStore awards points
    * userStore.patchUser({ totalPoints: newTotal });
    * 
-   * // CheckinStore adds pub visit
-   * userStore.patchUser({ checkedInPubIds: [...existing, newPubId] });
+   * // pubsVisited count now computed by DataAggregatorService
    */
   patchUser(updates: Partial<User>): void {
     const current = this._user();

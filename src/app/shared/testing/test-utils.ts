@@ -32,7 +32,6 @@ export function createTestUser(overrides: Partial<Omit<User, 'UserExperienceLeve
     displayName: 'Test User',
     landlordOf: [],
     claimedPubIds: [],
-    checkedInPubIds: [],
     badges: [],
     streaks: {},
     emailVerified: true,

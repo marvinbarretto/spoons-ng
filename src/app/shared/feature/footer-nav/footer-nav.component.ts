@@ -1,5 +1,5 @@
 // src/app/shared/feature/footer-nav/footer-nav.component.ts
-import { Component, computed, inject, ChangeDetectionStrategy, signal } from '@angular/core';
+import { Component, computed, inject, ChangeDetectionStrategy, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { filter, map } from 'rxjs/operators';
@@ -260,6 +260,23 @@ export class FooterNavComponent extends BaseComponent {
   private readonly _isCheckingIn = signal(false);
   readonly isCheckingIn = this._isCheckingIn.asReadonly();
 
+  // ✅ Watch for check-in results and show modals
+  constructor() {
+    super();
+
+    effect(() => {
+      const results = this.newCheckinStore.checkinResults();
+      if (results) {
+        console.log('[FooterNavComponent] Check-in results received, showing modal:', results);
+        this.checkInModalService.showCheckInResults(results);
+        // Clear the results after handling
+        setTimeout(() => {
+          this.newCheckinStore.clearCheckinResults();
+        }, 100);
+      }
+    });
+  }
+
   // ✅ Signals for reactivity
   readonly isMobile = this.viewportService.isMobile;
   readonly closestPub = this.nearbyPubStore.closestPub;
@@ -279,7 +296,7 @@ export class FooterNavComponent extends BaseComponent {
   readonly navItems = computed((): NavItem[] => {
     return [
       {
-        label: 'Dashboard',
+        label: 'Home',
         route: '/',
         iconName: 'home',
         isActive: this.isOnRoute('/')()

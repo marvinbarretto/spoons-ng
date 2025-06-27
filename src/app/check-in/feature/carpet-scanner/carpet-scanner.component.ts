@@ -1,6 +1,7 @@
 import { Component, inject, OnDestroy, signal, ElementRef, ViewChild, OnInit, effect, output } from '@angular/core';
 import { BaseComponent } from '@shared/data-access/base.component';
 import { CarpetRecognitionService } from '../../data-access/carpet-recognition.service';
+import { CarpetRecognitionData } from '../../utils/carpet.models';
 import { CameraService } from '../../../shared/data-access/camera.service';
 import { SsrPlatformService } from '../../../shared/utils/ssr/ssr-platform.service';
 import { CARPET_RECOGNITION_CONFIG } from '../../data-access/carpet-recognition.config';
@@ -29,8 +30,11 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
   protected readonly cameraError = signal<string | null>(null);
   protected readonly showDebug = signal(false);
   protected readonly showSuccessScreen = signal(false);
+  protected readonly persistentResultMessage = signal<string | null>(null);
 
   private photoAlreadySaved = false;
+  private autoTriggerTimeout: ReturnType<typeof setTimeout> | null = null;
+  private resultDisplayTimeout: ReturnType<typeof setTimeout> | null = null;
 
   // Outputs - now emits structured photo data
   readonly carpetConfirmed = output<CarpetPhotoData>();
@@ -39,6 +43,7 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
   constructor() {
     super();
 
+    // Auto-save photo when captured
     effect(() => {
       const data = this.carpetData();
       if (data.photoTaken && data.capturedPhoto && !this.photoAlreadySaved) {
@@ -47,11 +52,38 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
       }
     });
 
+    // Show success screen when photo captured
     effect(() => {
       const data = this.carpetData();
       if (data.photoTaken && data.capturedPhoto) {
         console.log('✅ [CarpetScanner] Photo captured successfully - showing success screen');
         this.showSuccessScreen.set(true);
+      }
+    });
+
+    // Watch for carpet detection via signals
+    effect(() => {
+      const carpetDetected = this._carpetService.carpetDetectedSignal();
+      if (carpetDetected) {
+        console.log('🎯 [CarpetScanner] Carpet detected - starting auto-trigger timer');
+        this.handleCarpetDetected(carpetDetected);
+      }
+    });
+
+    // Watch for quality ready
+    effect(() => {
+      const qualityReady = this._carpetService.qualityReadySignal();
+      if (qualityReady) {
+        console.log('✨ [CarpetScanner] Quality conditions ready');
+      }
+    });
+
+    // Watch for capture ready
+    effect(() => {
+      const captureReady = this._carpetService.captureReadySignal();
+      if (captureReady) {
+        console.log('📸 [CarpetScanner] All capture conditions ready');
+        this.handleCaptureReady(captureReady);
       }
     });
   }
@@ -63,7 +95,92 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
 
   ngOnDestroy(): void {
     console.log('🚪 [CarpetScanner] Component destroyed');
+    this.clearTimeouts();
     this.stopScanning();
+  }
+
+  private clearTimeouts(): void {
+    if (this.autoTriggerTimeout) {
+      clearTimeout(this.autoTriggerTimeout);
+      this.autoTriggerTimeout = null;
+    }
+    if (this.resultDisplayTimeout) {
+      clearTimeout(this.resultDisplayTimeout);
+      this.resultDisplayTimeout = null;
+    }
+  }
+
+  private handleCarpetDetected(data: CarpetRecognitionData): void {
+    console.log('🎯 [CarpetScanner] Handling carpet detection');
+    
+    // Set persistent result message
+    const resultMessage = data.llmCarpetDetected ? 'Carpet detected!' : 'No carpet detected';
+    this.persistentResultMessage.set(resultMessage);
+    
+    // Clear any existing auto-trigger
+    if (this.autoTriggerTimeout) {
+      clearTimeout(this.autoTriggerTimeout);
+    }
+
+    // Start auto-trigger timer (1.5 seconds to show result message)
+    this.autoTriggerTimeout = setTimeout(async () => {
+      console.log('⏰ [CarpetScanner] Auto-trigger timeout - attempting capture');
+      await this.attemptAutoCapture();
+    }, 1500);
+
+    // Set up persistent result display timeout (5 seconds)
+    this.setupResultDisplayTimeout();
+  }
+
+  private handleCaptureReady(data: CarpetRecognitionData): void {
+    console.log('📸 [CarpetScanner] Handling capture ready');
+    
+    // If we have an auto-trigger pending, trigger it immediately
+    if (this.autoTriggerTimeout) {
+      clearTimeout(this.autoTriggerTimeout);
+      this.autoTriggerTimeout = null;
+      
+      console.log('🚀 [CarpetScanner] Conditions optimal - triggering immediate capture');
+      setTimeout(async () => {
+        await this.attemptAutoCapture();
+      }, 100); // Small delay for UI
+    }
+  }
+
+  private async attemptAutoCapture(): Promise<void> {
+    const data = this.carpetData();
+    
+    // Skip if photo already taken
+    if (data.photoTaken) {
+      console.log('⏭️ [CarpetScanner] Photo already captured, skipping auto-capture');
+      return;
+    }
+
+    // Skip if carpet not detected
+    if (!data.llmCarpetDetected) {
+      console.log('⏭️ [CarpetScanner] No carpet detected, skipping auto-capture');
+      return;
+    }
+
+    try {
+      console.log('📸 [CarpetScanner] Attempting auto-capture via service');
+      await this._carpetService.manualCapture();
+    } catch (error) {
+      console.error('❌ [CarpetScanner] Auto-capture failed:', error);
+    }
+  }
+
+  private setupResultDisplayTimeout(): void {
+    // Clear any existing timeout
+    if (this.resultDisplayTimeout) {
+      clearTimeout(this.resultDisplayTimeout);
+    }
+
+    // Set 5-second timeout to clear persistent result
+    this.resultDisplayTimeout = setTimeout(() => {
+      console.log('⏰ [CarpetScanner] Clearing persistent result display');
+      this.persistentResultMessage.set(null);
+    }, 5000);
   }
 
   protected onExitScanner(): void {
@@ -125,6 +242,7 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
     this.cameraReady.set(false);
     this.cameraError.set(null);
     this.showSuccessScreen.set(false);
+    this.persistentResultMessage.set(null);
     this.photoAlreadySaved = false;
   }
 
@@ -154,8 +272,14 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
       return CARPET_SCANNER_MESSAGES.STARTING_CAMERA;
     }
 
+    // Prioritize component's persistent result message
+    if (this.persistentResultMessage()) {
+      return this.persistentResultMessage()!;
+    }
+
     if (data.llmProcessing) {
-      return CARPET_SCANNER_MESSAGES.ANALYZING_CARPET;
+      // Show streaming text if available, otherwise default message
+      return data.llmStreamingText || CARPET_SCANNER_MESSAGES.ANALYZING_CARPET;
     }
 
     if (data.photoTaken) {

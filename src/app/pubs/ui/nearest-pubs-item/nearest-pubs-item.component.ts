@@ -1,7 +1,7 @@
 // Update src/app/pubs/ui/nearest-pubs-item/nearest-pubs-item.component.ts
 import { Component, inject, input } from '@angular/core';
 import type { Pub } from '../../utils/pub.models';
-import { CheckinStore } from '../../../check-in/data-access/check-in.store';
+import { NewCheckinStore } from '../../../new-checkin/data-access/new-checkin.store';
 import { AuthStore } from '../../../auth/data-access/auth.store';
 import { LandlordStore } from '../../../landlord/data-access/landlord.store';
 
@@ -25,7 +25,7 @@ import { LandlordStore } from '../../../landlord/data-access/landlord.store';
 export class NearestPubsItemComponent {
   readonly pub = input.required<Pub & { distance: number }>();
 
-  private readonly checkinStore = inject(CheckinStore);
+  private readonly checkinStore = inject(NewCheckinStore);
   private readonly authStore = inject(AuthStore);
   private readonly landlordStore = inject(LandlordStore);
 

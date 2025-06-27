@@ -15,6 +15,7 @@
       "@carpets/*": ["app/carpets/*"],
       "@missions/*": ["app/missions/*"],
       "@check-in/*": ["app/check-in/*"],
+      "@new-checkin/*": ["app/new-checkin/*"],
       "@badges/*": ["app/badges/*"],
       "@users/*": ["app/users/*"],
       "@landlord/*": ["app/landlord/*"]

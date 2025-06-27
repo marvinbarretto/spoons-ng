@@ -33,6 +33,7 @@ import { AuthStore } from '../../auth/data-access/auth.store';
 import { UserStore } from '../../users/data-access/user.store';
 import { PointsStore } from '../../points/data-access/points.store';
 import { NewCheckinStore } from '../../new-checkin/data-access/new-checkin.store';
+import { PubStore } from '../../pubs/data-access/pub.store';
 import { DebugService } from '../utils/debug.service';
 
 @Injectable({ providedIn: 'root' })
@@ -42,6 +43,7 @@ export class DataAggregatorService {
   private readonly userStore = inject(UserStore);
   private readonly pointsStore = inject(PointsStore);
   private readonly newCheckinStore = inject(NewCheckinStore);
+  private readonly pubStore = inject(PubStore);
   private readonly debug = inject(DebugService);
 
   constructor() {
@@ -127,7 +129,7 @@ export class DataAggregatorService {
       totalPoints: this.userStore.totalPoints(),
       todaysPoints: this.pointsStore.todaysPoints?.() || 0, // Safe access
       pubsVisited: this.pubsVisited(), // From our computed
-      totalPubs: 856, // TODO: Get from PubStore when available
+      totalPubs: this.pubStore.totalCount(),
       badgeCount: this.userStore.badgeCount(),
       landlordCount: this.userStore.landlordCount(),
       totalCheckins: this.newCheckinStore.totalCheckins(),
@@ -144,18 +146,12 @@ export class DataAggregatorService {
       isLoading: data.isLoading,
       
       // Additional debugging
-      userStorePubsFromObject: user?.checkedInPubIds?.length || 0,
+      userStorePubsFromObject: 'N/A - checkedInPubIds removed',
       newCheckinStoreTotalCheckins: this.newCheckinStore.checkins().length,
-      pubsVisitedVsUserObject: {
-        fromDataAggregator: data.pubsVisited,
-        fromUserObject: user?.checkedInPubIds?.length || 0,
-        match: data.pubsVisited === (user?.checkedInPubIds?.length || 0)
-      }
+      pubsVisitedFromDataAggregator: data.pubsVisited
     });
     
-    if (data.pubsVisited !== (user?.checkedInPubIds?.length || 0)) {
-      console.warn('⚠️ [DataAggregator] MISMATCH: PubsVisited calculation differs from user object!');
-    }
+    // DataAggregatorService is now the single source of truth for pubsVisited
     
     return data;
   });

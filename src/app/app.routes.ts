@@ -80,12 +80,6 @@ export const appRoutes: Routes = [
         .then(m => m.ShareContainerComponent)
   },
   {
-    path: 'check-in',
-    loadComponent: () =>
-      import('./check-in/feature/check-in-container/check-in-container.component')
-        .then(m => m.CheckInContainerComponent)
-  },
-  {
     path: '**',
     redirectTo: '/',
   },

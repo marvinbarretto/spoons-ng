@@ -90,7 +90,6 @@ private async updateUserStats(user: User, checkin: Omit<CheckIn, 'id'>): Promise
       ...(user.streaks || {}),
       [checkin.pubId]: prevStreak + 1,
     },
-    checkedInPubIds: arrayUnion(checkin.pubId) as any,
   };
 
   await this.updateDoc<User>(userRefPath, updatedUser);

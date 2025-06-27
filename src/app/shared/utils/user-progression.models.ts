@@ -90,28 +90,11 @@ export type UserProgressionContext = UserProgressionStats & UserExperienceLevelU
 /**
  * ✅ Calculate user stage based on activity
  */
-export function getUserExperienceLevel(user: Pick<User, 'isAnonymous' | 'checkedInPubIds'>): UserExperienceLevel {
+export function getUserExperienceLevel(user: Pick<User, 'isAnonymous'>): UserExperienceLevel {
   if (!user) return 'guest';
-
-  if (user.isAnonymous && user.checkedInPubIds.length === 0) {
-    return 'brandNew';
-  }
-
-  const checkInCount = user.checkedInPubIds.length;
-  const uniquePubCount = new Set(user.checkedInPubIds).size;
-
-  if (checkInCount <= 2) return 'firstTime';
-  if (checkInCount <= 9) return 'earlyUser';
-  if (checkInCount <= 24) return 'regularUser';
-
-  // Explorer: 25-49 check-ins OR 10+ unique pubs
-  if ((checkInCount >= 25 && checkInCount <= 49) || uniquePubCount >= 10) {
-    return 'explorer';
-  }
-
-  if (checkInCount >= 50) return 'powerUser';
-
-  return 'regularUser'; // Fallback
+  
+  // Simplified - real calculation now done by UserProgressionService
+  return user.isAnonymous ? 'brandNew' : 'regularUser';
 }
 
 /**

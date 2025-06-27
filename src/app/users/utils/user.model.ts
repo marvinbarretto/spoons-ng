@@ -11,7 +11,6 @@ export type User = {
   joinedAt: string;
 
   // Pub-related data
-  checkedInPubIds: string[];
   streaks: Record<string, number>;
   joinedMissionIds: string[];
 

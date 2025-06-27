@@ -24,7 +24,7 @@ export interface BaseSignals {
 
 /**
  * Collection-based stores (arrays of data)
- * Used by: PubStore, CheckinStore, BadgeStore, etc.
+ * Used by: PubStore, NewCheckinStore, BadgeStore, etc.
  *
  * Note: These stores should have:
  * - readonly data: Signal<T[]>

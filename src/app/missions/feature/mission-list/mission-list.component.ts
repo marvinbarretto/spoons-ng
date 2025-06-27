@@ -6,6 +6,7 @@ import { MissionStore } from '../../data-access/mission.store';
 import { UserStore } from '@users/data-access/user.store';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { BaseComponent } from '../../../shared/data-access/base.component';
+import { NewCheckinStore } from '../../../new-checkin/data-access/new-checkin.store';
 import type { Mission } from '../../utils/mission.model';
 
 @Component({
@@ -295,9 +296,19 @@ export class MissionListComponent extends BaseComponent {
     this.user()?.joinedMissionIds ?? []
   );
 
-  protected readonly userCheckedInPubIds = computed(() =>
-    this.user()?.checkedInPubIds ?? []
-  );
+  private readonly checkinStore = inject(NewCheckinStore);
+  
+  protected readonly userCheckedInPubIds = computed(() => {
+    const user = this.user();
+    if (!user) return [];
+    
+    // Get unique pub IDs from user's check-ins
+    const checkins = this.checkinStore.checkins();
+    const userCheckins = checkins.filter(c => c.userId === user.uid);
+    const uniquePubIds = [...new Set(userCheckins.map(c => c.pubId))];
+    
+    return uniquePubIds;
+  });
 
   protected readonly missionsWithStatus = computed(() => {
     const missions = this.missionStore.missions();

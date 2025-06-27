@@ -7,7 +7,6 @@ export const dummyUser: User = {
   uid: 'user1',
   landlordOf: [],
   claimedPubIds: [],
-  checkedInPubIds: [],
   badges: [],
   streaks: {},
   joinedMissionIds: [],
