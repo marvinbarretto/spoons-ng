@@ -124,6 +124,25 @@ export class LLMService {
   }
 
   /**
+   * Simple boolean method for carpet detection
+   */
+  async isCarpet(imageData: string): Promise<boolean> {
+    console.log('[LLMService] Checking if image contains carpet...');
+    
+    try {
+      const result = await this.detectCarpet(imageData);
+      const isCarpet = result.success && result.data.isCarpet;
+      
+      console.log(`[LLMService] Carpet detection result: ${isCarpet} (confidence: ${result.data.confidence}%)`);
+      
+      return isCarpet;
+    } catch (error) {
+      console.error('[LLMService] Error in isCarpet:', error);
+      return false;
+    }
+  }
+
+  /**
    * General purpose method for any LLM request
    */
   async processRequest(request: LLMRequest): Promise<LLMResponse> {

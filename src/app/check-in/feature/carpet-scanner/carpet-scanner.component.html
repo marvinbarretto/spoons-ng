@@ -80,8 +80,11 @@
               <div class="stat" [class.active]="carpetData().isPhoneDown">
                 📱 {{ (carpetData().orientationConfidence * 100).toFixed(0) }}%
               </div>
-              <div class="stat" [class.active]="(carpetData().edgeCount || 0) > 800">
-                🔍 {{ carpetData().edgeCount || 0 }} edges
+              <div class="stat" [class.active]="carpetData().deviceStable">
+                ⚖️ {{ carpetData().deviceStable ? 'STABLE' : 'MOVING' }}
+              </div>
+              <div class="stat" [class.active]="carpetData().llmCarpetDetected">
+                🤖 {{ carpetData().llmProcessing ? 'ANALYZING...' : (carpetData().llmCarpetDetected ? 'CARPET' : 'NO CARPET') }}
               </div>
               <div class="stat" [class.active]="carpetData().isSharp">
                 📷 {{ carpetData().blurScore }}
@@ -192,6 +195,50 @@
                 <span class="value" [class.good]="carpetData().photoTaken">
                   {{ carpetData().photoTaken ? '✅ YES' : '❌ NO' }}
                 </span>
+              </div>
+            </div>
+
+            <!-- Device Stability -->
+            <div class="section">
+              <h5>⚖️ Device Stability</h5>
+              <div class="metric">
+                <span class="label">Device Stable:</span>
+                <span class="value" [class.good]="carpetData().deviceStable">
+                  {{ carpetData().deviceStable ? '✅ STABLE (1s+)' : '❌ MOVING' }}
+                </span>
+              </div>
+              <div class="metric">
+                <span class="label">Stability Threshold:</span>
+                <span class="value">5° movement</span>
+              </div>
+              <div class="metric">
+                <span class="label">Required Duration:</span>
+                <span class="value">1000ms</span>
+              </div>
+            </div>
+
+            <!-- LLM Carpet Detection -->
+            <div class="section">
+              <h5>🤖 AI Carpet Detection</h5>
+              <div class="metric">
+                <span class="label">LLM Processing:</span>
+                <span class="value" [class.processing]="carpetData().llmProcessing">
+                  {{ carpetData().llmProcessing ? '🔄 ANALYZING...' : '✅ READY' }}
+                </span>
+              </div>
+              <div class="metric">
+                <span class="label">LLM Result:</span>
+                <span class="value" [class.good]="carpetData().llmCarpetDetected">
+                  {{ carpetData().llmCarpetDetected ? '✅ CARPET DETECTED' : '❌ NO CARPET' }}
+                </span>
+              </div>
+              <div class="metric">
+                <span class="label">LLM Status:</span>
+                <span class="value">{{ carpetData().llmLastResult || 'No analysis yet' }}</span>
+              </div>
+              <div class="metric">
+                <span class="label">Trigger:</span>
+                <span class="value">Device stable 1s → LLM analysis</span>
               </div>
             </div>
 

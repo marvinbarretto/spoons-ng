@@ -2,10 +2,12 @@ import { Injectable, signal, inject } from '@angular/core';
 import { CarpetRecognitionData } from '../utils/carpet.models';
 import { CARPET_RECOGNITION_CONFIG } from './carpet-recognition.config';
 import { CameraService } from '../../shared/data-access/camera.service';
+import { LLMService } from '../../shared/data-access/llm.service';
 
 @Injectable({ providedIn: 'root' })
 export class CarpetRecognitionService {
   private readonly cameraService = inject(CameraService);
+  private readonly llmService = inject(LLMService);
   
   private readonly _data = signal<CarpetRecognitionData>({
     isPhoneDown: false,
@@ -23,7 +25,11 @@ export class CarpetRecognitionService {
     photoDisplayUrl: null,
     overallConfidence: 0,
     canCheckIn: false,
-    debugInfo: 'Not started'
+    debugInfo: 'Not started',
+    deviceStable: false,
+    llmCarpetDetected: false,
+    llmProcessing: false,
+    llmLastResult: null
   });
 
   readonly data = this._data.asReadonly();
@@ -38,6 +44,14 @@ export class CarpetRecognitionService {
   private _minThinkingTime = 3000; // 3 seconds minimum
   private _maxThinkingTime = 10000; // 10 seconds maximum
   private _hasTimedOut = false;
+  
+  // Simple device stability tracking
+  private _lastStableTimestamp = 0;
+  private _isCurrentlyStable = false;
+  private _lastBeta = 0;
+  private _lastGamma = 0;
+  private _stabilityThreshold = 5; // degrees
+  private _stabilityDuration = 1000; // 1 second
 
 
   async startRecognition(): Promise<void> {
@@ -148,7 +162,42 @@ export class CarpetRecognitionService {
     const orientationConfidence = Math.max(0, 1 - (angleDiff / tolerance));
     const hasGoodOrientation = isPhoneDown && orientationConfidence > minConfidence;
 
-    // console.log(`📱 [CarpetService] Orientation: β:${beta.toFixed(1)}° diff:${angleDiff.toFixed(1)}° conf:${orientationConfidence.toFixed(2)} good:${hasGoodOrientation}`);
+    // Check device stability
+    const now = Date.now();
+    const betaDiff = Math.abs(beta - this._lastBeta);
+    const gammaDiff = Math.abs(gamma - this._lastGamma);
+    const isStable = betaDiff < this._stabilityThreshold && gammaDiff < this._stabilityThreshold;
+
+    if (isStable && this._isCurrentlyStable) {
+      // Device continues to be stable - check duration
+      const stableDuration = now - this._lastStableTimestamp;
+      const deviceStable = stableDuration >= this._stabilityDuration;
+      
+      if (deviceStable && !this._data().deviceStable) {
+        console.log(`📱 [CarpetService] Device stable for ${stableDuration}ms - triggering LLM detection`);
+        this._triggerLLMDetection();
+      }
+      
+      this._updateData({ deviceStable });
+    } else if (isStable && !this._isCurrentlyStable) {
+      // Device just became stable
+      console.log(`📱 [CarpetService] Device became stable - starting timer`);
+      this._lastStableTimestamp = now;
+      this._isCurrentlyStable = true;
+      this._updateData({ deviceStable: false });
+    } else if (!isStable) {
+      // Device is not stable
+      if (this._isCurrentlyStable) {
+        console.log(`📱 [CarpetService] Device became unstable`);
+      }
+      this._isCurrentlyStable = false;
+      this._lastStableTimestamp = 0;
+      this._updateData({ deviceStable: false });
+    }
+
+    // Update last values for next comparison
+    this._lastBeta = beta;
+    this._lastGamma = gamma;
 
     this._updateData({
       isPhoneDown,
@@ -158,8 +207,59 @@ export class CarpetRecognitionService {
       gamma,
       angleDifference: angleDiff,
       orientationConfidence: Math.round(orientationConfidence * 100) / 100,
-      debugInfo: `β:${beta.toFixed(1)}° γ:${gamma.toFixed(1)}° α:${alpha.toFixed(1)}°`
+      debugInfo: `β:${beta.toFixed(1)}° γ:${gamma.toFixed(1)}° stable:${this._data().deviceStable ? 'YES' : 'NO'}`
     });
+  }
+
+  private async _triggerLLMDetection(): Promise<void> {
+    if (!this._videoElement || this._data().llmProcessing) {
+      return;
+    }
+
+    console.log('🤖 [CarpetService] Triggering LLM carpet detection...');
+    this._updateData({ llmProcessing: true, llmLastResult: null });
+
+    try {
+      // Capture current frame
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      if (!ctx) {
+        throw new Error('Failed to get canvas context');
+      }
+
+      canvas.width = this._videoElement.videoWidth || 640;
+      canvas.height = this._videoElement.videoHeight || 480;
+      ctx.drawImage(this._videoElement, 0, 0, canvas.width, canvas.height);
+
+      // Convert to data URL
+      const imageData = canvas.toDataURL('image/jpeg', 0.8);
+      
+      console.log('🤖 [CarpetService] Captured frame for LLM analysis:', {
+        width: canvas.width,
+        height: canvas.height,
+        dataSize: imageData.length
+      });
+
+      // Use the simple boolean method
+      const isCarpet = await this.llmService.isCarpet(imageData);
+      
+      console.log(`🤖 [CarpetService] LLM detection result: ${isCarpet ? 'CARPET DETECTED' : 'NO CARPET'}`);
+      
+      this._updateData({
+        llmCarpetDetected: isCarpet,
+        llmProcessing: false,
+        llmLastResult: isCarpet ? 'Carpet detected' : 'No carpet detected'
+      });
+
+    } catch (error) {
+      console.error('🤖 [CarpetService] LLM detection failed:', error);
+      this._updateData({
+        llmCarpetDetected: false,
+        llmProcessing: false,
+        llmLastResult: `Error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      });
+    }
   }
 
 
@@ -547,30 +647,36 @@ export class CarpetRecognitionService {
   private _calculateDecision(): void {
     const current = this._data();
 
-    const { edgeThreshold } = CARPET_RECOGNITION_CONFIG.texture;
     const { minConfidence } = CARPET_RECOGNITION_CONFIG.orientation;
 
-    // ✅ MUCH LOWER edge threshold for testing - use the texture analysis result directly
-    const hasGoodTexture = current.hasTexture; // Just use what _analyzeTexture already determined
+    // Use LLM detection if available, fallback to local analysis
+    const hasGoodTexture = current.llmCarpetDetected || current.hasTexture;
     const hasGoodOrientation = current.isPhoneDown && current.orientationConfidence > minConfidence;
+    const isDeviceStable = current.deviceStable;
 
-    const canCheckIn = hasGoodOrientation && hasGoodTexture;
+    // Require device stability, orientation, and carpet detection
+    const canCheckIn = hasGoodOrientation && hasGoodTexture && isDeviceStable;
 
-    const orientationWeight = 0.4;
-    const textureWeight = 0.6;
+    const orientationWeight = 0.3;
+    const textureWeight = 0.4;
+    const stabilityWeight = 0.3;
 
-    const normalizedTextureScore = Math.min(1, (current.edgeCount || 0) / 1500);
+    const normalizedTextureScore = current.llmCarpetDetected ? 1.0 : Math.min(1, (current.edgeCount || 0) / 1500);
+    const stabilityScore = isDeviceStable ? 1.0 : 0.0;
+    
     const overallConfidence =
       (current.orientationConfidence * orientationWeight) +
-      (normalizedTextureScore * textureWeight);
+      (normalizedTextureScore * textureWeight) +
+      (stabilityScore * stabilityWeight);
 
-    // ✅ Enhanced logging
-    console.log(`🎯 [CarpetService] Decision: orient:${hasGoodOrientation} texture:${hasGoodTexture} canCheckIn:${canCheckIn} (edges:${current.edgeCount}, analyzeTexture says: ${current.hasTexture})`);
+    // Enhanced logging with LLM status
+    const detectionMethod = current.llmCarpetDetected ? 'LLM' : (current.hasTexture ? 'LOCAL' : 'NONE');
+    console.log(`🎯 [CarpetService] Decision: orient:${hasGoodOrientation} carpet:${hasGoodTexture}(${detectionMethod}) stable:${isDeviceStable} canCheckIn:${canCheckIn}`);
 
     this._updateData({
       overallConfidence,
       canCheckIn,
-      debugInfo: `Orient: ${current.orientationConfidence.toFixed(2)} | HasTexture: ${current.hasTexture} | Can: ${canCheckIn}`
+      debugInfo: `Orient:${current.orientationConfidence.toFixed(2)} | Carpet:${hasGoodTexture}(${detectionMethod}) | Stable:${isDeviceStable} | Can:${canCheckIn}`
     });
   }
 
@@ -583,9 +689,13 @@ export class CarpetRecognitionService {
       URL.revokeObjectURL(current.photoDisplayUrl);
     }
 
-    // ✅ Reset counters
+    // ✅ Reset counters and stability tracking
     this._stableFrameCount = 0;
     this._lastDecision = false;
+    this._lastStableTimestamp = 0;
+    this._isCurrentlyStable = false;
+    this._lastBeta = 0;
+    this._lastGamma = 0;
 
     this._updateData({
       capturedPhoto: null,
@@ -594,6 +704,10 @@ export class CarpetRecognitionService {
       photoFormat: 'webp',
       photoSizeKB: 0,
       photoDisplayUrl: null,
+      deviceStable: false,
+      llmCarpetDetected: false,
+      llmProcessing: false,
+      llmLastResult: null,
       debugInfo: 'Reset for new scan'
     });
   }

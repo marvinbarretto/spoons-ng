@@ -268,22 +268,36 @@ protected onScanAgain(): void {
     }
 
     if (data.canCheckIn) {
-      return '✅ Carpet detected! Capturing...';
+      return '✅ All conditions met! Capturing...';
+    }
+
+    // LLM processing status
+    if (data.llmProcessing) {
+      return '🤖 AI analyzing carpet...';
     }
 
     const hasGoodOrientation = data.isPhoneDown && data.orientationConfidence > CARPET_RECOGNITION_CONFIG.orientation.minConfidence;
-    const hasGoodTexture = (data.edgeCount || 0) > CARPET_RECOGNITION_CONFIG.texture.edgeThreshold;
+    const hasGoodTexture = data.llmCarpetDetected || (data.edgeCount || 0) > CARPET_RECOGNITION_CONFIG.texture.edgeThreshold;
+    const isDeviceStable = data.deviceStable;
 
-    if (!hasGoodOrientation && !hasGoodTexture) {
+    // Check each condition individually with priority
+    if (!hasGoodOrientation) {
       return '📱 Point your phone down at the carpet';
     }
 
-    if (!hasGoodOrientation) {
-      return '📱 Angle the phone more toward the ground';
+    if (!isDeviceStable) {
+      return '⚖️ Hold device still for 1 second...';
     }
 
-    if (!hasGoodTexture) {
-      return `🔍 Scanning edges... ${data.edgeCount || 0}`;
+    if (!hasGoodTexture && !data.llmCarpetDetected) {
+      if (data.llmLastResult) {
+        return `🤖 ${data.llmLastResult} - Try repositioning`;
+      }
+      return `🔍 Scanning for carpet patterns... ${data.edgeCount || 0} edges`;
+    }
+
+    if (data.llmCarpetDetected) {
+      return '🤖 AI detected carpet! Checking sharpness...';
     }
 
     return '🔍 Analyzing...';

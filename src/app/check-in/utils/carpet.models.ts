@@ -31,4 +31,12 @@ export type CarpetRecognitionData = {
   overallConfidence: number;
   canCheckIn: boolean;
   debugInfo: string;
+
+  // Device stability
+  deviceStable: boolean;
+
+  // LLM carpet detection
+  llmCarpetDetected: boolean;
+  llmProcessing: boolean;
+  llmLastResult: string | null;
 };
