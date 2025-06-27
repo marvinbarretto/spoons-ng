@@ -10,6 +10,7 @@ import { OverlayService } from '@shared/data-access/overlay.service';
 import { PointsStore } from '@points/data-access/points.store';
 import { NewCheckinStore } from '../../../new-checkin/data-access/new-checkin.store';
 import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
+import { PubStore } from '../../../pubs/data-access/pub.store';
 
 // Import micro-widget components
 import { ScoreboardData, ScoreboardHeroComponent } from '@home/ui/scoreboard-hero/scoreboard-hero.component';
@@ -107,8 +108,22 @@ export class HomeComponent extends BaseComponent {
     try {
       console.log('💾 [Home] About to save photo using PhotoStorageService...');
 
-      // ✅ Save the WebP/JPEG binary photo
-      await this.carpetStorageService.savePhotoFromCarpetData(photoData);
+      // Get pub info for the carpet scan
+      const pubId = this.newCheckinStore.needsCarpetScan();
+      const pub = pubId ? this.pubStore.get(pubId) : null;
+      
+      console.log('🏠 [Home] Pub context for carpet:', {
+        pubId,
+        pubName: pub?.name,
+        hasPub: !!pub
+      });
+
+      if (!pub) {
+        throw new Error(`Pub not found for carpet scan: ${pubId}`);
+      }
+
+      // ✅ Save the WebP/JPEG binary photo with pub context
+      await this.carpetStorageService.savePhotoFromCarpetData(photoData, pub);
 
       console.log('✅ [Home] Photo saved successfully via PhotoStorageService');
 
@@ -155,6 +170,7 @@ export class HomeComponent extends BaseComponent {
   protected readonly pointsStore = inject(PointsStore);
   protected readonly newCheckinStore = inject(NewCheckinStore);
   protected readonly dataAggregator = inject(DataAggregatorService);
+  protected readonly pubStore = inject(PubStore);
 
 
 

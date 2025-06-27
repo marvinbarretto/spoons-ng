@@ -4,6 +4,7 @@ import { IndexedDbService } from '@shared/data-access/indexed-db.service';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { environment } from '../../../environments/environment';
 import { CarpetPhotoData, PhotoStats } from '@shared/utils/carpet-photo.models';
+import { Pub } from '../../pubs/utils/pub.models';
 
 
 type CarpetImageData = {
@@ -79,16 +80,13 @@ export class DeviceCarpetStorageService {
       // Detect supported image formats
       await this.detectSupportedFormats();
 
-      // ✅ Run migration if needed
-      await this.migrateFromOldDatabase();
-
       // Load initial stats for current user
       await this.updateStats();
 
       this.initialized = true;
       this.initializing = false; // ✅ Clear initializing flag
       console.log('[CarpetStorage] Initialization complete');
-      
+
       // ✅ Update stats after initialization is complete (safe to call getUserCarpets now)
       await this.updateStats();
     } catch (error) {
@@ -134,7 +132,7 @@ export class DeviceCarpetStorageService {
 /**
  * ✅ Save photo from carpet data (replaces PhotoStorageService method)
  */
-async savePhotoFromCarpetData(photoData: CarpetPhotoData, checkInId?: string): Promise<void> {
+async savePhotoFromCarpetData(photoData: CarpetPhotoData, pub: Pub): Promise<void> {
   console.log('📸 [CarpetStorage] === SAVE PHOTO FROM CARPET DATA ===');
   console.log('📸 [CarpetStorage] Input data:', {
     filename: photoData.filename,
@@ -142,7 +140,8 @@ async savePhotoFromCarpetData(photoData: CarpetPhotoData, checkInId?: string): P
     sizeKB: photoData.sizeKB,
     blobActualSize: photoData.blob.size,
     blobType: photoData.blob.type,
-    checkInId: checkInId || 'none',
+    pubId: pub.id,
+    pubName: pub.name,
     hasMetadata: !!photoData.metadata
   });
 
@@ -157,8 +156,8 @@ async savePhotoFromCarpetData(photoData: CarpetPhotoData, checkInId?: string): P
     // Create carpet data compatible with existing format
     const carpetData: CarpetImageData = {
       userId: userId,
-      pubId: checkInId || 'unknown_pub', // Use checkInId or default
-      pubName: 'Unknown Pub', // Could be enhanced later
+      pubId: pub.id,
+      pubName: pub.name,
       date: new Date().toISOString(),
       dateKey: photoData.filename.replace('.webp', '').replace('.jpeg', ''),
       blob: photoData.blob,
@@ -499,81 +498,6 @@ async saveCarpetImage(
 
     await this.indexedDb.clear(environment.database.name, environment.database.stores.carpets);
     await this.updateStats();
-  }
-
-  /**
-   * ✅ MIGRATION: Handle existing carpet data from old database
-   */
-  private async migrateFromOldDatabase(): Promise<void> {
-    console.log('[CarpetStorage] 🔄 Checking for legacy carpet data...');
-
-    const currentUser = this.authStore.user();
-    if (!currentUser) {
-      console.log('[CarpetStorage] No user authenticated, skipping migration');
-      return;
-    }
-
-    try {
-      // Try to open old database
-      await this.indexedDb.openDatabase({
-        name: environment.database.legacy.oldCarpetsDb, // Old database name
-        version: 1,
-        stores: [{
-          name: environment.database.stores.carpets,
-          indexes: [
-            { name: 'pubId', keyPath: 'pubId' },
-            { name: 'dateKey', keyPath: 'dateKey' },
-            { name: 'date', keyPath: 'date' }
-          ]
-        }]
-      });
-
-      // Get all data from old database
-      const oldCarpets = await this.indexedDb.getAll<any>(environment.database.legacy.oldCarpetsDb, environment.database.stores.carpets);
-
-      if (oldCarpets.length === 0) {
-        console.log('[CarpetStorage] No legacy data found');
-        return;
-      }
-
-      console.log('[CarpetStorage] 📦 Found', oldCarpets.length, 'legacy carpets to migrate');
-
-      // Migrate each carpet to new format with user association
-      let migratedCount = 0;
-      for (const oldCarpet of oldCarpets) {
-        try {
-          // Create new carpet data with userId
-          const newCarpetData: CarpetImageData = {
-            userId: currentUser.uid,  // Associate with current user
-            pubId: oldCarpet.pubId,
-            pubName: oldCarpet.pubName,
-            date: oldCarpet.date,
-            dateKey: oldCarpet.dateKey,
-            blob: oldCarpet.blob,
-            size: oldCarpet.size,
-            type: oldCarpet.type,
-            width: oldCarpet.width || 400,
-            height: oldCarpet.height || 400
-          };
-
-          // Save to new database with new key format
-          const newKey = `${currentUser.uid}_${oldCarpet.pubId}_${oldCarpet.dateKey}`;
-          await this.indexedDb.put(environment.database.name, environment.database.stores.carpets, newCarpetData, newKey);
-
-          migratedCount++;
-        } catch (error) {
-          console.warn('[CarpetStorage] Failed to migrate carpet:', oldCarpet, error);
-        }
-      }
-
-      console.log('[CarpetStorage] ✅ Successfully migrated', migratedCount, 'carpets');
-
-      // Optional: Clean up old database
-      // await this.indexedDb.clear(environment.database.legacy.oldCarpetsDb, environment.database.stores.carpets);
-
-    } catch (error) {
-      console.log('[CarpetStorage] No legacy database found or migration failed:', error);
-    }
   }
 
   /**

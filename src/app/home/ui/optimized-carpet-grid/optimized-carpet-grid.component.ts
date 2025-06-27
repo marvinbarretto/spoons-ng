@@ -1,5 +1,7 @@
 import { Component, Input, Signal, signal, OnDestroy, effect } from '@angular/core';
 import { CommonModule, JsonPipe } from '@angular/common';
+import { ObjectUrlManager } from '@shared/utils/object-url-manager';
+import { formatShortDate } from '@shared/utils/date-formatter';
 
 export type CarpetDisplayData = {
   key: string;
@@ -198,61 +200,13 @@ export class OptimizedCarpetGridComponent implements OnDestroy {
   @Input() loading: Signal<boolean> = signal(false);
   @Input() error: Signal<string | null> = signal(null);
 
-  private objectUrls = new Set<string>();
-  private keyToUrlMap = new Map<string, string>();
+  private readonly urlManager = new ObjectUrlManager();
 
   ngOnDestroy(): void {
-    // Clean up all object URLs to prevent memory leaks
-    this.cleanupObjectUrls();
+    this.urlManager.cleanup();
   }
 
-  private cleanupObjectUrls(): void {
-    this.objectUrls.forEach(url => {
-      URL.revokeObjectURL(url);
-      console.log('🧹 [OptimizedCarpetGrid] Revoked object URL');
-    });
-    this.objectUrls.clear();
-    this.keyToUrlMap.clear();
-  }
-
-  private trackCarpetUrls(): void {
-    const currentCarpets = this.carpets();
-    const currentKeys = new Set(currentCarpets.map(c => c.key));
-    
-    // Revoke URLs for carpets that are no longer present
-    this.keyToUrlMap.forEach((url, key) => {
-      if (!currentKeys.has(key)) {
-        URL.revokeObjectURL(url);
-        this.objectUrls.delete(url);
-        this.keyToUrlMap.delete(key);
-        console.log('🧹 [OptimizedCarpetGrid] Revoked URL for removed carpet:', key);
-      }
-    });
-    
-    // Track new URLs
-    currentCarpets.forEach(carpet => {
-      if (carpet.imageUrl.startsWith('blob:')) {
-        if (!this.keyToUrlMap.has(carpet.key)) {
-          this.objectUrls.add(carpet.imageUrl);
-          this.keyToUrlMap.set(carpet.key, carpet.imageUrl);
-          console.log('📎 [OptimizedCarpetGrid] Tracking new object URL for:', carpet.key);
-        }
-      }
-    });
-  }
-
-  formatDate(dateString: string): string {
-    try {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('en-GB', {
-        day: 'numeric',
-        month: 'short',
-        year: '2-digit'
-      });
-    } catch {
-      return dateString;
-    }
-  }
+  formatDate = formatShortDate;
 
   onImageError(event: Event): void {
     const img = event.target as HTMLImageElement;
@@ -260,9 +214,9 @@ export class OptimizedCarpetGridComponent implements OnDestroy {
   }
 
   constructor() {
-    // Use effect to track URL changes reactively
+    // Track URL changes reactively
     effect(() => {
-      this.trackCarpetUrls();
+      this.urlManager.trackUrls(this.carpets());
     });
   }
 }
