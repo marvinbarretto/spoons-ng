@@ -1,0 +1,200 @@
+// src/app/widgets/user-avatar/user-avatar.component.scss
+.user-avatar {
+  // ✅ Base styling
+  position: relative;
+  border-radius: 50%;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  // ✅ User's personal branding
+  background: var(--user-color-light, rgba(139, 69, 19, 0.15));
+  border: 2px solid var(--user-color, #8B4513);
+
+  // ✅ Smooth transitions
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  // ✅ Size variants
+  &.size--xs {
+    width: 24px;
+    height: 24px;
+    border-width: 1px; // Thinner border for tiny avatars
+  }
+
+  &.size--sm {
+    width: 32px;
+    height: 32px;
+    border-width: 2px;
+  }
+
+  &.size--md {
+    width: 40px;
+    height: 40px;
+    border-width: 2px;
+  }
+
+  &.size--lg {
+    width: 48px;
+    height: 48px;
+    border-width: 2px;
+  }
+
+  // ✅ Clickable interaction states
+  &.clickable {
+    cursor: pointer;
+
+    &:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(var(--user-color, 139, 69, 19), 0.3);
+      border-width: 3px;
+
+      .avatar-ring {
+        opacity: 0.6;
+      }
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+
+    &:focus-visible {
+      outline: 2px solid var(--color-primary, #8B4513);
+      outline-offset: 2px;
+    }
+  }
+
+  // ✅ Non-clickable state
+  &:not(.clickable) {
+    cursor: default;
+  }
+}
+
+// ✅ Avatar image
+.avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+
+  // ✅ Smooth loading
+  opacity: 0;
+  animation: fadeIn 0.3s ease-in-out forwards;
+}
+
+// ✅ Subtle ring overlay for visual depth
+.avatar-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  pointer-events: none;
+  opacity: 0.3;
+  transition: opacity 0.2s ease;
+}
+
+// ✅ Fade in animation
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+// ✅ Dark mode adjustments
+.dark .user-avatar {
+  border-color: var(--user-color, #8B4513);
+
+  .avatar-ring {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  &.clickable:hover {
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  }
+}
+
+// ✅ High contrast mode
+@media (prefers-contrast: high) {
+  .user-avatar {
+    border-width: 3px;
+
+    &.clickable:focus-visible {
+      outline-width: 3px;
+    }
+  }
+}
+
+// ✅ Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  .user-avatar {
+    transition: none;
+
+    &.clickable:hover {
+      transform: none;
+    }
+
+    &.clickable:active {
+      transform: none;
+    }
+  }
+
+  .avatar-image {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+// ✅ Touch device optimizations
+@media (hover: none) and (pointer: coarse) {
+  .user-avatar.clickable {
+    // Larger touch targets on mobile
+    &.size--xs {
+      min-width: 44px;
+      min-height: 44px;
+      // Keep visual size but expand touch area
+      &::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+      }
+    }
+
+    &.size--sm {
+      min-width: 44px;
+      min-height: 44px;
+    }
+
+    // Remove hover effects on touch devices
+    &:hover {
+      transform: none;
+      box-shadow: none;
+      border-width: 2px;
+    }
+
+    // Add touch feedback
+    &:active {
+      background: var(--user-color-light, rgba(139, 69, 19, 0.25));
+      border-color: var(--user-color, #8B4513);
+    }
+  }
+}
+
+// ✅ Print styles
+@media print {
+  .user-avatar {
+    border: 1px solid #666;
+    background: #f5f5f5;
+
+    .avatar-ring {
+      display: none;
+    }
+  }
+}
