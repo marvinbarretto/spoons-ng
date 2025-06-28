@@ -59,17 +59,18 @@ import type { Pub } from '../../utils/pub.models';
     .pub-card {
       display: block;
       padding: 1rem;
-      background: var(--color-surface, #ffffff);
-      border: 1px solid var(--color-border, #e5e7eb);
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.2s ease;
       position: relative;
+      box-shadow: 0 1px 3px var(--color-shadow);
     }
 
     .pub-card:hover {
-      border-color: var(--color-primary, #3b82f6);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border-color: var(--color-primary);
+      box-shadow: 0 4px 16px var(--color-shadow);
       transform: translateY(-1px);
     }
 
@@ -84,7 +85,7 @@ import type { Pub } from '../../utils/pub.models';
 
     .pub-card--selected {
       border-color: var(--color-primary);
-      background: var(--color-primary-subtle);
+      background: var(--color-surfaceElevated);
     }
 
     .pub-card__checkbox {
@@ -105,7 +106,7 @@ import type { Pub } from '../../utils/pub.models';
     .pub-card__title {
       font-size: 1.125rem;
       font-weight: 600;
-      color: var(--color-text, #111827);
+      color: var(--color-text);
       margin: 0;
       line-height: 1.3;
       flex: 1;
@@ -121,13 +122,13 @@ import type { Pub } from '../../utils/pub.models';
     }
 
     .pub-card__badge--success {
-      background: var(--color-success-subtle, #dcfce7);
-      color: var(--color-success, #16a34a);
+      background: var(--color-success);
+      color: var(--color-successText);
     }
 
     .pub-card__badge--info {
-      background: var(--color-info-subtle, #dbeafe);
-      color: var(--color-info, #2563eb);
+      background: var(--color-info);
+      color: var(--color-infoText);
     }
 
     .pub-card__content {
@@ -138,21 +139,21 @@ import type { Pub } from '../../utils/pub.models';
 
     .pub-card__address {
       font-size: 0.875rem;
-      color: var(--color-text-secondary, #6b7280);
+      color: var(--color-textSecondary);
       margin: 0;
       line-height: 1.4;
     }
 
     .pub-card__location {
       font-size: 0.875rem;
-      color: var(--color-text-secondary, #6b7280);
+      color: var(--color-textSecondary);
       margin: 0;
       font-style: italic;
     }
 
     .pub-card__distance {
       font-size: 0.75rem;
-      color: var(--color-text-secondary, #6b7280);
+      color: var(--color-textSecondary);
       margin: 0;
       display: flex;
       align-items: center;
@@ -161,15 +162,15 @@ import type { Pub } from '../../utils/pub.models';
 
     .pub-card__checkins {
       font-size: 0.75rem;
-      color: var(--color-text-secondary, #6b7280);
+      color: var(--color-textSecondary);
       margin: 0;
     }
 
     .pub-card__debug {
       margin-top: 0.75rem;
       padding: 0.5rem;
-      background: var(--color-background, #f9fafb);
-      border: 1px solid var(--color-border, #e5e7eb);
+      background: var(--color-background);
+      border: 1px solid var(--color-border);
       border-radius: 4px;
       font-size: 0.75rem;
     }
@@ -177,13 +178,13 @@ import type { Pub } from '../../utils/pub.models';
     .pub-card__debug summary {
       cursor: pointer;
       font-weight: 500;
-      color: var(--color-text-secondary, #6b7280);
+      color: var(--color-textSecondary);
     }
 
     .pub-card__debug pre {
       margin: 0.5rem 0 0 0;
       padding: 0.5rem;
-      background: var(--color-surface, #ffffff);
+      background: var(--color-surface);
       border-radius: 4px;
       overflow-x: auto;
       font-size: 0.6rem;
@@ -194,7 +195,7 @@ import type { Pub } from '../../utils/pub.models';
     @media (max-width: 640px) {
       .pub-card {
         /* Enhanced touch feedback */
-        -webkit-tap-highlight-color: var(--color-primary-subtle, rgba(59, 130, 246, 0.1));
+        -webkit-tap-highlight-color: var(--color-surfaceElevated);
       }
 
       .pub-card__title {
@@ -208,16 +209,7 @@ import type { Pub } from '../../utils/pub.models';
       }
     }
 
-    /* Dark mode support */
-    @media (prefers-color-scheme: dark) {
-      .pub-card {
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-      }
-
-      .pub-card:hover {
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-      }
-    }
+    /* Theme-aware shadows already defined above */
   `
 })
 export class PubCardComponent {

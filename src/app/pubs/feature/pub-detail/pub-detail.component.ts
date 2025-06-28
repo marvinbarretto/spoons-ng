@@ -1,7 +1,7 @@
 // src/app/pubs/feature/pub-detail/pub-detail.component.ts
 import { Component, computed, inject, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { PubStore } from '../../data-access/pub.store';
 import { NewCheckinStore } from '@new-checkin/data-access/new-checkin.store';
 import { UserStore } from '@users/data-access/user.store';
@@ -25,7 +25,7 @@ import { calculateDistance } from '@shared/utils/location.utils';
           <p>❌ {{ dataError() }}</p>
           <button (click)="retryLoad()" class="retry-btn">Try Again</button>
         </div>
-      } @else if (!pub()) {
+      } @else if (!pubId() || !pub()) {
         <div class="not-found-state">
           <p>🍺 Pub not found</p>
           <button (click)="goBack()" class="back-btn">← Back to Pubs</button>
@@ -137,6 +137,9 @@ import { calculateDistance } from '@shared/utils/location.utils';
       max-width: 1000px;
       margin: 0 auto;
       padding: 1rem;
+      background: var(--color-background);
+      color: var(--color-text);
+      min-height: 100vh;
     }
 
     .loading-state,
@@ -144,49 +147,55 @@ import { calculateDistance } from '@shared/utils/location.utils';
     .not-found-state {
       text-align: center;
       padding: 3rem 1rem;
-      color: var(--color-text-secondary, #6b7280);
+      color: var(--color-textSecondary);
     }
 
     .error-state {
-      color: var(--color-error, #ef4444);
+      color: var(--color-error);
     }
 
     .back-btn,
     .retry-btn {
       padding: 0.5rem 1rem;
-      border: 1px solid var(--color-border, #e5e7eb);
-      background: var(--color-surface, #ffffff);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface);
+      color: var(--color-text);
       border-radius: 6px;
       cursor: pointer;
       transition: all 0.2s ease;
       text-decoration: none;
-      color: var(--color-text-primary, #111827);
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
       font-size: 0.875rem;
+      font-family: inherit;
     }
 
     .back-btn:hover,
     .retry-btn:hover {
-      background: var(--color-gray-50, #f9fafb);
-      border-color: var(--color-primary, #3b82f6);
+      background: var(--color-surfaceElevated);
+      border-color: var(--color-primary);
+      color: var(--color-primary);
     }
 
     .pub-header {
       margin-bottom: 2rem;
+      padding: 1.5rem;
+      background: var(--color-surface);
+      border-radius: 12px;
+      border: 1px solid var(--color-border);
     }
 
     .pub-header h1 {
       font-size: 2.5rem;
       font-weight: 700;
       margin: 1rem 0 0.5rem;
-      color: var(--color-text-primary, #111827);
+      color: var(--color-text);
     }
 
     .pub-address {
       font-size: 1.125rem;
-      color: var(--color-text-secondary, #6b7280);
+      color: var(--color-textSecondary);
       margin: 0;
     }
 
@@ -195,6 +204,7 @@ import { calculateDistance } from '@shared/utils/location.utils';
       display: flex;
       gap: 1rem;
       align-items: center;
+      flex-wrap: wrap;
     }
 
     .action-btn {
@@ -208,16 +218,18 @@ import { calculateDistance } from '@shared/utils/location.utils';
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
+      font-family: inherit;
     }
 
     .action-btn--primary {
-      background: var(--color-primary, #3b82f6);
-      color: white;
+      background: var(--color-primary);
+      color: var(--color-primaryText);
     }
 
     .action-btn--primary:hover {
-      background: var(--color-primary-hover, #2563eb);
+      background: var(--color-primaryHover);
       transform: translateY(-1px);
+      box-shadow: 0 4px 12px var(--color-shadow);
     }
 
     .status-badge {
@@ -228,21 +240,25 @@ import { calculateDistance } from '@shared/utils/location.utils';
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
+      border: 1px solid var(--color-border);
     }
 
     .status-badge--success {
-      background: var(--color-success-subtle, #dcfce7);
-      color: var(--color-success, #16a34a);
+      background: var(--color-success);
+      color: var(--color-successText);
+      border-color: var(--color-success);
     }
 
     .status-badge--info {
-      background: var(--color-info-subtle, #dbeafe);
-      color: var(--color-info, #2563eb);
+      background: var(--color-info);
+      color: var(--color-infoText);
+      border-color: var(--color-info);
     }
 
     .status-badge--neutral {
-      background: var(--color-gray-100, #f3f4f6);
-      color: var(--color-text-secondary, #6b7280);
+      background: var(--color-surfaceElevated);
+      color: var(--color-textSecondary);
+      border-color: var(--color-borderSecondary);
     }
 
     .data-sections {
@@ -252,49 +268,63 @@ import { calculateDistance } from '@shared/utils/location.utils';
     }
 
     .data-section {
-      background: var(--color-surface, #ffffff);
-      border: 1px solid var(--color-border, #e5e7eb);
-      border-radius: 8px;
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
       overflow: hidden;
+      box-shadow: 0 2px 8px var(--color-shadow);
     }
 
     .data-section h2 {
-      background: var(--color-gray-50, #f9fafb);
+      background: var(--color-surfaceElevated);
       margin: 0;
       padding: 1rem;
       font-size: 1.125rem;
       font-weight: 600;
-      color: var(--color-text-primary, #111827);
-      border-bottom: 1px solid var(--color-border, #e5e7eb);
+      color: var(--color-text);
+      border-bottom: 1px solid var(--color-border);
     }
 
     .json-display {
       padding: 1rem;
+      background: var(--color-surface);
     }
 
     .json-display pre {
-      background: var(--color-background, #f9fafb);
-      border: 1px solid var(--color-border-light, #f3f4f6);
+      background: var(--color-background);
+      border: 1px solid var(--color-borderSecondary);
       border-radius: 6px;
       padding: 1rem;
       overflow-x: auto;
       margin: 0;
       font-size: 0.875rem;
       line-height: 1.5;
-      color: var(--color-text-primary, #111827);
+      color: var(--color-textMuted);
       white-space: pre-wrap;
       word-break: break-word;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
     }
 
     /* Mobile Optimizations */
     @media (max-width: 768px) {
+      .pub-detail-page {
+        padding: 0.5rem;
+      }
+
+      .pub-header {
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
       .pub-header h1 {
         font-size: 2rem;
+        margin: 0.5rem 0 0.25rem;
       }
 
       .quick-actions {
         flex-direction: column;
         align-items: stretch;
+        gap: 0.75rem;
       }
 
       .action-btn,
@@ -303,25 +333,46 @@ import { calculateDistance } from '@shared/utils/location.utils';
         justify-content: center;
       }
 
+      .data-sections {
+        gap: 1.5rem;
+      }
+
+      .json-display {
+        padding: 0.75rem;
+      }
+
       .json-display pre {
         font-size: 0.75rem;
+        padding: 0.75rem;
       }
     }
 
-    /* Dark mode support */
-    @media (prefers-color-scheme: dark) {
-      .json-display pre {
-        background: var(--color-gray-800, #1f2937);
-        border-color: var(--color-gray-700, #374151);
-        color: var(--color-gray-100, #f3f4f6);
-      }
+    /* Focus states for accessibility */
+    .back-btn:focus,
+    .retry-btn:focus,
+    .action-btn:focus {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 2px;
+    }
+
+    /* Enhanced hover states */
+    .data-section:hover {
+      border-color: var(--color-primary);
+      box-shadow: 0 4px 16px var(--color-shadow);
+    }
+
+    /* Loading animation */
+    .loading-state p {
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
     }
   `
 })
 export class PubDetailComponent extends BaseComponent {
-  // ✅ Route parameter
-  readonly pubId = input.required<string>();
-
   // ✅ Store dependencies
   private readonly pubStore = inject(PubStore);
   private readonly checkinStore = inject(NewCheckinStore);
@@ -329,10 +380,15 @@ export class PubDetailComponent extends BaseComponent {
   private readonly authStore = inject(AuthStore);
   private readonly locationService = inject(LocationService);
   protected override readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+
+  // ✅ Route parameter from ActivatedRoute
+  protected readonly pubId = computed(() => this.route.snapshot.paramMap.get('pubId') || '');
 
   // ✅ Computed pub data
   protected readonly pub = computed(() => {
     const id = this.pubId();
+    if (!id) return null;
     return this.pubStore.pubs().find(p => p.id === id) || null;
   });
 
