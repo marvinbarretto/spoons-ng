@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.66](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.65...v0.0.66) (2025-06-28)
+
+
+### Features
+
+* tweak Leaderboard look and feel ([12248d9](https://github.com/marvinbarretto/spoons-ng/commit/12248d99bee85f57a78a8698fe9f7da1adbc0c0a))
+
 ### [0.0.65](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.64...v0.0.65) (2025-06-27)
 
 
