@@ -2,7 +2,7 @@
 import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { BaseComponent } from '@shared/data-access/base.component';
+import { BaseComponent } from '@shared/base/base.component';
 import { ReferenceImageAnalyzerService } from '../../data-access/reference-image-analyzer.service';
 
 @Component({

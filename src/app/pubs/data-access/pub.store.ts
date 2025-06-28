@@ -1,6 +1,6 @@
 // src/app/pubs/data-access/pub.store.ts
 import { Injectable, computed, inject } from '@angular/core';
-import { BaseStore } from '@shared/data-access/base.store';
+import { BaseStore } from '@shared/base/base.store';
 import { CacheService } from '@shared/data-access/cache.service';
 import { LocationService } from '@shared/data-access/location.service';
 import type { Pub } from '../utils/pub.models';

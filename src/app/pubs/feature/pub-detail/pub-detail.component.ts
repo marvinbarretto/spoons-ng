@@ -7,7 +7,7 @@ import { CheckInStore } from '@/app/check-in/data-access/check-in.store';
 import { UserStore } from '@users/data-access/user.store';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { LocationService } from '@shared/data-access/location.service';
-import { BaseComponent } from '@shared/data-access/base.component';
+import { BaseComponent } from '@shared/base/base.component';
 import type { Pub } from '../../utils/pub.models';
 import { calculateDistance } from '@shared/utils/location.utils';
 

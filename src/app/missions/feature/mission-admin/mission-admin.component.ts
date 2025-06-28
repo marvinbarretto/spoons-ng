@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { ButtonComponent } from '@shared/ui/button/button.component';
 import { MissionStore } from '../../data-access/mission.store';
-import { BaseComponent } from '../../../shared/data-access/base.component';
+import { BaseComponent } from '../../../shared/base/base.component';
 import type { Mission } from '../../utils/mission.model';
 
 @Component({

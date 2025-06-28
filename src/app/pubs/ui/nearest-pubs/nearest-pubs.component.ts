@@ -3,7 +3,7 @@ import { Pub } from '../../utils/pub.models';
 import { CheckInStore } from '../../../check-in/data-access/check-in.store';
 import { computed } from '@angular/core';
 import { NearestPubsItemComponent } from "../nearest-pubs-item/nearest-pubs-item.component";
-import { BaseComponent } from '../../../shared/data-access/base.component';
+import { BaseComponent } from '../../../shared/base/base.component';
 
 @Component({
   selector: 'app-nearest-pubs',

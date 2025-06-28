@@ -6,7 +6,7 @@ import { ActivatedRoute } from '@angular/router';
 import { ButtonComponent } from '@shared/ui/button/button.component';
 import { PubSelectorComponent } from '@shared/ui/pub-selector/pub-selector.component';
 import { MissionStore } from '../../data-access/mission.store';
-import { BaseComponent } from '../../../shared/data-access/base.component';
+import { BaseComponent } from '../../../shared/base/base.component';
 import type { Mission } from '../../utils/mission.model';
 
 @Component({

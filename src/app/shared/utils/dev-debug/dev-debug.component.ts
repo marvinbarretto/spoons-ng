@@ -3,7 +3,7 @@ import { Component, computed, inject, signal, ChangeDetectionStrategy } from '@a
 import { DatePipe, JsonPipe } from '@angular/common';
 
 // Base and Services
-import { BaseComponent } from '@shared/data-access/base.component';
+import { BaseComponent } from '@shared/base/base.component';
 import { CleanupService, type CleanupResult } from '@shared/utils/cleanup.service';
 import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-carpet-storage.service';
 

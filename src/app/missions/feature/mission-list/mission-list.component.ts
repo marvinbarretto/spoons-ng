@@ -5,7 +5,7 @@ import { MissionCardComponent } from '../../ui/mission-card/mission-card.compone
 import { MissionStore } from '../../data-access/mission.store';
 import { UserStore } from '@users/data-access/user.store';
 import { AuthStore } from '@auth/data-access/auth.store';
-import { BaseComponent } from '../../../shared/data-access/base.component';
+import { BaseComponent } from '../../../shared/base/base.component';
 import { CheckInStore } from '../../../check-in/data-access/check-in.store';
 import type { Mission } from '../../utils/mission.model';
 

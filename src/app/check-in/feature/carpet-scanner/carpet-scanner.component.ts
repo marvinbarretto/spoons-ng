@@ -1,5 +1,5 @@
 import { Component, inject, OnDestroy, signal, ElementRef, ViewChild, OnInit, effect, output } from '@angular/core';
-import { BaseComponent } from '@shared/data-access/base.component';
+import { BaseComponent } from '@shared/base/base.component';
 import { CarpetRecognitionService } from '../../data-access/carpet-recognition.service';
 import { CarpetRecognitionData } from '../../utils/carpet.models';
 import { CameraService } from '../../../shared/data-access/camera.service';

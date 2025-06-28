@@ -2,7 +2,7 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { BaseComponent } from '../../../shared/data-access/base.component';
+import { BaseComponent } from '../../../shared/base/base.component';
 import { PubStore } from '../../data-access/pub.store';
 import { CheckInStore } from '../../../check-in/data-access/check-in.store';
 import { UserStore } from '@users/data-access/user.store';

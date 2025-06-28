@@ -14,7 +14,7 @@ import { CommonModule } from '@angular/common';
 import { filter, map } from 'rxjs/operators';
 import { toSignal } from '@angular/core/rxjs-interop';
 
-import { BaseComponent } from '../../data-access/base.component';
+import { BaseComponent } from '../../base/base.component';
 import { FeatureFlagPipe } from '../../utils/feature-flag.pipe';
 import { PanelStore, PanelType } from '../../ui/panel/panel.store';
 import { ViewportService } from '../../data-access/viewport.service';

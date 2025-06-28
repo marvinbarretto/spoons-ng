@@ -2,7 +2,7 @@
 import { Component, ViewChild, ElementRef, signal, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { BaseComponent } from '@shared/data-access/base.component';
+import { BaseComponent } from '@shared/base/base.component';
 import { DynamicCarpetMatcherService } from '../../data-access/dynamic-carpet-matcher.service';
 import { ReferenceImageAnalyzerService } from '../../data-access/reference-image-analyzer.service';
 

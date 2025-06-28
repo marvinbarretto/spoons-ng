@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from "@angular/core";
 import { AuthStore } from "../../auth/data-access/auth.store";
-import { BaseStore } from "../../shared/data-access/base.store";
+import { BaseStore } from "../../shared/base/base.store";
 import { LeaderboardEntry, LeaderboardTimeRange } from "../utils/leaderboard.models";
 import { generateAnonymousName } from "../../shared/utils/anonymous-names";
 import { UserService } from "../../users/data-access/user.service";

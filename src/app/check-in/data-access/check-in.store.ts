@@ -13,7 +13,7 @@ import { UserStore } from '../../users/data-access/user.store';
 import { BadgeAwardService } from '../../badges/data-access/badge-award.service';
 import { LandlordStore, type LandlordResult } from '../../landlord/data-access/landlord.store';
 // Remove CheckInModalService import to break circular dependency
-import { BaseStore } from '../../shared/data-access/base.store';
+import { BaseStore } from '../../shared/base/base.store';
 import { CameraService } from '../../shared/data-access/camera.service';
 import type { CheckIn } from '../utils/check-in.models';
 import { Timestamp } from 'firebase/firestore';

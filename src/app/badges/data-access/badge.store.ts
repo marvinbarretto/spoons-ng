@@ -1,6 +1,6 @@
 // src/app/badges/data-access/badge.store.ts
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { BaseStore } from '@shared/data-access/base.store';
+import { BaseStore } from '@shared/base/base.store';
 import { CacheService } from '@shared/data-access/cache.service';
 import type { EarnedBadge, Badge } from '../utils/badge.model';
 import { BadgeService } from './badge.service';

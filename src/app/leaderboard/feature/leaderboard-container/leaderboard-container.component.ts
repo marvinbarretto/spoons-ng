@@ -3,7 +3,7 @@ import { CommonModule } from "@angular/common";
 import { Component, computed, inject, signal } from "@angular/core";
 import { ActivatedRoute, RouterModule } from "@angular/router";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-import { BaseComponent } from "../../../shared/data-access/base.component";
+import { BaseComponent } from "../../../shared/base/base.component";
 import { LeaderboardStore } from "../../data-access/leaderboard.store";
 import { DataTableComponent } from "../../../shared/ui/data-table/data-table.component";
 import { TableColumn } from "../../../shared/ui/data-table/data-table.model";
