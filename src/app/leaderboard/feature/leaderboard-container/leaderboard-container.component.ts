@@ -22,24 +22,24 @@ import { AuthStore } from "../../../auth/data-access/auth.store";
 
       <!-- Time Period Tabs -->
       <nav class="time-period-tabs">
-        <a 
-          routerLink="/leaderboard/this-week" 
+        <a
+          routerLink="/leaderboard/this-week"
           routerLinkActive="active"
           [routerLinkActiveOptions]="{ exact: true }"
           class="tab-link"
         >
           This Week
         </a>
-        <a 
-          routerLink="/leaderboard/this-month" 
+        <a
+          routerLink="/leaderboard/this-month"
           routerLinkActive="active"
           [routerLinkActiveOptions]="{ exact: true }"
           class="tab-link"
         >
           This Month
         </a>
-        <a 
-          routerLink="/leaderboard/all-time" 
+        <a
+          routerLink="/leaderboard/all-time"
           routerLinkActive="active"
           [routerLinkActiveOptions]="{ exact: true }"
           class="tab-link"
@@ -203,11 +203,11 @@ export class LeaderboardContainerComponent extends BaseComponent {
   }
 
   // Computed data for display
-  readonly topEntries = computed(() => 
+  readonly topEntries = computed(() =>
     this.leaderboardStore.topByPoints().slice(0, 100)
   );
 
-  readonly userPosition = computed(() => 
+  readonly userPosition = computed(() =>
     this.leaderboardStore.userRankByPoints()
   );
 
@@ -215,24 +215,21 @@ export class LeaderboardContainerComponent extends BaseComponent {
   readonly columns = computed((): TableColumn[] => [
     {
       key: 'rank',
-      label: 'Rank',
+      label: '',
       className: 'rank',
-      width: '80px',
+      width: '60px',
       sortable: false,
       formatter: (_, row, index) => {
         const rank = (index ?? 0) + 1;
-        return `#${rank}`;
+        return `${rank}`;
       }
     },
     {
       key: 'displayName',
-      label: 'Pub Crawler',
+      label: '',
       className: 'user-cell',
       sortable: false,
-      formatter: (_, entry: LeaderboardEntry) => {
-        // Simple text-only formatter to avoid HTML sanitization
-        return entry.displayName || 'Unknown User';
-      }
+      renderer: (_, row) => row // Enable custom rendering for user chips
     },
     {
       key: 'totalPoints',

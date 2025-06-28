@@ -2,6 +2,7 @@
 import { Component, input, computed, signal } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { TableColumn } from './data-table.model';
+import { UserChipComponent, UserChipData } from '../chips/user-chip/user-chip.component';
 
 export type SortDirection = 'asc' | 'desc' | null;
 export type SortState = {
@@ -11,7 +12,7 @@ export type SortState = {
 
 @Component({
   selector: 'app-data-table',
-  imports: [CommonModule],
+  imports: [CommonModule, UserChipComponent],
   template: `
     <div class="data-table">
       @if (loading()) {
@@ -46,7 +47,21 @@ export type SortState = {
                 (click)="handleRowClick(row)"
               >
                 @for (column of columns(); track column.key) {
-                  <td [class]="column.className" [innerHTML]="getCellValue(column, row, i)">
+                  <td [class]="column.className">
+                    @if (column.renderer) {
+                      <!-- Custom renderer content -->
+                      @if (column.key === 'displayName') {
+                        <app-user-chip 
+                          [user]="getUserChipData(row)"
+                          size="sm"
+                          [clickable]="false"
+                        />
+                      } @else {
+                        <span [innerHTML]="getCellValue(column, row, i)"></span>
+                      }
+                    } @else {
+                      <span [innerHTML]="getCellValue(column, row, i)"></span>
+                    }
                   </td>
                 }
               </tr>
@@ -65,7 +80,6 @@ export type SortState = {
     table {
       width: 100%;
       border-collapse: collapse;
-      background: var(--color-background);
     }
 
     th, td {
@@ -109,6 +123,7 @@ export type SortState = {
     .number {
       text-align: right;
       font-variant-numeric: tabular-nums;
+      font-size: 0.95rem;
     }
 
     .rank {
@@ -118,6 +133,7 @@ export type SortState = {
     }
 
     .points-primary {
+      font-size: 1.1rem;
       font-weight: 700;
       color: var(--color-buttonPrimaryBase);
     }
@@ -144,8 +160,17 @@ export type SortState = {
       white-space: nowrap;
     }
 
+    tbody tr:nth-child(even) {
+      background: color-mix(in srgb, var(--color-subtleLighter) 15%, transparent);
+    }
+
+    tbody tr:hover {
+      background: var(--color-subtleLighter);
+      cursor: pointer;
+    }
+
     .highlight {
-      background: rgba(59, 130, 246, 0.1);
+      background: color-mix(in srgb, var(--color-accent) 15%, transparent) !important;
       font-weight: 600;
     }
 
@@ -327,5 +352,14 @@ export class DataTableComponent {
       classes.push('sortable');
     }
     return classes.filter(Boolean).join(' ');
+  }
+
+  getUserChipData(row: any): UserChipData {
+    return {
+      displayName: row.displayName || 'Unknown User',
+      photoURL: row.photoURL,
+      email: row.email,
+      realDisplayName: row.realDisplayName
+    };
   }
 }
