@@ -23,7 +23,7 @@ import { getAuth, updateProfile, User as FirebaseUser } from 'firebase/auth';
 import { AuthService } from './auth.service';
 import { SsrPlatformService } from '../../shared/utils/ssr/ssr-platform.service';
 import { OverlayService } from '../../shared/data-access/overlay.service';
-import { generateAnonymousName } from '../../shared/utils/anonymous-names';
+import { generateRandomName } from '../../shared/utils/anonymous-names';
 import type { User } from '@users/utils/user.model';
 
 @Injectable({ providedIn: 'root' })
@@ -73,7 +73,7 @@ export class AuthStore {
 
       // ✅ Only update Firebase Auth profile for anonymous users
       if (firebaseUser.isAnonymous && !displayName) {
-        displayName = generateAnonymousName(firebaseUser.uid);
+        displayName = generateRandomName(firebaseUser.uid);
         try {
           await updateProfile(firebaseUser, { displayName });
         } catch (error) {
@@ -86,7 +86,7 @@ export class AuthStore {
         uid: firebaseUser.uid,
         email: firebaseUser.email ?? null,
         photoURL: firebaseUser.photoURL ?? null,
-        displayName: displayName ?? generateAnonymousName(firebaseUser.uid),
+        displayName: displayName ?? generateRandomName(firebaseUser.uid),
         isAnonymous: firebaseUser.isAnonymous,
         emailVerified: firebaseUser.emailVerified,
         streaks: {},

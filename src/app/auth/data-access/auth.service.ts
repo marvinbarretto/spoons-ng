@@ -17,7 +17,7 @@ import {
   getDoc,
   setDoc,
 } from '@angular/fire/firestore';
-import { generateAnonymousName } from '../../shared/utils/anonymous-names';
+import { generateRandomName } from '../../shared/utils/anonymous-names';
 import type { User as SpoonsUser } from '../../users/utils/user.model';
 
 @Injectable({ providedIn: 'root' })
@@ -100,7 +100,7 @@ export class AuthService {
       if (!userSnap.exists()) {
         console.log('[AuthService] Creating anonymous user document...');
 
-        const displayName = generateAnonymousName(firebaseUser.uid);
+        const displayName = generateRandomName(firebaseUser.uid);
         const newUser: SpoonsUser = {
           uid: firebaseUser.uid,
           email: null,

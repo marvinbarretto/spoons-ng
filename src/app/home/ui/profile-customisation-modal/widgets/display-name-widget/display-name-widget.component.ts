@@ -2,7 +2,7 @@
 import { Component, input, output, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { generateAnonymousName } from '../../../../../shared/utils/anonymous-names';
+import { generateRandomName } from '../../../../../shared/utils/anonymous-names';
 import type { User } from '@users/utils/user.model';
 
 @Component({
@@ -276,7 +276,7 @@ export class DisplayNameWidgetComponent {
   shuffleRandomName(): void {
     // Generate a random UID-like string to get different results each time
     const randomSeed = Math.random().toString(36).substring(2) + Date.now().toString(36);
-    const randomName = generateAnonymousName(randomSeed);
+    const randomName = generateRandomName(randomSeed);
 
     // Convert to a more display-friendly format (remove original numbers, capitalize)
     const baseName = randomName.split('-').slice(0, 2).join('-');

@@ -2,7 +2,7 @@ import { Injectable, computed, inject, signal } from "@angular/core";
 import { AuthStore } from "../../auth/data-access/auth.store";
 import { BaseStore } from "../../shared/base/base.store";
 import { LeaderboardEntry, LeaderboardTimeRange } from "../utils/leaderboard.models";
-import { generateAnonymousName } from "../../shared/utils/anonymous-names";
+import { generateRandomName } from "../../shared/utils/anonymous-names";
 import { UserService } from "../../users/data-access/user.service";
 import { User } from "../../users/utils/user.model";
 import { CheckInStore } from "../../check-in/data-access/check-in.store";
@@ -334,7 +334,7 @@ private getDisplayName(userId: string, user: User): string {
   // ✅ Check if it's current user first
   if (currentUser?.uid === userId) {
     if (user.isAnonymous) {
-      return `${generateAnonymousName(userId)} (You)`;
+      return `${generateRandomName(userId)} (You)`;
     }
     return `${user.displayName || user.email || 'You'} (You)`;
   }
@@ -354,7 +354,7 @@ private getDisplayName(userId: string, user: User): string {
     }
   } else {
     // Anonymous user - generate pub name
-    return generateAnonymousName(userId);
+    return generateRandomName(userId);
   }
 }
 
