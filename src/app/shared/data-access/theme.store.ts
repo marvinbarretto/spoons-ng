@@ -94,7 +94,49 @@ export class ThemeStore {
     const theme = this.theme();
     const variables: Record<string, string> = {};
 
-    // ✅ NEW: Add all theme colors directly (flat structure)
+    // ✅ NEW: Add semantic CSS variables (new pattern)
+    const semanticMapping = {
+      // Background scales
+      '--background': theme.colors.background,
+      '--background-lighter': theme.colors.backgroundLighter,
+      '--background-lightest': theme.colors.backgroundLightest,
+      '--background-darker': theme.colors.backgroundDarker,
+      '--background-darkest': theme.colors.backgroundDarkest,
+
+      // Text scales
+      '--text': theme.colors.text,
+      '--text-secondary': theme.colors.textSecondary,
+      '--text-muted': theme.colors.textMuted,
+
+      // Border scales
+      '--border': theme.colors.border,
+      '--border-strong': theme.colors.borderStrong,
+
+      // Interactive colors
+      '--accent': theme.colors.accent,
+      '--accent-hover': theme.colors.accentHover,
+      '--accent-contrast': theme.colors.accentContrast,
+      '--secondary': theme.colors.secondary,
+      '--secondary-hover': theme.colors.secondaryHover,
+      '--secondary-contrast': theme.colors.secondaryContrast,
+
+      // Semantic colors
+      '--success': theme.colors.success,
+      '--warning': theme.colors.warning,
+      '--error': theme.colors.error,
+      '--info': theme.colors.info,
+
+      // Utility
+      '--overlay': theme.colors.overlay,
+      '--shadow': theme.colors.shadow,
+    };
+
+    // Add semantic variables
+    Object.entries(semanticMapping).forEach(([property, value]) => {
+      variables[property] = value;
+    });
+
+    // ✅ BACKWARD COMPATIBILITY: Add all theme colors with old naming (--color-* prefix)
     Object.entries(theme.colors).forEach(([key, value]) => {
       variables[`--color-${this._kebabCase(key)}`] = value;
     });
