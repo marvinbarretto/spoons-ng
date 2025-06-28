@@ -7,6 +7,7 @@ import { NewCheckinStore } from '../../new-checkin/data-access/new-checkin.store
 import { ModalCheckinSuccessComponent } from '../ui/modal-checkin-success/modal-checkin-success.component';
 import { ModalCheckinLandlordComponent } from '../ui/modal-checkin-landlord/modal-checkin-landlord.component';
 import { CheckInResultData } from '../utils/check-in.models';
+import { MODAL_NAVIGATION_TIMEOUT } from '@shared/utils/dev-mode.constants';
 
 @Injectable({ providedIn: 'root' })
 export class CheckInModalService {
@@ -50,11 +51,11 @@ export class CheckInModalService {
       }
     );
 
-    // Set up navigation fallback timeout (10 seconds)
+    // Set up navigation fallback timeout
     const navigationFallbackTimeout = setTimeout(() => {
       console.warn('[CheckInModalService] Navigation fallback timeout triggered - forcing navigation to homepage');
       this.forceNavigationToHomepage();
-    }, 10000);
+    }, MODAL_NAVIGATION_TIMEOUT);
 
     // Clear timeout when modal closes properly
     const clearFallbackTimeout = () => {
@@ -124,11 +125,11 @@ export class CheckInModalService {
       }
     );
 
-    // Set up navigation fallback timeout (10 seconds)
+    // Set up navigation fallback timeout
     const navigationFallbackTimeout = setTimeout(() => {
       console.warn('[CheckInModalService] Landlord modal navigation fallback timeout triggered - forcing navigation to homepage');
       this.forceNavigationToHomepage();
-    }, 10000);
+    }, MODAL_NAVIGATION_TIMEOUT);
 
     // Clear timeout when modal closes properly
     const clearFallbackTimeout = () => {

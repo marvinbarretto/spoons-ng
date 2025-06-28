@@ -8,6 +8,7 @@ import { CARPET_RECOGNITION_CONFIG } from '../../data-access/carpet-recognition.
 import { CARPET_SCANNER_MESSAGES } from '../../utils/carpet-scanner.messages';
 import { CarpetSuccessComponent } from '../../ui/carpet-success/carpet-success.component';
 import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-carpet-storage.service';
+import { DEV_FEATURES, DESKTOP_TESTING_DELAY, LLM_TO_PHOTO_DELAY } from '@shared/utils/dev-mode.constants';
 import { CarpetPhotoData, PhotoStats } from '@shared/utils/carpet-photo.models';
 import { NewCheckinStore } from '../../../new-checkin/data-access/new-checkin.store';
 import { CheckInModalService } from '../../data-access/check-in-modal.service';
@@ -112,31 +113,33 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
     console.log('🎬 [CarpetScanner] Component initialized');
     this.startScanning();
 
-    // TEMP: Force LLM detection then photo capture for desktop testing
-    setTimeout(async () => {
-      console.log('🧪 [TEMP] Forcing LLM detection first for desktop testing');
-      try {
-        // First trigger LLM detection
-        await this._carpetService.triggerLLMDetection();
-        
-        // Wait a bit for LLM response, then capture
-        setTimeout(async () => {
-          console.log('🧪 [TEMP] Now forcing photo capture after LLM');
-          await this._carpetService.manualCapture();
-        }, 3000);
-      } catch (error) {
-        console.log('🧪 [TEMP] LLM/capture failed, forcing state directly');
-        // Force the state if everything fails
-        (this._carpetService as any)._updateData({
-          photoTaken: true,
-          capturedPhoto: new Blob(['fake'], { type: 'image/jpeg' }),
-          llmCarpetDetected: true,
-          llmLastResult: { story: ['Test story 1', 'Test story 2', 'Test story 3'] },
-          photoFormat: 'jpeg',
-          photoSizeKB: 100
-        });
-      }
-    }, 2000);
+    // Desktop testing mode for development
+    if (DEV_FEATURES.DESKTOP_TESTING_MODE) {
+      setTimeout(async () => {
+        console.log('🧪 [DEV-MODE] Forcing LLM detection first for desktop testing');
+        try {
+          // First trigger LLM detection
+          await this._carpetService.triggerLLMDetection();
+          
+          // Wait for LLM response, then capture photo
+          setTimeout(async () => {
+            console.log('🧪 [DEV-MODE] Now forcing photo capture after LLM');
+            await this._carpetService.manualCapture();
+          }, LLM_TO_PHOTO_DELAY);
+        } catch (error) {
+          console.log('🧪 [DEV-MODE] LLM/capture failed, forcing state directly');
+          // Force the state if everything fails
+          (this._carpetService as any)._updateData({
+            photoTaken: true,
+            capturedPhoto: new Blob(['fake'], { type: 'image/jpeg' }),
+            llmCarpetDetected: true,
+            llmLastResult: { story: ['Test story 1', 'Test story 2', 'Test story 3'] },
+            photoFormat: 'jpeg',
+            photoSizeKB: 100
+          });
+        }
+      }, DESKTOP_TESTING_DELAY);
+    }
   }
 
   ngOnDestroy(): void {

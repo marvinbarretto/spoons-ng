@@ -9,6 +9,7 @@ import { FirestoreCrudService } from '../../shared/data-access/firestore-crud.se
 import { NearbyPubStore } from '../../pubs/data-access/nearby-pub.store';
 import { AuthStore } from '../../auth/data-access/auth.store';
 import type { CheckIn } from '../../check-in/utils/check-in.models';
+import { DEV_FEATURES } from '@shared/utils/dev-mode.constants';
 
 @Injectable({ providedIn: 'root' })
 export class NewCheckinService extends FirestoreCrudService<CheckIn> {
@@ -26,23 +27,31 @@ export class NewCheckinService extends FirestoreCrudService<CheckIn> {
   async canCheckIn(pubId: string): Promise<{ allowed: boolean; reason?: string }> {
     console.log('[NewCheckinService] 🔍 Running check-in validations for pub:', pubId);
 
-    // Gate 1: Daily limit check (DISABLED FOR DEVELOPMENT)
-    console.log('[NewCheckinService] 📅 Daily limit check DISABLED for development');
-    // const dailyCheck = await this.dailyLimitCheck(pubId);
-    // if (!dailyCheck.passed) {
-    //   console.log('[NewCheckinService] ❌ Failed daily limit check:', dailyCheck.reason);
-    //   return { allowed: false, reason: dailyCheck.reason };
-    // }
-    console.log('[NewCheckinService] ✅ Daily limit check SKIPPED (development mode)');
+    // Gate 1: Daily limit check
+    if (DEV_FEATURES.SKIP_DAILY_LIMITS) {
+      console.log('[NewCheckinService] 📅 Daily limit check SKIPPED (LET_ANYTHING_THROUGH_MODE enabled)');
+    } else {
+      console.log('[NewCheckinService] 📅 Running daily limit check...');
+      const dailyCheck = await this.dailyLimitCheck(pubId);
+      if (!dailyCheck.passed) {
+        console.log('[NewCheckinService] ❌ Failed daily limit check:', dailyCheck.reason);
+        return { allowed: false, reason: dailyCheck.reason };
+      }
+      console.log('[NewCheckinService] ✅ Daily limit check passed');
+    }
 
     // Gate 2: Proximity check
-    console.log('[NewCheckinService] 📍 Starting proximity validation...');
-    const proximityCheck = await this.proximityCheck(pubId);
-    if (!proximityCheck.passed) {
-      console.log('[NewCheckinService] ❌ Failed proximity check:', proximityCheck.reason);
-      return { allowed: false, reason: proximityCheck.reason };
+    if (DEV_FEATURES.SKIP_PROXIMITY_CHECKS) {
+      console.log('[NewCheckinService] 📍 Proximity check SKIPPED (LET_ANYTHING_THROUGH_MODE enabled)');
+    } else {
+      console.log('[NewCheckinService] 📍 Starting proximity validation...');
+      const proximityCheck = await this.proximityCheck(pubId);
+      if (!proximityCheck.passed) {
+        console.log('[NewCheckinService] ❌ Failed proximity check:', proximityCheck.reason);
+        return { allowed: false, reason: proximityCheck.reason };
+      }
+      console.log('[NewCheckinService] ✅ Proximity check passed');
     }
-    console.log('[NewCheckinService] ✅ Proximity check passed');
 
     // All gates passed
     console.log('[NewCheckinService] ✅ All validations passed - check-in allowed');

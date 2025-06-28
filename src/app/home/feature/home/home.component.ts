@@ -19,7 +19,7 @@ import { MissionsSectionComponent } from '../../ui/missions-widget/missions-widg
 import { UserProfileWidgetComponent } from '@home/ui/user-profile-widget/user-profile-widget.component';
 import { ProfileCustomisationModalComponent } from '@home/ui/profile-customisation-modal/profile-customisation-modal.component';
 import { OptimizedCarpetGridComponent, CarpetDisplayData } from '../../ui/optimized-carpet-grid/optimized-carpet-grid.component';
-import { LLMTestComponent } from '../../../shared/ui/llm-test/llm-test.component';
+// import { LLMTestComponent } from '../../../shared/ui/llm-test/llm-test.component';
 import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-carpet-storage.service';
 
 
@@ -34,7 +34,7 @@ import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-
     UserProfileWidgetComponent,
     OptimizedCarpetGridComponent,
     RouterModule,
-    LLMTestComponent
+    // LLMTestComponent
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
