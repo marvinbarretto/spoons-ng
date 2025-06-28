@@ -8,7 +8,7 @@ import { UserStore } from '@users/data-access/user.store';
 import { MissionStore } from '@missions/data-access/mission.store';
 import { OverlayService } from '@shared/data-access/overlay.service';
 import { PointsStore } from '@points/data-access/points.store';
-import { NewCheckinStore } from '../../../new-checkin/data-access/new-checkin.store';
+import { CheckInStore } from '../../../check-in/data-access/check-in.store';
 import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
 import { PubStore } from '../../../pubs/data-access/pub.store';
 
@@ -101,7 +101,7 @@ export class HomeComponent extends BaseComponent {
   protected readonly userStore = inject(UserStore);
   protected readonly missionStore = inject(MissionStore, { optional: true });
   protected readonly pointsStore = inject(PointsStore);
-  protected readonly newCheckinStore = inject(NewCheckinStore);
+  protected readonly checkinStore = inject(CheckInStore);
   protected readonly dataAggregatorService = inject(DataAggregatorService);
   protected readonly pubStore = inject(PubStore);
 

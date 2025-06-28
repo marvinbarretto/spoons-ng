@@ -1,227 +1,395 @@
-import { inject, Injectable } from '@angular/core';
-import { FirestoreService } from '../../shared/data-access/firestore.service';
-import { arrayUnion, increment, serverTimestamp, Timestamp, where } from 'firebase/firestore';
-import type { CheckIn } from '../utils/check-in.models';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { Pub } from '../../pubs/utils/pub.models';
-import { earliest, latest } from '../../shared/utils/date-utils';
-import { User } from '../../users/utils/user.model';
-import { LandlordService } from '../../landlord/data-access/landlord.service';
-import { AuthStore } from '../../auth/data-access/auth.store';
-import { LandlordStore } from '../../landlord/data-access/landlord.store';
-import { Landlord } from '../../landlord/utils/landlord.model';
+// =====================================
+// 🔧 checkin SERVICE - COMPLETE FIREBASE INTEGRATION
+// =====================================
 
-/**
- * @deprecated Use NewCheckinService instead. This service will be removed in a future version.
- * @see NewCheckinService
- */
-@Injectable({
-  providedIn: 'root'
-})
-export class CheckInService extends FirestoreService {
-  private landlordService = inject(LandlordService);
-  private authStore = inject(AuthStore);
-  private landlordStore = inject(LandlordStore);
+// src/app/checkin/data-access/checkin.service.ts
+import { Injectable, inject } from '@angular/core';
+import { Timestamp, where } from 'firebase/firestore';
+import { FirestoreCrudService } from '../../shared/data-access/firestore-crud.service';
+import { NearbyPubStore } from '../../pubs/data-access/nearby-pub.store';
+import { AuthStore } from '../../auth/data-access/auth.store';
+import type { CheckIn } from '../utils/check-in.models';
+import { DEV_FEATURES } from '@shared/utils/dev-mode.constants';
+
+@Injectable({ providedIn: 'root' })
+export class CheckInService extends FirestoreCrudService<CheckIn> {
+  protected override path: string = 'checkins';
+  // Clean dependencies - no underscores for services
+  private readonly authStore = inject(AuthStore);
+  private readonly nearbyPubStore = inject(NearbyPubStore);
 
   /**
-   * Get today's check-in for a specific pub and current user
-   * @param pubId - The pub to check for existing check-ins
-   * @returns Promise<CheckIn | null> - Today's check-in or null if none exists
+   * Check if user can check in to this pub
+   *
+   * @param pubId - The pub to validate check-in for
+   * @returns Promise<{allowed: boolean, reason?: string}>
    */
-  async getTodayCheckin(pubId: string): Promise<CheckIn | null> {
-    const todayDateKey = new Date().toISOString().split('T')[0];
-    const userId = this.authStore.uid(); // ✅ FIXED: Call the computed signal
-    if (!userId) throw new Error('[CheckInService] Missing userId for getTodayCheckin');
+  async canCheckIn(pubId: string): Promise<{ allowed: boolean; reason?: string }> {
+    console.log('[CheckInService] 🔍 Running check-in validations for pub:', pubId);
 
-    const matches = await this.getDocsWhere<CheckIn>(
-      'checkins',
-      where('userId', '==', userId),
-      where('pubId', '==', pubId),
-      where('dateKey', '==', todayDateKey)
-    );
+    // Gate 1: Daily limit check
+    if (DEV_FEATURES.SKIP_DAILY_LIMITS) {
+      console.log('[CheckInService] 📅 Daily limit check SKIPPED (LET_ANYTHING_THROUGH_MODE enabled)');
+    } else {
+      console.log('[CheckInService] 📅 Running daily limit check...');
+      const dailyCheck = await this.dailyLimitCheck(pubId);
+      if (!dailyCheck.passed) {
+        console.log('[CheckInService] ❌ Failed daily limit check:', dailyCheck.reason);
+        return { allowed: false, reason: dailyCheck.reason };
+      }
+      console.log('[CheckInService] ✅ Daily limit check passed');
+    }
 
-    return matches[0] ?? null;
+    // Gate 2: Proximity check
+    if (DEV_FEATURES.SKIP_PROXIMITY_CHECKS) {
+      console.log('[CheckInService] 📍 Proximity check SKIPPED (LET_ANYTHING_THROUGH_MODE enabled)');
+    } else {
+      console.log('[CheckInService] 📍 Starting proximity validation...');
+      const proximityCheck = await this.proximityCheck(pubId);
+      if (!proximityCheck.passed) {
+        console.log('[CheckInService] ❌ Failed proximity check:', proximityCheck.reason);
+        return { allowed: false, reason: proximityCheck.reason };
+      }
+      console.log('[CheckInService] ✅ Proximity check passed');
+    }
+
+    // All gates passed
+    console.log('[CheckInService] ✅ All validations passed - check-in allowed');
+    return { allowed: true };
   }
 
+  /**
+   * 🔄 UPDATED: Check if user has already checked into this pub today
+   * Now uses REAL Firestore data instead of simulation
+   */
+  private async dailyLimitCheck(pubId: string): Promise<{ passed: boolean; reason?: string }> {
+    console.log('[CheckInService] 📅 Checking REAL daily limit for pub:', pubId);
 
-  async getAllCheckins(): Promise<CheckIn[]> {
-    return this.getDocsWhere<CheckIn>('checkins');
+    try {
+      // ✅ REAL: Get current user
+      const userId = this.authStore.uid();
+      if (!userId) {
+        console.log('[CheckInService] 📅 No authenticated user found');
+        return { passed: false, reason: 'You must be logged in to check in' };
+      }
+
+      console.log('[CheckInService] 📅 Checking for existing check-in today...', { userId, pubId });
+
+      // ✅ REAL: Build today's date key
+      const todayDateKey = new Date().toISOString().split('T')[0];
+      console.log('[CheckInService] 📅 Today\'s date key:', todayDateKey);
+
+      // ✅ REAL: Query Firestore for today's check-in using inherited FirestoreService method
+      const existingCheckins = await this.getDocsWhere<CheckIn>(
+        'checkins',
+        where('userId', '==', userId),
+        where('pubId', '==', pubId),
+        where('dateKey', '==', todayDateKey)
+      );
+
+      console.log('[CheckInService] 📅 Query results:', {
+        collection: 'checkins',
+        query: { userId, pubId, dateKey: todayDateKey },
+        resultCount: existingCheckins.length
+      });
+
+      if (existingCheckins.length > 0) {
+        const existingCheckin = existingCheckins[0];
+        console.log('[CheckInService] ❌ Found existing check-in today:', {
+          checkinId: existingCheckin.id,
+          timestamp: existingCheckin.timestamp,
+          dateKey: existingCheckin.dateKey
+        });
+
+        return {
+          passed: false,
+          reason: 'You have already checked into this pub today. Try again tomorrow!'
+        };
+      }
+
+      console.log('[CheckInService] ✅ No existing check-in found for today - user can check in');
+      return { passed: true };
+
+    } catch (error: any) {
+      console.error('[CheckInService] 📅 Error checking daily limit:', error);
+      console.error('[CheckInService] 📅 Error details:', {
+        message: error?.message,
+        code: error?.code,
+        stack: error?.stack
+      });
+
+      return {
+        passed: false,
+        reason: 'Could not verify daily check-in limit. Please try again.'
+      };
+    }
   }
 
+  /**
+   * Check if user is close enough to the pub
+   */
+  private async proximityCheck(pubId: string): Promise<{ passed: boolean; reason?: string }> {
+    console.log('[CheckInService] 📍 Checking proximity to pub:', pubId);
+
+    try {
+      // Get real distance using NearbyPubStore
+      console.log('[CheckInService] 📍 Getting real distance to pub...');
+      const distance = this.nearbyPubStore.getDistanceToPub(pubId);
+
+      if (distance === null) {
+        console.log('[CheckInService] 📍 Could not determine distance (no location or pub not found)');
+        return { passed: false, reason: 'Could not determine your location or pub location' };
+      }
+
+      console.log('[CheckInService] 📍 Real distance calculated:', Math.round(distance), 'meters');
+
+      // Check if within range (using same threshold as NearbyPubStore)
+      const isWithinRange = this.nearbyPubStore.isWithinCheckInRange(pubId);
+      console.log('[CheckInService] 📍 Within check-in range?', isWithinRange);
+
+      if (!isWithinRange) {
+        const distanceInMeters = Math.round(distance);
+        console.log('[CheckInService] 📍 User is too far from pub');
+        return {
+          passed: false,
+          reason: `You are ${distanceInMeters}m away. Must be within 100m to check in.`
+        };
+      }
+
+      console.log('[CheckInService] 📍 User is within check-in range');
+      return { passed: true };
+
+    } catch (error) {
+      console.error('[CheckInService] 📍 Error checking proximity:', error);
+      return { passed: false, reason: 'Failed to check your location' };
+    }
+  }
+
+/**
+ * Create a new check-in with optional carpet image
+ *
+ * @param pubId - The pub to check into
+ * @param carpetImageKey - Optional key for captured carpet image
+ * @returns Promise<string> - The ID of the created check-in document
+ */
+async createCheckin(pubId: string, carpetImageKey?: string): Promise<string> {
+  console.log('[CheckInService] 💾 Creating REAL check-in for pub:', pubId);
+
+  if (carpetImageKey) {
+    console.log('[CheckInService] 🎨 Including carpet image key:', carpetImageKey);
+  }
+
+  const userId = this.authStore.uid();
+  if (!userId) {
+    console.log('[CheckInService] ❌ No authenticated user - cannot create check-in');
+    throw new Error('User must be authenticated to check in');
+  }
+
+  // Build check-in data
+  const timestamp = new Date();
+  const dateKey = timestamp.toISOString().split('T')[0];
+
+  const checkinData: Omit<CheckIn, 'id'> = {
+    userId,
+    pubId,
+    timestamp: Timestamp.fromDate(timestamp),
+    dateKey,
+    // 🆕 Include carpet image key if provided
+    ...(carpetImageKey && { carpetImageKey })
+  };
+
+  console.log('[CheckInService] 💾 Check-in data prepared:', {
+    ...checkinData,
+    timestamp: timestamp.toISOString()
+  });
+
+  // Save to Firestore
+  console.log('[CheckInService] 💾 Saving to Firestore collection: checkins');
+
+  const docRef = await this.addDocToCollection('checkins', checkinData);
+  const docId = docRef.id;
+
+  console.log('[CheckInService] ✅ Check-in created successfully!');
+  console.log('[CheckInService] ✅ Firestore document ID:', docId);
+  console.log('[CheckInService] ✅ Document path:', `checkins/${docId}`);
+
+  if (carpetImageKey) {
+    console.log('[CheckInService] 🎨 Carpet image linked to check-in:', carpetImageKey);
+  }
+
+  // Log the complete document for debugging
+  console.log('[CheckInService] 📄 Firestore document saved:', {
+    collection: 'checkins',
+    documentId: docId,
+    data: checkinData
+  });
+
+  return docId;
+}
 
   /**
    * Load all check-ins for a specific user
-   * @param userId - User ID to load check-ins for
-   * @returns Promise<CheckIn[]> - Array of all user's check-ins
    */
   async loadUserCheckins(userId: string): Promise<CheckIn[]> {
-    return this.getDocsWhere<CheckIn>('checkins', where('userId', '==', userId));
-  }
+    console.log('[CheckInService] 📡 Loading check-ins for user:', userId);
 
-  /**
-   * Upload a photo to Firebase Storage
-   * @param dataUrl - Base64 data URL of the photo
-   * @returns Promise<string> - Download URL of uploaded photo
-   */
-  async uploadPhoto(dataUrl: string): Promise<string> {
-    const storage = getStorage();
-    const id = crypto.randomUUID();
-    const storageRef = ref(storage, `checkins/${id}.jpg`);
+    try {
+      const checkins = await this.getDocsWhere<CheckIn>(
+        'checkins',
+        where('userId', '==', userId)
+      );
 
-    const blob = await (await fetch(dataUrl)).blob();
-    await uploadBytes(storageRef, blob);
-
-    return getDownloadURL(storageRef);
-  }
-
-  /**
- * Update user statistics after a check-in
- * - Updates streak count for this pub
- * - Adds pub to visited list
- * @param user - The user document
- * @param checkin - The check-in data
- */
-private async updateUserStats(user: User, checkin: Omit<CheckIn, 'id'>): Promise<void> {
-  const userRefPath = `users/${checkin.userId}`;
-  const prevStreak = user.streaks?.[checkin.pubId] || 0;
-
-  const updatedUser: Partial<User> = {
-    streaks: {
-      ...(user.streaks || {}),
-      [checkin.pubId]: prevStreak + 1,
-    },
-  };
-
-  await this.updateDoc<User>(userRefPath, updatedUser);
-}
-
-
-  /**
-   * Complete a check-in with full validation and side effects
-   * - Validates pub exists
-   * - Ensures user exists in Firestore
-   * - Updates pub statistics
-   * - Updates user statistics
-   * - Attempts to award landlord status
-   * @param checkin - Check-in data without ID
-   * @returns Promise<CheckIn & { landlordResult?: ... }> - Completed check-in with landlord info
-   */
-  async completeCheckin(checkin: Omit<CheckIn, 'id'>): Promise<CheckIn & { landlordResult?: { landlord: Landlord | null; wasAwarded: boolean } }> {
-    const pub = await this.validatePubExists(checkin.pubId);
-    const user = await this.ensureUserExists(checkin.userId);
-
-    console.log('[CheckInService] completeCheckin fn', checkin);
-
-    // Create the check-in document
-    const checkinRef = await this.addDocToCollection<Omit<CheckIn, 'id'>>('checkins', checkin);
-
-    // Update related statistics
-    await this.updatePubStats(pub, checkin, checkinRef.id);
-    await this.updateUserStats(user, checkin); // ✅ FIXED: Use transformation logic
-
-    // Try to award landlord status (doesn't update stores)
-    const checkinDate = this.normalizeDate(checkin.timestamp);
-    const landlordResult = await this.landlordService.tryAwardLandlord(checkin.pubId, checkinDate);
-
-    console.log('[CheckInService] Landlord result:', landlordResult);
-
-    // Return the completed check-in with landlord info for the store to handle
-    const completedCheckin = {
-      ...checkin,
-      id: checkinRef.id,
-      madeUserLandlord: landlordResult.wasAwarded,
-      landlordResult,
-    };
-
-    return completedCheckin;
-  }
-
-
-  /**
-   * Validate that a pub exists in Firestore
-   * @param pubId - Pub ID to validate
-   * @returns Promise<Pub> - The pub document
-   * @throws Error if pub doesn't exist
-   */
-  private async validatePubExists(pubId: string): Promise<Pub> {
-    const pub = await this.getDocByPath<Pub>(`pubs/${pubId}`);
-    if (!pub) throw new Error('Pub not found');
-    return pub;
-  }
-
-  /**
-   * Ensure user exists in Firestore, create if necessary
-   * @param userId - User ID to check/create
-   * @returns Promise<User> - The user document
-   * @throws Error if user creation fails
-   */
-  private async ensureUserExists(userId: string): Promise<User> {
-    const user = await this.getDocByPath<User>(`users/${userId}`);
-    if (user) return user;
-
-    // Create new user document with minimal data
-    await this.setDoc(`users/${userId}`, {
-      createdAt: serverTimestamp(),
-      landlordOf: [],
-      streaks: {},
-    });
-
-    const createdUser = await this.getDocByPath<User>(`users/${userId}`);
-    if (!createdUser) throw new Error('[CheckInService] Failed to create user');
-    return createdUser;
-  }
-
-  /**
-   * Update pub statistics after a check-in
-   * - Increments check-in count
-   * - Updates last check-in timestamp
-   * - Updates earliest/latest check-in records
-   * - Adds entry to check-in history
-   * @param pub - The pub document
-   * @param checkin - The check-in data
-   * @param checkinId - ID of the created check-in document
-   */
-  private async updatePubStats(pub: Pub, checkin: Omit<CheckIn, 'id'>, checkinId: string): Promise<void> {
-    const pubRefPath = `pubs/${checkin.pubId}`;
-    const checkinDate = this.normalizeDate(checkin.timestamp);
-
-    const userId = this.authStore.uid(); // ✅ FIXED: Call the computed signal
-    if (!userId) throw new Error('[CheckInService] Cannot update pub stats without a valid user ID');
-
-    await this.updateDoc<Pub>(pubRefPath, {
-      checkinCount: increment(1) as any,
-      lastCheckinAt: serverTimestamp() as any,
-      recordEarlyCheckinAt: earliest(pub.recordEarlyCheckinAt, checkinDate),
-      recordLatestCheckinAt: latest(pub.recordLatestCheckinAt, checkinDate),
-      checkinHistory: arrayUnion({
+      console.log('[CheckInService] 📡 Loaded check-ins:', {
         userId,
-        timestamp: checkin.timestamp.toMillis(), // ✅ FIXED: Convert Timestamp to number for arrayUnion
-      }) as any,
-    });
+        count: checkins.length
+      });
+
+      return checkins;
+    } catch (error) {
+      console.error('[CheckInService] ❌ Failed to load user check-ins:', error);
+      throw error;
+    }
   }
 
-/**
- * Patch the user's Firestore document with updates.
- * Intended to be called after a check-in or profile update.
- */
-async patchUserDocument(userId: string, updates: Partial<User>): Promise<void> {
-  const path = `users/${userId}`;
-  await this.updateDoc<User>(path, updates);
-}
+  /**
+   * Convert Firebase errors to user-friendly messages
+   */
+  private getFriendlyErrorMessage(error: any): string {
+    // Common Firebase error patterns
+    if (error?.code === 'permission-denied') {
+      return 'You do not have permission to check in. Please try logging in again.';
+    }
+
+    if (error?.code === 'unavailable') {
+      return 'Service temporarily unavailable. Please try again.';
+    }
+
+    if (error?.message?.includes('network')) {
+      return 'Network error. Please check your connection and try again.';
+    }
+
+    // Default fallback
+    return error?.message || 'Failed to save check-in. Please try again.';
+  }
+
+   /**
+   * Check if this is the user's first ever check-in to this pub
+   *
+   * @param userId - The user to check
+   * @param pubId - The pub to check
+   * @returns Promise<boolean> - True if this is their first visit
+   */
+   async isFirstEverCheckIn(userId: string, pubId: string): Promise<boolean> {
+    console.log('[CheckInService] 🔍 Checking if first visit...', { userId, pubId });
+
+    try {
+      const checkinCount = await this.getUserCheckinCount(userId, pubId);
+      const isFirst = checkinCount === 1; // Just the one we created
+
+      console.log('[CheckInService] 🔍 First visit check:', {
+        checkinCount,
+        isFirst,
+        logic: 'count === 1 means first visit (just created)'
+      });
+
+      return isFirst;
+
+    } catch (error) {
+      console.error('[CheckInService] 🔍 Error checking first visit:', error);
+      return false; // Default to false if we can't determine
+    }
+  }
+
+   /**
+   * Get total number of check-ins by user to this pub
+   *
+   * @param userId - The user to check
+   * @param pubId - The pub to check
+   * @returns Promise<number> - Total check-in count
+   */
+   async getUserCheckinCount(userId: string, pubId: string): Promise<number> {
+    console.log('[CheckInService] 📊 Getting user check-in count...', { userId, pubId });
+
+    try {
+      const checkins = await this.getDocsWhere<CheckIn>(
+        'checkins',
+        where('userId', '==', userId),
+        where('pubId', '==', pubId)
+      );
+
+      console.log('[CheckInService] 📊 Check-in count query result:', {
+        collection: 'checkins',
+        query: { userId, pubId },
+        resultCount: checkins.length
+      });
+
+      return checkins.length;
+
+    } catch (error) {
+      console.error('[CheckInService] 📊 Error getting check-in count:', error);
+      return 0; // Default to 0 if we can't query
+    }
+  }
+
 
   /**
-   * Safely convert various timestamp formats to Date
-   * @param input - Timestamp, Date, string, or number
-   * @returns Date - Normalized date object
-   * @throws Error if timestamp format is invalid
+   * Get total number of check-ins by user across all pubs
+   *
+   * @param userId - The user to check
+   * @returns Promise<number> - Total check-in count across all pubs
    */
-  private normalizeDate(input: unknown): Date {
-    if (input instanceof Timestamp) return input.toDate();
-    if (input instanceof Date) return input;
-    if (typeof input === 'string' || typeof input === 'number') {
-      const date = new Date(input);
-      if (!isNaN(date.getTime())) return date;
+  async getUserTotalCheckinCount(userId: string): Promise<number> {
+    console.log('[CheckInService] 📊 Getting user total check-in count...', { userId });
+
+    try {
+      const allCheckins = await this.getDocsWhere<CheckIn>(
+        'checkins',
+        where('userId', '==', userId)
+      );
+
+      console.log('[CheckInService] 📊 Total check-in count query result:', {
+        collection: 'checkins',
+        query: { userId },
+        resultCount: allCheckins.length
+      });
+
+      return allCheckins.length;
+
+    } catch (error) {
+      console.error('[CheckInService] 📊 Error getting total check-in count:', error);
+      return 0;
     }
-    throw new Error(`[CheckInService] Invalid timestamp: ${JSON.stringify(input)}`);
+  }
+
+  /**
+   * Get number of unique pubs user has visited
+   *
+   * @param userId - The user to check
+   * @returns Promise<number> - Number of unique pubs visited
+   */
+  async getUserUniquePubCount(userId: string): Promise<number> {
+    console.log('[CheckInService] 🏠 Getting unique pub count...', { userId });
+
+    try {
+      const allCheckins = await this.getDocsWhere<CheckIn>(
+        'checkins',
+        where('userId', '==', userId)
+      );
+
+      const uniquePubIds = new Set(allCheckins.map(checkin => checkin.pubId));
+      const uniqueCount = uniquePubIds.size;
+
+      console.log('[CheckInService] 🏠 Unique pub count query result:', {
+        totalCheckins: allCheckins.length,
+        uniquePubs: uniqueCount,
+        pubIds: Array.from(uniquePubIds)
+      });
+
+      return uniqueCount;
+
+    } catch (error) {
+      console.error('[CheckInService] 🏠 Error getting unique pub count:', error);
+      return 0;
+    }
   }
 }

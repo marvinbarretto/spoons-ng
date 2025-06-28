@@ -3,7 +3,7 @@ import { Component, inject, input, output, computed, signal, effect } from '@ang
 import { CommonModule } from '@angular/common';
 import { ButtonComponent } from '@shared/ui/button/button.component';
 import { BadgeIconComponent } from '@badges/ui/badge-icon/badge-icon.component';
-import { NewCheckinStore } from '../../../new-checkin/data-access/new-checkin.store';
+import { CheckInStore } from '../../../check-in/data-access/check-in.store';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { PubStore } from '@pubs/data-access/pub.store';
 import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-carpet-storage.service';
@@ -631,7 +631,7 @@ export class ModalCheckinSuccessComponent {
   readonly nextModal = output<void>();
 
   // Store injections
-  private readonly newCheckinStore = inject(NewCheckinStore);
+  private readonly checkinStore = inject(CheckInStore);
   private readonly authStore = inject(AuthStore);
   private readonly pubStore = inject(PubStore);
   private readonly carpetStorageService = inject(DeviceCarpetStorageService);
@@ -644,8 +644,8 @@ export class ModalCheckinSuccessComponent {
     // Debug effect to log when modal data changes
     effect(() => {
       const data = this.data();
-      const allCheckins = this.newCheckinStore.checkins();
-      const storeLoading = this.newCheckinStore.loading();
+      const allCheckins = this.checkinStore.checkins();
+      const storeLoading = this.checkinStore.loading();
 
       console.log('[ModalCheckinSuccess] Modal data changed:', {
         success: data.success,
@@ -657,11 +657,11 @@ export class ModalCheckinSuccessComponent {
         timestamp: data.checkin?.timestamp
       });
 
-      console.log('[ModalCheckinSuccess] NewCheckinStore state:', {
+      console.log('[ModalCheckinSuccess] CheckInStore state:', {
         allCheckinsCount: allCheckins.length,
         storeLoading,
         checkinIds: allCheckins.map(c => c.id),
-        storeHasLoadMethod: typeof this.newCheckinStore.load === 'function'
+        storeHasLoadMethod: typeof this.checkinStore.load === 'function'
       });
     });
 
@@ -806,12 +806,12 @@ export class ModalCheckinSuccessComponent {
     return checkin?.pointsEarned || this.pointsBreakdown().reduce((sum, item) => sum + item.points, 0);
   });
 
-  // Personalized stats computations - now using NewCheckinStore's computed signals
+  // Personalized stats computations - now using CheckInStore's computed signals
   readonly totalCheckinsCount = computed(() => {
     const userId = this.authStore.uid();
     if (!userId) return 0;
 
-    const allCheckins = this.newCheckinStore.checkins();
+    const allCheckins = this.checkinStore.checkins();
     const userCheckins = allCheckins.filter(c => c.userId === userId);
 
     console.log('[ModalCheckinSuccess] totalCheckinsCount computed:', {
@@ -828,7 +828,7 @@ export class ModalCheckinSuccessComponent {
     const userId = this.authStore.uid();
     if (!userId) return 0;
 
-    const allCheckins = this.newCheckinStore.checkins();
+    const allCheckins = this.checkinStore.checkins();
     const userCheckins = allCheckins.filter(c => c.userId === userId);
     const uniquePubIds = new Set(userCheckins.map(c => c.pubId));
 
@@ -845,7 +845,7 @@ export class ModalCheckinSuccessComponent {
 
   readonly isFirstTimeAtPub = computed(() => {
     const currentPubId = this.data().pub?.id;
-    const allCheckins = this.newCheckinStore.checkins();
+    const allCheckins = this.checkinStore.checkins();
     const userId = this.authStore.uid();
 
     if (!currentPubId || !userId) {
@@ -876,7 +876,7 @@ export class ModalCheckinSuccessComponent {
     const userId = this.authStore.uid();
     if (!currentPubId || !userId) return 0;
 
-    const userCheckins = this.newCheckinStore.checkins().filter(
+    const userCheckins = this.checkinStore.checkins().filter(
       c => c.userId === userId && c.pubId === currentPubId
     );
     return userCheckins.length;
@@ -886,7 +886,7 @@ export class ModalCheckinSuccessComponent {
     const userId = this.authStore.uid();
     if (!userId) return 0;
 
-    const userCheckins = this.newCheckinStore.checkins()
+    const userCheckins = this.checkinStore.checkins()
       .filter(c => c.userId === userId)
       .sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis());
 

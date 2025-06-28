@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { FirestoreCrudService } from '../../shared/data-access/firestore-crud.service';
 import { Observable } from 'rxjs';
 import type { Pub } from '../utils/pub.models';
-import type { CheckIn } from '../../check-in/utils/check-in.models';
+import type { CheckIn } from '@check-in/utils/check-in.models';
 import { FirestoreDataConverter, collection, getDocs, arrayUnion, increment, serverTimestamp, Timestamp } from 'firebase/firestore';
 import { earliest, latest } from '../../shared/utils/date-utils';
 
@@ -43,7 +43,7 @@ export class PubService extends FirestoreCrudService<Pub> {
    */
   async updatePubStats(pubId: string, checkin: Omit<CheckIn, 'id'>, checkinId: string, currentPub: Pub, userId: string): Promise<void> {
     console.log('[PubService] Updating pub stats for:', pubId);
-    
+
     const checkinDate = this.normalizeDate(checkin.timestamp);
 
     await this.updateDoc<Pub>(`${this.path}/${pubId}`, {
@@ -65,7 +65,7 @@ export class PubService extends FirestoreCrudService<Pub> {
    */
   async incrementCheckinCount(pubId: string): Promise<void> {
     console.log('[PubService] Incrementing check-in count for:', pubId);
-    
+
     await this.updateDoc<Pub>(`${this.path}/${pubId}`, {
       checkinCount: increment(1) as any,
       lastCheckinAt: serverTimestamp() as any,
@@ -79,7 +79,7 @@ export class PubService extends FirestoreCrudService<Pub> {
    */
   async updatePubHistory(pubId: string, userId: string, timestamp: Timestamp): Promise<void> {
     console.log('[PubService] Adding to pub check-in history:', { pubId, userId });
-    
+
     await this.updateDoc<Pub>(`${this.path}/${pubId}`, {
       checkinHistory: arrayUnion({
         userId,

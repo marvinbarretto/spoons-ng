@@ -10,7 +10,7 @@
  * DATA FLOW IN:
  * - AuthStore.user() changes → triggers loadOrCreateUser()
  * - PointsStore.awardPoints() → updates totalPoints via patchUser()
- * - NewCheckinStore data → computed via DataAggregatorService (no direct update needed)
+ * - CheckInStore data → computed via DataAggregatorService (no direct update needed)
  * - BadgeStore awards → updates badgeCount/badgeIds via updateBadgeSummary()
  * - LandlordStore → updates landlordCount/landlordPubIds via updateLandlordSummary()
  * 
@@ -71,7 +71,7 @@ export class UserStore {
 
   /**
    * REMOVED: pubsVisited computation moved to ScoreboardOrchestratorService
-   * @description This eliminates circular dependency between UserStore and NewCheckinStore.
+   * @description This eliminates circular dependency between UserStore and CheckInStore.
    * Use ScoreboardOrchestratorService.pubsVisited instead.
    */
 

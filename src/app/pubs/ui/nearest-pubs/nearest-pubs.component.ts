@@ -1,6 +1,6 @@
 import { Component, inject, input } from '@angular/core';
 import { Pub } from '../../utils/pub.models';
-import { NewCheckinStore } from '../../../new-checkin/data-access/new-checkin.store';
+import { CheckInStore } from '../../../check-in/data-access/check-in.store';
 import { computed } from '@angular/core';
 import { NearestPubsItemComponent } from "../nearest-pubs-item/nearest-pubs-item.component";
 import { BaseComponent } from '../../../shared/data-access/base.component';
@@ -15,7 +15,7 @@ export class NearestPubsComponent extends BaseComponent {
   readonly pubs = input.required<(Pub & { distance: number })[]>();
   readonly filter = input<'all' | 'checked-in' | 'not-checked-in'>('all');
 
-  private readonly checkinStore = inject(NewCheckinStore);
+  private readonly checkinStore = inject(CheckInStore);
   readonly userCheckins = this.checkinStore.userCheckins;
 
   readonly filteredPubs = computed(() => {

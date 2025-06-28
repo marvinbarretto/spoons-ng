@@ -1,5 +1,5 @@
 import { Timestamp } from 'firebase/firestore';
-import { CheckIn } from '../../check-in/utils/check-in.models';
+import { CheckIn } from '@check-in/utils/check-in.models';
 import { Pub } from '../../pubs/utils/pub.models';
 import { User } from '../../users/utils/user.model';
 

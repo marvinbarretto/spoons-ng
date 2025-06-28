@@ -1,19 +1,19 @@
 import { TestBed } from '@angular/core/testing';
 
-import { NewCheckinStore } from './new-checkin.store';
+import { CheckInStore } from './check-in.store';
 import { AuthStore } from '../../auth/data-access/auth.store';
 import { PointsStore } from '../../points/data-access/points.store';
 import { PubStore } from '../../pubs/data-access/pub.store';
-import { NewCheckinService } from './new-checkin.service';
+import { CheckInService } from './check-in.service';
 
-describe('NewCheckinStore', () => {
-  let store: NewCheckinStore;
-  let mockService: jest.Mocked<NewCheckinService>;
+describe('CheckInStore', () => {
+  let store: CheckInStore;
+  let mockService: jest.Mocked<CheckInService>;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    store = TestBed.inject(NewCheckinStore);
-    mockService = TestBed.inject(NewCheckinService) as jest.Mocked<NewCheckinService>;
+    store = TestBed.inject(CheckInStore);
+    mockService = TestBed.inject(CheckInService) as jest.Mocked<CheckInService>;
   });
 
 
@@ -32,8 +32,8 @@ describe('NewCheckinStore', () => {
 
       TestBed.configureTestingModule({
         providers: [
-          NewCheckinStore,
-          { provide: NewCheckinService, useValue: mockService },
+          CheckInStore,
+          { provide: CheckInService, useValue: mockService },
           { provide: PointsStore, useValue: pointsStoreMock },
           { provide: AuthStore, useValue: authStoreMock },
           { provide: PubStore, useValue: pubStoreMock }
@@ -41,8 +41,8 @@ describe('NewCheckinStore', () => {
       });
 
       // Re-inject with new mocks
-      store = TestBed.inject(NewCheckinStore);
-      mockService = TestBed.inject(NewCheckinService) as jest.Mocked<NewCheckinService>;
+      store = TestBed.inject(CheckInStore);
+      mockService = TestBed.inject(CheckInService) as jest.Mocked<CheckInService>;
     });
 
     it('should handle complete success flow with points integration', async () => {
@@ -100,10 +100,10 @@ describe('NewCheckinStore', () => {
 
       // Assert - Home pub detection triggered
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('[NewCheckinStore] 🏠 First ever check-in detected!')
+        expect.stringContaining('[CheckInStore] 🏠 First ever check-in detected!')
       );
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining('[NewCheckinStore] 🏠 [TODO] Show overlay: "Is this your local pub?"')
+        expect.stringContaining('[CheckInStore] 🏠 [TODO] Show overlay: "Is this your local pub?"')
       );
 
       consoleSpy.mockRestore();
@@ -190,7 +190,7 @@ describe('NewCheckinStore', () => {
           }),
           isFirstEver: false,
           debugInfo: expect.objectContaining({
-            flow: 'NewCheckinStore',
+            flow: 'CheckInStore',
             userId: 'test-user-123',
             isFirstEver: false,
             totalCheckins: 3

@@ -1,27 +1,27 @@
 /**
  * @fileoverview PointsStore - Points calculation and transaction management
- * 
+ *
  * RESPONSIBILITIES:
  * - Points calculation algorithms and business logic
  * - Points transaction creation and persistence
  * - Recent transactions history for UI/debugging
  * - Coordinating with UserStore for display data sync
- * 
+ *
  * DATA FLOW:
- * - CheckinStore requests points award → calculates points → updates UserStore immediately
+ * - CheckInStore requests points award → calculates points → updates UserStore immediately
  * - Creates transaction records in Firestore for audit trail
  * - Provides transaction history for user activity display
- * 
+ *
  * CRITICAL COORDINATION:
  * - MUST update UserStore.totalPoints immediately after awarding points
  * - UserStore becomes single source of truth for scoreboard display
  * - This store provides the "operational" layer, UserStore provides "display" layer
- * 
+ *
  * AUTH-REACTIVE PATTERN:
  * - Auto-loads when user authenticates
  * - Clears data on logout to prevent stale state
  * - Deduplicates loads for same user to prevent race conditions
- * 
+ *
  * @architecture Operations store that coordinates with UserStore for display consistency
  */
 import { Injectable, signal, computed, inject, effect } from '@angular/core';
@@ -236,7 +236,7 @@ export class PointsStore {
    * 4. ✅ IMMEDIATELY updates UserStore.totalPoints (for scoreboard)
    * 5. Updates user document in Firestore
    * 6. Adds transaction to local history
-   * 
+   *
    * @throws Error if user not authenticated or points award already in progress
    * @sideEffects Updates UserStore.totalPoints immediately for real-time UI
    */

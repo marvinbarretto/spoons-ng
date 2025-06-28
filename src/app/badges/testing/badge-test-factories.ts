@@ -1,7 +1,7 @@
 // badges/testing/badge-test-factories.ts
 import { Timestamp } from 'firebase/firestore';
 import type { BadgeTriggerContext, EarnedBadge, Badge } from '../utils/badge.model';
-import type { CheckIn } from '../../check-in/utils/check-in.models';
+import type { CheckIn } from '@check-in/utils/check-in.models';
 /**
  * Test data factories for badge-related testing.
  * Provides consistent, reusable test data creation methods.

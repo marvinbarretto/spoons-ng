@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { BaseComponent } from '../../../shared/data-access/base.component';
 import { PubStore } from '../../data-access/pub.store';
-import { NewCheckinStore } from '../../../new-checkin/data-access/new-checkin.store';
+import { CheckInStore } from '../../../check-in/data-access/check-in.store';
 import { UserStore } from '@users/data-access/user.store';
 import { PubCardComponent } from '../../ui/pub-card/pub-card.component';
 import type { Pub } from '../../utils/pub.models';
@@ -20,7 +20,7 @@ type FilterOption = 'all' | 'visited' | 'unvisited' | 'nearby';
 export class PubListComponent extends BaseComponent implements OnInit {
   // ✅ Store dependencies
   protected readonly pubStore = inject(PubStore);
-  private readonly checkinStore = inject(NewCheckinStore);
+  private readonly checkinStore = inject(CheckInStore);
   private readonly userStore = inject(UserStore);
 
   // ✅ Local state

@@ -9,7 +9,7 @@ import { ViewportService } from '@shared/data-access/viewport.service';
 import { NearbyPubStore } from '@pubs/data-access/nearby-pub.store';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { CheckInModalService } from '@check-in/data-access/check-in-modal.service';
-import { NewCheckinStore } from '../../../new-checkin/data-access/new-checkin.store';
+import { CheckInStore } from '@/app/check-in/data-access/check-in.store';
 import { IconComponent } from '@shared/ui/icon/icon.component';
 
 type NavItem = {
@@ -17,7 +17,7 @@ type NavItem = {
   route?: string;
   iconName: string;
   isActive: boolean;
-  isNewCheckIn?: boolean;
+  isCheckin?: boolean;
   action?: () => void;
 };
 
@@ -31,8 +31,8 @@ type NavItem = {
       <nav class="footer-nav" role="navigation" aria-label="Main navigation">
         @for (item of navItems(); track item.label) {
 
-          @if (item.isNewCheckIn) {
-            <!-- ✅ Check-in button - uses NewCheckinStore -->
+          @if (item.isCheckin) {
+            <!-- ✅ Check-in button - uses CheckInStore -->
             <button
               class="nav-item nav-item--check-in"
               [class.nav-item--pulse]="canCheckIn()"
@@ -254,7 +254,7 @@ export class FooterNavComponent extends BaseComponent {
   private readonly nearbyPubStore = inject(NearbyPubStore);
   private readonly authStore = inject(AuthStore);
   private readonly checkInModalService = inject(CheckInModalService);
-  private readonly newCheckinStore = inject(NewCheckinStore);
+  private readonly checkinStore = inject(CheckInStore);
 
   // ✅ Input for modal dismiss callback
   readonly onModalDismissed = input<(() => void) | undefined>();
@@ -268,13 +268,13 @@ export class FooterNavComponent extends BaseComponent {
     super();
 
     effect(() => {
-      const results = this.newCheckinStore.checkinResults();
+      const results = this.checkinStore.checkinResults();
       if (results) {
         console.log('[FooterNavComponent] Check-in results received, showing modal:', results);
         this.checkInModalService.showCheckInResults(results, this.onModalDismissed());
         // Clear the results after handling
         setTimeout(() => {
-          this.newCheckinStore.clearCheckinResults();
+          this.checkinStore.clearCheckinResults();
         }, 100);
       }
     });
@@ -290,9 +290,9 @@ export class FooterNavComponent extends BaseComponent {
     return this.isMobile();
   });
 
-  // ✅ Check if user can check in (uses NewCheckinStore)
+  // ✅ Check if user can check in (uses CheckInStore)
   readonly canCheckIn = computed(() => {
-    return !!this.closestPub() && !!this.user() && !this.isCheckingIn() && !this.newCheckinStore.isProcessing();
+    return !!this.closestPub() && !!this.user() && !this.isCheckingIn() && !this.checkinStore.isProcessing();
   });
 
   // ✅ Navigation items with Material Symbols
@@ -314,7 +314,7 @@ export class FooterNavComponent extends BaseComponent {
         label: 'Check In',
         iconName: 'photo_camera',
         isActive: false, // New Check-in is not a route
-        isNewCheckIn: true
+        isCheckin: true
       },
       {
         label: 'Leaderboard',
@@ -336,7 +336,7 @@ export class FooterNavComponent extends BaseComponent {
     this.router.navigate(['/debug-carpet-camera']);
   }
 
-  // ✅ Handle check-in button click (uses NewCheckinStore)
+  // ✅ Handle check-in button click (uses CheckInStore)
   handleCheckIn(): void {
     if (!this.canCheckIn() || this.isCheckingIn()) {
       console.log('[FooterNav] Check-in not available');

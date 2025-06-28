@@ -1,6 +1,6 @@
 import { Component, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { EnhancedCarpetRecognitionService } from '../../check-in/data-access/enhanced-carpet-recognition.service';
+import { EnhancedCarpetRecognitionService } from '@check-in/data-access/enhanced-carpet-recognition.service';
 
 interface CarpetImageFile {
   name: string;
@@ -27,12 +27,12 @@ interface CarpetImageFile {
         <button (click)="scanForImages()" [disabled]="isScanning()" class="btn primary">
           {{ isScanning() ? 'Scanning...' : 'Scan for Images' }}
         </button>
-        
+
         @if (images().length > 0) {
           <button (click)="compressAllImages()" [disabled]="isCompressing()" class="btn secondary">
             {{ isCompressing() ? 'Compressing...' : 'Compress All to AVIF' }}
           </button>
-          
+
           <button (click)="processAllImages()" [disabled]="isProcessing()" class="btn secondary">
             {{ isProcessing() ? 'Processing...' : 'Analyze All Carpets' }}
           </button>
@@ -53,7 +53,7 @@ interface CarpetImageFile {
                   }
                 </div>
               </div>
-              
+
               @if (image.profile) {
                 <div class="profile-data">
                   <h4>Generated Profile:</h4>
@@ -239,7 +239,7 @@ export class CarpetAnalyzerComponent {
 
   async scanForImages() {
     this.isScanning.set(true);
-    
+
     try {
       // Try to find actual carpet image names
       const testNames = [
@@ -279,7 +279,7 @@ export class CarpetAnalyzerComponent {
 
   async compressAllImages() {
     this.isCompressing.set(true);
-    
+
     try {
       const images = this.images();
       for (const image of images) {
@@ -299,7 +299,7 @@ export class CarpetAnalyzerComponent {
 
   async processAllImages() {
     this.isProcessing.set(true);
-    
+
     try {
       const images = this.images();
       let processed = 0;
@@ -336,27 +336,27 @@ export class CarpetAnalyzerComponent {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.crossOrigin = 'anonymous';
-      
+
       img.onload = () => {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d')!;
-        
+
         // Resize to reasonable dimensions
         const maxWidth = 800;
         const maxHeight = 600;
-        
+
         let { width, height } = img;
         if (width > maxWidth || height > maxHeight) {
           const ratio = Math.min(maxWidth / width, maxHeight / height);
           width *= ratio;
           height *= ratio;
         }
-        
+
         canvas.width = width;
         canvas.height = height;
-        
+
         ctx.drawImage(img, 0, 0, width, height);
-        
+
         // Convert to AVIF with compression
         canvas.toBlob((blob) => {
           if (blob) {
@@ -368,7 +368,7 @@ export class CarpetAnalyzerComponent {
           }
         }, 'image/avif', 0.7); // 70% quality
       };
-      
+
       img.onerror = () => reject(new Error('Failed to load image'));
       img.src = url;
     });
@@ -383,7 +383,7 @@ export class CarpetAnalyzerComponent {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.crossOrigin = 'anonymous';
-      
+
       img.onload = async () => {
         canvas.width = img.width;
         canvas.height = img.height;
@@ -391,11 +391,11 @@ export class CarpetAnalyzerComponent {
 
         // Create a data URL from the canvas
         const dataUrl = canvas.toDataURL();
-        
+
         // Create video element from the image
         video.width = img.width;
         video.height = img.height;
-        
+
         try {
           // For now, return mock data based on the enhanced service structure
           const mockProfile = {
@@ -411,13 +411,13 @@ export class CarpetAnalyzerComponent {
               edgeDensity: 10 + Math.random() * 30
             }
           };
-          
+
           resolve(mockProfile);
         } catch (error) {
           reject(error);
         }
       };
-      
+
       img.onerror = () => reject(new Error('Failed to load image'));
       img.src = url;
     });
@@ -425,10 +425,10 @@ export class CarpetAnalyzerComponent {
 
   formatProfile(image: CarpetImageFile): string {
     if (!image.profile) return '';
-    
+
     const profile = image.profile.colorProfile;
     const texture = image.profile.textureFeatures;
-    
+
     return JSON.stringify({
       dominant: profile.dominant,
       variance: Math.round(profile.variance * 10) / 10,
@@ -440,13 +440,13 @@ export class CarpetAnalyzerComponent {
 
   generateDatabaseCode(): string {
     const processedImages = this.images().filter(img => img.processed);
-    
+
     const entries = processedImages.map(image => {
       const profile = image.profile.colorProfile;
       const texture = image.profile.textureFeatures;
       const pubId = image.name.replace(/\.[^/.]+$/, '').replace(/[^a-z0-9]/gi, '-').toLowerCase();
       const pubName = this.generatePubName(image.name);
-      
+
       return `  {
     pubId: '${pubId}',
     pubName: '${pubName}',

@@ -24,7 +24,6 @@ export default {
     '^@missions/(.*)$': '<rootDir>/src/app/missions/$1',
     '^@check-in/(.*)$': '<rootDir>/src/app/check-in/$1',
     '^@carpets/(.*)$': '<rootDir>/src/app/carpets/$1',
-    '^@new-checkin/(.*)$': '<rootDir>/src/app/new-checkin/$1',
     '^@badges/(.*)$': '<rootDir>/src/app/badges/$1',
     '^@users/(.*)$': '<rootDir>/src/app/users/$1',
     '^@landlord/(.*)$': '<rootDir>/src/app/landlord/$1'

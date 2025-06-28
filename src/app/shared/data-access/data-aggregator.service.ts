@@ -1,24 +1,24 @@
 /**
  * @fileoverview DataAggregatorService - Reactive data aggregation across multiple stores
- * 
+ *
  * PURPOSE:
  * - Aggregate data from multiple stores without circular dependencies
  * - Provide reactive computed signals for complex cross-store data
  * - Clean separation of concerns - no business logic, just data composition
  * - Scalable pattern for any multi-store data needs
- * 
+ *
  * CAPABILITIES:
  * - Scoreboard data aggregation
  * - User statistics computation
  * - Cross-store reactive signals
  * - Dependency-free data composition
- * 
+ *
  * PATTERN:
  * - Reads from multiple stores but doesn't create dependencies
  * - All methods return computed signals for reactivity
  * - Comprehensive console logging for debugging
  * - Simple, focused, testable
- * 
+ *
  * USAGE:
  * ```typescript
  * // In components
@@ -32,7 +32,7 @@ import { Injectable, inject, computed } from '@angular/core';
 import { AuthStore } from '../../auth/data-access/auth.store';
 import { UserStore } from '../../users/data-access/user.store';
 import { PointsStore } from '../../points/data-access/points.store';
-import { NewCheckinStore } from '../../new-checkin/data-access/new-checkin.store';
+import { CheckInStore } from '@check-in/data-access/check-in.store';
 import { PubStore } from '../../pubs/data-access/pub.store';
 import { DebugService } from '../utils/debug.service';
 
@@ -42,7 +42,7 @@ export class DataAggregatorService {
   private readonly authStore = inject(AuthStore);
   private readonly userStore = inject(UserStore);
   private readonly pointsStore = inject(PointsStore);
-  private readonly newCheckinStore = inject(NewCheckinStore);
+  private readonly checkinStore = inject(CheckInStore);
   private readonly pubStore = inject(PubStore);
   private readonly debug = inject(DebugService);
 
@@ -52,11 +52,11 @@ export class DataAggregatorService {
 
   /**
    * Compute pubsVisited from check-in data (eliminates circular dependency)
-   * @description Gets unique pub count from NewCheckinStore for current user
+   * @description Gets unique pub count from CheckInStore for current user
    */
   readonly pubsVisited = computed(() => {
     const currentUser = this.authStore.user();
-    
+
     console.log('🔍 [DataAggregator] === COMPUTING PUBS VISITED ===');
     console.log('🔍 [DataAggregator] Current user:', {
       hasUser: !!currentUser,
@@ -64,19 +64,19 @@ export class DataAggregatorService {
       isAnonymous: currentUser?.isAnonymous,
       timestamp: new Date().toISOString()
     });
-    
+
     if (!currentUser) {
       console.log('❌ [DataAggregator] No current user - returning 0 pubs visited');
       return 0;
     }
-    
-    // Get check-ins for current user from NewCheckinStore (cached data)
-    const checkins = this.newCheckinStore.checkins();
+
+    // Get check-ins for current user from CheckInStore (cached data)
+    const checkins = this.checkinStore.checkins();
     const userCheckins = checkins.filter(checkin => checkin.userId === currentUser.uid);
     const uniquePubIds = new Set(userCheckins.map(checkin => checkin.pubId));
-    
+
     const pubCount = uniquePubIds.size;
-    
+
     console.log('📊 [DataAggregator] PubsVisited DETAILED BREAKDOWN:', {
       totalCheckinsInSystem: checkins.length,
       userSpecificCheckins: userCheckins.length,
@@ -87,20 +87,20 @@ export class DataAggregatorService {
         timestamp: c.timestamp.toDate().toISOString(),
         userId: c.userId?.slice(0, 8)
       })),
-      newCheckinStoreLoading: this.newCheckinStore.loading(),
-      newCheckinStoreError: this.newCheckinStore.error()
+      checkinStoreLoading: this.checkinStore.loading(),
+      checkinStoreError: this.checkinStore.error()
     });
-    
+
     // Additional verification logging
     if (userCheckins.length > 0 && pubCount === 0) {
       console.warn('⚠️ [DataAggregator] ANOMALY: User has check-ins but 0 unique pubs!');
       console.warn('⚠️ [DataAggregator] Checkin pub IDs:', userCheckins.map(c => c.pubId));
     }
-    
+
     if (pubCount > 0) {
       console.log('✅ [DataAggregator] Successfully calculated pubs visited:', pubCount);
     }
-    
+
     return pubCount;
   });
 
@@ -110,21 +110,21 @@ export class DataAggregatorService {
    */
   readonly scoreboardData = computed(() => {
     console.log('📊 [DataAggregator] === COMPUTING SCOREBOARD DATA ===');
-    
+
     const user = this.userStore.user();
     const currentUser = this.authStore.user();
-    const isLoading = this.userStore.loading() || this.newCheckinStore.loading() || this.pointsStore.loading();
-    
+    const isLoading = this.userStore.loading() || this.checkinStore.loading() || this.pointsStore.loading();
+
     console.log('📊 [DataAggregator] Store states:', {
       userStoreLoading: this.userStore.loading(),
-      newCheckinStoreLoading: this.newCheckinStore.loading(),
+      checkinStoreLoading: this.checkinStore.loading(),
       pointsStoreLoading: this.pointsStore.loading(),
       overallLoading: isLoading,
       hasUser: !!user,
       hasCurrentUser: !!currentUser,
       userId: currentUser?.uid?.slice(0, 8)
     });
-    
+
     const data = {
       totalPoints: this.userStore.totalPoints(),
       todaysPoints: this.pointsStore.todaysPoints?.() || 0, // Safe access
@@ -132,10 +132,10 @@ export class DataAggregatorService {
       totalPubs: this.pubStore.totalCount(),
       badgeCount: this.userStore.badgeCount(),
       landlordCount: this.userStore.landlordCount(),
-      totalCheckins: this.newCheckinStore.totalCheckins(),
+      totalCheckins: this.checkinStore.totalCheckins(),
       isLoading
     };
-    
+
     console.log('📊 [DataAggregator] === SCOREBOARD DATA FINAL ===', {
       totalPoints: data.totalPoints,
       todaysPoints: data.todaysPoints,
@@ -144,15 +144,15 @@ export class DataAggregatorService {
       landlordCount: data.landlordCount,
       totalCheckins: data.totalCheckins,
       isLoading: data.isLoading,
-      
+
       // Additional debugging
       userStorePubsFromObject: 'N/A - checkedInPubIds removed',
-      newCheckinStoreTotalCheckins: this.newCheckinStore.checkins().length,
+      checkinStoreTotalCheckins: this.checkinStore.checkins().length,
       pubsVisitedFromDataAggregator: data.pubsVisited
     });
-    
+
     // DataAggregatorService is now the single source of truth for pubsVisited
-    
+
     return data;
   });
 
@@ -163,18 +163,18 @@ export class DataAggregatorService {
    */
   getPubsVisitedForUser(userId: string): number {
     this.debug.standard('[DataAggregator] Computing pubs visited for specific user', { userId });
-    
-    const checkins = this.newCheckinStore.checkins();
+
+    const checkins = this.checkinStore.checkins();
     const userCheckins = checkins.filter(checkin => checkin.userId === userId);
     const uniquePubIds = new Set(userCheckins.map(checkin => checkin.pubId));
     const count = uniquePubIds.size;
-    
+
     this.debug.standard('[DataAggregator] User pub count computed', {
       userId,
       totalCheckins: userCheckins.length,
       uniquePubs: count
     });
-    
+
     return count;
   }
 
@@ -186,30 +186,30 @@ export class DataAggregatorService {
    */
   hasVisitedPub(pubId: string, userId?: string): boolean {
     const targetUserId = userId || this.authStore.user()?.uid;
-    
+
     this.debug.extreme('[DataAggregator] Checking if user visited pub', {
       pubId,
       userId: targetUserId,
       usingCurrentUser: !userId
     });
-    
+
     if (!targetUserId) {
       this.debug.standard('[DataAggregator] No user ID available for pub visit check');
       return false;
     }
-    
-    const checkins = this.newCheckinStore.checkins();
-    const hasVisited = checkins.some(checkin => 
+
+    const checkins = this.checkinStore.checkins();
+    const hasVisited = checkins.some(checkin =>
       checkin.userId === targetUserId && checkin.pubId === pubId
     );
-    
+
     this.debug.extreme('[DataAggregator] Pub visit check result', {
       pubId,
       userId: targetUserId,
       hasVisited,
       totalCheckins: checkins.length
     });
-    
+
     return hasVisited;
   }
 
@@ -221,28 +221,28 @@ export class DataAggregatorService {
    */
   getVisitCountForPub(pubId: string, userId?: string): number {
     const targetUserId = userId || this.authStore.user()?.uid;
-    
+
     this.debug.extreme('[DataAggregator] Getting visit count for pub', {
       pubId,
       userId: targetUserId
     });
-    
+
     if (!targetUserId) {
       this.debug.standard('[DataAggregator] No user ID available for visit count');
       return 0;
     }
-    
-    const checkins = this.newCheckinStore.checkins();
-    const visitCount = checkins.filter(checkin => 
+
+    const checkins = this.checkinStore.checkins();
+    const visitCount = checkins.filter(checkin =>
       checkin.userId === targetUserId && checkin.pubId === pubId
     ).length;
-    
+
     this.debug.extreme('[DataAggregator] Visit count computed', {
       pubId,
       userId: targetUserId,
       visitCount
     });
-    
+
     return visitCount;
   }
 
@@ -252,15 +252,15 @@ export class DataAggregatorService {
    */
   readonly userSummary = computed(() => {
     this.debug.standard('[DataAggregator] Computing userSummary');
-    
+
     const user = this.userStore.user();
     const currentUser = this.authStore.user();
-    
+
     if (!user || !currentUser) {
       this.debug.standard('[DataAggregator] No user data available for summary');
       return null;
     }
-    
+
     const summary = {
       profile: {
         uid: user.uid,
@@ -272,7 +272,7 @@ export class DataAggregatorService {
       stats: {
         totalPoints: this.userStore.totalPoints(),
         pubsVisited: this.pubsVisited(),
-        totalCheckins: this.newCheckinStore.totalCheckins(),
+        totalCheckins: this.checkinStore.totalCheckins(),
         badgeCount: this.userStore.badgeCount(),
         landlordCount: this.userStore.landlordCount()
       },
@@ -281,14 +281,14 @@ export class DataAggregatorService {
         recentCheckins: this.getRecentCheckinsForUser(user.uid, 5)
       }
     };
-    
+
     this.debug.standard('[DataAggregator] UserSummary computed', {
       uid: summary.profile.uid,
       totalPoints: summary.stats.totalPoints,
       pubsVisited: summary.stats.pubsVisited,
       recentCheckinsCount: summary.activity.recentCheckins.length
     });
-    
+
     return summary;
   });
 
@@ -300,20 +300,20 @@ export class DataAggregatorService {
    */
   getRecentCheckinsForUser(userId: string, limit: number = 10) {
     this.debug.extreme('[DataAggregator] Getting recent check-ins', { userId, limit });
-    
-    const checkins = this.newCheckinStore.checkins();
+
+    const checkins = this.checkinStore.checkins();
     const userCheckins = checkins
       .filter(checkin => checkin.userId === userId)
       .sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis())
       .slice(0, limit);
-    
+
     this.debug.extreme('[DataAggregator] Recent check-ins retrieved', {
       userId,
       totalCheckins: checkins.length,
       userCheckins: userCheckins.length,
       recentCount: userCheckins.length
     });
-    
+
     return userCheckins;
   }
 }

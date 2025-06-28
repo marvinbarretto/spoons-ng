@@ -15,14 +15,14 @@ Add image format detection (AVIF → WebP → JPEG)
 Update capture methods to use new IndexedDB service
 Maintain same public API for smooth migration
 
-3. Integrate with NewCheckinStore 🔗
+3. Integrate with CheckInStore 🔗
 
 Add carpet detection step after validation passes
 Call CarpetCheckinIntegrationService
-Pass captured image key to NewCheckinService
+Pass captured image key to CheckInService
 Add extensive console logging for orchestration visibility
 
-4. Update NewCheckinService 📝
+4. Update CheckInService 📝
 
 Update createCheckin() to accept optional carpetImageKey
 Save the key with the CheckIn document
@@ -68,7 +68,7 @@ Clean up old localStorage entries
 
 IndexedDB Service (foundation)
 DeviceCarpetStorageService refactor
-NewCheckinStore integration
+CheckInStore integration
 CheckIn model update
 Homepage widget (verify it works)
 UI components (polish later)

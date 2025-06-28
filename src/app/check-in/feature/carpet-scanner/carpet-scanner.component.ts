@@ -10,7 +10,7 @@ import { CarpetSuccessComponent } from '../../ui/carpet-success/carpet-success.c
 import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-carpet-storage.service';
 import { DEV_FEATURES, DESKTOP_TESTING_DELAY, LLM_TO_PHOTO_DELAY } from '@shared/utils/dev-mode.constants';
 import { CarpetPhotoData, PhotoStats } from '@shared/utils/carpet-photo.models';
-import { NewCheckinStore } from '../../../new-checkin/data-access/new-checkin.store';
+import { CheckInStore } from '../../../check-in/data-access/check-in.store';
 import { CheckInModalService } from '../../data-access/check-in-modal.service';
 import { PubStore } from '../../../pubs/data-access/pub.store';
 
@@ -27,7 +27,7 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
   private readonly _cameraService = inject(CameraService);
   private readonly _platform = inject(SsrPlatformService);
   private readonly photoStorage = inject(DeviceCarpetStorageService);
-  private readonly newCheckinStore = inject(NewCheckinStore);
+  private readonly checkinStore = inject(CheckInStore);
   private readonly checkInModalService = inject(CheckInModalService);
   private readonly pubStore = inject(PubStore);
 
@@ -120,7 +120,7 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
         try {
           // First trigger LLM detection
           await this._carpetService.triggerLLMDetection();
-          
+
           // Wait for LLM response, then capture photo
           setTimeout(async () => {
             console.log('🧪 [DEV-MODE] Now forcing photo capture after LLM');
@@ -385,7 +385,7 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
     // Step 4: Show pub information after all observations
     const storyDelay = 2500; // 2.5 seconds per story
     const totalStoryTime = 3000 + (this.storyArray.length * storyDelay);
-    
+
     // Add mystique before revealing pub name
     this.storyTimeouts.push(setTimeout(() => {
       this.storyMessage.set('✨ Discovering your location...');
@@ -469,8 +469,8 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
       return `🍺 Welcome to ${data.pubName}!`;
     }
 
-    // Check if we can get pub info from newCheckinStore
-    const pubId = this.newCheckinStore?.needsCarpetScan();
+    // Check if we can get pub info from checkinStore
+    const pubId = this.checkinStore?.needsCarpetScan();
     if (pubId && typeof pubId === 'string') {
       // Get pub details from PubStore using the pubId
       const pub = this.pubStore.get(pubId);
@@ -513,13 +513,13 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
 
     // Watch for check-in results
     const checkResults = () => {
-      const results = this.newCheckinStore.checkinResults();
+      const results = this.checkinStore.checkinResults();
       if (results) {
         console.log('🎉 [CarpetScanner] Check-in results ready, keeping scanner open for modal');
 
         // Don't show modal here - let FooterNav handle it
         // Just keep the scanner open with the blurred background
-        
+
         // DON'T clear results - let FooterNav handle it
 
         return true;

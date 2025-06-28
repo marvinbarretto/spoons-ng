@@ -12,7 +12,7 @@ import { AuthStore } from '@auth/data-access/auth.store';
 import { UserStore } from '@users/data-access/user.store';
 import { PubStore } from '@pubs/data-access/pub.store';
 import { NearbyPubStore } from '@pubs/data-access/nearby-pub.store';
-import { NewCheckinStore } from '@new-checkin/data-access/new-checkin.store';
+import { CheckInStore } from '@/app/check-in/data-access/check-in.store';
 import { LandlordStore } from '@landlord/data-access/landlord.store';
 import { BadgeStore } from '@badges/data-access/badge.store';
 
@@ -33,7 +33,7 @@ export class DevDebugComponent extends BaseComponent {
   protected readonly userStore = inject(UserStore);
   protected readonly pubStore = inject(PubStore);
   protected readonly nearbyPubStore = inject(NearbyPubStore);
-  protected readonly checkinStore = inject(NewCheckinStore);
+  protected readonly checkinStore = inject(CheckInStore);
   protected readonly landlordStore = inject(LandlordStore);
   protected readonly badgeStore = inject(BadgeStore);
 
@@ -247,20 +247,20 @@ export class DevDebugComponent extends BaseComponent {
       }
 
       // 3. Calculate results
-      const firestoreDeleted = firestoreResults.users.deletedCount + 
-        firestoreResults.checkIns.deletedCount + 
-        firestoreResults.landlords.deletedCount + 
+      const firestoreDeleted = firestoreResults.users.deletedCount +
+        firestoreResults.checkIns.deletedCount +
+        firestoreResults.landlords.deletedCount +
         firestoreResults.earnedBadges.deletedCount;
-      const firestoreSuccess = firestoreResults.users.success && 
-        firestoreResults.checkIns.success && 
-        firestoreResults.landlords.success && 
+      const firestoreSuccess = firestoreResults.users.success &&
+        firestoreResults.checkIns.success &&
+        firestoreResults.landlords.success &&
         firestoreResults.earnedBadges.success;
       const overallSuccess = firestoreSuccess && indexedDbSuccess;
 
       this.lastCleanupResult.set({
         success: overallSuccess,
         deletedCount: firestoreDeleted,
-        error: overallSuccess ? undefined : 
+        error: overallSuccess ? undefined :
           `${!firestoreSuccess ? 'Firestore cleanup issues. ' : ''}${!indexedDbSuccess ? `IndexedDB error: ${indexedDbError}` : ''}`
       });
 
@@ -272,10 +272,10 @@ export class DevDebugComponent extends BaseComponent {
       this.userStore.reset();
       this.checkinStore.reset();
       this.landlordStore.reset();
-      
+
       // For badge store, also clear the cache to ensure complete reset
       this.badgeStore.reset();
-      
+
       // Force reload badge definitions but clear earned badges
       setTimeout(() => {
         this.badgeStore.loadDefinitions();

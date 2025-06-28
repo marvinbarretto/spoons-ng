@@ -1,7 +1,7 @@
 // src/app/carpets/data-access/dynamic-carpet-matcher.service.ts
 import { Injectable, signal, computed } from '@angular/core';
 import type { CapturedFeatures, MatchResult } from './carpet-reference.types';
-import { CarpetConfidenceConfig } from '../../check-in/data-access/carpet-confidence-config';
+import { CarpetConfidenceConfig } from '@check-in/data-access/carpet-confidence-config';
 
 @Injectable({ providedIn: 'root' })
 export class DynamicCarpetMatcherService {

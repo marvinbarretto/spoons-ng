@@ -3,7 +3,7 @@ import { Component, computed, inject, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { PubStore } from '../../data-access/pub.store';
-import { NewCheckinStore } from '@new-checkin/data-access/new-checkin.store';
+import { CheckInStore } from '@/app/check-in/data-access/check-in.store';
 import { UserStore } from '@users/data-access/user.store';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { LocationService } from '@shared/data-access/location.service';
@@ -375,7 +375,7 @@ import { calculateDistance } from '@shared/utils/location.utils';
 export class PubDetailComponent extends BaseComponent {
   // ✅ Store dependencies
   private readonly pubStore = inject(PubStore);
-  private readonly checkinStore = inject(NewCheckinStore);
+  private readonly checkinStore = inject(CheckInStore);
   private readonly userStore = inject(UserStore);
   private readonly authStore = inject(AuthStore);
   private readonly locationService = inject(LocationService);
