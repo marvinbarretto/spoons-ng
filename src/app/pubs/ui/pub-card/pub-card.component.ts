@@ -59,19 +59,21 @@ import type { Pub } from '../../utils/pub.models';
     .pub-card {
       display: block;
       padding: 1rem;
-      background: var(--color-surface);
-      border: 1px solid var(--color-border);
+      background: var(--background-lighter);
+      border: 1px solid var(--border);
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.2s ease;
       position: relative;
-      box-shadow: 0 1px 3px var(--color-shadow);
+      box-shadow: var(--shadow);
+      color: var(--text);
     }
 
     .pub-card:hover {
-      border-color: var(--color-primary);
-      box-shadow: 0 4px 16px var(--color-shadow);
+      border-color: var(--accent);
+      box-shadow: var(--shadow);
       transform: translateY(-1px);
+      background: var(--background-lightest);
     }
 
     .pub-card:active {
@@ -84,8 +86,8 @@ import type { Pub } from '../../utils/pub.models';
     }
 
     .pub-card--selected {
-      border-color: var(--color-primary);
-      background: var(--color-surfaceElevated);
+      border-color: var(--accent);
+      background: var(--background-lightest);
     }
 
     .pub-card__checkbox {
@@ -106,7 +108,7 @@ import type { Pub } from '../../utils/pub.models';
     .pub-card__title {
       font-size: 1.125rem;
       font-weight: 600;
-      color: var(--color-text);
+      color: var(--text);
       margin: 0;
       line-height: 1.3;
       flex: 1;
@@ -122,13 +124,13 @@ import type { Pub } from '../../utils/pub.models';
     }
 
     .pub-card__badge--success {
-      background: var(--color-success);
-      color: var(--color-successText);
+      background: var(--success);
+      color: var(--background);
     }
 
     .pub-card__badge--info {
-      background: var(--color-info);
-      color: var(--color-infoText);
+      background: var(--info);
+      color: var(--background);
     }
 
     .pub-card__content {
@@ -139,21 +141,21 @@ import type { Pub } from '../../utils/pub.models';
 
     .pub-card__address {
       font-size: 0.875rem;
-      color: var(--color-textSecondary);
+      color: var(--text-secondary);
       margin: 0;
       line-height: 1.4;
     }
 
     .pub-card__location {
       font-size: 0.875rem;
-      color: var(--color-textSecondary);
+      color: var(--text-secondary);
       margin: 0;
       font-style: italic;
     }
 
     .pub-card__distance {
       font-size: 0.75rem;
-      color: var(--color-textSecondary);
+      color: var(--text-muted);
       margin: 0;
       display: flex;
       align-items: center;
@@ -162,15 +164,16 @@ import type { Pub } from '../../utils/pub.models';
 
     .pub-card__checkins {
       font-size: 0.75rem;
-      color: var(--color-textSecondary);
+      color: var(--success);
       margin: 0;
+      font-weight: 500;
     }
 
     .pub-card__debug {
       margin-top: 0.75rem;
       padding: 0.5rem;
-      background: var(--color-background);
-      border: 1px solid var(--color-border);
+      background: var(--background-darker);
+      border: 1px solid var(--border);
       border-radius: 4px;
       font-size: 0.75rem;
     }
@@ -178,13 +181,13 @@ import type { Pub } from '../../utils/pub.models';
     .pub-card__debug summary {
       cursor: pointer;
       font-weight: 500;
-      color: var(--color-textSecondary);
+      color: var(--text-secondary);
     }
 
     .pub-card__debug pre {
       margin: 0.5rem 0 0 0;
       padding: 0.5rem;
-      background: var(--color-surface);
+      background: var(--background);
       border-radius: 4px;
       overflow-x: auto;
       font-size: 0.6rem;
@@ -195,7 +198,7 @@ import type { Pub } from '../../utils/pub.models';
     @media (max-width: 640px) {
       .pub-card {
         /* Enhanced touch feedback */
-        -webkit-tap-highlight-color: var(--color-surfaceElevated);
+        -webkit-tap-highlight-color: var(--background-lightest);
       }
 
       .pub-card__title {
