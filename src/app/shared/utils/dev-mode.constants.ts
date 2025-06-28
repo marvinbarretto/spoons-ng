@@ -23,7 +23,7 @@
  *
  * @default false - MUST be false for production builds
  */
-export const LET_ANYTHING_THROUGH_MODE = false;
+export const LET_ANYTHING_THROUGH_MODE = true;
 
 /**
  * Modal navigation timeout (in milliseconds)

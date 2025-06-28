@@ -102,7 +102,7 @@ export class HomeComponent extends BaseComponent {
   protected readonly missionStore = inject(MissionStore, { optional: true });
   protected readonly pointsStore = inject(PointsStore);
   protected readonly newCheckinStore = inject(NewCheckinStore);
-  protected readonly dataAggregator = inject(DataAggregatorService);
+  protected readonly dataAggregatorService = inject(DataAggregatorService);
   protected readonly pubStore = inject(PubStore);
 
 
@@ -118,7 +118,7 @@ export class HomeComponent extends BaseComponent {
    * DataAggregatorService eliminates circular dependencies and provides
    * reactive computed signals for complex cross-store data.
    */
-  readonly scoreboardData = this.dataAggregator.scoreboardData;
+  readonly scoreboardData = this.dataAggregatorService.scoreboardData;
 
 
   readonly activeMissions = computed(() => {
@@ -134,7 +134,7 @@ export class HomeComponent extends BaseComponent {
         title: mission.name,
         description: mission.description,
         progress: mission.pubIds?.filter(id =>
-          this.dataAggregator.hasVisitedPub(id)
+          this.dataAggregatorService.hasVisitedPub(id)
         ).length || 0,
         total: mission.pubIds?.length || 0
       }))
@@ -143,7 +143,7 @@ export class HomeComponent extends BaseComponent {
 
   readonly isNewUser = computed(() => {
     const user = this.user();
-    return !user || this.dataAggregator.pubsVisited() === 0;
+    return !user || this.dataAggregatorService.pubsVisited() === 0;
   });
 
     // ✅ Placeholder for leaderboard position
@@ -152,7 +152,7 @@ export class HomeComponent extends BaseComponent {
       const user = this.user();
       if (!user) return null;
 
-      const pubs = this.dataAggregator.pubsVisited();
+      const pubs = this.dataAggregatorService.pubsVisited();
       const badges = user.badgeCount || 0;
 
       // Fake calculation for demo - higher activity = better position
@@ -282,7 +282,7 @@ handleOpenProfile(): void {
       uid: user.uid,
       displayName: user.displayName,
       isAnonymous: user.isAnonymous,
-      pubsVisited: this.dataAggregator.pubsVisited(),
+      pubsVisited: this.dataAggregatorService.pubsVisited(),
       badges: user.badgeCount || 0,
       missions: user.joinedMissionIds?.length || 0
     };
