@@ -142,7 +142,7 @@ import type { Pub } from '@pubs/utils/pub.models';
 
     .selector-label {
       font-weight: 500;
-      color: var(--color-text-primary, #111827);
+      color: var(--text);
       font-size: 0.875rem;
       display: flex;
       align-items: center;
@@ -150,7 +150,7 @@ import type { Pub } from '@pubs/utils/pub.models';
     }
 
     .required {
-      color: var(--color-error, #ef4444);
+      color: var(--error);
     }
 
     .selector-container {
@@ -164,17 +164,18 @@ import type { Pub } from '@pubs/utils/pub.models';
     .search-input {
       width: 100%;
       padding: 0.75rem 2.5rem 0.75rem 1rem;
-      border: 1px solid var(--color-border, #e5e7eb);
+      border: 1px solid var(--border);
       border-radius: 8px;
       font-size: 0.875rem;
-      transition: border-color 0.2s ease;
-      background: var(--color-surface, #ffffff);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      background: var(--background-lighter);
+      color: var(--text);
     }
 
     .search-input:focus {
       outline: none;
-      border-color: var(--color-primary, #3b82f6);
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(var(--accent), 0.1);
     }
 
     .search-icon {
@@ -182,15 +183,15 @@ import type { Pub } from '@pubs/utils/pub.models';
       right: 0.75rem;
       top: 50%;
       transform: translateY(-50%);
-      color: var(--color-text-secondary, #6b7280);
+      color: var(--text-muted);
       pointer-events: none;
     }
 
     .selected-pubs {
       margin-top: 0.75rem;
-      border: 1px solid var(--color-border, #e5e7eb);
+      border: 1px solid var(--border);
       border-radius: 8px;
-      background: var(--color-gray-50, #f9fafb);
+      background: var(--background-darker);
     }
 
     .selected-header {
@@ -198,21 +199,21 @@ import type { Pub } from '@pubs/utils/pub.models';
       justify-content: space-between;
       align-items: center;
       padding: 0.75rem 1rem;
-      border-bottom: 1px solid var(--color-border, #e5e7eb);
-      background: var(--color-surface, #ffffff);
+      border-bottom: 1px solid var(--border);
+      background: var(--background-lighter);
       border-radius: 8px 8px 0 0;
     }
 
     .selected-count {
       font-size: 0.875rem;
       font-weight: 500;
-      color: var(--color-text-primary, #111827);
+      color: var(--text);
     }
 
     .clear-all-btn {
       background: none;
       border: none;
-      color: var(--color-error, #ef4444);
+      color: var(--error);
       font-size: 0.75rem;
       cursor: pointer;
       padding: 0.25rem 0.5rem;
@@ -221,7 +222,7 @@ import type { Pub } from '@pubs/utils/pub.models';
     }
 
     .clear-all-btn:hover {
-      background: var(--color-error-subtle, rgba(239, 68, 68, 0.1));
+      background: var(--background-darkest);
     }
 
     .selected-list {
@@ -235,8 +236,8 @@ import type { Pub } from '@pubs/utils/pub.models';
       align-items: center;
       justify-content: space-between;
       padding: 0.5rem 0.75rem;
-      background: var(--color-surface, #ffffff);
-      border: 1px solid var(--color-border, #e5e7eb);
+      background: var(--background-lighter);
+      border: 1px solid var(--border);
       border-radius: 6px;
       margin-bottom: 0.5rem;
       gap: 1rem;
@@ -248,19 +249,19 @@ import type { Pub } from '@pubs/utils/pub.models';
 
     .pub-name {
       font-weight: 500;
-      color: var(--color-text-primary, #111827);
+      color: var(--text);
       font-size: 0.875rem;
     }
 
     .pub-location {
-      color: var(--color-text-secondary, #6b7280);
+      color: var(--text-secondary);
       font-size: 0.75rem;
     }
 
     .remove-btn {
       background: none;
       border: none;
-      color: var(--color-text-secondary, #6b7280);
+      color: var(--text-secondary);
       font-size: 1.25rem;
       cursor: pointer;
       padding: 0.25rem;
@@ -275,8 +276,8 @@ import type { Pub } from '@pubs/utils/pub.models';
     }
 
     .remove-btn:hover {
-      background: var(--color-error-subtle, rgba(239, 68, 68, 0.1));
-      color: var(--color-error, #ef4444);
+      background: var(--background-darkest);
+      color: var(--error);
     }
 
     .dropdown {
@@ -284,10 +285,10 @@ import type { Pub } from '@pubs/utils/pub.models';
       top: 100%;
       left: 0;
       right: 0;
-      background: var(--color-surface, #ffffff);
-      border: 1px solid var(--color-border, #e5e7eb);
+      background: var(--background-lighter);
+      border: 1px solid var(--border);
       border-radius: 8px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      box-shadow: var(--shadow);
       z-index: 50;
       max-height: 300px;
       overflow: hidden;
@@ -299,19 +300,19 @@ import type { Pub } from '@pubs/utils/pub.models';
       justify-content: space-between;
       align-items: center;
       padding: 0.75rem 1rem;
-      border-bottom: 1px solid var(--color-border, #e5e7eb);
-      background: var(--color-gray-50, #f9fafb);
+      border-bottom: 1px solid var(--border);
+      background: var(--background-darker);
     }
 
     .dropdown-title {
       font-size: 0.75rem;
       font-weight: 500;
-      color: var(--color-text-primary, #111827);
+      color: var(--text);
     }
 
     .result-count {
       font-size: 0.75rem;
-      color: var(--color-text-secondary, #6b7280);
+      color: var(--text-secondary);
     }
 
     .dropdown-list {
@@ -326,7 +327,7 @@ import type { Pub } from '@pubs/utils/pub.models';
       padding: 0.75rem 1rem;
       cursor: pointer;
       transition: background-color 0.15s ease;
-      border-bottom: 1px solid var(--color-gray-100, #f3f4f6);
+      border-bottom: 1px solid var(--border);
     }
 
     .dropdown-item:last-child {
@@ -334,12 +335,12 @@ import type { Pub } from '@pubs/utils/pub.models';
     }
 
     .dropdown-item:hover {
-      background: var(--color-gray-50, #f9fafb);
+      background: var(--background-lightest);
     }
 
     .dropdown-item.selected {
-      background: var(--color-primary-subtle, rgba(59, 130, 246, 0.05));
-      border-bottom-color: var(--color-primary-subtle, rgba(59, 130, 246, 0.1));
+      background: var(--background-lightest);
+      border-bottom-color: var(--accent);
     }
 
     .pub-info {
@@ -358,24 +359,24 @@ import type { Pub } from '@pubs/utils/pub.models';
     }
 
     .selected-icon {
-      color: var(--color-success, #10b981);
+      color: var(--success);
       font-weight: bold;
     }
 
     .add-icon {
-      color: var(--color-primary, #3b82f6);
+      color: var(--accent);
       font-size: 1.125rem;
     }
 
     .dropdown-footer {
       padding: 0.5rem 1rem;
-      border-top: 1px solid var(--color-border, #e5e7eb);
-      background: var(--color-gray-50, #f9fafb);
+      border-top: 1px solid var(--border);
+      background: var(--background-darker);
     }
 
     .more-results {
       font-size: 0.75rem;
-      color: var(--color-text-secondary, #6b7280);
+      color: var(--text-secondary);
       text-align: center;
       display: block;
     }
@@ -391,31 +392,31 @@ import type { Pub } from '@pubs/utils/pub.models';
     }
 
     .no-results-text {
-      color: var(--color-text-secondary, #6b7280);
+      color: var(--text-secondary);
       font-size: 0.875rem;
     }
 
     .helper-text {
       font-size: 0.75rem;
-      color: var(--color-text-secondary, #6b7280);
+      color: var(--text-secondary);
     }
 
     .error-text {
       font-size: 0.75rem;
-      color: var(--color-error, #ef4444);
+      color: var(--error);
     }
 
     .debug-info {
       margin-top: 1rem;
       padding: 0.75rem;
-      background: var(--color-gray-50, #f9fafb);
-      border: 1px solid var(--color-border, #e5e7eb);
+      background: var(--background-darker);
+      border: 1px solid var(--border);
       border-radius: 6px;
       font-size: 0.75rem;
     }
 
     .debug-info pre {
-      background: var(--color-surface, #ffffff);
+      background: var(--background-lighter);
       padding: 0.5rem;
       border-radius: 4px;
       margin: 0.5rem 0 0;
