@@ -128,13 +128,13 @@ export class LLMService {
    */
   async isCarpet(imageData: string): Promise<boolean> {
     console.log('[LLMService] Checking if image contains carpet...');
-    
+
     try {
       const result = await this.detectCarpet(imageData);
       const isCarpet = result.success && result.data.isCarpet;
-      
+
       console.log(`[LLMService] Carpet detection result: ${isCarpet} (confidence: ${result.data.confidence}%)`);
-      
+
       return isCarpet;
     } catch (error) {
       console.error('[LLMService] Error in isCarpet:', error);
@@ -157,7 +157,7 @@ export class LLMService {
     if (this._cache.has(cacheKey)) {
       console.log('[LLMService] ✅ Cache hit for streaming carpet detection');
       const cachedResult = this._cache.get(cacheKey);
-      
+
       // Return cached result as a single chunk stream
       return {
         success: true,
@@ -174,7 +174,7 @@ export class LLMService {
 
       // Use generateContentStream for real-time responses
       const streamResult = await this._model.generateContentStream([prompt, imagePart]);
-      
+
       return {
         success: true,
         stream: await this.processCarpetStream(streamResult, cacheKey),
@@ -205,7 +205,7 @@ export class LLMService {
       for await (const chunk of streamResult.stream) {
         const chunkText = chunk.text();
         fullText += chunkText;
-        
+
         yield {
           text: chunkText,
           isComplete: false,
@@ -252,7 +252,7 @@ export class LLMService {
    */
   private async* createCachedStream(cachedResult: CarpetDetectionResult): AsyncGenerator<LLMStreamChunk> {
     const reasoningText = `Is Carpet: ${cachedResult.isCarpet ? 'Yes' : 'No'}\nConfidence: ${cachedResult.confidence}%\nReasoning: ${cachedResult.reasoning}`;
-    
+
     yield {
       text: reasoningText,
       isComplete: true,
@@ -360,10 +360,12 @@ export class LLMService {
     return `
       You're helping someone check into a pub by analyzing their carpet photo. Look at this image and determine if it shows a pub carpet or floor covering.
 
-      If you see a carpet, provide 3-4 engaging observations that would interest a pub visitor. Each should be a short, vivid description focusing on different aspects like:
-      - Colors and patterns ("Deep burgundy with intricate golden paisley swirls")
-      - Texture and wear ("Plush velvet pile softened by countless conversations")  
-      - Character and history ("Classic pub carpet that's seen decades of good times")
+      If you see a carpet, provide 3-4 engaging observations that would interest a pub visitor.
+      You want them to feel amazed that you have noticed the tinest details, colours, and from this you have been able to determine which pub they are in.
+
+     Each should be a short, vivid description focusing on different aspects like:
+      - Colors and patterns ("Deep burgundy squares, intricate golden paisley swirls, rich mahogany woodgrain")
+      - Character and history ("Modern, tradituional")
       - Atmosphere ("Creates that cozy traditional British pub feeling")
 
       If it's not a carpet, provide encouraging observations about what you do see.
