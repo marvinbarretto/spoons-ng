@@ -3,6 +3,7 @@ export const POINTS_CONFIG = {
     base: 5,
     firstTime: 10,
     firstEver: 25,
+    homePub: 3, // Bonus points for checking into your home pub
   },
 
   distance: {
@@ -29,5 +30,6 @@ export const POINTS_CONFIG = {
     landlord: 20,
     explorer: 15,
     local: 30,
+    homePubLoyalty: 5, // Bonus for frequent visits to home pub
   }
 } as const;

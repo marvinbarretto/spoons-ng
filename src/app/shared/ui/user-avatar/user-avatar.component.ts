@@ -1,5 +1,6 @@
 import { Component, input, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { User } from '../../../users/utils/user.model';
 
 export type UserAvatarData = {
   displayName: string;
@@ -13,9 +14,9 @@ export type UserAvatarData = {
   imports: [CommonModule],
   template: `
     <div class="user-avatar">
-      <img 
-        [src]="avatarUrl()" 
-        [alt]="displayName()" 
+      <img
+        [src]="avatarUrl()"
+        [alt]="displayName()"
         class="avatar"
         onerror="this.src='assets/avatars/npc.webp'"
       />
@@ -71,7 +72,7 @@ export type UserAvatarData = {
   `
 })
 export class UserAvatarComponent {
-  readonly user = input.required<UserAvatarData>();
+  readonly user = input.required<User>();
   readonly showName = input(true);
   readonly size = input<'small' | 'medium' | 'large'>('medium');
 
@@ -79,14 +80,14 @@ export class UserAvatarComponent {
 
   readonly avatarUrl = computed(() => {
     const user = this.user();
-    
+
     // Check if this user has a profile photo (Google users)
     if (user.photoURL) {
       return user.photoURL;
     }
 
     // Check if it's a real user (has email/displayName) vs anonymous
-    const isAnonymousUser = !user.email && !user.realDisplayName &&
+    const isAnonymousUser = !user.email && !user.displayName &&
                            (user.displayName?.includes('-') || user.displayName?.includes('(You)'));
 
     if (isAnonymousUser) {

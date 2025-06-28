@@ -26,4 +26,5 @@ export type CheckInPointsData = {
   currentStreak: number;
   hasPhoto: boolean;
   sharedSocial: boolean;
+  isHomePub: boolean; // Whether this is the user's designated home pub
 };

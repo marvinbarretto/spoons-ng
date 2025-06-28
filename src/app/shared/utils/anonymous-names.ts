@@ -41,7 +41,7 @@ function simpleHash(str: string): number {
  * @param uid - Firebase user UID
  * @returns A kebab-case pub-themed name like "tipsy-landlord-847"
  */
-export function generateAnonymousName(uid: string): string {
+export function generateRandomName(uid: string): string {
   if (!uid) {
     console.warn('[AnonymousNames] Empty UID provided');
     return 'unknown-user-000';

@@ -51,6 +51,12 @@ export class PointsService extends FirestoreCrudService<PointsTransaction> {
       reasons.push(`${POINTS_CONFIG.checkIn.firstTime} first visit to this pub`);
     }
 
+    // Home pub bonus
+    if (data.isHomePub) {
+      bonus += POINTS_CONFIG.checkIn.homePub;
+      reasons.push(`${POINTS_CONFIG.checkIn.homePub} home pub bonus`);
+    }
+
     // Distance bonus
     if (data.distanceFromHome >= POINTS_CONFIG.distance.minDistance) {
       const distanceBonus = Math.min(

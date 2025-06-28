@@ -9,7 +9,7 @@ import { ButtonComponent } from '@shared/ui/button/button.component';
       <div class="permission-icon">📍</div>
       <h1>Find Nearby Pubs</h1>
       <p class="subtitle">We need your location to show you the best pubs around</p>
-      
+
       <div class="location-importance">
         <div class="importance-item">
           <span class="icon">🍺</span>
@@ -35,7 +35,6 @@ import { ButtonComponent } from '@shared/ui/button/button.component';
       <div class="step-actions">
         <app-button
           variant="primary"
-          size="large"
           [loading]="isRequesting()"
           [disabled]="isRequesting()"
           (onClick)="enableLocation.emit()"

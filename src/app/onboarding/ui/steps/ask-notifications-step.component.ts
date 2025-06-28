@@ -9,7 +9,7 @@ import { ButtonComponent } from '@shared/ui/button/button.component';
       <div class="permission-icon">🔔</div>
       <h1>Stay in the Loop!</h1>
       <p class="subtitle">Get notified about new badges, achievements, and pub challenges</p>
-      
+
       <div class="permission-benefits">
         <div class="benefit-item">
           <span class="icon">🏆</span>
@@ -37,7 +37,6 @@ import { ButtonComponent } from '@shared/ui/button/button.component';
       <div class="step-actions">
         <app-button
           variant="primary"
-          size="large"
           (onClick)="enableNotifications.emit()"
         >
           Enable Notifications

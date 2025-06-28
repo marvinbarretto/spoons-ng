@@ -149,6 +149,13 @@ export class UserStore {
     const current = this._user();
     const authUser = this.authStore.user();
 
+    console.log('[UserStore] 🚀 updateProfile called with:', updates);
+    console.log('[UserStore] 🔍 Current user before update:', {
+      uid: current?.uid?.slice(0, 8),
+      onboardingCompleted: current?.onboardingCompleted,
+      displayName: current?.displayName
+    });
+
     if (!current || !authUser) {
       throw new Error('No user found');
     }
@@ -158,14 +165,22 @@ export class UserStore {
 
     // ✅ Optimistic update
     const updatedUser = { ...current, ...updates };
+    console.log('[UserStore] 📝 Setting optimistic update:', {
+      uid: updatedUser.uid?.slice(0, 8),
+      onboardingCompleted: updatedUser.onboardingCompleted,
+      displayName: updatedUser.displayName
+    });
     this._user.set(updatedUser);
 
     try {
       // ✅ Update Firestore user document
+      console.log('[UserStore] 💾 Updating Firestore document...');
       await this.userService.updateUser(current.uid, updates);
+      console.log('[UserStore] ✅ Firestore document updated');
 
       // ✅ Update Firebase Auth profile if display name or avatar changed
       if (updates.displayName || updates.photoURL) {
+        console.log('[UserStore] 🔄 Updating Firebase Auth profile...');
         const auth = getAuth();
         const fbUser = auth.currentUser;
         if (fbUser) {
@@ -173,12 +188,23 @@ export class UserStore {
             displayName: updates.displayName || fbUser.displayName,
             photoURL: updates.photoURL || fbUser.photoURL,
           });
+          console.log('[UserStore] ✅ Firebase Auth profile updated');
         }
       }
 
-      console.log('[UserStore] ✅ Profile updated');
+      console.log('[UserStore] ✅ Profile update completed successfully');
+      
+      // Verify the signal was updated
+      const finalUser = this._user();
+      console.log('[UserStore] 🔍 Final user state:', {
+        uid: finalUser?.uid?.slice(0, 8),
+        onboardingCompleted: finalUser?.onboardingCompleted,
+        displayName: finalUser?.displayName
+      });
+      
     } catch (error: any) {
       // ❌ Rollback optimistic update
+      console.log('[UserStore] ❌ Rolling back optimistic update due to error');
       this._user.set(current);
       this._error.set(error?.message || 'Failed to update profile');
       console.error('[UserStore] ❌ Profile update failed:', error);

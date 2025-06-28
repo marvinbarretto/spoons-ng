@@ -9,10 +9,12 @@ export type User = {
   isAnonymous: boolean;
   photoURL: string | null;
   joinedAt: string;
+  accentColor?: string;
 
   // Pub-related data
   streaks: Record<string, number>;
   joinedMissionIds: string[];
+  homePubId?: string; // User's designated home pub for bonus points
 
   // ✅ Badge summaries (for performance and quick queries)
   badgeCount: number;
@@ -29,6 +31,8 @@ export type User = {
 
   totalPoints?: number;  // ✅ Add this
 
+  // Onboarding flow
+  onboardingCompleted?: boolean; // Flag to track if user has completed initial setup
 
 };
 

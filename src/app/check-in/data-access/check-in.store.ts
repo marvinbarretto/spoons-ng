@@ -639,7 +639,9 @@ export class CheckInStore extends BaseStore<CheckIn> {
         hasPhoto: false,
         sharedSocial: false,
         // 🆕 Carpet bonus
-        hasCarpet
+        hasCarpet,
+        // TODO: Determine if this is user's home pub
+        isHomePub: false
       };
 
       console.log('[CheckInStore] 🎯 Points context data prepared:', pointsData);

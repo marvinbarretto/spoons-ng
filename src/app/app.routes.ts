@@ -12,36 +12,49 @@ export const appRoutes: Routes = [
   {
     path: '',
     component: HomeComponent,
+    data: { shell: 'dashboard' }
+  },
+  {
+    path: 'onboarding',
+    title: 'Welcome to Spooncount',
+    loadComponent: () =>
+      import('./onboarding/feature/onboarding/onboarding.component').then(m => m.OnboardingComponent),
+    data: { shell: 'fullscreen' }
   },
   {
     path: 'pubs',
     title: 'Pubs',
     loadChildren: () =>
       import('./pubs/data-access/pub.routes').then((m) => m.PUBS_ROUTES),
+    data: { shell: 'feature' }
   },
   {
     path: 'check-in/:pubId',
     title: 'Check In',
     loadComponent: () =>
-      import('./check-in/feature/check-in-page/check-in-page.component').then(m => m.CheckInPageComponent)
+      import('./check-in/feature/check-in-page/check-in-page.component').then(m => m.CheckInPageComponent),
+    data: { shell: 'fullscreen' }
   },
   {
     path: 'test-carpet',
     title: 'Test Carpet',
     loadComponent: () =>
       import('./check-in/feature/carpet-scanner/carpet-scanner.component')
-        .then(m => m.CarpetScannerComponent)
+        .then(m => m.CarpetScannerComponent),
+    data: { shell: 'fullscreen' }
   },
   {
     path: 'carpets',
     loadChildren: () =>
       import('./carpets/data-access/carpet.routes').then((m) => m.CARPETS_ROUTES),
+    data: { shell: 'feature' }
   },
   {
     path: 'dev/carpet-analyzer',
     loadComponent: () =>
       import('./dev/carpet-analyzer/carpet-analyzer.component')
-        .then(m => m.CarpetAnalyzerComponent)
+        .then(m => m.CarpetAnalyzerComponent),
+    data: { shell: 'fullscreen' }
   },
 
   {
@@ -49,41 +62,48 @@ export const appRoutes: Routes = [
     title: 'Missions',
     loadChildren: () =>
       import('./missions/data-access/mission.routes').then((m) => m.MISSIONS_ROUTES),
+    data: { shell: 'feature' }
   },
   {
     path: 'leaderboard',
     title: 'Leaderboard',
     loadChildren: () =>
       import('./leaderboard/data-access/leaderboard.routes').then((m) => m.LEADERBOARD_ROUTES),
+    data: { shell: 'feature' }
   },
   {
     path: 'admin/badges',
     loadChildren: () =>
       import('./badges/data-access/badge.routes').then((m) => m.BADGE_ROUTES),
+    data: { shell: 'feature' }
   },
   {
     path: 'admin/missions',
     loadComponent: () =>
       import('./missions/feature/mission-admin/mission-admin.component')
-        .then(m => m.MissionsAdminComponent)
+        .then(m => m.MissionsAdminComponent),
+    data: { shell: 'feature' }
   },
   {
     path: 'admin/missions/new',
     loadComponent: () =>
       import('./missions/feature/mission-form/mission-form.component')
-        .then(m => m.MissionFormComponent)
+        .then(m => m.MissionFormComponent),
+    data: { shell: 'feature' }
   },
   {
     path: 'admin/missions/:id/edit',
     loadComponent: () =>
       import('./missions/feature/mission-form/mission-form.component')
-        .then(m => m.MissionFormComponent)
+        .then(m => m.MissionFormComponent),
+    data: { shell: 'feature' }
   },
   {
     path: 'share',
     loadComponent: () =>
       import('./share/feature/share-container/share-container.component')
-        .then(m => m.ShareContainerComponent)
+        .then(m => m.ShareContainerComponent),
+    data: { shell: 'feature' }
   },
   {
     path: '**',

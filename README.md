@@ -97,6 +97,10 @@ events:v1
 - Fully PWA-enabled (via `ngsw-config.json`)
 - Railway deployment (Dockerized client & server)
 
+### Architecture Documentation
+- [CLAUDE.md](./CLAUDE.md) - Codebase guidance and conventions
+- [PATTERNS.md](./PATTERNS.md) - Architectural patterns and best practices
+
 ### Data Layer
 - `FirebaseService`: base Firestore access layer (planned)
 - `PubsService` (and future `UsersService`, etc.) extends it

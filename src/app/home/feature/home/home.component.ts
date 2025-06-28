@@ -24,6 +24,7 @@ import { OptimizedCarpetGridComponent, CarpetDisplayData } from '../../ui/optimi
 import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-carpet-storage.service';
 import { UserAvatarComponent } from "../../../shared/ui/user-avatar/user-avatar.component";
 import { NearestPubComponent } from '../../../widgets/nearest-pub/nearest-pub.component';
+import { LeaderboardWidgetComponent } from '../../../widgets/leaderboard/leaderboard-widget.component';
 
 
 @Component({
@@ -37,6 +38,7 @@ import { NearestPubComponent } from '../../../widgets/nearest-pub/nearest-pub.co
     OptimizedCarpetGridComponent,
     RouterModule,
     NearestPubComponent,
+    LeaderboardWidgetComponent,
 ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
@@ -57,13 +59,33 @@ export class HomeComponent extends BaseComponent {
 
     // Watch for auth changes and redirect brand new users to onboarding
     effect(() => {
-      const user = this.authStore.user();
+      const user = this.dataAggregatorService.user();
+      const currentUrl = this.router.url;
+      
+      console.log('[Home] 🔍 Onboarding check effect triggered:', {
+        hasUser: !!user,
+        userId: user?.uid?.slice(0, 8),
+        onboardingCompleted: user?.onboardingCompleted,
+        isNewUser: this.isNewUser(),
+        currentUrl,
+        isComingFromOnboarding: currentUrl.includes('/onboarding') || currentUrl === '/'
+      });
+      
+      // Prevent redirect loop: don't redirect if we're already coming from onboarding completion
+      if (currentUrl === '/' && user?.onboardingCompleted === true) {
+        console.log('[Home] ✅ User completed onboarding, staying on home page');
+        return;
+      }
       
       // Only redirect if we have a user and they haven't completed onboarding
-      if (user && !user.onboardingCompleted && this.isNewUser()) {
-        console.log('[Home] Brand new user detected, redirecting to onboarding');
+      if (user && !user.onboardingCompleted && this.isNewUser() && !currentUrl.includes('/onboarding')) {
+        console.log('[Home] 🚀 Brand new user detected, redirecting to onboarding');
         this.router.navigate(['/onboarding']);
         return;
+      }
+      
+      if (user?.onboardingCompleted) {
+        console.log('[Home] ✅ User has completed onboarding, staying on home');
       }
     });
 

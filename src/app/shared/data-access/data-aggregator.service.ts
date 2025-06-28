@@ -247,6 +247,40 @@ export class DataAggregatorService {
   }
 
   /**
+   * Aggregated user data (combines Auth + User store)
+   * @description Single source of truth for complete user data
+   */
+  readonly user = computed(() => {
+    this.debug.standard('[DataAggregator] Computing aggregated user');
+
+    const userProfile = this.userStore.user();
+    const authUser = this.authStore.user();
+
+    if (!userProfile || !authUser) {
+      this.debug.standard('[DataAggregator] No complete user data available');
+      return null;
+    }
+
+    const aggregatedUser = {
+      ...authUser,
+      ...userProfile,
+      // Ensure critical fields from UserStore take precedence
+      onboardingCompleted: userProfile.onboardingCompleted || false,
+      displayName: userProfile.displayName || authUser.displayName,
+      photoURL: userProfile.photoURL || authUser.photoURL
+    };
+
+    this.debug.standard('[DataAggregator] Aggregated user computed', {
+      uid: aggregatedUser.uid,
+      onboardingCompleted: aggregatedUser.onboardingCompleted,
+      displayName: aggregatedUser.displayName,
+      source: 'UserStore+AuthStore'
+    });
+
+    return aggregatedUser;
+  });
+
+  /**
    * User summary data aggregated from all stores
    * @description Complete user profile data for display
    */
@@ -267,7 +301,8 @@ export class DataAggregatorService {
         email: user.email,
         displayName: this.userStore.displayName(),
         avatarUrl: this.userStore.avatarUrl(),
-        isAnonymous: user.isAnonymous
+        isAnonymous: user.isAnonymous,
+        onboardingCompleted: user.onboardingCompleted || false
       },
       stats: {
         totalPoints: this.userStore.totalPoints(),

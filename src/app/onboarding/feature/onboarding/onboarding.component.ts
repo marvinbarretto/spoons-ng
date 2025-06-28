@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { BaseComponent } from '@shared/base/base.component';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { UserStore } from '@users/data-access/user.store';
+import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
 import { AvatarService } from '../../../shared/data-access/avatar.service';
 import { NotificationService } from '../../../shared/data-access/notification.service';
 import { LocationService } from '../../../shared/data-access/location.service';
@@ -166,6 +167,7 @@ type OnboardingStep =
 export class OnboardingComponent extends BaseComponent {
   private readonly authStore = inject(AuthStore);
   private readonly userStore = inject(UserStore);
+  private readonly dataAggregator = inject(DataAggregatorService);
   private readonly avatarService = inject(AvatarService);
   private readonly notificationService = inject(NotificationService);
   private readonly locationService = inject(LocationService);
@@ -183,8 +185,8 @@ export class OnboardingComponent extends BaseComponent {
   readonly locationGranted = signal(false);
   readonly locationRequired = signal(false);
 
-  // Reactive data
-  readonly user = this.authStore.user;
+  // Reactive data - Use DataAggregator for complete user state
+  readonly user = this.dataAggregator.user;
 
   // Computed properties
   readonly progressPercentage = computed(() => {
@@ -315,7 +317,7 @@ export class OnboardingComponent extends BaseComponent {
         throw new Error('No user found');
       }
 
-      console.log('[Onboarding] Completing onboarding with data:', {
+      console.log('[Onboarding] 🚀 Completing onboarding with data:', {
         displayName: this.displayName(),
         avatarId: this.selectedAvatarId(),
         homePubId: this.selectedHomePubId(),
@@ -323,17 +325,30 @@ export class OnboardingComponent extends BaseComponent {
       });
 
       // Save all onboarding data to user profile
-      await this.userStore.updateProfile({
+      const updateData = {
         displayName: this.displayName(),
         photoURL: this.getAvatarUrlById(this.selectedAvatarId()),
-        homePubId: this.selectedHomePubId(),
+        homePubId: this.selectedHomePubId() || undefined,
         onboardingCompleted: true
+      };
+      
+      console.log('[Onboarding] 📝 Updating user profile with:', updateData);
+      await this.userStore.updateProfile(updateData);
+
+      console.log('[Onboarding] ✅ User profile updated successfully');
+      
+      // Verify the update took effect
+      const updatedUser = this.user();
+      console.log('[Onboarding] 🔍 User after update:', {
+        userId: updatedUser?.uid?.slice(0, 8),
+        onboardingCompleted: updatedUser?.onboardingCompleted,
+        displayName: updatedUser?.displayName
       });
 
-      console.log('[Onboarding] ✅ Onboarding completed successfully');
-
+      console.log('[Onboarding] 🧭 Navigating to home page...');
       // Navigate to home
-      this.router.navigate(['/']);
+      await this.router.navigate(['/']);
+      console.log('[Onboarding] ✅ Navigation to home completed');
 
     } catch (error: any) {
       console.error('[Onboarding] ❌ Failed to complete onboarding:', error);
