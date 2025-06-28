@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.68](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.67...v0.0.68) (2025-06-28)
+
+
+### Features
+
+* Move users to onboarding if they are brand new ([f794b71](https://github.com/marvinbarretto/spoons-ng/commit/f794b71f3a5e28f75f734cc48c78db9a06bd6604))
+* NearestPub widget ([491c09f](https://github.com/marvinbarretto/spoons-ng/commit/491c09fa216d9e851261ef98f96444bb1e8c321b))
+* Stub onboarding process ([eba5cf7](https://github.com/marvinbarretto/spoons-ng/commit/eba5cf704c3a871a8f24ee9fd982b2627968e27d))
+* Stub onboarding screens ([7375ad1](https://github.com/marvinbarretto/spoons-ng/commit/7375ad1f16557bc359c1f89752e0f75ca43ffcf0))
+* tweak font ([50b5555](https://github.com/marvinbarretto/spoons-ng/commit/50b5555ca320a550e336457c7594594038d1d68f))
+* User Avatar widget ([4837172](https://github.com/marvinbarretto/spoons-ng/commit/48371722fc05cadb4847aa05815091ed86ab192e))
+
 ### [0.0.67](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.66...v0.0.67) (2025-06-28)
 
 
