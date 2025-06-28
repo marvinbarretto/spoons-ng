@@ -1,8 +1,8 @@
-// src/app/shared/data-access/base.store.ts
+// src/app/shared/base/base.store.ts
 import { signal, computed, inject, effect } from '@angular/core';
-import { ToastService } from './toast.service';
-import type { CollectionStore } from './store.contracts';
-import { AuthStore } from '../../auth/data-access/auth.store';
+import { ToastService } from '@shared/data-access/toast.service';
+import type { CollectionStore } from '@shared/data-access/store.contracts';
+import { AuthStore } from '@auth/data-access/auth.store';
 
 export abstract class BaseStore<T> implements CollectionStore<T> {
   protected readonly toastService = inject(ToastService);

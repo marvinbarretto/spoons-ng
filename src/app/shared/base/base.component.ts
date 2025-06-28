@@ -12,8 +12,8 @@ import { Router, NavigationEnd } from '@angular/router';
 import { filter, map } from 'rxjs/operators';
 import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SsrPlatformService } from '../utils/ssr/ssr-platform.service';
-import { ToastService } from './toast.service';
-import { UserProgressionService } from './user-progression.service';
+import { ToastService } from '../data-access/toast.service';
+import { UserProgressionService } from '../data-access/user-progression.service';
 
 @Component({
   template: '',
