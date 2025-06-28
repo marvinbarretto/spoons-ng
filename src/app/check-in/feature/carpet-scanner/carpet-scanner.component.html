@@ -10,8 +10,8 @@
 
   <!-- Main Scanner Interface -->
   @if (!showSuccessScreen()) {
-    <!-- Video Background (hidden during story mode) -->
-    @if (!progressiveStoryMode()) {
+    <!-- Video Background (hidden when photo captured) -->
+    @if (!capturedPhotoUrl()) {
       <video #videoElement
              class="video-feed"
              playsinline
@@ -20,8 +20,8 @@
       </video>
     }
     
-    <!-- Captured Photo Background (shown during story mode) -->
-    @if (progressiveStoryMode() && capturedPhotoUrl()) {
+    <!-- Captured Photo Background (shown when photo captured) -->
+    @if (capturedPhotoUrl()) {
       <div class="captured-photo-background"
            [style.background-image]="'url(' + capturedPhotoUrl() + ')'">
       </div>

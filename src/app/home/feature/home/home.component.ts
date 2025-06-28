@@ -134,8 +134,6 @@ export class HomeComponent extends BaseComponent {
         this.newCheckinStore.processCarpetScanResult(photoData.filename);
       }
 
-      // Hide scanner
-      this.showCarpetTest.set(false);
 
       console.log('✅ [Home] === CARPET PROCESSING COMPLETE ===');
 
@@ -155,6 +153,11 @@ export class HomeComponent extends BaseComponent {
       this.newCheckinStore.processCarpetScanResult(undefined);
     }
 
+    this.showCarpetTest.set(false);
+  }
+
+  protected onSuccessModalDismissed(): void {
+    console.log('✅ [Home] Success modal dismissed - closing carpet scanner');
     this.showCarpetTest.set(false);
   }
 

@@ -3,6 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { OverlayService } from '@shared/data-access/overlay.service';
 import { UserProgressionService } from '@shared/data-access/user-progression.service';
+import { NewCheckinStore } from '../../new-checkin/data-access/new-checkin.store';
 import { ModalCheckinSuccessComponent } from '../ui/modal-checkin-success/modal-checkin-success.component';
 import { ModalCheckinLandlordComponent } from '../ui/modal-checkin-landlord/modal-checkin-landlord.component';
 import { CheckInResultData } from '../utils/check-in.models';
@@ -11,13 +12,18 @@ import { CheckInResultData } from '../utils/check-in.models';
 export class CheckInModalService {
   private readonly overlayService = inject(OverlayService);
   private readonly userProgressionService = inject(UserProgressionService);
+  private readonly newCheckinStore = inject(NewCheckinStore);
   private readonly router = inject(Router);
+
+  // Callback for when modal flow is completely dismissed
+  private onModalFlowDismissed?: () => void;
 
   /**
    * Show consecutive modals for check-in results
    */
-  showCheckInResults(data: CheckInResultData): void {
+  showCheckInResults(data: CheckInResultData, onDismissed?: () => void): void {
     console.log('[CheckInModalService] Starting modal flow:', data);
+    this.onModalFlowDismissed = onDismissed;
 
     if (!data.success) {
       // Show error in first modal only
@@ -52,8 +58,10 @@ export class CheckInModalService {
     });
 
     componentRef.instance.dismiss.subscribe(() => {
-      console.log('[CheckInModalService] Success modal dismissed');
+      console.log('[CheckInModalService] Success modal dismissed - navigating to homepage');
       close();
+      // Force navigation to homepage to trigger fresh state
+      this.router.navigate(['/'], { replaceUrl: true });
     });
 
     componentRef.instance.nextModal.subscribe(() => {
@@ -94,8 +102,10 @@ export class CheckInModalService {
     });
 
     componentRef.instance.dismiss.subscribe(() => {
-      console.log('[CheckInModalService] Landlord modal dismissed');
+      console.log('[CheckInModalService] Landlord modal dismissed - navigating to homepage');
       close();
+      // Force navigation to homepage to trigger fresh state
+      this.router.navigate(['/'], { replaceUrl: true });
     });
 
     componentRef.instance.previousModal.subscribe(() => {

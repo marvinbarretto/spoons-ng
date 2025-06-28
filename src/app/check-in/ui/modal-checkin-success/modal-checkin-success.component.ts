@@ -33,7 +33,7 @@ type PointsBreakdownItem = {
         @if (data().success) {
           <div class="success-content">
             <!-- Main Success Icon -->
-            <div class="main-icon">✅</div>
+            <!-- <div class="main-icon">✅</div> -->
 
             <!-- Basic Check-in Info -->
             <div class="basic-info">
@@ -47,10 +47,8 @@ type PointsBreakdownItem = {
 
             <!-- Personalized Stats Section -->
             <div class="personalized-stats">
-              <h3>Your Progress</h3>
               <div class="stats-grid">
                 <div class="stat-item featured-stat">
-                  <div class="stat-icon">🍺</div>
                   <span class="stat-number">{{ totalPubsCount() }}</span>
                   <span class="stat-label">Pubs Discovered</span>
                   @if (isFirstTimeAtPub()) {
@@ -92,8 +90,8 @@ type PointsBreakdownItem = {
                 <h3>🏆 Points Earned</h3>
                 <div class="points-table">
                   @for (item of pointsBreakdown(); track item.type; let i = $index) {
-                    <div 
-                      class="points-row" 
+                    <div
+                      class="points-row"
                       [style.animation-delay]="(i * 0.1) + 's'"
                     >
                       <div class="points-icon" [style.color]="item.color">
@@ -107,7 +105,7 @@ type PointsBreakdownItem = {
                       </div>
                     </div>
                   }
-                  
+
                   @if (totalPointsEarned() > 0) {
                     <div class="points-total">
                       <div class="total-label">Total Points</div>
@@ -432,7 +430,7 @@ type PointsBreakdownItem = {
         font-size: 2rem;
         margin-bottom: 0.5rem;
       }
-      
+
       .carpet-image {
         max-width: 120px;
         max-height: 120px;
@@ -648,7 +646,7 @@ export class ModalCheckinSuccessComponent {
       const data = this.data();
       const allCheckins = this.newCheckinStore.checkins();
       const storeLoading = this.newCheckinStore.loading();
-      
+
       console.log('[ModalCheckinSuccess] Modal data changed:', {
         success: data.success,
         pubId: data.pub?.id,
@@ -658,7 +656,7 @@ export class ModalCheckinSuccessComponent {
         checkinId: data.checkin?.id,
         timestamp: data.checkin?.timestamp
       });
-      
+
       console.log('[ModalCheckinSuccess] NewCheckinStore state:', {
         allCheckinsCount: allCheckins.length,
         storeLoading,
@@ -694,7 +692,7 @@ export class ModalCheckinSuccessComponent {
   // Points breakdown computed properties
   readonly pointsBreakdown = computed((): PointsBreakdownItem[] => {
     const checkin = this.data().checkin;
-    
+
     // If we have points but no breakdown, create a simple one
     if (checkin?.pointsEarned && !checkin.pointsBreakdown) {
       return [{
@@ -705,7 +703,7 @@ export class ModalCheckinSuccessComponent {
         color: '#28a745'
       }];
     }
-    
+
     if (!checkin?.pointsBreakdown) return [];
 
     try {
@@ -738,7 +736,7 @@ export class ModalCheckinSuccessComponent {
       // Parse bonus points from reason string
       if (breakdown.reason && breakdown.bonus > 0) {
         const reason = breakdown.reason.toLowerCase();
-        
+
         if (reason.includes('first check-in') || reason.includes('first visit')) {
           const points = reason.includes('first check-in') ? 25 : 10;
           items.push({
@@ -749,7 +747,7 @@ export class ModalCheckinSuccessComponent {
             color: '#ffc107'
           });
         }
-        
+
         if (reason.includes('photo')) {
           items.push({
             type: 'photo',
@@ -759,13 +757,13 @@ export class ModalCheckinSuccessComponent {
             color: '#6f42c1'
           });
         }
-        
+
         if (reason.includes('streak')) {
           const streakMatch = reason.match(/(\d+)\s*(-day\s*)?streak/i);
           const streakDays = streakMatch ? parseInt(streakMatch[1]) : 0;
           const streakPoints = reason.match(/(\d+)\s+\d+-day\s*streak/i);
           const points = streakPoints ? parseInt(streakPoints[1]) : 10;
-          
+
           items.push({
             type: 'streak',
             points: points,
@@ -774,7 +772,7 @@ export class ModalCheckinSuccessComponent {
             color: '#fd7e14'
           });
         }
-        
+
         if (reason.includes('social')) {
           items.push({
             type: 'social',
@@ -812,28 +810,28 @@ export class ModalCheckinSuccessComponent {
   readonly totalCheckinsCount = computed(() => {
     const userId = this.authStore.uid();
     if (!userId) return 0;
-    
+
     const allCheckins = this.newCheckinStore.checkins();
     const userCheckins = allCheckins.filter(c => c.userId === userId);
-    
+
     console.log('[ModalCheckinSuccess] totalCheckinsCount computed:', {
       allCheckinsCount: allCheckins.length,
       userId,
       userCheckinsCount: userCheckins.length,
       userCheckins: userCheckins.map(c => ({ id: c.id, pubId: c.pubId, timestamp: c.timestamp }))
     });
-    
+
     return userCheckins.length;
   });
 
   readonly totalPubsCount = computed(() => {
     const userId = this.authStore.uid();
     if (!userId) return 0;
-    
+
     const allCheckins = this.newCheckinStore.checkins();
     const userCheckins = allCheckins.filter(c => c.userId === userId);
     const uniquePubIds = new Set(userCheckins.map(c => c.pubId));
-    
+
     console.log('[ModalCheckinSuccess] totalPubsCount computed:', {
       allCheckinsCount: allCheckins.length,
       userId,
@@ -841,7 +839,7 @@ export class ModalCheckinSuccessComponent {
       uniquePubIds: Array.from(uniquePubIds),
       uniquePubsCount: uniquePubIds.size
     });
-    
+
     return uniquePubIds.size;
   });
 
@@ -849,7 +847,7 @@ export class ModalCheckinSuccessComponent {
     const currentPubId = this.data().pub?.id;
     const allCheckins = this.newCheckinStore.checkins();
     const userId = this.authStore.uid();
-    
+
     if (!currentPubId || !userId) {
       console.log('[ModalCheckinSuccess] isFirstTimeAtPub: No current pub ID or user ID');
       return false;
@@ -858,9 +856,9 @@ export class ModalCheckinSuccessComponent {
     const userCheckins = allCheckins.filter(
       c => c.userId === userId && c.pubId === currentPubId
     );
-    
+
     const isFirst = userCheckins.length === 1;
-    
+
     console.log('[ModalCheckinSuccess] isFirstTimeAtPub computed:', {
       currentPubId,
       userId,
@@ -869,7 +867,7 @@ export class ModalCheckinSuccessComponent {
       isFirstTime: isFirst,
       userCheckinsForThisPubData: userCheckins.map(c => ({ id: c.id, timestamp: c.timestamp }))
     });
-    
+
     return isFirst;
   });
 
@@ -887,7 +885,7 @@ export class ModalCheckinSuccessComponent {
   readonly consecutiveDaysCount = computed(() => {
     const userId = this.authStore.uid();
     if (!userId) return 0;
-    
+
     const userCheckins = this.newCheckinStore.checkins()
       .filter(c => c.userId === userId)
       .sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis());

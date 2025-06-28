@@ -55,7 +55,7 @@ export class CarpetRecognitionService {
   private _minThinkingTime = 3000; // 3 seconds minimum
   private _maxThinkingTime = 10000; // 10 seconds maximum
   private _hasTimedOut = false;
-  
+
   // Event emission tracking
   private _qualityReadyEmitted = false;
   private _captureReadyEmitted = false;
@@ -308,14 +308,14 @@ export class CarpetRecognitionService {
     this._animationFrame = requestAnimationFrame(analyzeFrame);
   }
 
-  private async _triggerLLMDetection(): Promise<void> {
+  async triggerLLMDetection(): Promise<void> {
     if (!this._videoElement || this._data().llmProcessing) {
       return;
     }
 
     console.log('🤖 [CarpetService] Triggering LLM streaming carpet detection...');
-    this._updateData({ 
-      llmProcessing: true, 
+    this._updateData({
+      llmProcessing: true,
       llmLastResult: null,
       llmStreamingText: 'Starting analysis...'
     });
@@ -355,7 +355,7 @@ export class CarpetRecognitionService {
 
       for await (const chunk of streamResponse.stream) {
         fullText += chunk.text;
-        
+
         // Update streaming text in real-time
         this._updateData({
           llmStreamingText: fullText || 'Analyzing...'
@@ -365,20 +365,44 @@ export class CarpetRecognitionService {
 
         if (chunk.isComplete) {
           // Parse final result
-          carpetDetected = /is carpet:\s*yes/i.test(fullText) || 
+          carpetDetected = /is carpet:\s*yes/i.test(fullText) ||
                           (/carpet/i.test(fullText) && !/no carpet|not.*carpet/i.test(fullText));
           break;
         }
       }
 
       console.log(`🤖 [CarpetService] LLM streaming result: ${carpetDetected ? 'CARPET DETECTED' : 'NO CARPET'}`);
+      console.log(`🤖 [CarpetService] === FULL LLM RESPONSE ===`);
+      console.log(fullText);
+      console.log(`🤖 [CarpetService] === END LLM RESPONSE ===`);
+
+      // Try to parse the response as JSON
+      let parsedResult = null;
+      try {
+        const jsonMatch = fullText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          parsedResult = JSON.parse(jsonMatch[0]);
+          console.log('🤖 [CarpetService] === PARSED JSON RESULT ===');
+          console.log(parsedResult);
+
+          if (parsedResult.story && Array.isArray(parsedResult.story)) {
+            console.log('📖 [CarpetService] === STORY ARRAY FOR UI ===');
+            parsedResult.story.forEach((story: string, index: number) => {
+              console.log(`📖 [CarpetService] Story ${index + 1}: ${story}`);
+            });
+            console.log('📖 [CarpetService] === END STORY ARRAY ===');
+          }
+        }
+      } catch (e) {
+        console.warn('🤖 [CarpetService] Failed to parse LLM response as JSON:', e);
+      }
 
       const resultText = carpetDetected ? 'Carpet detected!' : 'No carpet detected';
-      
+
       this._updateData({
         llmCarpetDetected: carpetDetected,
         llmProcessing: false,
-        llmLastResult: resultText,
+        llmLastResult: parsedResult || resultText,
         llmStreamingText: fullText || 'Analysis complete'
       });
 
@@ -391,7 +415,7 @@ export class CarpetRecognitionService {
     } catch (error) {
       console.error('🤖 [CarpetService] LLM streaming detection failed:', error);
       const errorText = `Error: ${error instanceof Error ? error.message : 'Unknown error'}`;
-      
+
       this._updateData({
         llmCarpetDetected: false,
         llmProcessing: false,
@@ -513,6 +537,13 @@ export class CarpetRecognitionService {
         debugInfo: 'Photo captured successfully!'
       });
 
+      // Stop analysis frames to prevent memory leak
+      if (this._animationFrame) {
+        console.log('🛑 [CarpetService] Stopping analysis frames after photo capture');
+        cancelAnimationFrame(this._animationFrame);
+        this._animationFrame = null;
+      }
+
     } catch (error) {
       console.error('[CarpetRecognition] ❌ === PHOTO CAPTURE FAILED ===', error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
@@ -592,7 +623,7 @@ export class CarpetRecognitionService {
 
     if (shouldTriggerLLM) {
       console.log('🤖 [CarpetService] Triggering LLM - all shallow conditions met');
-      this._triggerLLMDetection();
+      this.triggerLLMDetection();
     }
 
     // Use LLM detection if available, fallback to local analysis
@@ -615,7 +646,7 @@ export class CarpetRecognitionService {
 
     // Enhanced logging with LLM status
     const detectionMethod = current.llmCarpetDetected ? 'LLM' : (current.hasTexture ? 'LOCAL' : 'NONE');
-    console.log(`🎯 [CarpetService] Decision: orient:${hasGoodOrientation} carpet:${hasGoodTexture}(${detectionMethod}) stable:${isDeviceStable} canCheckIn:${canCheckIn}`);
+    // console.log(`🎯 [CarpetService] Decision: orient:${hasGoodOrientation} carpet:${hasGoodTexture}(${detectionMethod}) stable:${isDeviceStable} canCheckIn:${canCheckIn}`);
 
     this._updateData({
       overallConfidence,
@@ -625,14 +656,14 @@ export class CarpetRecognitionService {
 
     // Emit events for key milestones
     const updatedData = this._data();
-    
+
     // Quality ready: good orientation + device stable (regardless of carpet)
     if (hasGoodOrientation && isDeviceStable && !this._qualityReadyEmitted) {
       console.log('✨ [CarpetService] Emitting quality ready signal');
       this._qualityReadySignal.set(updatedData);
       this._qualityReadyEmitted = true;
     }
-    
+
     // Capture ready: all conditions met including carpet
     if (canCheckIn && updatedData.isSharp && !this._captureReadyEmitted) {
       console.log('📸 [CarpetService] Emitting capture ready signal');
@@ -657,11 +688,11 @@ export class CarpetRecognitionService {
     this._isCurrentlyStable = false;
     this._lastBeta = 0;
     this._lastGamma = 0;
-    
+
     // Reset event tracking
     this._qualityReadyEmitted = false;
     this._captureReadyEmitted = false;
-    
+
     // Reset event signals
     this._carpetDetectedSignal.set(null);
     this._qualityReadySignal.set(null);
@@ -684,7 +715,7 @@ export class CarpetRecognitionService {
 
   async manualCapture(): Promise<void> {
     console.log('📸 [CarpetService] Manual capture requested');
-    
+
     if (this._data().photoTaken) {
       console.log('⚠️ [CarpetService] Photo already taken');
       return;

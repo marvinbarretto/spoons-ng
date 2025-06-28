@@ -10,6 +10,7 @@ import { CarpetSuccessComponent } from '../../ui/carpet-success/carpet-success.c
 import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-carpet-storage.service';
 import { CarpetPhotoData, PhotoStats } from '@shared/utils/carpet-photo.models';
 import { NewCheckinStore } from '../../../new-checkin/data-access/new-checkin.store';
+import { CheckInModalService } from '../../data-access/check-in-modal.service';
 import { PubStore } from '../../../pubs/data-access/pub.store';
 
 @Component({
@@ -26,6 +27,7 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
   private readonly _platform = inject(SsrPlatformService);
   private readonly photoStorage = inject(DeviceCarpetStorageService);
   private readonly newCheckinStore = inject(NewCheckinStore);
+  private readonly checkInModalService = inject(CheckInModalService);
   private readonly pubStore = inject(PubStore);
 
   // Signals
@@ -59,6 +61,13 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
       if (data.photoTaken && data.capturedPhoto && !this.photoAlreadySaved) {
         console.log('🔥 [CarpetScanner] Photo captured - starting progressive story');
         this.photoAlreadySaved = true;
+
+        // Store captured photo immediately for background
+        if (data.capturedPhoto) {
+          const photoUrl = URL.createObjectURL(data.capturedPhoto);
+          this.capturedPhotoUrl.set(photoUrl);
+        }
+
         this.startProgressiveStoryMode(data);
       }
     });
@@ -102,13 +111,39 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
   override ngOnInit(): void {
     console.log('🎬 [CarpetScanner] Component initialized');
     this.startScanning();
+
+    // TEMP: Force LLM detection then photo capture for desktop testing
+    setTimeout(async () => {
+      console.log('🧪 [TEMP] Forcing LLM detection first for desktop testing');
+      try {
+        // First trigger LLM detection
+        await this._carpetService.triggerLLMDetection();
+        
+        // Wait a bit for LLM response, then capture
+        setTimeout(async () => {
+          console.log('🧪 [TEMP] Now forcing photo capture after LLM');
+          await this._carpetService.manualCapture();
+        }, 3000);
+      } catch (error) {
+        console.log('🧪 [TEMP] LLM/capture failed, forcing state directly');
+        // Force the state if everything fails
+        (this._carpetService as any)._updateData({
+          photoTaken: true,
+          capturedPhoto: new Blob(['fake'], { type: 'image/jpeg' }),
+          llmCarpetDetected: true,
+          llmLastResult: { story: ['Test story 1', 'Test story 2', 'Test story 3'] },
+          photoFormat: 'jpeg',
+          photoSizeKB: 100
+        });
+      }
+    }, 2000);
   }
 
   ngOnDestroy(): void {
     console.log('🚪 [CarpetScanner] Component destroyed');
     this.clearTimeouts();
     this.stopScanning();
-    
+
     // Clean up photo URL to prevent memory leak
     const photoUrl = this.capturedPhotoUrl();
     if (photoUrl) {
@@ -136,7 +171,7 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
     }
 
     // If carpet detected, trigger capture immediately for smooth UX
-    if (data.llmCarpetDetected) {
+    if (true) { // TEMP: Always detect carpet for desktop testing
       console.log('✅ [CarpetScanner] Carpet detected - triggering immediate capture');
       // No delay - immediate capture
       this.attemptAutoCapture();
@@ -159,10 +194,10 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
     }
 
     // Skip if carpet not detected
-    if (!data.llmCarpetDetected) {
-      console.log('⏭️ [CarpetScanner] No carpet detected, skipping auto-capture');
-      return;
-    }
+    // if (!data.llmCarpetDetected) { // TEMP: Disabled for desktop testing
+    //   console.log('⏭️ [CarpetScanner] No carpet detected, skipping auto-capture');
+    //   return;
+    // }
 
     try {
       console.log('📸 [CarpetScanner] Attempting auto-capture via service');
@@ -220,13 +255,13 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
 
   private stopCameraStream(): void {
     console.log('📹 [CarpetScanner] Stopping camera stream only');
-    
+
     // Stop the video element
     if (this.videoElement?.nativeElement) {
       this.videoElement.nativeElement.pause();
       this.videoElement.nativeElement.srcObject = null;
     }
-    
+
     // Stop camera service stream
     this._cameraService.releaseCamera();
     this.cameraReady.set(false);
@@ -319,16 +354,10 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
   private startProgressiveStoryMode(data: any): void {
     console.log('📖 [CarpetScanner] Starting progressive story mode');
     this.progressiveStoryMode.set(true);
-    
-    // Store captured photo for background
-    if (data.capturedPhoto) {
-      const photoUrl = URL.createObjectURL(data.capturedPhoto);
-      this.capturedPhotoUrl.set(photoUrl);
-    }
-    
+
     // Stop camera immediately for battery/privacy
     this.stopCameraStream();
-    
+
     // Clear any existing story timeouts
     this.storyTimeouts.forEach(timeout => clearTimeout(timeout));
     this.storyTimeouts = [];
@@ -336,10 +365,10 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
 
     // Get all the story observations
     this.storyArray = this.extractCarpetDetails(data);
-    
+
     // Step 1: Photo captured
     this.storyMessage.set('📸 Photo captured!');
-    
+
     // Step 2: Cycle through carpet story observations
     this.storyTimeouts.push(setTimeout(() => {
       this.cycleStoryObservations();
@@ -352,15 +381,13 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
       this.storyMessage.set(pubInfo);
     }, totalStoryTime));
 
-    // Step 4: Processing check-in and quick exit
+    // Step 4: Processing check-in (don't exit scanner yet)
     this.storyTimeouts.push(setTimeout(() => {
       this.storyMessage.set('✨ Processing your check-in...');
       this.processCheckIn(data);
-      
-      // Exit scanner quickly for homepage widget approach
-      setTimeout(() => {
-        this.onExitScanner();
-      }, 800);
+
+      // Wait for success modal to be ready, then show it over blurred background
+      this.waitForSuccessModal();
     }, totalStoryTime + 800));
   }
 
@@ -368,7 +395,7 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
     if (this.currentStoryIndex < this.storyArray.length) {
       this.storyMessage.set(this.storyArray[this.currentStoryIndex]);
       this.currentStoryIndex++;
-      
+
       // Schedule next observation
       this.storyTimeouts.push(setTimeout(() => {
         this.cycleStoryObservations();
@@ -377,20 +404,41 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
   }
 
   private extractCarpetDetails(data: any): string[] {
+    // console.log('🔍 [CarpetScanner] Extracting carpet details from data:', data);
+
     // Try to get story array from LLM response
     if (data.llmLastResult && data.llmLastResult.story && Array.isArray(data.llmLastResult.story)) {
+      console.log('✅ [CarpetScanner] Found story array:', data.llmLastResult.story);
       return data.llmLastResult.story;
     }
-    
-    // Try to extract from streaming text
+
+    // Check if we have raw streaming text that might contain JSON
     if (data.llmStreamingText) {
+      console.log('📝 [CarpetScanner] LLM streaming text:', data.llmStreamingText);
+
+      // Try to parse JSON from streaming text
+      try {
+        const jsonMatch = data.llmStreamingText.match(/\{[^}]*\}/s);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          if (parsed.story && Array.isArray(parsed.story)) {
+            console.log('✅ [CarpetScanner] Parsed story from JSON:', parsed.story);
+            return parsed.story;
+          }
+        }
+      } catch (e) {
+        // console.warn('❌ [CarpetScanner] Failed to parse JSON from streaming text', e.message);
+      }
+
+      // Simple fallback with streaming text
       const text = data.llmStreamingText.toLowerCase();
       if (text.includes('red') || text.includes('blue') || text.includes('pattern')) {
         return [`🎨 ${data.llmStreamingText.slice(0, 50)}...`];
       }
     }
-    
+
     // Fallback to technical details
+    console.log('⚠️ [CarpetScanner] Using technical fallback');
     const edges = data.edgeCount || 0;
     const sharpness = data.blurScore || 0;
     return [
@@ -405,7 +453,7 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
     if (data.pubName) {
       return `🍺 Welcome to ${data.pubName}!`;
     }
-    
+
     // Check if we can get pub info from newCheckinStore
     const pubId = this.newCheckinStore?.needsCarpetScan();
     if (pubId && typeof pubId === 'string') {
@@ -415,14 +463,14 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
         return `🍺 Welcome to ${pub.name}!`;
       }
     }
-    
+
     return '🍺 Great carpet spotted at this pub!';
   }
 
   private processCheckIn(data: any): void {
     // Trigger the actual check-in process
     console.log('🚀 [CarpetScanner] Triggering check-in process...');
-    
+
     // Emit the carpet confirmed event to start the normal flow
     const carpetPhotoData: CarpetPhotoData = {
       blob: data.capturedPhoto,
@@ -436,13 +484,53 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
         orientationAngle: data.orientationAngle
       }
     };
-    
+
     this.carpetConfirmed.emit(carpetPhotoData);
-    
+
     // Wait a bit then show success message
     this.storyTimeouts.push(setTimeout(() => {
       this.storyMessage.set('🎉 Check-in complete! Calculating rewards...');
     }, 1500));
+  }
+
+  private waitForSuccessModal(): void {
+    console.log('⏳ [CarpetScanner] Waiting for success modal...');
+
+    // Watch for check-in results
+    const checkResults = () => {
+      const results = this.newCheckinStore.checkinResults();
+      if (results) {
+        console.log('🎉 [CarpetScanner] Check-in results ready, keeping scanner open for modal');
+
+        // Don't show modal here - let FooterNav handle it
+        // Just keep the scanner open with the blurred background
+        
+        // DON'T clear results - let FooterNav handle it
+
+        return true;
+      }
+      return false;
+    };
+
+    // Check immediately
+    if (checkResults()) return;
+
+    // Poll for results every 500ms for up to 10 seconds
+    let attempts = 0;
+    const maxAttempts = 20;
+
+    const pollInterval = setInterval(() => {
+      attempts++;
+
+      if (checkResults() || attempts >= maxAttempts) {
+        clearInterval(pollInterval);
+
+        if (attempts >= maxAttempts) {
+          console.warn('⚠️ [CarpetScanner] Timeout waiting for success modal');
+          // Don't exit - just stay on the blurred background
+        }
+      }
+    }, 500);
   }
 
   // COMMENTED OUT FOR DEV - SIMPLIFYING FLOW

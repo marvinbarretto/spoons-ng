@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { DevDebugComponent } from "../../utils/dev-debug/dev-debug.component";
 import { ChangeDetectionStrategy } from '@angular/core';
 import { APP_VERSION } from '../../utils/version';
@@ -9,7 +9,7 @@ import { FooterNavComponent } from "../footer-nav/footer-nav.component";
   imports: [DevDebugComponent, FooterNavComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <app-footer-nav />
+    <app-footer-nav [onModalDismissed]="onModalDismissed()" />
     <footer class="footer">
       <app-dev-debug />
       <div class="footer-content">
@@ -56,6 +56,9 @@ import { FooterNavComponent } from "../footer-nav/footer-nav.component";
   `
 })
 export class FooterComponent {
+  // ✅ Input for modal dismiss callback
+  readonly onModalDismissed = input<(() => void) | undefined>();
+
   currentYear = new Date().getFullYear();
   readonly version = APP_VERSION;
 }

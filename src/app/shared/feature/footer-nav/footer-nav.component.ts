@@ -1,5 +1,5 @@
 // src/app/shared/feature/footer-nav/footer-nav.component.ts
-import { Component, computed, inject, ChangeDetectionStrategy, signal, effect } from '@angular/core';
+import { Component, computed, inject, ChangeDetectionStrategy, signal, effect, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { filter, map } from 'rxjs/operators';
@@ -256,6 +256,9 @@ export class FooterNavComponent extends BaseComponent {
   private readonly checkInModalService = inject(CheckInModalService);
   private readonly newCheckinStore = inject(NewCheckinStore);
 
+  // ✅ Input for modal dismiss callback
+  readonly onModalDismissed = input<(() => void) | undefined>();
+
   // ✅ Local state for check-in process
   private readonly _isCheckingIn = signal(false);
   readonly isCheckingIn = this._isCheckingIn.asReadonly();
@@ -268,7 +271,7 @@ export class FooterNavComponent extends BaseComponent {
       const results = this.newCheckinStore.checkinResults();
       if (results) {
         console.log('[FooterNavComponent] Check-in results received, showing modal:', results);
-        this.checkInModalService.showCheckInResults(results);
+        this.checkInModalService.showCheckInResults(results, this.onModalDismissed());
         // Clear the results after handling
         setTimeout(() => {
           this.newCheckinStore.clearCheckinResults();
