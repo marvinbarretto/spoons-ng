@@ -2,7 +2,8 @@
 import { Component, computed, inject, signal, ChangeDetectionStrategy, effect } from '@angular/core';
 import { JsonPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { BaseComponent } from '@shared/data-access/base.component';
+import { BaseComponent } from '@shared/base/base.component';
+
 import { AuthStore } from '@auth/data-access/auth.store';
 import { UserStore } from '@users/data-access/user.store';
 import { MissionStore } from '@missions/data-access/mission.store';
@@ -21,7 +22,8 @@ import { ProfileCustomisationModalComponent } from '@home/ui/profile-customisati
 import { OptimizedCarpetGridComponent, CarpetDisplayData } from '../../ui/optimized-carpet-grid/optimized-carpet-grid.component';
 // import { LLMTestComponent } from '../../../shared/ui/llm-test/llm-test.component';
 import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-carpet-storage.service';
-
+import { UserAvatarComponent } from "../../../shared/ui/user-avatar/user-avatar.component";
+import { NearestPubComponent } from '../../../widgets/nearest-pub/nearest-pub.component';
 
 
 @Component({
@@ -34,8 +36,8 @@ import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-
     UserProfileWidgetComponent,
     OptimizedCarpetGridComponent,
     RouterModule,
-    // LLMTestComponent
-  ],
+    NearestPubComponent,
+],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
@@ -53,6 +55,17 @@ export class HomeComponent extends BaseComponent {
   constructor() {
     super();
 
+    // Watch for auth changes and redirect brand new users to onboarding
+    effect(() => {
+      const user = this.authStore.user();
+      
+      // Only redirect if we have a user and they haven't completed onboarding
+      if (user && !user.onboardingCompleted && this.isNewUser()) {
+        console.log('[Home] Brand new user detected, redirecting to onboarding');
+        this.router.navigate(['/onboarding']);
+        return;
+      }
+    });
 
     // Watch for auth changes and load carpets accordingly
     effect(() => {
@@ -107,7 +120,9 @@ export class HomeComponent extends BaseComponent {
 
 
 
-
+  handleAvatarClick(event: any) {
+    console.log('Avatar clicked', event);
+  }
 
   // ✅ Data Signals
   readonly user = this.userStore.user;
