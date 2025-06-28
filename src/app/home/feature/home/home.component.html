@@ -16,7 +16,11 @@
       </div>
     } -->
 
+  <!-- Original scoreboard-hero component -->
   <app-scoreboard-hero [data]="scoreboardData()" />
+
+  <!-- New widget version for comparison -->
+  <app-scoreboard-hero-widget></app-scoreboard-hero-widget>
 
   <!-- <app-llm-test></app-llm-test> -->
 
@@ -26,11 +30,11 @@
   <!-- ✅ Leaderboard Widget -->
   <app-leaderboard-widget></app-leaderboard-widget>
 
-  <!-- ✅ Optimized Carpet Grid -->
-  <app-optimized-carpet-grid
-    [carpets]="carpets"
-    [loading]="carpetsLoading"
-    [error]="carpetsError" />
+  <!-- ✅ Recent Activity Widget -->
+  <app-recent-activity-widget></app-recent-activity-widget>
+
+  <!-- ✅ Carpet Collection Widget -->
+  <app-carpet-collection-widget></app-carpet-collection-widget>
 
 
   <!-- ✅ Badges Showcase -->

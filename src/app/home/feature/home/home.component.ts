@@ -19,49 +19,46 @@ import { BadgesShowcaseComponent } from '@home/ui/badges-showcase/badges-showcas
 import { MissionsSectionComponent } from '../../ui/missions-widget/missions-widget.component';
 import { UserProfileWidgetComponent } from '@home/ui/user-profile-widget/user-profile-widget.component';
 import { ProfileCustomisationModalComponent } from '@home/ui/profile-customisation-modal/profile-customisation-modal.component';
-import { OptimizedCarpetGridComponent, CarpetDisplayData } from '../../ui/optimized-carpet-grid/optimized-carpet-grid.component';
+import { CarpetCollectionWidgetComponent } from '../../../widgets/carpet-collection/carpet-collection-widget.component';
 // import { LLMTestComponent } from '../../../shared/ui/llm-test/llm-test.component';
-import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-carpet-storage.service';
 import { UserAvatarComponent } from "../../../shared/ui/user-avatar/user-avatar.component";
 import { NearestPubComponent } from '../../../widgets/nearest-pub/nearest-pub.component';
 import { LeaderboardWidgetComponent } from '../../../widgets/leaderboard/leaderboard-widget.component';
+import { RecentActivityWidgetComponent } from '../../../widgets/recent-activity/recent-activity-widget.component';
+import { ScoreboardHeroWidgetComponent } from '../../../widgets/scoreboard-hero/scoreboard-hero-widget.component';
 
 
 @Component({
-  selector: 'app-home-three',
+  selector: 'app-home',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ScoreboardHeroComponent,
+    ScoreboardHeroWidgetComponent,
     BadgesShowcaseComponent,
     MissionsSectionComponent,
     UserProfileWidgetComponent,
-    OptimizedCarpetGridComponent,
+    CarpetCollectionWidgetComponent,
     RouterModule,
     NearestPubComponent,
     LeaderboardWidgetComponent,
+    RecentActivityWidgetComponent,
 ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
 export class HomeComponent extends BaseComponent {
   private readonly overlayService = inject(OverlayService);
-  private readonly carpetStorageService = inject(DeviceCarpetStorageService); // ✅ Needed for carpet grid display
-
-
-  // Carpet grid state management
-  protected readonly carpets = signal<CarpetDisplayData[]>([]);
-  protected readonly carpetsLoading = signal(false);
-  protected readonly carpetsError = signal<string | null>(null);
-  private lastLoadedUserId: string | null = null;
 
   constructor() {
     super();
 
     // Watch for auth changes and redirect brand new users to onboarding
+    // CRITICAL: Use DataAggregator.user() to get onboardingCompleted field
+    // AuthStore.user() lacks this field, causing redirect loops after onboarding
     effect(() => {
       const user = this.dataAggregatorService.user();
       const currentUrl = this.router.url;
-      
+
       console.log('[Home] 🔍 Onboarding check effect triggered:', {
         hasUser: !!user,
         userId: user?.uid?.slice(0, 8),
@@ -70,54 +67,25 @@ export class HomeComponent extends BaseComponent {
         currentUrl,
         isComingFromOnboarding: currentUrl.includes('/onboarding') || currentUrl === '/'
       });
-      
+
       // Prevent redirect loop: don't redirect if we're already coming from onboarding completion
       if (currentUrl === '/' && user?.onboardingCompleted === true) {
         console.log('[Home] ✅ User completed onboarding, staying on home page');
         return;
       }
-      
+
       // Only redirect if we have a user and they haven't completed onboarding
       if (user && !user.onboardingCompleted && this.isNewUser() && !currentUrl.includes('/onboarding')) {
         console.log('[Home] 🚀 Brand new user detected, redirecting to onboarding');
         this.router.navigate(['/onboarding']);
         return;
       }
-      
+
       if (user?.onboardingCompleted) {
         console.log('[Home] ✅ User has completed onboarding, staying on home');
       }
     });
 
-    // Watch for auth changes and load carpets accordingly
-    effect(() => {
-      const user = this.authStore.user();
-      const userId = user?.uid;
-
-      console.log('[Home] Auth effect triggered for carpets:', {
-        hasUser: !!user,
-        userId: userId?.slice(0, 8),
-        isAnonymous: user?.isAnonymous,
-        previousUserId: this.lastLoadedUserId?.slice(0, 8)
-      });
-
-      // Clear carpets if no user
-      if (!user) {
-        console.log('[Home] No user, clearing carpets');
-        this.clearCarpets();
-        this.lastLoadedUserId = null;
-        return;
-      }
-
-      // Load carpets if user changed
-      if (userId !== this.lastLoadedUserId) {
-        console.log('[Home] User changed, loading carpets for:', userId?.slice(0, 8));
-        this.lastLoadedUserId = userId || null;
-
-        // Use setTimeout to handle async operation outside effect
-        setTimeout(() => this.loadUserCarpets(), 0);
-      }
-    });
   }
 
 
@@ -205,72 +173,6 @@ export class HomeComponent extends BaseComponent {
     return true; // Always show debug in development
   });
 
-  // ✅ Carpet management methods
-  private async loadUserCarpets(): Promise<void> {
-    console.log('[Home] Loading user carpets...');
-
-    // Prevent multiple simultaneous loads
-    if (this.carpetsLoading()) {
-      console.log('[Home] Already loading carpets, skipping...');
-      return;
-    }
-
-    this.carpetsLoading.set(true);
-    this.carpetsError.set(null);
-
-    try {
-      // Ensure carpet storage is initialized
-      await this.carpetStorageService.initialize();
-
-      // Get carpet data from storage
-      const carpetData = await this.carpetStorageService.getUserCarpets();
-      console.log('[Home] Got carpet data from storage:', {
-        userId: this.authStore.user()?.uid?.slice(0, 8),
-        carpetCount: carpetData.length,
-        sampleCarpet: carpetData[0] ? {
-          pubId: carpetData[0].pubId,
-          pubName: carpetData[0].pubName,
-          date: carpetData[0].date,
-          blobSize: carpetData[0].blob.size
-        } : null
-      });
-
-      // Convert to display format - create object URLs here
-      const displayData: CarpetDisplayData[] = carpetData.map(carpet => ({
-        key: `${carpet.pubId}_${carpet.dateKey}`,
-        pubId: carpet.pubId,
-        pubName: carpet.pubName || 'Unknown Pub',
-        date: carpet.date,
-        imageUrl: URL.createObjectURL(carpet.blob)
-      }));
-
-      // Sort by date, newest first
-      displayData.sort((a, b) =>
-        new Date(b.date).getTime() - new Date(a.date).getTime()
-      );
-
-      this.carpets.set(displayData);
-      console.log('[Home] Carpets loaded successfully:', {
-        userId: this.authStore.user()?.uid?.slice(0, 8),
-        carpetCount: displayData.length,
-        rawData: displayData.map(c => ({ key: c.key, pubName: c.pubName, date: c.date }))
-      });
-
-    } catch (error) {
-      console.error('[Home] Error loading carpets:', error);
-      this.carpetsError.set(error instanceof Error ? error.message : 'Failed to load carpets');
-    } finally {
-      this.carpetsLoading.set(false);
-    }
-  }
-
-  private clearCarpets(): void {
-    console.log('[Home] Clearing carpet data');
-
-    // Just clear the signal - OptimizedCarpetGridComponent handles URL cleanup
-    this.carpets.set([]);
-    this.carpetsError.set(null);
-  }
 
   // ✅ Event Handlers
   handleOpenSettings(): void {
@@ -359,8 +261,4 @@ handleOpenProfile(): void {
     console.log('[Home] Component initialized');
   }
 
-  // Clean up when component destroys
-  ngOnDestroy(): void {
-    this.clearCarpets();
-  }
 }
