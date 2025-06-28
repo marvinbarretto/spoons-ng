@@ -1,7 +1,7 @@
 import { Component, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthStore } from '../../../auth/data-access/auth.store';
-import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-carpet-storage.service';
+import { CarpetStorageService } from '../../../carpets/data-access/carpet-storage.service';
 
 // Import the proper type from carpet storage service
 type CarpetImageData = {
@@ -129,7 +129,7 @@ type CarpetDisplayData = {
 })
 export class CarpetCollectionWidgetComponent {
   private readonly authStore = inject(AuthStore);
-  private readonly carpetStorageService = inject(DeviceCarpetStorageService);
+  private readonly carpetStorageService = inject(CarpetStorageService);
 
   // State signals
   protected readonly carpets = signal<CarpetDisplayData[]>([]);

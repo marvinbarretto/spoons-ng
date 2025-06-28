@@ -3,7 +3,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { CarpetScannerComponent } from '../carpet-scanner/carpet-scanner.component';
 import { PubStore } from '../../../pubs/data-access/pub.store';
 import { CheckInStore } from '../../../check-in/data-access/check-in.store';
-import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-carpet-storage.service';
+import { CarpetStorageService } from '../../../carpets/data-access/carpet-storage.service';
 import { CarpetPhotoData } from '@shared/utils/carpet-photo.models';
 
 @Component({
@@ -34,7 +34,7 @@ export class CheckInPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly pubStore = inject(PubStore);
   private readonly checkinStore = inject(CheckInStore);
-  private readonly carpetStorageService = inject(DeviceCarpetStorageService);
+  private readonly carpetStorageService = inject(CarpetStorageService);
 
   private readonly pubId = signal<string | null>(null);
 

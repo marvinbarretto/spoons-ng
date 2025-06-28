@@ -8,7 +8,7 @@ Handle database versioning and migrations
 Error handling and logging
 Type-safe with generics
 
-2. Refactor DeviceCarpetStorageService 🔄
+2. Refactor CarpetStorageService 🔄
 
 Switch from localStorage to IndexedDB
 Add image format detection (AVIF → WebP → JPEG)
@@ -42,7 +42,7 @@ Success feedback
 7. Create Homepage Carpet Grid Widget 🏠
 
 Simple grid display of all captured carpets
-Inject DeviceCarpetStorageService
+Inject CarpetStorageService
 Load all images from IndexedDB
 Basic responsive grid layout
 
@@ -67,7 +67,7 @@ Clean up old localStorage entries
 📦 Deliverables Priority Order
 
 IndexedDB Service (foundation)
-DeviceCarpetStorageService refactor
+CarpetStorageService refactor
 CheckInStore integration
 CheckIn model update
 Homepage widget (verify it works)

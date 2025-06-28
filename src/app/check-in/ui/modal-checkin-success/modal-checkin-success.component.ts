@@ -6,7 +6,7 @@ import { BadgeIconComponent } from '@badges/ui/badge-icon/badge-icon.component';
 import { CheckInStore } from '../../../check-in/data-access/check-in.store';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { PubStore } from '@pubs/data-access/pub.store';
-import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-carpet-storage.service';
+import { CarpetStorageService } from '@carpets/data-access/carpet-storage.service';
 import { BADGE_DEFINITIONS } from '@badges/utils/badge.config';
 import { ButtonVariant } from '@shared/ui/button/button.params';
 import { environment } from '../../../../environments/environment';
@@ -634,7 +634,7 @@ export class ModalCheckinSuccessComponent {
   private readonly checkinStore = inject(CheckInStore);
   private readonly authStore = inject(AuthStore);
   private readonly pubStore = inject(PubStore);
-  private readonly carpetStorageService = inject(DeviceCarpetStorageService);
+  private readonly carpetStorageService = inject(CarpetStorageService);
 
   // Carpet image state
   private readonly _carpetImageUrl = signal<string | null>(null);

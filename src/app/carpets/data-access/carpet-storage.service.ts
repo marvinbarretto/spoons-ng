@@ -1,4 +1,4 @@
-// src/app/carpets/data-access/device-carpet-storage.service.ts
+// src/app/carpets/data-access/carpet-storage.service.ts
 import { Injectable, inject, signal } from '@angular/core';
 import { IndexedDbService } from '@shared/data-access/indexed-db.service';
 import { AuthStore } from '@auth/data-access/auth.store';
@@ -23,7 +23,7 @@ type CarpetImageData = {
 type ImageFormat = 'avif' | 'webp' | 'jpeg';
 
 @Injectable({ providedIn: 'root' })
-export class DeviceCarpetStorageService {
+export class CarpetStorageService {
   private readonly indexedDb = inject(IndexedDbService);
   private readonly authStore = inject(AuthStore);
 
@@ -131,6 +131,7 @@ export class DeviceCarpetStorageService {
 
 /**
  * ✅ Save photo from carpet data (replaces PhotoStorageService method)
+ * Now properly resizes images to 400x400 like saveCarpetImage()
  */
 async savePhotoFromCarpetData(photoData: CarpetPhotoData, pub: Pub): Promise<void> {
   console.log('📸 [CarpetStorage] === SAVE PHOTO FROM CARPET DATA ===');
@@ -153,21 +154,84 @@ async savePhotoFromCarpetData(photoData: CarpetPhotoData, pub: Pub): Promise<voi
       throw new Error('User must be authenticated to save photos');
     }
 
-    // Create carpet data compatible with existing format
+    this._loading.set(true);
+
+    // ✅ FIXED: Actually resize the image to 400x400 instead of just storing original blob
+    console.log('📸 [CarpetStorage] Resizing image from blob to 400x400...');
+
+    // Create image from blob to get original dimensions
+    const img = new Image();
+    const imageLoadPromise = new Promise<HTMLImageElement>((resolve, reject) => {
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error('Failed to load image from blob'));
+      img.src = URL.createObjectURL(photoData.blob);
+    });
+
+    const loadedImg = await imageLoadPromise;
+    console.log('📸 [CarpetStorage] Original image dimensions:', {
+      width: loadedImg.width,
+      height: loadedImg.height
+    });
+
+    // TODO: Revisit this
+    // Create 400x400 square crop canvas (same logic as saveCarpetImage)
+    const resizeCanvas = document.createElement('canvas');
+    resizeCanvas.width = resizeCanvas.height = 400;
+    const ctx = resizeCanvas.getContext('2d')!;
+
+    // Draw centered square crop - scaled to fit
+    const sourceSize = Math.min(loadedImg.width, loadedImg.height);
+    const sx = (loadedImg.width - sourceSize) / 2;
+    const sy = (loadedImg.height - sourceSize) / 2;
+
+    ctx.drawImage(
+      loadedImg,
+      sx, sy, sourceSize, sourceSize,  // Source rectangle (square crop from center)
+      0, 0, 400, 400                   // Destination rectangle (400x400)
+    );
+
+    // Clean up the object URL
+    URL.revokeObjectURL(img.src);
+
+    // Convert to blob with best supported format (same logic as saveCarpetImage)
+    const { format, mimeType, quality } = this.getBestFormat();
+    console.log('📸 [CarpetStorage] Using format:', format, 'quality:', quality);
+
+    const resizedBlob = await new Promise<Blob>((resolve, reject) => {
+      resizeCanvas.toBlob(
+        (blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error('Failed to create resized blob'));
+          }
+        },
+        mimeType,
+        quality
+      );
+    });
+
+    console.log('📸 [CarpetStorage] Resized image:', {
+      originalSize: `${(photoData.blob.size / 1024).toFixed(1)}KB`,
+      resizedSize: `${(resizedBlob.size / 1024).toFixed(1)}KB`,
+      reduction: `${(((photoData.blob.size - resizedBlob.size) / photoData.blob.size) * 100).toFixed(1)}%`
+    });
+
+    // Create carpet data with properly resized blob
     const carpetData: CarpetImageData = {
       userId: userId,
       pubId: pub.id,
       pubName: pub.name,
       date: new Date().toISOString(),
       dateKey: photoData.filename.replace('.webp', '').replace('.jpeg', ''),
-      blob: photoData.blob,
-      size: photoData.blob.size,
-      type: photoData.blob.type || `image/${photoData.format}`,
-      width: 400, // Default values - could be extracted from metadata
+      blob: resizedBlob, // ✅ Now using properly resized blob
+      size: resizedBlob.size,
+      type: resizedBlob.type,
+      width: 400, // ✅ Now actually 400x400
       height: 400
     };
 
-    // Use existing save method
+    // Save resized image
     const key = `${userId}_${carpetData.pubId}_${carpetData.dateKey}`;
     await this.indexedDb.put(
       environment.database.name,
@@ -176,11 +240,13 @@ async savePhotoFromCarpetData(photoData: CarpetPhotoData, pub: Pub): Promise<voi
       key
     );
     await this.updateStats();
-    console.log('✅ [CarpetStorage] Photo saved successfully');
+    console.log('✅ [CarpetStorage] Photo saved successfully with proper 400x400 resize');
 
   } catch (error) {
     console.error('❌ [CarpetStorage] Save photo failed:', error);
     throw error;
+  } finally {
+    this._loading.set(false);
   }
 }
 

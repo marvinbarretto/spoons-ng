@@ -1,12 +1,12 @@
 import { TestBed } from '@angular/core/testing';
-import { DeviceCarpetStorageService } from './device-carpet-storage.service';
+import { CarpetStorageService } from './carpet-storage.service';
 import { IndexedDbService } from '@shared/data-access/indexed-db.service';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { CarpetPhotoData } from '@shared/utils/carpet-photo.models';
 import { Pub } from '../../pubs/utils/pub.models';
 
-describe('DeviceCarpetStorageService', () => {
-  let service: DeviceCarpetStorageService;
+describe('CarpetStorageService', () => {
+  let service: CarpetStorageService;
   let mockIndexedDb: jest.Mocked<IndexedDbService>;
   let mockAuthStore: jest.Mocked<AuthStore>;
 
@@ -47,13 +47,13 @@ describe('DeviceCarpetStorageService', () => {
 
     TestBed.configureTestingModule({
       providers: [
-        DeviceCarpetStorageService,
+        CarpetStorageService,
         { provide: IndexedDbService, useValue: indexedDbMock },
         { provide: AuthStore, useValue: authStoreMock }
       ]
     });
 
-    service = TestBed.inject(DeviceCarpetStorageService);
+    service = TestBed.inject(CarpetStorageService);
     mockIndexedDb = TestBed.inject(IndexedDbService) as jest.Mocked<IndexedDbService>;
     mockAuthStore = TestBed.inject(AuthStore) as jest.Mocked<AuthStore>;
 
@@ -94,7 +94,7 @@ describe('DeviceCarpetStorageService', () => {
     it('should use correct key format for carpet storage', async () => {
       // Arrange
       jest.spyOn(service, 'initialize').mockResolvedValue();
-      
+
       // Act
       await service.savePhotoFromCarpetData(mockPhotoData, mockPub);
 
@@ -102,7 +102,7 @@ describe('DeviceCarpetStorageService', () => {
       const expectedKeyPattern = /^test-user-123_test-pub-123_test-carpet$/;
       const putCall = mockIndexedDb.put.mock.calls[0];
       const actualKey = putCall[3];
-      
+
       expect(actualKey).toMatch(expectedKeyPattern);
     });
 
