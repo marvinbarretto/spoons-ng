@@ -337,7 +337,7 @@ export class FooterNavComponent extends BaseComponent {
   }
 
   // ✅ Handle check-in button click (uses NewCheckinStore)
-  async handleCheckIn(): Promise<void> {
+  handleCheckIn(): void {
     if (!this.canCheckIn() || this.isCheckingIn()) {
       console.log('[FooterNav] Check-in not available');
       return;
@@ -349,22 +349,9 @@ export class FooterNavComponent extends BaseComponent {
       return;
     }
 
-    console.log('[FooterNav] Starting check-in for:', pub.name);
-    this._isCheckingIn.set(true);
+    console.log('[FooterNav] Navigating to check-in page for:', pub.name);
 
-    try {
-      // ✅ Perform check-in via NewCheckinStore - handles carpet scanning, landlord logic, etc.
-      await this.newCheckinStore.checkinToPub(pub.id);
-
-      console.log('[FooterNav] ✅ Check-in flow completed successfully');
-
-    } catch (error: any) {
-      console.error('[FooterNav] Check-in failed:', error);
-
-      // ✅ NewCheckinStore handles its own error flow and modals
-
-    } finally {
-      this._isCheckingIn.set(false);
-    }
+    // Navigate to dedicated check-in page
+    this.router.navigate(['/check-in', pub.id]);
   }
 }

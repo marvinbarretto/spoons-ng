@@ -60,8 +60,7 @@ export class CheckInModalService {
     componentRef.instance.dismiss.subscribe(() => {
       console.log('[CheckInModalService] Success modal dismissed - navigating to homepage');
       close();
-      // Force navigation to homepage to trigger fresh state
-      this.router.navigate(['/'], { replaceUrl: true });
+      this.router.navigate(['/']);
     });
 
     componentRef.instance.nextModal.subscribe(() => {
@@ -104,8 +103,7 @@ export class CheckInModalService {
     componentRef.instance.dismiss.subscribe(() => {
       console.log('[CheckInModalService] Landlord modal dismissed - navigating to homepage');
       close();
-      // Force navigation to homepage to trigger fresh state
-      this.router.navigate(['/'], { replaceUrl: true });
+      this.router.navigate(['/']);
     });
 
     componentRef.instance.previousModal.subscribe(() => {

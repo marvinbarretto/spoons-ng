@@ -20,6 +20,12 @@ export const appRoutes: Routes = [
       import('./pubs/data-access/pub.routes').then((m) => m.PUBS_ROUTES),
   },
   {
+    path: 'check-in/:pubId',
+    title: 'Check In',
+    loadComponent: () =>
+      import('./check-in/feature/check-in-page/check-in-page.component').then(m => m.CheckInPageComponent)
+  },
+  {
     path: 'test-carpet',
     title: 'Test Carpet',
     loadComponent: () =>

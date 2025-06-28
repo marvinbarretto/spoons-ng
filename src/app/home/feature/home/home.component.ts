@@ -19,10 +19,8 @@ import { MissionsSectionComponent } from '../../ui/missions-widget/missions-widg
 import { UserProfileWidgetComponent } from '@home/ui/user-profile-widget/user-profile-widget.component';
 import { ProfileCustomisationModalComponent } from '@home/ui/profile-customisation-modal/profile-customisation-modal.component';
 import { OptimizedCarpetGridComponent, CarpetDisplayData } from '../../ui/optimized-carpet-grid/optimized-carpet-grid.component';
-import { CarpetScannerComponent } from '../../../check-in/feature/carpet-scanner/carpet-scanner.component';
-import { CarpetPhotoData, PhotoStats } from '@shared/utils/carpet-photo.models';
-import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-carpet-storage.service';
 import { LLMTestComponent } from '../../../shared/ui/llm-test/llm-test.component';
+import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-carpet-storage.service';
 
 
 
@@ -36,7 +34,6 @@ import { LLMTestComponent } from '../../../shared/ui/llm-test/llm-test.component
     UserProfileWidgetComponent,
     OptimizedCarpetGridComponent,
     RouterModule,
-    CarpetScannerComponent,
     LLMTestComponent
   ],
   templateUrl: './home.component.html',
@@ -44,6 +41,8 @@ import { LLMTestComponent } from '../../../shared/ui/llm-test/llm-test.component
 })
 export class HomeComponent extends BaseComponent {
   private readonly overlayService = inject(OverlayService);
+  private readonly carpetStorageService = inject(DeviceCarpetStorageService); // ✅ Needed for carpet grid display
+
 
   // Carpet grid state management
   protected readonly carpets = signal<CarpetDisplayData[]>([]);
@@ -54,14 +53,6 @@ export class HomeComponent extends BaseComponent {
   constructor() {
     super();
 
-    // Watch for when check-in needs carpet scanning
-    effect(() => {
-      const needsCarpetForPub = this.newCheckinStore.needsCarpetScan();
-      if (needsCarpetForPub) {
-        console.log('[Home] Check-in needs carpet scan for pub:', needsCarpetForPub);
-        this.showCarpetTest.set(true);
-      }
-    });
 
     // Watch for auth changes and load carpets accordingly
     effect(() => {
@@ -87,79 +78,18 @@ export class HomeComponent extends BaseComponent {
       if (userId !== this.lastLoadedUserId) {
         console.log('[Home] User changed, loading carpets for:', userId?.slice(0, 8));
         this.lastLoadedUserId = userId || null;
-        
+
         // Use setTimeout to handle async operation outside effect
         setTimeout(() => this.loadUserCarpets(), 0);
       }
     });
   }
 
-  private readonly carpetStorageService = inject(DeviceCarpetStorageService); // ✅ Still needed for carpet scanner
 
 
 
-    // Signal for controlling carpet scanner display
-    protected readonly showCarpetTest = signal(false);
-
-  protected async onCarpetConfirmed(photoData: CarpetPhotoData): Promise<void> {
-    console.log('🎯 [Home] === CARPET CONFIRMED EVENT RECEIVED ===');
-    console.log('🎯 [Home] Photo data received:', photoData);
-
-    try {
-      console.log('💾 [Home] About to save photo using PhotoStorageService...');
-
-      // Get pub info for the carpet scan
-      const pubId = this.newCheckinStore.needsCarpetScan();
-      const pub = pubId ? this.pubStore.get(pubId) : null;
-      
-      console.log('🏠 [Home] Pub context for carpet:', {
-        pubId,
-        pubName: pub?.name,
-        hasPub: !!pub
-      });
-
-      if (!pub) {
-        throw new Error(`Pub not found for carpet scan: ${pubId}`);
-      }
-
-      // ✅ Save the WebP/JPEG binary photo with pub context
-      await this.carpetStorageService.savePhotoFromCarpetData(photoData, pub);
-
-      console.log('✅ [Home] Photo saved successfully via PhotoStorageService');
 
 
-      // Check if this was part of a check-in flow
-      if (this.newCheckinStore.needsCarpetScan()) {
-        // Send result back to check-in store using filename as imageKey
-        this.newCheckinStore.processCarpetScanResult(photoData.filename);
-      }
-
-
-      console.log('✅ [Home] === CARPET PROCESSING COMPLETE ===');
-
-    } catch (error) {
-      console.error('❌ [Home] === CARPET PROCESSING FAILED ===');
-      console.error('❌ [Home] Error details:', error);
-      console.error('❌ [Home] Photo data when error occurred:', photoData);
-    }
-  }
-
-  protected onExitCarpetTest(): void {
-    console.log('🚪 [Home] Exiting carpet test');
-
-    // Check if this was part of a check-in flow
-    if (this.newCheckinStore.needsCarpetScan()) {
-      // Tell check-in store to proceed without carpet
-      this.newCheckinStore.processCarpetScanResult(undefined);
-    }
-
-    this.showCarpetTest.set(false);
-  }
-
-  protected onSuccessModalDismissed(): void {
-    console.log('✅ [Home] Success modal dismissed - closing carpet scanner');
-    this.showCarpetTest.set(false);
-  }
 
 
 
@@ -241,20 +171,20 @@ export class HomeComponent extends BaseComponent {
   // ✅ Carpet management methods
   private async loadUserCarpets(): Promise<void> {
     console.log('[Home] Loading user carpets...');
-    
+
     // Prevent multiple simultaneous loads
     if (this.carpetsLoading()) {
       console.log('[Home] Already loading carpets, skipping...');
       return;
     }
-    
+
     this.carpetsLoading.set(true);
     this.carpetsError.set(null);
 
     try {
       // Ensure carpet storage is initialized
       await this.carpetStorageService.initialize();
-      
+
       // Get carpet data from storage
       const carpetData = await this.carpetStorageService.getUserCarpets();
       console.log('[Home] Got carpet data from storage:', {
@@ -278,7 +208,7 @@ export class HomeComponent extends BaseComponent {
       }));
 
       // Sort by date, newest first
-      displayData.sort((a, b) => 
+      displayData.sort((a, b) =>
         new Date(b.date).getTime() - new Date(a.date).getTime()
       );
 
@@ -299,7 +229,7 @@ export class HomeComponent extends BaseComponent {
 
   private clearCarpets(): void {
     console.log('[Home] Clearing carpet data');
-    
+
     // Just clear the signal - OptimizedCarpetGridComponent handles URL cleanup
     this.carpets.set([]);
     this.carpetsError.set(null);

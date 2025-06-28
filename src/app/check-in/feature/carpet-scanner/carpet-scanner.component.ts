@@ -369,26 +369,38 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
     // Step 1: Photo captured
     this.storyMessage.set('📸 Photo captured!');
 
-    // Step 2: Cycle through carpet story observations
+    // Step 2: Add mystique - analyzing discovery
+    this.storyTimeouts.push(setTimeout(() => {
+      this.storyMessage.set('🔍 Analyzing your discovery...');
+    }, 1500));
+
+    // Step 3: Cycle through carpet story observations
     this.storyTimeouts.push(setTimeout(() => {
       this.cycleStoryObservations();
-    }, 800));
+    }, 3000));
 
-    // Step 3: Show pub information after all observations
-    const totalStoryTime = 800 + (this.storyArray.length * 800);
+    // Step 4: Show pub information after all observations
+    const storyDelay = 2500; // 2.5 seconds per story
+    const totalStoryTime = 3000 + (this.storyArray.length * storyDelay);
+    
+    // Add mystique before revealing pub name
+    this.storyTimeouts.push(setTimeout(() => {
+      this.storyMessage.set('✨ Discovering your location...');
+    }, totalStoryTime));
+
     this.storyTimeouts.push(setTimeout(() => {
       const pubInfo = this.extractPubInfo(data);
       this.storyMessage.set(pubInfo);
-    }, totalStoryTime));
+    }, totalStoryTime + 1500));
 
-    // Step 4: Processing check-in (don't exit scanner yet)
+    // Step 5: Processing check-in (don't exit scanner yet)
     this.storyTimeouts.push(setTimeout(() => {
-      this.storyMessage.set('✨ Processing your check-in...');
+      this.storyMessage.set('🎉 Recording your visit...');
       this.processCheckIn(data);
 
       // Wait for success modal to be ready, then show it over blurred background
       this.waitForSuccessModal();
-    }, totalStoryTime + 800));
+    }, totalStoryTime + 3000));
   }
 
   private cycleStoryObservations(): void {
@@ -399,7 +411,7 @@ export class CarpetScannerComponent extends BaseComponent implements OnInit, OnD
       // Schedule next observation
       this.storyTimeouts.push(setTimeout(() => {
         this.cycleStoryObservations();
-      }, 800)); // 0.8 seconds per observation for faster experience
+      }, 2500)); // 2.5 seconds per observation for readability
     }
   }
 

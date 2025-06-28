@@ -31,7 +31,7 @@
 }
 
 .overlay-backdrop {
-  background: var(--color-overlay, rgba(0, 0, 0, 0.5));
+  // background: var(--color-overlay, rgba(0, 0, 0, 0.5));
   backdrop-filter: blur(2px);
   animation: fadeIn 200ms ease-out;
 }

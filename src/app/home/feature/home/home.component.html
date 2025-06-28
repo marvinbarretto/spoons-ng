@@ -1,12 +1,5 @@
 <div class="home-container">
 
-  <!-- Carpet Scanner (fullscreen when triggered) -->
-  @if (showCarpetTest()) {
-    <app-carpet-scanner
-      (carpetConfirmed)="onCarpetConfirmed($event)"
-      (exitScanner)="onExitCarpetTest()">
-    </app-carpet-scanner>
-  }
 
 
   <app-user-profile-widget
