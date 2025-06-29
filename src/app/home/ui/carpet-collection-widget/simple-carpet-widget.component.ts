@@ -1,7 +1,7 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthStore } from '../../../auth/data-access/auth.store';
-import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-carpet-storage.service';
+import { CarpetStorageService } from '../../../carpets/data-access/carpet-storage.service';
 
 type SimpleCarpet = {
   pubName: string;
@@ -15,7 +15,7 @@ type SimpleCarpet = {
   template: `
     <div>
       <h3>Carpet Collection ({{ carpets().length }})</h3>
-      
+
       @if (loading()) {
         <p>Loading...</p>
       } @else if (error()) {
@@ -33,14 +33,14 @@ type SimpleCarpet = {
           }
         </div>
       }
-      
+
       <button (click)="loadCarpets()">Refresh</button>
     </div>
   `
 })
 export class SimpleCarpetWidgetComponent implements OnInit {
   private readonly authStore = inject(AuthStore);
-  private readonly carpetStorage = inject(DeviceCarpetStorageService);
+  private readonly carpetStorage = inject(CarpetStorageService);
 
   protected readonly carpets = signal<SimpleCarpet[]>([]);
   protected readonly loading = signal(false);
@@ -52,14 +52,14 @@ export class SimpleCarpetWidgetComponent implements OnInit {
 
   protected async loadCarpets() {
     console.log('🔄 [SimpleCarpetWidget] Loading carpets...');
-    
+
     const user = this.authStore.user();
     if (!user) {
       console.log('❌ [SimpleCarpetWidget] No user found');
       this.carpets.set([]);
       return;
     }
-    
+
     console.log('✅ [SimpleCarpetWidget] User found:', { uid: user.uid, isAnonymous: user.isAnonymous });
 
     this.loading.set(true);

@@ -27,7 +27,12 @@ import type { Pub } from '../../utils/pub.models';
       }
 
     <header class="pub-card__header">
-        <h3 class="pub-card__title">{{ pub().name }}</h3>
+        <div class="pub-card__title-container">
+          <h3 class="pub-card__title">{{ pub().name }}</h3>
+          @if (isLocalPub()) {
+            <span class="pub-card__home-icon">🏠</span>
+          }
+        </div>
 
         @if (hasCheckedIn()) {
           <span class="pub-card__badge pub-card__badge--success">✅ Visited</span>
@@ -105,13 +110,24 @@ import type { Pub } from '../../utils/pub.models';
       margin-bottom: 0.75rem;
     }
 
+    .pub-card__title-container {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex: 1;
+    }
+
     .pub-card__title {
       font-size: 1.125rem;
       font-weight: 600;
       color: var(--text);
       margin: 0;
       line-height: 1.3;
-      flex: 1;
+    }
+
+    .pub-card__home-icon {
+      font-size: 1rem;
+      opacity: 0.8;
     }
 
     .pub-card__badge {
@@ -228,6 +244,7 @@ export class PubCardComponent {
   readonly hasCheckedIn = input<boolean>(false);
   readonly checkinCount = input<number>(0);
   readonly showCheckinCount = input<boolean>(false);
+  readonly isLocalPub = input<boolean>(false);
 
   // ✅ Outputs for interactions
   readonly cardClicked = output<Pub>();

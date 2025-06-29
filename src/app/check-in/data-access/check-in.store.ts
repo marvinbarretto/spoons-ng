@@ -303,21 +303,15 @@ export class CheckInStore extends BaseStore<CheckIn> {
    */
   private async waitForCarpetScanResult(): Promise<string | undefined> {
     console.log('[CheckInStore] Waiting for carpet scan result...');
+    console.log('[CheckInStore] ⏳ NO TIMEOUT - will wait indefinitely for carpet photo');
 
     // Create a promise that will be resolved when we receive the scan result
     return new Promise<string | undefined>((resolve) => {
       // Store the resolver so we can call it from processCarpetScanResult
       this.carpetScanResolver = resolve;
 
-      // Set a timeout to auto-resolve if user takes too long or cancels
-      setTimeout(() => {
-        if (this.carpetScanResolver) {
-          console.log('[CheckInStore] Carpet scan timeout - proceeding without carpet');
-          this.carpetScanResolver(undefined);
-          this.carpetScanResolver = null;
-          this._needsCarpetScan.set(null);
-        }
-      }, 120000); // 2 minute timeout
+      // REMOVED TIMEOUT - no more racing! Always wait for carpet photo
+      // Check-in will only complete when carpet is captured or explicitly cancelled
     });
   }
 

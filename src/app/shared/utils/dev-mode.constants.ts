@@ -23,7 +23,7 @@
  *
  * @default false - MUST be false for production builds
  */
-export const LET_ANYTHING_THROUGH_MODE = true;
+export const ACTIVE_DEVELOPMENT_MODE = true;
 
 /**
  * Modal navigation timeout (in milliseconds)
@@ -48,24 +48,24 @@ export const LLM_TO_PHOTO_DELAY = 3000; // 3 seconds
  */
 export const DEV_FEATURES = {
   /** Skip proximity validation checks */
-  SKIP_PROXIMITY_CHECKS: LET_ANYTHING_THROUGH_MODE,
+  SKIP_PROXIMITY_CHECKS: ACTIVE_DEVELOPMENT_MODE,
 
   /** Skip daily check-in limit validation */
-  SKIP_DAILY_LIMITS: LET_ANYTHING_THROUGH_MODE,
+  SKIP_DAILY_LIMITS: ACTIVE_DEVELOPMENT_MODE,
 
   /** Enable desktop testing bypass for carpet scanner */
-  DESKTOP_TESTING_MODE: LET_ANYTHING_THROUGH_MODE,
+  DESKTOP_TESTING_MODE: ACTIVE_DEVELOPMENT_MODE,
 
   /** Enable verbose development logging */
-  VERBOSE_LOGGING: LET_ANYTHING_THROUGH_MODE,
+  VERBOSE_LOGGING: ACTIVE_DEVELOPMENT_MODE,
 } as const;
 
 /**
  * Runtime check to ensure development mode is not accidentally enabled in production
  */
-if (LET_ANYTHING_THROUGH_MODE && typeof window !== 'undefined') {
+if (ACTIVE_DEVELOPMENT_MODE && typeof window !== 'undefined') {
   console.warn(
-    '🚨 [DEV-MODE] LET_ANYTHING_THROUGH_MODE is ENABLED! ' +
+    '🚨 [DEV-MODE] ACTIVE_DEVELOPMENT_MODE is ENABLED! ' +
     'All security checks are bypassed. This MUST be disabled for production!'
   );
 }

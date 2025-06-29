@@ -29,7 +29,7 @@ export class CheckInService extends FirestoreCrudService<CheckIn> {
 
     // Gate 1: Daily limit check
     if (DEV_FEATURES.SKIP_DAILY_LIMITS) {
-      console.log('[CheckInService] 📅 Daily limit check SKIPPED (LET_ANYTHING_THROUGH_MODE enabled)');
+      console.log('[CheckInService] 📅 Daily limit check SKIPPED (ACTIVE_DEVELOPMENT_MODE enabled)');
     } else {
       console.log('[CheckInService] 📅 Running daily limit check...');
       const dailyCheck = await this.dailyLimitCheck(pubId);
@@ -42,7 +42,7 @@ export class CheckInService extends FirestoreCrudService<CheckIn> {
 
     // Gate 2: Proximity check
     if (DEV_FEATURES.SKIP_PROXIMITY_CHECKS) {
-      console.log('[CheckInService] 📍 Proximity check SKIPPED (LET_ANYTHING_THROUGH_MODE enabled)');
+      console.log('[CheckInService] 📍 Proximity check SKIPPED (ACTIVE_DEVELOPMENT_MODE enabled)');
     } else {
       console.log('[CheckInService] 📍 Starting proximity validation...');
       const proximityCheck = await this.proximityCheck(pubId);

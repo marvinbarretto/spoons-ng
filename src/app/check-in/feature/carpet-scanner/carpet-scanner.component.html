@@ -1,15 +1,6 @@
 <div class="carpet-scanner-container">
-  <!-- Success Screen Overlay -->
-  @if (showSuccessScreen()) {
-    <app-carpet-success
-      [carpetData]="carpetData()"
-      (continue)="onExitScanner()"
-      (viewCollection)="onExitScanner()">
-    </app-carpet-success>
-  }
 
   <!-- Main Scanner Interface -->
-  @if (!showSuccessScreen()) {
     <!-- Video Background (hidden when photo captured) -->
     @if (!capturedPhotoUrl()) {
       <video #videoElement
@@ -71,7 +62,7 @@
              [class.error]="cameraError()"
              [class.processing]="carpetData().llmProcessing"
              [class.capturing]="carpetData().canCheckIn && !carpetData().isSharp"
-             [class.story-mode]="progressiveStoryMode()">
+>
           {{ statusMessage }}
         </div>
 
@@ -142,15 +133,6 @@
       </div>
     }
 
-    <!-- Processing Overlay -->
-    @if (carpetData().llmProcessing) {
-      <div class="processing-overlay">
-        <div class="processing-content">
-          <div class="spinner"></div>
-          <p>{{ statusMessage }}</p>
-        </div>
-      </div>
-    }
 
     <!-- Debug Toggle -->
     <div class="debug-toggle">
@@ -159,86 +141,28 @@
       </button>
     </div>
 
-    <!-- Debug Panel (Semi-transparent, visible by default) -->
+    <!-- Debug Panel -->
     @if (showDebug()) {
       <div class="debug-panel">
         <div class="section">
-          <h5>Camera</h5>
+          <h5>Status</h5>
           <div class="metric">
-            <span class="label">Ready:</span>
-            <span class="value" [class.good]="cameraReady()">{{ cameraReady() }}</span>
-          </div>
-          <div class="metric">
-            <span class="label">Error:</span>
-            <span class="value">{{ cameraError() || 'None' }}</span>
-          </div>
-        </div>
-
-        <div class="section">
-          <h5>Orientation</h5>
-          <div class="metric">
-            <span class="label">Phone Down:</span>
-            <span class="value" [class.good]="carpetData().isPhoneDown">{{ carpetData().isPhoneDown }}</span>
-          </div>
-          <div class="metric">
-            <span class="label">Confidence:</span>
-            <span class="value">{{ (carpetData().orientationConfidence * 100).toFixed(0) }}%</span>
+            <span class="label">Camera:</span>
+            <span class="value" [class.good]="cameraReady()">{{ cameraReady() ? 'Ready' : 'Loading' }}</span>
           </div>
           <div class="metric">
             <span class="label">Stable:</span>
-            <span class="value" [class.good]="carpetData().deviceStable">{{ carpetData().deviceStable }}</span>
-          </div>
-        </div>
-
-        <div class="section">
-          <h5>Detection</h5>
-          <div class="metric">
-            <span class="label">LLM Processing:</span>
-            <span class="value">{{ carpetData().llmProcessing }}</span>
+            <span class="value" [class.good]="carpetData().deviceStable">{{ carpetData().deviceStable ? 'Yes' : 'No' }}</span>
           </div>
           <div class="metric">
-            <span class="label">LLM Detected:</span>
-            <span class="value" [class.good]="carpetData().llmCarpetDetected">{{ carpetData().llmCarpetDetected }}</span>
-          </div>
-          @if (carpetData().llmStreamingText) {
-            <div class="metric streaming-text">
-              <span class="label">LLM Analysis:</span>
-              <span class="value streaming">{{ carpetData().llmStreamingText }}</span>
-            </div>
-          }
-          <div class="metric">
-            <span class="label">Local Texture:</span>
-            <span class="value" [class.good]="carpetData().hasTexture">{{ carpetData().hasTexture }}</span>
+            <span class="label">LLM:</span>
+            <span class="value" [class.good]="carpetData().llmCarpetDetected">{{ carpetData().llmProcessing ? 'Processing' : (carpetData().llmCarpetDetected ? 'Detected' : 'Waiting') }}</span>
           </div>
           <div class="metric">
-            <span class="label">Edges:</span>
-            <span class="value">{{ carpetData().edgeCount || 0 }}</span>
-          </div>
-        </div>
-
-        <div class="section">
-          <h5>Quality</h5>
-          <div class="metric">
-            <span class="label">Sharp:</span>
-            <span class="value" [class.good]="carpetData().isSharp">{{ carpetData().isSharp }}</span>
-          </div>
-          <div class="metric">
-            <span class="label">Blur Score:</span>
-            <span class="value">{{ carpetData().blurScore }}</span>
-          </div>
-          <div class="metric">
-            <span class="label">Can Check In:</span>
-            <span class="value" [class.good]="carpetData().canCheckIn">{{ carpetData().canCheckIn }}</span>
-          </div>
-        </div>
-
-        <div class="section">
-          <h5>Debug Info</h5>
-          <div class="metric">
-            <span class="label debug">{{ carpetData().debugInfo }}</span>
+            <span class="label">Can Check:</span>
+            <span class="value" [class.good]="carpetData().canCheckIn">{{ carpetData().canCheckIn ? 'Yes' : 'No' }}</span>
           </div>
         </div>
       </div>
     }
-  }
 </div>

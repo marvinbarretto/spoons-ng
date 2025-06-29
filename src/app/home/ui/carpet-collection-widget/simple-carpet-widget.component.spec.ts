@@ -2,20 +2,20 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { SimpleCarpetWidgetComponent } from './simple-carpet-widget.component';
 import { AuthStore } from '../../../auth/data-access/auth.store';
-import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-carpet-storage.service';
+import { CarpetStorageService } from '../../../carpets/data-access/carpet-storage.service';
 
 describe('SimpleCarpetWidgetComponent', () => {
   let component: SimpleCarpetWidgetComponent;
   let fixture: ComponentFixture<SimpleCarpetWidgetComponent>;
   let mockAuthStore: Partial<AuthStore>;
-  let mockCarpetStorage: Partial<DeviceCarpetStorageService>;
+  let mockCarpetStorage: Partial<CarpetStorageService>;
 
   beforeEach(async () => {
     // Create mock objects with signals
     mockAuthStore = {
       user: signal(null)
     };
-    
+
     mockCarpetStorage = {
       getUserCarpets: jest.fn()
     };
@@ -24,7 +24,7 @@ describe('SimpleCarpetWidgetComponent', () => {
       imports: [SimpleCarpetWidgetComponent],
       providers: [
         { provide: AuthStore, useValue: mockAuthStore },
-        { provide: DeviceCarpetStorageService, useValue: mockCarpetStorage }
+        { provide: CarpetStorageService, useValue: mockCarpetStorage }
       ]
     }).compileComponents();
 
@@ -45,7 +45,7 @@ describe('SimpleCarpetWidgetComponent', () => {
         displayName: null
       };
       mockAuthStore.user.set(mockUser);
-      
+
       const mockCarpetData = [
         {
           userId: 'test-user-123',
@@ -91,7 +91,7 @@ describe('SimpleCarpetWidgetComponent', () => {
         displayName: 'John Doe'
       };
       mockAuthStore.user!.set(mockUser);
-      
+
       (mockCarpetStorage.getUserCarpets as jest.Mock).mockReturnValue(Promise.resolve([]));
 
       // Act: Load carpets

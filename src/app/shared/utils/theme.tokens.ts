@@ -26,7 +26,7 @@ export type Theme = {
     accent: string;              // Primary actions
     accentHover: string;         // Primary hover
     accentContrast: string;      // Text on accent
-    
+
     secondary: string;           // Secondary actions
     secondaryHover: string;      // Secondary hover
     secondaryContrast: string;   // Text on secondary
@@ -113,7 +113,7 @@ export const themes: Record<ThemeType, Theme> = {
       accent: '#5d7a5c',              // Primary actions (sage green)
       accentHover: '#4a624a',         // Primary hover
       accentContrast: '#ffffff',      // Text on accent
-      
+
       secondary: '#e8e7e5',           // Secondary actions
       secondaryHover: '#d6d4d1',      // Secondary hover
       secondaryContrast: '#2d2c26',   // Text on secondary
@@ -158,8 +158,8 @@ export const themes: Record<ThemeType, Theme> = {
       // ===== NEW SEMANTIC PROPERTIES =====
       // Background scales
       background: '#fefdf9',          // Main app background
-      backgroundLighter: '#ffffff',   // Widget backgrounds
-      backgroundLightest: '#fffef5',  // Elevated surfaces
+      backgroundLighter: '#fffef5',   // Widget backgrounds
+      backgroundLightest: '#ffffff',  // Elevated surfaces
       backgroundDarker: '#fef9ed',    // Recessed areas
       backgroundDarkest: '#fbefd4',   // Deep contrast
 
@@ -176,7 +176,7 @@ export const themes: Record<ThemeType, Theme> = {
       accent: '#eab308',              // Primary actions (amber)
       accentHover: '#ca8a04',         // Primary hover
       accentContrast: '#422006',      // Text on accent
-      
+
       secondary: '#fbefd4',           // Secondary actions
       secondaryHover: '#f7e0b0',      // Secondary hover
       secondaryContrast: '#42260b',   // Text on secondary
@@ -239,7 +239,7 @@ export const themes: Record<ThemeType, Theme> = {
       accent: '#94a3b8',              // Primary actions (light slate)
       accentHover: '#cbd5e1',         // Primary hover
       accentContrast: '#0f1419',      // Text on accent
-      
+
       secondary: '#373d47',           // Secondary actions
       secondaryHover: '#4d5662',      // Secondary hover
       secondaryContrast: '#f3f4f6',   // Text on secondary
@@ -302,7 +302,7 @@ export const themes: Record<ThemeType, Theme> = {
       accent: '#f97316',              // Primary actions (coral)
       accentHover: '#ea580c',         // Primary hover
       accentContrast: '#ffffff',      // Text on accent
-      
+
       secondary: '#fdeee7',           // Secondary actions
       secondaryHover: '#fad9d0',      // Secondary hover
       secondaryContrast: '#4a1a0e',   // Text on secondary
@@ -365,7 +365,7 @@ export const themes: Record<ThemeType, Theme> = {
       accent: '#48bb78',              // Primary actions (green)
       accentHover: '#68d391',         // Primary hover
       accentContrast: '#0c1910',      // Text on accent
-      
+
       secondary: '#2d3e2d',           // Secondary actions
       secondaryHover: '#405640',      // Secondary hover
       secondaryContrast: '#f5f9f5',   // Text on secondary

@@ -5,7 +5,7 @@ import { DatePipe, JsonPipe } from '@angular/common';
 // Base and Services
 import { BaseComponent } from '@shared/base/base.component';
 import { CleanupService, type CleanupResult } from '@shared/utils/cleanup.service';
-import { DeviceCarpetStorageService } from '../../../carpets/data-access/device-carpet-storage.service';
+import { CarpetStorageService } from '@carpets/data-access/carpet-storage.service';
 
 // Stores
 import { AuthStore } from '@auth/data-access/auth.store';
@@ -38,7 +38,7 @@ export class DevDebugComponent extends BaseComponent {
   protected readonly badgeStore = inject(BadgeStore);
 
   private readonly cleanupService = inject(CleanupService);
-  private readonly deviceCarpetStorage = inject(DeviceCarpetStorageService);
+  private readonly carpetStorageService = inject(CarpetStorageService);
 
   // ===================================
   // 📊 STATE MANAGEMENT
@@ -238,7 +238,7 @@ export class DevDebugComponent extends BaseComponent {
       let indexedDbSuccess = true;
       let indexedDbError: string | undefined;
       try {
-        await this.deviceCarpetStorage.clearAllCarpets();
+        await this.carpetStorageService.clearAllCarpets();
         console.log('[DevDebugComponent] ✅ IndexedDB carpet cleanup completed');
       } catch (error: any) {
         console.error('[DevDebugComponent] ❌ IndexedDB carpet cleanup failed:', error);

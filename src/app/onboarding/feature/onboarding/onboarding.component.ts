@@ -186,6 +186,8 @@ export class OnboardingComponent extends BaseComponent {
   readonly locationRequired = signal(false);
 
   // Reactive data - Use DataAggregator for complete user state
+  // CRITICAL: DataAggregator.user() includes onboardingCompleted from UserStore
+  // AuthStore.user() alone lacks this field, causing infinite redirect loops
   readonly user = this.dataAggregator.user;
 
   // Computed properties
