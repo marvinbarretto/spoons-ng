@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.69](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.68...v0.0.69) (2025-07-01)
+
+
+### Features
+
+* Improve carpet logic and delete old legacy services ([10acf87](https://github.com/marvinbarretto/spoons-ng/commit/10acf8792dfd972adb71d2b9f7c37440aa88c7dd))
+* recent activity widget ([76ee464](https://github.com/marvinbarretto/spoons-ng/commit/76ee464fce60496db82afbd6a973314fa67d6531))
+* Update carpet detection models ([9f8f5e3](https://github.com/marvinbarretto/spoons-ng/commit/9f8f5e327e8ec9d64a588f8fc648237d1fa8d56f))
+* Update homepage with new widgets ([d6c0932](https://github.com/marvinbarretto/spoons-ng/commit/d6c09322d7a5a9f2adcf676b357ba46c92d42cca))
+
 ### [0.0.68](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.67...v0.0.68) (2025-06-28)
 
 
