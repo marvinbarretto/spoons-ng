@@ -3,7 +3,7 @@ service cloud.firestore {
   match /databases/{database}/documents {
     // DEV MODE: Allow all reads and writes until June 30, 2025
     match /{document=**} {
-      allow read, write: if request.time < timestamp.date(2025, 6, 30);
+      allow read, write: if request.time < timestamp.date(2025, 8, 30);
     }
   }
 }
