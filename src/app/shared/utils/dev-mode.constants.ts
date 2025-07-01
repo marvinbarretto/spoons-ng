@@ -23,7 +23,7 @@
  *
  * @default false - MUST be false for production builds
  */
-export const ACTIVE_DEVELOPMENT_MODE = true;
+export const ACTIVE_DEVELOPMENT_MODE = false;
 
 /**
  * Modal navigation timeout (in milliseconds)

@@ -31,5 +31,16 @@ export const CARPET_RECOGNITION_CONFIG = {
     // WebP gives better compression, so we can afford higher resolution
     webpQuality: 0.92,      // WebP-specific quality
     jpegQuality: 0.95       // JPEG fallback quality
+  },
+
+  // Multiple carpet detection thresholds (based on real data analysis)
+  carpetMetrics: {
+    colorComplexity: 100,      // PRIMARY: 56→143 on carpet, threshold ~100
+    varianceIntensity: 60,     // SECONDARY: 41→86 on carpet, threshold ~60
+    frequencyAnalysis: 4,      // GOOD: 2%→6% on carpet, threshold ~4%
+    localContrast: 15,         // MODERATE: needs more testing
+    fiberDirection: 10,        // LOW: not very responsive for this carpet type
+    gradientDensity: 25,       // INVERTED: 35%→19% (lower on carpet)
+    textureUniformity: 5       // BROKEN: always 0%, needs algorithm fix
   }
 } as const;

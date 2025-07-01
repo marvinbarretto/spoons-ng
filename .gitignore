@@ -87,3 +87,6 @@ CLAUDE.md
 firebase-debug.log
 TASKS.md
 .claude/settings.local.json
+BACKLOG.md
+PATTERNS.md
+upload-tasks.sh

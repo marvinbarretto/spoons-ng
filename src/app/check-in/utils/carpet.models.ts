@@ -15,6 +15,15 @@ export type CarpetRecognitionData = {
   totalSamples?: number;
   textureRatio?: number;
 
+  // Multiple carpet detection metrics
+  varianceIntensity?: number;      // Local pixel intensity variance
+  fiberDirection?: number;         // Directional texture analysis score
+  colorComplexity?: number;        // Multi-channel color pattern detection
+  frequencyAnalysis?: number;      // High-frequency texture content
+  localContrast?: number;          // Micro-contrast variations
+  gradientDensity?: number;        // Edge gradient distribution
+  textureUniformity?: number;      // Consistency of texture across surface
+
   // Image quality
   isSharp: boolean;
   blurScore: number;

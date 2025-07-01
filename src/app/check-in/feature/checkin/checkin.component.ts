@@ -1,9 +1,12 @@
-import { Component, inject, OnDestroy, signal, ElementRef, ViewChild, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, signal, ElementRef, ViewChild, OnInit, computed } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '@shared/base/base.component';
 import { CheckInStore } from '../../../check-in/data-access/check-in.store';
 import { PubStore } from '../../../pubs/data-access/pub.store';
+import { CarpetRecognitionService } from '../../data-access/carpet-recognition.service';
+import { CARPET_RECOGNITION_CONFIG } from '../../data-access/carpet-recognition.config';
 import { ACTIVE_DEVELOPMENT_MODE } from '@shared/utils/dev-mode.constants';
+import { CommonModule } from '@angular/common';
 
 // State machine phases
 type CheckinPhase =
@@ -16,6 +19,7 @@ type CheckinPhase =
 
 @Component({
   selector: 'app-checkin',
+  imports: [CommonModule],
   template: `
     <div class="checkin-container">
 
@@ -50,10 +54,22 @@ type CheckinPhase =
             @case ('WAITING_FOR_GATES') {
               <div class="status-message">Point at the carpet</div>
               <div class="gates-status">
-                <div class="gate" [class.passed]="gatesPassed().edges">📐 Edges: {{ edgeCount() }}</div>
-                <div class="gate" [class.passed]="gatesPassed().orientation">📱 Orientation: {{ orientationOk() ? 'OK' : 'Turn phone down' }}</div>
-                <div class="gate" [class.passed]="gatesPassed().stable">⚖️ Stable: {{ deviceStable() ? 'YES' : 'NO' }}</div>
-                <div class="gate" [class.passed]="gatesPassed().sharp">🔍 Sharp: {{ sharpnessScore() }}</div>
+                <!-- Core gates -->
+                <div class="gate" [class.passed]="gatesPassed().orientation">📱 Orientation: {{ (carpetData().orientationConfidence || 0) | number:'1.2-2' }}</div>
+                <div class="gate" [class.passed]="gatesPassed().stable">⚖️ Device Stable: {{ carpetData().deviceStable ? 'YES' : 'NO' }}</div>
+                
+                <!-- Multiple carpet detection experiments -->
+                <div class="gate experimental" [class.passed]="gatesPassed().varianceIntensity">🔬 Variance Intensity: {{ carpetData().varianceIntensity || 0 }}</div>
+                <div class="gate experimental">🧵 Fiber Direction: {{ carpetData().fiberDirection || 0 }}</div>
+                <div class="gate experimental winner" [class.passed]="gatesPassed().colorComplexity">🌈 Color Complexity: {{ carpetData().colorComplexity || 0 }} ⭐</div>
+                <div class="gate experimental" [class.passed]="gatesPassed().frequencyAnalysis">📊 Frequency Analysis: {{ carpetData().frequencyAnalysis || 0 }}%</div>
+                <div class="gate experimental">🔍 Local Contrast: {{ carpetData().localContrast || 0 }}</div>
+                <div class="gate experimental">📐 Gradient Density: {{ carpetData().gradientDensity || 0 }}%</div>
+                <div class="gate experimental broken">⚖️ Texture Uniformity: {{ carpetData().textureUniformity || 0 }}%</div>
+                
+                <!-- Original metrics for comparison -->
+                <div class="gate original">🎨 Pattern Density: {{ ((carpetData().textureRatio || 0) * 100) | number:'1.0-0' }}%</div>
+                <div class="gate original">🔧 Texture Coherence: {{ carpetData().edgeCount || 0 }}</div>
               </div>
               @if (allGatesPassed()) {
                 <button class="capture-btn" (click)="capturePhoto()">
@@ -183,6 +199,29 @@ type CheckinPhase =
       background: rgba(0, 255, 0, 0.3);
     }
 
+    .gate.experimental {
+      background: rgba(255, 165, 0, 0.2);
+      border-left: 3px solid orange;
+      font-size: 0.9rem;
+    }
+
+    .gate.original {
+      background: rgba(0, 123, 255, 0.2);
+      border-left: 3px solid blue;
+    }
+
+    .gate.winner {
+      background: rgba(255, 215, 0, 0.3) !important;
+      border-left: 3px solid gold !important;
+      font-weight: bold;
+    }
+
+    .gate.broken {
+      background: rgba(128, 128, 128, 0.2) !important;
+      border-left: 3px solid gray !important;
+      opacity: 0.6;
+    }
+
     .capture-btn, .exit-btn {
       background: #007bff;
       color: white;
@@ -264,17 +303,15 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
   private readonly route = inject(ActivatedRoute);
   private readonly checkinStore = inject(CheckInStore);
   private readonly pubStore = inject(PubStore);
+  private readonly _carpetService = inject(CarpetRecognitionService);
 
   // State
   protected readonly currentPhase = signal<CheckinPhase>('CAMERA_STARTING');
   protected readonly pubId = signal<string | null>(null);
   protected readonly capturedPhotoUrl = signal<string | null>(null);
 
-  // Gate monitoring
-  protected readonly edgeCount = signal(0);
-  protected readonly orientationOk = signal(false);
-  protected readonly deviceStable = signal(false);
-  protected readonly sharpnessScore = signal(0);
+  // Real carpet recognition data
+  protected readonly carpetData = this._carpetService.data;
 
   // Results
   protected readonly pointsEarned = signal(0);
@@ -289,17 +326,27 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
     return id ? this.pubStore.get(id)?.name || 'Unknown Pub' : 'Unknown Pub';
   };
 
-  protected readonly gatesPassed = () => ({
-    edges: this.edgeCount() > 50,
-    orientation: this.orientationOk(),
-    stable: this.deviceStable(),
-    sharp: this.sharpnessScore() > 100
+  protected readonly gatesPassed = computed(() => {
+    const data = this.carpetData();
+    const config = CARPET_RECOGNITION_CONFIG;
+
+    return {
+      edges: (data.edgeCount || 0) > config.texture.edgeThreshold,
+      orientation: (data.orientationConfidence || 0) > config.orientation.minConfidence,
+      stable: data.deviceStable || false,
+      sharp: (data.blurScore || 0) > config.blur.sharpnessThreshold,
+      // New carpet-specific gates based on real data
+      colorComplexity: (data.colorComplexity || 0) > config.carpetMetrics.colorComplexity,
+      varianceIntensity: (data.varianceIntensity || 0) > config.carpetMetrics.varianceIntensity,
+      frequencyAnalysis: (data.frequencyAnalysis || 0) > config.carpetMetrics.frequencyAnalysis
+    };
   });
 
-  protected readonly allGatesPassed = () => {
+  protected readonly allGatesPassed = computed(() => {
     const gates = this.gatesPassed();
-    return gates.edges && gates.orientation && gates.stable && gates.sharp;
-  };
+    // Use the best-performing metrics: Color Complexity as primary + orientation/stable
+    return gates.colorComplexity && gates.orientation && gates.stable;
+  });
 
   // Camera stream
   private stream: MediaStream | null = null;
@@ -352,41 +399,38 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
   }
 
   private startGateMonitoring(): void {
-    console.log('[Checkin] 🚦 Starting gate monitoring');
+    console.log('[Checkin] 🚦 Starting real gate monitoring via CarpetRecognitionService');
 
-    // Dev mode shortcut - force all gates to pass after 2 seconds
+    // Start the carpet recognition service for real camera analysis
+    this._carpetService.startRecognition();
+
+    // Dev mode shortcut - still check gates but faster timeout
     if (this.ACTIVE_DEVELOPMENT_MODE) {
       setTimeout(() => {
-        console.log('[Checkin] 🧪 DEV MODE: All gates forced to pass');
-        this.edgeCount.set(75);
-        this.orientationOk.set(true);
-        this.deviceStable.set(true);
-        this.sharpnessScore.set(150);
+        console.log('[Checkin] 🧪 DEV MODE: Checking gates after 2 seconds');
+        if (this.allGatesPassed()) {
+          console.log('[Checkin] 🧪 DEV MODE: All gates passed! Auto-capturing photo');
+          this.capturePhoto();
+        }
       }, 2000);
     }
-    // Simulate gate monitoring for now
-    this.gateMonitoringInterval = window.setInterval(() => {
-      if (!this.ACTIVE_DEVELOPMENT_MODE) {
-        this.edgeCount.set(Math.floor(Math.random() * 80) + 20); // 20-100, more likely > 50
-        this.orientationOk.set(Math.random() > 0.2); // 80% chance
-        this.deviceStable.set(Math.random() > 0.3); // 70% chance
-        this.sharpnessScore.set(Math.floor(Math.random() * 150) + 50); // 50-200, more likely > 100
-      }
 
+    // Monitor real gate status using computed signal
+    this.gateMonitoringInterval = window.setInterval(() => {
       const gates = this.gatesPassed();
-      console.log('[Checkin] 🚦 Gates status:', gates);
+      console.log('[Checkin] 🚦 Real gates status:', gates);
 
       // Auto-trigger photo capture when all gates pass
       if (this.allGatesPassed()) {
         console.log('[Checkin] startGateMonitoring() - ✅ ALL GATES PASSED! Auto-capturing photo');
-        
+
         // Stop gate monitoring since we're moving to next phase
         if (this.gateMonitoringInterval) {
           clearInterval(this.gateMonitoringInterval);
           this.gateMonitoringInterval = null;
           console.log('[Checkin] startGateMonitoring() - 🛑 Gate monitoring stopped');
         }
-        
+
         this.capturePhoto();
       }
     }, 1000);
@@ -481,6 +525,9 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
 
   private cleanup(): void {
     this.stopCamera();
+
+    // Stop carpet recognition service
+    this._carpetService.stopRecognition();
 
     if (this.gateMonitoringInterval) {
       clearInterval(this.gateMonitoringInterval);

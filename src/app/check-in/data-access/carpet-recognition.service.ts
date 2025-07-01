@@ -40,7 +40,15 @@ export class CarpetRecognitionService {
     llmProcessing: false,
     llmLastResult: null,
     llmStreamingText: '',
-    llmResultPersistent: null
+    llmResultPersistent: null,
+    // Initialize new carpet metrics
+    varianceIntensity: 0,
+    fiberDirection: 0,
+    colorComplexity: 0,
+    frequencyAnalysis: 0,
+    localContrast: 0,
+    gradientDensity: 0,
+    textureUniformity: 0
   });
 
   readonly data = this._data.asReadonly();
@@ -226,6 +234,7 @@ export class CarpetRecognitionService {
   private _startVideoAnalysis(): void {
     this._scanStartTime = Date.now();
     this._hasTimedOut = false;
+    let lastLogTime = 0;
 
     const analyzeFrame = () => {
       const now = Date.now();
@@ -243,65 +252,80 @@ export class CarpetRecognitionService {
         return;
       }
 
-      console.log('🔍 [CarpetService] Running analysis frame...');
-
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-
-      if (!ctx) {
-        this._animationFrame = requestAnimationFrame(analyzeFrame);
-        return;
-      }
-
-      canvas.width = 160;
-      canvas.height = 120;
-      ctx.drawImage(this._videoElement!, 0, 0, canvas.width, canvas.height);
-
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const textureResult = this._analyzeTexture(imageData);
-      const blurResult = this._analyzeBlur(imageData);
-
-      this._updateData({
-        hasTexture: textureResult.hasTexture,
-        textureConfidence: textureResult.confidence,
-        edgeCount: textureResult.edgeCount,
-        totalSamples: textureResult.totalSamples,
-        textureRatio: textureResult.textureRatio,
-        isSharp: blurResult.isSharp,
-        blurScore: blurResult.score
-      });
-
-      const prevDecision = this._lastDecision;
-      this._calculateDecision();
-      const updatedCurrent = this._data();
-      this._lastDecision = updatedCurrent.canCheckIn;
-
-      if (prevDecision !== updatedCurrent.canCheckIn) {
-        console.log(`🎯 [CarpetService] Decision CHANGED: orient:${updatedCurrent.isPhoneDown} texture:${updatedCurrent.hasTexture} canCheckIn:${updatedCurrent.canCheckIn}`);
-      }
-
-      // Enhanced capture logic with timing controls
-      if (updatedCurrent.canCheckIn && updatedCurrent.isSharp && !updatedCurrent.photoTaken && !this._hasTimedOut) {
-        this._stableFrameCount++;
-        console.log(`📸 [CarpetService] Capture conditions met! Stable frames: ${this._stableFrameCount} (elapsed: ${elapsed}ms)`);
-
-        // Check minimum thinking time (3 seconds)
-        const hasMinTime = elapsed >= this._minThinkingTime;
-        const hasStableFrames = this._stableFrameCount >= 2;
-
-        if (hasMinTime && hasStableFrames) {
-          console.log('🚀 [CarpetService] TRIGGERING PHOTO CAPTURE!');
-          this._capturePhoto();
-          return;
-        }
-      } else {
-        this._stableFrameCount = 0;
-      }
-
+      // Only run heavy analysis every _analysisInterval ms (4fps instead of 60fps)
       if (this._lastAnalysisTime + this._analysisInterval <= now) {
         this._lastAnalysisTime = now;
+
+        // Throttled logging - only every 2 seconds
+        if (now - lastLogTime > 2000) {
+          console.log(`🔍 [CarpetService] Analysis running at 4fps (elapsed: ${elapsed}ms)`);
+          lastLogTime = now;
+        }
+
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+
+        if (!ctx) {
+          this._animationFrame = requestAnimationFrame(analyzeFrame);
+          return;
+        }
+
+        canvas.width = 320;
+        canvas.height = 240;
+        ctx.drawImage(this._videoElement!, 0, 0, canvas.width, canvas.height);
+
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const textureResult = this._analyzeTexture(imageData);
+        const blurResult = this._analyzeBlur(imageData);
+        const multiMetrics = this._analyzeMultipleCarpetMetrics(imageData);
+
+        this._updateData({
+          hasTexture: textureResult.hasTexture,
+          textureConfidence: textureResult.confidence,
+          edgeCount: textureResult.edgeCount,
+          totalSamples: textureResult.totalSamples,
+          textureRatio: textureResult.textureRatio,
+          isSharp: blurResult.isSharp,
+          blurScore: blurResult.score,
+          // Multiple carpet metrics
+          varianceIntensity: multiMetrics.varianceIntensity,
+          fiberDirection: multiMetrics.fiberDirection,
+          colorComplexity: multiMetrics.colorComplexity,
+          frequencyAnalysis: multiMetrics.frequencyAnalysis,
+          localContrast: multiMetrics.localContrast,
+          gradientDensity: multiMetrics.gradientDensity,
+          textureUniformity: multiMetrics.textureUniformity
+        });
+
+        const prevDecision = this._lastDecision;
+        this._calculateDecision();
+        const updatedCurrent = this._data();
+        this._lastDecision = updatedCurrent.canCheckIn;
+
+        if (prevDecision !== updatedCurrent.canCheckIn) {
+          console.log(`🎯 [CarpetService] Decision CHANGED: orient:${updatedCurrent.isPhoneDown} texture:${updatedCurrent.hasTexture} canCheckIn:${updatedCurrent.canCheckIn}`);
+        }
+
+        // Enhanced capture logic with timing controls
+        if (updatedCurrent.canCheckIn && updatedCurrent.isSharp && !updatedCurrent.photoTaken && !this._hasTimedOut) {
+          this._stableFrameCount++;
+          console.log(`📸 [CarpetService] Capture conditions met! Stable frames: ${this._stableFrameCount} (elapsed: ${elapsed}ms)`);
+
+          // Check minimum thinking time (3 seconds)
+          const hasMinTime = elapsed >= this._minThinkingTime;
+          const hasStableFrames = this._stableFrameCount >= 2;
+
+          if (hasMinTime && hasStableFrames) {
+            console.log('🚀 [CarpetService] TRIGGERING PHOTO CAPTURE!');
+            this._capturePhoto();
+            return;
+          }
+        } else {
+          this._stableFrameCount = 0;
+        }
       }
 
+      // Continue the animation loop but skip heavy computation most frames
       this._animationFrame = requestAnimationFrame(analyzeFrame);
     };
 
@@ -435,17 +459,28 @@ export class CarpetRecognitionService {
     let edgeCount = 0;
     let totalSamples = 0;
 
+    // Enhanced 4-direction edge detection
     for (let y = 1; y < height - 1; y += sampleStep) {
       for (let x = 1; x < width - 1; x += sampleStep) {
         const idx = (y * width + x) * 4;
 
+        // Get current pixel grayscale value
         const current = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
+
+        // Get 4-direction neighbors
         const right = (data[idx + 4] + data[idx + 5] + data[idx + 6]) / 3;
+        const left = (data[idx - 4] + data[idx - 3] + data[idx - 2]) / 3;
         const bottom = (data[((y + 1) * width + x) * 4] +
                        data[((y + 1) * width + x) * 4 + 1] +
                        data[((y + 1) * width + x) * 4 + 2]) / 3;
+        const top = (data[((y - 1) * width + x) * 4] +
+                    data[((y - 1) * width + x) * 4 + 1] +
+                    data[((y - 1) * width + x) * 4 + 2]) / 3;
 
-        const edgeStrength = Math.abs(current - right) + Math.abs(current - bottom);
+        // Sobel-style gradient calculation
+        const gradientX = Math.abs(right - left);
+        const gradientY = Math.abs(bottom - top);
+        const edgeStrength = gradientX + gradientY;
 
         if (edgeStrength > edgeDetectionThreshold) {
           edgeCount++;
@@ -726,5 +761,113 @@ export class CarpetRecognitionService {
 
   private _updateData(updates: Partial<CarpetRecognitionData>): void {
     this._data.update(current => ({ ...current, ...updates }));
+  }
+
+  private _analyzeMultipleCarpetMetrics(imageData: ImageData): {
+    varianceIntensity: number;
+    fiberDirection: number;
+    colorComplexity: number;
+    frequencyAnalysis: number;
+    localContrast: number;
+    gradientDensity: number;
+    textureUniformity: number;
+  } {
+    const data = imageData.data;
+    const width = imageData.width;
+    const height = imageData.height;
+    const sampleStep = 6; // Denser sampling for better analysis
+
+    let varianceSum = 0;
+    let fiberDirectionSum = 0;
+    let colorComplexitySum = 0;
+    let highFreqCount = 0;
+    let contrastSum = 0;
+    let gradientCount = 0;
+    let uniformityVariance = 0;
+    let samples = 0;
+
+    const intensities: number[] = [];
+
+    for (let y = 2; y < height - 2; y += sampleStep) {
+      for (let x = 2; x < width - 2; x += sampleStep) {
+        const idx = (y * width + x) * 4;
+
+        // 1. Variance Intensity - Local pixel variance
+        const neighborhood = this._get5x5Neighborhood(data, x, y, width);
+        const mean = neighborhood.reduce((a, b) => a + b, 0) / neighborhood.length;
+        const variance = neighborhood.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / neighborhood.length;
+        varianceSum += variance;
+        intensities.push(mean);
+
+        // 2. Fiber Direction - Directional texture analysis
+        const horizontalGrad = Math.abs(neighborhood[10] - neighborhood[14]); // Left to right
+        const verticalGrad = Math.abs(neighborhood[5] - neighborhood[19]);   // Top to bottom
+        const diag1Grad = Math.abs(neighborhood[0] - neighborhood[24]);      // Diagonal
+        const diag2Grad = Math.abs(neighborhood[4] - neighborhood[20]);      // Other diagonal
+        const maxGrad = Math.max(horizontalGrad, verticalGrad, diag1Grad, diag2Grad);
+        fiberDirectionSum += maxGrad;
+
+        // 3. Color Complexity - Multi-channel analysis
+        const r = data[idx];
+        const g = data[idx + 1];
+        const b = data[idx + 2];
+        const colorVar = Math.abs(r - g) + Math.abs(g - b) + Math.abs(b - r);
+        colorComplexitySum += colorVar;
+
+        // 4. Frequency Analysis - High frequency content
+        const laplacian = Math.abs(
+          neighborhood[12] * 4 - (neighborhood[7] + neighborhood[11] + neighborhood[13] + neighborhood[17])
+        );
+        if (laplacian > 20) highFreqCount++;
+
+        // 5. Local Contrast - Micro-contrast variations
+        const minVal = Math.min(...neighborhood);
+        const maxVal = Math.max(...neighborhood);
+        contrastSum += (maxVal - minVal);
+
+        // 6. Gradient Density - Count significant gradients
+        if (maxGrad > 15) gradientCount++;
+
+        samples++;
+      }
+    }
+
+    // 7. Texture Uniformity - How consistent the texture is
+    if (intensities.length > 1) {
+      const globalMean = intensities.reduce((a, b) => a + b, 0) / intensities.length;
+      uniformityVariance = intensities.reduce((sum, val) => sum + Math.pow(val - globalMean, 2), 0) / intensities.length;
+      
+      // Debug texture uniformity calculation
+      if (uniformityVariance === 0) {
+        console.log('🔧 [CarpetService] Texture uniformity debug:', {
+          samplesCount: intensities.length,
+          globalMean,
+          firstFewIntensities: intensities.slice(0, 5),
+          uniformityVariance
+        });
+      }
+    }
+
+    return {
+      varianceIntensity: Math.round(samples > 0 ? varianceSum / samples : 0),
+      fiberDirection: Math.round(samples > 0 ? fiberDirectionSum / samples : 0),
+      colorComplexity: Math.round(samples > 0 ? colorComplexitySum / samples : 0),
+      frequencyAnalysis: Math.round((highFreqCount / samples) * 100),
+      localContrast: Math.round(samples > 0 ? contrastSum / samples : 0),
+      gradientDensity: Math.round((gradientCount / samples) * 100),
+      textureUniformity: Math.round(100 - Math.min(uniformityVariance / 10, 100)) // Invert so higher = more uniform
+    };
+  }
+
+  private _get5x5Neighborhood(data: Uint8ClampedArray, x: number, y: number, width: number): number[] {
+    const neighborhood: number[] = [];
+    for (let dy = -2; dy <= 2; dy++) {
+      for (let dx = -2; dx <= 2; dx++) {
+        const idx = ((y + dy) * width + (x + dx)) * 4;
+        const intensity = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
+        neighborhood.push(intensity);
+      }
+    }
+    return neighborhood;
   }
 }
