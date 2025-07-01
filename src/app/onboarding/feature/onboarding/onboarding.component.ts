@@ -23,7 +23,7 @@ import { ChooseYourLookStepComponent } from '../../ui/steps/choose-your-look-ste
 import { ChooseYourNameStepComponent } from '../../ui/steps/choose-your-name-step.component';
 import { ReadyToStartStepComponent } from '../../ui/steps/ready-to-start-step.component';
 
-type OnboardingStep = 
+type OnboardingStep =
   | 'ask-notifications'     // Request notification permissions
   | 'ask-location'          // Request location permissions (REQUIRED)
   | 'welcome-message'       // "You gotta catch them all" welcome
@@ -63,20 +63,20 @@ type OnboardingStep =
               (skipNotifications)="skipNotifications()"
             />
           }
-          
+
           @case ('ask-location') {
             <app-ask-location-step
               [isRequesting]="locationRequired()"
               (enableLocation)="requestLocationPermission()"
             />
           }
-          
+
           @case ('welcome-message') {
             <app-welcome-message-step
               (continue)="proceedToLookCustomization()"
             />
           }
-          
+
           @case ('choose-your-look') {
             <app-choose-your-look-step
               [user]="user()"
@@ -86,7 +86,7 @@ type OnboardingStep =
               (continue)="proceedToNameSelection()"
             />
           }
-          
+
           @case ('choose-your-name') {
             <app-choose-your-name-step
               [displayName]="displayName()"
@@ -96,7 +96,7 @@ type OnboardingStep =
               (continue)="proceedToHomePubSelection()"
             />
           }
-          
+
           @case ('choose-home-pub') {
             <div class="step">
               <h2>Choose Your Home Pub</h2>
@@ -113,7 +113,7 @@ type OnboardingStep =
               </div>
             </div>
           }
-          
+
           @case ('ready-to-start') {
             <app-ready-to-start-step
               [displayName]="displayName()"
@@ -179,7 +179,7 @@ export class OnboardingComponent extends BaseComponent {
   readonly selectedAvatarId = signal('');
   readonly selectedHomePubId = signal<string | null>(null);
   readonly saving = signal(false);
-  
+
   // Permission states
   readonly notificationsGranted = signal(false);
   readonly locationGranted = signal(false);
@@ -193,7 +193,7 @@ export class OnboardingComponent extends BaseComponent {
   // Computed properties
   readonly progressPercentage = computed(() => {
     const steps: OnboardingStep[] = [
-      'ask-notifications', 'ask-location', 'welcome-message', 
+      'ask-notifications', 'ask-location', 'welcome-message',
       'choose-your-look', 'choose-your-name', 'choose-home-pub', 'ready-to-start'
     ];
     const currentIndex = steps.indexOf(this.currentStep());
@@ -202,7 +202,7 @@ export class OnboardingComponent extends BaseComponent {
 
   override async onInit() {
     console.log('[Onboarding] Component initialized');
-    
+
     // Pre-populate display name if user already has one
     const user = this.user();
     if (user?.displayName) {
@@ -212,14 +212,14 @@ export class OnboardingComponent extends BaseComponent {
 
   // Step navigation with readable method names
   private readonly stepOrder: OnboardingStep[] = [
-    'ask-notifications', 'ask-location', 'welcome-message', 
+    'ask-notifications', 'ask-location', 'welcome-message',
     'choose-your-look', 'choose-your-name', 'choose-home-pub', 'ready-to-start'
   ];
 
   proceedToNextStep(): void {
     const current = this.currentStep();
     const currentIndex = this.stepOrder.indexOf(current);
-    
+
     if (currentIndex < this.stepOrder.length - 1) {
       this.currentStep.set(this.stepOrder[currentIndex + 1]);
     }
@@ -228,7 +228,7 @@ export class OnboardingComponent extends BaseComponent {
   goBackToPreviousStep(): void {
     const current = this.currentStep();
     const currentIndex = this.stepOrder.indexOf(current);
-    
+
     if (currentIndex > 0) {
       this.currentStep.set(this.stepOrder[currentIndex - 1]);
     }
@@ -257,26 +257,103 @@ export class OnboardingComponent extends BaseComponent {
   }
 
   async requestLocationPermission(): Promise<void> {
+    console.log('[Onboarding] 📍 Starting location permission request...');
     this.locationRequired.set(true);
+
     try {
-      await new Promise<void>((resolve, reject) => {
+      // Check if geolocation is supported
+      if (!('geolocation' in navigator)) {
+        throw new Error('Geolocation not supported by this browser');
+      }
+
+      // Request location with proper options and timeout
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
         navigator.geolocation.getCurrentPosition(
-          () => {
-            this.locationGranted.set(true);
-            this.locationRequired.set(false);
-            resolve();
+          (position) => {
+            console.log('[Onboarding] ✅ Location permission granted and position acquired');
+            resolve(position);
           },
           (error) => {
-            this.locationRequired.set(false);
+            console.error('[Onboarding] ❌ Location error:', {
+              code: error.code,
+              message: error.message
+            });
             reject(error);
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,  // 10 second timeout
+            maximumAge: 30000  // Accept cached position up to 30 seconds old
           }
         );
       });
+
+      // Success: store the location and proceed
+      this.locationGranted.set(true);
+      this.locationRequired.set(false);
+
+      // Optional: Store the actual coordinates for later use
+      console.log('[Onboarding] 📍 Position acquired:', {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude,
+        accuracy: position.coords.accuracy
+      });
+
       this.proceedToWelcome();
-    } catch (error) {
-      console.error('[Onboarding] Location permission error:', error);
-      this.showError('Location access is required to find nearby pubs. Please enable location permissions.');
+
+    } catch (error: any) {
+      this.locationRequired.set(false);
+      console.error('[Onboarding] ❌ Location permission failed:', error);
+
+      // Provide specific error messages and recovery options
+      this.handleLocationError(error);
     }
+  }
+
+  private handleLocationError(error: GeolocationPositionError): void {
+    let errorMessage = '';
+    let showRetryOption = false;
+
+    switch (error.code) {
+      case error.PERMISSION_DENIED:
+        errorMessage = 'Location access was denied. To use this app, please:\n\n' +
+                      '1. Enable location permissions in your browser\n' +
+                      '2. Refresh the page and try again\n\n' +
+                      'Or tap "Continue Without Location" to proceed with limited functionality.';
+        showRetryOption = false;
+        break;
+
+      case error.POSITION_UNAVAILABLE:
+        errorMessage = 'Location information is unavailable. Please check your device settings and try again.';
+        showRetryOption = true;
+        break;
+
+      case error.TIMEOUT:
+        errorMessage = 'Location request timed out. Please try again.';
+        showRetryOption = true;
+        break;
+
+      default:
+        errorMessage = 'Failed to get your location. Please try again.';
+        showRetryOption = true;
+        break;
+    }
+
+    this.showError(errorMessage);
+
+    // Optional: Add retry functionality or skip option
+    if (showRetryOption) {
+      // You could add a retry button or auto-retry logic here
+      console.log('[Onboarding] 🔄 Location error allows retry');
+    }
+  }
+
+  // Optional: Add a method to skip location if needed
+  skipLocationPermission(): void {
+    console.log('[Onboarding] ⏭️ Skipping location permission');
+    this.locationGranted.set(false);
+    this.locationRequired.set(false);
+    this.proceedToWelcome();
   }
 
   skipNotifications(): void {
@@ -333,12 +410,12 @@ export class OnboardingComponent extends BaseComponent {
         homePubId: this.selectedHomePubId() || undefined,
         onboardingCompleted: true
       };
-      
+
       console.log('[Onboarding] 📝 Updating user profile with:', updateData);
       await this.userStore.updateProfile(updateData);
 
       console.log('[Onboarding] ✅ User profile updated successfully');
-      
+
       // Verify the update took effect
       const updatedUser = this.user();
       console.log('[Onboarding] 🔍 User after update:', {
@@ -363,14 +440,14 @@ export class OnboardingComponent extends BaseComponent {
   // Utility methods
   private getAvatarUrlById(avatarId: string): string {
     if (!avatarId) return '/assets/avatars/npc.webp';
-    
+
     const user = this.user();
     if (!user) return '/assets/avatars/npc.webp';
-    
+
     // Generate avatar options for this user and find the selected one
     const avatarOptions = this.avatarService.generateAvatarOptions(user.uid);
     const selectedOption = avatarOptions.find(option => option.id === avatarId);
-    
+
     return selectedOption?.url || '/assets/avatars/npc.webp';
   }
 }

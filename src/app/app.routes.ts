@@ -36,25 +36,10 @@ export const appRoutes: Routes = [
     data: { shell: 'fullscreen' }
   },
   {
-    path: 'test-carpet',
-    title: 'Test Carpet',
-    loadComponent: () =>
-      import('./check-in/feature/carpet-scanner/carpet-scanner.component')
-        .then(m => m.CarpetScannerComponent),
-    data: { shell: 'fullscreen' }
-  },
-  {
     path: 'carpets',
     loadChildren: () =>
       import('./carpets/data-access/carpet.routes').then((m) => m.CARPETS_ROUTES),
     data: { shell: 'feature' }
-  },
-  {
-    path: 'dev/carpet-analyzer',
-    loadComponent: () =>
-      import('./dev/carpet-analyzer/carpet-analyzer.component')
-        .then(m => m.CarpetAnalyzerComponent),
-    data: { shell: 'fullscreen' }
   },
 
   {
