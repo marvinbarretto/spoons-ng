@@ -29,7 +29,8 @@
             "redis",
             "form-data",
             "proxy-from-env",
-            "follow-redirects"
+            "follow-redirects",
+            "qrcode"
           ],
           "outputPath": "dist/spoons",
           "index": "src/index.html",

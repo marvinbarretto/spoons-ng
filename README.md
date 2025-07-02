@@ -139,3 +139,7 @@ npx ts-node --project tsconfig.seed.json tools/seed/seed.ts
 ```
 
 
+
+
+`npm run analyze` - to check bundle size
+

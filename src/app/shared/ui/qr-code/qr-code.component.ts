@@ -1,6 +1,5 @@
 import { Component, ElementRef, Input, OnInit, ViewChild, inject } from '@angular/core';
 import { SsrPlatformService } from '../../utils/ssr/ssr-platform.service';
-import QRCode from 'qrcode';
 
 @Component({
   selector: 'app-qr-code',
@@ -40,25 +39,31 @@ export class QrCodeComponent implements OnInit {
     });
   }
 
-  private generateQRCode(): void {
+  private async generateQRCode(): Promise<void> {
     if (!this.canvas) {
       setTimeout(() => this.generateQRCode(), 100);
       return;
     }
     
-    QRCode.toCanvas(this.canvas.nativeElement, this.url, {
-      width: this.size,
-      margin: 2,
-      color: {
-        dark: '#000000',
-        light: '#FFFFFF'
-      }
-    }, (error) => {
-      if (error) {
-        console.error('[QrCode] Error generating QR code:', error);
-      } else {
-        console.log('[QrCode] QR code generated successfully');
-      }
-    });
+    try {
+      const QRCode = await import('qrcode');
+      
+      QRCode.default.toCanvas(this.canvas.nativeElement, this.url, {
+        width: this.size,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      }, (error) => {
+        if (error) {
+          console.error('[QrCode] Error generating QR code:', error);
+        } else {
+          console.log('[QrCode] QR code generated successfully');
+        }
+      });
+    } catch (error) {
+      console.error('[QrCode] Error loading QR code library:', error);
+    }
   }
 }
