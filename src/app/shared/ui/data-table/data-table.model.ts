@@ -6,4 +6,5 @@ export type TableColumn = {
   renderer?: (value: any, row: any, index?: number) => any; // For custom component rendering
   sortable?: boolean;
   width?: string;
+  hideOnMobile?: boolean; // Hide this column on mobile devices
 };

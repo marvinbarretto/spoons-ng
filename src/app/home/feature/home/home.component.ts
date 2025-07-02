@@ -17,7 +17,7 @@ import { PubStore } from '../../../pubs/data-access/pub.store';
 // Import micro-widget components
 import { ScoreboardData, ScoreboardHeroComponent } from '@home/ui/scoreboard-hero/scoreboard-hero.component';
 import { BadgesShowcaseComponent } from '@home/ui/badges-showcase/badges-showcase.component';
-import { MissionsSectionComponent } from '../../ui/missions-widget/missions-widget.component';
+import { MissionsWidgetComponent } from '../../../widgets/missions/missions-widget.component';
 import { UserProfileWidgetComponent } from '@home/ui/user-profile-widget/user-profile-widget.component';
 import { ProfileCustomisationModalComponent } from '@home/ui/profile-customisation-modal/profile-customisation-modal.component';
 import { CarpetCollectionWidgetComponent } from '../../../widgets/carpet-collection/carpet-collection-widget.component';
@@ -25,6 +25,7 @@ import { CarpetCollectionWidgetComponent } from '../../../widgets/carpet-collect
 import { UserAvatarComponent } from "../../../shared/ui/user-avatar/user-avatar.component";
 import { NearestPubComponent } from '../../../widgets/nearest-pub/nearest-pub.component';
 import { LeaderboardWidgetComponent } from '../../../widgets/leaderboard/leaderboard-widget.component';
+import { LocalLeaderboardWidgetComponent } from '../../../widgets/local-leaderboard/local-leaderboard-widget.component';
 import { RecentActivityWidgetComponent } from '../../../widgets/recent-activity/recent-activity-widget.component';
 import { ScoreboardHeroWidgetComponent } from '../../../widgets/scoreboard-hero/scoreboard-hero-widget.component';
 
@@ -36,12 +37,13 @@ import { ScoreboardHeroWidgetComponent } from '../../../widgets/scoreboard-hero/
     ScoreboardHeroComponent,
     ScoreboardHeroWidgetComponent,
     BadgesShowcaseComponent,
-    MissionsSectionComponent,
+    MissionsWidgetComponent,
     UserProfileWidgetComponent,
     CarpetCollectionWidgetComponent,
     RouterModule,
     NearestPubComponent,
     LeaderboardWidgetComponent,
+    LocalLeaderboardWidgetComponent,
     RecentActivityWidgetComponent,
 ],
   templateUrl: './home.component.html',
@@ -133,25 +135,6 @@ export class HomeComponent extends BaseComponent {
   readonly scoreboardData = this.dataAggregatorService.scoreboardData;
 
 
-  readonly activeMissions = computed(() => {
-    const user = this.user();
-    const allMissions = this.missionStore?.missions?.() || [];
-
-    if (!user?.joinedMissionIds?.length || !allMissions.length) return [];
-
-    return allMissions
-      .filter(mission => user.joinedMissionIds!.includes(mission.id))
-      .map(mission => ({
-        id: mission.id,
-        title: mission.name,
-        description: mission.description,
-        progress: mission.pubIds?.filter(id =>
-          this.dataAggregatorService.hasVisitedPub(id)
-        ).length || 0,
-        total: mission.pubIds?.length || 0
-      }))
-      .slice(0, 3); // Show max 3 active missions
-  });
 
   readonly isNewUser = computed(() => {
     const user = this.user();
@@ -192,15 +175,6 @@ export class HomeComponent extends BaseComponent {
     this.showInfo('How to play guide coming soon!');
   }
 
-  handleStartMission(): void {
-    console.log('[Home] Navigating to missions');
-    this.router.navigate(['/missions']);
-  }
-
-  handleViewMission(missionId: string): void {
-    console.log('[Home] Viewing mission:', missionId);
-    this.router.navigate(['/missions', missionId]);
-  }
 
 
 // ✅ Event Handlers
@@ -244,8 +218,7 @@ handleOpenProfile(): void {
       loading: this.userStore.loading?.() || false
     },
     missionStore: {
-      available: !!this.missionStore,
-      activeMissions: this.activeMissions().length
+      available: !!this.missionStore
     }
   }));
 

@@ -6,6 +6,7 @@ import { BaseComponent } from '../../../shared/base/base.component';
 import { PubStore } from '../../data-access/pub.store';
 import { CheckInStore } from '../../../check-in/data-access/check-in.store';
 import { UserStore } from '@users/data-access/user.store';
+import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
 import { PubCardComponent } from '../../ui/pub-card/pub-card.component';
 import type { Pub } from '../../utils/pub.models';
 
@@ -22,6 +23,7 @@ export class PubListComponent extends BaseComponent implements OnInit {
   protected readonly pubStore = inject(PubStore);
   private readonly checkinStore = inject(CheckInStore);
   private readonly userStore = inject(UserStore);
+  protected readonly dataAggregatorService = inject(DataAggregatorService);
 
   // ✅ Local state
   private readonly _searchTerm = signal('');

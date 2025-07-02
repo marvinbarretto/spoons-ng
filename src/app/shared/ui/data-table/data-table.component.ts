@@ -1,8 +1,9 @@
 // src/app/shared/ui/data-table/data-table.component.ts
-import { Component, input, computed, signal } from "@angular/core";
+import { Component, input, computed, signal, inject } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { TableColumn } from './data-table.model';
 import { UserChipComponent, UserChipData } from '../chips/user-chip/user-chip.component';
+import { ViewportService } from '../../data-access/viewport.service';
 
 export type SortDirection = 'asc' | 'desc' | null;
 export type SortState = {
@@ -21,7 +22,7 @@ export type SortState = {
         <table>
           <thead>
             <tr>
-              @for (column of columns(); track column.key) {
+              @for (column of displayColumns(); track column.key) {
                 <th 
                   [class]="getHeaderClass(column)" 
                   [style.width]="column.width"
@@ -46,7 +47,7 @@ export type SortState = {
                 [class]="getRowClassName(row)"
                 (click)="handleRowClick(row)"
               >
-                @for (column of columns(); track column.key) {
+                @for (column of displayColumns(); track column.key) {
                   <td [class]="column.className">
                     @if (column.renderer) {
                       <!-- Custom renderer content -->
@@ -247,8 +248,24 @@ export class DataTableComponent {
   readonly onRowClick = input<(row: any) => void>();
   readonly searchTerm = input<string>('');
 
+  // Viewport service for responsive behavior
+  private readonly viewportService = inject(ViewportService);
+
   // Sort state
   readonly sortState = signal<SortState>({ column: null, direction: null });
+
+  // Responsive columns - filter out columns that should be hidden on mobile
+  readonly displayColumns = computed(() => {
+    const allColumns = this.columns();
+    const isMobile = this.viewportService.isMobile();
+    
+    if (!isMobile) {
+      return allColumns;
+    }
+    
+    // On mobile, filter out columns that have hideOnMobile property
+    return allColumns.filter(column => !column.hideOnMobile);
+  });
 
   // Filtered data based on search
   readonly filteredData = computed(() => {

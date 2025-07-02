@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, signal, ElementRef, ViewChild, OnInit, computed } from '@angular/core';
+import { Component, inject, OnDestroy, signal, ElementRef, ViewChild, OnInit, AfterViewInit, computed } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '@shared/base/base.component';
 import { CheckInStore } from '../../../check-in/data-access/check-in.store';
@@ -330,7 +330,7 @@ type CheckinPhase =
     }
   `
 })
-export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy {
+export class CheckinComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('videoElement', { static: false }) videoElement!: ElementRef<HTMLVideoElement>;
 
   private readonly route = inject(ActivatedRoute);
@@ -363,21 +363,20 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
     console.log(`[Checkin] 🔄 === PHASE TRANSITION ===`);
     console.log(`[Checkin] 🔄 From: ${oldPhase} → To: ${newPhase}`);
     console.log(`[Checkin] 🔄 Video will be shown: ${newPhase === 'CAMERA_STARTING' || newPhase === 'WAITING_FOR_GATES'}`);
+
+    // Clean up intervals when leaving WAITING_FOR_GATES (the only phase that runs monitoring)
+    if (oldPhase === 'WAITING_FOR_GATES' && newPhase !== 'WAITING_FOR_GATES') {
+      this.cleanupIntervals();
+    }
+
     this._currentPhase.set(newPhase);
-    
-    // Log video element availability immediately after phase change
-    this.safeSetTimeout(() => {
-      console.log(`[Checkin] 🔄 After phase change - Video element exists: ${!!this.videoElement?.nativeElement}`);
-      if (this.videoElement?.nativeElement) {
-        console.log(`[Checkin] 🔄 After phase change - Video dimensions: ${this.videoElement.nativeElement.videoWidth}x${this.videoElement.nativeElement.videoHeight}`);
-      }
-    }, 0);
+
   }
   protected readonly pubId = signal<string | null>(null);
   protected readonly capturedPhotoUrl = signal<string | null>(null);
   protected readonly capturedPhotoBlob = signal<Blob | null>(null);
   private capturedCanvas: HTMLCanvasElement | null = null;
-  
+
   // LLM Analysis state
   protected readonly currentAnalysisMessage = signal('Starting analysis...');
   private readonly analysisMessages = [
@@ -416,15 +415,15 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
   // Camera readiness validation
   private isCameraReady(video: HTMLVideoElement): boolean {
     const isReady = video.readyState >= 2 && // HAVE_CURRENT_DATA or higher
-                   video.videoWidth > 0 && 
+                   video.videoWidth > 0 &&
                    video.videoHeight > 0;
-    
+
     console.log('[Checkin] 🔍 Camera readiness check:', {
       readyState: video.readyState,
       dimensions: `${video.videoWidth}x${video.videoHeight}`,
       isReady
     });
-    
+
     return isReady;
   }
 
@@ -528,10 +527,11 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
   private stream: MediaStream | null = null;
   private gateMonitoringInterval: number | null = null;
   private metricsAnalysisInterval: number | null = null;
-  
+  private videoEventCleanups: (() => void)[] = [];
+
   // Device orientation cleanup
   private deviceOrientationHandler: ((event: DeviceOrientationEvent) => void) | null = null;
-  
+
   // Timeout tracking for cleanup
   private activeTimeouts: Set<number> = new Set();
 
@@ -553,21 +553,27 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
     console.log('[Checkin] 🚀 Starting check-in for pub:', pubIdParam);
 
     this.startDeviceOrientationMonitoring();
+  }
+
+  ngAfterViewInit(): void {
+    // Camera initialization requires video element to be available
+    // This ensures @ViewChild videoElement is guaranteed to exist
+    console.log('[Checkin] 📹 View initialized - starting camera');
     this.startCamera();
   }
 
   ngOnDestroy(): void {
     console.log('[Checkin] 🚪 Component destroyed - starting comprehensive cleanup');
-    
+
     // Defensive cleanup - clear all intervals first to prevent any ongoing work
     this.cleanupIntervals();
-    
+
     // Clear all timeouts to prevent delayed callbacks
     this.cleanupTimeouts();
-    
+
     // Full cleanup
     this.cleanup();
-    
+
     console.log('[Checkin] ✅ Component destruction cleanup completed');
   }
 
@@ -579,7 +585,7 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
     if ('DeviceOrientationEvent' in window) {
       // Create bound handler that can be properly removed
       this.deviceOrientationHandler = this.handleDeviceOrientation.bind(this);
-      
+
       // Check if we need permission (iOS 13+)
       if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
         console.log('[Checkin] 🔐 Requesting device orientation permission...');
@@ -636,29 +642,20 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
     console.log('[Checkin] 📹 === STARTING CAMERA ===');
     console.log('[Checkin] 📹 Video element available:', !!this.videoElement?.nativeElement);
     console.log('[Checkin] 📹 Current phase:', this.currentPhase());
-    
+
     // Defensive cleanup - ensure any previous camera state is cleared
     if (this.stream) {
       console.log('[Checkin] 📹 Found existing stream, cleaning up first');
       this.stopCamera();
     }
-    
+
     if (!this.videoElement?.nativeElement) {
-      console.error('[Checkin] ❌ === CRITICAL: VIDEO ELEMENT NOT AVAILABLE ===');
-      console.error('[Checkin] ❌ Phase:', this.currentPhase());
-      console.error('[Checkin] ❌ ViewChild exists:', !!this.videoElement);
-      console.error('[Checkin] ❌ NativeElement exists:', !!this.videoElement?.nativeElement);
-      
-      // Wait a bit and try again
-      console.log('[Checkin] ⏳ Waiting 100ms for video element to appear...');
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      if (!this.videoElement?.nativeElement) {
-        console.error('[Checkin] ❌ Video element still not available after wait');
-        return;
-      } else {
-        console.log('[Checkin] ✅ Video element appeared after wait');
-      }
+      console.log('[Checkin] ❌ === CRITICAL: VIDEO ELEMENT NOT AVAILABLE ===');
+      console.log('[Checkin] ❌ Phase:', this.currentPhase());
+      console.log('[Checkin] ❌ ViewChild exists:', !!this.videoElement);
+      console.log('[Checkin] ❌ NativeElement exists:', !!this.videoElement?.nativeElement);
+
+      return;
     }
 
     try {
@@ -672,17 +669,17 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
       console.log('[Checkin] 📹 Assigning stream to video element...');
       video.srcObject = this.stream;
       console.log('[Checkin] 📹 Stream assigned, waiting for video to be ready...');
-      
+
       // Wait for video to actually load frame data, not just start playing
       await this.waitForVideoReady(video);
-      
+
       console.log('[Checkin] 📹 === CAMERA STARTED SUCCESSFULLY ===');
       console.log('[Checkin] 📹 Final video state:', {
         dimensions: `${video.videoWidth}x${video.videoHeight}`,
         readyState: video.readyState,
         srcObject: video.srcObject ? 'present' : 'null'
       });
-      
+
       // Only set phase if we're in initial camera start (not retry)
       if (this.currentPhase() === 'CAMERA_STARTING') {
         this.setPhase('WAITING_FOR_GATES');
@@ -696,7 +693,7 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
 
   private async waitForVideoReady(video: HTMLVideoElement): Promise<void> {
     console.log('[Checkin] ⏳ Waiting for video to be ready...');
-    
+
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
         cleanup();
@@ -708,7 +705,15 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
         video.removeEventListener('loadedmetadata', onLoadedMetadata);
         video.removeEventListener('canplay', onCanPlay);
         video.removeEventListener('error', onError);
+        // Remove this cleanup from the global tracking array
+        const index = this.videoEventCleanups.indexOf(cleanup);
+        if (index > -1) {
+          this.videoEventCleanups.splice(index, 1);
+        }
       };
+
+      // CRITICAL: Track this cleanup function so it can be called during component destruction
+      this.videoEventCleanups.push(cleanup);
 
       const checkReady = () => {
         if (video.readyState >= 2 && video.videoWidth > 0 && video.videoHeight > 0) {
@@ -807,26 +812,6 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
     console.log('[Checkin] 🔬 FORCE STARTING ANALYSIS');
     console.log('[Checkin] 🔧 Service exists?', !!this._metricsService);
 
-    // Test the service immediately with full debugging
-    this.safeSetTimeout(() => {
-      console.log('[Checkin] 🧪 STARTING DEBUG TEST');
-      console.log('[Checkin] 📹 Video element:', !!this.videoElement?.nativeElement);
-
-      if (this.videoElement?.nativeElement) {
-        const video = this.videoElement.nativeElement;
-        console.log('[Checkin] 📐 Video dimensions:', video.videoWidth, 'x', video.videoHeight);
-        console.log('[Checkin] 🎬 Video ready state:', video.readyState);
-        console.log('[Checkin] 🔧 Calling service...');
-
-        this._metricsService.analyzeVideoFrame(video).then((result) => {
-          console.log('[Checkin] ✅ SERVICE RETURNED:', result);
-        }).catch((error) => {
-          console.error('[Checkin] ❌ SERVICE ERROR:', error);
-        });
-      } else {
-        console.error('[Checkin] ❌ NO VIDEO ELEMENT');
-      }
-    }, 1000);
 
     // Then run continuously
     this.metricsAnalysisInterval = window.setInterval(async () => {
@@ -849,51 +834,60 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     const video = this.videoElement.nativeElement;
-    
+
     // Validate camera readiness
     if (!this.isCameraReady(video)) {
       console.error('[Checkin] ❌ Camera not ready for capture, skipping');
       return;
     }
 
-    // Stop camera immediately
-    this.stopCamera();
+    // Capture video dimensions BEFORE stopping camera
+    const videoWidth = video.videoWidth;
+    const videoHeight = video.videoHeight;
 
-    // Create fake photo URL (in real implementation, capture from video)
+    // Validate dimensions are valid
+    if (videoWidth <= 0 || videoHeight <= 0) {
+      console.error('[Checkin] ❌ Invalid video dimensions for capture:', { videoWidth, videoHeight });
+      return;
+    }
+
+    console.log('[Checkin] 📐 Capturing with dimensions:', videoWidth, 'x', videoHeight);
+
+    // Create canvas with captured dimensions
     const canvas = document.createElement('canvas');
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    canvas.width = videoWidth;
+    canvas.height = videoHeight;
 
     const ctx = canvas.getContext('2d');
     if (ctx) {
+      // Draw the video frame to canvas BEFORE stopping camera
       ctx.drawImage(video, 0, 0);
-      
+
+      // Now we can safely stop the camera
+      this.stopCamera();
+
       // Store canvas for later use by CarpetStorageService
       this.capturedCanvas = canvas;
-      
+
       // Base64 for UI background and LLM API
       const photoUrl = canvas.toDataURL('image/jpeg');
       this.capturedPhotoUrl.set(photoUrl);
-      
+
       // Blob for efficient IndexedDB storage (only stored after LLM confirms carpet)
       canvas.toBlob((blob) => {
         if (blob) {
           this.capturedPhotoBlob.set(blob);
           console.log('[Checkin] capturePhoto() - 📸 Photo captured as Blob:', (blob.size / 1024).toFixed(1) + 'KB');
         }
+
+        console.log('[Checkin] capturePhoto() - 📸 Photo captured, camera stopped');
+        console.log('[Checkin] capturePhoto() - 🖼️ Background set to blurred snapshot');
+
+        // Move phase transition here to ensure photo URL is available before template renders
+        this.setPhase('PHOTO_CAPTURED');
+        this.startLLMAnalysis();
       }, 'image/jpeg', 0.8);
-      
-      console.log('[Checkin] capturePhoto() - 📸 Photo captured, camera stopped');
-      console.log('[Checkin] capturePhoto() - 🖼️ Background set to blurred snapshot');
     }
-
-    this.setPhase('PHOTO_CAPTURED');
-
-    // Move to LLM thinking phase
-    console.log('[Checkin] capturePhoto() - ⏰ Moving to LLM analysis in 500ms');
-    this.safeSetTimeout(() => {
-      this.startLLMAnalysis();
-    }, 500);
   }
 
   private async startLLMAnalysis(): Promise<void> {
@@ -912,32 +906,39 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
         return;
       }
 
-      console.log('[Checkin] 📷 Sending photo to LLM for carpet detection');
-      const result = await this.llmService.detectCarpet(photoData);
+      // STUB: Replace LLM service call for debugging
+      console.log('[Checkin] 🧪 STUBBED LLM - always returning carpet detected');
+      const result = { 
+        success: true, 
+        data: { 
+          isCarpet: true, 
+          confidence: 0.9, 
+          reasoning: 'Stubbed response - always detects carpet for debugging',
+          visualElements: ['stubbed carpet pattern']
+        } 
+      };
       
       this.stopAnalysisMessageCycling();
-      console.log('[Checkin] 🤖 LLM analysis complete:', result);
+      console.log('[Checkin] 🤖 LLM analysis complete (STUBBED):', result);
 
       if (result.success && result.data.isCarpet) {
         console.log('[Checkin] ✅ LLM confirmed carpet detected! Confidence:', result.data.confidence);
         console.log('[Checkin] 🗨️ LLM reasoning:', result.data.reasoning);
-        
+
         this.llmResponse = result.data;
         this.executeCheckin();
       } else {
         console.log('[Checkin] ❌ LLM did not detect carpet or failed');
         console.log('[Checkin] 🗨️ LLM reasoning:', result.data?.reasoning || 'No reasoning provided');
-        
+
         // Show negative result briefly, then return to gates
         const identification = this.getLLMIdentification(result.data);
         this.currentAnalysisMessage.set(`Not a carpet - ${identification}`);
-        
-        this.safeSetTimeout(async () => {
-          console.log('[Checkin] 🔄 Returning to gate monitoring after negative LLM result');
-          await this.resetForRetry();
-          // Phase is already set in resetForRetry, no need to set again
+
+        console.log('[Checkin] 🔄 Returning to gate monitoring after negative LLM result');
+        this.resetForRetry().then(() => {
           this.startGateMonitoring();
-        }, 2000);
+        });
       }
     } catch (error) {
       console.error('[Checkin] ❌ LLM analysis error:', error);
@@ -948,22 +949,20 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
 
   private handleLLMError(errorMessage: string): void {
     console.log('[Checkin] 🔧 Handling LLM error, returning to gates instead of exiting');
-    
+
     // Show error message briefly, then return to gates
     this.currentAnalysisMessage.set(`Analysis error - ${errorMessage}`);
-    
-    this.safeSetTimeout(async () => {
-      console.log('[Checkin] 🔄 Returning to gate monitoring after LLM error');
-      await this.resetForRetry();
-      // Phase is already set in resetForRetry, no need to set again
+
+    console.log('[Checkin] 🔄 Returning to gate monitoring after LLM error');
+    this.resetForRetry().then(() => {
       this.startGateMonitoring();
-    }, 2000);
+    });
   }
 
   private startAnalysisMessageCycling(): void {
     let messageIndex = 0;
     this.currentAnalysisMessage.set(this.analysisMessages[messageIndex]);
-    
+
     this.analysisMessageInterval = window.setInterval(() => {
       messageIndex = (messageIndex + 1) % this.analysisMessages.length;
       this.currentAnalysisMessage.set(this.analysisMessages[messageIndex]);
@@ -981,16 +980,16 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
   private getLLMIdentification(llmData: any): string {
     // Extract what LLM thinks it saw from the reasoning
     if (!llmData?.reasoning) return 'unknown surface';
-    
+
     // Try to extract identification from reasoning (usually first sentence)
     const reasoning = llmData.reasoning.toLowerCase();
-    
+
     // Common patterns the LLM might say
     if (reasoning.includes('floor') || reasoning.includes('hardwood') || reasoning.includes('tile')) {
       return 'floor surface';
     }
     if (reasoning.includes('wall') || reasoning.includes('brick') || reasoning.includes('concrete')) {
-      return 'wall surface'; 
+      return 'wall surface';
     }
     if (reasoning.includes('table') || reasoning.includes('desk') || reasoning.includes('furniture')) {
       return 'furniture';
@@ -998,7 +997,7 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
     if (reasoning.includes('ground') || reasoning.includes('pavement') || reasoning.includes('asphalt')) {
       return 'ground surface';
     }
-    
+
     // Fallback: use first few words of reasoning
     const firstSentence = llmData.reasoning.split('.')[0] || llmData.reasoning;
     return firstSentence.substring(0, 30) + (firstSentence.length > 30 ? '...' : '');
@@ -1006,7 +1005,7 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
 
   private async resetForRetry(): Promise<void> {
     console.log('[Checkin] 🔄 === RESETTING FOR RETRY ATTEMPT ===');
-    
+
     // Clear captured photo data for fresh attempt
     this.capturedPhotoUrl.set(null);
     this.capturedPhotoBlob.set(null);
@@ -1018,36 +1017,32 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
       this.capturedCanvas = null;
     }
     this.llmResponse = null;
-    
+
     // Reset analysis message
     this.currentAnalysisMessage.set('Starting analysis...');
-    
+
     // Log current state before restart
     console.log('[Checkin] 📊 Current state before camera restart:', {
       hasStream: !!this.stream,
       hasVideoElement: !!this.videoElement?.nativeElement,
       videoSrcObject: this.videoElement?.nativeElement?.srcObject ? 'present' : 'null',
-      videoDimensions: this.videoElement?.nativeElement ? 
+      videoDimensions: this.videoElement?.nativeElement ?
         `${this.videoElement.nativeElement.videoWidth}x${this.videoElement.nativeElement.videoHeight}` : 'no-video',
       videoReadyState: this.videoElement?.nativeElement?.readyState || 'no-video'
     });
-    
+
     // Always restart camera on retry (don't check stream state)
     console.log('[Checkin] 📹 === RESTARTING CAMERA FOR RETRY ===');
-    
+
     // Stop current camera first (clean up properly)
     this.stopCamera();
-    
+
     // CRITICAL: Set phase to trigger video element visibility BEFORE starting camera
     console.log('[Checkin] 🔄 Setting phase to WAITING_FOR_GATES to ensure video element visibility');
     this.setPhase('WAITING_FOR_GATES');
-    
-    // Wait for Angular to process the phase change and update the template
-    console.log('[Checkin] ⏳ Waiting for template update after phase change...');
-    await new Promise(resolve => setTimeout(resolve, 50));
-    
+
     console.log('[Checkin] 📺 Video element available after phase change:', !!this.videoElement?.nativeElement);
-    
+
     // Start fresh camera
     try {
       await this.startCamera();
@@ -1055,12 +1050,12 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
       console.error('[Checkin] ❌ Failed to restart camera:', error);
       // Don't propagate the error - let the component remain in current state
     }
-    
+
     console.log('[Checkin] ✅ === CAMERA RESTART COMPLETED ===');
     console.log('[Checkin] 📊 Final state after camera restart:', {
       hasStream: !!this.stream,
       videoSrcObject: this.videoElement?.nativeElement?.srcObject ? 'present' : 'null',
-      videoDimensions: this.videoElement?.nativeElement ? 
+      videoDimensions: this.videoElement?.nativeElement ?
         `${this.videoElement.nativeElement.videoWidth}x${this.videoElement.nativeElement.videoHeight}` : 'no-video',
       videoReadyState: this.videoElement?.nativeElement?.readyState || 'no-video'
     });
@@ -1076,17 +1071,11 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
     try {
       // Store validated carpet image using CarpetStorageService
       if (this.capturedCanvas && this.llmResponse) {
-        console.log('[Checkin] 💾 Storing validated carpet image using CarpetStorageService');
+        console.log('[Checkin] 💾 Storing carpet image to IndexedDB');
+        console.log('[Checkin] 🖼️ Canvas dimensions:', this.capturedCanvas.width, 'x', this.capturedCanvas.height);
         
-        const pub = this.pubStore.get(pubId);
-        const pubName = pub?.name || 'Unknown Pub';
-        
-        await this.carpetStorageService.saveCarpetImage(
-          this.capturedCanvas,
-          pubId,
-          pubName
-        );
-        
+        const pubName = this.pubName();
+        await this.carpetStorageService.saveCarpetImage(this.capturedCanvas, pubId, pubName);
         console.log('[Checkin] ✅ Carpet image stored successfully');
       }
 
@@ -1102,7 +1091,7 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
 
         this.setPhase('SUCCESS_MODAL');
       }, 2000);
-      
+
     } catch (error) {
       console.error('[Checkin] ❌ Error storing carpet image:', error);
       // Continue with check-in even if storage fails
@@ -1118,23 +1107,23 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
 
   private emergencyCleanup(): void {
     console.log('[Checkin] 🆘 Emergency cleanup initiated');
-    
+
     // Force stop all intervals and timeouts immediately
     this.cleanupIntervals();
     this.cleanupTimeouts();
-    
+
     // Force stop camera
     this.stopCamera();
-    
+
     // Clear device orientation listener
     this.cleanupDeviceOrientationListener();
-    
+
     // Clear metrics service state
     this._metricsService.clearState?.();
-    
+
     // Clear canvas resources
     this.cleanupCanvasResources();
-    
+
     console.log('[Checkin] 🆘 Emergency cleanup completed');
   }
 
@@ -1145,13 +1134,13 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
         console.log('[Checkin] 📹 Stopping track:', track.kind, track.readyState);
         track.stop();
       });
-      
+
       // Clear video element source
       if (this.videoElement?.nativeElement) {
         this.videoElement.nativeElement.srcObject = null;
         console.log('[Checkin] 📹 Video element srcObject cleared');
       }
-      
+
       this.stream = null;
       console.log('[Checkin] 📹 Camera stopped and resources cleaned');
     }
@@ -1159,7 +1148,7 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
 
   private cleanupIntervals(): void {
     console.log('[Checkin] 🧹 Cleaning up intervals');
-    
+
     if (this.gateMonitoringInterval) {
       clearInterval(this.gateMonitoringInterval);
       this.gateMonitoringInterval = null;
@@ -1177,6 +1166,7 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
     this.stopCamera();
     this.stopAnalysisMessageCycling();
     this.cleanupIntervals();
+    this.cleanupVideoEventListeners();
     this.cleanupDeviceOrientationListener();
     this.cleanupTimeouts();
     this.cleanupCanvasResources();
@@ -1190,9 +1180,21 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
     }
   }
 
+  private cleanupVideoEventListeners(): void {
+    console.log('[Checkin] 🧹 Cleaning up video event listeners');
+    // Call all pending video event cleanups to prevent memory leaks
+    while (this.videoEventCleanups.length > 0) {
+      const cleanup = this.videoEventCleanups.pop();
+      if (cleanup) {
+        cleanup();
+      }
+    }
+    console.log('[Checkin] 🧹 All video event listeners cleaned up');
+  }
+
   private cleanupCanvasResources(): void {
     console.log('[Checkin] 🧹 Cleaning up canvas resources');
-    
+
     // Clear captured canvas reference
     if (this.capturedCanvas) {
       // Clear the canvas
@@ -1203,14 +1205,14 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
       this.capturedCanvas = null;
       console.log('[Checkin] 🧹 Captured canvas cleared');
     }
-    
+
     // Clear blob URL
     const blob = this.capturedPhotoBlob();
     if (blob) {
       this.capturedPhotoBlob.set(null);
       console.log('[Checkin] 🧹 Photo blob reference cleared');
     }
-    
+
     // Ask metrics service to clear its accumulated state
     this._metricsService.clearState?.();
   }

@@ -24,5 +24,35 @@ export const LEADERBOARD_ROUTES: Routes = [
     component: LeaderboardContainerComponent,
     data: { period: 'this-week' },
     title: 'This Week Leaderboard'
+  },
+  {
+    path: 'local',
+    component: LeaderboardContainerComponent,
+    data: { period: 'all-time', geographic: 'local' },
+    title: 'Local Leaderboard'
+  },
+  {
+    path: 'city/:cityName',
+    component: LeaderboardContainerComponent,
+    data: { period: 'all-time', geographic: 'city' },
+    title: 'City Leaderboard'
+  },
+  {
+    path: 'region/:regionId',
+    component: LeaderboardContainerComponent,
+    data: { period: 'all-time', geographic: 'region' },
+    title: 'Region Leaderboard'
+  },
+  {
+    path: 'country/:countryId',
+    component: LeaderboardContainerComponent,
+    data: { period: 'all-time', geographic: 'country' },
+    title: 'Country Leaderboard'
+  },
+  {
+    path: 'pub/:pubId',
+    component: LeaderboardContainerComponent,
+    data: { period: 'all-time', geographic: 'pub' },
+    title: 'Pub Leaderboard'
   }
 ];

@@ -348,7 +348,7 @@ export class LLMService {
       };
 
       img.onerror = () => {
-        console.error('[LLMService] Failed to load image for optimization');
+        console.log('[LLMService] Failed to load image for optimization');
         reject(new Error('Image optimization failed'));
       };
 

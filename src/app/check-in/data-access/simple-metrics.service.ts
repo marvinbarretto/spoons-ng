@@ -41,6 +41,10 @@ export class SimpleMetricsService {
   private analysisCount = 0;
   private readonly MAX_ANALYSIS_COUNT = 1000; // Clear state after 1000 analyses to prevent memory buildup
   
+  // Reusable canvas to prevent memory leaks
+  private canvas: HTMLCanvasElement | null = null;
+  private ctx: CanvasRenderingContext2D | null = null;
+  
   readonly metrics = this._metrics.asReadonly();
   readonly isAnalyzing = this._isAnalyzing.asReadonly();
 
@@ -60,6 +64,14 @@ export class SimpleMetricsService {
     this._metrics.set(null);
     this._isAnalyzing.set(false);
     
+    // Clear canvas resources
+    if (this.canvas) {
+      this.canvas.width = 0;
+      this.canvas.height = 0;
+      this.canvas = null;
+      this.ctx = null;
+    }
+    
     console.log('[SimpleMetrics] 🧹 State cleared - memory should be freed');
   }
   
@@ -77,14 +89,32 @@ export class SimpleMetricsService {
     console.log('📊 [SimpleMetrics] Running analysis...', this.analysisCount);
     
     try {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d')!;
+      // Initialize canvas once and reuse it
+      if (!this.canvas || !this.ctx) {
+        this.canvas = document.createElement('canvas');
+        this.ctx = this.canvas.getContext('2d', { willReadFrequently: true });
+        if (!this.ctx) {
+          throw new Error('Failed to get canvas context');
+        }
+      }
+      
+      const canvas = this.canvas;
+      const ctx = this.ctx;
       
       // ANALYSIS: 320x240 was TOO LOW - losing critical carpet detail
       // Ornate carpet (7/100 sharpness) vs plain (1-4/100) barely any difference
       // Carpet patterns need higher resolution for proper edge/texture detection
       canvas.width = 640;  // Doubled resolution for better pattern analysis
       canvas.height = 480;
+      
+      // Validate video element before drawing
+      if (videoElement.readyState < 2 || videoElement.videoWidth === 0 || videoElement.videoHeight === 0) {
+        console.log('[SimpleMetrics] Video not ready for analysis:', {
+          readyState: videoElement.readyState,
+          dimensions: `${videoElement.videoWidth}x${videoElement.videoHeight}`
+        });
+        throw new Error('Video element not ready for analysis');
+      }
       
       ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);

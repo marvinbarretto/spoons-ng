@@ -1,13 +1,14 @@
 import { Injectable, computed, inject, signal } from "@angular/core";
 import { AuthStore } from "../../auth/data-access/auth.store";
 import { BaseStore } from "../../shared/base/base.store";
-import { LeaderboardEntry, LeaderboardTimeRange } from "../utils/leaderboard.models";
+import { LeaderboardEntry, LeaderboardTimeRange, LeaderboardGeographicFilter } from "../utils/leaderboard.models";
 import { generateRandomName } from "../../shared/utils/anonymous-names";
 import { UserService } from "../../users/data-access/user.service";
 import { User } from "../../users/utils/user.model";
 import { CheckInStore } from "../../check-in/data-access/check-in.store";
 import { CheckIn } from "../../check-in/utils/check-in.models";
 import { PubStore } from "../../pubs/data-access/pub.store";
+import { PubGroupingService } from "../../shared/data-access/pub-grouping.service";
 
 @Injectable({
   providedIn: 'root'
@@ -17,22 +18,38 @@ export class LeaderboardStore extends BaseStore<LeaderboardEntry> {
   private readonly userService = inject(UserService);
   private readonly checkinStore = inject(CheckInStore);
   private readonly pubStore = inject(PubStore);
+  private readonly pubGroupingService = inject(PubGroupingService);
 
   // Time range filter
   private readonly _timeRange = signal<LeaderboardTimeRange>('all-time');
   readonly timeRange = this._timeRange.asReadonly();
 
+  // Geographic filter
+  private readonly _geographicFilter = signal<LeaderboardGeographicFilter>({ type: 'none' });
+  readonly geographicFilter = this._geographicFilter.asReadonly();
 
-  // 📊 Filter data by time range
+
+  // 📊 Filter data by time range and geography
   readonly filteredData = computed(() => {
     const range = this.timeRange();
+    const geoFilter = this.geographicFilter();
     const allData = this.data();
 
-    console.log('[LeaderboardStore] Filtering data for range:', range, 'Total users:', allData.length);
+    console.log('[LeaderboardStore] Filtering data for range:', range, 'geographic filter:', geoFilter, 'Total users:', allData.length);
 
+    // First apply geographic filtering
+    let geographicallyFilteredData = allData;
+    
+    if (geoFilter.type !== 'none' && geoFilter.value) {
+      const allowedUserIds = this.getAllowedUserIdsForGeographicFilter(geoFilter);
+      geographicallyFilteredData = allData.filter(entry => allowedUserIds.includes(entry.userId));
+      console.log('[LeaderboardStore] Geographic filtering applied:', geoFilter, 'Users remaining:', geographicallyFilteredData.length);
+    }
+
+    // Then apply time range filtering
     if (range === 'all-time') {
-      console.log('[LeaderboardStore] All-time view, returning all users:', allData.length);
-      return allData;
+      console.log('[LeaderboardStore] All-time view, returning geographically filtered users:', geographicallyFilteredData.length);
+      return geographicallyFilteredData;
     }
 
     const now = new Date();
@@ -46,13 +63,13 @@ export class LeaderboardStore extends BaseStore<LeaderboardEntry> {
       threshold = new Date(now.getFullYear(), now.getMonth(), 1);
     } else {
       // all-time case
-      return allData;
+      return geographicallyFilteredData;
     }
 
     console.log('[LeaderboardStore] Time threshold:', threshold, 'Total checkins:', checkins.length);
 
     // Show all users but adjust their stats for the time period
-    const filteredUsers = allData.map(entry => {
+    const filteredUsers = geographicallyFilteredData.map(entry => {
       const userCheckins = checkins.filter(c =>
         c.userId === entry.userId &&
         c.timestamp.toDate() >= threshold
@@ -86,7 +103,7 @@ export class LeaderboardStore extends BaseStore<LeaderboardEntry> {
       return hasRecentActivity || hasSignificantStats;
     });
 
-    console.log('[LeaderboardStore] Filtered users:', result.length, 'Time range:', range);
+    console.log('[LeaderboardStore] Filtered users:', result.length, 'Time range:', range, 'Geographic filter:', geoFilter);
     return result;
   });
 
@@ -375,6 +392,86 @@ private getDisplayName(userId: string, user: User): string {
     console.log('[LeaderboardStore] Setting time range:', range);
     this._timeRange.set(range);
   }
+
+  /**
+   * Set the geographic filter
+   */
+  setGeographicFilter(filter: LeaderboardGeographicFilter): void {
+    console.log('[LeaderboardStore] Setting geographic filter:', filter);
+    this._geographicFilter.set(filter);
+  }
+
+  /**
+   * Filter by city
+   */
+  filterByCity(city: string): void {
+    this.setGeographicFilter({ type: 'city', value: city });
+  }
+
+  /**
+   * Filter by region
+   */
+  filterByRegion(region: string): void {
+    this.setGeographicFilter({ type: 'region', value: region });
+  }
+
+  /**
+   * Filter by country
+   */
+  filterByCountry(country: string): void {
+    this.setGeographicFilter({ type: 'country', value: country });
+  }
+
+  /**
+   * Filter by specific pub
+   */
+  filterByPub(pubId: string): void {
+    this.setGeographicFilter({ type: 'pub', value: pubId });
+  }
+
+  /**
+   * Clear geographic filter
+   */
+  clearGeographicFilter(): void {
+    this.setGeographicFilter({ type: 'none' });
+  }
+
+  /**
+   * Get allowed user IDs for geographic filter
+   */
+  private getAllowedUserIdsForGeographicFilter(filter: LeaderboardGeographicFilter): string[] {
+    if (filter.type === 'none' || !filter.value) {
+      return [];
+    }
+
+    switch (filter.type) {
+      case 'city':
+        return this.pubGroupingService.getUsersInCity(filter.value);
+      case 'region':
+        return this.pubGroupingService.getUsersInRegion(filter.value);
+      case 'country':
+        return this.pubGroupingService.getUsersInCountry(filter.value);
+      case 'pub':
+        return this.pubGroupingService.getUsersForHomePub(filter.value);
+      default:
+        return [];
+    }
+  }
+
+  /**
+   * Get available cities for filtering
+   */
+  readonly availableCities = computed(() => this.pubGroupingService.activeCities());
+
+  /**
+   * Get available regions for filtering
+   */
+  readonly availableRegions = computed(() => this.pubGroupingService.activeRegions());
+
+  /**
+   * Get available countries for filtering
+   */
+  readonly availableCountries = computed(() => this.pubGroupingService.activeCountries());
 
   /**
    * Refresh leaderboard data

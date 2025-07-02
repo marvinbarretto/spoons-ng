@@ -20,6 +20,11 @@ export type LeaderboardType = 'visits' | 'unique-pubs' | 'points';
 
 export type LeaderboardTimeRange = 'all-time' | 'this-month' | 'this-week';
 
+export type LeaderboardGeographicFilter = {
+  type: 'none' | 'city' | 'region' | 'country' | 'pub';
+  value?: string;
+};
+
 export type UserStats = {
   userId: string;
   totalVisits: number;

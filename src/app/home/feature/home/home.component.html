@@ -30,6 +30,9 @@
   <!-- ✅ Leaderboard Widget -->
   <app-leaderboard-widget></app-leaderboard-widget>
 
+  <!-- ✅ Local Leaderboard Widget -->
+  <app-local-leaderboard-widget></app-local-leaderboard-widget>
+
   <!-- ✅ Recent Activity Widget -->
   <app-recent-activity-widget></app-recent-activity-widget>
 
@@ -40,13 +43,8 @@
   <!-- ✅ Badges Showcase -->
   <app-badges-showcase />
 
-  <!-- ✅ Active Missions -->
-  @if (activeMissions().length > 0) {
-    <app-missions-section
-      [missions]="activeMissions()"
-      [maxDisplay]="3"
-      (viewMission)="handleViewMission($event)" />
-  }
+  <!-- ✅ Missions Widget -->
+  <app-missions-widget></app-missions-widget>
 
   <!-- ✅ Action Cards -->
   <!-- <app-action-cards
