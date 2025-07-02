@@ -3,6 +3,7 @@ import { Component, computed, inject, signal, ChangeDetectionStrategy, effect } 
 import { JsonPipe } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { BaseComponent } from '@shared/base/base.component';
+import { environment } from '../../../../environments/environment';
 
 import { AuthStore } from '@auth/data-access/auth.store';
 import { UserStore } from '@users/data-access/user.store';
@@ -71,6 +72,12 @@ export class HomeComponent extends BaseComponent {
       // Prevent redirect loop: don't redirect if we're already coming from onboarding completion
       if (currentUrl === '/' && user?.onboardingCompleted === true) {
         console.log('[Home] ✅ User completed onboarding, staying on home page');
+        return;
+      }
+
+      // Skip onboarding redirect if development flag is enabled
+      if (environment.ALLOW_ONBOARDING_ACCESS) {
+        console.log('[Home] 🧪 DEV MODE: Onboarding access allowed, skipping redirect checks');
         return;
       }
 

@@ -4,8 +4,11 @@ import { BaseComponent } from '@shared/base/base.component';
 import { CheckInStore } from '../../../check-in/data-access/check-in.store';
 import { PubStore } from '../../../pubs/data-access/pub.store';
 import { SimpleMetricsService } from '../../data-access/simple-metrics.service';
-import { ACTIVE_DEVELOPMENT_MODE } from '@shared/utils/dev-mode.constants';
+import { LLMService } from '@shared/data-access/llm.service';
+import { CarpetStorageService } from '../../../carpets/data-access/carpet-storage.service';
+import { environment } from '../../../../environments/environment';
 import { CommonModule } from '@angular/common';
+import type { CarpetDetectionResult } from '@shared/utils/llm-types';
 
 // State machine phases
 type CheckinPhase =
@@ -56,11 +59,11 @@ type CheckinPhase =
                 <!-- Core device gates -->
                 <div class="gate" [class.passed]="gatesPassed().deviceOriented">📱 Device Oriented: {{ gatesPassed().deviceOriented ? 'YES' : 'NO' }}</div>
                 <div class="gate" [class.passed]="gatesPassed().isStable">🎥 Camera Stable: {{ gatesPassed().isStable ? 'YES' : 'NO' }}</div>
-                
+
                 <!-- Raw data only -->
                 <div class="gate simple">🔬 Analysis Count: {{ metrics()?.timestamp ? 'YES' : 'NO DATA' }}</div>
                 <div class="gate simple">📊 Processing: {{ (metrics()?.analysisTime ?? 0) | number:'1.0-0' }}ms</div>
-                
+
                 <!-- Real-time metrics - always show if available -->
                 @if (metrics()) {
                   <!-- Image quality -->
@@ -69,17 +72,17 @@ type CheckinPhase =
                   <div class="gate simple">💡 Brightness: {{ metrics()!.brightness }}/255</div>
                   <div class="gate simple" [class.passed]="gatesPassed().lowMotion">🏃 Motion Level: {{ metrics()!.motionLevel }}/100</div>
                   <div class="gate simple">📊 Motion History: [{{ getMotionHistoryString() }}]</div>
-                  
+
                   <!-- Color analysis -->
                   <div class="gate simple">🌈 Dominant Colors: {{ metrics()!.dominantColors.join(', ') }}</div>
-                  
+
                   <!-- Pattern analysis -->
-                  <div class="gate" [class.carpet-red]="gatesPassed().carpetConfidence === 'red'" 
+                  <div class="gate" [class.carpet-red]="gatesPassed().carpetConfidence === 'red'"
                        [class.carpet-yellow]="gatesPassed().carpetConfidence === 'yellow'"
                        [class.carpet-green]="gatesPassed().carpetConfidence === 'green'">🎯 Carpet Detection: {{ gatesPassed().carpetConfidence.toUpperCase() }}</div>
                   <div class="gate simple" [class.passed]="gatesPassed().hasEdges">📐 Edge Density: {{ metrics()!.edgeDensity }}%</div>
                   <div class="gate simple" [class.passed]="gatesPassed().hasTexture">🧵 Texture Complexity: {{ metrics()!.textureComplexity }}%</div>
-                  
+
                   <!-- Technical info -->
                   <div class="gate simple">⏱️ Analysis Time: {{ metrics()!.analysisTime | number:'1.0-0' }}ms</div>
                 }
@@ -96,12 +99,12 @@ type CheckinPhase =
             }
 
             @case ('LLM_THINKING') {
-              <div class="status-message">AI is thinking...</div>
+              <div class="status-message">{{ currentAnalysisMessage() }}</div>
               <div class="thinking-spinner">🤖</div>
             }
 
             @case ('CHECK_IN_PROCESSING') {
-              <div class="status-message">Checking in to {{ pubName() }}...</div>
+              <div class="status-message">{{ pubName() }}</div>
             }
 
             @case ('SUCCESS_MODAL') {
@@ -121,13 +124,6 @@ type CheckinPhase =
 
         </div>
       </div>
-
-      <!-- Development Mode Warning -->
-      @if (ACTIVE_DEVELOPMENT_MODE) {
-        <div class="dev-mode-warning">
-          🚨 DEVELOPMENT MODE ACTIVE
-        </div>
-      }
 
       <!-- Debug Info -->
       <div class="debug-info">
@@ -306,21 +302,6 @@ type CheckinPhase =
       to { transform: rotate(360deg); }
     }
 
-    .dev-mode-warning {
-      position: absolute;
-      top: 50px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(255, 0, 0, 0.9);
-      color: white;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      font-weight: bold;
-      font-size: 0.9rem;
-      z-index: 1000;
-      animation: pulse 2s infinite;
-    }
-
     @keyframes pulse {
       0%, 100% { opacity: 1; }
       50% { opacity: 0.7; }
@@ -356,16 +337,65 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
   private readonly checkinStore = inject(CheckInStore);
   private readonly pubStore = inject(PubStore);
   private readonly _metricsService = inject(SimpleMetricsService);
+  private readonly llmService = inject(LLMService);
+  private readonly carpetStorageService = inject(CarpetStorageService);
 
-  // State
-  protected readonly currentPhase = signal<CheckinPhase>('CAMERA_STARTING');
+  // State with comprehensive logging
+  private readonly _currentPhase = signal<CheckinPhase>('CAMERA_STARTING');
+  protected readonly currentPhase = computed(() => {
+    const phase = this._currentPhase();
+    const shouldShowVideo = phase === 'CAMERA_STARTING' || phase === 'WAITING_FOR_GATES';
+    console.log(`[Checkin] 📺 === TEMPLATE VIDEO VISIBILITY CHECK ===`);
+    console.log(`[Checkin] 📺 Current phase: ${phase}`);
+    console.log(`[Checkin] 📺 Should show video: ${shouldShowVideo}`);
+    console.log(`[Checkin] 📺 Video element exists: ${!!this.videoElement?.nativeElement}`);
+    if (this.videoElement?.nativeElement) {
+      console.log(`[Checkin] 📺 Video dimensions: ${this.videoElement.nativeElement.videoWidth}x${this.videoElement.nativeElement.videoHeight}`);
+      console.log(`[Checkin] 📺 Video readyState: ${this.videoElement.nativeElement.readyState}`);
+      console.log(`[Checkin] 📺 Video srcObject: ${this.videoElement.nativeElement.srcObject ? 'present' : 'null'}`);
+    }
+    return phase;
+  });
+
+  // Helper method to set phase with logging
+  private setPhase(newPhase: CheckinPhase): void {
+    const oldPhase = this._currentPhase();
+    console.log(`[Checkin] 🔄 === PHASE TRANSITION ===`);
+    console.log(`[Checkin] 🔄 From: ${oldPhase} → To: ${newPhase}`);
+    console.log(`[Checkin] 🔄 Video will be shown: ${newPhase === 'CAMERA_STARTING' || newPhase === 'WAITING_FOR_GATES'}`);
+    this._currentPhase.set(newPhase);
+    
+    // Log video element availability immediately after phase change
+    this.safeSetTimeout(() => {
+      console.log(`[Checkin] 🔄 After phase change - Video element exists: ${!!this.videoElement?.nativeElement}`);
+      if (this.videoElement?.nativeElement) {
+        console.log(`[Checkin] 🔄 After phase change - Video dimensions: ${this.videoElement.nativeElement.videoWidth}x${this.videoElement.nativeElement.videoHeight}`);
+      }
+    }, 0);
+  }
   protected readonly pubId = signal<string | null>(null);
   protected readonly capturedPhotoUrl = signal<string | null>(null);
+  protected readonly capturedPhotoBlob = signal<Blob | null>(null);
+  private capturedCanvas: HTMLCanvasElement | null = null;
+  
+  // LLM Analysis state
+  protected readonly currentAnalysisMessage = signal('Starting analysis...');
+  private readonly analysisMessages = [
+    'Analyzing sharpness...',
+    'Checking contrast levels...',
+    'Evaluating edge density...',
+    'Measuring texture complexity...',
+    'Examining pattern repetition...',
+    'Assessing color variance...',
+    'Detecting carpet features...'
+  ];
+  private analysisMessageInterval: number | null = null;
+  private llmResponse: CarpetDetectionResult | null = null;
 
   // Simple real-time metrics
   protected readonly metrics = this._metricsService.metrics;
   protected readonly isAnalyzing = this._metricsService.isAnalyzing;
-  
+
   // Device orientation tracking
   protected readonly deviceOrientation = signal({ beta: 0, gamma: 0, stable: false });
   private lastOrientationUpdate = 0;
@@ -375,12 +405,27 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
   protected readonly badgesEarned = signal<any[]>([]);
 
   // Constants
-  protected readonly ACTIVE_DEVELOPMENT_MODE = ACTIVE_DEVELOPMENT_MODE;
-  
+  protected readonly ACTIVE_DEVELOPMENT_MODE = environment.ACTIVE_DEVELOPMENT_MODE;
+
   // Helper for motion history display
   protected getMotionHistoryString(): string {
     // Access motion history from service for debugging display
     return 'Debug mode'; // Placeholder - service doesn't expose history
+  }
+
+  // Camera readiness validation
+  private isCameraReady(video: HTMLVideoElement): boolean {
+    const isReady = video.readyState >= 2 && // HAVE_CURRENT_DATA or higher
+                   video.videoWidth > 0 && 
+                   video.videoHeight > 0;
+    
+    console.log('[Checkin] 🔍 Camera readiness check:', {
+      readyState: video.readyState,
+      dimensions: `${video.videoWidth}x${video.videoHeight}`,
+      isReady
+    });
+    
+    return isReady;
   }
 
   // Computed
@@ -392,9 +437,9 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
   protected readonly gatesPassed = computed(() => {
     const data = this.metrics();
     const orientation = this.deviceOrientation();
-    
+
     console.log('[Checkin] 🧮 Computing gates with orientation:', orientation);
-    
+
     // ANALYSIS: Orientation logic was backwards! When pointing DOWN at carpet, we want YES
     // When looking UP (beta near 0), we want NO. So we need LESS than 45 degrees for pointing down
     const deviceOriented = Math.abs(orientation.beta) < 45; // Phone pointing down at carpet
@@ -410,7 +455,7 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
 
     // 3-TIER CARPET DETECTION THRESHOLDS based on real data:
     // RED (not carpet): Sharpness <20, Edges <30%, Texture <15%
-    // YELLOW (borderline): Sharpness 20-30, Edges 30-45%, Texture 15-22%  
+    // YELLOW (borderline): Sharpness 20-30, Edges 30-45%, Texture 15-22%
     // GREEN (carpet): Sharpness >30, Edges >45%, Texture >22%
     const carpetConfidence = this.calculateCarpetConfidence(data);
 
@@ -429,41 +474,41 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
 
   private calculateCarpetConfidence(data: any): 'red' | 'yellow' | 'green' {
     if (!data) return 'red';
-    
+
     const { sharpness, edgeDensity, textureComplexity } = data;
-    
+
     // GREEN: Definite carpet (2 of 3 metrics must pass - more forgiving)
     const sharpnessPass = sharpness > 25;  // Reduced from 30
-    const edgesPass = edgeDensity > 40;    // Reduced from 45  
+    const edgesPass = edgeDensity > 40;    // Reduced from 45
     const texturePass = textureComplexity > 18; // Reduced from 22
     const passCount = [sharpnessPass, edgesPass, texturePass].filter(Boolean).length;
-    
+
     if (passCount >= 2) {
       return 'green';
     }
-    
+
     // RED: Definitely not carpet (all metrics low)
     if (sharpness < 15 && edgeDensity < 25 && textureComplexity < 12) {
       return 'red';
     }
-    
+
     // YELLOW: Borderline detection
     return 'yellow';
   }
 
   protected readonly allGatesPassed = computed(() => {
     const gates = this.gatesPassed();
-    
+
     // ALL gates must be green/passed for auto check-in
-    const allPassed = gates.deviceOriented && 
-                     gates.isStable && 
+    const allPassed = gates.deviceOriented &&
+                     gates.isStable &&
                      gates.carpetConfidence === 'green' &&
                      gates.goodSharpness &&
                      gates.goodContrast &&
                      gates.hasTexture &&
                      gates.hasEdges &&
                      gates.lowMotion;
-    
+
     console.log('[Checkin] 🚦 All gates check:', {
       deviceOriented: gates.deviceOriented,
       isStable: gates.isStable,
@@ -475,13 +520,20 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
       lowMotion: gates.lowMotion,
       allPassed
     });
-    
+
     return allPassed;
   });
 
   // Camera stream
   private stream: MediaStream | null = null;
   private gateMonitoringInterval: number | null = null;
+  private metricsAnalysisInterval: number | null = null;
+  
+  // Device orientation cleanup
+  private deviceOrientationHandler: ((event: DeviceOrientationEvent) => void) | null = null;
+  
+  // Timeout tracking for cleanup
+  private activeTimeouts: Set<number> = new Set();
 
   constructor() {
     super();
@@ -505,28 +557,41 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
   }
 
   ngOnDestroy(): void {
-    console.log('[Checkin] 🚪 Component destroyed');
+    console.log('[Checkin] 🚪 Component destroyed - starting comprehensive cleanup');
+    
+    // Defensive cleanup - clear all intervals first to prevent any ongoing work
+    this.cleanupIntervals();
+    
+    // Clear all timeouts to prevent delayed callbacks
+    this.cleanupTimeouts();
+    
+    // Full cleanup
     this.cleanup();
+    
+    console.log('[Checkin] ✅ Component destruction cleanup completed');
   }
 
   private startDeviceOrientationMonitoring(): void {
     console.log('[Checkin] 📱 Starting device orientation monitoring');
     console.log('[Checkin] 🔧 DeviceOrientationEvent available?', 'DeviceOrientationEvent' in window);
     console.log('[Checkin] 🔧 User agent:', navigator.userAgent);
-    
+
     if ('DeviceOrientationEvent' in window) {
+      // Create bound handler that can be properly removed
+      this.deviceOrientationHandler = this.handleDeviceOrientation.bind(this);
+      
       // Check if we need permission (iOS 13+)
       if (typeof (DeviceOrientationEvent as any).requestPermission === 'function') {
         console.log('[Checkin] 🔐 Requesting device orientation permission...');
         (DeviceOrientationEvent as any).requestPermission().then((response: string) => {
           console.log('[Checkin] 🔐 Permission response:', response);
-          if (response === 'granted') {
-            window.addEventListener('deviceorientation', this.handleDeviceOrientation.bind(this));
+          if (response === 'granted' && this.deviceOrientationHandler) {
+            window.addEventListener('deviceorientation', this.deviceOrientationHandler);
           }
         });
       } else {
         console.log('[Checkin] 📱 Adding device orientation listener (no permission needed)');
-        window.addEventListener('deviceorientation', this.handleDeviceOrientation.bind(this));
+        window.addEventListener('deviceorientation', this.deviceOrientationHandler);
       }
     } else {
       console.warn('[Checkin] ⚠️ Device orientation not supported - desktop mode');
@@ -539,64 +604,182 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
     const beta = event.beta || 0;   // Front-to-back tilt
     const gamma = event.gamma || 0; // Left-to-right tilt
     const alpha = event.alpha || 0; // Compass direction
-    
+
     console.log('[Checkin] 📐 Raw orientation:', { alpha, beta, gamma });
-    
+
     // Check for stability - if movement is minimal for a period
     const now = Date.now();
     const timeSinceLastUpdate = now - this.lastOrientationUpdate;
-    
+
     const prevOrientation = this.deviceOrientation();
     const movement = Math.abs(beta - prevOrientation.beta) + Math.abs(gamma - prevOrientation.gamma);
-    
+
     console.log('[Checkin] 📊 Movement calculation:', {
       prevBeta: prevOrientation.beta,
       newBeta: beta,
-      prevGamma: prevOrientation.gamma, 
+      prevGamma: prevOrientation.gamma,
       newGamma: gamma,
       movement,
       timeSinceLastUpdate
     });
-    
+
     // Consider stable if movement is small and enough time has passed
     const stable = movement < 5 && timeSinceLastUpdate > 1000;
-    
+
     console.log('[Checkin] 📱 Orientation update:', { beta, gamma, stable, movement });
-    
+
     this.deviceOrientation.set({ beta, gamma, stable });
     this.lastOrientationUpdate = now;
   }
 
   private async startCamera(): Promise<void> {
-    console.log('[Checkin] 📹 Starting camera...');
+    console.log('[Checkin] 📹 === STARTING CAMERA ===');
+    console.log('[Checkin] 📹 Video element available:', !!this.videoElement?.nativeElement);
+    console.log('[Checkin] 📹 Current phase:', this.currentPhase());
+    
+    // Defensive cleanup - ensure any previous camera state is cleared
+    if (this.stream) {
+      console.log('[Checkin] 📹 Found existing stream, cleaning up first');
+      this.stopCamera();
+    }
+    
+    if (!this.videoElement?.nativeElement) {
+      console.error('[Checkin] ❌ === CRITICAL: VIDEO ELEMENT NOT AVAILABLE ===');
+      console.error('[Checkin] ❌ Phase:', this.currentPhase());
+      console.error('[Checkin] ❌ ViewChild exists:', !!this.videoElement);
+      console.error('[Checkin] ❌ NativeElement exists:', !!this.videoElement?.nativeElement);
+      
+      // Wait a bit and try again
+      console.log('[Checkin] ⏳ Waiting 100ms for video element to appear...');
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      if (!this.videoElement?.nativeElement) {
+        console.error('[Checkin] ❌ Video element still not available after wait');
+        return;
+      } else {
+        console.log('[Checkin] ✅ Video element appeared after wait');
+      }
+    }
 
     try {
+      console.log('[Checkin] 📹 Requesting user media...');
       this.stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment' }
       });
+      console.log('[Checkin] 📹 User media stream created successfully');
 
-      if (this.videoElement?.nativeElement) {
-        this.videoElement.nativeElement.srcObject = this.stream;
-        await this.videoElement.nativeElement.play();
-        console.log('[Checkin] 📹 Camera started successfully');
-
-        this.currentPhase.set('WAITING_FOR_GATES');
-        this.startGateMonitoring();
+      const video = this.videoElement.nativeElement;
+      console.log('[Checkin] 📹 Assigning stream to video element...');
+      video.srcObject = this.stream;
+      console.log('[Checkin] 📹 Stream assigned, waiting for video to be ready...');
+      
+      // Wait for video to actually load frame data, not just start playing
+      await this.waitForVideoReady(video);
+      
+      console.log('[Checkin] 📹 === CAMERA STARTED SUCCESSFULLY ===');
+      console.log('[Checkin] 📹 Final video state:', {
+        dimensions: `${video.videoWidth}x${video.videoHeight}`,
+        readyState: video.readyState,
+        srcObject: video.srcObject ? 'present' : 'null'
+      });
+      
+      // Only set phase if we're in initial camera start (not retry)
+      if (this.currentPhase() === 'CAMERA_STARTING') {
+        this.setPhase('WAITING_FOR_GATES');
       }
+      this.startGateMonitoring();
     } catch (error) {
-      console.error('[Checkin] ❌ Camera failed:', error);
+      console.error('[Checkin] ❌ === CAMERA START FAILED ===');
+      console.error('[Checkin] ❌ Error:', error);
     }
+  }
+
+  private async waitForVideoReady(video: HTMLVideoElement): Promise<void> {
+    console.log('[Checkin] ⏳ Waiting for video to be ready...');
+    
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        cleanup();
+        reject(new Error('Video ready timeout after 5 seconds'));
+      }, 5000);
+
+      const cleanup = () => {
+        clearTimeout(timeout);
+        video.removeEventListener('loadedmetadata', onLoadedMetadata);
+        video.removeEventListener('canplay', onCanPlay);
+        video.removeEventListener('error', onError);
+      };
+
+      const checkReady = () => {
+        if (video.readyState >= 2 && video.videoWidth > 0 && video.videoHeight > 0) {
+          console.log('[Checkin] ✅ Video ready:', {
+            readyState: video.readyState,
+            dimensions: `${video.videoWidth}x${video.videoHeight}`
+          });
+          cleanup();
+          resolve();
+          return true;
+        }
+        return false;
+      };
+
+      const onLoadedMetadata = () => {
+        console.log('[Checkin] 📐 Video metadata loaded');
+        checkReady();
+      };
+
+      const onCanPlay = () => {
+        console.log('[Checkin] 🎬 Video can play');
+        checkReady();
+      };
+
+      const onError = () => {
+        console.error('[Checkin] ❌ Video error during loading');
+        cleanup();
+        reject(new Error('Video loading error'));
+      };
+
+      // Add event listeners
+      video.addEventListener('loadedmetadata', onLoadedMetadata);
+      video.addEventListener('canplay', onCanPlay);
+      video.addEventListener('error', onError);
+
+      // Start playing and check if already ready
+      video.play().then(() => {
+        console.log('[Checkin] 🎬 Video play() completed');
+        checkReady();
+      }).catch((error) => {
+        console.error('[Checkin] ❌ Video play() failed:', error);
+        cleanup();
+        reject(error);
+      });
+    });
   }
 
   private startGateMonitoring(): void {
     console.log('[Checkin] 🚦 Starting simple metrics analysis monitoring');
 
+    // Clean up any existing intervals first
+    this.cleanupIntervals();
+
     // Start simple metrics analysis
     this.startSimpleAnalysis();
 
-    // DISABLED: Dev mode auto-capture - just observing metrics
+    // DEV MODE: Auto-bypass all gates after 1 second
     if (this.ACTIVE_DEVELOPMENT_MODE) {
-      console.log('[Checkin] 🧪 DEV MODE: Auto-capture DISABLED - metrics observation only');
+      console.log('[Checkin] 🧪 DEV MODE: Auto-capture will trigger in 1 second (bypassing all gates)');
+      this.safeSetTimeout(() => {
+        console.log('[Checkin] 🧪 DEV MODE: 1 second elapsed - triggering auto-capture!');
+
+        // Stop gate monitoring since we're bypassing to next phase
+        if (this.gateMonitoringInterval) {
+          clearInterval(this.gateMonitoringInterval);
+          this.gateMonitoringInterval = null;
+          console.log('[Checkin] 🧪 DEV MODE: Gate monitoring stopped');
+        }
+
+        this.capturePhoto();
+      }, 1000);
     }
 
     // Monitor simple metrics status
@@ -623,18 +806,18 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
   private startSimpleAnalysis(): void {
     console.log('[Checkin] 🔬 FORCE STARTING ANALYSIS');
     console.log('[Checkin] 🔧 Service exists?', !!this._metricsService);
-    
+
     // Test the service immediately with full debugging
-    setTimeout(() => {
+    this.safeSetTimeout(() => {
       console.log('[Checkin] 🧪 STARTING DEBUG TEST');
       console.log('[Checkin] 📹 Video element:', !!this.videoElement?.nativeElement);
-      
+
       if (this.videoElement?.nativeElement) {
         const video = this.videoElement.nativeElement;
         console.log('[Checkin] 📐 Video dimensions:', video.videoWidth, 'x', video.videoHeight);
         console.log('[Checkin] 🎬 Video ready state:', video.readyState);
         console.log('[Checkin] 🔧 Calling service...');
-        
+
         this._metricsService.analyzeVideoFrame(video).then((result) => {
           console.log('[Checkin] ✅ SERVICE RETURNED:', result);
         }).catch((error) => {
@@ -644,9 +827,9 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
         console.error('[Checkin] ❌ NO VIDEO ELEMENT');
       }
     }, 1000);
-    
+
     // Then run continuously
-    setInterval(async () => {
+    this.metricsAnalysisInterval = window.setInterval(async () => {
       if (this.videoElement?.nativeElement) {
         try {
           await this._metricsService.analyzeVideoFrame(this.videoElement.nativeElement);
@@ -660,103 +843,400 @@ export class CheckinComponent extends BaseComponent implements OnInit, OnDestroy
   protected capturePhoto(): void {
     console.log('[Checkin] capturePhoto() - 📸 Photo capture triggered');
 
-    if (!this.videoElement?.nativeElement) return;
+    if (!this.videoElement?.nativeElement) {
+      console.error('[Checkin] ❌ No video element available for capture');
+      return;
+    }
+
+    const video = this.videoElement.nativeElement;
+    
+    // Validate camera readiness
+    if (!this.isCameraReady(video)) {
+      console.error('[Checkin] ❌ Camera not ready for capture, skipping');
+      return;
+    }
 
     // Stop camera immediately
     this.stopCamera();
 
     // Create fake photo URL (in real implementation, capture from video)
     const canvas = document.createElement('canvas');
-    const video = this.videoElement.nativeElement;
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
 
     const ctx = canvas.getContext('2d');
     if (ctx) {
       ctx.drawImage(video, 0, 0);
+      
+      // Store canvas for later use by CarpetStorageService
+      this.capturedCanvas = canvas;
+      
+      // Base64 for UI background and LLM API
       const photoUrl = canvas.toDataURL('image/jpeg');
       this.capturedPhotoUrl.set(photoUrl);
+      
+      // Blob for efficient IndexedDB storage (only stored after LLM confirms carpet)
+      canvas.toBlob((blob) => {
+        if (blob) {
+          this.capturedPhotoBlob.set(blob);
+          console.log('[Checkin] capturePhoto() - 📸 Photo captured as Blob:', (blob.size / 1024).toFixed(1) + 'KB');
+        }
+      }, 'image/jpeg', 0.8);
+      
       console.log('[Checkin] capturePhoto() - 📸 Photo captured, camera stopped');
       console.log('[Checkin] capturePhoto() - 🖼️ Background set to blurred snapshot');
     }
 
-    this.currentPhase.set('PHOTO_CAPTURED');
+    this.setPhase('PHOTO_CAPTURED');
 
     // Move to LLM thinking phase
     console.log('[Checkin] capturePhoto() - ⏰ Moving to LLM analysis in 500ms');
-    setTimeout(() => {
+    this.safeSetTimeout(() => {
       this.startLLMAnalysis();
     }, 500);
   }
 
-  private startLLMAnalysis(): void {
+  private async startLLMAnalysis(): Promise<void> {
     console.log('[Checkin] startLLMAnalysis() - 🤖 LLM analysis started');
-    console.log('[Checkin] startLLMAnalysis() - 💭 Showing "thinking" message');
+    console.log('[Checkin] startLLMAnalysis() - 💭 Starting message cycling');
 
-    this.currentPhase.set('LLM_THINKING');
+    this.setPhase('LLM_THINKING');
+    this.startAnalysisMessageCycling();
 
-    // Simulate LLM response
-    setTimeout(() => {
-      const confidence = 0.85; // High confidence
-      console.log('[Checkin] startLLMAnalysis() - 🤖 LLM response: confidence=' + confidence);
+    try {
+      const photoData = this.capturedPhotoUrl();
+      if (!photoData) {
+        console.error('[Checkin] ❌ No photo data available for LLM analysis');
+        this.stopAnalysisMessageCycling();
+        this.handleLLMError('No photo data available');
+        return;
+      }
 
-      if (confidence > 0.7) {
+      console.log('[Checkin] 📷 Sending photo to LLM for carpet detection');
+      const result = await this.llmService.detectCarpet(photoData);
+      
+      this.stopAnalysisMessageCycling();
+      console.log('[Checkin] 🤖 LLM analysis complete:', result);
+
+      if (result.success && result.data.isCarpet) {
+        console.log('[Checkin] ✅ LLM confirmed carpet detected! Confidence:', result.data.confidence);
+        console.log('[Checkin] 🗨️ LLM reasoning:', result.data.reasoning);
+        
+        this.llmResponse = result.data;
         this.executeCheckin();
       } else {
-        console.log('[Checkin] ❌ Low confidence, aborting check-in');
-        this.exitToHomepage();
+        console.log('[Checkin] ❌ LLM did not detect carpet or failed');
+        console.log('[Checkin] 🗨️ LLM reasoning:', result.data?.reasoning || 'No reasoning provided');
+        
+        // Show negative result briefly, then return to gates
+        const identification = this.getLLMIdentification(result.data);
+        this.currentAnalysisMessage.set(`Not a carpet - ${identification}`);
+        
+        this.safeSetTimeout(async () => {
+          console.log('[Checkin] 🔄 Returning to gate monitoring after negative LLM result');
+          await this.resetForRetry();
+          // Phase is already set in resetForRetry, no need to set again
+          this.startGateMonitoring();
+        }, 2000);
       }
-    }, 3000);
+    } catch (error) {
+      console.error('[Checkin] ❌ LLM analysis error:', error);
+      this.stopAnalysisMessageCycling();
+      this.handleLLMError((error as any)?.message || 'LLM analysis failed');
+    }
   }
 
-  private executeCheckin(): void {
-    console.log('[Checkin] ✅ High confidence - executing check-in');
-    this.currentPhase.set('CHECK_IN_PROCESSING');
+  private handleLLMError(errorMessage: string): void {
+    console.log('[Checkin] 🔧 Handling LLM error, returning to gates instead of exiting');
+    
+    // Show error message briefly, then return to gates
+    this.currentAnalysisMessage.set(`Analysis error - ${errorMessage}`);
+    
+    this.safeSetTimeout(async () => {
+      console.log('[Checkin] 🔄 Returning to gate monitoring after LLM error');
+      await this.resetForRetry();
+      // Phase is already set in resetForRetry, no need to set again
+      this.startGateMonitoring();
+    }, 2000);
+  }
+
+  private startAnalysisMessageCycling(): void {
+    let messageIndex = 0;
+    this.currentAnalysisMessage.set(this.analysisMessages[messageIndex]);
+    
+    this.analysisMessageInterval = window.setInterval(() => {
+      messageIndex = (messageIndex + 1) % this.analysisMessages.length;
+      this.currentAnalysisMessage.set(this.analysisMessages[messageIndex]);
+    }, 800);
+  }
+
+  private stopAnalysisMessageCycling(): void {
+    if (this.analysisMessageInterval) {
+      clearInterval(this.analysisMessageInterval);
+      this.analysisMessageInterval = null;
+      console.log('[Checkin] 🔄 Analysis message cycling stopped');
+    }
+  }
+
+  private getLLMIdentification(llmData: any): string {
+    // Extract what LLM thinks it saw from the reasoning
+    if (!llmData?.reasoning) return 'unknown surface';
+    
+    // Try to extract identification from reasoning (usually first sentence)
+    const reasoning = llmData.reasoning.toLowerCase();
+    
+    // Common patterns the LLM might say
+    if (reasoning.includes('floor') || reasoning.includes('hardwood') || reasoning.includes('tile')) {
+      return 'floor surface';
+    }
+    if (reasoning.includes('wall') || reasoning.includes('brick') || reasoning.includes('concrete')) {
+      return 'wall surface'; 
+    }
+    if (reasoning.includes('table') || reasoning.includes('desk') || reasoning.includes('furniture')) {
+      return 'furniture';
+    }
+    if (reasoning.includes('ground') || reasoning.includes('pavement') || reasoning.includes('asphalt')) {
+      return 'ground surface';
+    }
+    
+    // Fallback: use first few words of reasoning
+    const firstSentence = llmData.reasoning.split('.')[0] || llmData.reasoning;
+    return firstSentence.substring(0, 30) + (firstSentence.length > 30 ? '...' : '');
+  }
+
+  private async resetForRetry(): Promise<void> {
+    console.log('[Checkin] 🔄 === RESETTING FOR RETRY ATTEMPT ===');
+    
+    // Clear captured photo data for fresh attempt
+    this.capturedPhotoUrl.set(null);
+    this.capturedPhotoBlob.set(null);
+    if (this.capturedCanvas) {
+      const ctx = this.capturedCanvas.getContext('2d');
+      if (ctx) {
+        ctx.clearRect(0, 0, this.capturedCanvas.width, this.capturedCanvas.height);
+      }
+      this.capturedCanvas = null;
+    }
+    this.llmResponse = null;
+    
+    // Reset analysis message
+    this.currentAnalysisMessage.set('Starting analysis...');
+    
+    // Log current state before restart
+    console.log('[Checkin] 📊 Current state before camera restart:', {
+      hasStream: !!this.stream,
+      hasVideoElement: !!this.videoElement?.nativeElement,
+      videoSrcObject: this.videoElement?.nativeElement?.srcObject ? 'present' : 'null',
+      videoDimensions: this.videoElement?.nativeElement ? 
+        `${this.videoElement.nativeElement.videoWidth}x${this.videoElement.nativeElement.videoHeight}` : 'no-video',
+      videoReadyState: this.videoElement?.nativeElement?.readyState || 'no-video'
+    });
+    
+    // Always restart camera on retry (don't check stream state)
+    console.log('[Checkin] 📹 === RESTARTING CAMERA FOR RETRY ===');
+    
+    // Stop current camera first (clean up properly)
+    this.stopCamera();
+    
+    // CRITICAL: Set phase to trigger video element visibility BEFORE starting camera
+    console.log('[Checkin] 🔄 Setting phase to WAITING_FOR_GATES to ensure video element visibility');
+    this.setPhase('WAITING_FOR_GATES');
+    
+    // Wait for Angular to process the phase change and update the template
+    console.log('[Checkin] ⏳ Waiting for template update after phase change...');
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
+    console.log('[Checkin] 📺 Video element available after phase change:', !!this.videoElement?.nativeElement);
+    
+    // Start fresh camera
+    try {
+      await this.startCamera();
+    } catch (error) {
+      console.error('[Checkin] ❌ Failed to restart camera:', error);
+      // Don't propagate the error - let the component remain in current state
+    }
+    
+    console.log('[Checkin] ✅ === CAMERA RESTART COMPLETED ===');
+    console.log('[Checkin] 📊 Final state after camera restart:', {
+      hasStream: !!this.stream,
+      videoSrcObject: this.videoElement?.nativeElement?.srcObject ? 'present' : 'null',
+      videoDimensions: this.videoElement?.nativeElement ? 
+        `${this.videoElement.nativeElement.videoWidth}x${this.videoElement.nativeElement.videoHeight}` : 'no-video',
+      videoReadyState: this.videoElement?.nativeElement?.readyState || 'no-video'
+    });
+  }
+
+  private async executeCheckin(): Promise<void> {
+    console.log('[Checkin] ✅ LLM confirmed carpet - executing check-in');
+    this.setPhase('CHECK_IN_PROCESSING');
 
     const pubId = this.pubId();
     if (!pubId) return;
 
-    // Simulate check-in processing
-    setTimeout(() => {
-      // Fake results
-      this.pointsEarned.set(25);
-      this.badgesEarned.set(['first-visit']);
+    try {
+      // Store validated carpet image using CarpetStorageService
+      if (this.capturedCanvas && this.llmResponse) {
+        console.log('[Checkin] 💾 Storing validated carpet image using CarpetStorageService');
+        
+        const pub = this.pubStore.get(pubId);
+        const pubName = pub?.name || 'Unknown Pub';
+        
+        await this.carpetStorageService.saveCarpetImage(
+          this.capturedCanvas,
+          pubId,
+          pubName
+        );
+        
+        console.log('[Checkin] ✅ Carpet image stored successfully');
+      }
 
-      console.log('[Checkin] 🎯 Points awarded:', this.pointsEarned());
-      console.log('[Checkin] 🏅 Badges awarded:', this.badgesEarned());
-      console.log('[Checkin] 🎉 Success modal displayed');
+      // Simulate check-in processing
+      this.safeSetTimeout(() => {
+        // Fake results
+        this.pointsEarned.set(25);
+        this.badgesEarned.set(['first-visit']);
 
-      this.currentPhase.set('SUCCESS_MODAL');
-    }, 2000);
+        console.log('[Checkin] 🎯 Points awarded:', this.pointsEarned());
+        console.log('[Checkin] 🏅 Badges awarded:', this.badgesEarned());
+        console.log('[Checkin] 🎉 Success modal displayed');
+
+        this.setPhase('SUCCESS_MODAL');
+      }, 2000);
+      
+    } catch (error) {
+      console.error('[Checkin] ❌ Error storing carpet image:', error);
+      // Continue with check-in even if storage fails
+      this.setPhase('SUCCESS_MODAL');
+    }
   }
 
   protected exitToHomepage(): void {
     console.log('[Checkin] 🏠 Navigating to homepage');
-    this.cleanup();
+    this.emergencyCleanup();
     this.router.navigate(['/']);
+  }
+
+  private emergencyCleanup(): void {
+    console.log('[Checkin] 🆘 Emergency cleanup initiated');
+    
+    // Force stop all intervals and timeouts immediately
+    this.cleanupIntervals();
+    this.cleanupTimeouts();
+    
+    // Force stop camera
+    this.stopCamera();
+    
+    // Clear device orientation listener
+    this.cleanupDeviceOrientationListener();
+    
+    // Clear metrics service state
+    this._metricsService.clearState?.();
+    
+    // Clear canvas resources
+    this.cleanupCanvasResources();
+    
+    console.log('[Checkin] 🆘 Emergency cleanup completed');
   }
 
   private stopCamera(): void {
     if (this.stream) {
-      this.stream.getTracks().forEach(track => track.stop());
+      console.log('[Checkin] 📹 Stopping camera with', this.stream.getTracks().length, 'tracks');
+      this.stream.getTracks().forEach(track => {
+        console.log('[Checkin] 📹 Stopping track:', track.kind, track.readyState);
+        track.stop();
+      });
+      
+      // Clear video element source
+      if (this.videoElement?.nativeElement) {
+        this.videoElement.nativeElement.srcObject = null;
+        console.log('[Checkin] 📹 Video element srcObject cleared');
+      }
+      
       this.stream = null;
-      console.log('[Checkin] 📹 Camera stopped');
+      console.log('[Checkin] 📹 Camera stopped and resources cleaned');
+    }
+  }
+
+  private cleanupIntervals(): void {
+    console.log('[Checkin] 🧹 Cleaning up intervals');
+    
+    if (this.gateMonitoringInterval) {
+      clearInterval(this.gateMonitoringInterval);
+      this.gateMonitoringInterval = null;
+      console.log('[Checkin] 🧹 Gate monitoring interval cleared');
+    }
+
+    if (this.metricsAnalysisInterval) {
+      clearInterval(this.metricsAnalysisInterval);
+      this.metricsAnalysisInterval = null;
+      console.log('[Checkin] 🧹 Metrics analysis interval cleared');
     }
   }
 
   private cleanup(): void {
     this.stopCamera();
-
-    // Simple metrics service doesn't need explicit cleanup - it's stateless
-
-    if (this.gateMonitoringInterval) {
-      clearInterval(this.gateMonitoringInterval);
-      this.gateMonitoringInterval = null;
-    }
+    this.stopAnalysisMessageCycling();
+    this.cleanupIntervals();
+    this.cleanupDeviceOrientationListener();
+    this.cleanupTimeouts();
+    this.cleanupCanvasResources();
 
     const photoUrl = this.capturedPhotoUrl();
-    if (photoUrl) {
-      URL.revokeObjectURL(photoUrl);
+    if (photoUrl && typeof URL !== 'undefined' && URL.revokeObjectURL) {
+      // Only revoke if it's an object URL (starts with blob:)
+      if (photoUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(photoUrl);
+      }
     }
+  }
+
+  private cleanupCanvasResources(): void {
+    console.log('[Checkin] 🧹 Cleaning up canvas resources');
+    
+    // Clear captured canvas reference
+    if (this.capturedCanvas) {
+      // Clear the canvas
+      const ctx = this.capturedCanvas.getContext('2d');
+      if (ctx) {
+        ctx.clearRect(0, 0, this.capturedCanvas.width, this.capturedCanvas.height);
+      }
+      this.capturedCanvas = null;
+      console.log('[Checkin] 🧹 Captured canvas cleared');
+    }
+    
+    // Clear blob URL
+    const blob = this.capturedPhotoBlob();
+    if (blob) {
+      this.capturedPhotoBlob.set(null);
+      console.log('[Checkin] 🧹 Photo blob reference cleared');
+    }
+    
+    // Ask metrics service to clear its accumulated state
+    this._metricsService.clearState?.();
+  }
+
+  private cleanupDeviceOrientationListener(): void {
+    if (this.deviceOrientationHandler) {
+      console.log('[Checkin] 🧹 Removing device orientation listener');
+      window.removeEventListener('deviceorientation', this.deviceOrientationHandler);
+      this.deviceOrientationHandler = null;
+    }
+  }
+
+  private cleanupTimeouts(): void {
+    console.log('[Checkin] 🧹 Clearing active timeouts:', this.activeTimeouts.size);
+    this.activeTimeouts.forEach(timeoutId => {
+      clearTimeout(timeoutId);
+    });
+    this.activeTimeouts.clear();
+  }
+
+  private safeSetTimeout(callback: () => void, delay: number): number {
+    const timeoutId = window.setTimeout(() => {
+      this.activeTimeouts.delete(timeoutId);
+      callback();
+    }, delay);
+    this.activeTimeouts.add(timeoutId);
+    return timeoutId;
   }
 }

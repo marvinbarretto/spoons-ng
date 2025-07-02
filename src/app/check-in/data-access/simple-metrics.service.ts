@@ -37,14 +37,44 @@ export class SimpleMetricsService {
   private motionHistory: number[] = []; // Track recent motion levels
   private readonly MOTION_HISTORY_SIZE = 3; // Reduced from 5 for faster response
   
+  // Memory management
+  private analysisCount = 0;
+  private readonly MAX_ANALYSIS_COUNT = 1000; // Clear state after 1000 analyses to prevent memory buildup
+  
   readonly metrics = this._metrics.asReadonly();
   readonly isAnalyzing = this._isAnalyzing.asReadonly();
+
+  clearState(): void {
+    console.log('[SimpleMetrics] 🧹 Clearing accumulated state');
+    
+    // Clear previous frame data to prevent memory accumulation
+    this.previousFrameData = null;
+    
+    // Clear motion history
+    this.motionHistory = [];
+    
+    // Reset analysis count
+    this.analysisCount = 0;
+    
+    // Reset metrics signal
+    this._metrics.set(null);
+    this._isAnalyzing.set(false);
+    
+    console.log('[SimpleMetrics] 🧹 State cleared - memory should be freed');
+  }
   
   async analyzeVideoFrame(videoElement: HTMLVideoElement): Promise<SimpleMetrics> {
     this._isAnalyzing.set(true);
     const startTime = performance.now();
     
-    console.log('📊 [SimpleMetrics] Running analysis...');
+    // Increment analysis count and check for memory management
+    this.analysisCount++;
+    if (this.analysisCount > this.MAX_ANALYSIS_COUNT) {
+      console.log('[SimpleMetrics] 🧹 Reached max analysis count, clearing state for memory management');
+      this.clearState();
+    }
+    
+    console.log('📊 [SimpleMetrics] Running analysis...', this.analysisCount);
     
     try {
       const canvas = document.createElement('canvas');

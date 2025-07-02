@@ -9,7 +9,7 @@ import { FirestoreCrudService } from '../../shared/data-access/firestore-crud.se
 import { NearbyPubStore } from '../../pubs/data-access/nearby-pub.store';
 import { AuthStore } from '../../auth/data-access/auth.store';
 import type { CheckIn } from '../utils/check-in.models';
-import { DEV_FEATURES } from '@shared/utils/dev-mode.constants';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class CheckInService extends FirestoreCrudService<CheckIn> {
@@ -28,7 +28,7 @@ export class CheckInService extends FirestoreCrudService<CheckIn> {
     console.log('[CheckInService] 🔍 Running check-in validations for pub:', pubId);
 
     // Gate 1: Daily limit check
-    if (DEV_FEATURES.SKIP_DAILY_LIMITS) {
+    if (environment.ACTIVE_DEVELOPMENT_MODE) {
       console.log('[CheckInService] 📅 Daily limit check SKIPPED (ACTIVE_DEVELOPMENT_MODE enabled)');
     } else {
       console.log('[CheckInService] 📅 Running daily limit check...');
@@ -41,7 +41,7 @@ export class CheckInService extends FirestoreCrudService<CheckIn> {
     }
 
     // Gate 2: Proximity check
-    if (DEV_FEATURES.SKIP_PROXIMITY_CHECKS) {
+    if (environment.ACTIVE_DEVELOPMENT_MODE) {
       console.log('[CheckInService] 📍 Proximity check SKIPPED (ACTIVE_DEVELOPMENT_MODE enabled)');
     } else {
       console.log('[CheckInService] 📍 Starting proximity validation...');

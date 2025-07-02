@@ -7,7 +7,7 @@ import { CheckInStore } from '@check-in/data-access/check-in.store';
 import { ModalCheckinSuccessComponent } from '../ui/modal-checkin-success/modal-checkin-success.component';
 import { ModalCheckinLandlordComponent } from '../ui/modal-checkin-landlord/modal-checkin-landlord.component';
 import { CheckInResultData } from '../utils/check-in.models';
-import { MODAL_NAVIGATION_TIMEOUT } from '@shared/utils/dev-mode.constants';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class CheckInModalService {
@@ -18,6 +18,9 @@ export class CheckInModalService {
 
   // Callback for when modal flow is completely dismissed
   private onModalFlowDismissed?: () => void;
+  
+  // Track active timeouts for cleanup
+  private activeTimeouts: Set<number> = new Set();
 
   /**
    * Show consecutive modals for check-in results
@@ -52,15 +55,15 @@ export class CheckInModalService {
     );
 
     // Set up navigation fallback timeout
-    const navigationFallbackTimeout = setTimeout(() => {
+    const navigationFallbackTimeout = this.safeSetTimeout(() => {
       console.warn('[CheckInModalService] Navigation fallback timeout triggered - forcing navigation to homepage');
       this.forceNavigationToHomepage();
-    }, MODAL_NAVIGATION_TIMEOUT);
+    }, environment.MODAL_NAVIGATION_TIMEOUT);
 
     // Clear timeout when modal closes properly
     const clearFallbackTimeout = () => {
       console.log('[CheckInModalService] Clearing navigation fallback timeout');
-      clearTimeout(navigationFallbackTimeout);
+      this.clearTimeout(navigationFallbackTimeout);
     };
 
     // Handle modal events
@@ -84,7 +87,7 @@ export class CheckInModalService {
       close();
 
       // Brief delay for smooth transition
-      setTimeout(() => {
+      this.safeSetTimeout(() => {
         this.showLandlordStatus(data);
       }, 200);
     });
@@ -126,15 +129,15 @@ export class CheckInModalService {
     );
 
     // Set up navigation fallback timeout
-    const navigationFallbackTimeout = setTimeout(() => {
+    const navigationFallbackTimeout = this.safeSetTimeout(() => {
       console.warn('[CheckInModalService] Landlord modal navigation fallback timeout triggered - forcing navigation to homepage');
       this.forceNavigationToHomepage();
-    }, MODAL_NAVIGATION_TIMEOUT);
+    }, environment.MODAL_NAVIGATION_TIMEOUT);
 
     // Clear timeout when modal closes properly
     const clearFallbackTimeout = () => {
       console.log('[CheckInModalService] Clearing landlord modal navigation fallback timeout');
-      clearTimeout(navigationFallbackTimeout);
+      this.clearTimeout(navigationFallbackTimeout);
     };
 
     // Handle modal events
@@ -158,7 +161,7 @@ export class CheckInModalService {
       close();
 
       // Brief delay for smooth transition
-      setTimeout(() => {
+      this.safeSetTimeout(() => {
         this.showCheckinSuccess(data);
       }, 200);
     });
@@ -197,7 +200,7 @@ export class CheckInModalService {
     console.log('[CheckInModalService] Force navigation to homepage initiated');
 
     // Add small delay to ensure any pending operations complete
-    setTimeout(() => {
+    this.safeSetTimeout(() => {
       console.log('[CheckInModalService] Executing router.navigate to homepage');
 
       this.router.navigate(['/'], {
@@ -216,5 +219,27 @@ export class CheckInModalService {
         }
       });
     }, 100);
+  }
+
+  private safeSetTimeout(callback: () => void, delay: number): number {
+    const timeoutId = window.setTimeout(() => {
+      this.activeTimeouts.delete(timeoutId);
+      callback();
+    }, delay);
+    this.activeTimeouts.add(timeoutId);
+    return timeoutId;
+  }
+
+  private clearTimeout(timeoutId: number): void {
+    clearTimeout(timeoutId);
+    this.activeTimeouts.delete(timeoutId);
+  }
+
+  clearAllTimeouts(): void {
+    console.log('[CheckInModalService] 🧹 Clearing all active timeouts:', this.activeTimeouts.size);
+    this.activeTimeouts.forEach(timeoutId => {
+      clearTimeout(timeoutId);
+    });
+    this.activeTimeouts.clear();
   }
 }
