@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.70](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.69...v0.0.70) (2025-07-02)
+
+
+### Features
+
+* Fixing this check in flow, wip ([9c0859c](https://github.com/marvinbarretto/spoons-ng/commit/9c0859c00066ea94eee614a93556d7573f92a6b9))
+* further develop the Onboarding feature ([a68db16](https://github.com/marvinbarretto/spoons-ng/commit/a68db169c6844bba5de60415bc567c6f7c763b66))
+
+
+### Bug Fixes
+
+* Relax firestore rules ([1da1550](https://github.com/marvinbarretto/spoons-ng/commit/1da15500254420b355b6612aab134a81647a83ca))
+
 ### [0.0.69](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.68...v0.0.69) (2025-07-01)
 
 
