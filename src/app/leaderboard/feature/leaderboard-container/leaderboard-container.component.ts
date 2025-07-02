@@ -1,7 +1,7 @@
 // src/app/leaderboard/feature/leaderboard-container/leaderboard-container.component.ts
 import { CommonModule } from "@angular/common";
 import { Component, computed, inject, signal } from "@angular/core";
-import { ActivatedRoute, RouterModule } from "@angular/router";
+import { ActivatedRoute, Router, RouterModule } from "@angular/router";
 import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
 import { BaseComponent } from "../../../shared/base/base.component";
 import { LeaderboardStore } from "../../data-access/leaderboard.store";
@@ -19,102 +19,64 @@ import { combineLatest } from 'rxjs';
     <div class="leaderboard-page">
       <header class="leaderboard-header">
         <h1>🏆 Leaderboard</h1>
-        <p>Compete with fellow pub crawlers across the city!</p>
+        <!-- TODO: Cycle through different motivational messages -->
       </header>
 
-
-      <!-- Geographic Filter Section -->
+      <!-- Compact Geographic Filter Section -->
       @if (showGeographicFilters()) {
-        <div class="geographic-filters">
-          <div class="filter-header">
-            <h3>🌍 Filter by Location</h3>
-            @if (hasActiveGeographicFilter()) {
+        <div class="geographic-filters compact">
+          <div class="filter-chips">
+            <!-- Global chip -->
+            <button
+              [class.active]="!hasActiveGeographicFilter()"
+              (click)="clearAllFilters()"
+              class="filter-chip"
+            >
+              🌍 Global
+            </button>
+
+            <!-- Popular Cities -->
+            @for (city of getPopularCities(); track city) {
               <button
-                class="clear-filters-btn"
-                (click)="clearAllFilters()"
-                title="Clear all filters"
+                [class.active]="selectedCity() === city"
+                (click)="onCityChange(city)"
+                class="filter-chip"
               >
-                ✕ Clear
+                {{ city }}
+              </button>
+            }
+
+            <!-- Regions -->
+            @for (region of availableRegions(); track region) {
+              <button
+                [class.active]="selectedRegion() === region"
+                (click)="onRegionChange(region)"
+                class="filter-chip"
+              >
+                {{ region }}
+              </button>
+            }
+
+            <!-- More cities if there are many -->
+            @if (availableCities().length > 8) {
+              <button class="filter-chip more-btn" (click)="showAllCities = !showAllCities">
+                {{ showAllCities ? 'Less' : 'More...' }}
               </button>
             }
           </div>
 
-          <!-- Filter Breadcrumb/Summary -->
-          @if (currentFilterSummary()) {
-            <div class="filter-summary">
-              <span class="filter-summary-text">{{ currentFilterSummary() }}</span>
-            </div>
-          }
-
-          <!-- Location Type Toggle -->
-          <nav class="location-tabs">
-            <button
-              [class.active]="!hasActiveGeographicFilter()"
-              (click)="clearAllFilters()"
-              class="location-tab"
-            >
-              🌍 Global
-            </button>
-            <button
-              [class.active]="hasActiveGeographicFilter()"
-              (click)="showLocalOptions()"
-              class="location-tab"
-            >
-              📍 Local
-            </button>
-          </nav>
-
-          <!-- City Filter Chips -->
-          @if (availableCities().length > 0 && !selectedRegion()) {
-            <div class="filter-section">
-              <label class="filter-label">Popular Cities:</label>
-              <div class="filter-chips">
-                @for (city of getPopularCities(); track city) {
-                  <button
-                    [class.active]="selectedCity() === city"
-                    (click)="onCityChange(city)"
-                    class="filter-chip"
-                  >
-                    {{ city }}
-                  </button>
-                }
-                @if (availableCities().length > 8) {
-                  <button class="filter-chip more-btn" (click)="showAllCities = !showAllCities">
-                    {{ showAllCities ? 'Less' : 'More...' }}
-                  </button>
-                }
-              </div>
-              @if (showAllCities && availableCities().length > 8) {
-                <div class="filter-chips additional-chips">
-                  @for (city of getAdditionalCities(); track city) {
-                    <button
-                      [class.active]="selectedCity() === city"
-                      (click)="onCityChange(city)"
-                      class="filter-chip"
-                    >
-                      {{ city }}
-                    </button>
-                  }
-                </div>
+          <!-- Additional cities row when expanded -->
+          @if (showAllCities && availableCities().length > 8) {
+            <div class="filter-chips additional-chips">
+              @for (city of getAdditionalCities(); track city) {
+                <button
+                  [class.active]="selectedCity() === city"
+                  (click)="onCityChange(city)"
+                  class="filter-chip"
+                >
+                  {{ city }}
+                </button>
               }
-            </div>
-          }
-
-          <!-- Region Filter Chips -->
-          @if (availableRegions().length > 0 && !selectedCity()) {
-            <div class="filter-section">
-              <label class="filter-label">Regions:</label>
-              <div class="filter-chips">
-                @for (region of availableRegions(); track region) {
-                  <button
-                    [class.active]="selectedRegion() === region"
-                    (click)="onRegionChange(region)"
-                    class="filter-chip"
-                  >
-                    {{ region }}
-                  </button>
-                }
-              </div>
             </div>
           }
         </div>
@@ -124,7 +86,7 @@ import { combineLatest } from 'rxjs';
       <!-- Time Period Tabs -->
       <nav class="time-period-tabs">
         <a
-          routerLink="/leaderboard/this-week"
+          [routerLink]="getTimePeriodLink('this-week')"
           routerLinkActive="active"
           [routerLinkActiveOptions]="{ exact: true }"
           class="tab-link"
@@ -132,7 +94,7 @@ import { combineLatest } from 'rxjs';
           This Week
         </a>
         <a
-          routerLink="/leaderboard/this-month"
+          [routerLink]="getTimePeriodLink('this-month')"
           routerLinkActive="active"
           [routerLinkActiveOptions]="{ exact: true }"
           class="tab-link"
@@ -140,7 +102,7 @@ import { combineLatest } from 'rxjs';
           This Month
         </a>
         <a
-          routerLink="/leaderboard/all-time"
+          [routerLink]="getTimePeriodLink('all-time')"
           routerLinkActive="active"
           [routerLinkActiveOptions]="{ exact: true }"
           class="tab-link"
@@ -233,91 +195,13 @@ import { combineLatest } from 'rxjs';
     }
 
     .geographic-filters {
+      margin-bottom: 1rem;
+    }
+
+    .geographic-filters.compact {
       background: var(--color-subtleLighter);
-      padding: 1rem;
-      border-radius: 8px;
-      margin-bottom: 2rem;
-    }
-
-    .filter-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 1rem;
-    }
-
-    .filter-header h3 {
-      margin: 0;
-      font-size: 1.1rem;
-      color: var(--color-text);
-    }
-
-    .clear-filters-btn {
-      background: var(--color-buttonSecondaryBackground);
-      color: var(--color-buttonSecondaryText);
-      border: 1px solid var(--color-buttonSecondaryBorder);
-      border-radius: 4px;
-      padding: 0.375rem 0.75rem;
-      font-size: 0.85rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .clear-filters-btn:hover {
-      background: var(--color-buttonSecondaryHover);
-    }
-
-    .filter-summary {
-      background: var(--color-background);
       padding: 0.75rem;
-      border-radius: 6px;
-      margin-bottom: 1rem;
-      border-left: 3px solid var(--color-buttonPrimaryBase);
-    }
-
-    .filter-summary-text {
-      font-size: 0.9rem;
-      color: var(--color-text);
-      font-weight: 500;
-    }
-
-    .location-tabs {
-      display: flex;
-      gap: 0.5rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .location-tab {
-      padding: 0.5rem 1rem;
-      background: var(--color-background);
-      border: 1px solid var(--color-buttonSecondaryBorder);
-      border-radius: 4px;
-      color: var(--color-text);
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-size: 0.9rem;
-    }
-
-    .location-tab:hover {
-      background: var(--color-buttonSecondaryHover);
-    }
-
-    .location-tab.active {
-      background: var(--color-buttonPrimaryBase);
-      color: var(--color-buttonPrimaryText);
-      border-color: var(--color-buttonPrimaryBase);
-    }
-
-    .filter-section {
-      margin-bottom: 1.5rem;
-    }
-
-    .filter-label {
-      display: block;
-      font-weight: 500;
-      color: var(--color-text);
-      font-size: 0.9rem;
-      margin-bottom: 0.75rem;
+      border-radius: 8px;
     }
 
     .filter-chips {
@@ -411,33 +295,8 @@ import { combineLatest } from 'rxjs';
         font-size: 0.9rem;
       }
 
-      .geographic-filters {
-        padding: 0.75rem;
-      }
-
-      .filter-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-      }
-
-      .filter-header h3 {
-        font-size: 1rem;
-      }
-
-      .clear-filters-btn {
-        align-self: flex-end;
-        padding: 0.25rem 0.5rem;
-        font-size: 0.8rem;
-      }
-
-      .location-tabs {
-        margin-bottom: 1rem;
-      }
-
-      .location-tab {
-        padding: 0.375rem 0.75rem;
-        font-size: 0.85rem;
+      .geographic-filters.compact {
+        padding: 0.5rem;
       }
 
       .filter-chips {
@@ -448,14 +307,6 @@ import { combineLatest } from 'rxjs';
         padding: 0.25rem 0.625rem;
         font-size: 0.8rem;
       }
-
-      .filter-summary {
-        padding: 0.5rem;
-      }
-
-      .filter-summary-text {
-        font-size: 0.85rem;
-      }
     }
   `
 })
@@ -463,7 +314,6 @@ export class LeaderboardContainerComponent extends BaseComponent {
   protected readonly leaderboardStore = inject(LeaderboardStore);
   private readonly authStore = inject(AuthStore);
   private readonly route = inject(ActivatedRoute);
-
 
   // Route data and params subscription - initialized in field initializer for injection context
   private readonly routeSubscription = combineLatest([
@@ -482,7 +332,7 @@ export class LeaderboardContainerComponent extends BaseComponent {
     this.leaderboardStore.setTimeRange(period);
 
     // Set geographic filter based on route
-    if (geographic && geographic !== 'none') {
+    if (geographic && geographic !== 'global') {
       const filter: LeaderboardGeographicFilter = this.createGeographicFilter(geographic, params);
       this.leaderboardStore.setGeographicFilter(filter);
       console.log('[LeaderboardContainer] Setting geographic filter:', filter);
@@ -539,18 +389,6 @@ export class LeaderboardContainerComponent extends BaseComponent {
     return filter.type !== 'none' && (filter.value || '').length > 0;
   });
 
-  readonly currentFilterSummary = computed(() => {
-    const filter = this.leaderboardStore.geographicFilter();
-    const totalEntries = this.leaderboardStore.filteredData().length;
-
-    if (filter.type === 'none' || !filter.value) {
-      return `Showing global leaderboard (${totalEntries.toLocaleString()} players)`;
-    }
-
-    const filterTypeLabel = filter.type === 'city' ? 'city' : 'region';
-    return `Showing leaderboard for ${filter.value} (${totalEntries.toLocaleString()} players)`;
-  });
-
   readonly getPopularCities = computed(() => {
     // Return first 8 cities as "popular" - you could enhance this with actual popularity metrics
     return this.availableCities().slice(0, 8);
@@ -560,6 +398,23 @@ export class LeaderboardContainerComponent extends BaseComponent {
     // Return cities beyond the first 8
     return this.availableCities().slice(8);
   });
+
+  // Current route context for maintaining geographic filters in time period tabs
+  readonly currentGeographic = computed(() => {
+    const filter = this.leaderboardStore.geographicFilter();
+    if (filter.type === 'city' && filter.value) {
+      return `city/${filter.value.toLowerCase()}`;
+    } else if (filter.type === 'region' && filter.value) {
+      return `region/${filter.value.toLowerCase()}`;
+    }
+    return 'global';
+  });
+
+  // Helper method to generate time period links that preserve geographic context
+  getTimePeriodLink(period: LeaderboardTimeRange): string {
+    const geographic = this.currentGeographic();
+    return `/leaderboard/${geographic}/${period}`;
+  }
 
   // Table columns configuration
   readonly columns = computed((): TableColumn[] => [
@@ -617,31 +472,29 @@ export class LeaderboardContainerComponent extends BaseComponent {
 
   onCityChange(city: string): void {
     if (city && city !== this.selectedCity()) {
-      this.leaderboardStore.filterByCity(city);
+      // Navigate to the city-specific route with lowercase URL
+      const currentPeriod = this.leaderboardStore.timeRange();
+      const citySlug = city.toLowerCase();
+      this.router.navigate(['/leaderboard', 'city', citySlug, currentPeriod]);
       this.showAllCities = false; // Collapse additional cities when one is selected
     }
   }
 
   onRegionChange(region: string): void {
     if (region && region !== this.selectedRegion()) {
-      this.leaderboardStore.filterByRegion(region);
+      // Navigate to the region-specific route with lowercase URL
+      const currentPeriod = this.leaderboardStore.timeRange();
+      const regionSlug = region.toLowerCase();
+      this.router.navigate(['/leaderboard', 'region', regionSlug, currentPeriod]);
     }
   }
 
   clearAllFilters(): void {
-    this.leaderboardStore.clearGeographicFilter();
+    // Navigate to global leaderboard
+    const currentPeriod = this.leaderboardStore.timeRange();
+    this.router.navigate(['/leaderboard', 'global', currentPeriod]);
     this.showAllCities = false;
   }
-
-  showLocalOptions(): void {
-    // This method can be enhanced to show a more sophisticated local filter selection
-    // For now, it just ensures the local tab appears active when we have filters
-    if (!this.hasActiveGeographicFilter()) {
-      // If no active filter, we could default to showing popular cities
-      // or auto-select based on user's location/history
-    }
-  }
-
 
   async retry(): Promise<void> {
     await this.handleAsync(
@@ -656,16 +509,24 @@ export class LeaderboardContainerComponent extends BaseComponent {
   private createGeographicFilter(type: string, params: any): LeaderboardGeographicFilter {
     switch (type) {
       case 'city':
-        return { type: 'city', value: params['cityName'] };
+        // Find the original case-sensitive city name from available cities
+        const citySlug = params['cityName']?.toLowerCase();
+        const originalCity = this.leaderboardStore.availableCities().find(city => 
+          city.toLowerCase() === citySlug
+        );
+        return { type: 'city', value: originalCity || params['cityName'] };
       case 'region':
-        return { type: 'region', value: params['regionId'] };
+        // Find the original case-sensitive region name from available regions
+        const regionSlug = params['regionName']?.toLowerCase();
+        const originalRegion = this.leaderboardStore.availableRegions().find(region => 
+          region.toLowerCase() === regionSlug
+        );
+        return { type: 'region', value: originalRegion || params['regionName'] };
       case 'country':
         return { type: 'country', value: params['countryId'] };
       case 'pub':
         return { type: 'pub', value: params['pubId'] };
-      case 'local':
-        // For local, we'll need to determine the user's local area
-        // For now, return none - this could be enhanced later
+      case 'global':
         return { type: 'none' };
       default:
         return { type: 'none' };
