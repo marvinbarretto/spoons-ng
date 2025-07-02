@@ -12,8 +12,8 @@ export type Toast = {
 
 @Injectable({ providedIn: 'root' })
 export class ToastService {
-  private readonly toasts$$ = signal<Toast[]>([]);
-  readonly toasts$$Readonly = this.toasts$$.asReadonly();
+  private readonly _toasts = signal<Toast[]>([]);
+  readonly toasts = this._toasts.asReadonly();
 
   private readonly activeTimeouts = new Map<string, number>();
   private readonly platform = inject(SsrPlatformService);
@@ -32,7 +32,7 @@ export class ToastService {
       timeout,
     };
 
-    this.toasts$$.update((current) => [toast, ...current]);
+    this._toasts.update((current) => [toast, ...current]);
 
     if (!sticky && timeout) {
       const win = this.platform.getWindow();
@@ -70,13 +70,13 @@ export class ToastService {
       this.activeTimeouts.delete(id);
     }
 
-    this.toasts$$.update((toasts) => toasts.filter((t) => t.id !== id));
+    this._toasts.update((toasts) => toasts.filter((t) => t.id !== id));
   }
 
   clearAll(): void {
     this.activeTimeouts.forEach((id) => clearTimeout(id));
     this.activeTimeouts.clear();
 
-    this.toasts$$.set([]);
+    this._toasts.set([]);
   }
 }

@@ -1,28 +1,31 @@
-import { Component, inject, effect } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ToastService } from '../../data-access/toast.service';
+import { ToastService, Toast } from '../../data-access/toast.service';
+import { IconComponent } from '../icon/icon.component';
 
 
 @Component({
   selector: 'app-toast',
-  standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, IconComponent],
   templateUrl: './toast.component.html',
   styleUrls: ['./toast.component.scss'],
 })
 export class ToastComponent {
   private readonly toastService = inject(ToastService);
-  readonly toasts$$ = this.toastService.toasts$$Readonly;
+  readonly toasts = this.toastService.toasts;
 
-  constructor() {
-    effect(() => {
-      console.log('[ToastComponent] Toasts changed:', this.toasts$$());
-    });
+  toastClass(toast: Toast): string {
+    return `toast toast--${toast.type}`;
   }
 
-  // TODO: type this
-  toastClass(toast: any): string {
-    return `toast toast--${toast.type}`;
+  getIconName(type: Toast['type']): string {
+    const iconMap: Record<Toast['type'], string> = {
+      success: 'check_circle',
+      error: 'error', 
+      warning: 'warning',
+      info: 'info'
+    };
+    return iconMap[type];
   }
 
   dismiss(id: string): void {
