@@ -12,16 +12,40 @@ import { ButtonComponent } from '@shared/ui/button/button.component';
 
       <div class="location-importance">
         <div class="importance-item">
-          <span class="icon">🍺</span>
-          <span>Discover pubs near you</span>
+          <span class="icon">🎯</span>
+          <span>Verify authentic check-ins - prevent fake check-ins from your couch</span>
         </div>
         <div class="importance-item">
-          <span class="icon">🎯</span>
-          <span>Get accurate distance calculations</span>
+          <span class="icon">🚶</span>
+          <span>Find pubs within walking distance - no more long treks after a few drinks</span>
+        </div>
+        <div class="importance-item">
+          <span class="icon">💎</span>
+          <span>Discover hidden local gems - uncover secret spots locals love</span>
         </div>
         <div class="importance-item">
           <span class="icon">🏠</span>
-          <span>Find your perfect home pub</span>
+          <span>Choose the perfect home pub - get bonus points at your regular spot</span>
+        </div>
+        <div class="importance-item">
+          <span class="icon">📊</span>
+          <span>See real-time pub popularity - know which spots are buzzing right now</span>
+        </div>
+        <div class="importance-item">
+          <span class="icon">🗺️</span>
+          <span>Get smart route suggestions - plan epic pub crawl routes efficiently</span>
+        </div>
+        <div class="importance-item">
+          <span class="icon">👥</span>
+          <span>Compete with friends in your area - local leaderboards and challenges</span>
+        </div>
+        <div class="importance-item">
+          <span class="icon">📈</span>
+          <span>Track your exploration radius - see how far your pub adventures reach</span>
+        </div>
+        <div class="importance-item">
+          <span class="icon">🎁</span>
+          <span>Unlock location-based rewards - special badges for exploring new areas</span>
         </div>
       </div>
 

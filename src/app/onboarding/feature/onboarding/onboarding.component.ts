@@ -19,18 +19,16 @@ import type { Pub } from '../../../pubs/utils/pub.models';
 import { AskNotificationsStepComponent } from '../../ui/steps/ask-notifications-step.component';
 import { AskLocationStepComponent } from '../../ui/steps/ask-location-step.component';
 import { WelcomeMessageStepComponent } from '../../ui/steps/welcome-message-step.component';
-import { ChooseYourLookStepComponent } from '../../ui/steps/choose-your-look-step.component';
-import { ChooseYourNameStepComponent } from '../../ui/steps/choose-your-name-step.component';
-import { ReadyToStartStepComponent } from '../../ui/steps/ready-to-start-step.component';
+import { AuthChoiceStepComponent } from '../../ui/steps/auth-choice-step.component';
+import { CustomizeProfileStepComponent } from '../../ui/steps/customize-profile-step.component';
 
 type OnboardingStep =
-  | 'ask-notifications'     // Request notification permissions
+  | 'ask-notifications'     // Request notification permissions (optional)
   | 'ask-location'          // Request location permissions (REQUIRED)
   | 'welcome-message'       // "You gotta catch them all" welcome
-  | 'choose-your-look'      // Avatar + background color selection
-  | 'choose-your-name'      // Display name with random generator option
-  | 'choose-home-pub'       // Home pub selection
-  | 'ready-to-start';       // Final confirmation screen
+  | 'auth-choice'           // Google login OR Custom profile choice
+  | 'customize-profile'     // Avatar + display name (only if custom chosen)
+  | 'choose-home-pub';      // Home pub selection (auto-complete on selection)
 
 @Component({
   selector: 'app-onboarding',
@@ -43,9 +41,8 @@ type OnboardingStep =
     AskNotificationsStepComponent,
     AskLocationStepComponent,
     WelcomeMessageStepComponent,
-    ChooseYourLookStepComponent,
-    ChooseYourNameStepComponent,
-    ReadyToStartStepComponent,
+    AuthChoiceStepComponent,
+    CustomizeProfileStepComponent,
   ],
   template: `
     <div class="onboarding-container">
@@ -73,23 +70,23 @@ type OnboardingStep =
 
           @case ('welcome-message') {
             <app-welcome-message-step
-              (continue)="proceedToLookCustomization()"
+              (continue)="proceedToAuthChoice()"
             />
           }
 
-          @case ('choose-your-look') {
-            <app-choose-your-look-step
+          @case ('auth-choice') {
+            <app-auth-choice-step
+              (googleLogin)="handleGoogleLogin()"
+              (customProfile)="proceedToCustomizeProfile()"
+            />
+          }
+
+          @case ('customize-profile') {
+            <app-customize-profile-step
               [user]="user()"
               [selectedAvatarId]="selectedAvatarId()"
-              (avatarSelected)="onAvatarSelected($event)"
-              (back)="goBackToPreviousStep()"
-              (continue)="proceedToNameSelection()"
-            />
-          }
-
-          @case ('choose-your-name') {
-            <app-choose-your-name-step
               [displayName]="displayName()"
+              (avatarSelected)="onAvatarSelected($event)"
               (nameChanged)="onDisplayNameChange($event)"
               (generateRandom)="generateRandomDisplayName()"
               (back)="goBackToPreviousStep()"
@@ -101,28 +98,13 @@ type OnboardingStep =
             <div class="step">
               <h2>Choose Your Home Pub</h2>
               <p>Your home pub gives you bonus points when you check in!</p>
-              <!-- TODO: Extract this to a step component -->
               <app-home-pub-selection-widget
-                (pubSelected)="onHomePubSelected($event)"
+                (pubSelected)="onHomePubSelectedAndComplete($event)"
               />
-              <div>
-                <app-button (onClick)="goBackToPreviousStep()">Back</app-button>
-                <app-button (onClick)="proceedToFinalConfirmation()">
-                  {{ selectedHomePubId() ? 'Continue' : 'Skip for Now' }}
-                </app-button>
+              <div class="step-actions">
+                <app-button variant="secondary" (onClick)="goBackToPreviousStep()">Back</app-button>
               </div>
             </div>
-          }
-
-          @case ('ready-to-start') {
-            <app-ready-to-start-step
-              [displayName]="displayName()"
-              [hasHomePub]="!!selectedHomePubId()"
-              [notificationsEnabled]="notificationsGranted()"
-              [locationEnabled]="locationGranted()"
-              [isSaving]="saving()"
-              (startExploring)="completeOnboarding()"
-            />
           }
         }
       </div>
@@ -162,6 +144,17 @@ type OnboardingStep =
       width: 100%;
       text-align: center;
     }
+
+    .step-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-top: 2rem;
+    }
+
+    .step-actions app-button {
+      min-width: 120px;
+    }
   `
 })
 export class OnboardingComponent extends BaseComponent {
@@ -194,10 +187,10 @@ export class OnboardingComponent extends BaseComponent {
   readonly progressPercentage = computed(() => {
     const steps: OnboardingStep[] = [
       'ask-notifications', 'ask-location', 'welcome-message',
-      'choose-your-look', 'choose-your-name', 'choose-home-pub', 'ready-to-start'
+      'auth-choice', 'customize-profile', 'choose-home-pub'
     ];
     const currentIndex = steps.indexOf(this.currentStep());
-    return (currentIndex / (steps.length - 1)) * 100;
+    return Math.max(0, (currentIndex / (steps.length - 1)) * 100);
   });
 
   override async onInit() {
@@ -213,7 +206,7 @@ export class OnboardingComponent extends BaseComponent {
   // Step navigation with readable method names
   private readonly stepOrder: OnboardingStep[] = [
     'ask-notifications', 'ask-location', 'welcome-message',
-    'choose-your-look', 'choose-your-name', 'choose-home-pub', 'ready-to-start'
+    'auth-choice', 'customize-profile', 'choose-home-pub'
   ];
 
   proceedToNextStep(): void {
@@ -237,10 +230,9 @@ export class OnboardingComponent extends BaseComponent {
   // Specific navigation methods for clarity
   proceedToLocationRequest(): void { this.currentStep.set('ask-location'); }
   proceedToWelcome(): void { this.currentStep.set('welcome-message'); }
-  proceedToLookCustomization(): void { this.currentStep.set('choose-your-look'); }
-  proceedToNameSelection(): void { this.currentStep.set('choose-your-name'); }
+  proceedToAuthChoice(): void { this.currentStep.set('auth-choice'); }
+  proceedToCustomizeProfile(): void { this.currentStep.set('customize-profile'); }
   proceedToHomePubSelection(): void { this.currentStep.set('choose-home-pub'); }
-  proceedToFinalConfirmation(): void { this.currentStep.set('ready-to-start'); }
 
   // Permission handling methods
   async requestNotificationPermission(): Promise<void> {
@@ -384,6 +376,26 @@ export class OnboardingComponent extends BaseComponent {
     console.log('[Onboarding] Home pub selected:', pub);
   }
 
+  // New methods for updated flow
+  async handleGoogleLogin(): Promise<void> {
+    console.log('[Onboarding] 🚀 Google login requested');
+    // TODO: Implement Google Firebase auth
+    console.log('[Onboarding] TODO: Implement Google login with Firebase Auth');
+    
+    // For now, just proceed to home pub selection (skip profile customization)
+    this.proceedToHomePubSelection();
+  }
+
+  onHomePubSelectedAndComplete(pub: Pub | null): void {
+    console.log('[Onboarding] 🏠 Home pub selected, auto-completing onboarding:', pub);
+    this.selectedHomePubId.set(pub?.id || null);
+    
+    // Auto-complete onboarding when pub is selected
+    setTimeout(() => {
+      this.completeOnboarding();
+    }, 500); // Small delay for UX
+  }
+
   // Complete onboarding
   async completeOnboarding(): Promise<void> {
     if (this.saving()) return;
@@ -425,6 +437,10 @@ export class OnboardingComponent extends BaseComponent {
       });
 
       console.log('[Onboarding] 🧭 Navigating to home page...');
+      
+      // TODO: Show success overlay instead of redirect
+      console.log('[Onboarding] TODO: Show success overlay instead of redirect');
+      
       // Navigate to home
       await this.router.navigate(['/']);
       console.log('[Onboarding] ✅ Navigation to home completed');
