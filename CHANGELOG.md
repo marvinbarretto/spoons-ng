@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.73](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.72...v0.0.73) (2025-07-03)
+
+
+### Features
+
+* Dislay success overlay in the check in phase yay ([87394ab](https://github.com/marvinbarretto/spoons-ng/commit/87394ab7f1dc8d10f24718bd39a532cbf08a2643))
+
 ### [0.0.72](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.71...v0.0.72) (2025-07-03)
 
 
