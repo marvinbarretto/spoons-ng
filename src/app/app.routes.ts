@@ -102,6 +102,14 @@ export const appRoutes: Routes = [
     data: { shell: 'feature' }
   },
   {
+    path: 'admin/feedback',
+    title: 'Feedback Management',
+    loadComponent: () =>
+      import('./feedback/feature/feedback-admin/feedback-admin.component')
+        .then(m => m.FeedbackAdminComponent),
+    data: { shell: 'feature' }
+  },
+  {
     path: 'share',
     loadComponent: () =>
       import('./share/feature/share-container/share-container.component')
