@@ -25,6 +25,7 @@ import { AuthStore } from '../../../auth/data-access/auth.store';
 
 import { APP_VERSION } from '../../utils/version';
 import { UserStore } from '../../../users/data-access/user.store';
+import { environment } from '../../../../environments/environment';
 
 
 /**
@@ -64,6 +65,17 @@ export class HeaderComponent extends BaseComponent implements AfterViewInit {
   readonly closestPub = computed(() => this.nearbyPubStore.closestPub());
 
   readonly version = APP_VERSION;
+  
+  // ✅ Environment detection
+  readonly environmentName = computed(() => {
+    if (environment.production) {
+      return 'PROD';
+    }
+    if (environment.ACTIVE_DEVELOPMENT_MODE) {
+      return 'DEV';
+    }
+    return 'LOCAL';
+  });
 
   // ✅ Auth signals
   readonly user = this.authStore.user;
