@@ -403,9 +403,9 @@ export class LeaderboardContainerComponent extends BaseComponent {
   readonly currentGeographic = computed(() => {
     const filter = this.leaderboardStore.geographicFilter();
     if (filter.type === 'city' && filter.value) {
-      return `city/${filter.value.toLowerCase()}`;
+      return `city/${this.createUrlSlug(filter.value)}`;
     } else if (filter.type === 'region' && filter.value) {
-      return `region/${filter.value.toLowerCase()}`;
+      return `region/${this.createUrlSlug(filter.value)}`;
     }
     return 'global';
   });
@@ -472,9 +472,9 @@ export class LeaderboardContainerComponent extends BaseComponent {
 
   onCityChange(city: string): void {
     if (city && city !== this.selectedCity()) {
-      // Navigate to the city-specific route with lowercase URL
+      // Navigate to the city-specific route with URL-friendly slug
       const currentPeriod = this.leaderboardStore.timeRange();
-      const citySlug = city.toLowerCase();
+      const citySlug = this.createUrlSlug(city);
       this.router.navigate(['/leaderboard', 'city', citySlug, currentPeriod]);
       this.showAllCities = false; // Collapse additional cities when one is selected
     }
@@ -482,9 +482,9 @@ export class LeaderboardContainerComponent extends BaseComponent {
 
   onRegionChange(region: string): void {
     if (region && region !== this.selectedRegion()) {
-      // Navigate to the region-specific route with lowercase URL
+      // Navigate to the region-specific route with URL-friendly slug
       const currentPeriod = this.leaderboardStore.timeRange();
-      const regionSlug = region.toLowerCase();
+      const regionSlug = this.createUrlSlug(region);
       this.router.navigate(['/leaderboard', 'region', regionSlug, currentPeriod]);
     }
   }
@@ -506,21 +506,32 @@ export class LeaderboardContainerComponent extends BaseComponent {
     );
   }
 
+  // Helper method to create URL-friendly slugs
+  private createUrlSlug(text: string): string {
+    return text
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '') // Remove special characters
+      .replace(/[\s_-]+/g, '-') // Replace spaces and underscores with hyphens
+      .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+  }
+
+  // Helper method to find original name from slug
+  private findOriginalNameFromSlug(slug: string, availableNames: string[]): string | undefined {
+    return availableNames.find(name => this.createUrlSlug(name) === slug);
+  }
+
   private createGeographicFilter(type: string, params: any): LeaderboardGeographicFilter {
     switch (type) {
       case 'city':
         // Find the original case-sensitive city name from available cities
-        const citySlug = params['cityName']?.toLowerCase();
-        const originalCity = this.leaderboardStore.availableCities().find(city => 
-          city.toLowerCase() === citySlug
-        );
+        const citySlug = params['cityName'];
+        const originalCity = this.findOriginalNameFromSlug(citySlug, this.leaderboardStore.availableCities());
         return { type: 'city', value: originalCity || params['cityName'] };
       case 'region':
         // Find the original case-sensitive region name from available regions
-        const regionSlug = params['regionName']?.toLowerCase();
-        const originalRegion = this.leaderboardStore.availableRegions().find(region => 
-          region.toLowerCase() === regionSlug
-        );
+        const regionSlug = params['regionName'];
+        const originalRegion = this.findOriginalNameFromSlug(regionSlug, this.leaderboardStore.availableRegions());
         return { type: 'region', value: originalRegion || params['regionName'] };
       case 'country':
         return { type: 'country', value: params['countryId'] };

@@ -86,18 +86,4 @@
       </div>
     }
   </section>
-
-  <!-- ✅ Development debug info (only shows when isDevelopment) -->
-  @if (isDevelopment()) {
-    <details class="debug-section">
-      <summary>🔧 Debug Info</summary>
-      <div class="debug-content">
-        <h4>Filter State:</h4>
-        <pre>{{ debugFilterInfo() | json }}</pre>
-
-        <h4>Pub Stats:</h4>
-        <pre>{{ debugPubStats() | json }}</pre>
-      </div>
-    </details>
-  }
 </section>

@@ -5,11 +5,12 @@ import { FooterComponent } from '@shared/feature/footer/footer.component';
 import { FooterNavComponent } from '@shared/feature/footer-nav/footer-nav.component';
 import { NotificationsComponent } from '@shared/ui/notifications/notifications.component';
 import { ToastComponent } from '@shared/ui/toast/toast.component';
+import { FeedbackButtonComponent } from '../../../feedback/ui/feedback-button/feedback-button.component';
 
 @Component({
   selector: 'app-feature-shell',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, HeaderComponent, FooterComponent, FooterNavComponent, NotificationsComponent, ToastComponent],
+  imports: [RouterOutlet, HeaderComponent, FooterComponent, FooterNavComponent, NotificationsComponent, ToastComponent, FeedbackButtonComponent],
   template: `
     <div class="feature-shell">
       <div class="site-container">
@@ -22,6 +23,7 @@ import { ToastComponent } from '@shared/ui/toast/toast.component';
         <app-footer />
       </div>
       <app-toast />
+      <app-feedback-button />
     </div>
   `,
   styles: `

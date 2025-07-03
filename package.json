@@ -1,6 +1,6 @@
 {
   "name": "spoons",
-  "description": "Gamified pub check-in app",
+  "description": "The unofficial Wetherspoons passport app",
   "version": "0.0.71",
   "scripts": {
     "ng": "ng",
@@ -35,7 +35,6 @@
     "@angular/ssr": "^19.2.12",
     "@google/generative-ai": "0.24.1",
     "@jest/globals": "29.7.0",
-    "axios": "1.9.0",
     "compression": "1.8.0",
     "cookie-parser": "1.4.7",
     "cors": "2.8.5",

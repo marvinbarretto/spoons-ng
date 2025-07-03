@@ -11,6 +11,19 @@ export interface CameraState {
 /**
  * Centralized Camera Management Service
  * 
+ * SCOPE:
+ * - Camera permissions and MediaStream lifecycle management
+ * - Video element attachment and stream management  
+ * - Photo capture from video streams to various formats (canvas, blob, dataURL)
+ * - Camera hardware cleanup and error recovery
+ * - Cross-browser compatibility for getUserMedia
+ * 
+ * DOES NOT HANDLE:
+ * - Photo quality validation or analysis
+ * - Device orientation monitoring
+ * - UI state management or flow control
+ * - Business logic for specific features (check-ins, profiles, etc.)
+ * 
  * Based on research from:
  * - MDN MediaDevices.getUserMedia() best practices
  * - Stack Overflow solutions for persistent camera issues
@@ -334,5 +347,194 @@ export class CameraService {
       // Some browsers throw errors when camera isn't available, which can be a good sign
       console.log('%c*** CAMERA: Emergency cleanup failed (this might be good):', 'color: orange; font-weight: bold;', error);
     }
+  }
+
+  // ==========================================
+  // PHOTO CAPTURE METHODS
+  // ==========================================
+
+  /**
+   * Check if video element is ready for photo capture
+   * 
+   * SCOPE:
+   * - Validates video readiness state and dimensions
+   * - Ensures video has loaded frame data for capture
+   * 
+   * @param video HTMLVideoElement to check
+   * @returns true if video is ready for photo capture
+   */
+  isCameraReadyForCapture(video: HTMLVideoElement): boolean {
+    const isReady = video.readyState >= 2 && // HAVE_CURRENT_DATA or higher
+                   video.videoWidth > 0 &&
+                   video.videoHeight > 0;
+
+    console.log('%c*** CAMERA: Readiness check:', 'color: blue; font-weight: bold;', {
+      readyState: video.readyState,
+      dimensions: `${video.videoWidth}x${video.videoHeight}`,
+      isReady
+    });
+
+    return isReady;
+  }
+
+  /**
+   * Wait for video element to be ready for photo capture
+   * 
+   * SCOPE:
+   * - Promise-based waiting for video metadata and playback readiness
+   * - Handles video loading events with timeout protection
+   * - Proper event listener cleanup
+   * 
+   * @param video HTMLVideoElement to monitor
+   * @param timeoutMs Timeout in milliseconds (default 5000)
+   * @returns Promise that resolves when video is ready
+   */
+  async waitForVideoReady(video: HTMLVideoElement, timeoutMs: number = 5000): Promise<void> {
+    console.log('%c*** CAMERA: Waiting for video to be ready...', 'color: blue; font-weight: bold;');
+
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        cleanup();
+        reject(new Error(`Video ready timeout after ${timeoutMs}ms`));
+      }, timeoutMs);
+
+      const cleanup = () => {
+        clearTimeout(timeout);
+        video.removeEventListener('loadedmetadata', onLoadedMetadata);
+        video.removeEventListener('canplay', onCanPlay);
+        video.removeEventListener('error', onError);
+      };
+
+      const checkReady = () => {
+        if (this.isCameraReadyForCapture(video)) {
+          console.log('%c*** CAMERA: Video ready for capture:', 'color: green; font-weight: bold;', {
+            readyState: video.readyState,
+            dimensions: `${video.videoWidth}x${video.videoHeight}`
+          });
+          cleanup();
+          resolve();
+          return true;
+        }
+        return false;
+      };
+
+      const onLoadedMetadata = () => {
+        console.log('%c*** CAMERA: Video metadata loaded', 'color: blue; font-weight: bold;');
+        checkReady();
+      };
+
+      const onCanPlay = () => {
+        console.log('%c*** CAMERA: Video can play', 'color: blue; font-weight: bold;');
+        checkReady();
+      };
+
+      const onError = (event: Event) => {
+        console.error('%c*** CAMERA: Video error during loading', 'color: red; font-weight: bold;', event);
+        cleanup();
+        reject(new Error('Video loading error'));
+      };
+
+      // Add event listeners
+      video.addEventListener('loadedmetadata', onLoadedMetadata);
+      video.addEventListener('canplay', onCanPlay);
+      video.addEventListener('error', onError);
+
+      // Start playing and check if already ready
+      video.play().then(() => {
+        console.log('%c*** CAMERA: Video play() resolved', 'color: blue; font-weight: bold;');
+        if (!checkReady()) {
+          console.log('%c*** CAMERA: Video playing but not ready, waiting for events...', 'color: blue; font-weight: bold;');
+        }
+      }).catch((playError) => {
+        console.error('%c*** CAMERA: Video play() failed:', 'color: red; font-weight: bold;', playError);
+        cleanup();
+        reject(playError);
+      });
+    });
+  }
+
+  /**
+   * Capture photo from video stream to canvas with multiple output formats
+   * 
+   * SCOPE:
+   * - Captures current video frame to canvas element
+   * - Provides canvas, data URL, and blob outputs
+   * - Handles canvas creation and 2D context operations
+   * 
+   * DOES NOT HANDLE:
+   * - Photo quality validation
+   * - Camera readiness checking (call isCameraReadyForCapture first)
+   * - Video stream management
+   * 
+   * @param video HTMLVideoElement showing camera stream
+   * @param quality JPEG quality (0.0 to 1.0, default 0.95)
+   * @returns Object containing canvas, dataUrl, and blob
+   */
+  async capturePhotoToCanvas(video: HTMLVideoElement, quality: number = 0.95): Promise<{
+    canvas: HTMLCanvasElement;
+    dataUrl: string;
+    blob: Blob;
+  }> {
+    console.log('%c*** CAMERA: === CAPTURING PHOTO ===', 'color: green; font-weight: bold;');
+    
+    if (!this.isCameraReadyForCapture(video)) {
+      throw new Error('Camera is not ready for photo capture. Call isCameraReadyForCapture() first.');
+    }
+
+    try {
+      // Create canvas with video dimensions
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        throw new Error('Failed to get canvas 2D context');
+      }
+
+      // Draw current video frame to canvas
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      console.log('%c*** CAMERA: Photo captured to canvas:', 'color: green; font-weight: bold;', {
+        dimensions: `${canvas.width}x${canvas.height}`,
+        quality
+      });
+
+      // Convert to data URL
+      const dataUrl = canvas.toDataURL('image/jpeg', quality);
+      
+      // Convert to blob
+      const blob = await this._canvasToBlob(canvas, quality);
+
+      console.log('%c*** CAMERA: === PHOTO CAPTURE COMPLETE ===', 'color: green; font-weight: bold;', {
+        dataUrlLength: dataUrl.length,
+        blobSize: blob.size
+      });
+
+      return { canvas, dataUrl, blob };
+
+    } catch (error) {
+      console.error('%c*** CAMERA: Photo capture failed:', 'color: red; font-weight: bold;', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Convert canvas to blob using Promise-based API
+   * 
+   * @param canvas Canvas element to convert
+   * @param quality JPEG quality (0.0 to 1.0)
+   * @returns Promise that resolves to blob
+   */
+  private async _canvasToBlob(canvas: HTMLCanvasElement, quality: number = 0.95): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+      canvas.toBlob((blob) => {
+        if (blob) {
+          resolve(blob);
+        } else {
+          reject(new Error('Failed to create blob from canvas'));
+        }
+      }, 'image/jpeg', quality);
+    });
   }
 }

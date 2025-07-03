@@ -1,4 +1,6 @@
-export const environment = {
+import { Environment } from './environment.model';
+
+export const environment: Environment = {
   production: false,
   ssr: false,
   ENABLE_ALL_FEATURES_FOR_DEV: true,
@@ -13,6 +15,10 @@ export const environment = {
   },
   llm: {
     gemini: 'GEMINI_API_KEY'
+  },
+  telegram: {
+    botToken: 'YOUR_TELEGRAM_BOT_TOKEN',
+    chatId: 'YOUR_TELEGRAM_CHAT_ID'
   },
   featureFlags: {
     patchwork: false,

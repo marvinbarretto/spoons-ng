@@ -26,6 +26,7 @@ export default {
     '^@carpets/(.*)$': '<rootDir>/src/app/carpets/$1',
     '^@badges/(.*)$': '<rootDir>/src/app/badges/$1',
     '^@users/(.*)$': '<rootDir>/src/app/users/$1',
-    '^@landlord/(.*)$': '<rootDir>/src/app/landlord/$1'
+    '^@landlord/(.*)$': '<rootDir>/src/app/landlord/$1',
+    '^@feedback/(.*)$': '<rootDir>/src/app/feedback/$1'
   }
 }

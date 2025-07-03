@@ -40,6 +40,13 @@ export class CarpetStorageService {
   private initializing = false; // ✅ Guard against multiple simultaneous initializations
   private supportedFormats: Set<ImageFormat> = new Set();
 
+  private getDatabaseConfig() {
+    if (!environment.database) {
+      throw new Error('Database configuration is missing from environment');
+    }
+    return environment.database;
+  }
+
   /**
    * Initialize the database and detect supported formats
    */
@@ -63,11 +70,13 @@ export class CarpetStorageService {
 
     try {
       // ✅ Using environment configuration
+      const dbConfig = this.getDatabaseConfig();
+      
       await this.indexedDb.openDatabase({
-        name: environment.database.name,
-        version: environment.database.version,
+        name: dbConfig.name,
+        version: dbConfig.version,
         stores: [{
-          name: environment.database.stores.carpets,
+          name: dbConfig.stores.carpets,
           indexes: [
             { name: 'userId', keyPath: 'userId' },     // ✅ Index by user
             { name: 'pubId', keyPath: 'pubId' },
@@ -233,9 +242,10 @@ async savePhotoFromCarpetData(photoData: CarpetPhotoData, pub: Pub): Promise<voi
 
     // Save resized image
     const key = `${userId}_${carpetData.pubId}_${carpetData.dateKey}`;
+    const dbConfig = this.getDatabaseConfig();
     await this.indexedDb.put(
-      environment.database.name,
-      environment.database.stores.carpets,
+      dbConfig.name,
+      dbConfig.stores.carpets,
       carpetData,
       key
     );
@@ -428,7 +438,8 @@ async saveCarpetImage(
       height: 400
     };
 
-    await this.indexedDb.put(environment.database.name, environment.database.stores.carpets, data, key);
+    const dbConfig = this.getDatabaseConfig();
+    await this.indexedDb.put(dbConfig.name, dbConfig.stores.carpets, data, key);
 
     console.log('[CarpetStorage] Image saved successfully:', {
       key,
@@ -454,7 +465,8 @@ async saveCarpetImage(
 
     await this.ensureInitialized();
 
-    const data = await this.indexedDb.get<CarpetImageData>(environment.database.name, environment.database.stores.carpets, key);
+    const dbConfig = this.getDatabaseConfig();
+    const data = await this.indexedDb.get<CarpetImageData>(dbConfig.name, dbConfig.stores.carpets, key);
     return data?.blob;
   }
 
@@ -471,7 +483,8 @@ async saveCarpetImage(
     console.log('[CarpetStorage] Getting carpets for user:', userId);
     await this.ensureInitialized();
 
-    const allCarpets = await this.indexedDb.getAll<CarpetImageData>(environment.database.name, environment.database.stores.carpets);
+    const dbConfig = this.getDatabaseConfig();
+    const allCarpets = await this.indexedDb.getAll<CarpetImageData>(dbConfig.name, dbConfig.stores.carpets);
     return allCarpets.filter(carpet => carpet.userId === userId);
   }
 
@@ -482,7 +495,8 @@ async saveCarpetImage(
     console.log('[CarpetStorage] Getting carpets for user:', userId);
     await this.ensureInitialized();
 
-    const allCarpets = await this.indexedDb.getAll<CarpetImageData>(environment.database.name, environment.database.stores.carpets);
+    const dbConfig = this.getDatabaseConfig();
+    const allCarpets = await this.indexedDb.getAll<CarpetImageData>(dbConfig.name, dbConfig.stores.carpets);
     return allCarpets.filter(carpet => carpet.userId === userId);
   }
 
@@ -508,7 +522,8 @@ async saveCarpetImage(
 
     await this.ensureInitialized();
 
-    return this.indexedDb.getAll<CarpetImageData>(environment.database.name, environment.database.stores.carpets);
+    const dbConfig = this.getDatabaseConfig();
+    return this.indexedDb.getAll<CarpetImageData>(dbConfig.name, dbConfig.stores.carpets);
   }
 
   /**
@@ -519,7 +534,8 @@ async saveCarpetImage(
 
     await this.ensureInitialized();
 
-    const keys = await this.indexedDb.getAllKeys(environment.database.name, environment.database.stores.carpets);
+    const dbConfig = this.getDatabaseConfig();
+    const keys = await this.indexedDb.getAllKeys(dbConfig.name, dbConfig.stores.carpets);
     return keys as string[];
   }
 
@@ -531,7 +547,8 @@ async saveCarpetImage(
 
     await this.ensureInitialized();
 
-    await this.indexedDb.delete(environment.database.name, environment.database.stores.carpets, key);
+    const dbConfig = this.getDatabaseConfig();
+    await this.indexedDb.delete(dbConfig.name, dbConfig.stores.carpets, key);
     await this.updateStats();
   }
 
@@ -548,7 +565,8 @@ async saveCarpetImage(
     const userCarpets = await this.getUserCarpets();
     for (const carpet of userCarpets) {
       const key = `${carpet.userId}_${carpet.pubId}_${carpet.dateKey}`;
-      await this.indexedDb.delete(environment.database.name, environment.database.stores.carpets, key);
+      const dbConfig = this.getDatabaseConfig();
+    await this.indexedDb.delete(dbConfig.name, dbConfig.stores.carpets, key);
     }
 
     await this.updateStats();
@@ -562,7 +580,8 @@ async saveCarpetImage(
 
     await this.ensureInitialized();
 
-    await this.indexedDb.clear(environment.database.name, environment.database.stores.carpets);
+    const dbConfig = this.getDatabaseConfig();
+    await this.indexedDb.clear(dbConfig.name, dbConfig.stores.carpets);
     await this.updateStats();
   }
 

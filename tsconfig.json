@@ -17,7 +17,8 @@
       "@check-in/*": ["app/check-in/*"],
       "@badges/*": ["app/badges/*"],
       "@users/*": ["app/users/*"],
-      "@landlord/*": ["app/landlord/*"]
+      "@landlord/*": ["app/landlord/*"],
+      "@feedback/*": ["app/feedback/*"]
     },
     "outDir": "./dist/out-tsc",
     "strict": true,

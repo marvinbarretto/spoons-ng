@@ -7,7 +7,7 @@ import { LLMResponse, CarpetDetectionResult, LLMRequest, LLMStreamResponse, LLMS
   providedIn: 'root'
 })
 export class LLMService {
-  private readonly _genAI = new GoogleGenerativeAI(environment.llm.gemini);
+  private readonly _genAI = new GoogleGenerativeAI(environment.llm?.gemini || '');
   private readonly _model = this._genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
   // Simple cache for testing

@@ -195,43 +195,14 @@ export class CheckInStore extends BaseStore<CheckIn> {
     }
     console.log('[CheckInStore] ✅ All validations passed - proceeding with check-in');
 
-    // 🆕 Carpet Detection Phase
-    let carpetImageKey: string | undefined;
-    if (this._carpetDetectionEnabled()) {
-      console.log('[CheckInStore] 📸 Starting carpet detection phase...');
-
-      // Check if pub has carpet references (for now always true)
-      const hasReferences = await this.pubHasCarpetReferences(pubId);
-
-      if (hasReferences) {
-        console.log('[CheckInStore] 📸 Requesting carpet scan for pub:', pubId);
-
-        // Signal that we need carpet scanning
-        this._needsCarpetScan.set(pubId);
-
-        // Wait for carpet scan result
-        carpetImageKey = await this.waitForCarpetScanResult();
-
-        if (carpetImageKey) {
-          console.log('[CheckInStore] ✅ Carpet captured successfully:', carpetImageKey);
-        } else {
-          console.log('[CheckInStore] ℹ️ No carpet detected or capture skipped');
-        }
-      } else {
-        console.log('[CheckInStore] ℹ️ No carpet references for this pub, skipping detection');
-      }
-    } else {
-      console.log('[CheckInStore] ⏭️ Carpet detection disabled, skipping');
-    }
-
     // Calculate points before creation
     console.log('[CheckInStore] 🎯 Calculating points before check-in creation...');
-    const pointsData = await this.calculatePoints(pubId, !!carpetImageKey);
+    const pointsData = await this.calculatePoints(pubId);
     console.log('[CheckInStore] 🎯 Points calculated:', pointsData);
 
     // Creation phase with carpet data
     console.log('[CheckInStore] 💾 Starting check-in creation...');
-    const newCheckinId = await this.newCheckInService.createCheckin(pubId, carpetImageKey);
+    const newCheckinId = await this.newCheckInService.createCheckin(pubId);
     console.log('[CheckInStore] ✅ Check-in creation completed successfully');
 
     // Add to local store immediately
@@ -245,7 +216,6 @@ export class CheckInStore extends BaseStore<CheckIn> {
         pubId,
         timestamp: Timestamp.now(),
         dateKey: new Date().toISOString().split('T')[0],
-        ...(carpetImageKey && { carpetImageKey }),
         // Add points data to the checkin object
         pointsEarned: pointsData?.total || 0,
         pointsBreakdown: pointsData ? JSON.stringify(pointsData) : undefined
@@ -268,7 +238,7 @@ export class CheckInStore extends BaseStore<CheckIn> {
 
     // Success flow - gather data and show overlay
     console.log('[CheckInStore] 🎉 Starting success flow...');
-    await this.handleSuccessFlow(pubId, carpetImageKey, pointsData);
+    await this.handleSuccessFlow(pubId, pointsData);
 
   } catch (error: any) {
     console.error('[CheckInStore] ❌ Check-in process failed:', error);
@@ -604,8 +574,8 @@ export class CheckInStore extends BaseStore<CheckIn> {
   /**
    * Calculate points for check-in (with carpet bonus)
    */
-  private async calculatePoints(pubId: string, hasCarpet: boolean): Promise<any> {
-    console.log('[CheckInStore] 🎯 Calculating points for pub:', pubId, 'hasCarpet:', hasCarpet);
+  private async calculatePoints(pubId: string): Promise<any> {
+    console.log('[CheckInStore] 🎯 Calculating points for pub:', pubId);
 
     const userId = this.authStore.uid();
     if (!userId) {
@@ -632,8 +602,6 @@ export class CheckInStore extends BaseStore<CheckIn> {
         currentStreak: 0, // TODO: Calculate streak
         hasPhoto: false,
         sharedSocial: false,
-        // 🆕 Carpet bonus
-        hasCarpet,
         // TODO: Determine if this is user's home pub
         isHomePub: false
       };

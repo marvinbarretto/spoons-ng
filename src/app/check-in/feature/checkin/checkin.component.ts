@@ -22,313 +22,8 @@ type CheckinPhase =
 @Component({
   selector: 'app-checkin',
   imports: [CommonModule],
-  template: `
-    <div class="checkin-container">
-
-      <!-- Camera View -->
-      @if (currentPhase() === 'CAMERA_STARTING' || currentPhase() === 'WAITING_FOR_GATES') {
-        <video #videoElement
-               class="camera-view"
-               playsinline
-               muted
-               autoplay>
-        </video>
-      }
-
-      <!-- Blurred Background (after photo captured) -->
-      @if (capturedPhotoUrl()) {
-        <div class="blurred-background"
-             [style.background-image]="'url(' + capturedPhotoUrl() + ')'">
-        </div>
-      }
-
-      <!-- Status Overlay -->
-      <div class="status-overlay">
-        <div class="status-content">
-
-          <!-- Phase-specific content -->
-          @switch (currentPhase()) {
-
-            @case ('CAMERA_STARTING') {
-              <div class="status-message">Starting camera...</div>
-            }
-
-            @case ('WAITING_FOR_GATES') {
-              <div class="status-message">Point at the carpet</div>
-              <div class="gates-status">
-                <!-- Core device gates -->
-                <div class="gate" [class.passed]="gatesPassed().deviceOriented">📱 Device Oriented: {{ gatesPassed().deviceOriented ? 'YES' : 'NO' }}</div>
-                <div class="gate" [class.passed]="gatesPassed().isStable">🎥 Camera Stable: {{ gatesPassed().isStable ? 'YES' : 'NO' }}</div>
-
-                <!-- Raw data only -->
-                <div class="gate simple">🔬 Analysis Count: {{ metrics()?.timestamp ? 'YES' : 'NO DATA' }}</div>
-                <div class="gate simple">📊 Processing: {{ (metrics()?.analysisTime ?? 0) | number:'1.0-0' }}ms</div>
-
-                <!-- Real-time metrics - always show if available -->
-                @if (metrics()) {
-                  <!-- Image quality -->
-                  <div class="gate simple" [class.passed]="gatesPassed().goodSharpness">🔍 Sharpness: {{ metrics()!.sharpness }}/100</div>
-                  <div class="gate simple" [class.passed]="gatesPassed().goodContrast">⚡ Contrast: {{ metrics()!.contrast }}/100</div>
-                  <div class="gate simple">💡 Brightness: {{ metrics()!.brightness }}/255</div>
-                  <div class="gate simple" [class.passed]="gatesPassed().lowMotion">🏃 Motion Level: {{ metrics()!.motionLevel }}/100</div>
-                  <div class="gate simple">📊 Motion History: [{{ getMotionHistoryString() }}]</div>
-
-                  <!-- Color analysis -->
-                  <div class="gate simple">🌈 Dominant Colors: {{ metrics()!.dominantColors.join(', ') }}</div>
-
-                  <!-- Pattern analysis -->
-                  <div class="gate" [class.carpet-red]="gatesPassed().carpetConfidence === 'red'"
-                       [class.carpet-yellow]="gatesPassed().carpetConfidence === 'yellow'"
-                       [class.carpet-green]="gatesPassed().carpetConfidence === 'green'">🎯 Carpet Detection: {{ gatesPassed().carpetConfidence.toUpperCase() }}</div>
-                  <div class="gate simple" [class.passed]="gatesPassed().hasEdges">📐 Edge Density: {{ metrics()!.edgeDensity }}%</div>
-                  <div class="gate simple" [class.passed]="gatesPassed().hasTexture">🧵 Texture Complexity: {{ metrics()!.textureComplexity }}%</div>
-
-                  <!-- Technical info -->
-                  <div class="gate simple">⏱️ Analysis Time: {{ metrics()!.analysisTime | number:'1.0-0' }}ms</div>
-                }
-              </div>
-              @if (allGatesPassed()) {
-                <button class="capture-btn" (click)="capturePhoto()">
-                  All conditions met - Take Photo
-                </button>
-              }
-            }
-
-            @case ('PHOTO_CAPTURED') {
-              <div class="status-message">Photo captured! Processing...</div>
-            }
-
-            @case ('LLM_THINKING') {
-              <div class="status-message">{{ currentAnalysisMessage() }}</div>
-              <div class="thinking-spinner">🤖</div>
-            }
-
-            @case ('CHECK_IN_PROCESSING') {
-              <div class="status-message">{{ pubName() }}</div>
-            }
-
-            @case ('SUCCESS_MODAL') {
-              <div class="success-modal">
-                <h2>Check-in Successful!</h2>
-                <p>Welcome to {{ pubName() }}</p>
-                <div class="success-details">
-                  <div>Points earned: {{ pointsEarned() }}</div>
-                  <div>Badges earned: {{ badgesEarned().length }}</div>
-                </div>
-                <button class="exit-btn" (click)="exitToHomepage()">
-                  Continue
-                </button>
-              </div>
-            }
-          }
-
-        </div>
-      </div>
-
-      <!-- Debug Info -->
-      <div class="debug-info">
-        <div>Phase: {{ currentPhase() }}</div>
-        <div>Pub: {{ pubName() }}</div>
-        @if (ACTIVE_DEVELOPMENT_MODE) {
-          <div>🚨 DEV MODE ON</div>
-        }
-      </div>
-
-      <!-- Exit Button (always available) -->
-      <button class="exit-button" (click)="exitToHomepage()">
-        Exit
-      </button>
-
-    </div>
-  `,
-  styles: `
-    .checkin-container {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: #000;
-      color: white;
-    }
-
-    .camera-view {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .blurred-background {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-size: cover;
-      background-position: center;
-      filter: blur(10px);
-    }
-
-    .status-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(0, 0, 0, 0.3);
-    }
-
-    .status-content {
-      text-align: center;
-      padding: 2rem;
-    }
-
-    .status-message {
-      font-size: 1.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .gates-status {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-      margin: 1rem 0;
-    }
-
-    .gate {
-      padding: 0.5rem;
-      background: rgba(255, 0, 0, 0.3);
-      border-radius: 4px;
-    }
-
-    .gate.passed {
-      background: rgba(0, 255, 0, 0.3);
-    }
-
-    .gate.experimental {
-      background: rgba(255, 165, 0, 0.2);
-      border-left: 3px solid orange;
-      font-size: 0.9rem;
-    }
-
-    .gate.original {
-      background: rgba(0, 123, 255, 0.2);
-      border-left: 3px solid blue;
-    }
-
-    .gate.winner {
-      background: rgba(255, 215, 0, 0.3) !important;
-      border-left: 3px solid gold !important;
-      font-weight: bold;
-    }
-
-    .gate.broken {
-      background: rgba(128, 128, 128, 0.2) !important;
-      border-left: 3px solid gray !important;
-      opacity: 0.6;
-    }
-
-    .gate.enhanced {
-      background: rgba(138, 43, 226, 0.2);
-      border-left: 3px solid blueviolet;
-      font-size: 0.9rem;
-    }
-
-    .gate.enhanced.passed {
-      background: rgba(138, 43, 226, 0.4);
-    }
-
-    .gate.simple {
-      background: rgba(34, 139, 34, 0.2);
-      border-left: 3px solid forestgreen;
-      font-size: 0.9rem;
-    }
-
-    .gate.simple.passed {
-      background: rgba(34, 139, 34, 0.4);
-    }
-
-    .gate.carpet-red {
-      background: rgba(255, 0, 0, 0.4) !important;
-      border-left: 3px solid red !important;
-      font-weight: bold;
-    }
-
-    .gate.carpet-yellow {
-      background: rgba(255, 255, 0, 0.4) !important;
-      border-left: 3px solid yellow !important;
-      font-weight: bold;
-      color: black;
-    }
-
-    .gate.carpet-green {
-      background: rgba(0, 255, 0, 0.4) !important;
-      border-left: 3px solid green !important;
-      font-weight: bold;
-    }
-
-    .capture-btn, .exit-btn {
-      background: #007bff;
-      color: white;
-      border: none;
-      padding: 1rem 2rem;
-      border-radius: 8px;
-      font-size: 1.1rem;
-      cursor: pointer;
-      margin: 0.5rem;
-    }
-
-    .success-modal {
-      background: rgba(0, 0, 0, 0.9);
-      padding: 2rem;
-      border-radius: 12px;
-      max-width: 400px;
-    }
-
-    .success-details {
-      margin: 1rem 0;
-    }
-
-    .thinking-spinner {
-      font-size: 3rem;
-      animation: spin 2s linear infinite;
-    }
-
-    @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.7; }
-    }
-
-    .debug-info {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background: rgba(0, 0, 0, 0.7);
-      padding: 0.5rem;
-      border-radius: 4px;
-      font-size: 0.8rem;
-    }
-
-    .exit-button {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: rgba(255, 0, 0, 0.7);
-      color: white;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-  `
+  templateUrl: './checkin.component.html',
+  styleUrl: './checkin.component.scss'
 })
 export class CheckinComponent extends BaseComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('videoElement', { static: false }) videoElement!: ElementRef<HTMLVideoElement>;
@@ -399,9 +94,16 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
   protected readonly deviceOrientation = signal({ beta: 0, gamma: 0, stable: false });
   private lastOrientationUpdate = 0;
 
-  // Results
-  protected readonly pointsEarned = signal(0);
-  protected readonly badgesEarned = signal<any[]>([]);
+  // Results - computed from CheckInStore
+  protected readonly pointsEarned = computed(() => {
+    const result = this.checkinStore.checkinResults();
+    return result?.success ? (result.points?.total || 0) : 0;
+  });
+  
+  protected readonly badgesEarned = computed(() => {
+    const result = this.checkinStore.checkinResults();
+    return result?.success ? (result.badges || []) : [];
+  });
 
   // Constants
   protected readonly ACTIVE_DEVELOPMENT_MODE = environment.ACTIVE_DEVELOPMENT_MODE;
@@ -1066,7 +768,11 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
     this.setPhase('CHECK_IN_PROCESSING');
 
     const pubId = this.pubId();
-    if (!pubId) return;
+    if (!pubId) {
+      console.error('[Checkin] ❌ No pub ID available for check-in');
+      this.handleCheckinError('No pub selected for check-in');
+      return;
+    }
 
     try {
       // Store validated carpet image using CarpetStorageService
@@ -1079,24 +785,30 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
         console.log('[Checkin] ✅ Carpet image stored successfully');
       }
 
-      // Simulate check-in processing
-      this.safeSetTimeout(() => {
-        // Fake results
-        this.pointsEarned.set(25);
-        this.badgesEarned.set(['first-visit']);
+      // Execute real check-in via CheckInStore
+      console.log('[Checkin] 🚀 Starting real check-in process');
+      await this.checkinStore.checkinToPub(pubId);
+      
+      // Check-in submitted successfully - results will be handled globally by AppComponent
+      // The success modal will be shown by the CheckInModalService when results are ready
+      console.log('[Checkin] ✅ Check-in submitted successfully');
+      console.log('[Checkin] 🎉 Success will be handled by global modal service');
+      
+      // Navigate back to home - the success modal will appear on top
+      this.exitToHomepage();
 
-        console.log('[Checkin] 🎯 Points awarded:', this.pointsEarned());
-        console.log('[Checkin] 🏅 Badges awarded:', this.badgesEarned());
-        console.log('[Checkin] 🎉 Success modal displayed');
-
-        this.setPhase('SUCCESS_MODAL');
-      }, 2000);
-
-    } catch (error) {
-      console.error('[Checkin] ❌ Error storing carpet image:', error);
-      // Continue with check-in even if storage fails
-      this.setPhase('SUCCESS_MODAL');
+    } catch (error: any) {
+      console.error('[Checkin] ❌ Error during check-in process:', error);
+      this.handleCheckinError(error?.message || 'Check-in failed');
     }
+  }
+
+  private handleCheckinError(message: string): void {
+    console.error('[Checkin] 🚨 Handling check-in error:', message);
+    // For now, show error and allow user to exit
+    // TODO: Implement proper error UI in future iterations
+    alert(`Check-in failed: ${message}`);
+    this.setPhase('WAITING_FOR_GATES');
   }
 
   protected exitToHomepage(): void {

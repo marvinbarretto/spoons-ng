@@ -1,5 +1,6 @@
 import { Component, signal, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { BaseWidgetComponent } from '../base/base-widget.component';
 import { UserMissionsStore } from '../../missions/data-access/user-missions.store';
 import { MissionDisplayData } from '../../missions/utils/user-mission-progress.model';
@@ -158,12 +159,12 @@ export class MissionsWidgetComponent extends BaseWidgetComponent {
   protected readonly storeError = computed(() => this.userMissionsStore.error());
 
   onStartSuggestedMission(): void {
-    console.log('[MissionsWidget] Start suggested mission clicked - stubbed for now');
-    // TODO: Implement suggested mission logic
+    console.log('[MissionsWidget] Start suggested mission clicked - navigating to missions');
+    this.router.navigate(['/missions']);
   }
 
   onMissionCardClicked(mission: Mission): void {
     console.log('[MissionsWidget] Mission card clicked:', mission.id, mission.name);
-    // TODO: Navigate to mission detail or open modal
+    this.router.navigate(['/missions']);
   }
 }

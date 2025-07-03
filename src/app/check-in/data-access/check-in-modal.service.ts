@@ -58,7 +58,7 @@ export class CheckInModalService {
     const navigationFallbackTimeout = this.safeSetTimeout(() => {
       console.warn('[CheckInModalService] Navigation fallback timeout triggered - forcing navigation to homepage');
       this.forceNavigationToHomepage();
-    }, environment.MODAL_NAVIGATION_TIMEOUT);
+    }, environment.MODAL_NAVIGATION_TIMEOUT || 10000);
 
     // Clear timeout when modal closes properly
     const clearFallbackTimeout = () => {
@@ -132,7 +132,7 @@ export class CheckInModalService {
     const navigationFallbackTimeout = this.safeSetTimeout(() => {
       console.warn('[CheckInModalService] Landlord modal navigation fallback timeout triggered - forcing navigation to homepage');
       this.forceNavigationToHomepage();
-    }, environment.MODAL_NAVIGATION_TIMEOUT);
+    }, environment.MODAL_NAVIGATION_TIMEOUT || 10000);
 
     // Clear timeout when modal closes properly
     const clearFallbackTimeout = () => {

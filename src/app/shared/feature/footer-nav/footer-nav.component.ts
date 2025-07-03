@@ -8,7 +8,6 @@ import { BaseComponent } from '@shared/base/base.component';
 import { ViewportService } from '@shared/data-access/viewport.service';
 import { NearbyPubStore } from '@pubs/data-access/nearby-pub.store';
 import { AuthStore } from '@auth/data-access/auth.store';
-import { CheckInModalService } from '@check-in/data-access/check-in-modal.service';
 import { CheckInStore } from '@/app/check-in/data-access/check-in.store';
 import { IconComponent } from '@shared/ui/icon/icon.component';
 
@@ -253,31 +252,14 @@ export class FooterNavComponent extends BaseComponent {
   private readonly viewportService = inject(ViewportService);
   private readonly nearbyPubStore = inject(NearbyPubStore);
   private readonly authStore = inject(AuthStore);
-  private readonly checkInModalService = inject(CheckInModalService);
   private readonly checkinStore = inject(CheckInStore);
-
-  // ✅ Input for modal dismiss callback
-  readonly onModalDismissed = input<(() => void) | undefined>();
 
   // ✅ Local state for check-in process
   private readonly _isCheckingIn = signal(false);
   readonly isCheckingIn = this._isCheckingIn.asReadonly();
 
-  // ✅ Watch for check-in results and show modals
   constructor() {
     super();
-
-    effect(() => {
-      const results = this.checkinStore.checkinResults();
-      if (results) {
-        console.log('[FooterNavComponent] Check-in results received, showing modal:', results);
-        this.checkInModalService.showCheckInResults(results, this.onModalDismissed());
-        // Clear the results after handling
-        setTimeout(() => {
-          this.checkinStore.clearCheckinResults();
-        }, 100);
-      }
-    });
   }
 
   // ✅ Signals for reactivity

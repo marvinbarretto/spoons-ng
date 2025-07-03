@@ -1,4 +1,4 @@
-import { Component, inject, computed } from '@angular/core';
+import { Component, inject, computed, effect } from '@angular/core';
 import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { PanelStore } from './shared/ui/panel/panel.store';
 import { filter } from 'rxjs';
@@ -8,6 +8,8 @@ import { SsrPlatformService } from './shared/utils/ssr/ssr-platform.service';
 import { PageTitleService } from './shared/data-access/page-title.service';
 import { PubStore } from './pubs/data-access/pub.store';
 import { LandlordStore } from './landlord/data-access/landlord.store';
+import { CheckInModalService } from './check-in/data-access/check-in-modal.service';
+import { CheckInStore } from './check-in/data-access/check-in.store';
 import { FullScreenShell } from './shared/feature/shells/full-screen.shell';
 import { DashboardShell } from './shared/feature/shells/dashboard.shell';
 import { FeatureShell } from './shared/feature/shells/feature.shell';
@@ -47,6 +49,8 @@ export class AppComponent {
   readonly titleService = inject(PageTitleService);
   readonly pubStore = inject(PubStore);
   readonly landlordStore = inject(LandlordStore);
+  private readonly checkInModalService = inject(CheckInModalService);
+  private readonly checkinStore = inject(CheckInStore);
 
   // Track current shell based on route data
   private readonly navigationEnd$ = this.router.events.pipe(
@@ -89,6 +93,19 @@ export class AppComponent {
     // Auto-load critical data
     this.pubStore.loadOnce();
     console.log('[AppComponent] ✅ PubStore loaded');
+
+    // Global checkin modal handling
+    effect(() => {
+      const results = this.checkinStore.checkinResults();
+      if (results) {
+        console.log('[AppComponent] Check-in results received, showing modal:', results);
+        this.checkInModalService.showCheckInResults(results);
+        // Clear the results after handling
+        setTimeout(() => {
+          this.checkinStore.clearCheckinResults();
+        }, 100);
+      }
+    });
 
     this.platform.onlyOnBrowser(() => {
       this.router.events

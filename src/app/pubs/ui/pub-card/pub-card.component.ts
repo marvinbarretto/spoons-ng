@@ -28,15 +28,16 @@ import type { Pub } from '../../utils/pub.models';
 
     <header class="pub-card__header">
         <div class="pub-card__title-container">
+        @if (hasCheckedIn()) {
+          <span class="pub-card__badge pub-card__badge--success">✅ Visited</span>
+        }
           <h3 class="pub-card__title">{{ pub().name }}</h3>
           @if (isLocalPub()) {
             <span class="pub-card__home-icon">🏠</span>
           }
         </div>
 
-        @if (hasCheckedIn()) {
-          <span class="pub-card__badge pub-card__badge--success">✅ Visited</span>
-        } @else if (canCheckIn()) {
+        @if (canCheckIn()) {
           <span class="pub-card__badge pub-card__badge--info">📍 Can check in</span>
         }
       </header>

@@ -1,0 +1,117 @@
+<div class="checkin-container">
+
+  <!-- Camera View -->
+  @if (currentPhase() === 'CAMERA_STARTING' || currentPhase() === 'WAITING_FOR_GATES') {
+    <video #videoElement
+           class="camera-view"
+           playsinline
+           muted
+           autoplay>
+    </video>
+  }
+
+  <!-- Blurred Background (after photo captured) -->
+  @if (capturedPhotoUrl()) {
+    <div class="blurred-background"
+         [style.background-image]="'url(' + capturedPhotoUrl() + ')'">
+    </div>
+  }
+
+  <!-- Status Overlay -->
+  <div class="status-overlay">
+    <div class="status-content">
+
+      <!-- Phase-specific content -->
+      @switch (currentPhase()) {
+
+        @case ('CAMERA_STARTING') {
+          <div class="status-message">Starting camera...</div>
+        }
+
+        @case ('WAITING_FOR_GATES') {
+          <div class="status-message">Point at the carpet</div>
+          <div class="gates-status">
+            <!-- Core device gates -->
+            <div class="gate" [class.passed]="gatesPassed().deviceOriented">📱 Device Oriented: {{ gatesPassed().deviceOriented ? 'YES' : 'NO' }}</div>
+            <div class="gate" [class.passed]="gatesPassed().isStable">🎥 Camera Stable: {{ gatesPassed().isStable ? 'YES' : 'NO' }}</div>
+
+            <!-- Raw data only -->
+            <div class="gate simple">🔬 Analysis Count: {{ metrics()?.timestamp ? 'YES' : 'NO DATA' }}</div>
+            <div class="gate simple">📊 Processing: {{ (metrics()?.analysisTime ?? 0) | number:'1.0-0' }}ms</div>
+
+            <!-- Real-time metrics - always show if available -->
+            @if (metrics()) {
+              <!-- Image quality -->
+              <div class="gate simple" [class.passed]="gatesPassed().goodSharpness">🔍 Sharpness: {{ metrics()!.sharpness }}/100</div>
+              <div class="gate simple" [class.passed]="gatesPassed().goodContrast">⚡ Contrast: {{ metrics()!.contrast }}/100</div>
+              <div class="gate simple">💡 Brightness: {{ metrics()!.brightness }}/255</div>
+              <div class="gate simple" [class.passed]="gatesPassed().lowMotion">🏃 Motion Level: {{ metrics()!.motionLevel }}/100</div>
+              <div class="gate simple">📊 Motion History: [{{ getMotionHistoryString() }}]</div>
+
+              <!-- Color analysis -->
+              <div class="gate simple">🌈 Dominant Colors: {{ metrics()!.dominantColors.join(', ') }}</div>
+
+              <!-- Pattern analysis -->
+              <div class="gate" [class.carpet-red]="gatesPassed().carpetConfidence === 'red'"
+                   [class.carpet-yellow]="gatesPassed().carpetConfidence === 'yellow'"
+                   [class.carpet-green]="gatesPassed().carpetConfidence === 'green'">🎯 Carpet Detection: {{ gatesPassed().carpetConfidence.toUpperCase() }}</div>
+              <div class="gate simple" [class.passed]="gatesPassed().hasEdges">📐 Edge Density: {{ metrics()!.edgeDensity }}%</div>
+              <div class="gate simple" [class.passed]="gatesPassed().hasTexture">🧵 Texture Complexity: {{ metrics()!.textureComplexity }}%</div>
+
+              <!-- Technical info -->
+              <div class="gate simple">⏱️ Analysis Time: {{ metrics()!.analysisTime | number:'1.0-0' }}ms</div>
+            }
+          </div>
+          @if (allGatesPassed()) {
+            <button class="capture-btn" (click)="capturePhoto()">
+              All conditions met - Take Photo
+            </button>
+          }
+        }
+
+        @case ('PHOTO_CAPTURED') {
+          <div class="status-message">Photo captured! Processing...</div>
+        }
+
+        @case ('LLM_THINKING') {
+          <div class="status-message">{{ currentAnalysisMessage() }}</div>
+          <div class="thinking-spinner">🤖</div>
+        }
+
+        @case ('CHECK_IN_PROCESSING') {
+          <div class="status-message">{{ pubName() }}</div>
+        }
+
+        @case ('SUCCESS_MODAL') {
+          <div class="success-modal">
+            <h2>Check-in Successful!</h2>
+            <p>Welcome to {{ pubName() }}</p>
+            <div class="success-details">
+              <div>Points earned: {{ pointsEarned() }}</div>
+              <div>Badges earned: {{ badgesEarned().length }}</div>
+            </div>
+            <button class="exit-btn" (click)="exitToHomepage()">
+              Continue
+            </button>
+          </div>
+        }
+      }
+
+    </div>
+  </div>
+
+  <!-- Debug Info -->
+  <div class="debug-info">
+    <div>Phase: {{ currentPhase() }}</div>
+    <div>Pub: {{ pubName() }}</div>
+    @if (ACTIVE_DEVELOPMENT_MODE) {
+      <div>🚨 DEV MODE ON</div>
+    }
+  </div>
+
+  <!-- Exit Button (always available) -->
+  <button class="exit-button" (click)="exitToHomepage()">
+    Exit
+  </button>
+
+</div>

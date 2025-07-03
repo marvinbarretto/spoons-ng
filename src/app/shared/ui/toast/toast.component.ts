@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ToastService, Toast } from '../../data-access/toast.service';
 import { IconComponent } from '../icon/icon.component';
@@ -13,6 +13,14 @@ import { IconComponent } from '../icon/icon.component';
 export class ToastComponent {
   private readonly toastService = inject(ToastService);
   readonly toasts = this.toastService.toasts;
+
+  constructor() {
+    console.log('[ToastComponent] Constructed');
+    effect(() => {
+      const currentToasts = this.toasts();
+      console.log('[ToastComponent] Toasts updated:', currentToasts);
+    });
+  }
 
   toastClass(toast: Toast): string {
     return `toast toast--${toast.type}`;

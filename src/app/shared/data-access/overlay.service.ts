@@ -110,13 +110,25 @@ export class OverlayService {
       // Handle escape key
       document.addEventListener('keydown', this.keydownListener);
 
-      // Check if component has a result output
+      // Check if component has a result output (modern output() or legacy EventEmitter)
       const instance = componentRef.instance as any;
-      if (instance.result instanceof EventEmitter) {
+      console.log('[OverlayService] Checking for result output on component:', {
+        hasResult: !!instance.result,
+        resultType: instance.result?.constructor?.name,
+        isEventEmitter: instance.result instanceof EventEmitter,
+        hasSubscribe: instance.result && typeof instance.result.subscribe === 'function'
+      });
+
+      if (instance.result && typeof instance.result.subscribe === 'function') {
+        console.log('[OverlayService] Setting up result subscription for modal closure');
         const resultSub = instance.result.subscribe((value: R) => {
+          console.log('[OverlayService] Result emitted, closing modal with value:', value);
           resultSub.unsubscribe();
           this.close(value);
         });
+        console.log('[OverlayService] Result subscription created successfully');
+      } else {
+        console.log('[OverlayService] No valid result output found - modal will not auto-close on result emission');
       }
 
       // Support legacy callback pattern for backward compatibility

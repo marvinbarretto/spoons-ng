@@ -67,7 +67,7 @@ html {
 
 // ✅ SIMPLIFIED: Theme-aware overlays
 .overlay-backdrop {
-  // background: var(--color-overlay);
+  background: var(--color-overlay);
   position: fixed;
   inset: 0;
   z-index: 1000;

@@ -2,11 +2,9 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MissionCardComponent } from '../../ui/mission-card/mission-card.component';
-import { MissionStore } from '../../data-access/mission.store';
-import { UserStore } from '@users/data-access/user.store';
+import { UserMissionsStore } from '../../data-access/user-missions.store';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { BaseComponent } from '../../../shared/base/base.component';
-import { CheckInStore } from '../../../check-in/data-access/check-in.store';
 import type { Mission } from '../../utils/mission.model';
 
 @Component({
@@ -15,22 +13,22 @@ import type { Mission } from '../../utils/mission.model';
   template: `
     <section class="mission-list-page">
       <header class="page-header">
-        <h1>Missions ({{ missionStore.missions().length }})</h1>
+        <h1>Missions ({{ totalMissionsCount() }})</h1>
         <p class="page-subtitle">
           Complete missions by visiting the required pubs to earn rewards
         </p>
       </header>
 
-      @if (missionStore.loading()) {
+      @if (userMissionsStore.loading()) {
         <div class="loading-state">
           <p>📝 Loading missions...</p>
         </div>
-      } @else if (missionStore.error()) {
+      } @else if (userMissionsStore.error()) {
         <div class="error-state">
-          <p>❌ {{ missionStore.error() }}</p>
+          <p>❌ {{ userMissionsStore.error() }}</p>
           <button (click)="retryLoad()" class="retry-btn">Try Again</button>
         </div>
-      } @else if (missionStore.missions().length === 0) {
+      } @else if (totalMissionsCount() === 0) {
         <div class="empty-state">
           <p>📝 No missions available yet.</p>
           <p>Check back later for new challenges!</p>
@@ -48,7 +46,7 @@ import type { Mission } from '../../utils/mission.model';
                 [checked]="filterMode() === 'all'"
                 (change)="setFilter('all')"
               />
-              All ({{ missionStore.missions().length }})
+              All ({{ totalMissionsCount() }})
             </label>
             <label class="filter-pill">
               <input
@@ -58,7 +56,7 @@ import type { Mission } from '../../utils/mission.model';
                 [checked]="filterMode() === 'available'"
                 (change)="setFilter('available')"
               />
-              Available ({{ availableMissions().length }})
+              Available ({{ userMissionsStore.availableMissions().length }})
             </label>
             <label class="filter-pill">
               <input
@@ -68,7 +66,7 @@ import type { Mission } from '../../utils/mission.model';
                 [checked]="filterMode() === 'joined'"
                 (change)="setFilter('joined')"
               />
-              Joined ({{ joinedMissions().length }})
+              Joined ({{ userMissionsStore.activeMissions().length + userMissionsStore.completedMissions().length }})
             </label>
           </div>
         </div>
@@ -78,8 +76,8 @@ import type { Mission } from '../../utils/mission.model';
           @for (missionData of filteredMissions(); track missionData.mission.id) {
             <app-mission-card
               [mission]="missionData.mission"
-              [isJoined]="missionData.isJoined"
-              [progress]="missionData.progress"
+              [isJoined]="missionData.isActive || missionData.isCompleted"
+              [progress]="missionData.completedCount"
               (cardClicked)="handleMissionClick($event)"
             />
           }
@@ -278,66 +276,39 @@ import type { Mission } from '../../utils/mission.model';
 })
 export class MissionListComponent extends BaseComponent {
   // ✅ Store dependencies
-  protected readonly missionStore = inject(MissionStore);
-  private readonly userStore = inject(UserStore);
+  protected readonly userMissionsStore = inject(UserMissionsStore);
   private readonly authStore = inject(AuthStore);
 
   // ✅ Local state
   private readonly _filterMode = signal<'all' | 'available' | 'joined'>('all');
-  private readonly _isJoining = signal(false);
 
   // ✅ Expose state for template
   protected readonly filterMode = this._filterMode.asReadonly();
-  protected readonly isJoining = this._isJoining.asReadonly();
-  protected readonly user = this.userStore.user;
 
-  // ✅ Computed mission data with progress
-  protected readonly joinedMissionIds = computed(() =>
-    this.user()?.joinedMissionIds ?? []
+  // ✅ Computed data using UserMissionsStore
+  protected readonly totalMissionsCount = computed(() => 
+    this.userMissionsStore.availableMissions().length + 
+    this.userMissionsStore.activeMissions().length + 
+    this.userMissionsStore.completedMissions().length
   );
 
-  private readonly checkinStore = inject(CheckInStore);
+  protected readonly allMissions = computed(() => [
+    ...this.userMissionsStore.availableMissions(),
+    ...this.userMissionsStore.activeMissions(),
+    ...this.userMissionsStore.completedMissions()
+  ]);
 
-  protected readonly userCheckedInPubIds = computed(() => {
-    const user = this.user();
-    if (!user) return [];
-
-    // Get unique pub IDs from user's check-ins
-    const checkins = this.checkinStore.checkins();
-    const userCheckins = checkins.filter(c => c.userId === user.uid);
-    const uniquePubIds = [...new Set(userCheckins.map(c => c.pubId))];
-
-    return uniquePubIds;
-  });
-
-  protected readonly missionsWithStatus = computed(() => {
-    const missions = this.missionStore.missions();
-    const joinedIds = this.joinedMissionIds();
-    const checkedInIds = this.userCheckedInPubIds();
-
-    return missions.map(mission => ({
-      mission,
-      isJoined: joinedIds.includes(mission.id),
-      progress: joinedIds.includes(mission.id)
-        ? mission.pubIds.filter(pubId => checkedInIds.includes(pubId)).length
-        : null
-    }));
-  });
-
-  protected readonly availableMissions = computed(() =>
-    this.missionsWithStatus().filter(m => !m.isJoined)
-  );
-
-  protected readonly joinedMissions = computed(() =>
-    this.missionsWithStatus().filter(m => m.isJoined)
-  );
+  protected readonly joinedMissions = computed(() => [
+    ...this.userMissionsStore.activeMissions(),
+    ...this.userMissionsStore.completedMissions()
+  ]);
 
   protected readonly filteredMissions = computed(() => {
     const mode = this.filterMode();
     switch (mode) {
-      case 'available': return this.availableMissions();
+      case 'available': return this.userMissionsStore.availableMissions();
       case 'joined': return this.joinedMissions();
-      default: return this.missionsWithStatus();
+      default: return this.allMissions();
     }
   });
 
@@ -346,98 +317,63 @@ export class MissionListComponent extends BaseComponent {
 
   // ✅ Debug information
   protected readonly debugUserInfo = computed(() => {
-    const user = this.user();
+    const user = this.authStore.user();
     return {
       hasUser: !!user,
       uid: user?.uid,
-      joinedMissionCount: this.joinedMissionIds().length,
-      joinedMissionIds: this.joinedMissionIds(),
-      checkedInPubCount: this.userCheckedInPubIds().length
+      isAnonymous: user?.isAnonymous,
+      joinedMissionCount: this.joinedMissions().length
     };
   });
 
   protected readonly debugMissionStats = computed(() => ({
-    totalMissions: this.missionStore.missions().length,
-    availableCount: this.availableMissions().length,
-    joinedCount: this.joinedMissions().length,
+    totalMissions: this.totalMissionsCount(),
+    availableCount: this.userMissionsStore.availableMissions().length,
+    activeCount: this.userMissionsStore.activeMissions().length,
+    completedCount: this.userMissionsStore.completedMissions().length,
     currentFilter: this.filterMode(),
     filteredCount: this.filteredMissions().length,
-    isJoining: this.isJoining()
+    loading: this.userMissionsStore.loading(),
+    error: this.userMissionsStore.error()
   }));
-
-  // ✅ Data loading
-  protected override onInit(): void {
-    this.missionStore.loadOnce();
-  }
 
   // ✅ Filter controls
   setFilter(mode: 'all' | 'available' | 'joined'): void {
     this._filterMode.set(mode);
   }
 
-  // ✅ Retry loading
+  // ✅ Retry loading - no-op since UserMissionsStore handles loading automatically
   retryLoad(): void {
-    this.missionStore.loadOnce();
+    console.log('[MissionList] Retry load requested - UserMissionsStore handles loading automatically');
   }
 
-  // ✅ Main action - join mission
+  // ✅ Main action - start mission
   async handleMissionClick(mission: Mission): Promise<void> {
-    const user = this.user();
-    if (!user) {
-      console.warn('[MissionList] No user logged in');
+    const user = this.authStore.user();
+    if (!user || user.isAnonymous) {
+      console.warn('[MissionList] No authenticated user');
       this.showError('Please log in to join missions');
       return;
     }
 
-    const isAlreadyJoined = this.joinedMissionIds().includes(mission.id);
+    // Check if already joined by looking in all mission lists
+    const allUserMissions = [...this.joinedMissions()];
+    const isAlreadyJoined = allUserMissions.some(m => m.mission.id === mission.id);
+    
     if (isAlreadyJoined) {
       console.log('[MissionList] Mission already joined:', mission.name);
       this.showInfo(`You've already joined "${mission.name}"`);
       return;
     }
 
-    if (this.isJoining()) {
-      console.log('[MissionList] Already joining a mission, skipping');
-      return;
-    }
-
-    this._isJoining.set(true);
-
     try {
-      console.log('[MissionList] Joining mission:', mission.name);
-
-      // ✅ Add mission to user's joinedMissionIds
-      await this.addMissionToUser(user.uid, mission.id);
-
-      console.log('[MissionList] ✅ Successfully joined mission:', mission.name);
-      this.showSuccess(`Joined mission: "${mission.name}"!`);
-
+      console.log('[MissionList] Starting mission:', mission.name);
+      await this.userMissionsStore.startMission(mission.id);
+      console.log('[MissionList] ✅ Successfully started mission:', mission.name);
+      this.showSuccess(`Started mission: "${mission.name}"!`);
     } catch (error: any) {
-      console.error('[MissionList] ❌ Failed to join mission:', error);
-      this.showError(error?.message || 'Failed to join mission');
-    } finally {
-      this._isJoining.set(false);
-    }
-  }
-
-  // ✅ Add mission to user
-  private async addMissionToUser(userId: string, missionId: string): Promise<void> {
-    const currentUser = this.user();
-    if (!currentUser) throw new Error('No user found');
-
-    const currentMissionIds = currentUser.joinedMissionIds ?? [];
-
-    // ✅ Optimistic update
-    const updatedMissionIds = [...currentMissionIds, missionId];
-    this.userStore.patchUser({ joinedMissionIds: updatedMissionIds });
-
-    try {
-      // ✅ Update in Firestore
-      await this.userStore.updateProfile({ joinedMissionIds: updatedMissionIds });
-    } catch (error) {
-      // ❌ Rollback on failure
-      this.userStore.patchUser({ joinedMissionIds: currentMissionIds });
-      throw error;
+      console.error('[MissionList] ❌ Failed to start mission:', error);
+      this.showError(error?.message || 'Failed to start mission');
     }
   }
 }
