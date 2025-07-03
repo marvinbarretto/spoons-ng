@@ -1,4 +1,4 @@
-import { Injectable, computed, inject, signal } from "@angular/core";
+import { Injectable, computed, inject, signal, effect } from "@angular/core";
 import { AuthStore } from "../../auth/data-access/auth.store";
 import { BaseStore } from "../../shared/base/base.store";
 import { LeaderboardEntry, LeaderboardTimeRange, LeaderboardGeographicFilter } from "../utils/leaderboard.models";
@@ -6,9 +6,11 @@ import { generateRandomName } from "../../shared/utils/anonymous-names";
 import { UserService } from "../../users/data-access/user.service";
 import { User } from "../../users/utils/user.model";
 import { CheckInStore } from "../../check-in/data-access/check-in.store";
+import { CheckInService } from "../../check-in/data-access/check-in.service";
 import { CheckIn } from "../../check-in/utils/check-in.models";
 import { PubStore } from "../../pubs/data-access/pub.store";
 import { PubGroupingService } from "../../shared/data-access/pub-grouping.service";
+import { UserStore } from "../../users/data-access/user.store";
 
 @Injectable({
   providedIn: 'root'
@@ -16,9 +18,11 @@ import { PubGroupingService } from "../../shared/data-access/pub-grouping.servic
 // /leaderboard/data-access/leaderboard.store.ts
 export class LeaderboardStore extends BaseStore<LeaderboardEntry> {
   private readonly userService = inject(UserService);
+  private readonly checkinService = inject(CheckInService);
   private readonly checkinStore = inject(CheckInStore);
   private readonly pubStore = inject(PubStore);
   private readonly pubGroupingService = inject(PubGroupingService);
+  private readonly userStore = inject(UserStore);
 
   // Time range filter
   private readonly _timeRange = signal<LeaderboardTimeRange>('all-time');
@@ -27,6 +31,83 @@ export class LeaderboardStore extends BaseStore<LeaderboardEntry> {
   // Geographic filter
   private readonly _geographicFilter = signal<LeaderboardGeographicFilter>({ type: 'none' });
   readonly geographicFilter = this._geographicFilter.asReadonly();
+
+  // Track last computation to prevent infinite loops
+  private lastComputationHash = '';
+  private lastCurrentUserUpdate = { userId: '', checkinsCount: 0 };
+
+  constructor() {
+    super();
+    console.log('[LeaderboardStore] ✅ Initialized with pure signal reactivity');
+
+    // Initial load of global data
+    this.loadGlobalData();
+
+    // Effect 1: React to global user and check-in changes
+    effect(() => {
+      const allUsers = this.userService.allUsers();
+      const allCheckIns = this.checkinService.allCheckIns();
+      
+      // Create hash to detect actual changes
+      const computationHash = `${allUsers.length}-${allCheckIns.length}-${allUsers.map(u => u.uid).join(',').slice(-10)}`;
+      
+      if (computationHash !== this.lastComputationHash && allUsers.length > 0) {
+        console.log('[LeaderboardStore] Global data changed, rebuilding leaderboard:', {
+          users: allUsers.length,
+          checkIns: allCheckIns.length,
+          hash: computationHash
+        });
+        this.lastComputationHash = computationHash;
+        this.rebuildLeaderboardFromGlobalData(allUsers, allCheckIns);
+      }
+    });
+
+    // Effect 2: React to current user changes for immediate updates
+    effect(() => {
+      const currentUser = this.userStore.user();
+      const userCheckIns = this.checkinStore.checkins();
+      
+      const currentUserId = currentUser?.uid || '';
+      const currentCheckinsCount = userCheckIns.length;
+      
+      // Prevent unnecessary updates
+      if (currentUserId === this.lastCurrentUserUpdate.userId && 
+          currentCheckinsCount === this.lastCurrentUserUpdate.checkinsCount) {
+        return;
+      }
+
+      console.log('[LeaderboardStore] Current user data changed:', {
+        userId: currentUserId,
+        checkinsCount: currentCheckinsCount
+      });
+
+      this.lastCurrentUserUpdate = { userId: currentUserId, checkinsCount: currentCheckinsCount };
+
+      if (currentUser) {
+        this.updateCurrentUserInLeaderboard(currentUser, userCheckIns);
+      }
+    });
+  }
+
+  /**
+   * Load all global data (users and check-ins) using new signal approach
+   */
+  private async loadGlobalData(): Promise<void> {
+    this._loading.set(true);
+    try {
+      console.log('[LeaderboardStore] Loading global data for signal reactivity...');
+      await Promise.all([
+        this.userService.loadAllUsers(),
+        this.checkinService.loadAllCheckIns()
+      ]);
+      console.log('[LeaderboardStore] Global data loaded successfully');
+    } catch (error) {
+      console.error('[LeaderboardStore] Failed to load global data:', error);
+      this._error.set('Failed to load leaderboard data');
+    } finally {
+      this._loading.set(false);
+    }
+  }
 
 
   // 📊 Filter data by time range and geography
@@ -163,132 +244,82 @@ export class LeaderboardStore extends BaseStore<LeaderboardEntry> {
   });
 
 
-  // In LeaderboardStore - replace fetchData with this debug version:
-
-protected async fetchData(): Promise<LeaderboardEntry[]> {
-  console.log('[LeaderboardStore] Building leaderboard from all users...');
-
-  const allUsers = await this.userService.getAllUsers();
-  console.log('[LeaderboardStore] Total users found:', allUsers.length);
-
-  const validUsers = allUsers.filter(user => {
-    const userId = user.uid || (user as any).id;
-    const hasValidId = !!userId && typeof userId === 'string';
-
-    if (!hasValidId) {
-      console.warn('[LeaderboardStore] Skipping user with invalid ID:', user);
-      return false;
+  /**
+   * Rebuild leaderboard from global data (pure signal approach)
+   */
+  private rebuildLeaderboardFromGlobalData(allUsers: User[], allCheckIns: CheckIn[]): void {
+    console.log(`[LeaderboardStore] Rebuilding leaderboard from global data: ${allUsers.length} users, ${allCheckIns.length} check-ins`);
+    
+    const entries: LeaderboardEntry[] = [];
+    
+    for (const user of allUsers) {
+      try {
+        // Get all check-ins for this user from global data
+        const userCheckIns = allCheckIns.filter(c => c.userId === user.uid);
+        const uniquePubIds = new Set(userCheckIns.map(c => c.pubId));
+        
+        const entry = this.createLeaderboardEntry(user, userCheckIns, uniquePubIds);
+        entries.push(entry);
+        
+      } catch (error) {
+        console.error('[LeaderboardStore] Error creating entry for user', user.uid, error);
+      }
     }
+    
+    this._data.set(entries);
+    console.log(`[LeaderboardStore] ✅ Rebuilt leaderboard with ${entries.length} entries`);
+  }
 
-    return true;
-  });
+  /**
+   * Update specific user in leaderboard without full rebuild (for immediate updates)
+   */
+  private updateCurrentUserInLeaderboard(currentUser: User, userCheckIns: CheckIn[]): void {
+    const entries = this._data();
+    const userIndex = entries.findIndex(e => e.userId === currentUser.uid);
+    
+    const uniquePubIds = new Set(userCheckIns.map(c => c.pubId));
+    const updatedEntry = this.createLeaderboardEntry(currentUser, userCheckIns, uniquePubIds);
+    
+    if (userIndex >= 0) {
+      // Update existing entry
+      this._data.update(current => {
+        const updated = [...current];
+        updated[userIndex] = updatedEntry;
+        return updated;
+      });
+      console.log(`[LeaderboardStore] ✅ Updated current user in leaderboard: ${currentUser.uid}`);
+    } else {
+      // Add new entry
+      this._data.update(current => [...current, updatedEntry]);
+      console.log(`[LeaderboardStore] ✅ Added current user to leaderboard: ${currentUser.uid}`);
+    }
+  }
 
-  console.log('[LeaderboardStore] Valid users:', validUsers.length);
 
-  // Get all check-ins for counting
-  const allCheckins = this.checkinStore.checkins();
-  console.log('[LeaderboardStore] Total check-ins in system:', allCheckins.length);
-
-  // 🐛 DEBUG: Look for real users vs anonymous
-  const realUsers = validUsers.filter(user => !user.isAnonymous);
-  const anonUsers = validUsers.filter(user => user.isAnonymous);
-
-  console.log('[LeaderboardStore] Real users found:', realUsers.length);
-  console.log('[LeaderboardStore] Anonymous users found:', anonUsers.length);
-
-  // 🐛 DEBUG: Show some real user data
-  realUsers.slice(0, 3).forEach((user, index) => {
-    console.log(`[LeaderboardStore] Real user ${index}:`, {
-      uid: user.uid,
-      email: user.email,
-      displayName: user.displayName,
-      isAnonymous: user.isAnonymous,
-      checkedInPubIds: 0, // Will be computed from actual check-ins below
-      totalPoints: user.totalPoints || 0
-    });
-  });
-
-  return validUsers.map(user => {
-    const userId = user.uid || (user as any).id;
+  /**
+   * Create a leaderboard entry from user and check-in data
+   */
+  private createLeaderboardEntry(user: User, userCheckins: CheckIn[], uniquePubIds: Set<string>): LeaderboardEntry {
+    const userId = user.uid;
     const displayName = this.getDisplayName(userId, user);
-
-    // Get user's check-ins for accurate counts
-    const userCheckins = allCheckins.filter(c => c.userId === userId);
-    const uniquePubIds = new Set(userCheckins.map(c => c.pubId));
-
-    // 🔍 DETAILED LOGGING for pub count calculation
-    const currentUser = this.authStore.user();
-    if (currentUser && userId === currentUser.uid) {
-      console.log('🏆 [LeaderboardStore] === CURRENT USER PUB CALCULATION ===');
-      console.log('🏆 [LeaderboardStore] User details:', {
-        userId: userId?.slice(0, 8),
-        displayName,
-        isCurrentUser: true,
-        userObject: {
-          totalPoints: user.totalPoints,
-          checkedInPubIds: 0, // Will be computed from actual check-ins below
-          isAnonymous: user.isAnonymous
-        }
-      });
-      console.log('🏆 [LeaderboardStore] Check-in calculation:', {
-        totalCheckinsInSystem: allCheckins.length,
-        userSpecificCheckins: userCheckins.length,
-        uniquePubIdsFromCheckins: Array.from(uniquePubIds),
-        uniquePubCount: uniquePubIds.size,
-        sampleCheckins: userCheckins.slice(0, 3).map(c => ({
-          pubId: c.pubId,
-          timestamp: c.timestamp.toDate().toISOString(),
-          userId: c.userId?.slice(0, 8)
-        }))
-      });
-
-      // Check-ins are now the single source of truth for pub visits
-      console.log('🏆 [LeaderboardStore] Pub visits calculated from check-ins:', {
-        userId: user.uid,
-        uniquePubsFromCheckins: uniquePubIds.size,
-        totalCheckinsForUser: userCheckins.length
-      });
-    }
-
+    
     // Calculate last active from check-ins
     const lastCheckin = userCheckins
       .sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis())[0];
     const lastActive = lastCheckin?.timestamp.toDate().toISOString();
 
-    // Calculate current streak from consecutive check-in days
+    // Calculate current streak
     const currentStreak = this.calculateStreak(userCheckins);
-
-    // 🐛 DEBUG: Log what display name we're generating
-    if (user.displayName || user.email) {
-      console.log('[LeaderboardStore] Real user display name:', {
-        userId: userId.slice(0, 8),
-        originalName: user.displayName,
-        email: user.email || undefined,
-        isAnonymous: user.isAnonymous,
-        hasRealProfile: !!(user.displayName || user.email),
-        photoURL: user.photoURL || undefined,
-        generatedName: displayName,
-        joinedAt: user.joinedAt || undefined,
-        badgeCount: user.badgeCount || undefined,
-        badgeIds: user.badgeIds || undefined,
-        landlordCount: user.landlordCount || undefined,
-        landlordPubIds: user.landlordPubIds || undefined,
-        totalPoints: user.totalPoints || 0,
-        totalCheckins: userCheckins.length,
-        uniquePubs: uniquePubIds.size,
-        currentStreak
-      });
-    }
 
     return {
       userId,
       displayName,
-      totalVisits: uniquePubIds.size, // Computed from actual check-ins
+      totalVisits: uniquePubIds.size,
       uniquePubs: uniquePubIds.size,
       totalCheckins: userCheckins.length,
       totalPoints: user.totalPoints || 0,
       joinedDate: user.joinedAt || new Date().toISOString(),
-      rank: 0,
+      rank: 0, // Will be set by sorting
       photoURL: user.photoURL || undefined,
       email: user.email || undefined,
       realDisplayName: user.displayName || undefined,
@@ -296,8 +327,13 @@ protected async fetchData(): Promise<LeaderboardEntry[]> {
       lastActive,
       currentStreak
     };
-  });
-}
+  }
+
+  // Override the base store's fetchData to prevent it from being called
+  protected async fetchData(): Promise<LeaderboardEntry[]> {
+    console.log('[LeaderboardStore] fetchData called but ignored - using reactive pattern');
+    return []; // Return empty, the reactive effect will populate data
+  }
 
 /**
  * Calculate current streak from check-ins
@@ -473,13 +509,6 @@ private getDisplayName(userId: string, user: User): string {
    */
   readonly availableCountries = computed(() => this.pubGroupingService.activeCountries());
 
-  /**
-   * Refresh leaderboard data
-   */
-  async refresh(): Promise<void> {
-    console.log('[LeaderboardStore] Refreshing leaderboard...');
-    await this.load();
-  }
 
   /**
    * Get site-wide statistics with real data
@@ -537,7 +566,43 @@ private getDisplayName(userId: string, user: User): string {
     };
   });
 
+  /**
+   * Public method to refresh all global data
+   */
+  async refreshGlobalData(): Promise<void> {
+    console.log('[LeaderboardStore] Refreshing all global data...');
+    await this.loadGlobalData();
+  }
 
+  /**
+   * Computed signals for efficient global loading state tracking
+   */
+  readonly globalLoadingState = computed(() => ({
+    users: this.userService.loadingAllUsers(),
+    checkIns: this.checkinService.loadingAllCheckIns(),
+    leaderboard: this.loading()
+  }));
 
+  readonly isGlobalDataLoaded = computed(() => 
+    this.userService.allUsers().length > 0 && 
+    this.checkinService.allCheckIns().length > 0
+  );
 
+  readonly globalDataStats = computed(() => {
+    const allUsers = this.userService.allUsers();
+    const allCheckIns = this.checkinService.allCheckIns();
+    
+    return {
+      totalUsers: allUsers.length,
+      totalCheckIns: allCheckIns.length,
+      activeUsers: new Set(allCheckIns.map(c => c.userId)).size,
+      lastLoaded: new Date().toISOString()
+    };
+  });
+
+  // Public refresh method using our new global approach
+  async refresh(): Promise<void> {
+    console.log('[LeaderboardStore] Refreshing with pure signal approach...');
+    await this.refreshGlobalData();
+  }
 }

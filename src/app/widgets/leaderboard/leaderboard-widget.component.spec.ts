@@ -5,13 +5,49 @@ import { AuthStore } from '../../auth/data-access/auth.store';
 import { Router } from '@angular/router';
 import { signal } from '@angular/core';
 import type { LeaderboardEntry } from '../../leaderboard/utils/leaderboard.models';
+import { MockAuthStore } from '../../testing/store-mocks';
+import { createMockUser } from '../../testing/test-data';
+
+// Mock LeaderboardStore class
+class MockLeaderboardStore {
+  private _loading = signal(false);
+  private _error = signal<string | null>(null);
+  private _topByPoints = signal<LeaderboardEntry[]>([]);
+  private _userRankByPoints = signal<number | null>(null);
+  
+  readonly loading = this._loading.asReadonly();
+  readonly error = this._error.asReadonly();
+  readonly topByPoints = this._topByPoints.asReadonly();
+  readonly userRankByPoints = this._userRankByPoints.asReadonly();
+  
+  setLoading(loading: boolean): void {
+    this._loading.set(loading);
+  }
+  
+  setError(error: string | null): void {
+    this._error.set(error);
+  }
+  
+  setTopByPoints(entries: LeaderboardEntry[]): void {
+    this._topByPoints.set(entries);
+  }
+  
+  setUserRankByPoints(rank: number | null): void {
+    this._userRankByPoints.set(rank);
+  }
+}
+
+// Mock Router class
+class MockRouter {
+  navigate = jest.fn();
+}
 
 describe('LeaderboardWidgetComponent', () => {
   let component: LeaderboardWidgetComponent;
   let fixture: ComponentFixture<LeaderboardWidgetComponent>;
-  let mockLeaderboardStore: jasmine.SpyObj<LeaderboardStore>;
-  let mockAuthStore: jasmine.SpyObj<AuthStore>;
-  let mockRouter: jasmine.SpyObj<Router>;
+  let mockLeaderboardStore: MockLeaderboardStore;
+  let mockAuthStore: MockAuthStore;
+  let mockRouter: MockRouter;
 
   const mockLeaderboardData: LeaderboardEntry[] = [
     {
@@ -72,33 +108,36 @@ describe('LeaderboardWidgetComponent', () => {
   ];
 
   beforeEach(async () => {
-    const leaderboardStoreSpy = jasmine.createSpyObj('LeaderboardStore', ['load'], {
-      loading: signal(false),
-      error: signal(null),
-      topByPoints: signal(mockLeaderboardData),
-      userRankByPoints: signal(3)
-    });
-
-    const authStoreSpy = jasmine.createSpyObj('AuthStore', [], {
-      user: signal({ uid: 'currentUser', displayName: 'Current User' })
-    });
-
-    const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
+    // Use fake timers for consistent test behavior
+    jest.useFakeTimers();
+    
+    // Create mock stores
+    mockLeaderboardStore = new MockLeaderboardStore();
+    mockAuthStore = new MockAuthStore();
+    mockRouter = new MockRouter();
+    
+    // Set up initial test data
+    const currentUser = createMockUser({ uid: 'currentUser', displayName: 'Current User' });
+    mockAuthStore.setUser(currentUser);
+    mockLeaderboardStore.setTopByPoints(mockLeaderboardData);
+    mockLeaderboardStore.setUserRankByPoints(3);
 
     await TestBed.configureTestingModule({
       imports: [LeaderboardWidgetComponent],
       providers: [
-        { provide: LeaderboardStore, useValue: leaderboardStoreSpy },
-        { provide: AuthStore, useValue: authStoreSpy },
-        { provide: Router, useValue: routerSpy }
+        { provide: LeaderboardStore, useValue: mockLeaderboardStore },
+        { provide: AuthStore, useValue: mockAuthStore },
+        { provide: Router, useValue: mockRouter }
       ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(LeaderboardWidgetComponent);
     component = fixture.componentInstance;
-    mockLeaderboardStore = TestBed.inject(LeaderboardStore) as jasmine.SpyObj<LeaderboardStore>;
-    mockAuthStore = TestBed.inject(AuthStore) as jasmine.SpyObj<AuthStore>;
-    mockRouter = TestBed.inject(Router) as jasmine.SpyObj<Router>;
+  });
+  
+  afterEach(() => {
+    jest.useRealTimers();
+    jest.clearAllMocks();
   });
 
   it('should create', () => {
@@ -106,7 +145,7 @@ describe('LeaderboardWidgetComponent', () => {
   });
 
   it('should show loading state', () => {
-    mockLeaderboardStore.loading = signal(true);
+    mockLeaderboardStore.setLoading(true);
     fixture.detectChanges();
     
     const loadingElement = fixture.nativeElement.querySelector('.widget-loading');
@@ -115,7 +154,7 @@ describe('LeaderboardWidgetComponent', () => {
   });
 
   it('should show error state', () => {
-    mockLeaderboardStore.error = signal('Failed to load leaderboard');
+    mockLeaderboardStore.setError('Failed to load leaderboard');
     fixture.detectChanges();
     
     const errorElement = fixture.nativeElement.querySelector('.widget-error');
@@ -124,7 +163,7 @@ describe('LeaderboardWidgetComponent', () => {
   });
 
   it('should show empty state when user is not ranked', () => {
-    mockLeaderboardStore.userRankByPoints = signal(null);
+    mockLeaderboardStore.setUserRankByPoints(null);
     fixture.detectChanges();
     
     const emptyElement = fixture.nativeElement.querySelector('.widget-empty');
@@ -165,11 +204,46 @@ describe('LeaderboardWidgetComponent', () => {
     
     expect(mockRouter.navigate).toHaveBeenCalledWith(['/leaderboard']);
   });
+  
+  it('should handle rapid auth changes without memory leaks', () => {
+    // Clear any existing calls
+    jest.clearAllMocks();
+    
+    // Rapidly change users
+    for (let i = 0; i < 5; i++) {
+      const testUser = createMockUser({ uid: `user${i}`, displayName: `User ${i}` });
+      mockAuthStore.setUser(testUser);
+      fixture.detectChanges();
+      jest.runAllTimers();
+    }
+    
+    // Component should still be functional
+    expect(component).toBeTruthy();
+    
+    // Should not have excessive router calls
+    expect(mockRouter.navigate).not.toHaveBeenCalled();
+  });
+  
+  it('should react to leaderboard data changes', () => {
+    // Initial state
+    fixture.detectChanges();
+    let entries = fixture.nativeElement.querySelectorAll('.leaderboard-entry');
+    expect(entries.length).toBe(5);
+    
+    // Change leaderboard data
+    const newData = mockLeaderboardData.slice(0, 2); // Only first 2 entries
+    mockLeaderboardStore.setTopByPoints(newData);
+    fixture.detectChanges();
+    
+    entries = fixture.nativeElement.querySelectorAll('.leaderboard-entry');
+    expect(entries.length).toBe(2);
+  });
 
   it('should handle edge case when user is at top of leaderboard', () => {
     // Mock user at position 1
-    mockAuthStore.user = signal({ uid: 'user1', displayName: 'Top Player' });
-    mockLeaderboardStore.userRankByPoints = signal(1);
+    const topUser = createMockUser({ uid: 'user1', displayName: 'Top Player' });
+    mockAuthStore.setUser(topUser);
+    mockLeaderboardStore.setUserRankByPoints(1);
     
     fixture.detectChanges();
     
@@ -182,8 +256,9 @@ describe('LeaderboardWidgetComponent', () => {
 
   it('should handle edge case when user is at bottom of leaderboard', () => {
     // Mock user at position 5
-    mockAuthStore.user = signal({ uid: 'user5', displayName: 'Fifth Place' });
-    mockLeaderboardStore.userRankByPoints = signal(5);
+    const bottomUser = createMockUser({ uid: 'user5', displayName: 'Fifth Place' });
+    mockAuthStore.setUser(bottomUser);
+    mockLeaderboardStore.setUserRankByPoints(5);
     
     fixture.detectChanges();
     

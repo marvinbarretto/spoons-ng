@@ -28,13 +28,18 @@
  * ```
  */
 
-import { Injectable, inject, computed } from '@angular/core';
+import { Injectable, inject, computed, signal } from '@angular/core';
 import { AuthStore } from '../../auth/data-access/auth.store';
 import { UserStore } from '../../users/data-access/user.store';
 import { PointsStore } from '../../points/data-access/points.store';
 import { CheckInStore } from '@check-in/data-access/check-in.store';
 import { PubStore } from '../../pubs/data-access/pub.store';
 import { DebugService } from '../utils/debug.service';
+import { UserService } from '../../users/data-access/user.service';
+import { generateRandomName } from '../utils/anonymous-names';
+import type { LeaderboardEntry, LeaderboardTimeRange, LeaderboardGeographicFilter } from '../../leaderboard/utils/leaderboard.models';
+import type { User } from '../../users/utils/user.model';
+import type { CheckIn } from '../../check-in/utils/check-in.models';
 
 @Injectable({ providedIn: 'root' })
 export class DataAggregatorService {
@@ -45,6 +50,14 @@ export class DataAggregatorService {
   private readonly checkinStore = inject(CheckInStore);
   private readonly pubStore = inject(PubStore);
   private readonly debug = inject(DebugService);
+  private readonly userService = inject(UserService);
+
+  // 🎯 Leaderboard filter state
+  private readonly _leaderboardTimeRange = signal<LeaderboardTimeRange>('all-time');
+  private readonly _leaderboardGeographicFilter = signal<LeaderboardGeographicFilter>({ type: 'none' });
+  
+  readonly leaderboardTimeRange = this._leaderboardTimeRange.asReadonly();
+  readonly leaderboardGeographicFilter = this._leaderboardGeographicFilter.asReadonly();
 
   constructor() {
     this.debug.standard('[DataAggregator] Service initialized - providing reactive cross-store data aggregation');

@@ -3,7 +3,7 @@
 // =====================================
 
 // src/app/checkin/data-access/checkin.service.ts
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { Timestamp, where } from 'firebase/firestore';
 import { FirestoreCrudService } from '../../shared/data-access/firestore-crud.service';
 import { NearbyPubStore } from '../../pubs/data-access/nearby-pub.store';
@@ -14,6 +14,15 @@ import { environment } from '../../../environments/environment';
 @Injectable({ providedIn: 'root' })
 export class CheckInService extends FirestoreCrudService<CheckIn> {
   protected override path: string = 'checkins';
+  
+  // Global check-ins signal for leaderboard reactivity
+  private readonly _allCheckIns = signal<CheckIn[]>([]);
+  readonly allCheckIns = this._allCheckIns.asReadonly();
+  
+  // Loading state for global check-ins
+  private readonly _loadingAllCheckIns = signal(false);
+  readonly loadingAllCheckIns = this._loadingAllCheckIns.asReadonly();
+  
   // Clean dependencies - no underscores for services
   private readonly authStore = inject(AuthStore);
   private readonly nearbyPubStore = inject(NearbyPubStore);
@@ -391,5 +400,75 @@ async createCheckin(pubId: string, carpetImageKey?: string): Promise<string> {
       console.error('[CheckInService] 🏠 Error getting unique pub count:', error);
       return 0;
     }
+  }
+
+  /**
+   * Get all check-ins from all users (for leaderboard)
+   */
+  async getAllCheckIns(): Promise<CheckIn[]> {
+    try {
+      console.log('[CheckInService] Loading all check-ins for global reactivity...');
+      const checkIns = await this.getDocsWhere<CheckIn>('checkins');
+      console.log(`[CheckInService] Loaded ${checkIns.length} check-ins from all users`);
+      return checkIns;
+    } catch (error) {
+      console.error('[CheckInService] Failed to load all check-ins:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Load all check-ins and update the signal for reactive leaderboard
+   */
+  async loadAllCheckIns(): Promise<void> {
+    this._loadingAllCheckIns.set(true);
+    try {
+      const checkIns = await this.getAllCheckIns();
+      this._allCheckIns.set(checkIns);
+    } catch (error) {
+      console.error('[CheckInService] Failed to load all check-ins:', error);
+      throw error;
+    } finally {
+      this._loadingAllCheckIns.set(false);
+    }
+  }
+
+  /**
+   * Refresh global check-ins data
+   */
+  async refreshAllCheckIns(): Promise<void> {
+    console.log('[CheckInService] Refreshing all check-ins data...');
+    await this.loadAllCheckIns();
+  }
+
+  /**
+   * Add a check-in to the global check-ins signal (for immediate reactivity)
+   */
+  addCheckInToGlobalSignal(checkIn: CheckIn): void {
+    this._allCheckIns.update(checkIns => {
+      const exists = checkIns.some(c => 
+        c.userId === checkIn.userId && 
+        c.pubId === checkIn.pubId && 
+        c.timestamp.isEqual(checkIn.timestamp)
+      );
+      if (!exists) {
+        console.log(`[CheckInService] Adding check-in to global signal: ${checkIn.userId} -> ${checkIn.pubId}`);
+        return [...checkIns, checkIn];
+      }
+      return checkIns;
+    });
+  }
+
+  /**
+   * Remove a check-in from the global check-ins signal
+   */
+  removeCheckInFromGlobalSignal(checkInId: string): void {
+    this._allCheckIns.update(checkIns => {
+      const filtered = checkIns.filter(c => c.id !== checkInId);
+      if (filtered.length !== checkIns.length) {
+        console.log(`[CheckInService] Removed check-in ${checkInId} from global signal`);
+      }
+      return filtered;
+    });
   }
 }
