@@ -21,7 +21,6 @@ export const environment: Environment = {
     chatId: 'YOUR_TELEGRAM_CHAT_ID'
   },
   featureFlags: {
-    patchwork: false,
     landlord: false,
     theme: true,
     search: false,
