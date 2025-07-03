@@ -1,7 +1,10 @@
 // src/app/missions/ui/mission-card/mission-card.component.ts
-import { Component, computed, input, output } from '@angular/core';
+import { Component, computed, input, output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
+import { PubStore } from '../../../pubs/data-access/pub.store';
 import type { Mission } from '../../utils/mission.model';
+import type { Pub } from '../../../pubs/utils/pub.models';
 
 @Component({
   selector: 'app-mission-card',
@@ -52,6 +55,31 @@ import type { Mission } from '../../utils/mission.model';
             </div>
           }
         </div>
+
+        @if (missionPubs().pubs.length > 0) {
+          <div class="mission-card__pubs">
+            <h4 class="mission-card__pubs-title">Pubs in this mission:</h4>
+
+            <!-- TODO: Make the pub crests a mini component? -->
+            <div class="pub-crests">
+              @for (pub of missionPubs().displayPubs; track pub.id) {
+                <div class="pub-crest" [class.pub-crest--completed]="pub.hasVisited" [title]="pub.name">
+                  <div class="pub-crest__icon">
+                    @if (pub.hasVisited) {
+                      ✅
+                    } @else {
+                      🍺
+                    }
+                  </div>
+                  <div class="pub-crest__name">{{ pub.name.substring(0, 12) }}{{ pub.name.length > 12 ? '...' : '' }}</div>
+                </div>
+              }
+              @if (missionPubs().hasMore) {
+                <div class="more-pubs">+{{ missionPubs().moreCount }}</div>
+              }
+            </div>
+          </div>
+        }
       </div>
 
       @if (isJoined() && progress() !== null) {
@@ -75,7 +103,7 @@ import type { Mission } from '../../utils/mission.model';
     .mission-card {
       background: linear-gradient(135deg, var(--color-surface, #ffffff) 0%, rgba(59, 130, 246, 0.02) 100%);
       border: 2px solid transparent;
-      border-radius: 16px;
+      border-radius: 8px;
       padding: 1.5rem;
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -283,6 +311,95 @@ import type { Mission } from '../../utils/mission.model';
       letter-spacing: 0.025em;
     }
 
+    /* Pub crests display - similar to badge crests */
+    .mission-card__pubs {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--color-border, #e5e7eb);
+    }
+
+    .mission-card__pubs-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--color-text-primary, #111827);
+      margin: 0 0 0.75rem 0;
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
+    }
+
+    .pub-crests {
+      display: flex;
+      gap: 0.375rem;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      align-items: flex-start;
+    }
+
+    .pub-crest {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.5rem 0.375rem;
+      background: var(--color-surface, #f9fafb);
+      border: 1px solid var(--color-border, #e5e7eb);
+      border-radius: 8px;
+      min-width: 60px;
+      max-width: 80px;
+      transition: all 0.2s ease;
+      cursor: default;
+    }
+
+    .pub-crest:hover {
+      background: var(--color-gray-50, #f8fafc);
+      border-color: var(--color-primary, #3b82f6);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .pub-crest--completed {
+      background: rgba(16, 185, 129, 0.1);
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .pub-crest--completed:hover {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.5);
+    }
+
+    .pub-crest__icon {
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    .pub-crest__name {
+      font-size: 0.6875rem;
+      font-weight: 500;
+      color: var(--color-text-secondary, #6b7280);
+      text-align: center;
+      line-height: 1.2;
+      word-break: break-word;
+    }
+
+    .pub-crest--completed .pub-crest__name {
+      color: var(--color-success, #10b981);
+      font-weight: 600;
+    }
+
+    .more-pubs {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 60px;
+      height: 3.5rem;
+      font-size: 0.625rem;
+      font-weight: bold;
+      color: var(--color-text-secondary, #6b7280);
+      background: var(--color-surface, #f9fafb);
+      border: 1px solid var(--color-border, #e5e7eb);
+      border-radius: 8px;
+      margin-left: 0.125rem;
+    }
 
     /* Responsive design */
     @media (max-width: 640px) {
@@ -316,10 +433,29 @@ import type { Mission } from '../../utils/mission.model';
         -webkit-text-fill-color: transparent;
         background-clip: text;
       }
+
+      .pub-crest {
+        background: rgba(55, 65, 81, 0.6);
+        border-color: rgba(75, 85, 99, 0.4);
+      }
+
+      .pub-crest--completed {
+        background: rgba(16, 185, 129, 0.15);
+        border-color: rgba(16, 185, 129, 0.4);
+      }
+
+      .more-pubs {
+        background: rgba(55, 65, 81, 0.6);
+        border-color: rgba(75, 85, 99, 0.4);
+      }
     }
   `
 })
 export class MissionCardComponent {
+  // ✅ Dependency injection
+  private readonly dataAggregatorService = inject(DataAggregatorService);
+  private readonly pubStore = inject(PubStore);
+
   // ✅ Required inputs
   readonly mission = input.required<Mission>();
 
@@ -336,6 +472,42 @@ export class MissionCardComponent {
     const total = this.mission().pubIds.length;
     if (prog === null || total === 0) return 0;
     return Math.round((prog / total) * 100);
+  });
+
+  // ✅ Mission pub details with crest data
+  readonly missionPubs = computed(() => {
+    const mission = this.mission();
+    const allPubs = this.pubStore.pubs();
+
+    // Get pub details for all mission pubs, regardless of joined status
+    const pubDetails = mission.pubIds.map(pubId => {
+      const pub = allPubs.find(p => p.id === pubId);
+      const hasVisited = this.isJoined() ? this.dataAggregatorService.hasVisitedPub(pubId) : false;
+
+      return {
+        id: pubId,
+        pub: pub || null,
+        name: pub?.name || 'Unknown Pub',
+        hasVisited,
+        visitCount: hasVisited ? this.dataAggregatorService.getVisitCountForPub(pubId) : 0,
+        // Prepare crest data similar to badge crests
+        hasCrest: !!pub?.carpetUrl
+      };
+    });
+
+    // For display, limit to first 6 pubs and show "+X more" if needed
+    const displayPubs = pubDetails.slice(0, 6);
+    const hasMore = pubDetails.length > 6;
+    const moreCount = hasMore ? pubDetails.length - 6 : 0;
+
+    return {
+      pubCount: mission.pubIds.length,
+      pubs: pubDetails,
+      displayPubs,
+      hasMore,
+      moreCount,
+      completedCount: pubDetails.filter(p => p.hasVisited).length
+    };
   });
 
 

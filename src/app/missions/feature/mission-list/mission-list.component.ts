@@ -78,7 +78,7 @@ import type { Mission } from '../../utils/mission.model';
               [mission]="missionData.mission"
               [isJoined]="missionData.isActive || missionData.isCompleted"
               [progress]="missionData.completedCount"
-              (cardClicked)="handleMissionClick($event)"
+              (cardClicked)="handleStartMissionClick($event)"
             />
           }
         </div>
@@ -93,22 +93,6 @@ import type { Mission } from '../../utils/mission.model';
         }
       }
 
-      <!-- Development debug info -->
-      @if (isDevelopment()) {
-        <details class="debug-section">
-          <summary>Debug Info</summary>
-          <div class="debug-grid">
-            <div class="debug-card">
-              <h4>User State</h4>
-              <pre>{{ debugUserInfo() | json }}</pre>
-            </div>
-            <div class="debug-card">
-              <h4>Mission Stats</h4>
-              <pre>{{ debugMissionStats() | json }}</pre>
-            </div>
-          </div>
-        </details>
-      }
     </section>
   `,
   styles: `
@@ -262,9 +246,9 @@ import type { Mission } from '../../utils/mission.model';
       }
 
       .control-group {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.75rem;
+        flex-direction: row;
+        align-items: center;
+        gap: 0.5rem;
       }
 
       .filter-pill {
@@ -286,9 +270,9 @@ export class MissionListComponent extends BaseComponent {
   protected readonly filterMode = this._filterMode.asReadonly();
 
   // ✅ Computed data using UserMissionsStore
-  protected readonly totalMissionsCount = computed(() => 
-    this.userMissionsStore.availableMissions().length + 
-    this.userMissionsStore.activeMissions().length + 
+  protected readonly totalMissionsCount = computed(() =>
+    this.userMissionsStore.availableMissions().length +
+    this.userMissionsStore.activeMissions().length +
     this.userMissionsStore.completedMissions().length
   );
 
@@ -348,18 +332,18 @@ export class MissionListComponent extends BaseComponent {
   }
 
   // ✅ Main action - start mission
-  async handleMissionClick(mission: Mission): Promise<void> {
+  async handleStartMissionClick(mission: Mission): Promise<void> {
     const user = this.authStore.user();
-    if (!user || user.isAnonymous) {
-      console.warn('[MissionList] No authenticated user');
-      this.showError('Please log in to join missions');
+    if (!user) {
+      console.warn('[MissionList] No user available');
+      this.showError('Unable to start mission at this time');
       return;
     }
 
     // Check if already joined by looking in all mission lists
     const allUserMissions = [...this.joinedMissions()];
     const isAlreadyJoined = allUserMissions.some(m => m.mission.id === mission.id);
-    
+
     if (isAlreadyJoined) {
       console.log('[MissionList] Mission already joined:', mission.name);
       this.showInfo(`You've already joined "${mission.name}"`);
@@ -367,10 +351,14 @@ export class MissionListComponent extends BaseComponent {
     }
 
     try {
-      console.log('[MissionList] Starting mission:', mission.name);
-      await this.userMissionsStore.startMission(mission.id);
-      console.log('[MissionList] ✅ Successfully started mission:', mission.name);
-      this.showSuccess(`Started mission: "${mission.name}"!`);
+      console.log('[MissionList] Enrolling in mission:', mission.name);
+      await this.userMissionsStore.enrollInMission(mission.id);
+      console.log('[MissionList] ✅ Successfully enrolled in mission:', mission.name);
+      this.showSuccess(`Enrolled in mission: "${mission.name}"!`);
+
+      // Navigate to homepage after successful enrollment
+      console.log('[MissionList] Navigating to homepage after mission enrollment');
+      this.router.navigate(['/']);
     } catch (error: any) {
       console.error('[MissionList] ❌ Failed to start mission:', error);
       this.showError(error?.message || 'Failed to start mission');

@@ -26,9 +26,9 @@ export class UserMissionProgressService extends FirestoreService {
   }
 
   /**
-   * Start a mission for a user.
+   * Enroll a user in a mission.
    */
-  async startMission(userId: string, missionId: string): Promise<void> {
+  async enrollInMission(userId: string, missionId: string): Promise<void> {
     const id = `${userId}_${missionId}`;
     const progress: UserMissionProgress = {
       id,
