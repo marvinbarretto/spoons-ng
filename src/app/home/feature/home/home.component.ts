@@ -34,7 +34,6 @@ import { ScoreboardHeroWidgetComponent } from '../../../widgets/scoreboard-hero/
   selector: 'app-home',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    ScoreboardHeroComponent,
     ScoreboardHeroWidgetComponent,
     BadgesShowcaseComponent,
     MissionsWidgetComponent,

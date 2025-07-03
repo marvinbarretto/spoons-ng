@@ -56,6 +56,16 @@ export const appRoutes: Routes = [
       import('./leaderboard/data-access/leaderboard.routes').then((m) => m.LEADERBOARD_ROUTES),
     data: { shell: 'feature' }
   },
+  // Admin Dashboard Hub
+  {
+    path: 'admin',
+    title: 'Admin Dashboard',
+    loadComponent: () =>
+      import('./admin/feature/admin-dashboard/admin-dashboard.component')
+        .then(m => m.AdminDashboardComponent),
+    data: { shell: 'feature' }
+  },
+  // Admin Sub-sections
   {
     path: 'admin/badges',
     loadChildren: () =>
@@ -81,6 +91,14 @@ export const appRoutes: Routes = [
     loadComponent: () =>
       import('./missions/feature/mission-form/mission-form.component')
         .then(m => m.MissionFormComponent),
+    data: { shell: 'feature' }
+  },
+  {
+    path: 'admin/metrics',
+    title: 'Database Metrics',
+    loadComponent: () =>
+      import('./shared/ui/database-metrics-dashboard/database-metrics-dashboard.component')
+        .then(m => m.DatabaseMetricsDashboardComponent),
     data: { shell: 'feature' }
   },
   {

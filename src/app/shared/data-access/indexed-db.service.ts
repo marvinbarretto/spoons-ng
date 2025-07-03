@@ -17,9 +17,39 @@ type DatabaseConfig = {
   stores: StoreConfig[];
 };
 
+type DbOperation = 'read' | 'write' | 'delete' | 'clear';
+
+type DbMetrics = {
+  operations: Record<DbOperation, number>;
+  totalSize: number;
+  lastUpdated: number;
+  performance: {
+    avgReadTime: number;
+    avgWriteTime: number;
+    operations: Array<{
+      type: DbOperation;
+      duration: number;
+      timestamp: number;
+      dbName: string;
+      storeName: string;
+    }>;
+  };
+};
+
 @Injectable({ providedIn: 'root' })
 export class IndexedDbService {
   private databases = new Map<string, IDBDatabase>();
+  private metrics: DbMetrics = {
+    operations: { read: 0, write: 0, delete: 0, clear: 0 },
+    totalSize: 0,
+    lastUpdated: Date.now(),
+    performance: {
+      avgReadTime: 0,
+      avgWriteTime: 0,
+      operations: []
+    }
+  };
+  private readonly MAX_PERFORMANCE_LOGS = 1000;
 
   /**
    * Open or create a database with specified configuration
@@ -162,6 +192,9 @@ export class IndexedDbService {
         console.log(`✅ [IndexedDB] Result key: ${resultKey}`);
         console.log(`✅ [IndexedDB] Target: ${dbName}/${storeName}`);
 
+        // Track metrics
+        this.recordOperation('write', duration, dbName, storeName);
+
         resolve(resultKey);
       };
 
@@ -212,6 +245,9 @@ export class IndexedDbService {
           console.log(`✅ [IndexedDB] Retrieved blob: ${(result.size / 1024).toFixed(1)}KB (${result.type})`);
         }
 
+        // Track metrics
+        this.recordOperation('read', duration, dbName, storeName);
+
         resolve(result);
       };
 
@@ -260,6 +296,9 @@ export class IndexedDbService {
             .reduce((sum, blob) => sum + (blob as Blob).size, 0);
           console.log(`✅ [IndexedDB] Total blob data: ${blobCount} blobs, ${(totalSize / 1024).toFixed(1)}KB`);
         }
+
+        // Track metrics
+        this.recordOperation('read', duration, dbName, storeName);
 
         resolve(results);
       };
@@ -343,6 +382,8 @@ export class IndexedDbService {
     storeName: string,
     key: IDBValidKey
   ): Promise<void> {
+    const startTime = performance.now();
+    
     console.log(`🗑️ [IndexedDB] === DELETE OPERATION STARTED ===`);
     console.log(`🗑️ [IndexedDB] Target: ${dbName}/${storeName}`);
     console.log(`🗑️ [IndexedDB] Key: ${key}`);
@@ -355,7 +396,12 @@ export class IndexedDbService {
       const request = store.delete(key);
 
       request.onsuccess = () => {
+        const duration = performance.now() - startTime;
         console.log(`✅ [IndexedDB] Delete successful: ${key}`);
+        
+        // Track metrics
+        this.recordOperation('delete', duration, dbName, storeName);
+        
         resolve();
       };
 
@@ -373,6 +419,8 @@ export class IndexedDbService {
     dbName: string,
     storeName: string
   ): Promise<void> {
+    const startTime = performance.now();
+    
     console.log(`🧹 [IndexedDB] === CLEAR OPERATION STARTED ===`);
     console.log(`🧹 [IndexedDB] Target: ${dbName}/${storeName}`);
 
@@ -384,7 +432,12 @@ export class IndexedDbService {
       const request = store.clear();
 
       request.onsuccess = () => {
+        const duration = performance.now() - startTime;
         console.log(`✅ [IndexedDB] Store cleared: ${storeName}`);
+        
+        // Track metrics
+        this.recordOperation('clear', duration, dbName, storeName);
+        
         resolve();
       };
 
@@ -492,6 +545,95 @@ export class IndexedDbService {
     }
     console.warn(`⚠️ [IndexedDB] Storage estimate API not available`);
     return null;
+  }
+
+  /**
+   * Get current database metrics
+   */
+  getMetrics(): DbMetrics {
+    return { ...this.metrics };
+  }
+
+  /**
+   * Reset all metrics
+   */
+  resetMetrics(): void {
+    this.metrics = {
+      operations: { read: 0, write: 0, delete: 0, clear: 0 },
+      totalSize: 0,
+      lastUpdated: Date.now(),
+      performance: {
+        avgReadTime: 0,
+        avgWriteTime: 0,
+        operations: []
+      }
+    };
+    console.log(`📊 [IndexedDB] Metrics reset`);
+  }
+
+  /**
+   * Get cache hit ratio (reads vs operations)
+   */
+  getCacheHitRatio(): number {
+    const totalOps = Object.values(this.metrics.operations).reduce((sum, count) => sum + count, 0);
+    return totalOps > 0 ? this.metrics.operations.read / totalOps : 0;
+  }
+
+  /**
+   * Get average operation times
+   */
+  getPerformanceStats(): { avgReadTime: number; avgWriteTime: number; totalOperations: number } {
+    return {
+      avgReadTime: this.metrics.performance.avgReadTime,
+      avgWriteTime: this.metrics.performance.avgWriteTime,
+      totalOperations: this.metrics.performance.operations.length
+    };
+  }
+
+  /**
+   * Record operation metrics (internal helper)
+   */
+  private recordOperation(type: DbOperation, duration: number, dbName: string, storeName: string): void {
+    // Update operation count
+    this.metrics.operations[type]++;
+    this.metrics.lastUpdated = Date.now();
+
+    // Record performance data
+    const operation = {
+      type,
+      duration,
+      timestamp: Date.now(),
+      dbName,
+      storeName
+    };
+
+    this.metrics.performance.operations.push(operation);
+
+    // Keep only recent operations (prevent memory bloat)
+    if (this.metrics.performance.operations.length > this.MAX_PERFORMANCE_LOGS) {
+      this.metrics.performance.operations = this.metrics.performance.operations.slice(-this.MAX_PERFORMANCE_LOGS);
+    }
+
+    // Update average times
+    this.updateAverages();
+
+    console.log(`📊 [IndexedDB] Metrics updated: ${type} operation took ${duration.toFixed(1)}ms`);
+  }
+
+  /**
+   * Update average performance times (internal helper)
+   */
+  private updateAverages(): void {
+    const readOps = this.metrics.performance.operations.filter(op => op.type === 'read');
+    const writeOps = this.metrics.performance.operations.filter(op => op.type === 'write');
+
+    this.metrics.performance.avgReadTime = readOps.length > 0 
+      ? readOps.reduce((sum, op) => sum + op.duration, 0) / readOps.length 
+      : 0;
+
+    this.metrics.performance.avgWriteTime = writeOps.length > 0 
+      ? writeOps.reduce((sum, op) => sum + op.duration, 0) / writeOps.length 
+      : 0;
   }
 
   /**

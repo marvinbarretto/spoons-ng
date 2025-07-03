@@ -1,0 +1,340 @@
+// src/app/admin/feature/admin-dashboard/admin-dashboard.component.scss
+.admin-dashboard {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-family: var(--font-family);
+}
+
+.dashboard-header {
+  margin-bottom: 32px;
+  text-align: center;
+  
+  h1 {
+    margin: 0 0 8px 0;
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: var(--color-text);
+  }
+}
+
+.dashboard-subtitle {
+  margin: 0;
+  font-size: 1.125rem;
+  color: var(--color-text-secondary);
+  font-weight: 400;
+}
+
+// Stats Overview Section
+.stats-overview {
+  margin-bottom: 48px;
+  
+  h2 {
+    margin: 0 0 24px 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.stat-card {
+  padding: 24px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-background);
+  text-align: center;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.stat-value {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: var(--color-primary, #3b82f6);
+  margin-bottom: 8px;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+// Admin Sections
+.admin-sections {
+  margin-bottom: 48px;
+  
+  h2 {
+    margin: 0 0 24px 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+}
+
+.sections-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+}
+
+.admin-card {
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-background);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  
+  &.active {
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+      border-color: var(--color-primary, #3b82f6);
+    }
+  }
+  
+  &.coming-soon {
+    opacity: 0.6;
+    background: var(--color-surface-disabled, var(--color-surface));
+  }
+}
+
+.card-link {
+  display: flex;
+  align-items: center;
+  padding: 24px;
+  text-decoration: none;
+  color: inherit;
+  gap: 16px;
+  min-height: 120px;
+  
+  &:hover {
+    color: inherit;
+  }
+}
+
+.card-disabled {
+  display: flex;
+  align-items: center;
+  padding: 24px;
+  gap: 16px;
+  min-height: 120px;
+  cursor: not-allowed;
+}
+
+.card-icon {
+  font-size: 2.5rem;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: var(--color-surface);
+  flex-shrink: 0;
+}
+
+.card-content {
+  flex: 1;
+  
+  h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+  
+  p {
+    margin: 0 0 12px 0;
+    font-size: 0.875rem;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+  }
+}
+
+.card-stats {
+  font-size: 0.75rem;
+  color: var(--color-primary, #3b82f6);
+  font-weight: 500;
+  padding: 4px 8px;
+  background: var(--color-primary-background, rgba(59, 130, 246, 0.1));
+  border-radius: 6px;
+  display: inline-block;
+}
+
+.coming-soon-badge {
+  font-size: 0.75rem;
+  color: var(--color-warning, #f59e0b);
+  font-weight: 500;
+  padding: 4px 8px;
+  background: var(--color-warning-background, rgba(245, 158, 11, 0.1));
+  border: 1px solid var(--color-warning, #f59e0b);
+  border-radius: 6px;
+  display: inline-block;
+}
+
+.card-arrow {
+  font-size: 1.5rem;
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.card-link:hover .card-arrow {
+  transform: translateX(4px);
+  color: var(--color-primary, #3b82f6);
+}
+
+// System Status Section
+.system-status {
+  h2 {
+    margin: 0 0 24px 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-background);
+  gap: 16px;
+}
+
+.status-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  
+  &.active {
+    background: var(--color-success, #10b981);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+  }
+  
+  &.warning {
+    background: var(--color-warning, #f59e0b);
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+  }
+  
+  &.error {
+    background: var(--color-error, #ef4444);
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+  }
+}
+
+.status-info {
+  flex: 1;
+}
+
+.status-title {
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 4px;
+}
+
+.status-detail {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .admin-dashboard {
+    padding: 16px;
+  }
+  
+  .dashboard-header h1 {
+    font-size: 1.875rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+  }
+  
+  .stat-card {
+    padding: 16px;
+  }
+  
+  .stat-value {
+    font-size: 2rem;
+  }
+  
+  .sections-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .card-link,
+  .card-disabled {
+    padding: 20px;
+    min-height: 100px;
+  }
+  
+  .card-icon {
+    font-size: 2rem;
+    width: 50px;
+    height: 50px;
+  }
+  
+  .status-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .card-link,
+  .card-disabled {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+  }
+  
+  .card-arrow {
+    display: none;
+  }
+}
+
+// Dark mode enhancements
+@media (prefers-color-scheme: dark) {
+  .admin-dashboard {
+    --color-surface: #1f2937;
+    --color-background: #111827;
+    --color-text: #f9fafb;
+    --color-text-secondary: #d1d5db;
+    --color-text-tertiary: #9ca3af;
+    --color-border: #374151;
+    --color-surface-disabled: #1f2937;
+  }
+  
+  .stat-card:hover,
+  .admin-card.active:hover {
+    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
+  }
+}

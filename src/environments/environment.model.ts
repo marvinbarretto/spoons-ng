@@ -4,21 +4,21 @@ export interface Environment {
   ENABLE_ALL_FEATURES_FOR_DEV?: boolean;
   enableAllFeaturesForDev?: boolean;
   debugLevel?: 'OFF' | 'ESSENTIAL' | 'STANDARD' | 'EXTREME';
-  
+
   // Development Mode Configuration
   ACTIVE_DEVELOPMENT_MODE?: boolean;
   ALLOW_ONBOARDING_ACCESS?: boolean;
-  
+
   // Development timeouts
   MODAL_NAVIGATION_TIMEOUT?: number;
   DESKTOP_TESTING_DELAY?: number;
   LLM_TO_PHOTO_DELAY?: number;
-  
+
   // External services
   strapiUrl?: string;
   strapiToken?: string;
   mapTilerKey?: string;
-  
+
   firebaseConfig: {
     apiKey: string;
     authDomain: string;
@@ -28,16 +28,16 @@ export interface Environment {
     appId: string;
     measurementId?: string;
   };
-  
+
   llm?: {
     gemini: string;
   };
-  
+
   telegram?: {
     botToken: string;
     chatId: string;
   };
-  
+
   database?: {
     name: string;
     version: number;
@@ -45,11 +45,8 @@ export interface Environment {
       carpets: string;
       [key: string]: string;
     };
-    legacy?: {
-      oldCarpetsDb: string;
-    };
   };
-  
+
   featureFlags: {
     patchwork?: boolean;
     landlord?: boolean;
