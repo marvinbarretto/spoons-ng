@@ -1,8 +1,11 @@
 // src/app/admin/feature/admin-dashboard/admin-dashboard.component.ts
-import { Component, inject, computed } from '@angular/core';
+import { Component, inject, computed, isDevMode } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { DatabaseMetricsService } from '../../../shared/data-access/database-metrics.service';
+import { LeaderboardStore } from '../../../leaderboard/data-access/leaderboard.store';
+import { FeedbackStore } from '../../../feedback/data-access/feedback.store';
+import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
 
 type AdminSection = {
   id: string;
@@ -12,6 +15,16 @@ type AdminSection = {
   icon: string;
   status: 'active' | 'coming-soon';
   stats?: string;
+};
+
+type DataSourceType = 'real' | 'calculated' | 'placeholder';
+
+type StatData = {
+  value: string | number;
+  label: string;
+  sourceType: DataSourceType;
+  sourceDetail: string;
+  icon: string;
 };
 
 @Component({
@@ -27,23 +40,39 @@ type AdminSection = {
 
       <!-- Quick Stats Overview -->
       <section class="stats-overview">
+        <div class="section-header">
+          <h2>Key Metrics</h2>
+          <div class="data-legend">
+            <span class="legend-item">
+              <span class="legend-icon">✅</span>
+              Real Data
+            </span>
+            <span class="legend-item">
+              <span class="legend-icon">⚠️</span>
+              Calculated
+            </span>
+            <span class="legend-item">
+              <span class="legend-icon">🔶</span>
+              Placeholder
+            </span>
+          </div>
+        </div>
         <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-value">{{ totalOperations() }}</div>
-            <div class="stat-label">Total DB Operations</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value">{{ operationsToday() }}</div>
-            <div class="stat-label">Operations Today</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value">{{ cacheHitRatio() }}%</div>
-            <div class="stat-label">Cache Hit Ratio</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value">$ {{ monthlyCost() }}</div>
-            <div class="stat-label">Est. Monthly Cost</div>
-          </div>
+          @for (stat of dashboardStats(); track stat.label) {
+            <div class="stat-card" [attr.data-source]="stat.sourceType">
+              <div class="stat-header">
+                <span class="data-source-icon" [title]="stat.sourceDetail">{{ stat.icon }}</span>
+                @if (isDevMode()) {
+                  <span class="debug-badge">{{ stat.sourceType }}</span>
+                }
+              </div>
+              <div class="stat-value">{{ stat.value }}</div>
+              <div class="stat-label">{{ stat.label }}</div>
+              @if (isDevMode()) {
+                <div class="debug-source">{{ stat.sourceDetail }}</div>
+              }
+            </div>
+          }
         </div>
       </section>
 
@@ -91,22 +120,159 @@ type AdminSection = {
           <div class="status-item">
             <div class="status-indicator active"></div>
             <div class="status-info">
-              <div class="status-title">Database</div>
-              <div class="status-detail">Operational</div>
+              <div class="status-title">Database 🔶</div>
+              <div class="status-detail">Operational (hardcoded)</div>
             </div>
+            @if (isDevMode()) {
+              <div class="debug-badge">placeholder</div>
+            }
           </div>
           <div class="status-item">
             <div class="status-indicator active"></div>
             <div class="status-info">
-              <div class="status-title">Cache</div>
+              <div class="status-title">Cache ✅</div>
               <div class="status-detail">{{ cacheHitRatio() }}% hit rate</div>
             </div>
+            @if (isDevMode()) {
+              <div class="debug-badge">real</div>
+            }
           </div>
           <div class="status-item">
             <div class="status-indicator warning"></div>
             <div class="status-info">
-              <div class="status-title">Monitoring</div>
+              <div class="status-title">Monitoring ✅</div>
               <div class="status-detail">Tracking {{ totalOperations() }} operations</div>
+            </div>
+            @if (isDevMode()) {
+              <div class="debug-badge">real</div>
+            }
+          </div>
+        </div>
+      </section>
+
+      <!-- Detailed Data Debug Section -->
+      <section class="data-debug-section">
+        <h2>🔍 Data Source Debug (Show Your Working)</h2>
+
+        <div class="debug-grid">
+          <!-- LeaderboardStore Debug -->
+          <div class="debug-card">
+            <h3>LeaderboardStore Analysis</h3>
+            <div class="debug-content">
+              <div class="debug-item">
+                <strong>Loading State:</strong> {{ leaderboardStore.loading() }}
+              </div>
+              <div class="debug-item">
+                <strong>Error State:</strong> {{ leaderboardStore.error() || 'None' }}
+              </div>
+              <div class="debug-item">
+                <strong>Raw siteStats:</strong>
+                <pre>{{ formatJSON(siteStats()) }}</pre>
+              </div>
+              <div class="debug-item">
+                <strong>Raw globalDataStats:</strong>
+                <pre>{{ formatJSON(globalDataStats()) }}</pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- FeedbackStore Debug -->
+          <div class="debug-card">
+            <h3>FeedbackStore Analysis</h3>
+            <div class="debug-content">
+              <div class="debug-item">
+                <strong>Loading State:</strong> {{ feedbackStore.loading() }}
+              </div>
+              <div class="debug-item">
+                <strong>Error State:</strong> {{ feedbackStore.error() || 'None' }}
+              </div>
+              <div class="debug-item">
+                <strong>Total Feedback Items:</strong> {{ feedbackStore.data().length }}
+              </div>
+              <div class="debug-item">
+                <strong>Pending Feedback:</strong> {{ feedbackStore.pendingFeedback().length }}
+              </div>
+              <div class="debug-item">
+                <strong>Resolved Feedback:</strong> {{ feedbackStore.resolvedFeedback().length }}
+              </div>
+              <div class="debug-item">
+                <strong>Raw Feedback Data:</strong>
+                <pre>{{ formatJSON(feedbackStore.data().slice(0, 3)) }}...</pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- DataAggregator Debug -->
+          <div class="debug-card">
+            <h3>DataAggregatorService Analysis</h3>
+            <div class="debug-content">
+              <div class="debug-item">
+                <strong>Raw scoreboardData:</strong>
+                <pre>{{ formatJSON(scoreboardData()) }}</pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- DatabaseMetrics Debug -->
+          <div class="debug-card">
+            <h3>DatabaseMetricsService Analysis</h3>
+            <div class="debug-content">
+              <div class="debug-item">
+                <strong>Performance Metrics:</strong>
+                <pre>{{ formatJSON(performanceMetrics()) }}</pre>
+              </div>
+              <div class="debug-item">
+                <strong>Cost Estimate:</strong>
+                <pre>{{ formatJSON(costEstimate()) }}</pre>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Store Loading Status Summary -->
+        <div class="loading-status-summary">
+          <h3>Store Loading Status Summary</h3>
+          <div class="status-items">
+            <div class="status-item-debug" [class.loading]="leaderboardStore.loading()" [class.error]="leaderboardStore.error()">
+              <span class="store-name">LeaderboardStore:</span>
+              <span class="store-status">
+                @if (leaderboardStore.loading()) {
+                  🔄 Loading...
+                } @else if (leaderboardStore.error()) {
+                  ❌ Error: {{ leaderboardStore.error() }}
+                } @else {
+                  ✅ Loaded
+                }
+              </span>
+            </div>
+
+            <div class="status-item-debug" [class.loading]="feedbackStore.loading()" [class.error]="feedbackStore.error()">
+              <span class="store-name">FeedbackStore:</span>
+              <span class="store-status">
+                @if (feedbackStore.loading()) {
+                  🔄 Loading...
+                } @else if (feedbackStore.error()) {
+                  ❌ Error: {{ feedbackStore.error() }}
+                } @else {
+                  ✅ Loaded ({{ feedbackStore.data().length }} items)
+                }
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Raw Data Inspection -->
+        <div class="raw-data-inspection">
+          <h3>Raw Data Inspection</h3>
+          <div class="inspection-grid">
+            <div class="inspection-item">
+              <strong>Auth State:</strong> Check if user is authenticated and has data access
+            </div>
+            <div class="inspection-item">
+              <strong>Firestore Rules:</strong> Verify admin permissions for reading all collections
+            </div>
+            <div class="inspection-item">
+              <strong>Data Existence:</strong> Check if collections exist in Firestore database
             </div>
           </div>
         </div>
@@ -117,69 +283,202 @@ type AdminSection = {
 })
 export class AdminDashboardComponent {
   private readonly metricsService = inject(DatabaseMetricsService);
+  protected readonly leaderboardStore = inject(LeaderboardStore);
+  protected readonly feedbackStore = inject(FeedbackStore);
+  private readonly dataAggregator = inject(DataAggregatorService);
 
   // Computed stats from metrics service
   readonly performanceMetrics = this.metricsService.performanceMetrics;
   readonly costEstimate = this.metricsService.costEstimate;
 
-  readonly totalOperations = computed(() => this.performanceMetrics().totalOperations);
-  readonly operationsToday = computed(() => this.performanceMetrics().operationsToday);
-  readonly cacheHitRatio = computed(() => Math.round(this.performanceMetrics().cacheHitRatio * 100));
-  readonly monthlyCost = computed(() => this.costEstimate().firestore.monthlyCost.toFixed(2));
+  // Real business data from stores
+  readonly siteStats = this.leaderboardStore.siteStats;
+  readonly globalDataStats = this.leaderboardStore.globalDataStats;
+  readonly pendingFeedback = this.feedbackStore.pendingFeedback;
+  readonly scoreboardData = this.dataAggregator.scoreboardData;
+
+  readonly totalOperations = computed(() => {
+    const value = this.performanceMetrics().totalOperations;
+    console.log('🔍 [AdminDashboard] totalOperations from DatabaseMetricsService.performanceMetrics:', value);
+    return value;
+  });
+
+  readonly operationsToday = computed(() => {
+    const value = this.performanceMetrics().operationsToday;
+    console.log('🔍 [AdminDashboard] operationsToday from DatabaseMetricsService.performanceMetrics:', value);
+    return value;
+  });
+
+  readonly cacheHitRatio = computed(() => {
+    const rawValue = this.performanceMetrics().cacheHitRatio;
+    const value = Math.round(rawValue * 100);
+    console.log('🔍 [AdminDashboard] cacheHitRatio from DatabaseMetricsService.performanceMetrics:', { raw: rawValue, rounded: value });
+    return value;
+  });
+
+  readonly monthlyCost = computed(() => {
+    const value = this.costEstimate().firestore.monthlyCost.toFixed(2);
+    console.log('🔍 [AdminDashboard] monthlyCost from DatabaseMetricsService.costEstimate:', value);
+    return value;
+  });
+
+  readonly dashboardStats = computed((): StatData[] => {
+    const siteData = this.siteStats();
+    const globalData = this.globalDataStats();
+    const pendingCount = this.pendingFeedback().length;
+    const allFeedback = this.feedbackStore.data();
+    const scoreboardData = this.scoreboardData();
+
+    const stats: StatData[] = [
+      // Business Metrics (Real Data)
+      {
+        value: siteData.allTime.users,
+        label: 'Total Users',
+        sourceType: siteData.allTime.users > 0 ? 'real' : 'placeholder',
+        sourceDetail: `LeaderboardStore.siteStats.allTime.users | Raw siteData: ${JSON.stringify(siteData.allTime)}`,
+        icon: siteData.allTime.users > 0 ? '✅' : '🔶'
+      },
+      {
+        value: siteData.allTime.checkins,
+        label: 'Total Check-ins',
+        sourceType: siteData.allTime.checkins > 0 ? 'real' : 'placeholder',
+        sourceDetail: `LeaderboardStore.siteStats.allTime.checkins | Weekly: ${siteData.thisWeek.checkins}, Monthly: ${siteData.thisMonth.checkins}`,
+        icon: siteData.allTime.checkins > 0 ? '✅' : '🔶'
+      },
+      {
+        value: siteData.allTime.pubsConquered,
+        label: 'Pubs Visited',
+        sourceType: siteData.allTime.pubsConquered > 0 ? 'real' : 'placeholder',
+        sourceDetail: `LeaderboardStore.siteStats.allTime.pubsConquered | Total pubs in system: ${siteData.allTime.totalPubsInSystem}`,
+        icon: siteData.allTime.pubsConquered > 0 ? '✅' : '🔶'
+      },
+      {
+        value: pendingCount,
+        label: 'Pending Feedback',
+        sourceType: allFeedback.length > 0 ? 'real' : 'placeholder',
+        sourceDetail: `FeedbackStore.pendingFeedback.length | Total feedback: ${allFeedback.length}, Loading: ${this.feedbackStore.loading()}, Error: ${this.feedbackStore.error()}`,
+        icon: allFeedback.length > 0 ? '✅' : '🔶'
+      },
+      // Activity Metrics (Real Data)
+      {
+        value: siteData.thisWeek.activeUsers,
+        label: 'Active This Week',
+        sourceType: siteData.thisWeek.activeUsers > 0 ? 'real' : 'placeholder',
+        sourceDetail: `LeaderboardStore.siteStats.thisWeek.activeUsers | New users: ${siteData.thisWeek.newUsers}`,
+        icon: siteData.thisWeek.activeUsers > 0 ? '✅' : '🔶'
+      },
+      {
+        value: siteData.thisWeek.checkins,
+        label: 'Check-ins This Week',
+        sourceType: siteData.thisWeek.checkins > 0 ? 'real' : 'placeholder',
+        sourceDetail: `LeaderboardStore.siteStats.thisWeek.checkins | Raw weekly data: ${JSON.stringify(siteData.thisWeek)}`,
+        icon: siteData.thisWeek.checkins > 0 ? '✅' : '🔶'
+      },
+      // Global Data Debug
+      {
+        value: globalData.totalUsers,
+        label: 'Global Users',
+        sourceType: globalData.totalUsers > 0 ? 'real' : 'placeholder',
+        sourceDetail: `LeaderboardStore.globalDataStats.totalUsers | CheckIns: ${globalData.totalCheckIns}, Active: ${globalData.activeUsers}`,
+        icon: globalData.totalUsers > 0 ? '✅' : '🔶'
+      },
+      {
+        value: scoreboardData.totalPubs || 0,
+        label: 'Total Pubs',
+        sourceType: (scoreboardData.totalPubs || 0) > 0 ? 'real' : 'placeholder',
+        sourceDetail: `DataAggregator.scoreboardData.totalPubs | Loading: ${scoreboardData.isLoading}, Pubs visited: ${scoreboardData.pubsVisited}`,
+        icon: (scoreboardData.totalPubs || 0) > 0 ? '✅' : '🔶'
+      }
+    ];
+
+    console.log('🔍 [AdminDashboard] FULL DEBUG DATA:', {
+      siteData,
+      globalData,
+      scoreboardData,
+      pendingCount,
+      allFeedback: allFeedback.length,
+      feedbackStore: {
+        loading: this.feedbackStore.loading(),
+        error: this.feedbackStore.error(),
+        data: allFeedback
+      },
+      leaderboardStore: {
+        loading: this.leaderboardStore.loading(),
+        error: this.leaderboardStore.error()
+      },
+      stats
+    });
+    return stats;
+  });
+
+  readonly isDevMode = isDevMode;
 
   readonly adminSections: AdminSection[] = [
     // Active sections
     {
       id: 'missions',
-      title: 'Missions',
+      title: 'Missions ✅',
       description: 'Create and manage game missions and challenges',
       route: '/admin/missions',
       icon: '🎯',
       status: 'active',
-      stats: 'CRUD operations available'
+      stats: 'Real CRUD via MissionStore'
     },
     {
       id: 'badges',
-      title: 'Badges',
+      title: 'Badges ✅',
       description: 'Manage achievement badges and rewards',
       route: '/admin/badges',
       icon: '🏆',
       status: 'active',
-      stats: 'Badge definitions & criteria'
+      stats: 'Real CRUD via BadgeStore'
     },
     {
       id: 'metrics',
-      title: 'Database Metrics',
+      title: 'Database Metrics ✅',
       description: 'Monitor database performance and costs',
       route: '/admin/metrics',
       icon: '📊',
       status: 'active',
-      stats: `${this.totalOperations()} operations tracked`
+      stats: `Real data: ${this.totalOperations()} operations tracked`
     },
 
-    // Future sections
+    // High Priority - Real Data Available
+    {
+      id: 'feedback',
+      title: 'Feedback Review ✅',
+      description: 'Review user feedback and support tickets',
+      route: '/admin/feedback',
+      icon: '💬',
+      status: 'active',
+      stats: `${this.pendingFeedback().length} pending reviews - Real CRUD available`
+    },
     {
       id: 'users',
-      title: 'User Management',
+      title: 'User Management 🔶',
       description: 'Manage user accounts, roles, and permissions',
       route: '/admin/users',
       icon: '👥',
-      status: 'coming-soon'
+      status: 'coming-soon',
+      stats: `${this.siteStats().allTime.users} users (UserStore ready)`
     },
+    {
+      id: 'analytics',
+      title: 'Analytics Hub 🔶',
+      description: 'Business intelligence and user engagement metrics',
+      route: '/admin/analytics',
+      icon: '📈',
+      status: 'coming-soon',
+      stats: 'LeaderboardStore + DataAggregator ready'
+    },
+
+    // Future sections
     {
       id: 'pubs',
       title: 'Pub Management',
       description: 'Add, edit, and manage pub locations and details',
       route: '/admin/pubs',
       icon: '🍺',
-      status: 'coming-soon'
-    },
-    {
-      id: 'feedback',
-      title: 'Feedback & Support',
-      description: 'Review user feedback and support tickets',
-      route: '/admin/feedback',
-      icon: '💬',
       status: 'coming-soon'
     },
     {
@@ -196,14 +495,6 @@ export class AdminDashboardComponent {
       description: 'Moderate user-generated content and photos',
       route: '/admin/content',
       icon: '🛡️',
-      status: 'coming-soon'
-    },
-    {
-      id: 'analytics',
-      title: 'Analytics Hub',
-      description: 'Business intelligence and user engagement metrics',
-      route: '/admin/analytics',
-      icon: '📈',
       status: 'coming-soon'
     },
     {
@@ -231,4 +522,12 @@ export class AdminDashboardComponent {
       status: 'coming-soon'
     }
   ];
+
+  formatJSON(data: any): string {
+    try {
+      return JSON.stringify(data, null, 2);
+    } catch (error) {
+      return `[Error formatting JSON: ${error}]`;
+    }
+  }
 }
