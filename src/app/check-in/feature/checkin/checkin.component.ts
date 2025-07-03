@@ -99,7 +99,7 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
     const result = this.checkinStore.checkinResults();
     return result?.success ? (result.points?.total || 0) : 0;
   });
-  
+
   protected readonly badgesEarned = computed(() => {
     const result = this.checkinStore.checkinResults();
     return result?.success ? (result.badges || []) : [];
@@ -610,16 +610,16 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
 
       // STUB: Replace LLM service call for debugging
       console.log('[Checkin] 🧪 STUBBED LLM - always returning carpet detected');
-      const result = { 
-        success: true, 
-        data: { 
-          isCarpet: true, 
-          confidence: 0.9, 
+      const result = {
+        success: true,
+        data: {
+          isCarpet: true,
+          confidence: 0.9,
           reasoning: 'Stubbed response - always detects carpet for debugging',
           visualElements: ['stubbed carpet pattern']
-        } 
+        }
       };
-      
+
       this.stopAnalysisMessageCycling();
       console.log('[Checkin] 🤖 LLM analysis complete (STUBBED):', result);
 
@@ -779,7 +779,7 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
       if (this.capturedCanvas && this.llmResponse) {
         console.log('[Checkin] 💾 Storing carpet image to IndexedDB');
         console.log('[Checkin] 🖼️ Canvas dimensions:', this.capturedCanvas.width, 'x', this.capturedCanvas.height);
-        
+
         const pubName = this.pubName();
         await this.carpetStorageService.saveCarpetImage(this.capturedCanvas, pubId, pubName);
         console.log('[Checkin] ✅ Carpet image stored successfully');
@@ -788,14 +788,11 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
       // Execute real check-in via CheckInStore
       console.log('[Checkin] 🚀 Starting real check-in process');
       await this.checkinStore.checkinToPub(pubId);
-      
+
       // Check-in submitted successfully - results will be handled globally by AppComponent
       // The success modal will be shown by the CheckInModalService when results are ready
       console.log('[Checkin] ✅ Check-in submitted successfully');
       console.log('[Checkin] 🎉 Success will be handled by global modal service');
-      
-      // Navigate back to home - the success modal will appear on top
-      this.exitToHomepage();
 
     } catch (error: any) {
       console.error('[Checkin] ❌ Error during check-in process:', error);

@@ -308,7 +308,7 @@ import { FormsModule } from '@angular/forms';
     }
   `]
 })
-export class FeedbackModalComponent extends BaseComponent implements AfterViewInit {
+export class FeedbackModalComponent extends BaseComponent {
   private readonly feedbackStore = inject(FeedbackStore);
 
   readonly result = output<boolean>();
@@ -338,22 +338,6 @@ export class FeedbackModalComponent extends BaseComponent implements AfterViewIn
   constructor() {
     super();
     console.log('[FeedbackModal] Component constructed');
-  }
-
-  ngAfterViewInit(): void {
-    console.log('[FeedbackModal] ngAfterViewInit - setting up modal');
-
-    // Auto-focus the textarea
-    if (this.messageTextarea) {
-      setTimeout(() => {
-        console.log('[FeedbackModal] Focusing textarea');
-        this.messageTextarea.nativeElement.focus();
-      }, 100);
-    } else {
-      console.warn('[FeedbackModal] MessageTextarea not found');
-    }
-
-    console.log('[FeedbackModal] Modal setup complete');
   }
 
   selectType(type: FeedbackType): void {

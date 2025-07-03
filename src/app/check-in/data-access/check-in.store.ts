@@ -238,7 +238,9 @@ export class CheckInStore extends BaseStore<CheckIn> {
 
     // Success flow - gather data and show overlay
     console.log('[CheckInStore] 🎉 Starting success flow...');
-    await this.handleSuccessFlow(pubId, pointsData);
+
+    // TODO: check this.... undefined?
+    await this.handleSuccessFlow(pubId, undefined, pointsData);
 
   } catch (error: any) {
     console.error('[CheckInStore] ❌ Check-in process failed:', error);

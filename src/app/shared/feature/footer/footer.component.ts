@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { DevDebugComponent } from "../../utils/dev-debug/dev-debug.component";
 import { ChangeDetectionStrategy } from '@angular/core';
 import { APP_VERSION } from '../../utils/version';
+import { environment } from '../../../../environments/environment';
+
 
 @Component({
   selector: 'app-footer',
@@ -9,7 +11,9 @@ import { APP_VERSION } from '../../utils/version';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <footer class="footer">
-      <app-dev-debug />
+      @if (!isProduction) {
+        <app-dev-debug />
+      }
       <div class="footer-content">
         <p>&copy; {{ currentYear }} Spooncount {{ version }}</p>
       </div>
@@ -56,4 +60,5 @@ import { APP_VERSION } from '../../utils/version';
 export class FooterComponent {
   currentYear = new Date().getFullYear();
   readonly version = APP_VERSION;
+  readonly isProduction = environment.production;
 }

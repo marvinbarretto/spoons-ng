@@ -319,6 +319,12 @@ async getStorageStats(): Promise<PhotoStats> {
 async getPhotoUrl(filename: string): Promise<string | null> {
   console.log(`🖼️ [CarpetStorage] Getting photo URL for: ${filename}`);
 
+  // Type validation - ensure filename is a string
+  if (typeof filename !== 'string' || !filename) {
+    console.error(`❌ [CarpetStorage] Invalid filename type: ${typeof filename}, value:`, filename);
+    return null;
+  }
+
   try {
     // For carpet storage, we need to find by filename pattern
     const userCarpets = await this.getUserCarpets();
