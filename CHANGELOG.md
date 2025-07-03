@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.72](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.71...v0.0.72) (2025-07-03)
+
+
+### Features
+
+* Add feedback mechanism ([17db1ce](https://github.com/marvinbarretto/spoons-ng/commit/17db1ce829b67c39949a7d3d2f850ebd547d4f29))
+* RESTful leaderboard routes ([962f0b1](https://github.com/marvinbarretto/spoons-ng/commit/962f0b13c41388c41bee1857c96e1f124cae6777))
+
 ### [0.0.71](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.70...v0.0.71) (2025-07-02)
 
 
