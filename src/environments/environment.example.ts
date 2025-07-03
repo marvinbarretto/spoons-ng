@@ -3,7 +3,15 @@ import { Environment } from './environment.model';
 export const environment: Environment = {
   production: false,
   ssr: false,
-  ENABLE_ALL_FEATURES_FOR_DEV: true,
+  debugLevel: 'STANDARD' as 'OFF' | 'ESSENTIAL' | 'STANDARD' | 'EXTREME',
+
+  ACTIVE_DEVELOPMENT_MODE: true,
+  ALLOW_ONBOARDING_ACCESS: true,
+
+  // Development timeouts (in milliseconds)
+  MODAL_NAVIGATION_TIMEOUT: 10000, // 10 seconds
+  DESKTOP_TESTING_DELAY: 2000, // 2 seconds
+  LLM_TO_PHOTO_DELAY: 3000, // 3 seconds
   firebaseConfig: {
     apiKey: 'API_KEY',
     authDomain: 'AUTH_DOMAIN',
@@ -19,6 +27,14 @@ export const environment: Environment = {
   telegram: {
     botToken: 'YOUR_TELEGRAM_BOT_TOKEN',
     chatId: 'YOUR_TELEGRAM_CHAT_ID'
+  },
+  database: {
+    name: 'Spoonscount',
+    version: 1,
+    stores: {
+      carpets: 'carpets',
+      // Add other stores as needed
+    }
   },
   featureFlags: {
     landlord: false,
