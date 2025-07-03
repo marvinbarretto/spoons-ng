@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.74](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.73...v0.0.74) (2025-07-03)
+
+
+### Features
+
+* add `realUsers` concept so they are safe from delete ([017c89b](https://github.com/marvinbarretto/spoons-ng/commit/017c89b62c93a817fb7ba1e4ef834b8204c7d494))
+* Display env name in header ([f4151fc](https://github.com/marvinbarretto/spoons-ng/commit/f4151fcc88b1d8fd7c8ef5641bde26b30adde699))
+* display mission cards on homepage ([c1911a9](https://github.com/marvinbarretto/spoons-ng/commit/c1911a9e8e6ecc536d84e0b28510d768b906ddc9))
+* Update Leaderboard, still wip ([32ee342](https://github.com/marvinbarretto/spoons-ng/commit/32ee342c898379bcd3cbd77a15cf706862dd0ab8))
+
 ### [0.0.73](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.72...v0.0.73) (2025-07-03)
 
 
