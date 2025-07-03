@@ -406,6 +406,9 @@ export class CheckInStore extends BaseStore<CheckIn> {
       // ✅ STEP 7: UserStore updates (DataAggregatorService computes pubsVisited from our data)
       console.log('[CheckInStore] 👤 UserStore.checkedInPubIds updates not needed - DataAggregatorService computes from our check-ins');
 
+      // ✅ STEP 8: Mission progress updates handled automatically via UserMissionsStore reactive effects
+      console.log('[CheckInStore] 🎯 Mission progress will be updated automatically via reactive effects');
+
       // Assemble success data
       const successData = {
         success: true,

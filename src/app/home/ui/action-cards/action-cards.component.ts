@@ -108,13 +108,13 @@ export class ActionCardsComponent {
   readonly showStartMission = input(true);
 
   // ✅ Outputs
-  readonly startMission = output<void>();
+  readonly enrollInMission = output<void>();
   readonly openGuide = output<void>();
   readonly openSettings = output<void>();
 
   // ✅ Event Handlers
   handleStartMission(): void {
-    this.startMission.emit();
+    this.enrollInMission.emit();
   }
 
   handleOpenGuide(): void {

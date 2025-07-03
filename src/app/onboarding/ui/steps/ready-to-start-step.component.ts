@@ -1,4 +1,4 @@
-import { Component, input, output, ChangeDetectionStrategy } from '@angular/core';
+import { Component, input, output, ChangeDetectionStrategy, signal } from '@angular/core';
 import { ButtonComponent } from '@shared/ui/button/button.component';
 
 @Component({
@@ -28,9 +28,23 @@ import { ButtonComponent } from '@shared/ui/button/button.component';
         </ul>
       </div>
 
+      <div style="margin: 1rem 0; padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px;">
+        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+          <input 
+            type="checkbox" 
+            [checked]="realUser()"
+            (change)="onRealUserChange($event)"
+            style="margin: 0;"
+          />
+          <span style="font-size: 0.9rem; color: var(--text-secondary);">
+            I'm a real alpha user - please don't delete me during dev updates
+          </span>
+        </label>
+      </div>
+
       <app-button 
         [loading]="isSaving()" 
-        (onClick)="startExploring.emit()"
+        (onClick)="onStartExploring()"
       >
         Start Exploring Pubs!
       </app-button>
@@ -44,5 +58,16 @@ export class ReadyToStartStepComponent {
   readonly notificationsEnabled = input<boolean>(false);
   readonly locationEnabled = input<boolean>(false);
   readonly isSaving = input<boolean>(false);
-  readonly startExploring = output<void>();
+  readonly startExploring = output<{ realUser: boolean }>();
+
+  readonly realUser = signal<boolean>(true); // Default to true for alpha users
+
+  onRealUserChange(event: Event) {
+    const target = event.target as HTMLInputElement;
+    this.realUser.set(target.checked);
+  }
+
+  onStartExploring() {
+    this.startExploring.emit({ realUser: this.realUser() });
+  }
 }

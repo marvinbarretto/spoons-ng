@@ -21,6 +21,7 @@ import { AskLocationStepComponent } from '../../ui/steps/ask-location-step.compo
 import { WelcomeMessageStepComponent } from '../../ui/steps/welcome-message-step.component';
 import { AuthChoiceStepComponent } from '../../ui/steps/auth-choice-step.component';
 import { CustomizeProfileStepComponent } from '../../ui/steps/customize-profile-step.component';
+import { ReadyToStartStepComponent } from '../../ui/steps/ready-to-start-step.component';
 
 type OnboardingStep =
   | 'ask-notifications'     // Request notification permissions (optional)
@@ -28,7 +29,8 @@ type OnboardingStep =
   | 'welcome-message'       // "You gotta catch them all" welcome
   | 'auth-choice'           // Google login OR Custom profile choice
   | 'customize-profile'     // Avatar + display name (only if custom chosen)
-  | 'choose-home-pub';      // Home pub selection (auto-complete on selection)
+  | 'choose-home-pub'       // Home pub selection
+  | 'ready-to-start';       // Final step with real user checkbox
 
 @Component({
   selector: 'app-onboarding',
@@ -43,6 +45,7 @@ type OnboardingStep =
     WelcomeMessageStepComponent,
     AuthChoiceStepComponent,
     CustomizeProfileStepComponent,
+    ReadyToStartStepComponent,
   ],
   template: `
     <div class="onboarding-container">
@@ -99,12 +102,24 @@ type OnboardingStep =
               <h2>Choose Your Home Pub</h2>
               <p>Your home pub gives you bonus points when you check in!</p>
               <app-home-pub-selection-widget
-                (pubSelected)="onHomePubSelectedAndComplete($event)"
+                (pubSelected)="onHomePubSelected($event)"
               />
               <div class="step-actions">
                 <app-button variant="secondary" (onClick)="goBackToPreviousStep()">Back</app-button>
+                <app-button (onClick)="proceedToReadyToStart()">Continue</app-button>
               </div>
             </div>
+          }
+
+          @case ('ready-to-start') {
+            <app-ready-to-start-step
+              [displayName]="displayName()"
+              [hasHomePub]="!!selectedHomePubId()"
+              [notificationsEnabled]="notificationsGranted()"
+              [locationEnabled]="locationGranted()"
+              [isSaving]="saving()"
+              (startExploring)="completeOnboardingWithRealUser($event)"
+            />
           }
         }
       </div>
@@ -187,7 +202,7 @@ export class OnboardingComponent extends BaseComponent {
   readonly progressPercentage = computed(() => {
     const steps: OnboardingStep[] = [
       'ask-notifications', 'ask-location', 'welcome-message',
-      'auth-choice', 'customize-profile', 'choose-home-pub'
+      'auth-choice', 'customize-profile', 'choose-home-pub', 'ready-to-start'
     ];
     const currentIndex = steps.indexOf(this.currentStep());
     return Math.max(0, (currentIndex / (steps.length - 1)) * 100);
@@ -206,7 +221,7 @@ export class OnboardingComponent extends BaseComponent {
   // Step navigation with readable method names
   private readonly stepOrder: OnboardingStep[] = [
     'ask-notifications', 'ask-location', 'welcome-message',
-    'auth-choice', 'customize-profile', 'choose-home-pub'
+    'auth-choice', 'customize-profile', 'choose-home-pub', 'ready-to-start'
   ];
 
   proceedToNextStep(): void {
@@ -233,6 +248,7 @@ export class OnboardingComponent extends BaseComponent {
   proceedToAuthChoice(): void { this.currentStep.set('auth-choice'); }
   proceedToCustomizeProfile(): void { this.currentStep.set('customize-profile'); }
   proceedToHomePubSelection(): void { this.currentStep.set('choose-home-pub'); }
+  proceedToReadyToStart(): void { this.currentStep.set('ready-to-start'); }
 
   // Permission handling methods
   async requestNotificationPermission(): Promise<void> {
@@ -386,14 +402,61 @@ export class OnboardingComponent extends BaseComponent {
     this.proceedToHomePubSelection();
   }
 
-  onHomePubSelectedAndComplete(pub: Pub | null): void {
-    console.log('[Onboarding] 🏠 Home pub selected, auto-completing onboarding:', pub);
-    this.selectedHomePubId.set(pub?.id || null);
-    
-    // Auto-complete onboarding when pub is selected
-    setTimeout(() => {
-      this.completeOnboarding();
-    }, 500); // Small delay for UX
+  // New method to handle completion with realUser flag
+  async completeOnboardingWithRealUser(data: { realUser: boolean }): Promise<void> {
+    if (this.saving()) return;
+
+    this.saving.set(true);
+
+    try {
+      const user = this.user();
+      if (!user) {
+        throw new Error('No user found');
+      }
+
+      console.log('[Onboarding] 🚀 Completing onboarding with data:', {
+        displayName: this.displayName(),
+        avatarId: this.selectedAvatarId(),
+        homePubId: this.selectedHomePubId(),
+        realUser: data.realUser,
+        userId: user.uid
+      });
+
+      // Save all onboarding data to user profile including realUser flag
+      const updateData = {
+        displayName: this.displayName(),
+        photoURL: this.getAvatarUrlById(this.selectedAvatarId()),
+        homePubId: this.selectedHomePubId() || undefined,
+        onboardingCompleted: true,
+        realUser: data.realUser
+      };
+
+      console.log('[Onboarding] 📝 Updating user profile with:', updateData);
+      await this.userStore.updateProfile(updateData);
+
+      console.log('[Onboarding] ✅ User profile updated successfully');
+
+      // Verify the update took effect
+      const updatedUser = this.user();
+      console.log('[Onboarding] 🔍 User after update:', {
+        userId: updatedUser?.uid?.slice(0, 8),
+        onboardingCompleted: updatedUser?.onboardingCompleted,
+        displayName: updatedUser?.displayName,
+        realUser: updatedUser?.realUser
+      });
+
+      console.log('[Onboarding] 🧭 Navigating to home page...');
+      
+      // Navigate to home
+      await this.router.navigate(['/']);
+      console.log('[Onboarding] ✅ Navigation to home completed');
+
+    } catch (error: any) {
+      console.error('[Onboarding] ❌ Failed to complete onboarding:', error);
+      this.showError('Failed to save your preferences. Please try again.');
+    } finally {
+      this.saving.set(false);
+    }
   }
 
   // Complete onboarding

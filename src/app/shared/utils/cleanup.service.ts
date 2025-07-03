@@ -6,13 +6,24 @@ import {
   getDocs,
   writeBatch,
   query,
-  limit as firestoreLimit
+  limit as firestoreLimit,
+  where
 } from '@angular/fire/firestore';
+import type { User } from '@users/utils/user.model';
 
 export type CleanupResult = {
   success: boolean;
   deletedCount: number;
+  protectedCount?: number;
   error?: string;
+};
+
+export type UserDeletionSummary = {
+  totalUsers: number;
+  realUsers: number;
+  testUsers: number;
+  realUserIds: string[];
+  testUserIds: string[];
 };
 
 @Injectable({
@@ -111,15 +122,196 @@ export class CleanupService extends FirestoreService {
   }
 
   // ===================================
+  // 👥 USER ANALYSIS AND PROTECTION
+  // ===================================
+
+  /**
+   * Analyze users to identify real vs test users
+   */
+  async analyzeUsers(): Promise<UserDeletionSummary> {
+    console.log('[CleanupService] 🔍 Analyzing users for real vs test classification...');
+    
+    try {
+      const users = await this.getDocsWhere<User>('users');
+      
+      const realUsers = users.filter(user => user.realUser === true);
+      const testUsers = users.filter(user => user.realUser !== true);
+      
+      const summary: UserDeletionSummary = {
+        totalUsers: users.length,
+        realUsers: realUsers.length,
+        testUsers: testUsers.length,
+        realUserIds: realUsers.map(u => u.uid),
+        testUserIds: testUsers.map(u => u.uid)
+      };
+      
+      console.log('[CleanupService] 📊 User Analysis Results:', {
+        total: summary.totalUsers,
+        real: summary.realUsers,
+        test: summary.testUsers,
+        realUserDisplayNames: realUsers.map(u => ({ uid: u.uid.slice(0, 8), name: u.displayName }))
+      });
+      
+      return summary;
+    } catch (error: any) {
+      console.error('[CleanupService] ❌ Error analyzing users:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get list of real users for review before deletion
+   */
+  async getRealUsers(): Promise<User[]> {
+    console.log('[CleanupService] 🔍 Fetching real users...');
+    
+    try {
+      const realUsers = await this.getDocsWhere<User>('users', where('realUser', '==', true));
+      
+      console.log('[CleanupService] 👥 Found real users:', 
+        realUsers.map(u => ({ 
+          uid: u.uid.slice(0, 8),
+          displayName: u.displayName,
+          email: u.email,
+          joinedAt: u.joinedAt 
+        }))
+      );
+      
+      return realUsers;
+    } catch (error: any) {
+      console.error('[CleanupService] ❌ Error fetching real users:', error);
+      return [];
+    }
+  }
+
+  // ===================================
   // 🧽 INDIVIDUAL COLLECTION CLEANUP
   // ===================================
 
   /**
-   * Clear users collection
+   * Clear users collection (PROTECTED - excludes real users)
    */
   async clearUsers(): Promise<CleanupResult> {
-    console.log('[CleanupService] 👥 Clearing users collection...');
+    console.log('[CleanupService] 👥 Clearing users collection (with real user protection)...');
+    return this.clearTestUsersOnly();
+  }
+
+  /**
+   * Clear only test users, protect real users
+   */
+  async clearTestUsersOnly(): Promise<CleanupResult> {
+    console.log('[CleanupService] 👥 Clearing test users only (protecting real users)...');
+    
+    try {
+      // First analyze the users
+      const summary = await this.analyzeUsers();
+      
+      if (summary.realUsers > 0) {
+        console.log(`[CleanupService] 🛡️ PROTECTING ${summary.realUsers} real users:`, 
+          summary.realUserIds.map(uid => uid.slice(0, 8))
+        );
+      }
+      
+      if (summary.testUsers === 0) {
+        console.log('[CleanupService] ✅ No test users to delete');
+        return {
+          success: true,
+          deletedCount: 0,
+          protectedCount: summary.realUsers
+        };
+      }
+      
+      console.log(`[CleanupService] 🗑️ Deleting ${summary.testUsers} test users:`, 
+        summary.testUserIds.map(uid => uid.slice(0, 8))
+      );
+      
+      // Delete only test users (those without realUser: true)
+      const result = await this.clearUsersWhere(where('realUser', '!=', true));
+      
+      return {
+        ...result,
+        protectedCount: summary.realUsers
+      };
+      
+    } catch (error: any) {
+      console.error('[CleanupService] ❌ Error clearing test users:', error);
+      return {
+        success: false,
+        deletedCount: 0,
+        protectedCount: 0,
+        error: error?.message || 'Failed to clear test users'
+      };
+    }
+  }
+
+  /**
+   * DANGEROUS: Clear ALL users including real users (requires explicit call)
+   */
+  async clearAllUsersIncludingReal(): Promise<CleanupResult> {
+    console.log('[CleanupService] ⚠️ DANGER: Clearing ALL users including real users...');
+    
+    const summary = await this.analyzeUsers();
+    if (summary.realUsers > 0) {
+      console.warn(`[CleanupService] ⚠️ WARNING: This will delete ${summary.realUsers} REAL users!`);
+    }
+    
     return this.clearCollection('users');
+  }
+
+  /**
+   * Clear users with specific where condition
+   */
+  private async clearUsersWhere(whereCondition: any): Promise<CleanupResult> {
+    try {
+      let totalDeleted = 0;
+      let hasMore = true;
+
+      while (hasMore) {
+        // Get batch of documents with where condition
+        const snapshot = await getDocs(
+          query(
+            collection(this.firestore, 'users'), 
+            whereCondition,
+            firestoreLimit(500)
+          )
+        );
+
+        if (snapshot.empty) {
+          hasMore = false;
+          break;
+        }
+
+        // Create batch delete operation
+        const batch = writeBatch(this.firestore);
+        snapshot.docs.forEach(doc => {
+          batch.delete(doc.ref);
+        });
+
+        // Execute batch
+        await batch.commit();
+        totalDeleted += snapshot.size;
+
+        console.log(`[CleanupService] Deleted ${snapshot.size} users (batch)`);
+
+        // Check if we got less than 500, meaning we're done
+        if (snapshot.size < 500) {
+          hasMore = false;
+        }
+      }
+
+      return {
+        success: true,
+        deletedCount: totalDeleted
+      };
+
+    } catch (error: any) {
+      console.error('[CleanupService] Error clearing users with condition:', error);
+      return {
+        success: false,
+        deletedCount: 0,
+        error: error?.message || 'Unknown error'
+      };
+    }
   }
 
   /**

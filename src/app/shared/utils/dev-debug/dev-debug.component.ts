@@ -4,7 +4,7 @@ import { DatePipe, JsonPipe } from '@angular/common';
 
 // Base and Services
 import { BaseComponent } from '@shared/base/base.component';
-import { CleanupService, type CleanupResult } from '@shared/utils/cleanup.service';
+import { CleanupService, type CleanupResult, type UserDeletionSummary } from '@shared/utils/cleanup.service';
 import { CarpetStorageService } from '@carpets/data-access/carpet-storage.service';
 
 // Stores
@@ -67,6 +67,10 @@ export class DevDebugComponent extends BaseComponent {
   // Cleanup state
   protected readonly cleanupLoading = signal(false);
   protected readonly lastCleanupResult = signal<CleanupResult | null>(null);
+
+  // User analysis state
+  protected readonly userAnalysis = signal<UserDeletionSummary | null>(null);
+  protected readonly analysisLoading = signal(false);
 
   // ===================================
   // 🔍 COMPUTED DATA FOR DISPLAY
@@ -218,21 +222,41 @@ export class DevDebugComponent extends BaseComponent {
 
 
   /**
-   * Clear users and ALL their cached data (Firestore + IndexedDB)
+   * Clear users and ALL their cached data (Firestore + IndexedDB) - PROTECTS REAL USERS
    */
   protected async clearAllUsers(): Promise<void> {
-    if (!confirm('🧹 Clear ALL test data and cached images? This includes:')) return;
-    if (!confirm('• Firestore: Users, check-ins, landlords, earned badges\n• IndexedDB: All cached carpet images\n• Keeps: Badge definitions, pub data\n\nThis cannot be undone!')) return;
+    // First analyze users to show what will be protected
+    console.log('[DevDebugComponent] 🔍 Analyzing users before deletion...');
+
+    try {
+      const analysis = await this.cleanupService.analyzeUsers();
+      this.userAnalysis.set(analysis);
+
+      const protectionMessage = analysis.realUsers > 0
+        ? `\n🛡️ PROTECTION: ${analysis.realUsers} real users will be PROTECTED and kept safe`
+        : '\n✅ No real users found - safe to proceed';
+
+      const deletionMessage = analysis.testUsers > 0
+        ? `\n🗑️ DELETION: ${analysis.testUsers} test users will be deleted`
+        : '\n✅ No test users to delete';
+
+      if (!confirm(`🧹 Clear test data and cached images?\n\nThis will:${protectionMessage}${deletionMessage}\n• Delete: Check-ins, landlords, earned badges\n• Clear: All cached carpet images\n• Keep: Badge definitions, pub data, real users\n\nContinue?`)) return;
+
+    } catch (error) {
+      console.error('[DevDebugComponent] Failed to analyze users:', error);
+      if (!confirm('⚠️ Could not analyze users for protection. Proceed with caution?\n\nThis will clear test data but may not protect real users properly.')) return;
+    }
 
     this.cleanupLoading.set(true);
     this.lastCleanupResult.set(null);
 
     try {
-      console.log('[DevDebugComponent] 🧹 Starting comprehensive user cleanup...');
+      console.log('[DevDebugComponent] 🧹 Starting comprehensive PROTECTED user cleanup...');
+      console.log('[DevDebugComponent] 🛡️ Real users will be protected during this operation');
 
-      // 1. Clear Firestore data (all test data except badge definitions)
+      // 1. Clear Firestore data (all test data except badge definitions) - NOW PROTECTED
       const firestoreResults = await this.cleanupService.clearAllTestData();
-      console.log('[DevDebugComponent] ✅ Firestore cleanup completed:', firestoreResults);
+      console.log('[DevDebugComponent] ✅ Firestore cleanup completed (real users protected):', firestoreResults);
 
       // 2. Clear IndexedDB carpet images
       let indexedDbSuccess = true;
@@ -363,18 +387,119 @@ export class DevDebugComponent extends BaseComponent {
   }
 
   protected async clearUsersOnly(): Promise<void> {
-    if (!confirm('Delete ALL users only? (keeps badges, check-ins, etc.)')) return;
+    // Analyze users first
+    console.log('[DevDebugComponent] 🔍 Analyzing users before deletion...');
+
+    try {
+      const analysis = await this.cleanupService.analyzeUsers();
+      this.userAnalysis.set(analysis);
+
+      const protectionMessage = analysis.realUsers > 0
+        ? `🛡️ ${analysis.realUsers} real users will be PROTECTED\n`
+        : '✅ No real users to protect\n';
+
+      const deletionMessage = analysis.testUsers > 0
+        ? `🗑️ ${analysis.testUsers} test users will be deleted\n`
+        : '✅ No test users to delete\n';
+
+      if (!confirm(`Delete test users only? (keeps badges, check-ins, etc.)\n\n${protectionMessage}${deletionMessage}(Keeps: badges, check-ins, etc.)\n\nContinue?`)) return;
+
+    } catch (error) {
+      console.error('[DevDebugComponent] Failed to analyze users:', error);
+      if (!confirm('⚠️ Could not analyze users. Proceed with deletion?')) return;
+    }
 
     this.cleanupLoading.set(true);
     this.lastCleanupResult.set(null);
 
     try {
-      const result = await this.cleanupService.clearUsers();
+      console.log('[DevDebugComponent] 👥 Deleting test users only (protecting real users)...');
+      const result = await this.cleanupService.clearUsers(); // Now protected by default
       this.lastCleanupResult.set(result);
+
+      if (result.protectedCount && result.protectedCount > 0) {
+        console.log(`[DevDebugComponent] ✅ Protected ${result.protectedCount} real users`);
+      }
+      console.log(`[DevDebugComponent] ✅ Deleted ${result.deletedCount} test users`);
+
       await this.refreshCounts();
       this.userStore.reset();
     } finally {
       this.cleanupLoading.set(false);
+    }
+  }
+
+  /**
+   * DANGEROUS: Clear ALL users including real users
+   */
+  protected async clearAllUsersIncludingReal(): Promise<void> {
+    console.log('[DevDebugComponent] ⚠️ DANGER MODE: Analyzing ALL users for deletion...');
+
+    try {
+      const analysis = await this.cleanupService.analyzeUsers();
+      this.userAnalysis.set(analysis);
+
+      if (analysis.realUsers > 0) {
+        const realUserDetails = await this.cleanupService.getRealUsers();
+        const usersList = realUserDetails.map(u => `• ${u.displayName} (${u.uid.slice(0, 8)})`).join('\n');
+
+        if (!confirm(`⚠️ DANGER: This will delete ${analysis.realUsers} REAL USERS!\n\nReal users to be deleted:\n${usersList}\n\nThis action cannot be undone!\n\nAre you absolutely sure?`)) return;
+        if (!confirm('Last chance! This will permanently delete real users. Continue?')) return;
+      }
+
+    } catch (error) {
+      console.error('[DevDebugComponent] Failed to analyze users:', error);
+      if (!confirm('⚠️ Could not analyze users. This is dangerous. Really proceed?')) return;
+    }
+
+    this.cleanupLoading.set(true);
+    this.lastCleanupResult.set(null);
+
+    try {
+      console.log('[DevDebugComponent] ⚠️ DANGER: Deleting ALL users including real users...');
+      const result = await this.cleanupService.clearAllUsersIncludingReal();
+      this.lastCleanupResult.set(result);
+
+      console.log(`[DevDebugComponent] ⚠️ COMPLETED: Deleted ${result.deletedCount} users (including real users)`);
+
+      await this.refreshCounts();
+      this.userStore.reset();
+    } finally {
+      this.cleanupLoading.set(false);
+    }
+  }
+
+  /**
+   * Analyze users without deleting
+   */
+  protected async analyzeUsersOnly(): Promise<void> {
+    this.analysisLoading.set(true);
+
+    try {
+      console.log('[DevDebugComponent] 🔍 Analyzing users...');
+      const analysis = await this.cleanupService.analyzeUsers();
+      this.userAnalysis.set(analysis);
+
+      const realUsers = await this.cleanupService.getRealUsers();
+
+      console.group('👥 User Analysis Results');
+      console.log(`Total Users: ${analysis.totalUsers}`);
+      console.log(`Real Users: ${analysis.realUsers} (protected)`);
+      console.log(`Test Users: ${analysis.testUsers} (deletable)`);
+      if (realUsers.length > 0) {
+        console.log('Real User Details:', realUsers.map(u => ({
+          uid: u.uid.slice(0, 8),
+          name: u.displayName,
+          email: u.email,
+          joined: u.joinedAt
+        })));
+      }
+      console.groupEnd();
+
+    } catch (error) {
+      console.error('[DevDebugComponent] Failed to analyze users:', error);
+    } finally {
+      this.analysisLoading.set(false);
     }
   }
 
