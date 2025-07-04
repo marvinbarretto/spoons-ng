@@ -14,25 +14,25 @@ const db = getFirestore();
  */
 function generateRegionalMissions() {
   const regionPubCounts = new Map<string, any[]>();
-  
+
   // List of London boroughs to consolidate
   const londonBoroughs = [
-    'London', 'Brent', 'Camden', 'Tower Hamlets', 'Hackney', 'Newham', 
-    'Middlesex', 'Haringey', 'Lewisham', 'Redbridge', 'Waltham Forest', 
-    'Islington', 'Sutton', 'Hounslow', 'Enfield', 'Richmond upon Thames', 
+    'London', 'Brent', 'Camden', 'Tower Hamlets', 'Hackney', 'Newham',
+    'Middlesex', 'Haringey', 'Lewisham', 'Redbridge', 'Waltham Forest',
+    'Islington', 'Sutton', 'Hounslow', 'Enfield', 'Richmond upon Thames',
     'Kensington and Chelsea', 'Westminster', 'Merton', 'Farringdon',
     'Southwark', 'Lambeth'
   ];
-  
+
   // Group pubs by region, consolidating London boroughs
   pubs.forEach(pub => {
     let region = pub.region;
-    
+
     // Consolidate all London boroughs into "London"
     if (londonBoroughs.includes(pub.region)) {
       region = 'London';
     }
-    
+
     if (!regionPubCounts.has(region)) {
       regionPubCounts.set(region, []);
     }
@@ -44,13 +44,13 @@ function generateRegionalMissions() {
   regionPubCounts.forEach((pubList, region) => {
     const pubCount = pubList.length;
     const country = pubList[0].country;
-    
+
     // Generate mission based on region size
     let difficulty: string;
     let requirementCount: number;
     let pointsReward: number;
     let missionType: string;
-    
+
     if (pubCount === 1) {
       difficulty = 'easy';
       requirementCount = 1;
@@ -94,11 +94,11 @@ function generateRegionalMissions() {
     };
 
     const emoji = countryEmojis[country as keyof typeof countryEmojis] || '🏴󠁧󠁢󠁥󠁮󠁧󠁿';
-    
+
     const mission = {
       id: `regional-${region.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-')}`,
       name: `${region} ${missionType}`,
-      description: `${missionType === 'Solo Explorer' ? 'Complete your pilgrimage to' : 
+      description: `${missionType === 'Solo Explorer' ? 'Complete your pilgrimage to' :
                    missionType === 'Twin Explorer' ? 'Conquer both pubs in' :
                    `Visit ${requirementCount} pubs in`} ${region}${pubCount > requirementCount ? ` (${pubCount} total)` : ''}`,
       difficulty,
@@ -322,9 +322,9 @@ function generateThemedMissions() {
       difficulty: 'hard',
       category: 'themed',
       subcategory: 'geographic',
-      pubIds: pubs.filter(p => 
+      pubIds: pubs.filter(p =>
         ['Devon', 'Cornwall', 'Kent', 'Norfolk', 'Essex', 'East Sussex', 'West Sussex', 'Dorset', 'Somerset', 'Isle of Wight', 'Merseyside'].includes(p.region) ||
-        p.city.toLowerCase().includes('beach') || p.city.toLowerCase().includes('sea') || 
+        p.city.toLowerCase().includes('beach') || p.city.toLowerCase().includes('sea') ||
         p.city.toLowerCase().includes('bay') || p.address.toLowerCase().includes('seafront')
       ).slice(0, 15).map(p => p.id),
       pointsReward: 750,
@@ -338,7 +338,7 @@ function generateThemedMissions() {
       difficulty: 'medium',
       category: 'themed',
       subcategory: 'geographic',
-      pubIds: pubs.filter(p => 
+      pubIds: pubs.filter(p =>
         p.name.toLowerCase().includes('river') || p.name.toLowerCase().includes('bridge') ||
         p.name.toLowerCase().includes('wharf') || p.name.toLowerCase().includes('waterside') ||
         p.address.toLowerCase().includes('river') || p.address.toLowerCase().includes('bridge')
@@ -353,7 +353,7 @@ function generateThemedMissions() {
       difficulty: 'medium',
       category: 'themed',
       subcategory: 'geographic',
-      pubIds: pubs.filter(p => 
+      pubIds: pubs.filter(p =>
         p.region === 'Isle of Wight' || p.region === 'Isle of Man' ||
         p.address.toLowerCase().includes('island') || p.city.toLowerCase().includes('island')
       ).map(p => p.id),
@@ -367,7 +367,7 @@ function generateThemedMissions() {
       difficulty: 'hard',
       category: 'themed',
       subcategory: 'geographic',
-      pubIds: pubs.filter(p => 
+      pubIds: pubs.filter(p =>
         (p.country === 'Scotland' && ['Highland', 'Argyll and Bute', 'Perth and Kinross'].includes(p.region)) ||
         p.region === 'Cumbria' || p.country === 'Wales' ||
         p.name.toLowerCase().includes('hill') || p.name.toLowerCase().includes('mountain') ||
@@ -383,8 +383,8 @@ function generateThemedMissions() {
       difficulty: 'medium',
       category: 'themed',
       subcategory: 'historical',
-      pubIds: pubs.filter(p => 
-        ['Brighton', 'Blackpool', 'Bournemouth', 'Southend', 'Margate', 'Hastings', 'Eastbourne', 'Weymouth', 'Torquay', 'Scarborough', 'Whitby'].some(resort => 
+      pubIds: pubs.filter(p =>
+        ['Brighton', 'Blackpool', 'Bournemouth', 'Southend', 'Margate', 'Hastings', 'Eastbourne', 'Weymouth', 'Torquay', 'Scarborough', 'Whitby'].some(resort =>
           p.city.toLowerCase().includes(resort.toLowerCase()) || p.address.toLowerCase().includes(resort.toLowerCase())
         )
       ).map(p => p.id),
@@ -397,7 +397,7 @@ function generateThemedMissions() {
       description: 'Cross-country diplomacy - England/Scotland/Wales border regions where accents get confused',
       difficulty: 'hard',
       category: 'themed',
-      pubIds: pubs.filter(p => 
+      pubIds: pubs.filter(p =>
         ['Northumberland', 'Cumbria', 'Shropshire', 'Herefordshire', 'Gloucestershire', 'Monmouthshire', 'Scottish Borders', 'Dumfries and Galloway', 'Powys', 'Cheshire'].includes(p.region)
       ).slice(0, 10).map(p => p.id),
       pointsReward: 600,
@@ -409,7 +409,7 @@ function generateThemedMissions() {
       description: 'Classic British journey - The ultimate pub crawl from Cornwall\'s tip to Scotland\'s edge',
       difficulty: 'extreme',
       category: 'themed',
-      pubIds: pubs.filter(p => 
+      pubIds: pubs.filter(p =>
         (p.region === 'Cornwall' && p.address.toLowerCase().includes('penzance')) ||
         (p.country === 'Scotland' && (p.region === 'Highland' || p.city.toLowerCase().includes('thurso'))) ||
         p.address.toLowerCase().includes('land\'s end') || p.address.toLowerCase().includes('john o\'groats')
@@ -425,7 +425,7 @@ function generateThemedMissions() {
       difficulty: 'medium',
       category: 'themed',
       subcategory: 'historical',
-      pubIds: pubs.filter(p => 
+      pubIds: pubs.filter(p =>
         (p.city === 'London' || p.region === 'London') ||
         (p.city === 'Edinburgh' || p.region === 'Edinburgh') ||
         (p.city === 'Cardiff' || p.region === 'Cardiff') ||
@@ -440,7 +440,7 @@ function generateThemedMissions() {
       description: 'Protected wilderness drinking - Pubs in and around Britain\'s most beautiful landscapes',
       difficulty: 'hard',
       category: 'themed',
-      pubIds: pubs.filter(p => 
+      pubIds: pubs.filter(p =>
         p.region === 'Cumbria' || // Lake District
         (p.country === 'Wales' && ['Gwynedd', 'Powys', 'Carmarthenshire', 'Pembrokeshire'].includes(p.region)) || // Snowdonia, Brecon Beacons, Pembrokeshire Coast
         (p.region === 'Devon' || p.region === 'Cornwall') || // Dartmoor, Exmoor
@@ -459,7 +459,7 @@ function generateThemedMissions() {
       difficulty: 'hard',
       category: 'themed',
       subcategory: 'dark-political',
-      pubIds: pubs.filter(p => 
+      pubIds: pubs.filter(p =>
         ['Cornwall', 'Essex', 'Kent', 'Lincolnshire', 'Stoke-on-Trent'].includes(p.region) || // Leave areas
         ['London', 'Edinburgh', 'Brighton', 'Cambridge', 'Oxford'].some(remain => p.city.toLowerCase().includes(remain.toLowerCase()))
       ).slice(0, 10).map(p => p.id),
@@ -474,8 +474,8 @@ function generateThemedMissions() {
       difficulty: 'medium',
       category: 'themed',
       subcategory: 'dark-political',
-      pubIds: pubs.filter(p => 
-        ['Blackpool', 'Middlesbrough', 'Oldham', 'Rochdale', 'Burnley', 'Stoke', 'Grimsby', 'Rhyl'].some(deprived => 
+      pubIds: pubs.filter(p =>
+        ['Blackpool', 'Middlesbrough', 'Oldham', 'Rochdale', 'Burnley', 'Stoke', 'Grimsby', 'Rhyl'].some(deprived =>
           p.city.toLowerCase().includes(deprived.toLowerCase()) || p.address.toLowerCase().includes(deprived.toLowerCase())
         )
       ).map(p => p.id),
@@ -489,7 +489,7 @@ function generateThemedMissions() {
       difficulty: 'medium',
       category: 'themed',
       subcategory: 'dark-political',
-      pubIds: pubs.filter(p => 
+      pubIds: pubs.filter(p =>
         ['Surrey', 'Buckinghamshire', 'Oxfordshire', 'Wiltshire', 'Hampshire', 'Dorset', 'West Sussex'].includes(p.region) ||
         ['Windsor', 'Henley', 'Maidenhead', 'Beaconsfield'].some(posh => p.city.toLowerCase().includes(posh.toLowerCase()))
       ).slice(0, 8).map(p => p.id),
@@ -503,9 +503,9 @@ function generateThemedMissions() {
       difficulty: 'medium',
       category: 'themed',
       subcategory: 'dark-political',
-      pubIds: pubs.filter(p => 
+      pubIds: pubs.filter(p =>
         ['County Durham', 'Northumberland', 'West Yorkshire', 'South Yorkshire'].includes(p.region) ||
-        ['Hartlepool', 'Redcar', 'Bishop Auckland', 'Sedgefield', 'Workington'].some(redWall => 
+        ['Hartlepool', 'Redcar', 'Bishop Auckland', 'Sedgefield', 'Workington'].some(redWall =>
           p.city.toLowerCase().includes(redWall.toLowerCase())
         )
       ).slice(0, 8).map(p => p.id),
@@ -519,7 +519,7 @@ function generateThemedMissions() {
       difficulty: 'medium',
       category: 'themed',
       subcategory: 'dark-political',
-      pubIds: pubs.filter(p => 
+      pubIds: pubs.filter(p =>
         ['Richmond upon Thames', 'Kensington and Chelsea', 'Westminster', 'Camden', 'Islington'].includes(p.region) ||
         p.city.toLowerCase().includes('richmond') || p.city.toLowerCase().includes('barnes')
       ).slice(0, 6).map(p => p.id),
@@ -533,7 +533,7 @@ function generateThemedMissions() {
       difficulty: 'medium',
       category: 'themed',
       subcategory: 'dark-political',
-      pubIds: pubs.filter(p => 
+      pubIds: pubs.filter(p =>
         p.name.toLowerCase().includes('community') || p.name.toLowerCase().includes('estate') ||
         ['Tower Hamlets', 'Hackney', 'Newham', 'Southwark', 'Lambeth'].includes(p.region)
       ).slice(0, 8).map(p => p.id),
@@ -547,9 +547,9 @@ function generateThemedMissions() {
       difficulty: 'medium',
       category: 'themed',
       subcategory: 'dark-political',
-      pubIds: pubs.filter(p => 
-        ['Hackney', 'Shoreditch', 'Clapham', 'Brixton', 'Peckham', 'Dalston'].some(gentrified => 
-          p.city.toLowerCase().includes(gentrified.toLowerCase()) || 
+      pubIds: pubs.filter(p =>
+        ['Hackney', 'Shoreditch', 'Clapham', 'Brixton', 'Peckham', 'Dalston'].some(gentrified =>
+          p.city.toLowerCase().includes(gentrified.toLowerCase()) ||
           p.address.toLowerCase().includes(gentrified.toLowerCase())
         )
       ).map(p => p.id),
@@ -563,9 +563,9 @@ function generateThemedMissions() {
       difficulty: 'hard',
       category: 'themed',
       subcategory: 'dark-political',
-      pubIds: pubs.filter(p => 
+      pubIds: pubs.filter(p =>
         p.region === 'City of London' ||
-        ['Mayfair', 'Belgravia', 'Canary Wharf'].some(financial => 
+        ['Mayfair', 'Belgravia', 'Canary Wharf'].some(financial =>
           p.address.toLowerCase().includes(financial.toLowerCase())
         )
       ).map(p => p.id),
@@ -579,8 +579,8 @@ function generateThemedMissions() {
       difficulty: 'medium',
       category: 'themed',
       subcategory: 'dark-political',
-      pubIds: pubs.filter(p => 
-        ['Bradford', 'Birmingham', 'Liverpool', 'Manchester', 'Newcastle', 'Glasgow'].some(foodBank => 
+      pubIds: pubs.filter(p =>
+        ['Bradford', 'Birmingham', 'Liverpool', 'Manchester', 'Newcastle', 'Glasgow'].some(foodBank =>
           p.city.toLowerCase().includes(foodBank.toLowerCase())
         ) ||
         ['West Midlands', 'Merseyside', 'Tyne and Wear', 'South Yorkshire'].includes(p.region)
@@ -595,11 +595,11 @@ function generateThemedMissions() {
       difficulty: 'medium',
       category: 'themed',
       subcategory: 'dark-political',
-      pubIds: pubs.filter(p => 
-        ['Cornwall', 'Devon', 'Lake District', 'Cotswolds', 'Norfolk', 'Suffolk'].some(touristy => 
+      pubIds: pubs.filter(p =>
+        ['Cornwall', 'Devon', 'Lake District', 'Cotswolds', 'Norfolk', 'Suffolk'].some(touristy =>
           p.region.toLowerCase().includes(touristy.toLowerCase())
         ) ||
-        ['St Ives', 'Padstow', 'Salcombe', 'Aldeburgh'].some(expensive => 
+        ['St Ives', 'Padstow', 'Salcombe', 'Aldeburgh'].some(expensive =>
           p.city.toLowerCase().includes(expensive.toLowerCase())
         )
       ).slice(0, 8).map(p => p.id),
@@ -657,11 +657,11 @@ function generateThemedMissions() {
       difficulty: 'hard',
       category: 'themed',
       subcategory: 'weird-wonderful',
-      pubIds: pubs.filter(p => 
-        ['ram', 'bull', 'lion', 'virgin', 'scale', 'scorpion', 'archer', 'goat', 'water', 'fish', 'crab', 'twin'].some(sign => 
+      pubIds: pubs.filter(p =>
+        ['ram', 'bull', 'lion', 'virgin', 'scale', 'scorpion', 'archer', 'goat', 'water', 'fish', 'crab', 'twin'].some(sign =>
           p.name.toLowerCase().includes(sign)
         ) ||
-        ['aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces'].some(zodiac => 
+        ['aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces'].some(zodiac =>
           p.name.toLowerCase().includes(zodiac)
         )
       ).slice(0, 12).map(p => p.id),
@@ -678,9 +678,9 @@ function generateThemedMissions() {
       pubIds: (() => {
         return pubs.filter(p => {
           const pubFirstLetter = p.name.charAt(0).toLowerCase();
-          const streetFirstLetter = p.address.split(' ').find(word => 
-            word.toLowerCase().endsWith('street') || 
-            word.toLowerCase().endsWith('road') || 
+          const streetFirstLetter = p.address.split(' ').find(word =>
+            word.toLowerCase().endsWith('street') ||
+            word.toLowerCase().endsWith('road') ||
             word.toLowerCase().endsWith('lane')
           );
           return streetFirstLetter && streetFirstLetter.charAt(0).toLowerCase() === pubFirstLetter;
@@ -696,11 +696,11 @@ function generateThemedMissions() {
       difficulty: 'medium',
       category: 'themed',
       subcategory: 'weird-wonderful',
-      pubIds: pubs.filter(p => 
-        ['shakespeare', 'dickens', 'austen', 'byron', 'keats', 'wordsworth', 'hardy', 'wilde', 'chaucer', 'milton'].some(author => 
+      pubIds: pubs.filter(p =>
+        ['shakespeare', 'dickens', 'austen', 'byron', 'keats', 'wordsworth', 'hardy', 'wilde', 'chaucer', 'milton'].some(author =>
           p.name.toLowerCase().includes(author)
         ) ||
-        ['hamlet', 'othello', 'macbeth', 'romeo', 'juliet', 'prospero'].some(character => 
+        ['hamlet', 'othello', 'macbeth', 'romeo', 'juliet', 'prospero'].some(character =>
           p.name.toLowerCase().includes(character)
         )
       ).map(p => p.id),
@@ -733,8 +733,8 @@ function generateThemedMissions() {
       difficulty: 'medium',
       category: 'themed',
       subcategory: 'weird-wonderful',
-      pubIds: pubs.filter(p => 
-        ['red', 'blue', 'green', 'white', 'black', 'golden', 'silver', 'purple', 'yellow', 'pink'].some(color => 
+      pubIds: pubs.filter(p =>
+        ['red', 'blue', 'green', 'white', 'black', 'golden', 'silver', 'purple', 'yellow', 'pink'].some(color =>
           p.name.toLowerCase().includes(color)
         )
       ).slice(0, 10).map(p => p.id),
@@ -769,12 +769,12 @@ function generateThemedMissions() {
       difficulty: 'easy',
       category: 'themed',
       subcategory: 'weird-wonderful',
-      pubIds: pubs.filter(p => 
+      pubIds: pubs.filter(p =>
         p.name.toLowerCase().includes('shakespeare') ||
-        ['hamlet', 'macbeth', 'othello', 'lear', 'romeo', 'juliet', 'prospero', 'falstaff'].some(character => 
+        ['hamlet', 'macbeth', 'othello', 'lear', 'romeo', 'juliet', 'prospero', 'falstaff'].some(character =>
           p.name.toLowerCase().includes(character)
         ) ||
-        ['stratford', 'avon', 'globe', 'theatre'].some(related => 
+        ['stratford', 'avon', 'globe', 'theatre'].some(related =>
           p.name.toLowerCase().includes(related) || p.address.toLowerCase().includes(related)
         )
       ).map(p => p.id),
@@ -791,7 +791,7 @@ function generateThemedMissions() {
       pubIds: (() => {
         const numberWords = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
         const numberMap = new Map(numberWords.map((word, i) => [word, i + 1]));
-        
+
         return pubs.filter(p => {
           const name = p.name.toLowerCase();
           return numberWords.some(num => name.includes(num)) || /\b\d+\b/.test(name);
@@ -831,32 +831,32 @@ function generateThemedMissions() {
 
 async function seed() {
   console.log(`🎯 Generating comprehensive mission system...`);
-  
+
   const regionalMissions = generateRegionalMissions();
   const themedMissions = generateThemedMissions();
-  
+
   const allMissions = [...regionalMissions, ...themedMissions];
-  
+
   console.log(`📊 Mission breakdown:`);
   console.log(`   🏴󠁧󠁢󠁥󠁮󠁧󠁿 Regional missions: ${regionalMissions.length}`);
   console.log(`   🎪 Themed missions: ${themedMissions.length}`);
   console.log(`   📋 Total missions: ${allMissions.length}`);
-  
+
   // Show regional breakdown
   const countryCounts = regionalMissions.reduce((acc, mission) => {
     acc[mission.country] = (acc[mission.country] || 0) + 1;
     return acc;
   }, {} as Record<string, number>);
-  
+
   console.log(`\n🌍 Regional missions by country:`);
   Object.entries(countryCounts).forEach(([country, count]) => {
     console.log(`   ${country}: ${count} regions`);
   });
-  
+
   // Show themed mission details
   console.log(`\n🎪 Themed missions:`);
   themedMissions.forEach(mission => {
-    console.log(`   ${mission.emoji} ${mission.title}: ${mission.pubIds.length} pubs (${mission.difficulty})`);
+    console.log(`   ${mission.emoji} ${mission.name}: ${mission.pubIds.length} pubs (${mission.difficulty})`);
   });
 
   let successCount = 0;
@@ -866,7 +866,7 @@ async function seed() {
     try {
       await db.collection('missions').doc(mission.id).set(mission);
       successCount++;
-      
+
       if (successCount % 20 === 0) {
         console.log(`📈 Progress: ${successCount}/${allMissions.length} missions seeded`);
       }
