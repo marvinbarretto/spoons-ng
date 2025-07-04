@@ -48,9 +48,15 @@ export abstract class BaseComponent implements OnInit {
 
   // ✅ Common routing computeds
   protected readonly isHomepage = computed(() => this.currentRoute() === '/');
-  protected readonly isOnRoute = (route: string) => computed(() =>
-    this.currentRoute().startsWith(route)
-  );
+  protected readonly isOnRoute = (route: string) => computed(() => {
+    const current = this.currentRoute();
+    // Special case for root route - must be exact match
+    if (route === '/') {
+      return current === '/';
+    }
+    // For other routes, use startsWith as before
+    return current.startsWith(route);
+  });
 
   ngOnInit(): void {
     this.onInit();
