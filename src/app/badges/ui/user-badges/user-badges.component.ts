@@ -36,7 +36,7 @@ import type { Badge } from '../../utils/badge.model';
 
     img {
       border-radius: 50%;
-      background: var(--color-backgroundLightest);
+      background: var(--color-background-lightest);
     }
   `]
 })

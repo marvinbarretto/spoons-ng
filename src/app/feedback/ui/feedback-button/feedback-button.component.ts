@@ -116,7 +116,7 @@ export class FeedbackButtonComponent extends BaseComponent {
       FeedbackModalComponent,
       {
         hasBackdrop: true,
-        backdropClass: 'feedback-modal-backdrop',
+        backdropClass: 'overlay-backdrop',
         panelClass: 'feedback-modal-panel',
         maxWidth: '95vw',
         width: 'auto'

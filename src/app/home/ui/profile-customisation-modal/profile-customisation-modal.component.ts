@@ -86,7 +86,7 @@ import { ProfileIdentityWidgetComponent } from './widgets/profile-identity-widge
       align-items: center;
       padding: 1.5rem;
       border-bottom: 1px solid var(--color-border);
-      background: var(--color-backgroundLightest);
+      background: var(--color-background-lightest);
     }
 
     .modal-header h2 {
@@ -109,7 +109,7 @@ import { ProfileIdentityWidgetComponent } from './widgets/profile-identity-widge
     }
 
     .close-btn:hover {
-      background: var(--color-backgroundLightest-elevated);
+      background: var(--color-background-lightest-elevated);
       color: var(--color-text);
     }
 
@@ -151,7 +151,7 @@ import { ProfileIdentityWidgetComponent } from './widgets/profile-identity-widge
       display: flex;
       justify-content: space-between;
       gap: 1rem;
-      background: var(--color-backgroundLightest);
+      background: var(--color-background-lightest);
     }
 
     /* ✅ Responsive */

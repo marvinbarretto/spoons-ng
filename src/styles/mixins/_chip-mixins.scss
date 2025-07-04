@@ -85,15 +85,15 @@
     border-color: var(--border);
   } @else if $variant == 'success' {
     background: var(--success);
-    color: var(--color-backgroundLighter);
+    color: var(--color-background-lighter);
     border-color: var(--success);
   } @else if $variant == 'warning' {
     background: var(--warning);
-    color: var(--color-backgroundLighter);
+    color: var(--color-background-lighter);
     border-color: var(--warning);
   } @else if $variant == 'error' {
     background: var(--error);
-    color: var(--color-backgroundLighter);
+    color: var(--color-background-lighter);
     border-color: var(--error);
   } @else if $variant == 'accent' {
     background: var(--accent);
@@ -101,7 +101,7 @@
     border-color: var(--accent);
   } @else {
     // default variant
-    background: var(--color-backgroundLighter);
+    background: var(--color-background-lighter);
     color: var(--color-text);
     border-color: var(--border);
   }

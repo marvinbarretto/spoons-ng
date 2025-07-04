@@ -139,11 +139,6 @@ export class ThemeStore {
       variables[property] = value;
     });
 
-    // ✅ BACKWARD COMPATIBILITY: Add all theme colors with old naming (--color-* prefix)
-    Object.entries(theme.colors).forEach(([key, value]) => {
-      variables[`--color-${this._kebabCase(key)}`] = value;
-    });
-
     return variables;
   }
 

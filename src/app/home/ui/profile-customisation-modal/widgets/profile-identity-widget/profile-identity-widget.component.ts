@@ -91,7 +91,7 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
   styles: `
     .profile-identity-widget {
       padding: 1.5rem;
-      background: var(--color-backgroundLightest-elevated);
+      background: var(--color-background-lightest-elevated);
       border: 1px solid var(--color-border);
       border-radius: 12px;
     }
@@ -134,7 +134,7 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
       font-size: 14px;
       font-weight: bold;
       color: white;
-      border: 2px solid var(--color-backgroundLightest);
+      border: 2px solid var(--color-background-lightest);
       background: #f59e0b;
     }
 
@@ -150,7 +150,7 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
       border: 2px solid var(--color-border);
       border-radius: 8px;
       font-size: 1rem;
-      background: var(--color-backgroundLightest);
+      background: var(--color-background-lightest);
       color: var(--color-text);
       transition: all 0.2s ease;
     }
@@ -202,7 +202,7 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
     }
 
     .shuffle-btn:hover {
-      background: var(--color-backgroundLightest-elevated);
+      background: var(--color-background-lightest-elevated);
     }
 
     /* ✅ Avatar Grid */

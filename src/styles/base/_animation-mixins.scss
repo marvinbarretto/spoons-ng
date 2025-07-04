@@ -1,6 +1,6 @@
 /**
  * 🎬 ANIMATION MIXINS
- * 
+ *
  * Pure mixins and functions for animations - no CSS output.
  * Use these in components with @include for proper encapsulation.
  */
@@ -18,7 +18,7 @@
 
 @mixin pulse($duration: 2s, $scale: 1.05) {
   animation: pulse $duration ease-in-out infinite;
-  
+
   @keyframes pulse {
     0% { transform: scale(1); }
     50% { transform: scale($scale); }
@@ -27,7 +27,7 @@
 }
 
 @mixin skeleton-loading() {
-  background: repeating-linear-gradient(90deg, var(--color-border), var(--color-backgroundLighter) 10px, var(--color-border) 20px);
+  background: repeating-linear-gradient(90deg, var(--color-border), var(--color-background-lighter) 10px, var(--color-border) 20px);
   animation: skeleton-pulse 1.2s infinite;
 }
 
@@ -105,7 +105,7 @@
 
 @mixin shake($duration: 0.5s, $distance: 4px) {
   animation: shake $duration ease-in-out;
-  
+
   @keyframes shake {
     0%, 100% { transform: translateX(0); }
     25% { transform: translateX(-$distance); }
@@ -119,7 +119,7 @@
 
 @mixin hover-lift($distance: -1px, $duration: var(--animation-duration-fast)) {
   transition: transform $duration var(--animation-easing-ease);
-  
+
   &:hover {
     transform: translateY($distance);
   }
@@ -127,7 +127,7 @@
 
 @mixin hover-scale($scale: 1.02, $duration: var(--animation-duration-fast)) {
   transition: transform $duration var(--animation-easing-ease);
-  
+
   &:hover {
     transform: scale($scale);
   }
@@ -135,7 +135,7 @@
 
 @mixin press-scale($scale: 0.98, $duration: var(--animation-duration-fast)) {
   transition: transform $duration var(--animation-easing-ease);
-  
+
   &:active {
     transform: scale($scale);
   }
@@ -144,12 +144,12 @@
 @mixin hover-lift-with-shadow($distance: -1px, $duration: var(--animation-duration-fast)) {
   transition: transform $duration var(--animation-easing-ease),
               box-shadow $duration var(--animation-easing-ease);
-  
+
   &:hover:not(:disabled) {
     transform: translateY($distance);
     box-shadow: var(--shadow);
   }
-  
+
   &:active {
     transform: translateY(0);
   }

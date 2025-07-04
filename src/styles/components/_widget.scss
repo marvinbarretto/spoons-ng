@@ -1,11 +1,11 @@
 @use '../index' as *;
 
 @mixin widget-style {
-  background-color: var(--color-subtleLighter);
-  color: var(--color-onSubtleLighter);
+  background-color: var(--secondary);
+  color: var(--secondary-contrast);
   padding: 1rem;
   border-radius: 0.5rem;
-  box-shadow: 0 2px 4px var(--color-shadow, rgba(0, 0, 0, 0.05));
+  box-shadow: var(--shadow);
   transition: background-color 0.3s ease;
   width: 100%;
 
@@ -49,8 +49,8 @@
 @mixin blank-widget {
   background-color: color-mix(
     in srgb,
-    var(--color-background) 85%,
-    var(--color-secondary) 15%
+    var(--background) 85%,
+    var(--secondary) 15%
   );
   border-radius: 0.5rem;
   min-height: 150px;

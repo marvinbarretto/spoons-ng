@@ -25,19 +25,19 @@
   max-width: 400px;
   word-break: break-word;
   @include toast-enter();
-  
+
   // Default colors
-  background-color: var(--color-backgroundLighter);
+  background-color: var(--color-background-lighter);
   color: var(--color-text);
 
   &--success {
     background-color: var(--success);
-    color: var(--color-backgroundLighter);
+    color: var(--color-background-lighter);
   }
 
   &--error {
     background-color: var(--error);
-    color: var(--color-backgroundLighter);
+    color: var(--color-background-lighter);
   }
 
   &--warning {
@@ -47,7 +47,7 @@
 
   &--info {
     background-color: var(--info);
-    color: var(--color-backgroundLighter);
+    color: var(--color-background-lighter);
   }
 }
 
@@ -63,7 +63,7 @@
 .toast-dismiss-icon {
   flex-shrink: 0;
   opacity: 0.7;
-  
+
   &:hover {
     opacity: 1;
   }

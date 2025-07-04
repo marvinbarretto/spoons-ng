@@ -71,7 +71,7 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
   styles: `
     .theme-selection-widget {
       padding: 1rem;
-      background: var(--color-backgroundLightest-elevated);
+      background: var(--color-background-lightest-elevated);
       border: 1px solid var(--color-border);
       border-radius: 8px;
     }
@@ -89,7 +89,7 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
       align-items: center;
       gap: 0.75rem;
       padding: 0.75rem;
-      background: var(--color-backgroundLightest);
+      background: var(--color-background-lightest);
       border: 1px solid var(--color-border);
       border-radius: 6px;
       margin-bottom: 1rem;
@@ -170,7 +170,7 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
       align-items: center;
       gap: 0.5rem;
       padding: 0.75rem;
-      background: var(--color-backgroundLightest);
+      background: var(--color-background-lightest);
       border: 2px solid var(--color-border);
       border-radius: 6px;
       cursor: pointer;

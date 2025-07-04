@@ -105,7 +105,7 @@ import type { Pub } from '../../../pubs/utils/pub.models';
   `,
   styles: `
     .mission-card {
-      background: linear-gradient(135deg, var(--color-backgroundLightest, #ffffff) 0%, rgba(59, 130, 246, 0.02) 100%);
+      background: linear-gradient(135deg, var(--color-background-lightest, #ffffff) 0%, rgba(59, 130, 246, 0.02) 100%);
       border: 2px solid transparent;
       border-radius: 8px;
       padding: 1.5rem;
@@ -336,7 +336,7 @@ import type { Pub } from '../../../pubs/utils/pub.models';
       align-items: center;
       gap: 0.25rem;
       padding: 0.5rem 0.375rem;
-      background: var(--color-backgroundLightest, #f9fafb);
+      background: var(--color-background-lightest, #f9fafb);
       border: 1px solid var(--color-border, #e5e7eb);
       border-radius: 8px;
       min-width: 60px;
@@ -390,7 +390,7 @@ import type { Pub } from '../../../pubs/utils/pub.models';
       font-size: 0.625rem;
       font-weight: bold;
       color: var(--color-text-secondary, #6b7280);
-      background: var(--color-backgroundLightest, #f9fafb);
+      background: var(--color-background-lightest, #f9fafb);
       border: 1px solid var(--color-border, #e5e7eb);
       border-radius: 8px;
       margin-left: 0.125rem;

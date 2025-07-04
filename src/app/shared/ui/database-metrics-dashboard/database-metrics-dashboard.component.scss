@@ -3,7 +3,7 @@
   padding: 24px;
   max-width: 1200px;
   margin: 0 auto;
-  background: var(--color-backgroundLightest);
+  background: var(--color-background-lightest);
   color: var(--color-text);
   font-family: var(--font-family);
 }
@@ -33,7 +33,7 @@
   transition: all 0.2s ease;
 
   &:hover:not(:disabled) {
-    background: var(--color-backgroundLightest-hover);
+    background: var(--color-background-lightest-hover);
     border-color: var(--color-primary);
   }
 
@@ -280,12 +280,12 @@
 // Dark mode support
 @media (prefers-color-scheme: dark) {
   .metrics-dashboard {
-    --color-backgroundLightest: #1f2937;
+    --color-background-lightest: #1f2937;
     --color-background: #111827;
     --color-text: #f9fafb;
     --color-text-secondary: #d1d5db;
     --color-text-tertiary: #9ca3af;
     --color-border: #374151;
-    --color-backgroundLightest-hover: #374151;
+    --color-background-lightest-hover: #374151;
   }
 }

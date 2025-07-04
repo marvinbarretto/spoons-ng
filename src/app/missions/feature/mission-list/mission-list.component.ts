@@ -167,7 +167,7 @@ import type { Mission } from '../../utils/mission.model';
       margin-top: 1rem;
       padding: 0.5rem 1rem;
       border: 1px solid var(--color-border, #e5e7eb);
-      background: var(--color-backgroundLightest, #ffffff);
+      background: var(--color-background-lightest, #ffffff);
       border-radius: 6px;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -182,7 +182,7 @@ import type { Mission } from '../../utils/mission.model';
     .filter-controls {
       margin-bottom: 2rem;
       padding: 1rem;
-      background: var(--color-backgroundLightest, #ffffff);
+      background: var(--color-background-lightest, #ffffff);
       border: 1px solid var(--color-border, #e5e7eb);
       border-radius: 8px;
     }

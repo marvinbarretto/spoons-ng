@@ -63,7 +63,7 @@ export type ScoreboardData = {
   `,
   styles: [`
     .scoreboard-hero {
-      background: var(--color-backgroundLightest);
+      background: var(--color-background-lightest);
       color: var(--color-text);
       border: 1px solid var(--color-border);
       border-radius: 12px;
@@ -138,7 +138,7 @@ export type ScoreboardData = {
     /* Loading state */
     .loading .points-value,
     .loading .stat-value {
-      background: var(--color-backgroundLightestElevated);
+      background: var(--color-background-lightestElevated);
       border-radius: 4px;
       color: transparent;
       animation: pulse 1.5s ease-in-out infinite;

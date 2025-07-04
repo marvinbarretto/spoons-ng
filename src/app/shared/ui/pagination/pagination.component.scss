@@ -1,7 +1,7 @@
 // Rework the pagination component to use the theme tokens
 
 .pagination {
-  background-color: var(--color-subtleLighter);
+  background-color: var(--secondary);
   text-align: center;
   padding: 1rem;
   display: flex;
@@ -18,7 +18,7 @@
 }
 
 button {
-  background-color: var(--color-subtleLighter);
+  background-color: var(--secondary);
   padding: 0.5rem 1rem;
   display: flex;
   gap: 0.5rem;
@@ -26,12 +26,12 @@ button {
 }
 
 .active {
-  background-color: var(--color-subtleDarker);
+  background-color: var(--secondary-hover);
   color: var(--color-text);
 }
 
 button:disabled {
-  background-color: var(--color-button-primaryDisabled);
-  color: var(--color-button-primaryText);
+  background-color: var(--secondary);
+  color: var(--text-muted);
   cursor: not-allowed;
 }

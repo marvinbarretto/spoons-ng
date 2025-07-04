@@ -80,7 +80,7 @@ type NavItem = {
       left: 0;
       right: 0;
       display: flex;
-      background-color: var(--color-backgroundLightest-elevated);
+      background-color: var(--color-background-lightest-elevated);
       border-top: 1px solid var(--color-border);
       padding: 0.5rem 0;
       z-index: 1000;

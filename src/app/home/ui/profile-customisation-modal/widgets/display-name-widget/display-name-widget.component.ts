@@ -65,7 +65,7 @@ import type { User } from '@users/utils/user.model';
   styles: `
     .display-name-widget {
       padding: 1rem;
-      background: var(--color-backgroundLightest-elevated);
+      background: var(--color-background-lightest-elevated);
       border: 1px solid var(--color-border);
       border-radius: 8px;
     }
@@ -96,7 +96,7 @@ import type { User } from '@users/utils/user.model';
       border: 2px solid var(--color-border);
       border-radius: 6px;
       font-size: 1rem;
-      background: var(--color-backgroundLightest);
+      background: var(--color-background-lightest);
       color: var(--color-text);
       transition: all 0.2s ease;
     }
@@ -112,7 +112,7 @@ import type { User } from '@users/utils/user.model';
     }
 
     .name-input:disabled {
-      background: var(--color-backgroundLightest-elevated);
+      background: var(--color-background-lightest-elevated);
       opacity: 0.6;
       cursor: not-allowed;
     }
@@ -147,7 +147,7 @@ import type { User } from '@users/utils/user.model';
 
     .shuffle-btn {
       padding: 0.75rem 1rem;
-      background: var(--color-backgroundLightest);
+      background: var(--color-background-lightest);
       border: 1px solid var(--color-border);
       border-radius: 6px;
       cursor: pointer;

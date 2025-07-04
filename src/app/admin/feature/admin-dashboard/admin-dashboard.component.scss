@@ -3,7 +3,7 @@
   padding: 24px;
   max-width: 1400px;
   margin: 0 auto;
-  background: var(--color-backgroundLightest);
+  background: var(--color-background-lightest);
   color: var(--color-text);
   font-family: var(--font-family);
 }
@@ -148,7 +148,7 @@
   color: var(--color-text-tertiary);
   margin-top: 8px;
   padding: 6px;
-  background: var(--color-backgroundLightest);
+  background: var(--color-background-lightest);
   border-radius: 4px;
   font-family: monospace;
   word-break: break-all;
@@ -190,7 +190,7 @@
 
   &.coming-soon {
     opacity: 0.6;
-    background: var(--color-backgroundLightest-disabled, var(--color-backgroundLightest));
+    background: var(--color-background-lightest-disabled, var(--color-background-lightest));
   }
 }
 
@@ -225,7 +225,7 @@
   align-items: center;
   justify-content: center;
   border-radius: 12px;
-  background: var(--color-backgroundLightest);
+  background: var(--color-background-lightest);
   flex-shrink: 0;
 }
 
@@ -404,13 +404,13 @@
 // Dark mode enhancements
 @media (prefers-color-scheme: dark) {
   .admin-dashboard {
-    --color-backgroundLightest: #1f2937;
+    --color-background-lightest: #1f2937;
     --color-background: #111827;
     --color-text: #f9fafb;
     --color-text-secondary: #d1d5db;
     --color-text-tertiary: #9ca3af;
     --color-border: #374151;
-    --color-backgroundLightest-disabled: #1f2937;
+    --color-background-lightest-disabled: #1f2937;
   }
 
   .stat-card:hover,
@@ -442,7 +442,7 @@
 }
 
 .debug-card {
-  background: var(--color-backgroundLightest);
+  background: var(--color-background-lightest);
   border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 20px;
@@ -488,7 +488,7 @@
 .loading-status-summary {
   margin-bottom: 24px;
   padding: 16px;
-  background: var(--color-backgroundLightest);
+  background: var(--color-background-lightest);
   border-radius: 8px;
 
   h3 {
@@ -556,7 +556,7 @@
   font-size: 0.875rem;
   color: var(--color-text-secondary);
   padding: 8px;
-  background: var(--color-backgroundLightest);
+  background: var(--color-background-lightest);
   border-radius: 4px;
 
   strong {

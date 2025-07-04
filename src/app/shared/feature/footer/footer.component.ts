@@ -21,7 +21,7 @@ import { environment } from '../../../../environments/environment';
   `,
   styles: `
 .footer {
-      background-color: var(--color-backgroundLightest, #f8fafc);
+      background-color: var(--color-background-lightest, #f8fafc);
       color: var(--color-text-secondary, #64748b);
       padding: 2rem 1rem 1rem;
       text-align: center;

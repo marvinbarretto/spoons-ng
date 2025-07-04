@@ -129,7 +129,7 @@ import { ListFilterStore, type SortOption } from '../../data-access/list-filter.
       flex-direction: column;
       gap: 1rem;
       padding: 1rem;
-      background: var(--color-backgroundLightest);
+      background: var(--color-background-lightest);
       border: 1px solid var(--color-border);
       border-radius: 8px;
       margin-bottom: 1rem;

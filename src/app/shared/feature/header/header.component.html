@@ -13,33 +13,16 @@
        Desktop: Show horizontal nav in header
        Mobile:  Only FooterNavComponent (no hamburger menu needed)
   -->
-  <nav class="main-nav"  *ngIf="!isMobile()">
-    <!-- ✅ Desktop Navigation: Horizontal nav links -->
-    <app-nav  />
+  <!-- Desktop Navigation -->
+  <nav class="main-nav" *ngIf="!isMobile()">
+    <app-nav />
+  </nav>
 
-    <!-- ✅ Utility Actions (both desktop & mobile) -->
-    <div class="main-nav__actions">
-      <button
-        *ngIf="'theme' | featureFlag"
-        #panelTrigger
-        aria-expanded="true"
-        (click)="onTogglePanel('theme')"
-        class="theme-link"
-      >
-        🎨 Theme
-      </button>
-
-      <button
-        *ngIf="'search' | featureFlag"
-        #panelTrigger
-        aria-expanded="true"
-        (click)="onTogglePanel('search')"
-        class="search-link"
-      >
-        🔍 Search
-      </button>
-    </div>
-
-    <!-- ❌ REMOVED: Mobile hamburger menu (FooterNavComponent handles mobile nav) -->
+  <!-- Mobile Navigation - minimal header with user profile -->
+  <nav class="main-nav main-nav--mobile" *ngIf="isMobile()">
+    <app-user-profile-widget 
+      [user]="user()" 
+      (openProfile)="onOpenProfile()" 
+      class="mobile-profile-widget" />
   </nav>
 </div>

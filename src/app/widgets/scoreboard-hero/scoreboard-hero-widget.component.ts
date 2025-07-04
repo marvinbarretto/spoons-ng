@@ -175,7 +175,7 @@ export type EnhancedScoreboardData = ScoreboardData & {
     }
 
     .scoreboard-hero {
-      background: var(--color-backgroundLightest);
+      background: var(--color-background-lightest);
       color: var(--color-text);
       border: 1px solid var(--color-border);
       border-radius: 12px;
@@ -249,7 +249,7 @@ export type EnhancedScoreboardData = ScoreboardData & {
     /* Loading state */
     .loading .points-value,
     .loading .stat-value {
-      background: var(--color-backgroundLightestElevated);
+      background: var(--color-background-lightestElevated);
       border-radius: 4px;
       color: transparent;
       animation: pulse 1.5s ease-in-out infinite;
@@ -274,7 +274,7 @@ export type EnhancedScoreboardData = ScoreboardData & {
       align-items: center;
       gap: 0.5rem;
       padding: 0.75rem;
-      background: var(--color-backgroundLightestElevated);
+      background: var(--color-background-lightestElevated);
       border: 1px solid var(--color-borderLight);
       border-radius: 8px;
       min-width: 100px;
@@ -345,7 +345,7 @@ export type EnhancedScoreboardData = ScoreboardData & {
       font-size: 0.625rem;
       font-weight: bold;
       color: var(--color-textSecondary);
-      background: var(--color-backgroundLightestElevated);
+      background: var(--color-background-lightestElevated);
       border: 1px solid var(--color-borderLight);
       border-radius: 50%;
       width: 1.5rem;

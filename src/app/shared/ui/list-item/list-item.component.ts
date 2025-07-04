@@ -125,7 +125,7 @@ export type ListItemConfig = {
       align-items: flex-start;
       gap: 0.75rem;
       padding: 1rem;
-      background: var(--color-backgroundLightest);
+      background: var(--color-background-lightest);
       border: 1px solid var(--color-border);
       border-radius: 8px;
       transition: all 0.2s ease;

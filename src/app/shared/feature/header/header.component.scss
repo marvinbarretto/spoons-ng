@@ -20,7 +20,7 @@ nav {
   color: var(--color-text);
 
   // ✅ NEW: Theme-aware background
-  background-color: var(--color-backgroundLightest);
+  background-color: var(--color-background-lightest);
   border-bottom: 1px solid var(--color-border);
 
   // ✅ NEW: Smooth transitions
@@ -105,7 +105,7 @@ small {
 
 .main-nav {
   // ✅ NEW: Use semantic theme tokens
-  background-color: var(--color-backgroundLightest-elevated);
+  background-color: var(--color-background-lightest-elevated);
   border-bottom: 1px solid var(--color-border);
 
   align-items: center;
@@ -121,9 +121,14 @@ small {
   }
 }
 
-.main-nav__actions {
-  display: flex;
-  gap: 0.5rem;
+// Mobile navigation styles
+.main-nav--mobile {
+  padding: 0.5rem 1rem;
+  
+  .mobile-profile-widget {
+    max-width: 200px;
+    margin-left: auto;
+  }
 }
 
 .menu {
@@ -131,7 +136,7 @@ small {
   gap: 0.75rem;
   position: relative;
   z-index: 100;
-  background-color: var(--color-backgroundLightest);
+  background-color: var(--color-background-lightest);
   color: var(--color-text);
 
   // ✅ NEW: Enhanced styling
@@ -282,7 +287,7 @@ nav ul {
   gap: 0;
 
   // ✅ NEW: Enhanced mobile menu styling
-  background-color: var(--color-backgroundLightest-elevated);
+  background-color: var(--color-background-lightest-elevated);
   border: 1px solid var(--color-border);
   border-radius: 0 0 1rem 1rem;
   box-shadow: var(--color-shadow);
@@ -298,7 +303,7 @@ nav ul {
 }
 
 [data-theme="amber"] .main-nav {
-  background: linear-gradient(135deg, var(--color-backgroundLightest-elevated) 0%, var(--color-backgroundLightest) 100%);
+  background: linear-gradient(135deg, var(--color-background-lightest-elevated) 0%, var(--color-background-lightest) 100%);
 }
 
 [data-theme="coral"] .menu {
@@ -313,7 +318,7 @@ nav ul {
 
   .main-nav {
     backdrop-filter: blur(20px);
-    background-color: rgba(var(--color-backgroundLightest-elevated), 0.9);
+    background-color: rgba(var(--color-background-lightest-elevated), 0.9);
   }
 
   .menu--open {

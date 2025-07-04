@@ -50,7 +50,7 @@ import type { User } from '@users/utils/user.model';
       display: flex;
       align-items: center;
       padding: 0.5rem 0.75rem;
-      background: var(--color-backgroundLightest);
+      background: var(--color-background-lightest);
       border: 1px solid var(--color-border);
       border-radius: 9999px;
       width: 100%;

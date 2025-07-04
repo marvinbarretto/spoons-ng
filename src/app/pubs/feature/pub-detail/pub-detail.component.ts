@@ -158,7 +158,7 @@ import { calculateDistance } from '@shared/utils/location.utils';
     .retry-btn {
       padding: 0.5rem 1rem;
       border: 1px solid var(--color-border);
-      background: var(--color-backgroundLightest);
+      background: var(--color-background-lightest);
       color: var(--color-text);
       border-radius: 6px;
       cursor: pointer;
@@ -173,7 +173,7 @@ import { calculateDistance } from '@shared/utils/location.utils';
 
     .back-btn:hover,
     .retry-btn:hover {
-      background: var(--color-backgroundLightestElevated);
+      background: var(--color-background-lightestElevated);
       border-color: var(--color-primary);
       color: var(--color-primary);
     }
@@ -181,7 +181,7 @@ import { calculateDistance } from '@shared/utils/location.utils';
     .pub-header {
       margin-bottom: 2rem;
       padding: 1.5rem;
-      background: var(--color-backgroundLightest);
+      background: var(--color-background-lightest);
       border-radius: 12px;
       border: 1px solid var(--color-border);
     }
@@ -256,7 +256,7 @@ import { calculateDistance } from '@shared/utils/location.utils';
     }
 
     .status-badge--neutral {
-      background: var(--color-backgroundLightestElevated);
+      background: var(--color-background-lightestElevated);
       color: var(--color-textSecondary);
       border-color: var(--color-borderSecondary);
     }
@@ -268,7 +268,7 @@ import { calculateDistance } from '@shared/utils/location.utils';
     }
 
     .data-section {
-      background: var(--color-backgroundLightest);
+      background: var(--color-background-lightest);
       border: 1px solid var(--color-border);
       border-radius: 12px;
       overflow: hidden;
@@ -276,7 +276,7 @@ import { calculateDistance } from '@shared/utils/location.utils';
     }
 
     .data-section h2 {
-      background: var(--color-backgroundLightestElevated);
+      background: var(--color-background-lightestElevated);
       margin: 0;
       padding: 1rem;
       font-size: 1.125rem;
@@ -287,7 +287,7 @@ import { calculateDistance } from '@shared/utils/location.utils';
 
     .json-display {
       padding: 1rem;
-      background: var(--color-backgroundLightest);
+      background: var(--color-background-lightest);
     }
 
     .json-display pre {
