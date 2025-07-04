@@ -84,36 +84,50 @@ type PointsBreakdownItem = {
               }
             </div>
 
-            <!-- Points Breakdown Section -->
+            <!-- Points Breakdown Section with Suspense -->
             @if (pointsBreakdown().length > 0 || totalPointsEarned() > 0) {
-              <div class="points-section">
-                <h3>🏆 Points Earned</h3>
-                <div class="points-table">
-                  @for (item of pointsBreakdown(); track item.type; let i = $index) {
-                    <div
-                      class="points-row"
-                      [style.animation-delay]="(i * 0.1) + 's'"
-                    >
-                      <div class="points-icon" [style.color]="item.color">
-                        {{ item.icon }}
+              @defer (on timer(1500ms)) {
+                <div class="points-section">
+                  <h3>🏆 Points Earned</h3>
+                  <div class="points-table">
+                    @for (item of pointsBreakdown(); track item.type; let i = $index) {
+                      <div
+                        class="points-row animate"
+                        [style.animation-delay]="getAnimationDelay(i)"
+                      >
+                        <div class="points-icon" [style.color]="item.color">
+                          {{ item.icon }}
+                        </div>
+                        <div class="points-description">
+                          {{ item.description }}
+                        </div>
+                        <div class="points-value" [style.color]="item.color">
+                          +{{ item.points }}
+                        </div>
                       </div>
-                      <div class="points-description">
-                        {{ item.description }}
-                      </div>
-                      <div class="points-value" [style.color]="item.color">
-                        +{{ item.points }}
-                      </div>
-                    </div>
-                  }
+                    }
 
-                  @if (totalPointsEarned() > 0) {
-                    <div class="points-total">
-                      <div class="total-label">Total Points</div>
-                      <div class="total-value">{{ totalPointsEarned() }}</div>
-                    </div>
-                  }
+                    @if (totalPointsEarned() > 0) {
+                      <div class="points-total animate">
+                        <div class="total-label">Total Points</div>
+                        <div class="total-value">{{ totalPointsEarned() }}</div>
+                      </div>
+                    }
+                  </div>
                 </div>
-              </div>
+              } @placeholder (minimum 1200ms) {
+                <div class="points-calculating">
+                  <div class="calculating-icon">🧮</div>
+                  <div class="calculating-text">
+                    Calculating points<span class="calculating-dots">
+                      <span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
+                    </span>
+                  </div>
+                  <div class="calculating-bar">
+                    <div class="calculating-progress"></div>
+                  </div>
+                </div>
+              }
             }
 
             <!-- Badges Section -->
@@ -165,6 +179,34 @@ type PointsBreakdownItem = {
     </div>
   `,
   styles: [`
+    @use 'styles/index' as *;
+    
+    // ===================================
+    // ⏱️ POINTS ANIMATION TIMING CONFIG
+    // ===================================
+    
+    // 🎯 Adjust these values to control animation speed:
+    // - Increase for slower, more dramatic reveals
+    // - Decrease for snappier, quicker animations
+    
+    // Suspense timing (for building anticipation)
+    $suspense-calculation-delay: 1500ms;  // How long to show "Calculating..." 
+    $suspense-minimum-show: 1200ms;      // Minimum time for placeholder
+    
+    // Individual point row animations
+    $points-row-duration: 0.6s;        // How long each row takes to slide in
+    $points-row-stagger: 0.15s;        // Delay between each row appearing
+    
+    // Total points summary animation
+    $points-total-delay: 0.8s;         // When total appears after rows start
+    $points-total-duration: 0.6s;      // How long total takes to pop in
+    
+    // Value pulsing animation
+    $points-pulse-duration: 2s;        // Speed of the pulsing number effect
+    
+    // Badge animations
+    $badge-pulse-duration: 1.5s;       // Speed of badge pulsing
+    
     .modal-container {
       background: var(--color-background);
       border: 1px solid var(--color-subtleDarker);
@@ -277,13 +319,7 @@ type PointsBreakdownItem = {
       padding: 0.125rem 0.25rem;
       border-radius: 4px;
       box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-      animation: pulse 1.5s infinite;
-    }
-
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.1); }
-      100% { transform: scale(1); }
+      @include pulse($badge-pulse-duration);
     }
 
     .stat-number {
@@ -515,16 +551,16 @@ type PointsBreakdownItem = {
 
     /* Points Breakdown Section */
     .points-section {
-      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      background: linear-gradient(135deg, var(--background-lighter) 0%, var(--background) 100%);
       border-radius: 6px;
       padding: 0.5rem;
       margin: 0.25rem 0;
-      border: 1px solid #dee2e6;
+      border: 1px solid var(--border);
     }
 
     .points-section h3 {
       margin: 0 0 0.25rem 0;
-      color: #495057;
+      color: var(--text);
       font-size: 0.9rem;
       font-weight: 600;
       text-align: center;
@@ -542,12 +578,14 @@ type PointsBreakdownItem = {
       align-items: center;
       gap: 0.5rem;
       padding: 0.375rem 0.5rem;
-      background: rgba(255, 255, 255, 0.8);
+      background: var(--background-lightest);
       border-radius: 6px;
-      border: 1px solid rgba(0, 0, 0, 0.05);
-      opacity: 0;
-      transform: translateY(10px);
-      animation: slideInUp 0.4s ease-out forwards;
+      border: 1px solid var(--border);
+      
+      // Slide up animation for each row
+      &.animate {
+        @include slide-up($duration: $points-row-duration);
+      }
     }
 
     .points-icon {
@@ -557,7 +595,7 @@ type PointsBreakdownItem = {
 
     .points-description {
       font-size: 0.875rem;
-      color: #495057;
+      color: var(--text);
       font-weight: 500;
     }
 
@@ -574,13 +612,15 @@ type PointsBreakdownItem = {
       gap: 0.5rem;
       padding: 0.5rem;
       margin-top: 0.25rem;
-      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-      color: white;
+      background: linear-gradient(135deg, var(--success) 0%, var(--accent) 100%);
+      color: var(--accent-contrast);
       border-radius: 6px;
       font-weight: bold;
-      opacity: 0;
-      transform: scale(0.9);
-      animation: popIn 0.5s ease-out 0.3s forwards;
+      
+      // Pop in animation with delay
+      &.animate {
+        @include pop-in($duration: $points-total-duration, $delay: $points-total-delay);
+      }
     }
 
     .total-label {
@@ -592,29 +632,79 @@ type PointsBreakdownItem = {
       text-align: right;
     }
 
-    /* Animations */
-    @keyframes slideInUp {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    @keyframes popIn {
-      to {
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
-
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.05); }
-      100% { transform: scale(1); }
-    }
-
     .total-value {
-      animation: pulse 2s ease-in-out infinite;
+      @include pulse($points-pulse-duration);
+    }
+
+    // ===================================
+    // 🧮 CALCULATING POINTS ANIMATION
+    // ===================================
+
+    .points-calculating {
+      text-align: center;
+      padding: 2rem 1rem;
+      background: linear-gradient(135deg, var(--background-lighter) 0%, var(--background) 100%);
+      border-radius: 6px;
+      margin: 0.25rem 0;
+      border: 1px solid var(--border);
+      
+      @include fade-in();
+    }
+    
+    .calculating-icon {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      @include pulse(1.5s);
+    }
+    
+    .calculating-text {
+      font-size: 1rem;
+      color: var(--text);
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+    
+    .calculating-dots {
+      display: inline-block;
+      
+      .dot {
+        animation: calculating-dot-fade 1.5s infinite;
+        
+        &:nth-child(1) { animation-delay: 0s; }
+        &:nth-child(2) { animation-delay: 0.3s; }
+        &:nth-child(3) { animation-delay: 0.6s; }
+      }
+    }
+    
+    .calculating-bar {
+      width: 200px;
+      height: 4px;
+      background: var(--background-darker);
+      border-radius: 2px;
+      margin: 0 auto;
+      overflow: hidden;
+      position: relative;
+    }
+    
+    .calculating-progress {
+      height: 100%;
+      background: linear-gradient(90deg, var(--success), var(--accent));
+      border-radius: 2px;
+      animation: calculating-progress 1.2s ease-in-out infinite;
+      transform-origin: left;
+    }
+    
+    // Calculating animations
+    @keyframes calculating-dot-fade {
+      0%, 60% { opacity: 0.3; }
+      30% { opacity: 1; }
+      100% { opacity: 0.3; }
+    }
+    
+    @keyframes calculating-progress {
+      0% { transform: scaleX(0); }
+      50% { transform: scaleX(0.6); }
+      100% { transform: scaleX(1); }
     }
   `]
 })
@@ -639,6 +729,9 @@ export class ModalCheckinSuccessComponent {
   // Carpet image state
   private readonly _carpetImageUrl = signal<string | null>(null);
   readonly carpetImageUrl = this._carpetImageUrl.asReadonly();
+  
+  // Animation timing configuration
+  readonly POINTS_ROW_STAGGER = 0.15; // seconds between each row reveal
 
   constructor() {
     // Debug effect to log when modal data changes
@@ -970,6 +1063,11 @@ export class ModalCheckinSuccessComponent {
 
   getBadgeDefinition(badgeId: string) {
     return BADGE_DEFINITIONS.find(b => b.id === badgeId);
+  }
+  
+  // Animation helper
+  getAnimationDelay(index: number): string {
+    return `${index * this.POINTS_ROW_STAGGER}s`;
   }
 
 }
