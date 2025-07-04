@@ -45,7 +45,7 @@ import { FeedbackButtonComponent } from '../../../feedback/ui/feedback-button/fe
       position: sticky;
       top: 0;
       z-index: 100;
-      background-color: var(--color-surface, #ffffff);
+      background-color: var(--color-backgroundLightest, #ffffff);
       border-bottom: 1px solid var(--color-border, #e2e8f0);
     }
 

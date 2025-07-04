@@ -94,7 +94,7 @@ export type VirtualListConfig = {
     .virtual-debug {
       margin-top: 0.5rem;
       padding: 0.5rem;
-      background: var(--color-surface);
+      background: var(--color-backgroundLightest);
       border: 1px solid var(--color-border);
       border-radius: 4px;
       font-family: monospace;

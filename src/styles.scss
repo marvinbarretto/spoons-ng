@@ -95,7 +95,7 @@ html {
   z-index: 1001;
 
   // ✅ SIMPLIFIED: Use theme tokens
-  background: var(--color-surface-elevated);
+  background: var(--color-backgroundLightest-elevated);
   color: var(--color-text);
   border: 1px solid var(--color-border);
   box-shadow: var(--color-shadow);
@@ -115,7 +115,7 @@ html {
   }
 
   &::-webkit-scrollbar-track {
-    background: var(--color-surface);
+    background: var(--color-backgroundLightest);
     border-radius: 4px;
   }
 

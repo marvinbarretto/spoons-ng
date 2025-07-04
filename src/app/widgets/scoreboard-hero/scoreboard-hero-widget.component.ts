@@ -118,7 +118,7 @@ export type EnhancedScoreboardData = ScoreboardData & {
                   @if (enhancedData().recentBadges.length > 0) {
                     <div class="badge-crests">
                       @for (badgeItem of enhancedData().recentBadges; track badgeItem.badge.id) {
-                        <app-badge-crest 
+                        <app-badge-crest
                           [badge]="badgeItem.badge"
                           [isEarned]="badgeItem.isEarned"
                           size="tiny"
@@ -175,7 +175,7 @@ export type EnhancedScoreboardData = ScoreboardData & {
     }
 
     .scoreboard-hero {
-      background: var(--color-surface);
+      background: var(--color-backgroundLightest);
       color: var(--color-text);
       border: 1px solid var(--color-border);
       border-radius: 12px;
@@ -249,7 +249,7 @@ export type EnhancedScoreboardData = ScoreboardData & {
     /* Loading state */
     .loading .points-value,
     .loading .stat-value {
-      background: var(--color-surfaceElevated);
+      background: var(--color-backgroundLightestElevated);
       border-radius: 4px;
       color: transparent;
       animation: pulse 1.5s ease-in-out infinite;
@@ -274,7 +274,7 @@ export type EnhancedScoreboardData = ScoreboardData & {
       align-items: center;
       gap: 0.5rem;
       padding: 0.75rem;
-      background: var(--color-surfaceElevated);
+      background: var(--color-backgroundLightestElevated);
       border: 1px solid var(--color-borderLight);
       border-radius: 8px;
       min-width: 100px;
@@ -345,7 +345,7 @@ export type EnhancedScoreboardData = ScoreboardData & {
       font-size: 0.625rem;
       font-weight: bold;
       color: var(--color-textSecondary);
-      background: var(--color-surfaceElevated);
+      background: var(--color-backgroundLightestElevated);
       border: 1px solid var(--color-borderLight);
       border-radius: 50%;
       width: 1.5rem;
@@ -480,10 +480,10 @@ export class ScoreboardHeroWidgetComponent extends BaseWidgetComponent implement
   // ✅ Enhanced data with additional metrics
   readonly enhancedData = computed((): EnhancedScoreboardData => {
     const baseData = this.data();
-    
+
     // Get additional metrics - using safe property access since these features may not be implemented yet
     const currentStreak = 0; // TODO: Implement streak calculation in CheckInStore
-    
+
     // Get badge collection data
     const earnedBadgesWithDefinitions = this.badgeStore.earnedBadgesWithDefinitions?.() || [];
     const recentBadges: BadgeWithEarnedStatus[] = earnedBadgesWithDefinitions
@@ -493,7 +493,7 @@ export class ScoreboardHeroWidgetComponent extends BaseWidgetComponent implement
         badge: item.badge!,
         isEarned: true
       }));
-    
+
     const leaderboardPosition = this.leaderboardStore.userRankByPoints?.() || null;
 
     const enhanced: EnhancedScoreboardData = {
@@ -554,7 +554,7 @@ export class ScoreboardHeroWidgetComponent extends BaseWidgetComponent implement
         this.smartAnimateValue('points', this.animatedPointsValue, data.totalPoints, 1200);
         setTimeout(() => this.smartAnimateValue('pubs', this.animatedPubsValue, data.pubsVisited, 800), 100);
         setTimeout(() => this.smartAnimateValue('checkins', this.animatedCheckinsValue, data.totalCheckins, 900), 200);
-        
+
         // Enhanced metrics with staggered timing
         setTimeout(() => this.smartAnimateValue('todaysPoints', this.animatedTodaysPointsValue, data.todaysPoints, 600), 300);
         setTimeout(() => this.smartAnimateValue('streak', this.animatedStreakValue, data.currentStreak, 700), 400);

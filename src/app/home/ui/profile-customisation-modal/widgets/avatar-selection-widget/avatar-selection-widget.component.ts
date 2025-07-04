@@ -56,7 +56,7 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
   styles: `
     .avatar-selection-widget {
       padding: 1rem;
-      background: var(--color-surface-elevated);
+      background: var(--color-backgroundLightest-elevated);
       border: 1px solid var(--color-border);
       border-radius: 8px;
     }
@@ -73,7 +73,7 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
       align-items: center;
       gap: 1rem;
       padding: 1rem;
-      background: var(--color-surface);
+      background: var(--color-backgroundLightest);
       border: 1px solid var(--color-border);
       border-radius: 6px;
       margin-bottom: 1rem;
@@ -104,7 +104,7 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
       font-size: 12px;
       font-weight: bold;
       color: white;
-      border: 2px solid var(--color-surface);
+      border: 2px solid var(--color-backgroundLightest);
     }
 
     .status-circle.saving {

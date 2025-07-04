@@ -113,12 +113,15 @@ export class ThemeStore {
       '--border-strong': theme.colors.borderStrong,
 
       // Interactive colors
-      '--accent': theme.colors.accent,
-      '--accent-hover': theme.colors.accentHover,
-      '--accent-contrast': theme.colors.accentContrast,
+      '--primary': theme.colors.primary,
+      '--primary-hover': theme.colors.primaryHover,
+      '--primary-contrast': theme.colors.primaryContrast,
       '--secondary': theme.colors.secondary,
       '--secondary-hover': theme.colors.secondaryHover,
       '--secondary-contrast': theme.colors.secondaryContrast,
+      '--accent': theme.colors.accent,
+      '--accent-hover': theme.colors.accentHover,
+      '--accent-contrast': theme.colors.accentContrast,
 
       // Semantic colors
       '--success': theme.colors.success,

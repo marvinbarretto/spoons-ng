@@ -158,7 +158,7 @@ import { calculateDistance } from '@shared/utils/location.utils';
     .retry-btn {
       padding: 0.5rem 1rem;
       border: 1px solid var(--color-border);
-      background: var(--color-surface);
+      background: var(--color-backgroundLightest);
       color: var(--color-text);
       border-radius: 6px;
       cursor: pointer;
@@ -173,7 +173,7 @@ import { calculateDistance } from '@shared/utils/location.utils';
 
     .back-btn:hover,
     .retry-btn:hover {
-      background: var(--color-surfaceElevated);
+      background: var(--color-backgroundLightestElevated);
       border-color: var(--color-primary);
       color: var(--color-primary);
     }
@@ -181,7 +181,7 @@ import { calculateDistance } from '@shared/utils/location.utils';
     .pub-header {
       margin-bottom: 2rem;
       padding: 1.5rem;
-      background: var(--color-surface);
+      background: var(--color-backgroundLightest);
       border-radius: 12px;
       border: 1px solid var(--color-border);
     }
@@ -256,7 +256,7 @@ import { calculateDistance } from '@shared/utils/location.utils';
     }
 
     .status-badge--neutral {
-      background: var(--color-surfaceElevated);
+      background: var(--color-backgroundLightestElevated);
       color: var(--color-textSecondary);
       border-color: var(--color-borderSecondary);
     }
@@ -268,7 +268,7 @@ import { calculateDistance } from '@shared/utils/location.utils';
     }
 
     .data-section {
-      background: var(--color-surface);
+      background: var(--color-backgroundLightest);
       border: 1px solid var(--color-border);
       border-radius: 12px;
       overflow: hidden;
@@ -276,7 +276,7 @@ import { calculateDistance } from '@shared/utils/location.utils';
     }
 
     .data-section h2 {
-      background: var(--color-surfaceElevated);
+      background: var(--color-backgroundLightestElevated);
       margin: 0;
       padding: 1rem;
       font-size: 1.125rem;
@@ -287,7 +287,7 @@ import { calculateDistance } from '@shared/utils/location.utils';
 
     .json-display {
       padding: 1rem;
-      background: var(--color-surface);
+      background: var(--color-backgroundLightest);
     }
 
     .json-display pre {

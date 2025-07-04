@@ -17,7 +17,7 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
         <div class="theme-preview" [attr.data-theme]="currentTheme()">
           <div class="preview-colors">
             <span class="color-swatch primary" [style.background-color]="currentThemeColors().colors.primary"></span>
-            <span class="color-swatch surface" [style.background-color]="currentThemeColors().colors.surface"></span>
+            <span class="color-swatch surface" [style.background-color]="currentThemeColors().colors.backgroundLighter"></span>
             <span class="color-swatch accent" [style.background-color]="currentThemeColors().colors.success"></span>
           </div>
         </div>
@@ -55,7 +55,7 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
             <div class="theme-preview small">
               <div class="preview-colors">
                 <span class="color-swatch" [style.background-color]="themeOption.theme.colors.primary"></span>
-                <span class="color-swatch" [style.background-color]="themeOption.theme.colors.surface"></span>
+                <span class="color-swatch" [style.background-color]="themeOption.theme.colors.backgroundLighter"></span>
                 <span class="color-swatch" [style.background-color]="themeOption.theme.colors.success"></span>
               </div>
             </div>
@@ -71,7 +71,7 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
   styles: `
     .theme-selection-widget {
       padding: 1rem;
-      background: var(--color-surface-elevated);
+      background: var(--color-backgroundLightest-elevated);
       border: 1px solid var(--color-border);
       border-radius: 8px;
     }
@@ -89,7 +89,7 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
       align-items: center;
       gap: 0.75rem;
       padding: 0.75rem;
-      background: var(--color-surface);
+      background: var(--color-backgroundLightest);
       border: 1px solid var(--color-border);
       border-radius: 6px;
       margin-bottom: 1rem;
@@ -170,7 +170,7 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
       align-items: center;
       gap: 0.5rem;
       padding: 0.75rem;
-      background: var(--color-surface);
+      background: var(--color-backgroundLightest);
       border: 2px solid var(--color-border);
       border-radius: 6px;
       cursor: pointer;

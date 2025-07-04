@@ -43,7 +43,7 @@ import { MissionCardComponent } from '../../missions/ui/mission-card/mission-car
       } @else {
         <div class="missions-grid">
           @for (missionData of activeMissions(); track missionData.mission.id) {
-            <button 
+            <button
               class="mission-card-button"
               (click)="onMissionCardClicked(missionData.mission)"
             >
@@ -61,7 +61,7 @@ import { MissionCardComponent } from '../../missions/ui/mission-card/mission-car
   styles: [`
     .missions-widget {
       padding: 1rem;
-      background: var(--color-surface, var(--background-lighter));
+      background: var(--color-backgroundLightest, var(--background-lighter));
       color: var(--color-text, var(--text));
       border: 1px solid var(--color-border, var(--border));
       border-radius: 0.5rem;

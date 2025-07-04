@@ -39,7 +39,7 @@ import type { User } from '@users/utils/user.model';
       justify-content: flex-start;
       border: 1px solid var(--color-border);
       box-shadow: 0 1px 3px var(--color-shadow);
-      
+
       &:hover {
         border-color: var(--color-primary);
         box-shadow: 0 4px 8px var(--color-shadow);
@@ -50,7 +50,7 @@ import type { User } from '@users/utils/user.model';
       display: flex;
       align-items: center;
       padding: 0.5rem 0.75rem;
-      background: var(--color-surface);
+      background: var(--color-backgroundLightest);
       border: 1px solid var(--color-border);
       border-radius: 9999px;
       width: 100%;
@@ -83,7 +83,7 @@ export class UserProfileWidgetComponent {
     if (!currentUser) return null;
 
     let displayName = currentUser.displayName || 'User';
-    
+
     // ✅ Handle anonymous users with better names
     if (currentUser.isAnonymous && displayName.startsWith('Anonymous')) {
       displayName = displayName.replace('Anonymous', 'Explorer');

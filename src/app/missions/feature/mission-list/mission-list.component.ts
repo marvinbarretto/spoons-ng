@@ -81,7 +81,7 @@ import type { Mission } from '../../utils/mission.model';
             >
               <div slot="actions">
                 @if (missionData.isActive || missionData.isCompleted) {
-                  <button 
+                  <button
                     class="btn btn--secondary btn--small"
                     (click)="handleLeaveMissionClick(missionData.mission)"
                     [disabled]="userMissionsStore.loading()"
@@ -97,7 +97,7 @@ import type { Mission } from '../../utils/mission.model';
                     <span class="progress-badge">📍 {{ missionData.completedCount }}/{{ missionData.totalCount }}</span>
                   }
                 } @else {
-                  <button 
+                  <button
                     class="btn btn--primary btn--small"
                     (click)="handleStartMissionClick(missionData.mission)"
                     [disabled]="userMissionsStore.loading()"
@@ -167,7 +167,7 @@ import type { Mission } from '../../utils/mission.model';
       margin-top: 1rem;
       padding: 0.5rem 1rem;
       border: 1px solid var(--color-border, #e5e7eb);
-      background: var(--color-surface, #ffffff);
+      background: var(--color-backgroundLightest, #ffffff);
       border-radius: 6px;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -182,7 +182,7 @@ import type { Mission } from '../../utils/mission.model';
     .filter-controls {
       margin-bottom: 2rem;
       padding: 1rem;
-      background: var(--color-surface, #ffffff);
+      background: var(--color-backgroundLightest, #ffffff);
       border: 1px solid var(--color-border, #e5e7eb);
       border-radius: 8px;
     }

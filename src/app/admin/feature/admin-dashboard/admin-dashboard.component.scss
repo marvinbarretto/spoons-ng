@@ -3,7 +3,7 @@
   padding: 24px;
   max-width: 1400px;
   margin: 0 auto;
-  background: var(--color-surface);
+  background: var(--color-backgroundLightest);
   color: var(--color-text);
   font-family: var(--font-family);
 }
@@ -11,7 +11,7 @@
 .dashboard-header {
   margin-bottom: 32px;
   text-align: center;
-  
+
   h1 {
     margin: 0 0 8px 0;
     font-size: 2.25rem;
@@ -30,7 +30,7 @@
 // Stats Overview Section
 .stats-overview {
   margin-bottom: 48px;
-  
+
   h2 {
     margin: 0 0 24px 0;
     font-size: 1.5rem;
@@ -80,23 +80,23 @@
   text-align: center;
   transition: all 0.3s ease;
   position: relative;
-  
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
   }
-  
+
   // Data source type styling
   &[data-source="real"] {
     border-left: 4px solid var(--color-success, #10b981);
     background: var(--color-success-background, rgba(16, 185, 129, 0.05));
   }
-  
+
   &[data-source="calculated"] {
     border-left: 4px solid var(--color-warning, #f59e0b);
     background: var(--color-warning-background, rgba(245, 158, 11, 0.05));
   }
-  
+
   &[data-source="placeholder"] {
     border-left: 4px solid var(--color-error, #ef4444);
     background: var(--color-error-background, rgba(239, 68, 68, 0.05));
@@ -148,7 +148,7 @@
   color: var(--color-text-tertiary);
   margin-top: 8px;
   padding: 6px;
-  background: var(--color-surface);
+  background: var(--color-backgroundLightest);
   border-radius: 4px;
   font-family: monospace;
   word-break: break-all;
@@ -158,7 +158,7 @@
 // Admin Sections
 .admin-sections {
   margin-bottom: 48px;
-  
+
   h2 {
     margin: 0 0 24px 0;
     font-size: 1.5rem;
@@ -179,7 +179,7 @@
   background: var(--color-background);
   overflow: hidden;
   transition: all 0.3s ease;
-  
+
   &.active {
     &:hover {
       transform: translateY(-4px);
@@ -187,10 +187,10 @@
       border-color: var(--color-primary, #3b82f6);
     }
   }
-  
+
   &.coming-soon {
     opacity: 0.6;
-    background: var(--color-surface-disabled, var(--color-surface));
+    background: var(--color-backgroundLightest-disabled, var(--color-backgroundLightest));
   }
 }
 
@@ -202,7 +202,7 @@
   color: inherit;
   gap: 16px;
   min-height: 120px;
-  
+
   &:hover {
     color: inherit;
   }
@@ -225,20 +225,20 @@
   align-items: center;
   justify-content: center;
   border-radius: 12px;
-  background: var(--color-surface);
+  background: var(--color-backgroundLightest);
   flex-shrink: 0;
 }
 
 .card-content {
   flex: 1;
-  
+
   h3 {
     margin: 0 0 8px 0;
     font-size: 1.25rem;
     font-weight: 600;
     color: var(--color-text);
   }
-  
+
   p {
     margin: 0 0 12px 0;
     font-size: 0.875rem;
@@ -311,17 +311,17 @@
   height: 12px;
   border-radius: 50%;
   flex-shrink: 0;
-  
+
   &.active {
     background: var(--color-success, #10b981);
     box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
   }
-  
+
   &.warning {
     background: var(--color-warning, #f59e0b);
     box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
   }
-  
+
   &.error {
     background: var(--color-error, #ef4444);
     box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
@@ -348,41 +348,41 @@
   .admin-dashboard {
     padding: 16px;
   }
-  
+
   .dashboard-header h1 {
     font-size: 1.875rem;
   }
-  
+
   .stats-grid {
     grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 16px;
   }
-  
+
   .stat-card {
     padding: 16px;
   }
-  
+
   .stat-value {
     font-size: 2rem;
   }
-  
+
   .sections-grid {
     grid-template-columns: 1fr;
     gap: 16px;
   }
-  
+
   .card-link,
   .card-disabled {
     padding: 20px;
     min-height: 100px;
   }
-  
+
   .card-icon {
     font-size: 2rem;
     width: 50px;
     height: 50px;
   }
-  
+
   .status-grid {
     grid-template-columns: 1fr;
   }
@@ -395,7 +395,7 @@
     text-align: center;
     gap: 12px;
   }
-  
+
   .card-arrow {
     display: none;
   }
@@ -404,15 +404,15 @@
 // Dark mode enhancements
 @media (prefers-color-scheme: dark) {
   .admin-dashboard {
-    --color-surface: #1f2937;
+    --color-backgroundLightest: #1f2937;
     --color-background: #111827;
     --color-text: #f9fafb;
     --color-text-secondary: #d1d5db;
     --color-text-tertiary: #9ca3af;
     --color-border: #374151;
-    --color-surface-disabled: #1f2937;
+    --color-backgroundLightest-disabled: #1f2937;
   }
-  
+
   .stat-card:hover,
   .admin-card.active:hover {
     box-shadow: 0 12px 35px rgba(0, 0, 0, 0.3);
@@ -426,7 +426,7 @@
   background: var(--color-background);
   border: 2px solid var(--color-warning, #f59e0b);
   border-radius: 12px;
-  
+
   h2 {
     margin: 0 0 24px 0;
     color: var(--color-warning, #f59e0b);
@@ -442,11 +442,11 @@
 }
 
 .debug-card {
-  background: var(--color-surface);
+  background: var(--color-backgroundLightest);
   border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 20px;
-  
+
   h3 {
     margin: 0 0 16px 0;
     font-size: 1.125rem;
@@ -464,13 +464,13 @@
 
 .debug-item {
   font-size: 0.875rem;
-  
+
   strong {
     color: var(--color-text);
     display: block;
     margin-bottom: 4px;
   }
-  
+
   pre {
     background: var(--color-background);
     border: 1px solid var(--color-border);
@@ -488,9 +488,9 @@
 .loading-status-summary {
   margin-bottom: 24px;
   padding: 16px;
-  background: var(--color-surface);
+  background: var(--color-backgroundLightest);
   border-radius: 8px;
-  
+
   h3 {
     margin: 0 0 12px 0;
     font-size: 1rem;
@@ -512,12 +512,12 @@
   border-radius: 6px;
   background: var(--color-background);
   border: 1px solid var(--color-border);
-  
+
   &.loading {
     border-color: var(--color-warning, #f59e0b);
     background: var(--color-warning-background, rgba(245, 158, 11, 0.1));
   }
-  
+
   &.error {
     border-color: var(--color-error, #ef4444);
     background: var(--color-error-background, rgba(239, 68, 68, 0.1));
@@ -539,7 +539,7 @@
   background: var(--color-background);
   border-radius: 8px;
   border: 1px dashed var(--color-border);
-  
+
   h3 {
     margin: 0 0 12px 0;
     font-size: 1rem;
@@ -556,9 +556,9 @@
   font-size: 0.875rem;
   color: var(--color-text-secondary);
   padding: 8px;
-  background: var(--color-surface);
+  background: var(--color-backgroundLightest);
   border-radius: 4px;
-  
+
   strong {
     color: var(--color-text);
   }

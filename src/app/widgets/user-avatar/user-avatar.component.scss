@@ -91,7 +91,7 @@
   right: 0;
   bottom: 0;
   border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(var(--text-rgb, 255, 255, 255), 0.2);
   pointer-events: none;
   opacity: 0.3;
   transition: opacity 0.2s ease;
@@ -108,7 +108,7 @@
   border-color: var(--user-color, #8B4513);
 
   .avatar-ring {
-    border-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(var(--text-rgb, 255, 255, 255), 0.1);
   }
 
   &.clickable:hover {
@@ -190,8 +190,8 @@
 // ✅ Print styles
 @media print {
   .user-avatar {
-    border: 1px solid #666;
-    background: #f5f5f5;
+    border: 1px solid var(--text-muted);
+    background: var(--background-lighter);
 
     .avatar-ring {
       display: none;

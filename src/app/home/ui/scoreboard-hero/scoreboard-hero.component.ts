@@ -1,22 +1,22 @@
 /**
  * @fileoverview ScoreboardHeroComponent - Main stats display with smart animations
- * 
+ *
  * RESPONSIBILITIES:
  * - Display user stats (points, pubs, badges) with visual impact
  * - Smart animations: skip count-up for small changes, use fade-in instead
  * - Loading states and error handling
  * - Responsive design for mobile/desktop
- * 
+ *
  * ANIMATION STRATEGY:
  * - Small changes (0→1, 1→2): Instant fade-in, feels responsive
  * - Medium changes (10+): Short count-up animation for satisfaction
  * - Large changes (100+): Full count-up animation for excitement
- * 
+ *
  * DATA FLOW:
  * - Receives ScoreboardData from HomeComponent as input
  * - HomeComponent gets data from UserStore (single source of truth)
  * - Real-time updates when stores change user stats
- * 
+ *
  * @architecture Dumb component - all data via inputs, animations self-contained
  */
 
@@ -63,7 +63,7 @@ export type ScoreboardData = {
   `,
   styles: [`
     .scoreboard-hero {
-      background: var(--color-surface);
+      background: var(--color-backgroundLightest);
       color: var(--color-text);
       border: 1px solid var(--color-border);
       border-radius: 12px;
@@ -138,7 +138,7 @@ export type ScoreboardData = {
     /* Loading state */
     .loading .points-value,
     .loading .stat-value {
-      background: var(--color-surfaceElevated);
+      background: var(--color-backgroundLightestElevated);
       border-radius: 4px;
       color: transparent;
       animation: pulse 1.5s ease-in-out infinite;
@@ -181,7 +181,7 @@ export type ScoreboardData = {
 export class ScoreboardHeroComponent implements OnDestroy {
   // ✅ Dumb component - receives all data as input
   readonly data = input.required<ScoreboardData>();
-  
+
   // 🔧 Dependencies
   private readonly debug = inject(DebugService);
 
@@ -255,7 +255,7 @@ export class ScoreboardHeroComponent implements OnDestroy {
   ): void {
     const currentValue = signalRef();
     const change = Math.abs(targetValue - currentValue);
-    
+
     this.debug.extreme(`[ScoreboardHero] Smart animate ${key}:`, {
       from: currentValue,
       to: targetValue,

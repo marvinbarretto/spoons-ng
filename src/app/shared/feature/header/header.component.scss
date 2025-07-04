@@ -20,7 +20,7 @@ nav {
   color: var(--color-text);
 
   // ✅ NEW: Theme-aware background
-  background-color: var(--color-surface);
+  background-color: var(--color-backgroundLightest);
   border-bottom: 1px solid var(--color-border);
 
   // ✅ NEW: Smooth transitions
@@ -73,18 +73,18 @@ small {
   opacity: 1;
 
   &--dev {
-    background-color: #ef4444;
-    color: white;
+    background-color: var(--error);
+    color: var(--accent-contrast);
   }
 
   &--prod {
-    background-color: #10b981;
-    color: white;
+    background-color: var(--success);
+    color: var(--accent-contrast);
   }
 
   &--local {
-    background-color: #6366f1;
-    color: white;
+    background-color: var(--info);
+    color: var(--accent-contrast);
   }
 }
 
@@ -105,7 +105,7 @@ small {
 
 .main-nav {
   // ✅ NEW: Use semantic theme tokens
-  background-color: var(--color-surface-elevated);
+  background-color: var(--color-backgroundLightest-elevated);
   border-bottom: 1px solid var(--color-border);
 
   align-items: center;
@@ -131,7 +131,7 @@ small {
   gap: 0.75rem;
   position: relative;
   z-index: 100;
-  background-color: var(--color-surface);
+  background-color: var(--color-backgroundLightest);
   color: var(--color-text);
 
   // ✅ NEW: Enhanced styling
@@ -282,7 +282,7 @@ nav ul {
   gap: 0;
 
   // ✅ NEW: Enhanced mobile menu styling
-  background-color: var(--color-surface-elevated);
+  background-color: var(--color-backgroundLightest-elevated);
   border: 1px solid var(--color-border);
   border-radius: 0 0 1rem 1rem;
   box-shadow: var(--color-shadow);
@@ -298,7 +298,7 @@ nav ul {
 }
 
 [data-theme="amber"] .main-nav {
-  background: linear-gradient(135deg, var(--color-surface-elevated) 0%, var(--color-surface) 100%);
+  background: linear-gradient(135deg, var(--color-backgroundLightest-elevated) 0%, var(--color-backgroundLightest) 100%);
 }
 
 [data-theme="coral"] .menu {
@@ -313,7 +313,7 @@ nav ul {
 
   .main-nav {
     backdrop-filter: blur(20px);
-    background-color: rgba(var(--color-surface-elevated), 0.9);
+    background-color: rgba(var(--color-backgroundLightest-elevated), 0.9);
   }
 
   .menu--open {
@@ -324,9 +324,9 @@ nav ul {
 // ✅ NEW: Print styles
 @media print {
   .header {
-    background: white !important;
-    color: black !important;
-    border-bottom: 1px solid #ccc;
+    background: var(--background-lightest) !important;
+    color: var(--text) !important;
+    border-bottom: 1px solid var(--border);
   }
 
   .main-nav {

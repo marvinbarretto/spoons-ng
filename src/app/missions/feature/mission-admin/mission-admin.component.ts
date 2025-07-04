@@ -192,7 +192,7 @@ import type { Mission } from '../../utils/mission.model';
     .empty-state {
       text-align: center;
       padding: 4rem 2rem;
-      background: var(--color-surface, #ffffff);
+      background: var(--color-backgroundLightest, #ffffff);
       border: 1px solid var(--color-border, #e5e7eb);
       border-radius: 12px;
     }
@@ -244,7 +244,7 @@ import type { Mission } from '../../utils/mission.model';
     }
 
     .stat-card {
-      background: var(--color-surface, #ffffff);
+      background: var(--color-backgroundLightest, #ffffff);
       border: 1px solid var(--color-border, #e5e7eb);
       border-radius: 8px;
       padding: 1.5rem;
@@ -265,7 +265,7 @@ import type { Mission } from '../../utils/mission.model';
     }
 
     .missions-table-container {
-      background: var(--color-surface, #ffffff);
+      background: var(--color-backgroundLightest, #ffffff);
       border: 1px solid var(--color-border, #e5e7eb);
       border-radius: 12px;
       overflow: hidden;
@@ -411,7 +411,7 @@ import type { Mission } from '../../utils/mission.model';
     }
 
     .debug-content pre {
-      background: var(--color-surface, #ffffff);
+      background: var(--color-backgroundLightest, #ffffff);
       padding: 1rem;
       border-radius: 6px;
       border: 1px solid var(--color-border, #e5e7eb);
