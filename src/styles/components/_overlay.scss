@@ -31,7 +31,7 @@
 }
 
 .overlay-backdrop {
-  background: var(--color-overlay, rgba(0, 0, 0, 0.5));
+  background: var(--overlay);
   backdrop-filter: blur(2px);
   animation: fadeIn 200ms ease-out;
 }
@@ -60,9 +60,7 @@
 .overlay-panel {
   /* Panel-specific styling */
   border-radius: clamp(8px, 1.5vw, 16px);
-  box-shadow:
-    0 4px 24px var(--color-shadow, rgba(0, 0, 0, 0.15)),
-    0 8px 64px var(--color-shadow, rgba(0, 0, 0, 0.1));
+  box-shadow: var(--shadow);
 
   animation: slideInScale 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
 
@@ -133,7 +131,7 @@
 
 /* ✅ ACCESSIBILITY IMPROVEMENTS */
 .overlay-panel:focus {
-  outline: 2px solid var(--color-primary);
+  outline: 2px solid var(--primary);
   outline-offset: -2px;
 }
 
@@ -156,7 +154,7 @@
 /* ✅ HIGH CONTRAST MODE SUPPORT */
 @media (prefers-contrast: high) {
   .overlay-backdrop {
-    background: rgba(0, 0, 0, 0.8);
+    background: var(--overlay);
     backdrop-filter: none;
   }
 
