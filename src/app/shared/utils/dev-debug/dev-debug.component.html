@@ -59,9 +59,45 @@
             </span>
           </div>
           <div class="count-item">
+            <span class="count-label">Pubs:</span>
+            <span class="count-value" [class.zero]="counts().pubs === 0">
+              {{ counts().pubs }}
+            </span>
+          </div>
+          <div class="count-item">
             <span class="count-label">Check-ins:</span>
             <span class="count-value" [class.zero]="counts().checkIns === 0">
               {{ counts().checkIns }}
+            </span>
+          </div>
+          <div class="count-item">
+            <span class="count-label">Feedback:</span>
+            <span class="count-value" [class.zero]="counts().feedback === 0">
+              {{ counts().feedback }}
+            </span>
+          </div>
+          <div class="count-item">
+            <span class="count-label">Points:</span>
+            <span class="count-value" [class.zero]="counts().pointsTransactions === 0">
+              {{ counts().pointsTransactions }}
+            </span>
+          </div>
+          <div class="count-item">
+            <span class="count-label">Missions:</span>
+            <span class="count-value" [class.zero]="counts().missions === 0">
+              {{ counts().missions }}
+            </span>
+          </div>
+          <div class="count-item">
+            <span class="count-label">Progress:</span>
+            <span class="count-value" [class.zero]="counts().userMissionProgress === 0">
+              {{ counts().userMissionProgress }}
+            </span>
+          </div>
+          <div class="count-item">
+            <span class="count-label">Badges:</span>
+            <span class="count-value" [class.zero]="counts().earnedBadges === 0">
+              {{ counts().earnedBadges }}
             </span>
           </div>
           <div class="count-item">
@@ -70,140 +106,41 @@
               {{ counts().landlords }}
             </span>
           </div>
-          <div class="count-item">
-            <span class="count-label">Earned Badges:</span>
-            <span class="count-value" [class.zero]="counts().earnedBadges === 0">
-              {{ counts().earnedBadges }}
-            </span>
-          </div>
-          <div class="count-item">
-            <span class="count-label">Pubs:</span>
-            <span class="count-value" [class.zero]="counts().pubs === 0">
-              {{ counts().pubs }}
-            </span>
-          </div>
         </div>
       </div>
 
       <!-- Cleanup Actions -->
       <div class="section">
         <div class="section-header">
-          <h4>🧽 Database Cleanup</h4>
+          <h4>🧽 Database Reset</h4>
         </div>
 
         <div class="action-groups">
-          <!-- Bulk Cleanup -->
           <div class="action-group">
-            <div class="group-label">💥 Bulk Operations</div>
+            <div class="group-label">🔥 Clean Slate Operations</div>
 
             <button
               class="btn danger nuclear"
               (click)="clearEverything()"
               [disabled]="cleanupLoading()"
-              title="Delete EVERYTHING including badge definitions">
-              ☢️ Nuclear Reset
+              title="Delete ALL data from ALL collections - complete fresh start">
+              ☢️ Nuclear Reset (Everything)
             </button>
-
 
             <button
               class="btn warning"
               (click)="clearAllUsers()"
               [disabled]="cleanupLoading()"
-              title="Clear users, check-ins, landlords, earned badges, and cached carpet images (keeps badge definitions and pubs)">
-              🧹 Clear All Test Data & Cache
+              title="Clear test data but keep pubs and system data">
+              🧹 Clear Test Data Only
             </button>
-          </div>
-
-          <!-- Individual Collections -->
-          <div class="action-group">
-            <div class="group-label">🎯 Individual Collections</div>
-
-            <button
-              class="btn secondary"
-              (click)="clearCheckIns()"
-              [disabled]="cleanupLoading()">
-              📍 Clear Check-ins
-            </button>
-
-            <button
-              class="btn secondary"
-              (click)="clearLandlords()"
-              [disabled]="cleanupLoading()">
-              🏠 Clear Landlords
-            </button>
-
-            <button
-              class="btn secondary"
-              (click)="clearEarnedBadges()"
-              [disabled]="cleanupLoading()">
-              🏆 Clear Earned Badges
-            </button>
-
-            <button
-              class="btn secondary"
-              (click)="clearPubs()"
-              [disabled]="cleanupLoading()">
-              🏢 Clear Pubs
-            </button>
-
-            <button
-              class="btn secondary"
-              (click)="clearUsersOnly()"
-              [disabled]="cleanupLoading()">
-              👤 Clear Users Only
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Store Management -->
-      <div class="section">
-        <div class="section-header">
-          <h4>🔄 Store Management</h4>
-        </div>
-
-        <div class="action-groups">
-          <div class="action-group">
-            <div class="group-label">🔄 Refresh & Reset</div>
 
             <button
               class="btn primary"
-              (click)="refreshAllStores()">
-              🔄 Refresh All Stores
-            </button>
-
-            <button
-              class="btn secondary"
-              (click)="resetBadgeStore()">
-              🏆 Reset Badge Store
-            </button>
-
-            <button
-              class="btn secondary"
-              (click)="clearErrors()">
-              🧹 Clear Store Errors
-            </button>
-          </div>
-
-          <div class="action-group">
-            <div class="group-label">🔍 Debugging</div>
-
-            <button
-              class="btn info"
-              (click)="logDatabaseState()">
-              📊 Log DB State
-            </button>
-
-            <button
-              class="btn info"
-              (click)="debugBadgeState()">
-              🏆 Debug Badges
-            </button>
-
-            <button
-              class="btn info"
-              (click)="checkDatabaseEmpty()">
-              🔍 Check DB Empty
+              (click)="refreshAllStores()"
+              [disabled]="cleanupLoading()"
+              title="Refresh data display without deleting anything">
+              🔄 Refresh Data
             </button>
           </div>
         </div>

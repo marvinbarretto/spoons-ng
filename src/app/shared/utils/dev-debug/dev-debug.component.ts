@@ -54,7 +54,11 @@ export class DevDebugComponent extends BaseComponent {
     checkIns: 0,
     pubs: 0,
     landlords: 0,
-    earnedBadges: 0
+    earnedBadges: 0,
+    userMissionProgress: 0,
+    pointsTransactions: 0,
+    missions: 0,
+    feedback: 0
   });
 
   // Database summary
@@ -319,72 +323,8 @@ export class DevDebugComponent extends BaseComponent {
     }
   }
 
-  /**
-   * Clear individual collections
-   */
-  protected async clearCheckIns(): Promise<void> {
-    if (!confirm('Delete ALL check-ins? This cannot be undone.')) return;
-
-    this.cleanupLoading.set(true);
-    this.lastCleanupResult.set(null);
-
-    try {
-      const result = await this.cleanupService.clearCheckIns();
-      this.lastCleanupResult.set(result);
-      await this.refreshCounts();
-      this.checkinStore.reset();
-    } finally {
-      this.cleanupLoading.set(false);
-    }
-  }
-
-  protected async clearLandlords(): Promise<void> {
-    if (!confirm('Delete ALL landlords? This cannot be undone.')) return;
-
-    this.cleanupLoading.set(true);
-    this.lastCleanupResult.set(null);
-
-    try {
-      const result = await this.cleanupService.clearLandlords();
-      this.lastCleanupResult.set(result);
-      await this.refreshCounts();
-      this.landlordStore.reset();
-    } finally {
-      this.cleanupLoading.set(false);
-    }
-  }
-
-  protected async clearEarnedBadges(): Promise<void> {
-    if (!confirm('Delete ALL earned badges? (keeps badge definitions)')) return;
-
-    this.cleanupLoading.set(true);
-    this.lastCleanupResult.set(null);
-
-    try {
-      const result = await this.cleanupService.clearEarnedBadges();
-      this.lastCleanupResult.set(result);
-      await this.refreshCounts();
-      this.badgeStore.reset();
-    } finally {
-      this.cleanupLoading.set(false);
-    }
-  }
-
-  protected async clearPubs(): Promise<void> {
-    if (!confirm('Delete ALL pubs? This cannot be undone.')) return;
-
-    this.cleanupLoading.set(true);
-    this.lastCleanupResult.set(null);
-
-    try {
-      const result = await this.cleanupService.clearCollection('pubs');
-      this.lastCleanupResult.set(result);
-      await this.refreshCounts();
-      this.pubStore.reset();
-    } finally {
-      this.cleanupLoading.set(false);
-    }
-  }
+  // Individual collection clearing methods removed for UI simplification
+  // Use nuclear reset or test data clearing instead
 
   protected async clearUsersOnly(): Promise<void> {
     // Analyze users first
@@ -589,55 +529,6 @@ export class DevDebugComponent extends BaseComponent {
   // 🔍 DEBUGGING HELPERS
   // ===================================
 
-  logDatabaseState(): void {
-    const counts = this.counts();
-    const summary = this.databaseSummary();
-    const health = this.databaseHealth();
-
-    console.group('🔍 [DevDebugComponent] Database State');
-    console.log('Collection Counts:', counts);
-    console.log('Database Summary:', summary);
-    console.log('Database Health:', health);
-    console.log('Store Status:', this.storeStatus());
-    console.groupEnd();
-  }
-
-  debugBadgeState(): void {
-    const user = this.authStore.user();
-    const badgeState = {
-      user: user ? { uid: user.uid, displayName: user.displayName } : null,
-      definitions: this.badgeStore.definitions().length,
-      earnedBadges: this.badgeStore.earnedBadges().length,
-      loading: this.badgeStore.loading(),
-      error: this.badgeStore.error(),
-      debugInfo: this.badgeStore.getDebugInfo()
-    };
-
-    console.log('🔍 [DevDebugComponent] Badge State Debug:', badgeState);
-  }
-
-  resetBadgeStore(): void {
-    console.log('[DevDebugComponent] 🔄 Force resetting badge store...');
-    this.badgeStore.reset();
-    console.log('[DevDebugComponent] ✅ Badge store reset complete');
-  }
-
-  async checkDatabaseEmpty(): Promise<void> {
-    const summary = await this.cleanupService.getDatabaseSummary();
-    const message = summary.isEmpty
-      ? '✅ Database is completely empty'
-      : `📊 Database has ${summary.totalDocuments} documents total`;
-
-    console.log('[DevDebugComponent]', message);
-    alert(message);
-  }
-
-  clearErrors(): void {
-    console.log('🧹 [DevDebugComponent] Clearing store errors...');
-    [this.pubStore, this.checkinStore, this.userStore, this.badgeStore].forEach(store => {
-      if ('clearError' in store && typeof store.clearError === 'function') {
-        store.clearError();
-      }
-    });
-  }
+  // Debugging methods removed for UI simplification  
+  // Use browser dev tools and console logs from cleanup operations instead
 }

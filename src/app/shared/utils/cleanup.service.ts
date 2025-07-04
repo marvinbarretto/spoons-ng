@@ -109,16 +109,24 @@ export class CleanupService extends FirestoreService {
     landlords: number;
     earnedBadges: number;
     pubs: number;
+    userMissionProgress: number;
+    pointsTransactions: number;
+    missions: number;
+    feedback: number;
   }> {
-    const [users, checkIns, landlords, earnedBadges, pubs] = await Promise.all([
+    const [users, checkIns, landlords, earnedBadges, pubs, userMissionProgress, pointsTransactions, missions, feedback] = await Promise.all([
       this.getCollectionCount('users'),
       this.getCollectionCount('checkins'),
       this.getCollectionCount('landlords'),
       this.getCollectionCount('earnedBadges'),
-      this.getCollectionCount('pubs')
+      this.getCollectionCount('pubs'),
+      this.getCollectionCount('userMissionProgress'),
+      this.getCollectionCount('pointsTransactions'),
+      this.getCollectionCount('missions'),
+      this.getCollectionCount('feedback')
     ]);
 
-    return { users, checkIns, landlords, earnedBadges, pubs };
+    return { users, checkIns, landlords, earnedBadges, pubs, userMissionProgress, pointsTransactions, missions, feedback };
   }
 
   // ===================================
@@ -410,25 +418,75 @@ export class CleanupService extends FirestoreService {
     landlords: CleanupResult;
     earnedBadges: CleanupResult;
     badges: CleanupResult;
-    pubs?: CleanupResult;
+    pubs: CleanupResult;
+    userMissionProgress: CleanupResult;
+    pointsTransactions: CleanupResult;
+    missions: CleanupResult;
+    feedback: CleanupResult;
   }> {
-    console.log('[CleanupService] ☢️ NUCLEAR CLEANUP - Clearing ALL data...');
+    console.log('🔥🔥🔥 [CleanupService] ☢️ NUCLEAR CLEANUP STARTED 🔥🔥🔥');
+    console.log('[CleanupService] This will DELETE ALL DATA from ALL collections');
+    
+    // Get current counts for before/after comparison
+    console.log('[CleanupService] 📊 Getting current database state...');
+    const beforeCounts = await this.getCollectionCounts();
+    const totalBefore = Object.values(beforeCounts).reduce((sum, count) => sum + count, 0);
+    
+    console.log('[CleanupService] 📊 BEFORE Nuclear Reset:');
+    console.log(`[CleanupService]   Total Documents: ${totalBefore}`);
+    Object.entries(beforeCounts).forEach(([collection, count]) => {
+      console.log(`[CleanupService]   ${collection}: ${count} docs`);
+    });
 
-    const [users, checkIns, landlords, earnedBadges, badges] = await Promise.all([
-      this.clearUsers(),
+    console.log('[CleanupService] 🚀 Starting parallel deletion of ALL collections...');
+
+    // Clear ALL collections in parallel - including the missing ones
+    const [users, checkIns, landlords, earnedBadges, badges, pubs, userMissionProgress, pointsTransactions, missions, feedback] = await Promise.all([
+      this.clearAllUsersIncludingReal(), // Use dangerous version for true nuclear reset
       this.clearCheckIns(),
       this.clearLandlords(),
       this.clearEarnedBadges(),
-      this.clearBadgeDefinitions()
+      this.clearBadgeDefinitions(),
+      this.clearCollection('pubs'),
+      this.clearCollection('userMissionProgress'),
+      this.clearCollection('pointsTransactions'),
+      this.clearCollection('missions'),
+      this.clearCollection('feedback')
     ]);
 
-    const totalDeleted = users.deletedCount + checkIns.deletedCount +
-                        landlords.deletedCount + earnedBadges.deletedCount +
-                        badges.deletedCount;
+    // Calculate total deleted
+    const results = { users, checkIns, landlords, earnedBadges, badges, pubs, userMissionProgress, pointsTransactions, missions, feedback };
+    const totalDeleted = Object.values(results).reduce((sum, result) => sum + result.deletedCount, 0);
+    
+    // Log detailed results
+    console.log('[CleanupService] 📊 NUCLEAR RESET RESULTS:');
+    Object.entries(results).forEach(([collection, result]) => {
+      const status = result.success ? '✅' : '❌';
+      console.log(`[CleanupService]   ${status} ${collection}: deleted ${result.deletedCount} docs ${result.error ? `(Error: ${result.error})` : ''}`);
+    });
 
-    console.log(`[CleanupService] ☢️ Nuclear cleanup complete. Deleted: ${totalDeleted} documents`);
+    console.log(`[CleanupService] 🔥 TOTAL DELETED: ${totalDeleted} documents`);
+    
+    // Get after counts to verify
+    console.log('[CleanupService] 📊 Verifying deletion...');
+    const afterCounts = await this.getCollectionCounts();
+    const totalAfter = Object.values(afterCounts).reduce((sum, count) => sum + count, 0);
+    
+    console.log('[CleanupService] 📊 AFTER Nuclear Reset:');
+    console.log(`[CleanupService]   Total Documents: ${totalAfter}`);
+    if (totalAfter > 0) {
+      Object.entries(afterCounts).forEach(([collection, count]) => {
+        if (count > 0) {
+          console.warn(`[CleanupService]   ⚠️ ${collection}: ${count} docs REMAIN`);
+        }
+      });
+    } else {
+      console.log('[CleanupService] ✅ Database is completely empty!');
+    }
 
-    return { users, checkIns, landlords, earnedBadges, badges };
+    console.log('🔥🔥🔥 [CleanupService] ☢️ NUCLEAR CLEANUP COMPLETED 🔥🔥🔥');
+
+    return results;
   }
 
   // ===================================
