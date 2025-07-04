@@ -3,19 +3,41 @@ import { Component, computed, input, output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
 import { PubStore } from '../../../pubs/data-access/pub.store';
+import { PubChipComponent } from '../pub-chip/pub-chip.component';
 import type { Mission } from '../../utils/mission.model';
 import type { Pub } from '../../../pubs/utils/pub.models';
 
 @Component({
   selector: 'app-mission-card',
-  imports: [CommonModule],
+  imports: [CommonModule, PubChipComponent],
   template: `
     <article
       class="mission-card"
       [class.mission-card--joined]="isJoined()"
     >
       <header class="mission-card__header">
-        <h3 class="mission-card__title">{{ mission().name }}</h3>
+        <div class="mission-card__title-section">
+          <h3 class="mission-card__title">
+            @if (mission().emoji) {
+              <span class="mission-card__emoji">{{ mission().emoji }}</span>
+            }
+            {{ mission().name }}
+          </h3>
+          <div class="mission-card__meta">
+            @if (mission().category) {
+              <span class="meta-badge meta-badge--category">{{ mission().category }}</span>
+            }
+            @if (mission().subcategory) {
+              <span class="meta-badge meta-badge--subcategory">{{ mission().subcategory }}</span>
+            }
+            @if (mission().difficulty) {
+              <span class="meta-badge meta-badge--difficulty meta-badge--{{ mission().difficulty }}">{{ mission().difficulty }}</span>
+            }
+            @if (mission().featured) {
+              <span class="meta-badge meta-badge--featured">⭐ Featured</span>
+            }
+          </div>
+        </div>
         <div class="mission-card__status">
           @if (isJoined()) {
             <span class="status-badge status-badge--joined">
@@ -40,6 +62,13 @@ import type { Pub } from '../../../pubs/utils/pub.models';
             <span class="stat__value">{{ mission().pubIds.length }}</span>
           </div>
 
+          @if (mission().pointsReward) {
+            <div class="stat stat--highlighted">
+              <span class="stat__label">💰 Points:</span>
+              <span class="stat__value stat__value--points">{{ mission().pointsReward }}</span>
+            </div>
+          }
+
           @if (mission().badgeRewardId) {
             <div class="stat">
               <span class="stat__label">🏆 Reward:</span>
@@ -53,30 +82,36 @@ import type { Pub } from '../../../pubs/utils/pub.models';
               <span class="stat__value">{{ progress() }}/{{ mission().pubIds.length }}</span>
             </div>
           }
+
+          @if (mission().requiredPubs && mission().totalPubs && mission().requiredPubs !== mission().totalPubs) {
+            <div class="stat">
+              <span class="stat__label">Required:</span>
+              <span class="stat__value">{{ mission().requiredPubs }}/{{ mission().totalPubs }}</span>
+            </div>
+          }
         </div>
 
         @if (missionPubs().pubs.length > 0) {
           <div class="mission-card__pubs">
-            <h4 class="mission-card__pubs-title">Pubs in this mission:</h4>
-
-            <!-- TODO: Make the pub crests a mini component? -->
-            <div class="pub-crests">
-              @for (pub of missionPubs().displayPubs; track pub.id) {
-                <div class="pub-crest" [class.pub-crest--completed]="pub.hasVisited" [title]="pub.name">
-                  <div class="pub-crest__icon">
-                    @if (pub.hasVisited) {
-                      ✅
-                    } @else {
-                      🍺
-                    }
-                  </div>
-                  <div class="pub-crest__name">{{ pub.name.substring(0, 12) }}{{ pub.name.length > 12 ? '...' : '' }}</div>
-                </div>
-              }
-              @if (missionPubs().hasMore) {
-                <div class="more-pubs">+{{ missionPubs().moreCount }}</div>
-              }
-            </div>
+            <details class="pub-list-details">
+              <summary class="pub-list-summary">
+                <span class="pub-list-count">{{ missionPubs().pubs.length }} Pubs in this mission</span>
+                <span class="pub-list-toggle-icon">▼</span>
+              </summary>
+              <div class="pub-chips">
+                @for (pubDetail of missionPubs().pubs; track pubDetail.id) {
+                  @if (pubDetail.pub) {
+                    <app-pub-chip
+                      [pub]="pubDetail.pub"
+                      [hasVisited]="pubDetail.hasVisited"
+                      [visitCount]="pubDetail.visitCount"
+                      [showLocation]="true"
+                      [showCarpet]="false"
+                    />
+                  }
+                }
+              </div>
+            </details>
           </div>
         }
       </div>
@@ -105,7 +140,7 @@ import type { Pub } from '../../../pubs/utils/pub.models';
   `,
   styles: `
     .mission-card {
-      background: linear-gradient(135deg, var(--color-background-lightest, #ffffff) 0%, rgba(59, 130, 246, 0.02) 100%);
+      background: linear-gradient(135deg, var(--background-darkest, #ffffff) 0%, rgba(59, 130, 246, 0.02) 100%);
       border: 2px solid transparent;
       border-radius: 8px;
       padding: 1.5rem;
@@ -147,16 +182,92 @@ import type { Pub } from '../../../pubs/utils/pub.models';
       gap: 1rem;
     }
 
+    .mission-card__title-section {
+      flex: 1;
+      min-width: 0;
+    }
+
     .mission-card__title {
       font-size: 1.375rem;
       font-weight: 700;
-      margin: 0;
-      color: var(--color-text-primary, #111827);
-      background: linear-gradient(135deg, #1f2937 0%, #3b82f6 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      margin: 0 0 0.5rem 0;
+      color: var(--text);
       line-height: 1.2;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .mission-card__emoji {
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+
+    .mission-card__meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.375rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .meta-badge {
+      font-size: 0.625rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.025em;
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .meta-badge--category {
+      background: rgba(59, 130, 246, 0.1);
+      color: var(--primary, #3b82f6);
+      border-color: rgba(59, 130, 246, 0.2);
+    }
+
+    .meta-badge--subcategory {
+      background: rgba(147, 51, 234, 0.1);
+      color: #9333ea;
+      border-color: rgba(147, 51, 234, 0.2);
+    }
+
+    .meta-badge--difficulty {
+      border-color: rgba(156, 163, 175, 0.3);
+    }
+
+    .meta-badge--easy {
+      background: rgba(34, 197, 94, 0.1);
+      color: #22c55e;
+      border-color: rgba(34, 197, 94, 0.2);
+    }
+
+    .meta-badge--medium {
+      background: rgba(234, 179, 8, 0.1);
+      color: #eab308;
+      border-color: rgba(234, 179, 8, 0.2);
+    }
+
+    .meta-badge--hard {
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+      border-color: rgba(239, 68, 68, 0.2);
+    }
+
+    .meta-badge--extreme {
+      background: rgba(139, 69, 19, 0.1);
+      color: #8b4513;
+      border-color: rgba(139, 69, 19, 0.2);
+    }
+
+    .meta-badge--featured {
+      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+      color: white;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      border-color: #f59e0b;
     }
 
     .mission-card__status {
@@ -210,7 +321,7 @@ import type { Pub } from '../../../pubs/utils/pub.models';
     }
 
     .mission-card__description {
-      color: var(--color-text-secondary, #6b7280);
+      color: var(--text-secondary, #6b7280);
       margin: 0 0 1.5rem;
       line-height: 1.6;
       font-size: 0.95rem;
@@ -232,7 +343,7 @@ import type { Pub } from '../../../pubs/utils/pub.models';
 
     .stat__label {
       font-size: 0.75rem;
-      color: var(--color-text-secondary, #6b7280);
+      color: var(--text-secondary, #6b7280);
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.025em;
@@ -240,14 +351,27 @@ import type { Pub } from '../../../pubs/utils/pub.models';
 
     .stat__value {
       font-size: 0.95rem;
-      color: var(--color-text-primary, #111827);
+      color: var(--text, #111827);
       font-weight: 700;
+    }
+
+    .stat--highlighted {
+      padding: 0.5rem;
+      background: rgba(59, 130, 246, 0.05);
+      border: 1px solid rgba(59, 130, 246, 0.1);
+      border-radius: 6px;
+    }
+
+    .stat__value--points {
+      color: var(--primary, #3b82f6);
+      font-size: 1.1rem;
+      font-weight: 800;
     }
 
     .mission-card__progress {
       margin-top: 1rem;
       padding-top: 0.75rem;
-      border-top: 1px solid var(--color-border, #e5e7eb);
+      border-top: 1px solid var(--border, #e5e7eb);
     }
 
     .progress-bar {
@@ -287,7 +411,7 @@ import type { Pub } from '../../../pubs/utils/pub.models';
 
     .progress-text {
       font-size: 0.875rem;
-      color: var(--color-text-secondary, #6b7280);
+      color: var(--text-secondary, #6b7280);
       display: flex;
       align-items: center;
       gap: 0.5rem;
@@ -306,95 +430,65 @@ import type { Pub } from '../../../pubs/utils/pub.models';
       letter-spacing: 0.025em;
     }
 
-    /* Pub crests display - similar to badge crests */
+    /* Pub list display with details/summary */
     .mission-card__pubs {
       margin-top: 1rem;
       padding-top: 1rem;
-      border-top: 1px solid var(--color-border, #e5e7eb);
+      border-top: 1px solid var(--border);
     }
 
-    .mission-card__pubs-title {
-      font-size: 0.875rem;
+    .pub-list-details {
+      border: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .pub-list-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem;
+      background: var(--background-darker);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      list-style: none;
       font-weight: 600;
-      color: var(--color-text-primary, #111827);
-      margin: 0 0 0.75rem 0;
+      color: var(--text);
+      margin-bottom: 0.75rem;
+    }
+
+    .pub-list-summary:hover {
+      background: var(--background-darkest);
+      border-color: var(--border-strong);
+    }
+
+    .pub-list-summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .pub-list-count {
+      font-size: 0.875rem;
       text-transform: uppercase;
       letter-spacing: 0.025em;
     }
 
-    .pub-crests {
-      display: flex;
-      gap: 0.375rem;
-      flex-wrap: wrap;
-      justify-content: flex-start;
-      align-items: flex-start;
+    .pub-list-toggle-icon {
+      font-size: 0.75rem;
+      transition: transform 0.2s ease;
     }
 
-    .pub-crest {
+    .pub-list-details[open] .pub-list-toggle-icon {
+      transform: rotate(180deg);
+    }
+
+    .pub-chips {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      gap: 0.25rem;
-      padding: 0.5rem 0.375rem;
-      background: var(--color-background-lightest, #f9fafb);
-      border: 1px solid var(--color-border, #e5e7eb);
-      border-radius: 8px;
-      min-width: 60px;
-      max-width: 80px;
-      transition: all 0.2s ease;
-      cursor: default;
+      gap: 0.5rem;
     }
 
-    .pub-crest:hover {
-      background: var(--color-gray-50, #f8fafc);
-      border-color: var(--color-primary, #3b82f6);
-      transform: translateY(-1px);
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    .pub-crest--completed {
-      background: rgba(16, 185, 129, 0.1);
-      border-color: rgba(16, 185, 129, 0.3);
-    }
-
-    .pub-crest--completed:hover {
-      background: rgba(16, 185, 129, 0.15);
-      border-color: rgba(16, 185, 129, 0.5);
-    }
-
-    .pub-crest__icon {
-      font-size: 1rem;
-      line-height: 1;
-    }
-
-    .pub-crest__name {
-      font-size: 0.6875rem;
-      font-weight: 500;
-      color: var(--color-text-secondary, #6b7280);
-      text-align: center;
-      line-height: 1.2;
-      word-break: break-word;
-    }
-
-    .pub-crest--completed .pub-crest__name {
-      color: var(--color-success, #10b981);
-      font-weight: 600;
-    }
-
-    .more-pubs {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-width: 60px;
-      height: 3.5rem;
-      font-size: 0.625rem;
-      font-weight: bold;
-      color: var(--color-text-secondary, #6b7280);
-      background: var(--color-background-lightest, #f9fafb);
-      border: 1px solid var(--color-border, #e5e7eb);
-      border-radius: 8px;
-      margin-left: 0.125rem;
-    }
 
     /* Responsive design */
     @media (max-width: 640px) {
@@ -420,33 +514,15 @@ import type { Pub } from '../../../pubs/utils/pub.models';
 
       /* Hover effects removed - parent components can add their own hover styles */
 
-      .mission-card__title {
-        background: linear-gradient(135deg, #f3f4f6 0%, #60a5fa 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-      }
+      /* Title styling handled by theme tokens */
 
-      .pub-crest {
-        background: rgba(55, 65, 81, 0.6);
-        border-color: rgba(75, 85, 99, 0.4);
-      }
-
-      .pub-crest--completed {
-        background: rgba(16, 185, 129, 0.15);
-        border-color: rgba(16, 185, 129, 0.4);
-      }
-
-      .more-pubs {
-        background: rgba(55, 65, 81, 0.6);
-        border-color: rgba(75, 85, 99, 0.4);
-      }
+      /* Dark mode styles handled by theme tokens */
     }
 
     .mission-card__actions {
       margin-top: 1rem;
       padding-top: 1rem;
-      border-top: 1px solid var(--color-border, #e5e7eb);
+      border-top: 1px solid var(--border, #e5e7eb);
       display: flex;
       gap: 0.75rem;
       flex-wrap: wrap;
@@ -479,7 +555,7 @@ export class MissionCardComponent {
     return Math.round((prog / total) * 100);
   });
 
-  // ✅ Mission pub details with crest data
+  // ✅ Mission pub details
   readonly missionPubs = computed(() => {
     const mission = this.mission();
     const allPubs = this.pubStore.pubs();
@@ -495,22 +571,13 @@ export class MissionCardComponent {
         name: pub?.name || 'Unknown Pub',
         hasVisited,
         visitCount: hasVisited ? this.dataAggregatorService.getVisitCountForPub(pubId) : 0,
-        // Prepare crest data similar to badge crests
         hasCrest: !!pub?.carpetUrl
       };
     });
 
-    // For display, limit to first 6 pubs and show "+X more" if needed
-    const displayPubs = pubDetails.slice(0, 6);
-    const hasMore = pubDetails.length > 6;
-    const moreCount = hasMore ? pubDetails.length - 6 : 0;
-
     return {
       pubCount: mission.pubIds.length,
       pubs: pubDetails,
-      displayPubs,
-      hasMore,
-      moreCount,
       completedCount: pubDetails.filter(p => p.hasVisited).length
     };
   });
