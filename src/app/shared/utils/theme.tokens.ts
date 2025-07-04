@@ -1,5 +1,5 @@
 // ===== SIMPLIFIED THEME SYSTEM =====
-export type ThemeType = 'sage' | 'amber' | 'slate' | 'coral' | 'forest';
+export type ThemeType = 'fresh' | 'sunshine' | 'midnight' | 'coral' | 'forest';
 
 export type Theme = {
   name: string;
@@ -88,161 +88,35 @@ export type Theme = {
 // ===== THEME DEFINITIONS =====
 
 export const themes: Record<ThemeType, Theme> = {
-  sage: {
-    name: 'Sage',
+  fresh: {
+    name: 'Forest Fresh',
     isDark: false,
     colors: {
       // ===== NEW SEMANTIC PROPERTIES =====
       // Background scales
-      background: '#fafaf9',          // Main app background
+      background: '#f8fcf8',          // Main app background
       backgroundLighter: '#ffffff',   // Widget backgrounds
-      backgroundLightest: '#f4f4f3',  // Elevated surfaces
-      backgroundDarker: '#f0f0ef',    // Recessed areas
-      backgroundDarkest: '#e8e7e5',   // Deep contrast
+      backgroundLightest: '#f0fdf0',  // Elevated surfaces
+      backgroundDarker: '#ecfdf5',    // Recessed areas
+      backgroundDarkest: '#dcfce7',   // Deep contrast
 
       // Text scales
-      text: '#2d2c26',                // Primary text
-      textSecondary: '#4f4d45',       // Secondary text
-      textMuted: '#7c7970',           // Disabled/muted text
+      text: '#14532d',                // Primary text
+      textSecondary: '#166534',       // Secondary text
+      textMuted: '#15803d',           // Disabled/muted text
 
       // Border scales
-      border: '#e8e7e5',              // Default borders
-      borderStrong: '#d6d4d1',        // Emphasized borders
+      border: '#dcfce7',              // Default borders
+      borderStrong: '#bbf7d0',        // Emphasized borders
 
       // Interactive colors
-      accent: '#5d7a5c',              // Primary actions (sage green)
-      accentHover: '#4a624a',         // Primary hover
+      accent: '#059669',              // Primary actions (deeper emerald)
+      accentHover: '#047857',         // Primary hover
       accentContrast: '#ffffff',      // Text on accent
 
-      secondary: '#e8e7e5',           // Secondary actions
-      secondaryHover: '#d6d4d1',      // Secondary hover
-      secondaryContrast: '#2d2c26',   // Text on secondary
-
-      // Semantic colors
-      success: '#16a34a',
-      warning: '#eab308',
-      error: '#dc2626',
-      info: '#0ea5e9',
-
-      // ===== DEPRECATED PROPERTIES (backward compatibility) =====
-      surface: '#ffffff',
-      surfaceElevated: '#f4f4f3',
-      primary: '#5d7a5c',
-      primaryHover: '#4a624a',
-      primaryActive: '#3d503d',
-      primaryText: '#ffffff',
-      secondaryActive: '#a8a5a0',
-      secondaryText: '#2d2c26',
-      successText: '#ffffff',
-      warningText: '#422006',
-      errorText: '#ffffff',
-      infoText: '#ffffff',
-      borderSecondary: '#f4f4f3',
-      overlay: 'rgba(45, 44, 38, 0.5)',
-      shadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-      link: '#5d7a5c',
-      linkHover: '#4a624a',
-      linkVisited: '#7a9279',
-      light: '#f6f7f6',
-      lighter: '#e3e8e3',
-      dark: '#334033',
-      darker: '#2a352a',
-      accentLight: '#fef9c3'
-    }
-  },
-
-  amber: {
-    name: 'Amber',
-    isDark: false,
-    colors: {
-      // ===== NEW SEMANTIC PROPERTIES =====
-      // Background scales
-      background: '#fefdf9',          // Main app background
-      backgroundLighter: '#fffef5',   // Widget backgrounds
-      backgroundLightest: '#ffffff',  // Elevated surfaces
-      backgroundDarker: '#fef9ed',    // Recessed areas
-      backgroundDarkest: '#fbefd4',   // Deep contrast
-
-      // Text scales
-      text: '#42260b',                // Primary text
-      textSecondary: '#744b1b',       // Secondary text
-      textMuted: '#8f5a1a',           // Disabled/muted text
-
-      // Border scales
-      border: '#fbefd4',              // Default borders
-      borderStrong: '#f7e0b0',        // Emphasized borders
-
-      // Interactive colors
-      accent: '#eab308',              // Primary actions (amber)
-      accentHover: '#ca8a04',         // Primary hover
-      accentContrast: '#422006',      // Text on accent
-
-      secondary: '#fbefd4',           // Secondary actions
-      secondaryHover: '#f7e0b0',      // Secondary hover
-      secondaryContrast: '#42260b',   // Text on secondary
-
-      // Semantic colors
-      success: '#16a34a',
-      warning: '#f59e0b',
-      error: '#dc2626',
-      info: '#0ea5e9',
-
-      // ===== DEPRECATED PROPERTIES (backward compatibility) =====
-      surface: '#ffffff',
-      surfaceElevated: '#fef9ed',
-      primary: '#eab308',
-      primaryHover: '#ca8a04',
-      primaryActive: '#a16207',
-      primaryText: '#422006',
-      secondaryActive: '#f0c674',
-      secondaryText: '#42260b',
-      successText: '#ffffff',
-      warningText: '#451a03',
-      errorText: '#ffffff',
-      infoText: '#ffffff',
-      borderSecondary: '#fef9ed',
-      overlay: 'rgba(66, 38, 11, 0.5)',
-      shadow: '0 4px 6px -1px rgba(233, 179, 8, 0.2)',
-      link: '#ca8a04',
-      linkHover: '#a16207',
-      linkVisited: '#8b6c5c',
-      light: '#fefce8',
-      lighter: '#fef9c3',
-      dark: '#854d0e',
-      darker: '#713f12',
-      accentLight: '#e7ddd9'
-    }
-  },
-
-  slate: {
-    name: 'Slate',
-    isDark: true,
-    colors: {
-      // ===== NEW SEMANTIC PROPERTIES =====
-      // Background scales (darker to lighter for dark theme)
-      background: '#0f1419',          // Main app background
-      backgroundLighter: '#1c2128',   // Widget backgrounds
-      backgroundLightest: '#292e37',  // Elevated surfaces
-      backgroundDarker: '#0c1015',    // Recessed areas
-      backgroundDarkest: '#060709',   // Deep contrast
-
-      // Text scales
-      text: '#f3f4f6',                // Primary text
-      textSecondary: '#d1d5db',       // Secondary text
-      textMuted: '#9ca3af',           // Disabled/muted text
-
-      // Border scales
-      border: '#373d47',              // Default borders
-      borderStrong: '#4d5662',        // Emphasized borders
-
-      // Interactive colors
-      accent: '#94a3b8',              // Primary actions (light slate)
-      accentHover: '#cbd5e1',         // Primary hover
-      accentContrast: '#0f1419',      // Text on accent
-
-      secondary: '#373d47',           // Secondary actions
-      secondaryHover: '#4d5662',      // Secondary hover
-      secondaryContrast: '#f3f4f6',   // Text on secondary
+      secondary: '#f0fdf4',           // Secondary actions (very light)
+      secondaryHover: '#dcfce7',      // Secondary hover
+      secondaryContrast: '#166534',   // Text on secondary
 
       // Semantic colors
       success: '#22c55e',
@@ -251,29 +125,155 @@ export const themes: Record<ThemeType, Theme> = {
       info: '#3b82f6',
 
       // ===== DEPRECATED PROPERTIES (backward compatibility) =====
-      surface: '#1c2128',
-      surfaceElevated: '#292e37',
-      primary: '#708090',
-      primaryHover: '#94a3b8',
-      primaryActive: '#cbd5e1',
-      primaryText: '#0f1419',
-      secondaryActive: '#6b7280',
-      secondaryText: '#f3f4f6',
-      successText: '#0f1419',
-      warningText: '#0f1419',
-      errorText: '#f3f4f6',
-      infoText: '#f3f4f6',
-      borderSecondary: '#292e37',
-      overlay: 'rgba(0, 0, 0, 0.8)',
-      shadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)',
-      link: '#94a3b8',
-      linkHover: '#cbd5e1',
-      linkVisited: '#a855f7',
-      light: '#475569',
-      lighter: '#64748b',
-      dark: '#1e293b',
-      darker: '#0c1220',
-      accentLight: '#c084fc'
+      surface: '#ffffff',
+      surfaceElevated: '#f0fdf0',
+      primary: '#059669',
+      primaryHover: '#047857',
+      primaryActive: '#065f46',
+      primaryText: '#ffffff',
+      secondaryActive: '#dcfce7',
+      secondaryText: '#166534',
+      successText: '#ffffff',
+      warningText: '#451a03',
+      errorText: '#ffffff',
+      infoText: '#ffffff',
+      borderSecondary: '#f0fdf0',
+      overlay: 'rgba(20, 83, 45, 0.5)',
+      shadow: '0 4px 6px -1px rgba(16, 185, 129, 0.2)',
+      link: '#059669',
+      linkHover: '#047857',
+      linkVisited: '#065f46',
+      light: '#f0fdf4',
+      lighter: '#dcfce7',
+      dark: '#166534',
+      darker: '#14532d',
+      accentLight: '#a7f3d0'
+    }
+  },
+
+  sunshine: {
+    name: 'Sunshine',
+    isDark: false,
+    colors: {
+      // ===== NEW SEMANTIC PROPERTIES =====
+      // Background scales
+      background: '#fffbeb',          // Main app background
+      backgroundLighter: '#ffffff',   // Widget backgrounds
+      backgroundLightest: '#fefce8',  // Elevated surfaces
+      backgroundDarker: '#fef3c7',    // Recessed areas
+      backgroundDarkest: '#fde68a',   // Deep contrast
+
+      // Text scales
+      text: '#92400e',                // Primary text
+      textSecondary: '#b45309',       // Secondary text
+      textMuted: '#d97706',           // Disabled/muted text
+
+      // Border scales
+      border: '#fde68a',              // Default borders
+      borderStrong: '#fcd34d',        // Emphasized borders
+
+      // Interactive colors
+      accent: '#f59e0b',              // Primary actions (deeper golden)
+      accentHover: '#d97706',         // Primary hover
+      accentContrast: '#ffffff',      // Text on accent
+
+      secondary: '#fffbeb',           // Secondary actions (very light)
+      secondaryHover: '#fef3c7',      // Secondary hover
+      secondaryContrast: '#b45309',   // Text on secondary
+
+      // Semantic colors
+      success: '#22c55e',
+      warning: '#f59e0b',
+      error: '#ef4444',
+      info: '#3b82f6',
+
+      // ===== DEPRECATED PROPERTIES (backward compatibility) =====
+      surface: '#ffffff',
+      surfaceElevated: '#fefce8',
+      primary: '#f59e0b',
+      primaryHover: '#d97706',
+      primaryActive: '#b45309',
+      primaryText: '#ffffff',
+      secondaryActive: '#fef3c7',
+      secondaryText: '#b45309',
+      successText: '#ffffff',
+      warningText: '#451a03',
+      errorText: '#ffffff',
+      infoText: '#ffffff',
+      borderSecondary: '#fefce8',
+      overlay: 'rgba(146, 64, 14, 0.5)',
+      shadow: '0 4px 6px -1px rgba(251, 191, 36, 0.3)',
+      link: '#f59e0b',
+      linkHover: '#d97706',
+      linkVisited: '#b45309',
+      light: '#fffbeb',
+      lighter: '#fef3c7',
+      dark: '#b45309',
+      darker: '#92400e',
+      accentLight: '#fef3c7'
+    }
+  },
+
+  midnight: {
+    name: 'Midnight Pastels',
+    isDark: true,
+    colors: {
+      // ===== NEW SEMANTIC PROPERTIES =====
+      // Background scales (darker to lighter for dark theme)
+      background: '#0f0b1a',          // Main app background
+      backgroundLighter: '#1a1625',   // Widget backgrounds
+      backgroundLightest: '#2d2438',  // Elevated surfaces
+      backgroundDarker: '#0a0612',    // Recessed areas
+      backgroundDarkest: '#050308',   // Deep contrast
+
+      // Text scales
+      text: '#f8fafc',                // Primary text
+      textSecondary: '#e2e8f0',       // Secondary text
+      textMuted: '#cbd5e1',           // Disabled/muted text
+
+      // Border scales
+      border: '#44375a',              // Default borders
+      borderStrong: '#5b4d70',        // Emphasized borders
+
+      // Interactive colors
+      accent: '#a78bfa',              // Primary actions (brighter purple)
+      accentHover: '#c4b5fd',         // Primary hover
+      accentContrast: '#0f0b1a',      // Text on accent
+
+      secondary: '#44375a',           // Secondary actions (muted dark)
+      secondaryHover: '#5b4d70',      // Secondary hover
+      secondaryContrast: '#f8fafc',   // Text on secondary
+
+      // Semantic colors
+      success: '#68d391',
+      warning: '#f6d55c',
+      error: '#fc8181',
+      info: '#63b3ed',
+
+      // ===== DEPRECATED PROPERTIES (backward compatibility) =====
+      surface: '#1a1625',
+      surfaceElevated: '#2d2438',
+      primary: '#a78bfa',
+      primaryHover: '#c4b5fd',
+      primaryActive: '#e9d5ff',
+      primaryText: '#0f0b1a',
+      secondaryActive: '#5b4d70',
+      secondaryText: '#f8fafc',
+      successText: '#0f0b1a',
+      warningText: '#0f0b1a',
+      errorText: '#f8fafc',
+      infoText: '#f8fafc',
+      borderSecondary: '#2d2438',
+      overlay: 'rgba(15, 11, 26, 0.85)',
+      shadow: '0 4px 6px -1px rgba(183, 148, 246, 0.25)',
+      link: '#b794f6',
+      linkHover: '#d6bcfa',
+      linkVisited: '#a78bfa',
+      light: '#44375a',
+      lighter: '#5b4d70',
+      dark: '#1a1625',
+      darker: '#0f0b1a',
+      accentLight: '#fbb6ce'
     }
   },
 
@@ -405,6 +405,6 @@ export const themes: Record<ThemeType, Theme> = {
 };
 
 export const defaultTheme: { type: ThemeType; theme: Theme } = {
-  type: 'sage',
-  theme: themes.sage
+  type: 'fresh',
+  theme: themes.fresh
 };

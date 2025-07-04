@@ -62,11 +62,11 @@ export class ThemeStore {
 
     if (this.isDark()) {
       // Switch to a light theme (default to first light theme)
-      const newTheme = lightThemes[0]?.[0] as ThemeType || 'sage';
+      const newTheme = lightThemes[0]?.[0] as ThemeType || 'fresh';
       this.setTheme(newTheme);
     } else {
       // Switch to a dark theme (default to first dark theme)
-      const newTheme = darkThemes[0]?.[0] as ThemeType || 'slate';
+      const newTheme = darkThemes[0]?.[0] as ThemeType || 'midnight';
       this.setTheme(newTheme);
     }
   }
@@ -150,18 +150,21 @@ export class ThemeStore {
     // ✅ UPDATED: Handle new theme names and legacy names
     const themeMap: Record<string, ThemeType> = {
       // New themes
-      'sage': 'sage',
-      'amber': 'amber',
-      'slate': 'slate',
+      'fresh': 'fresh',
+      'sunshine': 'sunshine',
+      'midnight': 'midnight',
       'coral': 'coral',
       'forest': 'forest',
 
       // Legacy mappings (in case old cookies exist)
-      'default': 'sage',
-      'light': 'sage',
-      'dark': 'slate',
-      'highcontrast': 'slate',
-      'cvdsafe': 'sage'
+      'sage': 'fresh',
+      'amber': 'sunshine',
+      'slate': 'midnight',
+      'default': 'fresh',
+      'light': 'fresh',
+      'dark': 'midnight',
+      'highcontrast': 'midnight',
+      'cvdsafe': 'fresh'
     };
 
     const normalized = themeInput.toLowerCase();
@@ -184,11 +187,11 @@ export class ThemeStore {
 
       if (systemPrefersDark) {
         const darkThemes = this.getDarkThemes();
-        const systemTheme = darkThemes[0]?.type || 'slate';
+        const systemTheme = darkThemes[0]?.type || 'midnight';
         this._themeType.set(systemTheme);
       } else {
         const lightThemes = this.getLightThemes();
-        const systemTheme = lightThemes[0]?.type || 'sage';
+        const systemTheme = lightThemes[0]?.type || 'fresh';
         this._themeType.set(systemTheme);
       }
     }
