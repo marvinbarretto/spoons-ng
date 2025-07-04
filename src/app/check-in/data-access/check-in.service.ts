@@ -158,10 +158,11 @@ export class CheckInService extends FirestoreCrudService<CheckIn> {
 
       if (!isWithinRange) {
         const distanceInMeters = Math.round(distance);
+        const threshold = environment.checkInDistanceThresholdMeters || 200;
         console.log('[CheckInService] 📍 User is too far from pub');
         return {
           passed: false,
-          reason: `You are ${distanceInMeters}m away. Must be within 100m to check in.`
+          reason: `You are ${distanceInMeters}m away. Must be within ${threshold}m to check in.`
         };
       }
 

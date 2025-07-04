@@ -14,6 +14,9 @@ export interface Environment {
   DESKTOP_TESTING_DELAY?: number;
   LLM_TO_PHOTO_DELAY?: number;
 
+  // Check-in configuration
+  checkInDistanceThresholdMeters?: number;
+
   // External services
   strapiUrl?: string;
   strapiToken?: string;

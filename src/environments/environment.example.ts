@@ -9,9 +9,10 @@ export const environment: Environment = {
   ALLOW_ONBOARDING_ACCESS: true,
 
   // Development timeouts (in milliseconds)
-  MODAL_NAVIGATION_TIMEOUT: 10000, // 10 seconds
-  DESKTOP_TESTING_DELAY: 2000, // 2 seconds
-  LLM_TO_PHOTO_DELAY: 3000, // 3 seconds
+  MODAL_NAVIGATION_TIMEOUT: 10000,
+  DESKTOP_TESTING_DELAY: 2000,
+  LLM_TO_PHOTO_DELAY: 3000,
+  checkInDistanceThresholdMeters: 200,
   firebaseConfig: {
     apiKey: 'API_KEY',
     authDomain: 'AUTH_DOMAIN',
