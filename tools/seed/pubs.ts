@@ -1,5 +1,10 @@
-export const pubs = [
+// Import parsed pubs from HTML data
+import { parsedPubs } from './parsed-pubs';
+
+// Original manually curated pubs (with coordinates)
+const manualPubs = [
   {
+    id: 'montagu-pyke-london',
     name: 'The Montagu Pyke',
     address: '105-107 Charing Cross Rd, London WC2H 0DT',
     city: 'London',
@@ -12,6 +17,7 @@ export const pubs = [
     carpetUrl: ''
   },
   {
+    id: 'captain-flinders-london',
     name: 'The Captain Flinders',
     address: '34-38 Eversholt St, Euston Square, London NW1 1DA',
     city: 'London',
@@ -23,6 +29,12 @@ export const pubs = [
     },
     carpetUrl: ''
   }
+];
+
+// Combine manual pubs with parsed pubs
+export const pubs = [
+  ...manualPubs,
+  ...parsedPubs
 ];
 
 
