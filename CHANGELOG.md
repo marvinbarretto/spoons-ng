@@ -2,6 +2,33 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.80](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.79...v0.0.80) (2025-07-04)
+
+
+### Features
+
+* add new themes ([a4ace7f](https://github.com/marvinbarretto/spoons-ng/commit/a4ace7fa7c72a04ebb8e2aa0765c35f19c6fc061))
+* Add points awards animations ([0c5b37a](https://github.com/marvinbarretto/spoons-ng/commit/0c5b37a7e3249c93113a081f62b4543bc9fea7fa))
+* Display user in the header ([636d140](https://github.com/marvinbarretto/spoons-ng/commit/636d14012e0d804fb51593d046c03f58bc270ac9))
+* Enhance mission cards ([b06d86d](https://github.com/marvinbarretto/spoons-ng/commit/b06d86d42d3f2836d18e286f2640313b468e9a0f))
+* Extract animations so can be reused ([ce59535](https://github.com/marvinbarretto/spoons-ng/commit/ce5953585db029093c73dff9413540498819c7d5))
+* Make LocationService a bit smarter ([dd3f398](https://github.com/marvinbarretto/spoons-ng/commit/dd3f398c9d9ccf210e6e09572adf98a3ef923ba0))
+* Remove weekly leaderboard counting ([efd71ac](https://github.com/marvinbarretto/spoons-ng/commit/efd71ac45ecf9ff73cbf2dad1fc046f52db2c4b5))
+* Show which dashboard values are legit ([b8fa7e4](https://github.com/marvinbarretto/spoons-ng/commit/b8fa7e4007f785d46765a290d11bba315e6d91f1))
+* Stub feedback admin ([654a8b2](https://github.com/marvinbarretto/spoons-ng/commit/654a8b2c1c35941f5b17111d6c7089720f0aaab4))
+
+
+### Bug Fixes
+
+* Correct use of theming sitewide ([82072b3](https://github.com/marvinbarretto/spoons-ng/commit/82072b3c893b55695b13f9559a8397056ecbef35))
+* Ensure delete buttons in DevDebug work ([2b528ef](https://github.com/marvinbarretto/spoons-ng/commit/2b528efc1e632af0924c226ef11a2d45e863396e))
+* Make desktop nav legible ([4ba833b](https://github.com/marvinbarretto/spoons-ng/commit/4ba833bb44035a15279b4fbede5ce3edcf8512d8))
+* More theming fixes wip ([73be560](https://github.com/marvinbarretto/spoons-ng/commit/73be560e9e70c9da2703ba5723b1731b134cf958))
+* name mistake on the missions seed ([051f76c](https://github.com/marvinbarretto/spoons-ng/commit/051f76c88391e733ee8a3b15d083b1dba8081724))
+* Pubs had wrong country data ([6911b95](https://github.com/marvinbarretto/spoons-ng/commit/6911b95b713006c5305fa36ec9fc38a04e97cf44))
+* Resolve FooterNav selected state ([449fd68](https://github.com/marvinbarretto/spoons-ng/commit/449fd6874deb790d396729c4b5cfab0d1f5a1ea9))
+* theme variable names ([4df7b60](https://github.com/marvinbarretto/spoons-ng/commit/4df7b60c6e3cdd68781fce865f7c5101c7905381))
+
 ### [0.0.79](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.78...v0.0.79) (2025-07-03)
 
 
