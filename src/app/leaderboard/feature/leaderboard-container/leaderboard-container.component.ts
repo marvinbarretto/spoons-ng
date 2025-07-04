@@ -86,14 +86,6 @@ import { combineLatest } from 'rxjs';
       <!-- Time Period Tabs -->
       <nav class="time-period-tabs">
         <a
-          [routerLink]="getTimePeriodLink('this-week')"
-          routerLinkActive="active"
-          [routerLinkActiveOptions]="{ exact: true }"
-          class="tab-link"
-        >
-          This Week
-        </a>
-        <a
           [routerLink]="getTimePeriodLink('this-month')"
           routerLinkActive="active"
           [routerLinkActiveOptions]="{ exact: true }"

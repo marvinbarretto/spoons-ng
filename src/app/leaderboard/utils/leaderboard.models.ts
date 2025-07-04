@@ -18,7 +18,7 @@ export type LeaderboardEntry = {
 
 export type LeaderboardType = 'visits' | 'unique-pubs' | 'points';
 
-export type LeaderboardTimeRange = 'all-time' | 'this-month' | 'this-week';
+export type LeaderboardTimeRange = 'all-time' | 'this-month';
 
 export type LeaderboardGeographicFilter = {
   type: 'none' | 'city' | 'region' | 'country' | 'pub';

@@ -238,8 +238,8 @@ describe('LeaderboardStore', () => {
       expect(store.filteredData().length).toBe(2);
 
       // Change time range
-      store.setTimeRange('this-week');
-      expect(store.timeRange()).toBe('this-week');
+      store.setTimeRange('this-month');
+      expect(store.timeRange()).toBe('this-month');
     });
 
     it('should calculate correct user rankings', () => {

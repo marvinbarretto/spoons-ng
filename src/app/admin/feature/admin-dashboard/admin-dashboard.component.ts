@@ -342,7 +342,7 @@ export class AdminDashboardComponent {
         value: siteData.allTime.checkins,
         label: 'Total Check-ins',
         sourceType: siteData.allTime.checkins > 0 ? 'real' : 'placeholder',
-        sourceDetail: `LeaderboardStore.siteStats.allTime.checkins | Weekly: ${siteData.thisWeek.checkins}, Monthly: ${siteData.thisMonth.checkins}`,
+        sourceDetail: `LeaderboardStore.siteStats.allTime.checkins | Monthly: ${siteData.thisMonth.checkins}`,
         icon: siteData.allTime.checkins > 0 ? '✅' : '🔶'
       },
       {
@@ -361,18 +361,18 @@ export class AdminDashboardComponent {
       },
       // Activity Metrics (Real Data)
       {
-        value: siteData.thisWeek.activeUsers,
-        label: 'Active This Week',
-        sourceType: siteData.thisWeek.activeUsers > 0 ? 'real' : 'placeholder',
-        sourceDetail: `LeaderboardStore.siteStats.thisWeek.activeUsers | New users: ${siteData.thisWeek.newUsers}`,
-        icon: siteData.thisWeek.activeUsers > 0 ? '✅' : '🔶'
+        value: siteData.thisMonth.activeUsers,
+        label: 'Active This Month',
+        sourceType: siteData.thisMonth.activeUsers > 0 ? 'real' : 'placeholder',
+        sourceDetail: `LeaderboardStore.siteStats.thisMonth.activeUsers | New users: ${siteData.thisMonth.newUsers}`,
+        icon: siteData.thisMonth.activeUsers > 0 ? '✅' : '🔶'
       },
       {
-        value: siteData.thisWeek.checkins,
-        label: 'Check-ins This Week',
-        sourceType: siteData.thisWeek.checkins > 0 ? 'real' : 'placeholder',
-        sourceDetail: `LeaderboardStore.siteStats.thisWeek.checkins | Raw weekly data: ${JSON.stringify(siteData.thisWeek)}`,
-        icon: siteData.thisWeek.checkins > 0 ? '✅' : '🔶'
+        value: siteData.thisMonth.checkins,
+        label: 'Check-ins This Month',
+        sourceType: siteData.thisMonth.checkins > 0 ? 'real' : 'placeholder',
+        sourceDetail: `LeaderboardStore.siteStats.thisMonth.checkins | Raw monthly data: ${JSON.stringify(siteData.thisMonth)}`,
+        icon: siteData.thisMonth.checkins > 0 ? '✅' : '🔶'
       },
       // Global Data Debug
       {

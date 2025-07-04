@@ -138,9 +138,7 @@ export class LeaderboardStore extends BaseStore<LeaderboardEntry> {
 
     // Calculate date threshold
     let threshold: Date;
-    if (range === 'this-week') {
-      threshold = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    } else if (range === 'this-month') {
+    if (range === 'this-month') {
       threshold = new Date(now.getFullYear(), now.getMonth(), 1);
     } else {
       // all-time case
@@ -163,8 +161,8 @@ export class LeaderboardStore extends BaseStore<LeaderboardEntry> {
       // For time-based views, show period-specific stats but keep total points
       const adjustedEntry = {
         ...entry,
-        totalCheckins: range === 'this-week' || range === 'this-month' ? totalCheckinsInPeriod : entry.totalCheckins,
-        uniquePubs: range === 'this-week' || range === 'this-month' ? uniquePubsInPeriod : entry.uniquePubs,
+        totalCheckins: range === 'this-month' ? totalCheckinsInPeriod : entry.totalCheckins,
+        uniquePubs: range === 'this-month' ? uniquePubsInPeriod : entry.uniquePubs,
         // Points stay the same - they're cumulative
       };
 
@@ -176,7 +174,7 @@ export class LeaderboardStore extends BaseStore<LeaderboardEntry> {
       // Show users who either:
       // 1. Have activity in the time period, OR
       // 2. Have significant all-time stats (more than 5 total points or 3+ pubs visited)
-      const hasRecentActivity = (range === 'this-week' || range === 'this-month') ?
+      const hasRecentActivity = range === 'this-month' ?
         entry.totalCheckins > 0 : true;
       const originalUser = allData.find(u => u.userId === entry.userId);
       const hasSignificantStats = entry.totalPoints > 5 || (originalUser?.uniquePubs ?? 0) >= 3;
@@ -518,17 +516,7 @@ private getDisplayName(userId: string, user: User): string {
     const checkins = this.checkinStore.checkins();
     const totalPubs = this.pubStore.pubs().length;
     const now = new Date();
-    const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-
-    // This week's stats
-    const weekCheckins = checkins.filter(c =>
-      c.timestamp.toDate() >= weekStart
-    );
-    const weekActiveUsers = new Set(weekCheckins.map(c => c.userId)).size;
-    const weekNewUsers = allData.filter(u =>
-      new Date(u.joinedDate) >= weekStart
-    ).length;
 
     // This month's stats
     const monthCheckins = checkins.filter(c =>
@@ -546,11 +534,6 @@ private getDisplayName(userId: string, user: User): string {
     const totalPoints = allData.reduce((sum, u) => sum + u.totalPoints, 0);
 
     return {
-      thisWeek: {
-        activeUsers: weekActiveUsers,
-        newUsers: weekNewUsers,
-        checkins: weekCheckins.length
-      },
       thisMonth: {
         activeUsers: monthActiveUsers,
         newUsers: monthNewUsers,
