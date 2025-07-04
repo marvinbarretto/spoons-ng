@@ -109,7 +109,7 @@ export const parsedPubs = [
     "address": "56–58 High Street, Galashiels, Scottish Borders, TD1 1SE",
     "city": "Galashiels",
     "region": "Scottish Borders",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.617769,
       "lng": -2.810322
@@ -200,7 +200,7 @@ export const parsedPubs = [
     "address": "43A Gray Street, Broughty Ferry, Dundee City, DD5 2BJ",
     "city": "Broughty Ferry",
     "region": "Dundee City",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 56.465977,
       "lng": -2.873762
@@ -213,7 +213,7 @@ export const parsedPubs = [
     "address": "1 Camden Street Upper, Dublin, County Dublin, D02 TC61",
     "city": "Dublin",
     "region": "County Dublin",
-    "country": "England",
+    "country": "Ireland",
     "location": {
       "lat": null,
       "lng": null
@@ -317,7 +317,7 @@ export const parsedPubs = [
     "address": "Station Square, Pwllheli, Gwynedd, LL53 5HG",
     "city": "Pwllheli",
     "region": "Gwynedd",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 52.887814,
       "lng": -4.417596
@@ -369,7 +369,7 @@ export const parsedPubs = [
     "address": "81–83 Buccleuch Street, Dumfries, Dumfries and Galloway, DG1 1DJ",
     "city": "Dumfries",
     "region": "Dumfries and Galloway",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.069902,
       "lng": -3.612918
@@ -449,8 +449,8 @@ export const parsedPubs = [
     "region": "Camden",
     "country": "England",
     "location": {
-      "lat": null,
-      "lng": null
+      "lat": 51.5168039,
+      "lng": -0.1221543
     },
     "carpetUrl": "https://carpets.example.com/2024/03/239-feature-448x332.jpg"
   },
@@ -551,7 +551,7 @@ export const parsedPubs = [
     "address": "5–9 Eastgate Street, Caernarfon, Gwynedd, LL55 1AG",
     "city": "Caernarfon",
     "region": "Gwynedd",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 53.140787,
       "lng": -4.274811
@@ -655,7 +655,7 @@ export const parsedPubs = [
     "address": "128 George Street, Edinburgh, EH2 4JZ",
     "city": "128 George Street",
     "region": "Edinburgh",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.951693,
       "lng": -3.205087
@@ -681,7 +681,7 @@ export const parsedPubs = [
     "address": "Caerphilly Road, Cardiff, CF14 4AD",
     "city": "Caerphilly Road",
     "region": "Cardiff",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 51.509067,
       "lng": -3.199992
@@ -733,7 +733,7 @@ export const parsedPubs = [
     "address": "5 Castle Street, Aberdeen, AB11 5BQ",
     "city": "5 Castle Street",
     "region": "Aberdeen",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 57.148506,
       "lng": -2.09269
@@ -824,7 +824,7 @@ export const parsedPubs = [
     "address": "Rivergate Shopping Centre, Irvine, North Ayrshire, KA12 8EH",
     "city": "Irvine",
     "region": "North Ayrshire",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.613085,
       "lng": -4.670035
@@ -889,7 +889,7 @@ export const parsedPubs = [
     "address": "57–58 Wind Street, Swansea, SA1 1EP",
     "city": "57–58 Wind Street",
     "region": "Swansea",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 51.619321,
       "lng": -3.940535
@@ -1071,7 +1071,7 @@ export const parsedPubs = [
     "address": "9–10 St Mary Street, Chepstow, Monmouthshire, NP16 5EW",
     "city": "Chepstow",
     "region": "Monmouthshire",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 51.642615,
       "lng": -2.673725
@@ -1214,7 +1214,7 @@ export const parsedPubs = [
     "address": "31/32 Broad Street, Newtown, Powys, SY16 2BQ",
     "city": "Newtown",
     "region": "Powys",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 52.516351,
       "lng": -3.315833
@@ -1227,7 +1227,7 @@ export const parsedPubs = [
     "address": "107 High Street, Bangor, Gwynedd, LL57 1NS",
     "city": "Bangor",
     "region": "Gwynedd",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 53.224158,
       "lng": -4.129403
@@ -1331,7 +1331,7 @@ export const parsedPubs = [
     "address": "46 Drysdale Street, Alloa, Clackmannanshire, FK10 1JL",
     "city": "Alloa",
     "region": "Clackmannanshire",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 56.115613,
       "lng": -3.790912
@@ -1357,7 +1357,7 @@ export const parsedPubs = [
     "address": "17 Waverley Bridge, Edinburgh, EH1 1BQ",
     "city": "17 Waverley Bridge",
     "region": "Edinburgh",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.952627,
       "lng": -3.191295
@@ -1422,7 +1422,7 @@ export const parsedPubs = [
     "address": "22 Bourtree Place, Hawick, Scottish Borders, TD9 9HL",
     "city": "Hawick",
     "region": "Scottish Borders",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.425516,
       "lng": -2.783644
@@ -1461,7 +1461,7 @@ export const parsedPubs = [
     "address": "45–61 Merry Street, Motherwell, North Lanarkshire, ML1 1JJ",
     "city": "Motherwell",
     "region": "North Lanarkshire",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.791348,
       "lng": -3.99194
@@ -1695,7 +1695,7 @@ export const parsedPubs = [
     "address": "31 Lothian Road, Edinburgh, EH1 2DJ",
     "city": "31 Lothian Road",
     "region": "Edinburgh",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.947857,
       "lng": -3.205929
@@ -1721,7 +1721,7 @@ export const parsedPubs = [
     "address": "26 Tay Street, Perth, Perth and Kinross, PH1 5LQ",
     "city": "Perth",
     "region": "Perth and Kinross",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 56.397432,
       "lng": -3.426289
@@ -1760,7 +1760,7 @@ export const parsedPubs = [
     "address": "97–99 High Street, Dumbarton, West Dunbartonshire, G82 1LF",
     "city": "Dumbarton",
     "region": "West Dunbartonshire",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.94331,
       "lng": -4.571759
@@ -1799,7 +1799,7 @@ export const parsedPubs = [
     "address": "52 Teviot Walk, Cumbernauld, Glasgow, North Lanarkshire, G67 1NG",
     "city": "Glasgow",
     "region": "North Lanarkshire",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.948199,
       "lng": -3.988857
@@ -1812,7 +1812,7 @@ export const parsedPubs = [
     "address": "Bank Street, Falkirk, FK1 1NB",
     "city": "Bank Street",
     "region": "Falkirk",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 56.000052,
       "lng": -3.78343
@@ -1825,7 +1825,7 @@ export const parsedPubs = [
     "address": "St Peters Square, Ruthin, Denbighshire, LL15 1AA",
     "city": "Ruthin",
     "region": "Denbighshire",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 53.114862,
       "lng": -3.310444
@@ -1864,7 +1864,7 @@ export const parsedPubs = [
     "address": "39 Windsor Place, Cardiff, CF10 3BW",
     "city": "39 Windsor Place",
     "region": "Cardiff",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 51.483346,
       "lng": -3.172788
@@ -1890,7 +1890,7 @@ export const parsedPubs = [
     "address": "2–4 Chester Road West, Shotton, Flintshire, CH5 1BX",
     "city": "Shotton",
     "region": "Flintshire",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 53.212255,
       "lng": -3.039899
@@ -2098,7 +2098,7 @@ export const parsedPubs = [
     "address": "Lion Street, Abergavenny, Monmouthshire, NP7 5PE",
     "city": "Abergavenny",
     "region": "Monmouthshire",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 51.823196,
       "lng": -3.017692
@@ -2215,7 +2215,7 @@ export const parsedPubs = [
     "address": "6 Regent Street, Douglas, Isle of Man, IM1 2EA",
     "city": "Douglas",
     "region": "Isle of Man",
-    "country": "England",
+    "country": "Isle of Man",
     "location": {
       "lat": null,
       "lng": null
@@ -2280,7 +2280,7 @@ export const parsedPubs = [
     "address": "Market Place, Arbroath, Angus, DD11 1HR",
     "city": "Arbroath",
     "region": "Angus",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 56.558821,
       "lng": -2.582352
@@ -2306,7 +2306,7 @@ export const parsedPubs = [
     "address": "The Waterfront Centre, Railway Pier, Oban, Argyll and Bute, PA34 4LW",
     "city": "Oban",
     "region": "Argyll and Bute",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 56.41216,
       "lng": -5.475373
@@ -2319,7 +2319,7 @@ export const parsedPubs = [
     "address": "67–71 Reform Street, Dundee, Dundee City, DD1 1SP",
     "city": "Dundee",
     "region": "Dundee City",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 56.461882,
       "lng": -2.971444
@@ -2332,7 +2332,7 @@ export const parsedPubs = [
     "address": "2 St Vincent Place, Glasgow, G1 2DH",
     "city": "2 St Vincent Place",
     "region": "Glasgow",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.860813,
       "lng": -4.252066
@@ -2423,7 +2423,7 @@ export const parsedPubs = [
     "address": "Back Street, Peterhead, Aberdeenshire, AB42 1TH",
     "city": "Peterhead",
     "region": "Aberdeenshire",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 57.505647,
       "lng": -1.77894
@@ -2462,7 +2462,7 @@ export const parsedPubs = [
     "address": "8 Spittal Street, Stirling, FK8 1AT",
     "city": "8 Spittal Street",
     "region": "Stirling",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 56.1186,
       "lng": -3.93877
@@ -2579,7 +2579,7 @@ export const parsedPubs = [
     "address": "36 Jamaica Street, Glasgow, G1 4QD",
     "city": "36 Jamaica Street",
     "region": "Glasgow",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.857965,
       "lng": -4.257446
@@ -2618,7 +2618,7 @@ export const parsedPubs = [
     "address": "Bridge Street, Musselburgh, East Lothian, EH21 6AG",
     "city": "Musselburgh",
     "region": "East Lothian",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.943088,
       "lng": -3.056993
@@ -2631,7 +2631,7 @@ export const parsedPubs = [
     "address": "7 Windsor Road, Neath, Neath Port Talbot, SA11 1LS",
     "city": "Neath",
     "region": "Neath Port Talbot",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 51.661838,
       "lng": -3.806317
@@ -2891,7 +2891,7 @@ export const parsedPubs = [
     "address": "44–46 Regent Street, Wrexham, LL11 1RR",
     "city": "44–46 Regent Street",
     "region": "Wrexham",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 53.047216,
       "lng": -2.997182
@@ -2956,7 +2956,7 @@ export const parsedPubs = [
     "address": "2–12 City Road, Roath, Cardiff, CF24 3DL",
     "city": "Roath",
     "region": "Cardiff",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 51.486302,
       "lng": -3.165792
@@ -2969,7 +2969,7 @@ export const parsedPubs = [
     "address": "Esquire House, 1487 Great Western Road, Glasgow, G12 0AU",
     "city": "1487 Great Western Road",
     "region": "Glasgow",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.888157,
       "lng": -4.320975
@@ -2995,7 +2995,7 @@ export const parsedPubs = [
     "address": "25–29 Allan Street, Blairgowrie, Perth and Kinross, PH10 6AB",
     "city": "Blairgowrie",
     "region": "Perth and Kinross",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 56.592497,
       "lng": -3.338053
@@ -3203,7 +3203,7 @@ export const parsedPubs = [
     "address": "The Pavilion Centre, Marine Road, Dún Laoghaire, County Dublin, A96 P862",
     "city": "Dún Laoghaire",
     "region": "County Dublin",
-    "country": "England",
+    "country": "Ireland",
     "location": {
       "lat": null,
       "lng": null
@@ -3398,7 +3398,7 @@ export const parsedPubs = [
     "address": "9–10 Westgate Street, Cardiff, CF10 1DD",
     "city": "9–10 Westgate Street",
     "region": "Cardiff",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 51.480022,
       "lng": -3.181415
@@ -3476,7 +3476,7 @@ export const parsedPubs = [
     "address": "George Street, Brecon, Powys, LD3 7LD",
     "city": "Brecon",
     "region": "Powys",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 51.948842,
       "lng": -3.39109
@@ -3593,7 +3593,7 @@ export const parsedPubs = [
     "address": "158 Chepstow Road, Newport, NP19 8EG",
     "city": "158 Chepstow Road",
     "region": "Newport",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 51.589748,
       "lng": -2.978615
@@ -3619,7 +3619,7 @@ export const parsedPubs = [
     "address": "8–8a Wrexham Street, Mold, Flintshire, CH7 1ES",
     "city": "Mold",
     "region": "Flintshire",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 53.165987,
       "lng": -3.140977
@@ -3632,7 +3632,7 @@ export const parsedPubs = [
     "address": "1 North Street, Glenrothes, Fife, KY7 5NA",
     "city": "Glenrothes",
     "region": "Fife",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 56.196474,
       "lng": -3.1679
@@ -3749,7 +3749,7 @@ export const parsedPubs = [
     "address": "West High Street, Inverurie, Aberdeenshire, AB51 3QQ",
     "city": "Inverurie",
     "region": "Aberdeenshire",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 57.284583,
       "lng": -2.378657
@@ -3801,7 +3801,7 @@ export const parsedPubs = [
     "address": "104 High Street, Fort William, Highland, PH33 6AD",
     "city": "Fort William",
     "region": "Highland",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 56.816795,
       "lng": -5.112942
@@ -3840,7 +3840,7 @@ export const parsedPubs = [
     "address": "64 St Mary Street, Cardiff, CF10 1FA",
     "city": "64 St Mary Street",
     "region": "Cardiff",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 51.477149,
       "lng": -3.177424
@@ -3853,7 +3853,7 @@ export const parsedPubs = [
     "address": "Westend Commercial Village, Blanchardstown, Dublin, County Dublin, D15 ED86",
     "city": "Dublin",
     "region": "County Dublin",
-    "country": "England",
+    "country": "Ireland",
     "location": {
       "lat": null,
       "lng": null
@@ -3957,7 +3957,7 @@ export const parsedPubs = [
     "address": "79–83 High Street, Dunfermline, Fife, KY12 7DR",
     "city": "Dunfermline",
     "region": "Fife",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 56.071355,
       "lng": -3.46013
@@ -4061,7 +4061,7 @@ export const parsedPubs = [
     "address": "26–36 Princes Mall, East Kilbride, South Lanarkshire, G74 1JU",
     "city": "East Kilbride",
     "region": "South Lanarkshire",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.760905,
       "lng": -4.176009
@@ -4100,7 +4100,7 @@ export const parsedPubs = [
     "address": "351–363 Sauchiehall Street, Glasgow, G2 3HU",
     "city": "351–363 Sauchiehall Street",
     "region": "Glasgow",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.86568,
       "lng": -4.266971
@@ -4113,7 +4113,7 @@ export const parsedPubs = [
     "address": "19–29 James Street, Helensburgh, Argyll and Bute, G84 8AS",
     "city": "Helensburgh",
     "region": "Argyll and Bute",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 56.00392,
       "lng": -4.73766
@@ -4386,7 +4386,7 @@ export const parsedPubs = [
     "address": "243–249 Cowbridge Road East, Cardiff, CF11 9AN",
     "city": "243–249 Cowbridge Road East",
     "region": "Cardiff",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 51.481314,
       "lng": -3.200357
@@ -4477,7 +4477,7 @@ export const parsedPubs = [
     "address": "80–92 Cathcart Street, Greenock, Inverclyde, PA15 1DD",
     "city": "Greenock",
     "region": "Inverclyde",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.946772,
       "lng": -4.752909
@@ -4516,7 +4516,7 @@ export const parsedPubs = [
     "address": "52–58 Main Street, Cambuslang, South Lanarkshire, G72 7EP",
     "city": "Cambuslang",
     "region": "South Lanarkshire",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.818665,
       "lng": -4.166398
@@ -4529,7 +4529,7 @@ export const parsedPubs = [
     "address": "1 Caradoc Road, Cwmbran, Torfaen, NP44 1PP",
     "city": "Cwmbran",
     "region": "Torfaen",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 51.65497,
       "lng": -3.021191
@@ -4594,7 +4594,7 @@ export const parsedPubs = [
     "address": "The Cambrian Centre, Cambrian Road, Newport, NP20 4AD",
     "city": "Cambrian Road",
     "region": "Newport",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 51.588443,
       "lng": -2.997872
@@ -4698,7 +4698,7 @@ export const parsedPubs = [
     "address": "423–425 Union Street, Aberdeen, AB11 6DA",
     "city": "423–425 Union Street",
     "region": "Aberdeen",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 57.143283,
       "lng": -2.109598
@@ -4841,7 +4841,7 @@ export const parsedPubs = [
     "address": "8 Agincourt Square, Monmouth, Monmouthshire, NP25 3DY",
     "city": "Monmouth",
     "region": "Monmouthshire",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 51.812142,
       "lng": -2.715776
@@ -4867,7 +4867,7 @@ export const parsedPubs = [
     "address": "72–74 Church Street, Inverness, Highland, IV1 1EN",
     "city": "Inverness",
     "region": "Highland",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 57.479825,
       "lng": -4.227444
@@ -4906,7 +4906,7 @@ export const parsedPubs = [
     "address": "1–11 Townhead, Kirkintilloch, Glasgow, G66 1NG",
     "city": "Kirkintilloch",
     "region": "Glasgow",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.937897,
       "lng": -4.154174
@@ -4971,7 +4971,7 @@ export const parsedPubs = [
     "address": "County Square, Paisley, Renfrewshire, PA1 1BN",
     "city": "Paisley",
     "region": "Renfrewshire",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.846411,
       "lng": -4.424353
@@ -5231,7 +5231,7 @@ export const parsedPubs = [
     "address": "69–73 Station Road, Port Talbot, Neath Port Talbot, SA13 1NW",
     "city": "Port Talbot",
     "region": "Neath Port Talbot",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 51.593967,
       "lng": -3.781982
@@ -5283,7 +5283,7 @@ export const parsedPubs = [
     "address": "King’s Inch Road, Renfrew, Renfrewshire, PA4 8XQ",
     "city": "Renfrew",
     "region": "Renfrewshire",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.878968,
       "lng": -4.371142
@@ -5387,7 +5387,7 @@ export const parsedPubs = [
     "address": "87–91 Cardiff Road, Caerphilly, CF83 1FQ",
     "city": "87–91 Cardiff Road",
     "region": "Caerphilly",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 51.572245,
       "lng": -3.219967
@@ -5465,7 +5465,7 @@ export const parsedPubs = [
     "address": "117 High Street, Gorseinon, Swansea, SA4 4BR",
     "city": "Gorseinon",
     "region": "Swansea",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 51.66897,
       "lng": -4.038583
@@ -5894,7 +5894,7 @@ export const parsedPubs = [
     "address": "Landsea House, Stuart Place, Cardiff, CF10 5BU",
     "city": "Stuart Place",
     "region": "Cardiff",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 51.462921,
       "lng": -3.16691
@@ -5907,7 +5907,7 @@ export const parsedPubs = [
     "address": "34 High Street, Elgin, Moray, IV30 1BU",
     "city": "Elgin",
     "region": "Moray",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 57.648842,
       "lng": -3.312781
@@ -6024,7 +6024,7 @@ export const parsedPubs = [
     "address": "Livingston Designer Outlet, Almondvale Avenue, Livingston, West Lothian, EH54 6QX",
     "city": "Livingston",
     "region": "West Lothian",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.882885,
       "lng": -3.518336
@@ -6102,7 +6102,7 @@ export const parsedPubs = [
     "address": "72 Main Street, Swords, County Dublin, K67 E6W7",
     "city": "Swords",
     "region": "County Dublin",
-    "country": "England",
+    "country": "Ireland",
     "location": {
       "lat": null,
       "lng": null
@@ -6206,7 +6206,7 @@ export const parsedPubs = [
     "address": "Morgan Street, Tredegar, Blaenau Gwent, NP22 3ND",
     "city": "Tredegar",
     "region": "Blaenau Gwent",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 51.770603,
       "lng": -3.244121
@@ -6271,7 +6271,7 @@ export const parsedPubs = [
     "address": "Gallowgate Street, Largs, North Ayrshire, KA30 8LX",
     "city": "Largs",
     "region": "North Ayrshire",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.795045,
       "lng": -4.869597
@@ -6284,7 +6284,7 @@ export const parsedPubs = [
     "address": "7 Gloddaeth Street, Llandudno, Conwy, LL30 2DD",
     "city": "Llandudno",
     "region": "Conwy",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 53.324991,
       "lng": -3.832524
@@ -6427,7 +6427,7 @@ export const parsedPubs = [
     "address": "Market Street, Ebbw Vale, Blaenau Gwent, NP23 6HP",
     "city": "Ebbw Vale",
     "region": "Blaenau Gwent",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 51.780587,
       "lng": -3.207574
@@ -6440,7 +6440,7 @@ export const parsedPubs = [
     "address": "24–26 Prince’s Drive, Colwyn Bay, Conwy, LL29 8LA",
     "city": "Colwyn Bay",
     "region": "Conwy",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 53.296735,
       "lng": -3.727761
@@ -6544,7 +6544,7 @@ export const parsedPubs = [
     "address": "Omni Centre, Leith Walk, Edinburgh, EH1 3AJ",
     "city": "Leith Walk",
     "region": "Edinburgh",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.956196,
       "lng": -3.185495
@@ -6622,7 +6622,7 @@ export const parsedPubs = [
     "address": "14 Somerset Street, Abertillery, Blaenau Gwent, NP13 1DJ",
     "city": "Abertillery",
     "region": "Blaenau Gwent",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 51.729947,
       "lng": -3.134259
@@ -6726,7 +6726,7 @@ export const parsedPubs = [
     "address": "85–86 The Kingsway, Swansea, SA1 5JE",
     "city": "85–86 The Kingsway",
     "region": "Swansea",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 51.619386,
       "lng": -3.949076
@@ -6791,7 +6791,7 @@ export const parsedPubs = [
     "address": "87 Main Street, Prestwick, South Ayrshire, KA9 1JS",
     "city": "Prestwick",
     "region": "South Ayrshire",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.499375,
       "lng": -4.610627
@@ -6817,7 +6817,7 @@ export const parsedPubs = [
     "address": "81–83 St Mary Street, Cardiff, CF10 1FA",
     "city": "81–83 St Mary Street",
     "region": "Cardiff",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 51.477149,
       "lng": -3.177424
@@ -7207,7 +7207,7 @@ export const parsedPubs = [
     "address": "49 Sway Road, Morriston, Swansea, SA6 6JA",
     "city": "Morriston",
     "region": "Swansea",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 51.669226,
       "lng": -3.922697
@@ -7376,7 +7376,7 @@ export const parsedPubs = [
     "address": "6 Kirk Wynd, Kirkcaldy, Fife, KY1 1EH",
     "city": "Kirkcaldy",
     "region": "Fife",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 56.112015,
       "lng": -3.158458
@@ -7597,7 +7597,7 @@ export const parsedPubs = [
     "address": "7 Hamilton Street, Saltcoats, North Ayrshire, KA21 5DS",
     "city": "Saltcoats",
     "region": "North Ayrshire",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.6345,
       "lng": -4.790923
@@ -7675,7 +7675,7 @@ export const parsedPubs = [
     "address": "3–6 Commercial Street, Maesteg, Bridgend, CF34 9DF",
     "city": "Maesteg",
     "region": "Bridgend",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 51.608191,
       "lng": -3.65935
@@ -7857,7 +7857,7 @@ export const parsedPubs = [
     "address": "12A/12C Abbey Street Lower, Dublin, County Dublin, D01 X593",
     "city": "Dublin",
     "region": "County Dublin",
-    "country": "England",
+    "country": "Ireland",
     "location": {
       "lat": null,
       "lng": null
@@ -7961,7 +7961,7 @@ export const parsedPubs = [
     "address": "260–292 Argyle Street, Glasgow, G2 8QW",
     "city": "260–292 Argyle Street",
     "region": "Glasgow",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.858872,
       "lng": -4.260375
@@ -8039,7 +8039,7 @@ export const parsedPubs = [
     "address": "Romilly Buildings, Barry, Vale of Glamorgan, CF62 7AU",
     "city": "Barry",
     "region": "Vale of Glamorgan",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 51.398674,
       "lng": -3.284444
@@ -8078,7 +8078,7 @@ export const parsedPubs = [
     "address": "Edinburgh Airport (after security), Unit C170, Edinburgh, EH12 9DN",
     "city": "Unit C170",
     "region": "Edinburgh",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.945621,
       "lng": -3.364203
@@ -8104,7 +8104,7 @@ export const parsedPubs = [
     "address": "61–63 High Street, Blackwood, Caerphilly, NP12 1BA",
     "city": "Blackwood",
     "region": "Caerphilly",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 51.669024,
       "lng": -3.195509
@@ -8182,7 +8182,7 @@ export const parsedPubs = [
     "address": "151 West George Street, Glasgow, G2 2JJ",
     "city": "151 West George Street",
     "region": "Glasgow",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.862228,
       "lng": -4.25723
@@ -8247,7 +8247,7 @@ export const parsedPubs = [
     "address": "1 Hanover Quay, Dublin, County Dublin, D02 E295",
     "city": "Dublin",
     "region": "County Dublin",
-    "country": "England",
+    "country": "Ireland",
     "location": {
       "lat": null,
       "lng": null
@@ -8286,7 +8286,7 @@ export const parsedPubs = [
     "address": "54–56 Regent Street, Newtownards, County Down, BT23 4LP",
     "city": "Newtownards",
     "region": "County Down",
-    "country": "England",
+    "country": "Northern Ireland",
     "location": {
       "lat": 54.594122,
       "lng": -5.7
@@ -8377,7 +8377,7 @@ export const parsedPubs = [
     "address": "62–66 George Street, Edinburgh, EH2 2LR",
     "city": "62–66 George Street",
     "region": "Edinburgh",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.952962,
       "lng": -3.199297
@@ -8572,7 +8572,7 @@ export const parsedPubs = [
     "address": "20–26 Sussex Street, Rhyl, Denbighshire, LL18 1SG",
     "city": "Rhyl",
     "region": "Denbighshire",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 53.321014,
       "lng": -3.491629
@@ -8988,7 +8988,7 @@ export const parsedPubs = [
     "address": "4–9 Broadway/Sardis Road, Pontypridd, Rhondda Cynon Taff, CF37 1BA",
     "city": "Pontypridd",
     "region": "Rhondda Cynon Taff",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 51.599497,
       "lng": -3.340553
@@ -9352,7 +9352,7 @@ export const parsedPubs = [
     "address": "58a Sandgate, Ayr, South Ayrshire, KA7 1BX",
     "city": "Ayr",
     "region": "South Ayrshire",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.46271,
       "lng": -4.634116
@@ -9430,7 +9430,7 @@ export const parsedPubs = [
     "address": "70 Portland Street, Kilmarnock, East Ayrshire, KA1 1JG",
     "city": "Kilmarnock",
     "region": "East Ayrshire",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.610995,
       "lng": -4.497164
@@ -9560,7 +9560,7 @@ export const parsedPubs = [
     "address": "98 St John’s Road, Corstorphine, Edinburgh, EH12 8AT",
     "city": "Corstorphine",
     "region": "Edinburgh",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.942903,
       "lng": -3.281762
@@ -9755,7 +9755,7 @@ export const parsedPubs = [
     "address": "6 Quay Street, Haverfordwest, Pembrokeshire, SA61 1BG",
     "city": "Haverfordwest",
     "region": "Pembrokeshire",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 51.801488,
       "lng": -4.967892
@@ -9937,7 +9937,7 @@ export const parsedPubs = [
     "address": "62–66 Kirk Road, Wishaw, North Lanarkshire, ML2 7BL",
     "city": "Wishaw",
     "region": "North Lanarkshire",
-    "country": "England",
+    "country": "Scotland",
     "location": {
       "lat": 55.773724,
       "lng": -3.918589
@@ -10015,7 +10015,7 @@ export const parsedPubs = [
     "address": "Dunraven Place, Bridgend, CF31 1JE",
     "city": "Dunraven Place",
     "region": "Bridgend",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 51.50664,
       "lng": -3.579286
@@ -10041,7 +10041,7 @@ export const parsedPubs = [
     "address": "51 Stepney Street, Llanelli, Carmarthenshire, SA15 3YA",
     "city": "Llanelli",
     "region": "Carmarthenshire",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 51.681,
       "lng": -4.162895
@@ -10236,7 +10236,7 @@ export const parsedPubs = [
     "address": "102–103 High Street, Merthyr Tydfil, CF47 8AP",
     "city": "102–103 High Street",
     "region": "Merthyr Tydfil",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 51.746823,
       "lng": -3.378444
@@ -10249,7 +10249,7 @@ export const parsedPubs = [
     "address": "Alexandra Road, Aberystwyth, Ceredigion, SY23 1LN",
     "city": "Aberystwyth",
     "region": "Ceredigion",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 52.415105,
       "lng": -4.080219
@@ -10262,7 +10262,7 @@ export const parsedPubs = [
     "address": "6 High Street, Aberdare, Rhondda Cynon Taff, CF44 7AA",
     "city": "Aberdare",
     "region": "Rhondda Cynon Taff",
-    "country": "England",
+    "country": "Wales",
     "location": {
       "lat": 51.7135,
       "lng": -3.447894
