@@ -13,7 +13,6 @@ import type { Pub } from '../../../pubs/utils/pub.models';
     <article
       class="mission-card"
       [class.mission-card--joined]="isJoined()"
-      (click)="handleClick($event)"
     >
       <header class="mission-card__header">
         <h3 class="mission-card__title">{{ mission().name }}</h3>
@@ -97,6 +96,11 @@ import type { Pub } from '../../../pubs/utils/pub.models';
         </div>
       }
 
+      <!-- Actions slot for parent components to inject buttons -->
+      <div class="mission-card__actions">
+        <ng-content select="[slot=actions]"></ng-content>
+      </div>
+
     </article>
   `,
   styles: `
@@ -105,7 +109,6 @@ import type { Pub } from '../../../pubs/utils/pub.models';
       border: 2px solid transparent;
       border-radius: 8px;
       padding: 1.5rem;
-      cursor: pointer;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
       position: relative;
@@ -125,15 +128,7 @@ import type { Pub } from '../../../pubs/utils/pub.models';
       pointer-events: none;
     }
 
-    .mission-card:hover {
-      transform: translateY(-8px) scale(1.02);
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-      border-color: rgba(59, 130, 246, 0.3);
-    }
-
-    .mission-card:hover::before {
-      opacity: 1;
-    }
+    /* Hover effects removed - parent components can add their own hover styles */
 
     .mission-card--joined {
       background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%);
@@ -423,9 +418,7 @@ import type { Pub } from '../../../pubs/utils/pub.models';
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
       }
 
-      .mission-card:hover {
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
-      }
+      /* Hover effects removed - parent components can add their own hover styles */
 
       .mission-card__title {
         background: linear-gradient(135deg, #f3f4f6 0%, #60a5fa 100%);
@@ -449,6 +442,19 @@ import type { Pub } from '../../../pubs/utils/pub.models';
         border-color: rgba(75, 85, 99, 0.4);
       }
     }
+
+    .mission-card__actions {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--color-border, #e5e7eb);
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .mission-card__actions:empty {
+      display: none;
+    }
   `
 })
 export class MissionCardComponent {
@@ -463,8 +469,7 @@ export class MissionCardComponent {
   readonly isJoined = input<boolean>(false);
   readonly progress = input<number | null>(null);
 
-  // ✅ Outputs for interactions
-  readonly cardClicked = output<Mission>();
+  // ✅ No outputs - parent components handle their own interactions
 
   // ✅ Computed properties
   readonly progressPercentage = computed(() => {
@@ -511,8 +516,5 @@ export class MissionCardComponent {
   });
 
 
-  // ✅ Event handlers
-  handleClick(event: Event): void {
-    this.cardClicked.emit(this.mission());
-  }
+  // ✅ No event handlers - purely presentational component
 }

@@ -1,4 +1,6 @@
 // src/app/shared/ui/button/button.component.scss
+@use 'styles/index' as *;
+
 .btn {
   font-family: inherit;
   border: none;
@@ -136,7 +138,7 @@
     &:hover:not(:disabled):not(.disabled) {
       background-color: var(--color-error);
       filter: brightness(0.9);
-      transform: translateY(-1px);
+      @include hover-lift();
     }
 
     &:active {
@@ -153,7 +155,7 @@
     &:hover:not(:disabled):not(.disabled) {
       background-color: var(--color-success);
       filter: brightness(0.9);
-      transform: translateY(-1px);
+      @include hover-lift();
     }
 
     &:active {
@@ -170,7 +172,7 @@
     &:hover:not(:disabled):not(.disabled) {
       background-color: var(--color-warning);
       filter: brightness(0.9);
-      transform: translateY(-1px);
+      @include hover-lift();
     }
 
     &:active {
@@ -249,7 +251,7 @@
     border: 2px solid currentColor;
     border-top-color: transparent;
     border-radius: 50%;
-    animation: spin 1s linear infinite;
+    @include spin();
   }
 
   // Router link specific styles
@@ -263,11 +265,7 @@
   }
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
+// Spin keyframe now in centralized animations
 
 // Utility classes for special cases
 .btn-group {

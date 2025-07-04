@@ -16,7 +16,6 @@ import type { User } from '@users/utils/user.model';
       <div class="avatar-section">
         <h3>Choose Your Avatar</h3>
         <app-avatar-selection-widget
-          [user]="user()"
           [selectedAvatarId]="selectedAvatarId()"
           (avatarSelected)="avatarSelected.emit($event)"
         />
@@ -54,8 +53,8 @@ import type { User } from '@users/utils/user.model';
         <app-button variant="secondary" (onClick)="back.emit()">
           Back
         </app-button>
-        <app-button 
-          variant="primary" 
+        <app-button
+          variant="primary"
           [disabled]="!isValid()"
           (onClick)="continue.emit()"
         >
@@ -167,7 +166,7 @@ export class CustomizeProfileStepComponent {
   readonly user = input<User | null>(null);
   readonly selectedAvatarId = input<string>('');
   readonly displayName = input<string>('');
-  
+
   readonly avatarSelected = output<string>();
   readonly nameChanged = output<string>();
   readonly generateRandom = output<void>();

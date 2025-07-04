@@ -263,4 +263,24 @@ export class UserMissionsStore {
       throw error;
     }
   }
+
+  /**
+   * Leave a mission by deleting the user's progress.
+   */
+  async leaveMission(missionId: string): Promise<void> {
+    const user = this.authStore.user();
+    if (!user) {
+      throw new Error('User must be available to leave missions');
+    }
+
+    try {
+      await this.userMissionProgressService.leaveMission(user.uid, missionId);
+      // Reload user missions to reflect changes
+      await this.loadUserMissions();
+    } catch (error: any) {
+      console.error('[UserMissionsStore] Failed to leave mission:', error);
+      this._error.set(error?.message || 'Failed to leave mission');
+      throw error;
+    }
+  }
 }

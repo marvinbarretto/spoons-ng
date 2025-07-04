@@ -4,6 +4,11 @@ Gamified pub check-in app built with Angular + Firebase
 
 
 
+## Important files
+ - `points.config.ts` - tweak this to know how to do this right
+ 
+
+
 ## Development
 ## Test on the phone
 `ng serve --host 0.0.0.0`

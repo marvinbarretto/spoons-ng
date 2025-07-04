@@ -78,8 +78,38 @@ import type { Mission } from '../../utils/mission.model';
               [mission]="missionData.mission"
               [isJoined]="missionData.isActive || missionData.isCompleted"
               [progress]="missionData.completedCount"
-              (cardClicked)="handleStartMissionClick($event)"
-            />
+            >
+              <div slot="actions">
+                @if (missionData.isActive || missionData.isCompleted) {
+                  <button 
+                    class="btn btn--secondary btn--small"
+                    (click)="handleLeaveMissionClick(missionData.mission)"
+                    [disabled]="userMissionsStore.loading()"
+                  >
+                    @if (userMissionsStore.loading()) {
+                      <span class="btn__spinner">⏳</span>
+                    }
+                    Leave Mission
+                  </button>
+                  @if (missionData.isCompleted) {
+                    <span class="completion-badge">✅ Completed</span>
+                  } @else {
+                    <span class="progress-badge">📍 {{ missionData.completedCount }}/{{ missionData.totalCount }}</span>
+                  }
+                } @else {
+                  <button 
+                    class="btn btn--primary btn--small"
+                    (click)="handleStartMissionClick(missionData.mission)"
+                    [disabled]="userMissionsStore.loading()"
+                  >
+                    @if (userMissionsStore.loading()) {
+                      <span class="btn__spinner">⏳</span>
+                    }
+                    Join Mission
+                  </button>
+                }
+              </div>
+            </app-mission-card>
           }
         </div>
 
@@ -235,6 +265,94 @@ import type { Mission } from '../../utils/mission.model';
       margin: 0;
     }
 
+    /* Action buttons styling */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      min-width: 120px;
+      justify-content: center;
+    }
+
+    .btn--small {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8125rem;
+      min-width: 100px;
+    }
+
+    .btn--primary {
+      background: var(--color-primary, #3b82f6);
+      color: white;
+      border-color: var(--color-primary, #3b82f6);
+    }
+
+    .btn--primary:hover:not(:disabled) {
+      background: var(--color-primary-dark, #2563eb);
+      border-color: var(--color-primary-dark, #2563eb);
+      transform: translateY(-1px);
+    }
+
+    .btn--secondary {
+      background: transparent;
+      color: var(--color-text-secondary, #6b7280);
+      border-color: var(--color-border, #e5e7eb);
+    }
+
+    .btn--secondary:hover:not(:disabled) {
+      background: var(--color-gray-50, #f9fafb);
+      border-color: var(--color-gray-300, #d1d5db);
+      color: var(--color-text-primary, #111827);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn__spinner {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .completion-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--color-success, #10b981);
+      background: rgba(16, 185, 129, 0.1);
+      padding: 0.375rem 0.75rem;
+      border-radius: 6px;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .progress-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--color-primary, #3b82f6);
+      background: rgba(59, 130, 246, 0.1);
+      padding: 0.375rem 0.75rem;
+      border-radius: 6px;
+      border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+
     /* Responsive design */
     @media (max-width: 768px) {
       .mission-grid {
@@ -254,6 +372,11 @@ import type { Mission } from '../../utils/mission.model';
       .filter-pill {
         padding: 0.375rem 0.75rem;
         font-size: 0.8125rem;
+      }
+
+      .btn {
+        min-width: 90px;
+        padding: 0.5rem 0.75rem;
       }
     }
   `
@@ -362,6 +485,32 @@ export class MissionListComponent extends BaseComponent {
     } catch (error: any) {
       console.error('[MissionList] ❌ Failed to start mission:', error);
       this.showError(error?.message || 'Failed to start mission');
+    }
+  }
+
+  // ✅ New action - leave mission
+  async handleLeaveMissionClick(mission: Mission): Promise<void> {
+    const user = this.authStore.user();
+    if (!user) {
+      console.warn('[MissionList] No user available');
+      this.showError('Unable to leave mission at this time');
+      return;
+    }
+
+    // Show confirmation dialog
+    const confirmed = confirm(`Are you sure you want to leave "${mission.name}"?\n\nThis will delete all your progress in this mission.`);
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      console.log('[MissionList] Leaving mission:', mission.name);
+      await this.userMissionsStore.leaveMission(mission.id);
+      console.log('[MissionList] ✅ Successfully left mission:', mission.name);
+      this.showSuccess(`Left mission: "${mission.name}"`);
+    } catch (error: any) {
+      console.error('[MissionList] ❌ Failed to leave mission:', error);
+      this.showError(error?.message || 'Failed to leave mission');
     }
   }
 }

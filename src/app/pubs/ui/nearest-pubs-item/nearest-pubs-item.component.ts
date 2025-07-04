@@ -4,6 +4,7 @@ import type { Pub } from '../../utils/pub.models';
 import { CheckInStore } from '../../../check-in/data-access/check-in.store';
 import { AuthStore } from '../../../auth/data-access/auth.store';
 import { LandlordStore } from '../../../landlord/data-access/landlord.store';
+import { LocationService } from '../../../shared/data-access/location.service';
 
 @Component({
   selector: 'app-nearest-pubs-item',
@@ -11,7 +12,7 @@ import { LandlordStore } from '../../../landlord/data-access/landlord.store';
   template: `
     <li>
       {{ pub().name }}
-      <span class="distance">({{ pub().distance.toFixed(0) }}m)</span>
+      <span class="distance" [class.distance-pulsing]="isMoving()">({{ pub().distance.toFixed(0) }}m)</span>
       @if (isLandlord(pub().id)) {
         <span class="badge">👑 You're the Landlord</span>
       }
@@ -28,6 +29,10 @@ export class NearestPubsItemComponent {
   private readonly checkinStore = inject(CheckInStore);
   private readonly authStore = inject(AuthStore);
   private readonly landlordStore = inject(LandlordStore);
+  private readonly locationService = inject(LocationService);
+  
+  // ✅ Movement detection signal
+  readonly isMoving = this.locationService.isMoving;
 
   isLandlord(pubId: string): boolean {
     const userId = this.authStore.uid;

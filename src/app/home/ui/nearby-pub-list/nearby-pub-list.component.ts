@@ -1,7 +1,8 @@
 // src/app/features/home/ui/nearby-pub-list/nearby-pub-list.component.ts
-import { Component, input, computed, ChangeDetectionStrategy } from '@angular/core';
+import { Component, input, computed, ChangeDetectionStrategy, inject } from '@angular/core';
 import type { CheckIn } from '@/app/check-in/utils/check-in.models';
 import type { Pub } from '@pubs/utils/pub.models';
+import { LocationService } from '../../../shared/data-access/location.service';
 
 type NearbyPub = {
   id: string;
@@ -30,7 +31,7 @@ type NearbyPub = {
               <div class="pub-info">
                 <h4 class="pub-name">{{ pub.name }}</h4>
                 <div class="pub-details">
-                  <span class="distance">{{ pub.distanceText }}</span>
+                  <span class="distance" [class.distance-pulsing]="isMoving()">{{ pub.distanceText }}</span>
                   @if (pub.address) {
                     <span class="address">{{ pub.address }}</span>
                   }
@@ -43,7 +44,7 @@ type NearbyPub = {
                 } @else if (pub.canCheckIn) {
                   <span class="can-check-in-badge">📍 Can check in</span>
                 } @else {
-                  <span class="distance-badge">{{ pub.distanceText }}</span>
+                  <span class="distance-badge" [class.distance-pulsing]="isMoving()">{{ pub.distanceText }}</span>
                 }
               </div>
             </li>
@@ -227,9 +228,15 @@ type NearbyPub = {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class NearbyPubListComponent {
+  // ✅ Inject LocationService for movement detection
+  private readonly locationService = inject(LocationService);
+  
   // ✅ Properly typed inputs
   readonly pubs = input.required<NearbyPub[]>();
   readonly userCheckins = input.required<CheckIn[]>();
+  
+  // ✅ Movement detection signal
+  readonly isMoving = this.locationService.isMoving;
 
   /**
    * Computed signal that adds status information to each pub

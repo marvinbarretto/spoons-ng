@@ -49,11 +49,11 @@ import { calculateDistance } from '@shared/utils/location.utils';
               ✅ You've been here
             </div>
           } @else if (isNearby()) {
-            <div class="status-badge status-badge--info">
+            <div class="status-badge status-badge--info" [class.distance-pulsing]="isMoving()">
               📍 You're nearby ({{ distanceText() }})
             </div>
           } @else {
-            <div class="status-badge status-badge--neutral">
+            <div class="status-badge status-badge--neutral" [class.distance-pulsing]="isMoving()">
               📍 {{ distanceText() }}
             </div>
           }
@@ -403,6 +403,7 @@ export class PubDetailComponent extends BaseComponent {
   // ✅ User and location data
   protected readonly user = this.userStore.user;
   protected readonly currentLocation = this.locationService.location;
+  protected readonly isMoving = this.locationService.isMoving;
 
   // ✅ Distance calculations
   protected readonly distance = computed(() => {

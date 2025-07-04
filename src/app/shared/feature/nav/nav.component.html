@@ -1,29 +1,51 @@
-<ul
-  class="menu__list"
-  [class.mobile]="isMobile$$()"
-  [class.desktop]="!isMobile$$()"
->
-  <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-    <a routerLink="/">Home</a>
-  </li>
+<div class="nav-container">
+  <!-- Movement Status Indicator -->
+  <div class="movement-status">
+    @if (loading()) {
+      <span class="status-indicator status-indicator--loading" title="Getting location...">📍</span>
+    } @else if (isMoving()) {
+      <span class="status-indicator status-indicator--moving" title="Moving detected! ({{ movementSpeed().toFixed(1) }} m/s)">🔴</span>
+    } @else if (isTracking()) {
+      <span class="status-indicator status-indicator--stationary" title="Stationary - tracking location">🟢</span>
+    } @else {
+      <span class="status-indicator status-indicator--inactive" title="Location tracking inactive">⚫</span>
+    }
+    
+    <!-- Debug controls (temporary) -->
+    @if (!isTracking()) {
+      <button class="movement-btn" (click)="startMovementDetection()" title="Start movement detection">▶️</button>
+    } @else {
+      <button class="movement-btn" (click)="stopMovementDetection()" title="Stop movement detection">⏸️</button>
+    }
+  </div>
 
-  <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-    <a routerLink="/pubs">Pubs</a>
-  </li>
+  <ul
+    class="menu__list"
+    [class.mobile]="isMobile$$()"
+    [class.desktop]="!isMobile$$()"
+  >
+    <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+      <a routerLink="/">Home</a>
+    </li>
 
-  <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-    <a routerLink="/missions">Missions</a>
-  </li>
+    <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+      <a routerLink="/pubs">Pubs</a>
+    </li>
 
-  <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-    <a routerLink="/admin/badges">Badges</a>
-  </li>
+    <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+      <a routerLink="/missions">Missions</a>
+    </li>
 
-  <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-    <a routerLink="/leaderboard">Leaderboard</a>
-  </li>
+    <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+      <a routerLink="/admin/badges">Badges</a>
+    </li>
 
-  <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-    <a routerLink="/share">Share</a>
-  </li>
-</ul>
+    <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+      <a routerLink="/leaderboard">Leaderboard</a>
+    </li>
+
+    <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+      <a routerLink="/share">Share</a>
+    </li>
+  </ul>
+</div>

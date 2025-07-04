@@ -103,4 +103,12 @@ export class UserMissionProgressService extends FirestoreService {
       where('isCompleted', '==', false)
     );
   }
+
+  /**
+   * Leave a mission by deleting the user's progress.
+   */
+  async leaveMission(userId: string, missionId: string): Promise<void> {
+    const id = `${userId}_${missionId}`;
+    await this.deleteDoc(`${this.collectionPath}/${id}`);
+  }
 }

@@ -43,12 +43,16 @@ import { MissionCardComponent } from '../../missions/ui/mission-card/mission-car
       } @else {
         <div class="missions-grid">
           @for (missionData of activeMissions(); track missionData.mission.id) {
-            <app-mission-card
-              [mission]="missionData.mission"
-              [isJoined]="missionData.isActive"
-              [progress]="missionData.completedCount"
-              (cardClicked)="onMissionCardClicked($event)"
-            />
+            <button 
+              class="mission-card-button"
+              (click)="onMissionCardClicked(missionData.mission)"
+            >
+              <app-mission-card
+                [mission]="missionData.mission"
+                [isJoined]="missionData.isActive"
+                [progress]="missionData.completedCount"
+              />
+            </button>
           }
         </div>
       }
@@ -174,6 +178,26 @@ import { MissionCardComponent } from '../../missions/ui/mission-card/mission-car
       display: flex;
       flex-direction: column;
       gap: 1rem;
+    }
+
+    .mission-card-button {
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      width: 100%;
+      display: block;
+      text-align: left;
+      transition: all 0.2s ease;
+    }
+
+    .mission-card-button:hover {
+      transform: translateY(-2px);
+    }
+
+    .mission-card-button:focus {
+      outline: 2px solid var(--color-primary, var(--primary));
+      outline-offset: 2px;
     }
   `]
 })

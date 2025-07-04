@@ -1,8 +1,9 @@
 // src/app/pubs/ui/pub-card/pub-card.component.ts
-import { Component, computed, input, output } from '@angular/core';
+import { Component, computed, input, output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { environment } from '../../../../environments/environment';
 import type { Pub } from '../../utils/pub.models';
+import { LocationService } from '../../../shared/data-access/location.service';
 
 @Component({
   selector: 'app-pub-card',
@@ -50,7 +51,7 @@ import type { Pub } from '../../utils/pub.models';
         }
 
         @if (distanceText()) {
-          <p class="pub-card__distance">{{ distanceText() }}</p>
+          <p class="pub-card__distance" [class.distance-pulsing]="isMoving()">{{ distanceText() }}</p>
         }
 
         @if (showCheckinCount() && checkinCount() > 0) {
@@ -233,12 +234,18 @@ import type { Pub } from '../../utils/pub.models';
   `
 })
 export class PubCardComponent {
+  // ✅ Inject LocationService for movement detection
+  private readonly locationService = inject(LocationService);
+  
   // ✅ Required inputs - pure component pattern
   readonly pub = input.required<Pub & { distance: number | null }>();
 
     // ✅ Selection mode inputs
     readonly selectable = input<boolean>(false);
     readonly isSelected = input<boolean>(false);
+    
+  // ✅ Movement detection signal
+  readonly isMoving = this.locationService.isMoving;
 
 
   // ✅ Optional inputs with defaults

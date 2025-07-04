@@ -1,8 +1,7 @@
-import { Component, input, output, computed, signal, inject, ChangeDetectionStrategy, DestroyRef } from '@angular/core';
+import { Component, input, output, computed, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AvatarService } from '@shared/data-access/avatar.service';
 import { UserStore } from '@users/data-access/user.store';
-import type { User } from '@users/utils/user.model';
 import type { AvatarOption } from '@shared/data-access/avatar.service';
 
 @Component({
@@ -24,8 +23,6 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
           <!-- ✅ Status indicator -->
           @if (saving()) {
             <div class="status-circle saving">⏳</div>
-          } @else if (lastSaved()) {
-            <div class="status-circle saved">✓</div>
           }
         </div>
         <div class="avatar-info">
@@ -48,27 +45,12 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
             [title]="avatar.name"
           >
             <img [src]="avatar.url" [alt]="avatar.name" />
-            @if (avatar.isDefault) {
-              <div class="default-badge">NPC</div>
-            }
             @if (isSelected(avatar)) {
               <div class="selected-badge">✓</div>
             }
           </button>
         }
       </div>
-
-      <!-- ✅ Error display -->
-      @if (error()) {
-        <div class="error-message">
-          {{ error() }}
-          @if (failedAvatar()) {
-            <button type="button" class="retry-btn" (click)="retryLastSelection()">
-              Retry
-            </button>
-          }
-        </div>
-      }
     </div>
   `,
   styles: `
@@ -261,29 +243,16 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
 export class AvatarSelectionWidgetComponent {
   private readonly _avatarService = inject(AvatarService);
   private readonly _userStore = inject(UserStore); // ✅ Use UserStore
-  private readonly _destroyRef = inject(DestroyRef);
 
-  readonly user = input<User | null>(null);
   readonly selectedAvatarId = input(''); // ✅ For backwards compatibility
   readonly avatarSelected = output<string>();
 
   // ✅ Local widget state
   private readonly _selectedAvatarId = signal<string>('');
-  private readonly _saving = signal(false);
-  private readonly _error = signal<string | null>(null);
-  private readonly _lastSaved = signal(false);
-  private readonly _failedAvatar = signal<AvatarOption | null>(null);
-
-  private _saveTimer: number | null = null;
-  private readonly SAVE_DELAY = 2000; // 2 seconds
-
-  readonly error = this._error.asReadonly();
-  readonly lastSaved = this._lastSaved.asReadonly();
-  readonly failedAvatar = this._failedAvatar.asReadonly();
 
   // ✅ Use UserStore for current user data
   readonly currentUser = this._userStore.user;
-  readonly saving = computed(() => this._saving() || this._userStore.loading());
+  readonly saving = computed(() => this._userStore.loading());
 
   readonly isAnonymous = computed(() => this.currentUser()?.isAnonymous ?? true);
 
@@ -307,11 +276,6 @@ export class AvatarSelectionWidgetComponent {
     return this.currentAvatarUrl();
   });
 
-  constructor() {
-    this._destroyRef.onDestroy(() => {
-      this._clearTimer();
-    });
-  }
 
   getDisplayAvatarName(): string {
     const selectedId = this._selectedAvatarId();
@@ -338,61 +302,10 @@ export class AvatarSelectionWidgetComponent {
     const avatar = this.availableAvatars().find(a => a.id === avatarId);
     if (!avatar) return;
 
-    this._clearTimer();
-    this._error.set(null);
-    this._lastSaved.set(false);
-    this._failedAvatar.set(null);
     this._selectedAvatarId.set(avatarId);
-
     this.avatarSelected.emit(avatarId);
-
-    // Start auto-save timer
-    this._saveTimer = window.setTimeout(async () => {
-      await this._performSave(avatar);
-    }, this.SAVE_DELAY);
 
     console.log('[AvatarSelectionWidget] Avatar selected:', avatar.name);
   }
 
-  async retryLastSelection(): Promise<void> {
-    const failed = this._failedAvatar();
-    if (!failed) return;
-
-    this._error.set(null);
-    this._failedAvatar.set(null);
-    await this._performSave(failed);
-  }
-
-  private async _performSave(avatar: AvatarOption): Promise<void> {
-    this._saving.set(true);
-    this._error.set(null);
-
-    try {
-      await this._avatarService.selectAvatar(avatar);
-
-      this._selectedAvatarId.set('');
-      this._lastSaved.set(true);
-
-      // Hide success indicator after 3 seconds
-      setTimeout(() => this._lastSaved.set(false), 3000);
-
-      console.log('[AvatarSelectionWidget] ✅ Avatar auto-saved:', avatar.name);
-
-    } catch (error: any) {
-      this._selectedAvatarId.set('');
-      this._failedAvatar.set(avatar);
-      this._error.set(error?.message || 'Failed to save avatar');
-
-      console.error('[AvatarSelectionWidget] ❌ Auto-save failed:', error);
-    } finally {
-      this._saving.set(false);
-    }
-  }
-
-  private _clearTimer(): void {
-    if (this._saveTimer) {
-      clearTimeout(this._saveTimer);
-      this._saveTimer = null;
-    }
-  }
 }

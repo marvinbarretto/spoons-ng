@@ -3,7 +3,8 @@ import type { Pub, PubWithDistance } from '../utils/pub.models';
 import { haversineDistanceInMeters } from '../../shared/utils/geo';
 import { LocationService } from '../../shared/data-access/location.service';
 import { PubStore } from './pub.store';
-import { PUB_DISTANCE_THRESHOLD_METRES, MAX_NEARBY_PUBS } from '../../constants';
+import { MAX_NEARBY_PUBS } from '../../constants';
+import { environment } from '../../../environments/environment';
 
 
 /**
@@ -41,7 +42,7 @@ export class NearbyPubStore {
     }));
 
     return pubsWithDistances
-      .filter((pub) => pub.distance < PUB_DISTANCE_THRESHOLD_METRES)
+      .filter((pub) => pub.distance < (environment.checkInDistanceThresholdMeters || 200))
       .sort((a, b) => a.distance - b.distance)
       .slice(0, MAX_NEARBY_PUBS);
   });
@@ -83,7 +84,7 @@ export class NearbyPubStore {
    */
   isWithinCheckInRange(pubId: string): boolean {
     const distance = this.getDistanceToPub(pubId);
-    return distance !== null && distance < PUB_DISTANCE_THRESHOLD_METRES;
+    return distance !== null && distance < (environment.checkInDistanceThresholdMeters || 200);
   }
 
   /**
@@ -104,24 +105,5 @@ export class NearbyPubStore {
       }))
       .filter(pub => pub.distance <= radiusMeters)
       .sort((a, b) => a.distance - b.distance);
-  }
-
-  /**
-   * Get debug info for troubleshooting
-   */
-  getDebugInfo() {
-    const location = this.location();
-    const nearbyPubs = this.nearbyPubs();
-
-    return {
-      hasLocation: !!location,
-      location,
-      totalPubs: this.allPubs().length,
-      nearbyPubsCount: nearbyPubs.length,
-      closestPub: this.closestPub()?.name || 'None',
-      canCheckIn: this.canCheckIn(),
-      threshold: PUB_DISTANCE_THRESHOLD_METRES,
-      maxNearby: MAX_NEARBY_PUBS
-    };
   }
 }

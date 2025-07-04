@@ -1,14 +1,15 @@
 // src/app/home/ui/profile-customisation-modal/profile-customisation-modal.component.ts
 import { Component, inject, signal, computed, ChangeDetectionStrategy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { UserStore } from '@users/data-access/user.store';
 import { AuthStore } from '@auth/data-access/auth.store';
+import { AvatarService } from '@shared/data-access/avatar.service';
 import { OverlayService } from '@shared/data-access/overlay.service';
 import { ButtonComponent } from '@shared/ui/button/button.component';
 
-// Import micro-widgets
+// Import widgets
 import { ThemeSelectionWidgetComponent } from './widgets/theme-selection-widget/theme-selection-widget.component';
-import { AvatarSelectionWidgetComponent } from './widgets/avatar-selection-widget/avatar-selection-widget.component';
-import { DisplayNameWidgetComponent } from './widgets/display-name-widget/display-name-widget.component';
+import { ProfileIdentityWidgetComponent } from './widgets/profile-identity-widget/profile-identity-widget.component';
 
 @Component({
   selector: 'app-profile-customisation-modal',
@@ -17,42 +18,32 @@ import { DisplayNameWidgetComponent } from './widgets/display-name-widget/displa
     CommonModule,
     ButtonComponent,
     ThemeSelectionWidgetComponent,
-    AvatarSelectionWidgetComponent,
-    DisplayNameWidgetComponent,
+    ProfileIdentityWidgetComponent,
   ],
   template: `
     <div class="modal-container">
-      <!-- ✅ Header -->
+
       <div class="modal-header">
         <h2>🎮 Customize Your Profile</h2>
-        <button type="button" class="close-btn" (click)="close()">×</button>
+        <button type="button" class="close-btn" (click)="close()">        <!-- TODO: Bring in an icon-component to handle exit icon -->
+        ×</button>
       </div>
 
-      <!-- ✅ Modal Body with Widgets -->
-      <div class="modal-body">
-        <!-- ✅ Display Name Widget -->
-        <app-display-name-widget
-          [user]="user()"
-          [displayName]="displayName()"
-          (displayNameChanged)="onDisplayNameChanged($event)" />
 
-        <!-- ✅ Avatar Selection Widget -->
-        <app-avatar-selection-widget
+
+      <div class="modal-body">
+
+        <app-profile-identity-widget
           [user]="user()"
+          [displayName]="tempDisplayName()"
           [selectedAvatarId]="selectedAvatarId()"
+          (displayNameChanged)="onDisplayNameChanged($event)"
           (avatarSelected)="onAvatarSelected($event)" />
 
-        <!-- ✅ Theme Selection Widget -->
         <app-theme-selection-widget />
 
-        <!-- ✅ Account Upgrade Widget (anonymous users only) -->
-        <!-- <app-account-upgrade-widget
-          [user]="user()"
-          (upgradeRequested)="onUpgradeRequested()"
-          (continueAnonymousRequested)="close()" /> -->
       </div>
 
-      <!-- ✅ Footer -->
       <div class="modal-footer">
         <app-button
           variant="secondary"
@@ -182,32 +173,32 @@ import { DisplayNameWidgetComponent } from './widgets/display-name-widget/displa
   `
 })
 export class ProfileCustomisationModalComponent implements OnInit {
+  private readonly userStore = inject(UserStore);
   private readonly authStore = inject(AuthStore);
+  private readonly avatarService = inject(AvatarService);
   private readonly overlayService = inject(OverlayService);
 
   // ✅ Component State
-  readonly displayName = signal('');
+  readonly tempDisplayName = signal('');  // Temporary value during editing
   readonly selectedAvatarId = signal('');
-  readonly saving = signal(false);
+  readonly saving = computed(() => this.userStore.loading());
 
   // ✅ Reactive Data
-  readonly user = this.authStore.user;
+  readonly user = this.userStore.user;
   readonly originalDisplayName = computed(() => this.user()?.displayName || '');
   readonly originalAvatarUrl = computed(() => this.user()?.photoURL || '');
 
   // ✅ Change Detection
   readonly hasChanges = computed(() => {
-    const nameChanged = this.displayName() !== this.originalDisplayName();
+    const nameChanged = this.tempDisplayName() !== this.userStore.displayName();
     const avatarChanged = this.selectedAvatarId() !== this.findCurrentAvatarId();
     return nameChanged || avatarChanged;
   });
 
   ngOnInit(): void {
-    // Initialize with current user data
-    const user = this.user();
-    if (user?.displayName) {
-      this.displayName.set(user.displayName);
-    }
+    // Initialize temp display name with current value
+    const currentDisplayName = this.userStore.displayName();
+    this.tempDisplayName.set(currentDisplayName || '');
 
     const currentAvatarId = this.findCurrentAvatarId();
     this.selectedAvatarId.set(currentAvatarId);
@@ -215,7 +206,7 @@ export class ProfileCustomisationModalComponent implements OnInit {
 
   // ✅ Event Handlers
   onDisplayNameChanged(newName: string): void {
-    this.displayName.set(newName);
+    this.tempDisplayName.set(newName);
   }
 
   onAvatarSelected(avatarId: string): void {
@@ -232,29 +223,32 @@ export class ProfileCustomisationModalComponent implements OnInit {
   async saveChanges(): Promise<void> {
     if (!this.hasChanges() || this.saving()) return;
 
-    this.saving.set(true);
-
     try {
       const user = this.user();
       if (!user) {
         throw new Error('No user found');
       }
 
-      // TODO: Implement actual save logic
+      const updates: Partial<any> = {};
+
+      // Update display name if changed
+      if (this.tempDisplayName() !== this.userStore.displayName()) {
+        updates['displayName'] = this.tempDisplayName();
+      }
+
+      // Update avatar if changed
+      if (this.selectedAvatarId() !== this.findCurrentAvatarId()) {
+        updates['photoURL'] = this.getAvatarUrlById(this.selectedAvatarId());
+      }
+
       console.log('[ProfileModal] Saving changes:', {
-        displayName: this.displayName(),
-        avatarId: this.selectedAvatarId(),
+        displayName: updates['displayName'],
+        photoURL: updates['photoURL'],
         userId: user.uid
       });
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // TODO: Update user via AuthStore or UserService
-      // await this.authStore.updateProfile({
-      //   displayName: this.displayName(),
-      //   photoURL: this.getAvatarUrlById(this.selectedAvatarId())
-      // });
+      // Save via UserStore
+      await this.userStore.updateProfile(updates);
 
       console.log('[ProfileModal] ✅ Changes saved successfully');
       this.close();
@@ -262,8 +256,6 @@ export class ProfileCustomisationModalComponent implements OnInit {
     } catch (error: any) {
       console.error('[ProfileModal] ❌ Save failed:', error);
       // TODO: Show error toast
-    } finally {
-      this.saving.set(false);
     }
   }
 
@@ -273,14 +265,25 @@ export class ProfileCustomisationModalComponent implements OnInit {
 
   // ✅ Utility Methods
   private findCurrentAvatarId(): string {
-    // TODO: Match current photoURL to avatar ID
-    // For now, return default
-    return 'npc-default';
+    const user = this.user();
+    if (!user) return 'npc-default';
+
+    const availableAvatars = this.avatarService.generateAvatarOptions(user.uid);
+    const currentUrl = user.photoURL;
+
+    if (!currentUrl) return 'npc-default';
+
+    // Find avatar by URL
+    const currentAvatar = availableAvatars.find(avatar => avatar.url === currentUrl);
+    return currentAvatar?.id || 'npc-default';
   }
 
   private getAvatarUrlById(avatarId: string): string {
-    // TODO: Get avatar URL from avatar service
-    // For now, return placeholder
-    return '/assets/avatars/npc.webp';
+    const user = this.user();
+    if (!user) return '/assets/avatars/npc.webp';
+
+    const availableAvatars = this.avatarService.generateAvatarOptions(user.uid);
+    const selectedAvatar = availableAvatars.find(avatar => avatar.id === avatarId);
+    return selectedAvatar?.url || '/assets/avatars/npc.webp';
   }
 }

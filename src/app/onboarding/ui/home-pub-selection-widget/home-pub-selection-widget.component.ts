@@ -5,6 +5,7 @@ import { BaseWidgetComponent } from '../../../widgets/base/base-widget.component
 import { PubStore } from '../../../pubs/data-access/pub.store';
 import { NearbyPubStore } from '../../../pubs/data-access/nearby-pub.store';
 import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
+import { LocationService } from '../../../shared/data-access/location.service';
 import type { Pub } from '../../../pubs/utils/pub.models';
 
 @Component({
@@ -65,7 +66,7 @@ import type { Pub } from '../../../pubs/utils/pub.models';
                   <h4 class="pub-name">{{ selectedPub()!.name }}</h4>
                   <p class="pub-address">{{ getPubLocationText(selectedPub()!) }}</p>
                   @if (selectedPubDistance()) {
-                    <p class="pub-distance">📍 {{ formatDistance(selectedPubDistance()!) }}</p>
+                    <p class="pub-distance" [class.distance-pulsing]="isMoving()">📍 {{ formatDistance(selectedPubDistance()!) }}</p>
                   }
                 </div>
                 <div class="selection-check">✓</div>
@@ -86,7 +87,7 @@ import type { Pub } from '../../../pubs/utils/pub.models';
                     <div class="pub-info">
                       <h5 class="pub-name">{{ pub.name }}</h5>
                       <p class="pub-address">{{ getPubLocationText(pub) }}</p>
-                      <p class="pub-distance">📍 {{ formatDistance(pub.distance) }}</p>
+                      <p class="pub-distance" [class.distance-pulsing]="isMoving()">📍 {{ formatDistance(pub.distance) }}</p>
                     </div>
                     <div class="select-icon">+</div>
                   </div>
@@ -510,9 +511,13 @@ export class HomePubSelectionWidgetComponent extends BaseWidgetComponent {
   // Direct store access for pub data
   private readonly pubStore = inject(PubStore);
   private readonly nearbyPubStore = inject(NearbyPubStore);
+  private readonly locationService = inject(LocationService);
 
   // DataAggregator for any cross-store needs
   private readonly dataAggregatorService = inject(DataAggregatorService);
+  
+  // ✅ Movement detection signal
+  readonly isMoving = this.locationService.isMoving;
 
   // Output for selected pub
   readonly pubSelected = output<Pub | null>();

@@ -24,7 +24,7 @@
   min-width: 250px;
   max-width: 400px;
   word-break: break-word;
-  animation: toastEnter 0.3s ease-out;
+  @include toast-enter();
   
   // Default colors
   background-color: var(--backgroundLighter);
@@ -69,13 +69,4 @@
   }
 }
 
-@keyframes toastEnter {
-  from {
-    opacity: 0;
-    transform: translateX(100%); // Start off-screen to the right
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0); // Slide to original position
-  }
-}
+// Toast enter keyframe now in centralized animations
