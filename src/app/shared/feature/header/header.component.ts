@@ -15,13 +15,15 @@ import { filter, map } from 'rxjs/operators';
 import { toSignal } from '@angular/core/rxjs-interop';
 
 import { BaseComponent } from '../../base/base.component';
-import { FeatureFlagPipe } from '../../utils/feature-flag.pipe';
 import { PanelStore, PanelType } from '../../ui/panel/panel.store';
 import { ViewportService } from '../../data-access/viewport.service';
 import { NavComponent } from "../nav/nav.component";
+import { UserProfileWidgetComponent } from '../../../home/ui/user-profile-widget/user-profile-widget.component';
+import { ProfileCustomisationModalComponent } from '../../../home/ui/profile-customisation-modal/profile-customisation-modal.component';
 import { LandlordStore } from '../../../landlord/data-access/landlord.store';
 import { NearbyPubStore } from '../../../pubs/data-access/nearby-pub.store';
 import { AuthStore } from '../../../auth/data-access/auth.store';
+import { OverlayService } from '../../data-access/overlay.service';
 
 import { APP_VERSION } from '../../utils/version';
 import { UserStore } from '../../../users/data-access/user.store';
@@ -47,8 +49,9 @@ import { environment } from '../../../../environments/environment';
   imports: [
     RouterModule,
     CommonModule,
-    FeatureFlagPipe,
     NavComponent,
+    UserProfileWidgetComponent,
+    ProfileCustomisationModalComponent,
   ],
 })
 export class HeaderComponent extends BaseComponent implements AfterViewInit {
@@ -59,6 +62,7 @@ export class HeaderComponent extends BaseComponent implements AfterViewInit {
   private readonly nearbyPubStore = inject(NearbyPubStore);
   private readonly authStore = inject(AuthStore);
   private readonly userStore = inject(UserStore);
+  private readonly overlayService = inject(OverlayService);
 
   // ✅ Reactive viewport detection
   readonly isMobile = this.viewportService.isMobile;
@@ -133,5 +137,20 @@ export class HeaderComponent extends BaseComponent implements AfterViewInit {
   @HostBinding('class.is-homepage')
   get isHomepageClass(): boolean {
     return this.isHomepage();
+  }
+
+  // ✅ Handle user profile actions
+  onOpenProfile(): void {
+    console.log('[HeaderComponent] Opening profile customization modal');
+
+    const { componentRef, close } = this.overlayService.open(
+      ProfileCustomisationModalComponent,
+      {
+        maxWidth: '600px',
+        maxHeight: '90vh'
+      }
+    );
+
+    console.log('[HeaderComponent] Profile modal opened, close function available');
   }
 }
