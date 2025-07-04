@@ -1,15 +1,89 @@
-@keyframes fadeIn {
+/**
+ * 🎬 CENTRAL ANIMATION SYSTEM
+ * 
+ * All reusable animations and keyframes for the Spoons application.
+ * Organized by category with consistent timing and accessibility support.
+ */
+
+// ===================================
+// ⏱️ ANIMATION TIMING CONFIGURATION
+// ===================================
+
+// 🎯 Quick Timing Guide:
+// - Increase values to slow down animations
+// - Decrease values to speed up animations
+// - Stagger controls delay between sequential items
+// - Duration controls individual animation speed
+
+// Base timing values - adjust these to control all animation speeds
+$anim-duration-fast: 0.2s;          // Quick interactions (hovers, small transitions)
+$anim-duration-normal: 0.6s;        // Standard animations (slide-ins, fades)
+$anim-duration-slow: 0.8s;          // Deliberate animations (modals, important reveals)
+$anim-duration-slower: 1s;          // Very slow animations (celebrations, emphasis)
+
+// Stagger delays for sequential animations
+$anim-stagger-fast: 0.05s;          // Rapid-fire reveals
+$anim-stagger-normal: 0.15s;        // Comfortable pacing between items
+$anim-stagger-slow: 0.2s;           // Deliberate pacing
+$anim-stagger-slower: 0.3s;         // Dramatic effect
+
+// Initial delays before animations start
+$anim-delay-short: 0.1s;            // Barely noticeable delay
+$anim-delay-normal: 0.3s;           // Noticeable pause
+$anim-delay-long: 0.6s;             // Significant pause
+$anim-delay-dramatic: 1s;           // Dramatic pause
+
+// ===================================
+// 🎨 CSS CUSTOM PROPERTIES
+// ===================================
+
+:root {
+  // Duration properties
+  --animation-duration-fast: #{$anim-duration-fast};
+  --animation-duration-normal: #{$anim-duration-normal};
+  --animation-duration-slow: #{$anim-duration-slow};
+  --animation-duration-slower: #{$anim-duration-slower};
+  
+  // Stagger properties
+  --animation-stagger-fast: #{$anim-stagger-fast};
+  --animation-stagger-normal: #{$anim-stagger-normal};
+  --animation-stagger-slow: #{$anim-stagger-slow};
+  
+  // Delay properties
+  --animation-delay-short: #{$anim-delay-short};
+  --animation-delay-normal: #{$anim-delay-normal};
+  --animation-delay-long: #{$anim-delay-long};
+  
+  // Easing functions
+  --animation-easing-ease: ease;
+  --animation-easing-ease-out: ease-out;
+  --animation-easing-ease-in-out: ease-in-out;
+  --animation-easing-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+// ===================================
+// 🔄 LOADING ANIMATIONS
+// ===================================
+
+@keyframes spin {
   to {
-    opacity: 1;
+    transform: rotate(360deg);
   }
 }
 
-.fade-in {
-  opacity: 0;
-  animation: fadeIn 0.4s ease forwards;
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
-@keyframes pulse {
+@keyframes skeleton-pulse {
   0% {
     background-position: -200px 0;
   }
@@ -18,9 +92,325 @@
   }
 }
 
-.skeleton {
-  background: repeating-linear-gradient(90deg, #eee, #f5f5f5 10px, #eee 20px);
-  animation: pulse 1.2s infinite;
+// ===================================
+// 📥 ENTRY/EXIT ANIMATIONS
+// ===================================
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
 }
 
-// TODO: Move some of these values out, such as the animation duration
+@keyframes slideInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes popIn {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInScale {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+@keyframes toastEnter {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+// ===================================
+// 🎯 FEEDBACK ANIMATIONS
+// ===================================
+
+@keyframes distance-pulse {
+  0%, 100% { 
+    opacity: 1; 
+    transform: scale(1);
+    background-color: transparent;
+  }
+  50% { 
+    opacity: 0.8; 
+    transform: scale(1.02);
+    background-color: rgba(74, 222, 128, 0.1);
+  }
+}
+
+@keyframes distance-highlight {
+  0%, 100% { 
+    box-shadow: 0 0 0 0 rgba(74, 222, 128, 0);
+  }
+  50% { 
+    box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.3);
+  }
+}
+
+@keyframes celebration-bounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(0.95);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  75% {
+    transform: scale(0.98);
+  }
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+// ===================================
+// 🎪 INTERACTION ANIMATIONS
+// ===================================
+
+@keyframes hover-lift {
+  to {
+    transform: translateY(-1px);
+  }
+}
+
+@keyframes hover-scale {
+  to {
+    transform: scale(1.02);
+  }
+}
+
+@keyframes press-scale {
+  to {
+    transform: scale(0.98);
+  }
+}
+
+// ===================================
+// 🛠️ UTILITY CLASSES
+// ===================================
+
+// Loading States
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.animate-pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.skeleton {
+  background: repeating-linear-gradient(90deg, #eee, #f5f5f5 10px, #eee 20px);
+  animation: skeleton-pulse 1.2s infinite;
+}
+
+// Entry/Exit Animations
+.animate-fade-in {
+  opacity: 0;
+  animation: fadeIn var(--animation-duration-normal) var(--animation-easing-ease) forwards;
+}
+
+.animate-slide-up {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: slideInUp var(--animation-duration-normal) var(--animation-easing-ease-out) forwards;
+}
+
+.animate-slide-down {
+  opacity: 0;
+  transform: translateY(-20px);
+  animation: slideInDown var(--animation-duration-normal) var(--animation-easing-ease-out) forwards;
+}
+
+.animate-slide-left {
+  opacity: 0;
+  transform: translateX(-20px);
+  animation: slideInLeft var(--animation-duration-normal) var(--animation-easing-ease-out) forwards;
+}
+
+.animate-slide-right {
+  opacity: 0;
+  transform: translateX(20px);
+  animation: slideInRight var(--animation-duration-normal) var(--animation-easing-ease-out) forwards;
+}
+
+.animate-pop-in {
+  opacity: 0;
+  transform: scale(0.9);
+  animation: popIn var(--animation-duration-normal) var(--animation-easing-bounce) forwards;
+}
+
+.animate-toast-enter {
+  opacity: 0;
+  transform: translateX(100%);
+  animation: toastEnter 0.3s var(--animation-easing-ease-out) forwards;
+}
+
+// Feedback Animations
+.animate-distance-pulse {
+  animation: distance-pulse 1.2s ease-in-out infinite;
+  border-radius: 0.25rem;
+  padding: 0.1rem 0.3rem;
+  transition: all 0.3s ease;
+}
+
+.animate-distance-highlight {
+  animation: distance-highlight 1.5s ease-in-out infinite;
+}
+
+.animate-celebration-bounce {
+  animation: celebration-bounce 0.6s var(--animation-easing-bounce) forwards;
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+// Interaction States
+.animate-hover-lift:hover {
+  animation: hover-lift var(--animation-duration-fast) var(--animation-easing-ease) forwards;
+}
+
+.animate-hover-scale:hover {
+  animation: hover-scale var(--animation-duration-fast) var(--animation-easing-ease) forwards;
+}
+
+.animate-press-scale:active {
+  animation: press-scale var(--animation-duration-fast) var(--animation-easing-ease) forwards;
+}
+
+// ===================================
+// 📐 TIMING MODIFIERS
+// ===================================
+
+.animate-fast {
+  animation-duration: var(--animation-duration-fast) !important;
+}
+
+.animate-normal {
+  animation-duration: var(--animation-duration-normal) !important;
+}
+
+.animate-slow {
+  animation-duration: var(--animation-duration-slow) !important;
+}
+
+.animate-delay-100 {
+  animation-delay: 0.1s !important;
+}
+
+.animate-delay-200 {
+  animation-delay: 0.2s !important;
+}
+
+.animate-delay-300 {
+  animation-delay: 0.3s !important;
+}
+
+.animate-delay-400 {
+  animation-delay: 0.4s !important;
+}
+
+.animate-delay-500 {
+  animation-delay: 0.5s !important;
+}
+
+// ===================================
+// 🎯 ACCESSIBILITY SUPPORT
+// ===================================
+
+@media (prefers-reduced-motion: reduce) {
+  // Disable all animations for users who prefer reduced motion
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  // But still provide subtle feedback without motion
+  .animate-distance-pulse,
+  .animate-distance-highlight {
+    animation: none;
+    background-color: rgba(74, 222, 128, 0.05);
+  }
+  
+  .skeleton {
+    animation: none;
+    background: #f5f5f5;
+  }
+}
+
+// ===================================
+// 📱 MOBILE OPTIMIZATIONS
+// ===================================
+
+@media (max-width: 768px) {
+  // Slightly faster animations on mobile for better perceived performance
+  :root {
+    --animation-duration-fast: 0.15s;
+    --animation-duration-normal: 0.3s;
+    --animation-duration-slow: 0.45s;
+  }
+}

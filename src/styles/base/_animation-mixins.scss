@@ -1,0 +1,213 @@
+/**
+ * 🎬 ANIMATION MIXINS
+ * 
+ * Pure mixins and functions for animations - no CSS output.
+ * Use these in components with @include for proper encapsulation.
+ */
+
+// Import timing variables from main animations file
+@use './animations' as anim;
+
+// ===================================
+// 🔄 LOADING ANIMATION MIXINS
+// ===================================
+
+@mixin spin($duration: 1s) {
+  animation: spin $duration linear infinite;
+}
+
+@mixin pulse($duration: 2s, $scale: 1.05) {
+  animation: pulse $duration ease-in-out infinite;
+  
+  @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale($scale); }
+    100% { transform: scale(1); }
+  }
+}
+
+@mixin skeleton-loading() {
+  background: repeating-linear-gradient(90deg, #eee, #f5f5f5 10px, #eee 20px);
+  animation: skeleton-pulse 1.2s infinite;
+}
+
+// ===================================
+// 📥 ENTRY/EXIT ANIMATION MIXINS
+// ===================================
+
+@mixin fade-in($duration: anim.$anim-duration-normal, $delay: 0s) {
+  opacity: 0;
+  animation: fadeIn $duration var(--animation-easing-ease) forwards;
+  animation-delay: $delay;
+}
+
+@mixin slide-up($duration: anim.$anim-duration-normal, $delay: 0s, $distance: 10px) {
+  opacity: 0;
+  transform: translateY($distance);
+  animation: slideInUp $duration var(--animation-easing-ease-out) forwards;
+  animation-delay: $delay;
+}
+
+@mixin slide-down($duration: var(--animation-duration-normal), $delay: 0s, $distance: -20px) {
+  opacity: 0;
+  transform: translateY($distance);
+  animation: slideInDown $duration var(--animation-easing-ease-out) forwards;
+  animation-delay: $delay;
+}
+
+@mixin slide-left($duration: var(--animation-duration-normal), $delay: 0s, $distance: -20px) {
+  opacity: 0;
+  transform: translateX($distance);
+  animation: slideInLeft $duration var(--animation-easing-ease-out) forwards;
+  animation-delay: $delay;
+}
+
+@mixin slide-right($duration: var(--animation-duration-normal), $delay: 0s, $distance: 20px) {
+  opacity: 0;
+  transform: translateX($distance);
+  animation: slideInRight $duration var(--animation-easing-ease-out) forwards;
+  animation-delay: $delay;
+}
+
+@mixin pop-in($duration: anim.$anim-duration-normal, $delay: 0s, $scale: 0.9) {
+  opacity: 0;
+  transform: scale($scale);
+  animation: popIn $duration var(--animation-easing-bounce) forwards;
+  animation-delay: $delay;
+}
+
+@mixin toast-enter($duration: 0.3s, $delay: 0s) {
+  opacity: 0;
+  transform: translateX(100%);
+  animation: toastEnter $duration var(--animation-easing-ease-out) forwards;
+  animation-delay: $delay;
+}
+
+// ===================================
+// 🎯 FEEDBACK ANIMATION MIXINS
+// ===================================
+
+@mixin distance-pulse() {
+  animation: distance-pulse 1.2s ease-in-out infinite;
+  border-radius: 0.25rem;
+  padding: 0.1rem 0.3rem;
+  transition: all 0.3s ease;
+}
+
+@mixin distance-highlight() {
+  animation: distance-highlight 1.5s ease-in-out infinite;
+}
+
+@mixin celebration-bounce($duration: 0.6s, $delay: 0s) {
+  animation: celebration-bounce $duration var(--animation-easing-bounce) forwards;
+  animation-delay: $delay;
+}
+
+@mixin shake($duration: 0.5s, $distance: 4px) {
+  animation: shake $duration ease-in-out;
+  
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-$distance); }
+    75% { transform: translateX($distance); }
+  }
+}
+
+// ===================================
+// 🎪 INTERACTION ANIMATION MIXINS
+// ===================================
+
+@mixin hover-lift($distance: -1px, $duration: var(--animation-duration-fast)) {
+  transition: transform $duration var(--animation-easing-ease);
+  
+  &:hover {
+    transform: translateY($distance);
+  }
+}
+
+@mixin hover-scale($scale: 1.02, $duration: var(--animation-duration-fast)) {
+  transition: transform $duration var(--animation-easing-ease);
+  
+  &:hover {
+    transform: scale($scale);
+  }
+}
+
+@mixin press-scale($scale: 0.98, $duration: var(--animation-duration-fast)) {
+  transition: transform $duration var(--animation-easing-ease);
+  
+  &:active {
+    transform: scale($scale);
+  }
+}
+
+@mixin hover-lift-with-shadow($distance: -1px, $duration: var(--animation-duration-fast)) {
+  transition: transform $duration var(--animation-easing-ease),
+              box-shadow $duration var(--animation-easing-ease);
+  
+  &:hover:not(:disabled) {
+    transform: translateY($distance);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+// ===================================
+// 🛠️ UTILITY FUNCTIONS
+// ===================================
+
+// Calculate animation delay based on index
+@function animation-delay($index, $base-delay: anim.$anim-stagger-normal) {
+  @return $index * $base-delay;
+}
+
+// Calculate staggered delays for a list
+@function stagger-delay($index, $base: anim.$anim-stagger-normal, $initial: 0s) {
+  @return $initial + ($index * $base);
+}
+
+// ===================================
+// 🎯 COMPOSITE MIXINS
+// ===================================
+
+// Progressive reveal for lists
+@mixin progressive-reveal($count: 10, $base-delay: 0.1s) {
+  @for $i from 1 through $count {
+    &:nth-child(#{$i}) {
+      animation-delay: animation-delay($i - 1, $base-delay);
+    }
+  }
+}
+
+// Staggered entrance for child elements
+@mixin stagger-children($selector, $count: 10, $base-delay: 0.1s) {
+  @for $i from 1 through $count {
+    #{$selector}:nth-child(#{$i}) {
+      animation-delay: animation-delay($i - 1, $base-delay);
+    }
+  }
+}
+
+// ===================================
+// 📱 RESPONSIVE ANIMATION HELPERS
+// ===================================
+
+@mixin mobile-faster-animation() {
+  @media (max-width: 768px) {
+    animation-duration: calc(var(--animation-duration-normal) * 0.75);
+  }
+}
+
+// ===================================
+// 🎯 ACCESSIBILITY HELPERS
+// ===================================
+
+@mixin respect-motion-preference() {
+  @media (prefers-reduced-motion: reduce) {
+    animation: none !important;
+    transition: none !important;
+  }
+}
