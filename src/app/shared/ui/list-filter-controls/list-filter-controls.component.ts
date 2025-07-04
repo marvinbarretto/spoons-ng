@@ -129,8 +129,8 @@ import { ListFilterStore, type SortOption } from '../../data-access/list-filter.
       flex-direction: column;
       gap: 1rem;
       padding: 1rem;
-      background: var(--color-background-lightest);
-      border: 1px solid var(--color-border);
+      background: var(--background-darkest);
+      border: 1px solid var(--border);
       border-radius: 8px;
       margin-bottom: 1rem;
     }
@@ -144,21 +144,21 @@ import { ListFilterStore, type SortOption } from '../../data-access/list-filter.
       position: relative;
       display: flex;
       align-items: center;
-      background: var(--color-background);
-      border: 1px solid var(--color-border);
+      background: var(--background);
+      border: 1px solid var(--border);
       border-radius: 6px;
       overflow: hidden;
       transition: border-color 0.2s ease;
     }
 
     .search-input:focus-within {
-      border-color: var(--color-primary);
-      box-shadow: 0 0 0 2px var(--color-primary-subtle);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px var(--primary-subtle);
     }
 
     .search-input__icon {
       padding: 0.75rem;
-      color: var(--color-text-secondary);
+      color: var(--text-secondary);
       pointer-events: none;
     }
 
@@ -168,19 +168,19 @@ import { ListFilterStore, type SortOption } from '../../data-access/list-filter.
       outline: none;
       padding: 0.75rem 0;
       background: transparent;
-      color: var(--color-text);
+      color: var(--text);
       font-size: 1rem;
     }
 
     .search-input__field::placeholder {
-      color: var(--color-text-secondary);
+      color: var(--text-secondary);
     }
 
     .search-input__clear {
       padding: 0.75rem;
       border: none;
       background: transparent;
-      color: var(--color-text-secondary);
+      color: var(--text-secondary);
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -202,7 +202,7 @@ import { ListFilterStore, type SortOption } from '../../data-access/list-filter.
     .sort-label {
       font-size: 0.875rem;
       font-weight: 500;
-      color: var(--color-text-secondary);
+      color: var(--text-secondary);
       white-space: nowrap;
     }
 
@@ -214,26 +214,26 @@ import { ListFilterStore, type SortOption } from '../../data-access/list-filter.
 
     .sort-select {
       padding: 0.5rem 0.75rem;
-      border: 1px solid var(--color-border);
+      border: 1px solid var(--border);
       border-radius: 4px;
-      background: var(--color-background);
-      color: var(--color-text);
+      background: var(--background);
+      color: var(--text);
       font-size: 0.875rem;
       cursor: pointer;
     }
 
     .sort-select:focus {
       outline: none;
-      border-color: var(--color-primary);
+      border-color: var(--primary);
     }
 
     .sort-direction-btn {
       width: 2rem;
       height: 2rem;
-      border: 1px solid var(--color-border);
+      border: 1px solid var(--border);
       border-radius: 4px;
-      background: var(--color-background);
-      color: var(--color-text);
+      background: var(--background);
+      color: var(--text);
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -243,9 +243,9 @@ import { ListFilterStore, type SortOption } from '../../data-access/list-filter.
     }
 
     .sort-direction-btn:hover {
-      border-color: var(--color-primary);
-      background: var(--color-primary);
-      color: var(--color-primary-text);
+      border-color: var(--primary);
+      background: var(--primary);
+      color: var(--primary-contrast);
     }
 
     /* Results Summary */
@@ -255,20 +255,20 @@ import { ListFilterStore, type SortOption } from '../../data-access/list-filter.
       justify-content: space-between;
       gap: 1rem;
       padding: 0.5rem 0;
-      border-top: 1px solid var(--color-border);
+      border-top: 1px solid var(--border);
     }
 
     .results-count {
       font-size: 0.875rem;
-      color: var(--color-text-secondary);
+      color: var(--text-secondary);
     }
 
     .clear-filters-btn {
       padding: 0.375rem 0.75rem;
-      border: 1px solid var(--color-border);
+      border: 1px solid var(--border);
       border-radius: 4px;
-      background: var(--color-background);
-      color: var(--color-text-secondary);
+      background: var(--background);
+      color: var(--text-secondary);
       font-size: 0.875rem;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -289,7 +289,7 @@ import { ListFilterStore, type SortOption } from '../../data-access/list-filter.
     .quick-filters-label {
       font-size: 0.75rem;
       font-weight: 500;
-      color: var(--color-text-secondary);
+      color: var(--text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
@@ -302,10 +302,10 @@ import { ListFilterStore, type SortOption } from '../../data-access/list-filter.
 
     .quick-filter-btn {
       padding: 0.375rem 0.75rem;
-      border: 1px solid var(--color-border);
+      border: 1px solid var(--border);
       border-radius: 12px;
-      background: var(--color-background);
-      color: var(--color-text-secondary);
+      background: var(--background);
+      color: var(--text-secondary);
       font-size: 0.75rem;
       font-weight: 500;
       cursor: pointer;
@@ -314,14 +314,14 @@ import { ListFilterStore, type SortOption } from '../../data-access/list-filter.
     }
 
     .quick-filter-btn:hover {
-      border-color: var(--color-primary);
-      color: var(--color-primary);
+      border-color: var(--primary);
+      color: var(--primary);
     }
 
     .quick-filter-btn.active {
-      border-color: var(--color-primary);
-      background: var(--color-primary);
-      color: var(--color-primary-text);
+      border-color: var(--primary);
+      background: var(--primary);
+      color: var(--primary-contrast);
     }
 
     /* Mobile Toggle */
@@ -329,18 +329,18 @@ import { ListFilterStore, type SortOption } from '../../data-access/list-filter.
       display: none;
       width: 100%;
       padding: 0.75rem;
-      border: 1px solid var(--color-border);
+      border: 1px solid var(--border);
       border-radius: 6px;
-      background: var(--color-background);
-      color: var(--color-text);
+      background: var(--background);
+      color: var(--text);
       font-size: 0.875rem;
       cursor: pointer;
       transition: all 0.2s ease;
     }
 
     .mobile-filters-toggle.active {
-      border-color: var(--color-primary);
-      background: var(--color-primary-subtle);
+      border-color: var(--primary);
+      background: var(--primary-subtle);
     }
 
     /* Desktop Layout */
@@ -361,7 +361,7 @@ import { ListFilterStore, type SortOption } from '../../data-access/list-filter.
 
       .filter-controls__summary {
         border-top: none;
-        border-left: 1px solid var(--color-border);
+        border-left: 1px solid var(--border);
         padding: 0 0 0 1.5rem;
         margin-left: auto;
       }

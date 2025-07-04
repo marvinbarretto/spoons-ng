@@ -168,19 +168,19 @@ export type EnhancedScoreboardData = ScoreboardData & {
 
     .today-badge {
       font-size: 0.875rem;
-      color: var(--color-primary);
+      color: var(--primary);
       font-weight: 600;
       margin-top: 0.25rem;
       opacity: 0.9;
     }
 
     .scoreboard-hero {
-      background: var(--color-background-lightest);
-      color: var(--color-text);
-      border: 1px solid var(--color-border);
+      background: var(--background-darkest);
+      color: var(--text);
+      border: 1px solid var(--border);
       border-radius: 12px;
       padding: 1.5rem;
-      box-shadow: 0 2px 8px var(--color-shadow);
+      box-shadow: 0 2px 8px var(--shadow);
       transition: all 0.3s ease;
     }
 
@@ -198,7 +198,7 @@ export type EnhancedScoreboardData = ScoreboardData & {
       font-weight: 800;
       line-height: 1;
       margin-bottom: 0.5rem;
-      color: var(--color-text);
+      color: var(--text);
       font-variant-numeric: tabular-nums;
       transition: all 0.3s ease;
     }
@@ -206,7 +206,7 @@ export type EnhancedScoreboardData = ScoreboardData & {
     .points-label {
       font-size: 1rem;
       font-weight: 600;
-      color: var(--color-textSecondary);
+      color: var(--text-secondary);
       text-transform: uppercase;
       letter-spacing: 1px;
     }
@@ -226,7 +226,7 @@ export type EnhancedScoreboardData = ScoreboardData & {
     .stat-label {
       font-size: 0.875rem;
       font-weight: 600;
-      color: var(--color-textSecondary);
+      color: var(--text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.5px;
       margin-bottom: 0.25rem;
@@ -235,21 +235,21 @@ export type EnhancedScoreboardData = ScoreboardData & {
     .stat-value {
       font-size: 1.5rem;
       font-weight: 700;
-      color: var(--color-text);
+      color: var(--text);
       font-variant-numeric: tabular-nums;
       transition: all 0.3s ease;
     }
 
     .stat-divider {
       font-size: 1.5rem;
-      color: var(--color-textMuted);
+      color: var(--textMuted);
       font-weight: 300;
     }
 
     /* Loading state */
     .loading .points-value,
     .loading .stat-value {
-      background: var(--color-background-lightestElevated);
+      background: var(--background-darkestElevated);
       border-radius: 4px;
       color: transparent;
       animation: pulse 1.5s ease-in-out infinite;
@@ -274,8 +274,8 @@ export type EnhancedScoreboardData = ScoreboardData & {
       align-items: center;
       gap: 0.5rem;
       padding: 0.75rem;
-      background: var(--color-background-lightestElevated);
-      border: 1px solid var(--color-borderLight);
+      background: var(--background-darkestElevated);
+      border: 1px solid var(--borderLight);
       border-radius: 8px;
       min-width: 100px;
       flex: 1;
@@ -284,10 +284,10 @@ export type EnhancedScoreboardData = ScoreboardData & {
     }
 
     .metric-card:hover {
-      background: var(--color-primary);
-      color: var(--color-primaryContrast);
+      background: var(--primary);
+      color: var(--primaryContrast);
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px var(--color-shadow);
+      box-shadow: 0 4px 12px var(--shadow);
     }
 
     .metric-icon {
@@ -306,18 +306,18 @@ export type EnhancedScoreboardData = ScoreboardData & {
     .metric-value {
       font-size: 0.875rem;
       font-weight: 700;
-      color: var(--color-text);
+      color: var(--text);
       line-height: 1;
     }
 
     .metric-card:hover .metric-value {
-      color: var(--color-primaryContrast);
+      color: var(--primaryContrast);
     }
 
     .metric-label {
       font-size: 0.6875rem;
       font-weight: 500;
-      color: var(--color-textSecondary);
+      color: var(--text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.5px;
       line-height: 1;
@@ -327,7 +327,7 @@ export type EnhancedScoreboardData = ScoreboardData & {
     }
 
     .metric-card:hover .metric-label {
-      color: var(--color-primaryContrast);
+      color: var(--primaryContrast);
       opacity: 0.9;
     }
 
@@ -344,9 +344,9 @@ export type EnhancedScoreboardData = ScoreboardData & {
     .more-badges {
       font-size: 0.625rem;
       font-weight: bold;
-      color: var(--color-textSecondary);
-      background: var(--color-background-lightestElevated);
-      border: 1px solid var(--color-borderLight);
+      color: var(--text-secondary);
+      background: var(--background-darkestElevated);
+      border: 1px solid var(--borderLight);
       border-radius: 50%;
       width: 1.5rem;
       height: 1.5rem;
@@ -357,9 +357,9 @@ export type EnhancedScoreboardData = ScoreboardData & {
     }
 
     .metric-card:hover .more-badges {
-      background: var(--color-primaryContrast);
-      border-color: var(--color-primaryContrast);
-      color: var(--color-primary);
+      background: var(--primaryContrast);
+      border-color: var(--primaryContrast);
+      color: var(--primary);
     }
 
     /* Specific metric card colors */

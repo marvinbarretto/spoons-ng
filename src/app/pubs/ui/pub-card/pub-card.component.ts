@@ -80,7 +80,7 @@ import { LocationService } from '../../../shared/data-access/location.service';
       border-color: var(--accent);
       box-shadow: var(--shadow);
       transform: translateY(-1px);
-      background: var(--background-lightest);
+      background: var(--background-darkest);
     }
 
     .pub-card:active {
@@ -94,7 +94,7 @@ import { LocationService } from '../../../shared/data-access/location.service';
 
     .pub-card--selected {
       border-color: var(--accent);
-      background: var(--background-lightest);
+      background: var(--background-darkest);
     }
 
     .pub-card__checkbox {
@@ -216,7 +216,7 @@ import { LocationService } from '../../../shared/data-access/location.service';
     @media (max-width: 640px) {
       .pub-card {
         /* Enhanced touch feedback */
-        -webkit-tap-highlight-color: var(--background-lightest);
+        -webkit-tap-highlight-color: var(--background-darkest);
       }
 
       .pub-card__title {
@@ -236,14 +236,14 @@ import { LocationService } from '../../../shared/data-access/location.service';
 export class PubCardComponent {
   // ✅ Inject LocationService for movement detection
   private readonly locationService = inject(LocationService);
-  
+
   // ✅ Required inputs - pure component pattern
   readonly pub = input.required<Pub & { distance: number | null }>();
 
     // ✅ Selection mode inputs
     readonly selectable = input<boolean>(false);
     readonly isSelected = input<boolean>(false);
-    
+
   // ✅ Movement detection signal
   readonly isMoving = this.locationService.isMoving;
 

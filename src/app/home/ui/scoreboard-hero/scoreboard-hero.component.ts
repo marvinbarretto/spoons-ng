@@ -63,13 +63,13 @@ export type ScoreboardData = {
   `,
   styles: [`
     .scoreboard-hero {
-      background: var(--color-background-lightest);
-      color: var(--color-text);
-      border: 1px solid var(--color-border);
+      background: var(--background-darkest);
+      color: var(--text);
+      border: 1px solid var(--border);
       border-radius: 12px;
       padding: 1.5rem;
       margin-bottom: 1.5rem;
-      box-shadow: 0 2px 8px var(--color-shadow);
+      box-shadow: 0 2px 8px var(--shadow);
       transition: all 0.3s ease;
     }
 
@@ -87,7 +87,7 @@ export type ScoreboardData = {
       font-weight: 800;
       line-height: 1;
       margin-bottom: 0.5rem;
-      color: var(--color-text);
+      color: var(--text);
       font-variant-numeric: tabular-nums;
       transition: all 0.3s ease;
     }
@@ -95,7 +95,7 @@ export type ScoreboardData = {
     .points-label {
       font-size: 1rem;
       font-weight: 600;
-      color: var(--color-textSecondary);
+      color: var(--text-secondary);
       text-transform: uppercase;
       letter-spacing: 1px;
     }
@@ -115,7 +115,7 @@ export type ScoreboardData = {
     .stat-label {
       font-size: 0.875rem;
       font-weight: 600;
-      color: var(--color-textSecondary);
+      color: var(--text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.5px;
       margin-bottom: 0.25rem;
@@ -124,21 +124,21 @@ export type ScoreboardData = {
     .stat-value {
       font-size: 1.5rem;
       font-weight: 700;
-      color: var(--color-text);
+      color: var(--text);
       font-variant-numeric: tabular-nums;
       transition: all 0.3s ease;
     }
 
     .stat-divider {
       font-size: 1.5rem;
-      color: var(--color-textMuted);
+      color: var(--textMuted);
       font-weight: 300;
     }
 
     /* Loading state */
     .loading .points-value,
     .loading .stat-value {
-      background: var(--color-background-lightestElevated);
+      background: var(--background-darkestElevated);
       border-radius: 4px;
       color: transparent;
       animation: pulse 1.5s ease-in-out infinite;

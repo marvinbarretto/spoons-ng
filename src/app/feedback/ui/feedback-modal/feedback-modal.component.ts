@@ -85,7 +85,7 @@ import { FormsModule } from '@angular/forms';
   `,
   styles: [`
     .feedback-modal {
-      background: var(--color-background-lightest);
+      background: var(--background-darkest);
       border-radius: 12px;
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
       max-width: 400px;
@@ -137,7 +137,7 @@ import { FormsModule } from '@angular/forms';
     }
 
     .feedback-modal__close:hover {
-      background: var(--color-background-lightest-variant);
+      background: var(--background-darkest-variant);
     }
 
     .feedback-modal__content {
@@ -184,7 +184,7 @@ import { FormsModule } from '@angular/forms';
       padding: 16px 12px;
       border: 2px solid var(--color-outline);
       border-radius: 8px;
-      background: var(--color-background-lightest);
+      background: var(--background-darkest);
       cursor: pointer;
       transition: all 0.2s;
       text-align: center;
@@ -202,13 +202,13 @@ import { FormsModule } from '@angular/forms';
     }
 
     .feedback-type-option:hover {
-      border-color: var(--color-primary);
-      background: var(--color-background-lightest-variant);
+      border-color: var(--primary);
+      background: var(--background-darkest-variant);
     }
 
     .feedback-type-option--selected {
-      border-color: var(--color-primary);
-      background: var(--color-primary);
+      border-color: var(--primary);
+      background: var(--primary);
       color: var(--color-on-primary);
       transform: scale(1.02);
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
@@ -225,7 +225,7 @@ import { FormsModule } from '@angular/forms';
 
     .feedback-type-option__icon {
       --icon-size: 24px;
-      color: var(--color-primary);
+      color: var(--primary);
       margin-top: 2px;
     }
 
@@ -245,7 +245,7 @@ import { FormsModule } from '@angular/forms';
       padding: 16px;
       border: 2px solid var(--color-outline);
       border-radius: 8px;
-      background: var(--color-background-lightest-variant);
+      background: var(--background-darkest-variant);
       color: var(--color-on-surface);
       font-family: inherit;
       font-size: 16px;
@@ -257,8 +257,8 @@ import { FormsModule } from '@angular/forms';
 
     .feedback-modal__textarea:focus {
       outline: none;
-      border-color: var(--color-primary);
-      background: var(--color-background-lightest);
+      border-color: var(--primary);
+      background: var(--background-darkest);
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
       transform: translateY(-1px);
     }

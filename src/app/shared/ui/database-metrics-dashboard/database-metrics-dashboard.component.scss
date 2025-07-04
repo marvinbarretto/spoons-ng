@@ -3,8 +3,8 @@
   padding: 24px;
   max-width: 1200px;
   margin: 0 auto;
-  background: var(--color-background-lightest);
-  color: var(--color-text);
+  background: var(--background-darkest);
+  color: var(--text);
   font-family: var(--font-family);
 }
 
@@ -18,23 +18,23 @@
     margin: 0;
     font-size: 1.75rem;
     font-weight: 600;
-    color: var(--color-text);
+    color: var(--text);
   }
 }
 
 .reset-btn, .export-btn {
   padding: 8px 16px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--border);
   border-radius: 6px;
-  background: var(--color-background);
-  color: var(--color-text);
+  background: var(--background);
+  color: var(--text);
   cursor: pointer;
   font-size: 0.875rem;
   transition: all 0.2s ease;
 
   &:hover:not(:disabled) {
-    background: var(--color-background-lightest-hover);
-    border-color: var(--color-primary);
+    background: var(--background-darkest-hover);
+    border-color: var(--primary);
   }
 
   &:disabled {
@@ -50,7 +50,7 @@
     margin: 0 0 16px 0;
     font-size: 1.25rem;
     font-weight: 500;
-    color: var(--color-text);
+    color: var(--text);
   }
 }
 
@@ -63,9 +63,9 @@
 
 .metric-card {
   padding: 20px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--border);
   border-radius: 8px;
-  background: var(--color-background);
+  background: var(--background);
   text-align: center;
   transition: transform 0.2s ease;
 
@@ -75,31 +75,31 @@
 
   &.performance-boost {
     border-color: var(--color-success);
-    background: var(--color-success-background, var(--color-background));
+    background: var(--color-success-background, var(--background));
   }
 
   &.savings {
     border-color: var(--color-success);
-    background: var(--color-success-background, var(--color-background));
+    background: var(--color-success-background, var(--background));
   }
 }
 
 .metric-value {
   font-size: 1.875rem;
   font-weight: 700;
-  color: var(--color-text);
+  color: var(--text);
   margin-bottom: 4px;
 }
 
 .metric-label {
   font-size: 0.875rem;
-  color: var(--color-text-secondary);
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
 .metric-detail {
   font-size: 0.75rem;
-  color: var(--color-text-tertiary);
+  color: var(--text-tertiary);
   margin-top: 4px;
 }
 
@@ -111,9 +111,9 @@
 
 .collection-item {
   padding: 16px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--border);
   border-radius: 6px;
-  background: var(--color-background);
+  background: var(--background);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -121,7 +121,7 @@
 
 .collection-name {
   font-weight: 500;
-  color: var(--color-text);
+  color: var(--text);
   font-family: monospace;
 }
 
@@ -131,7 +131,7 @@
 
   .stat {
     font-size: 0.875rem;
-    color: var(--color-text-secondary);
+    color: var(--text-secondary);
   }
 }
 
@@ -140,9 +140,9 @@
   gap: 12px;
   align-items: flex-end;
   padding: 20px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--border);
   border-radius: 8px;
-  background: var(--color-background);
+  background: var(--background);
   margin-bottom: 12px;
 }
 
@@ -156,7 +156,7 @@
 
 .day-label {
   font-size: 0.75rem;
-  color: var(--color-text-secondary);
+  color: var(--text-secondary);
   transform: rotate(-45deg);
   white-space: nowrap;
 }
@@ -175,7 +175,7 @@
   transition: all 0.2s ease;
 
   &.firestore-bar {
-    background: var(--color-warning, #f59e0b);
+    background: var(--warning, #f59e0b);
   }
 
   &.cache-bar {
@@ -189,7 +189,7 @@
 
 .day-total {
   font-size: 0.75rem;
-  color: var(--color-text-secondary);
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
@@ -211,7 +211,7 @@
   border-radius: 2px;
 
   &.firestore {
-    background: var(--color-warning, #f59e0b);
+    background: var(--warning, #f59e0b);
   }
 
   &.cache {
@@ -227,13 +227,13 @@
 
 .export-info {
   font-size: 0.875rem;
-  color: var(--color-text-secondary);
+  color: var(--text-secondary);
 }
 
 .no-data {
   padding: 24px;
   text-align: center;
-  color: var(--color-text-secondary);
+  color: var(--text-secondary);
   font-style: italic;
 }
 
@@ -280,12 +280,12 @@
 // Dark mode support
 @media (prefers-color-scheme: dark) {
   .metrics-dashboard {
-    --color-background-lightest: #1f2937;
-    --color-background: #111827;
-    --color-text: #f9fafb;
-    --color-text-secondary: #d1d5db;
-    --color-text-tertiary: #9ca3af;
-    --color-border: #374151;
-    --color-background-lightest-hover: #374151;
+    --background-darkest: #1f2937;
+    --background: #111827;
+    --text: #f9fafb;
+    --text-secondary: #d1d5db;
+    --text-tertiary: #9ca3af;
+    --border: #374151;
+    --background-darkest-hover: #374151;
   }
 }

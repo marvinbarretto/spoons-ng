@@ -30,14 +30,14 @@
 .hint-text {
   font-size: 0.875rem;
   line-height: 1.4;
-  color: var(--color-text, #1f2937);
+  color: var(--text, #1f2937);
 }
 
 /* ✅ Debug Styles */
 .debug-section {
   margin-top: 2rem;
-  background: var(--color-background-lightest, #f8fafc);
-  border: 1px solid var(--color-border, #e2e8f0);
+  background: var(--background-darkest, #f8fafc);
+  border: 1px solid var(--border, #e2e8f0);
   border-radius: 8px;
   padding: 1rem;
 }
@@ -45,7 +45,7 @@
 .debug-section summary {
   cursor: pointer;
   font-weight: 600;
-  color: var(--color-text-secondary, #64748b);
+  color: var(--text-secondary, #64748b);
 }
 
 .debug-grid {
@@ -56,7 +56,7 @@
 }
 
 .debug-item {
-  background: var(--background-lightest);
+  background: var(--background-darkest);
   border: 1px solid var(--border);
   border-radius: 6px;
   padding: 1rem;
@@ -65,7 +65,7 @@
 .debug-item h4 {
   margin: 0 0 0.5rem 0;
   font-size: 0.875rem;
-  color: var(--color-text, #1f2937);
+  color: var(--text, #1f2937);
 }
 
 .debug-item pre {

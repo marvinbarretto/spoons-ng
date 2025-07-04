@@ -37,12 +37,12 @@ import type { User } from '@users/utils/user.model';
     .profile-chip {
       width: 100%;
       justify-content: flex-start;
-      border: 1px solid var(--color-border);
-      box-shadow: 0 1px 3px var(--color-shadow);
+      border: 1px solid var(--border);
+      box-shadow: 0 1px 3px var(--shadow);
 
       &:hover {
-        border-color: var(--color-primary);
-        box-shadow: 0 4px 8px var(--color-shadow);
+        border-color: var(--primary);
+        box-shadow: 0 4px 8px var(--shadow);
       }
     }
 
@@ -50,14 +50,14 @@ import type { User } from '@users/utils/user.model';
       display: flex;
       align-items: center;
       padding: 0.5rem 0.75rem;
-      background: var(--color-background-lightest);
-      border: 1px solid var(--color-border);
+      background: var(--background-darkest);
+      border: 1px solid var(--border);
       border-radius: 9999px;
       width: 100%;
     }
 
     .guest-text {
-      color: var(--color-textSecondary);
+      color: var(--text-secondary);
       font-size: 0.875rem;
       font-weight: 500;
     }

@@ -65,10 +65,10 @@ import { Component, input, computed, ChangeDetectionStrategy } from '@angular/co
   `,
   styles: `
     .progress-hero {
-      background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+      background: linear-gradient(135deg, var(--primary) 0%, var(--color-secondary) 100%);
       border-radius: 16px;
       padding: 2rem;
-      color: var(--color-primaryText);
+      color: var(--primaryText);
       position: relative;
       overflow: hidden;
     }
@@ -108,7 +108,7 @@ import { Component, input, computed, ChangeDetectionStrategy } from '@angular/co
       transform: translate(-50%, -50%);
       font-size: 2.5rem;
       font-weight: 800;
-      color: var(--color-accent);
+      color: var(--accent);
       text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
       z-index: 2;
     }
@@ -181,7 +181,7 @@ import { Component, input, computed, ChangeDetectionStrategy } from '@angular/co
       display: block;
       font-size: 1.5rem;
       font-weight: 700;
-      color: var(--color-primaryText);
+      color: var(--primaryText);
       margin-bottom: 0.25rem;
     }
 

@@ -25,7 +25,7 @@ import { Component, input, computed, ChangeDetectionStrategy } from '@angular/co
     .pub-count-hero {
       text-align: center;
       padding: 2rem 1rem;
-      background: linear-gradient(135deg, var(--color-primary, #667eea) 0%, var(--color-secondary, #764ba2) 100%);
+      background: linear-gradient(135deg, var(--primary, #667eea) 0%, var(--color-secondary, #764ba2) 100%);
       color: white;
       border-radius: 20px;
       position: relative;
@@ -55,7 +55,7 @@ import { Component, input, computed, ChangeDetectionStrategy } from '@angular/co
       font-size: 4rem;
       font-weight: 900;
       line-height: 1;
-      color: var(--color-accent, #ffd700);
+      color: var(--accent, #ffd700);
       text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
       margin-bottom: 0.5rem;
     }

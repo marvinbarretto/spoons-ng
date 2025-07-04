@@ -32,7 +32,7 @@
   // @container (min-width: 400px) {
   //   background-color: color-mix(
   //     in srgb,
-  //     var(--color-background) 90%,
+  //     var(--background) 90%,
   //     var(--color-secondary) 10%
   //   );
   // }
@@ -40,8 +40,8 @@
   // @container (min-width: 700px) {
   //   background-color: color-mix(
   //     in srgb,
-  //     var(--color-background) 85%,
-  //     var(--color-text) 15%
+  //     var(--background) 85%,
+  //     var(--text) 15%
   //   );
   // }
 }

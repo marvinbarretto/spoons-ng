@@ -44,7 +44,7 @@ type MissionWithProgress = {
       font-weight: 700;
       margin-bottom: 1rem;
       text-align: center;
-      color: var(--color-text, #1f2937);
+      color: var(--text, #1f2937);
     }
 
     .missions-grid {
@@ -78,7 +78,7 @@ type MissionWithProgress = {
     .mission-name {
       font-weight: 600;
       font-size: 0.9rem;
-      color: var(--color-text, #1f2937);
+      color: var(--text, #1f2937);
     }
 
     .mission-progress {

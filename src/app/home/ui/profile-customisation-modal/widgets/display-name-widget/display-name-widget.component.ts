@@ -65,8 +65,8 @@ import type { User } from '@users/utils/user.model';
   styles: `
     .display-name-widget {
       padding: 1rem;
-      background: var(--color-background-lightest-elevated);
-      border: 1px solid var(--color-border);
+      background: var(--background-darkest);
+      border: 1px solid var(--border);
       border-radius: 8px;
     }
 
@@ -74,7 +74,7 @@ import type { User } from '@users/utils/user.model';
       margin: 0 0 1rem 0;
       font-size: 1rem;
       font-weight: 600;
-      color: var(--color-text);
+      color: var(--text);
     }
 
     /* ✅ Input Section */
@@ -87,23 +87,23 @@ import type { User } from '@users/utils/user.model';
       margin-bottom: 0.5rem;
       font-size: 0.875rem;
       font-weight: 500;
-      color: var(--color-text);
+      color: var(--text);
     }
 
     .name-input {
       width: 100%;
       padding: 0.75rem;
-      border: 2px solid var(--color-border);
+      border: 2px solid var(--border);
       border-radius: 6px;
       font-size: 1rem;
-      background: var(--color-background-lightest);
-      color: var(--color-text);
+      background: var(--background-darkest);
+      color: var(--text);
       transition: all 0.2s ease;
     }
 
     .name-input:focus {
       outline: none;
-      border-color: var(--color-primary);
+      border-color: var(--primary);
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
 
@@ -112,7 +112,7 @@ import type { User } from '@users/utils/user.model';
     }
 
     .name-input:disabled {
-      background: var(--color-background-lightest-elevated);
+      background: var(--background-darkest);
       opacity: 0.6;
       cursor: not-allowed;
     }
@@ -127,11 +127,11 @@ import type { User } from '@users/utils/user.model';
     }
 
     .char-count {
-      color: var(--color-text-secondary);
+      color: var(--text-secondary);
     }
 
     .char-count.warning {
-      color: var(--color-warning);
+      color: var(--warning);
       font-weight: 600;
     }
 
@@ -147,13 +147,13 @@ import type { User } from '@users/utils/user.model';
 
     .shuffle-btn {
       padding: 0.75rem 1rem;
-      background: var(--color-background-lightest);
-      border: 1px solid var(--color-border);
+      background: var(--background-darkest);
+      border: 1px solid var(--border);
       border-radius: 6px;
       cursor: pointer;
       font-size: 0.875rem;
       font-weight: 500;
-      color: var(--color-text);
+      color: var(--text);
       transition: all 0.2s ease;
       display: flex;
       align-items: center;
@@ -161,9 +161,9 @@ import type { User } from '@users/utils/user.model';
     }
 
     .shuffle-btn:hover {
-      background: var(--color-primary);
-      color: var(--color-primary-text);
-      border-color: var(--color-primary);
+      background: var(--primary);
+      color: var(--primary-contrast);
+      border-color: var(--primary);
       transform: translateY(-1px);
     }
 
@@ -192,7 +192,7 @@ import type { User } from '@users/utils/user.model';
 
     .tip-text {
       font-size: 0.875rem;
-      color: var(--color-text);
+      color: var(--text);
       line-height: 1.4;
     }
 

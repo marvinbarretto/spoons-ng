@@ -174,11 +174,11 @@ import type { Mission } from '../../utils/mission.model';
       font-size: 2.25rem;
       font-weight: 700;
       margin: 0 0 0.5rem;
-      color: var(--color-text-primary, #111827);
+      color: var(--text, #111827);
     }
 
     .page-subtitle {
-      color: var(--color-text-secondary, #6b7280);
+      color: var(--text-secondary, #6b7280);
       margin: 0;
       font-size: 1.125rem;
     }
@@ -192,8 +192,8 @@ import type { Mission } from '../../utils/mission.model';
     .empty-state {
       text-align: center;
       padding: 4rem 2rem;
-      background: var(--color-background-lightest, #ffffff);
-      border: 1px solid var(--color-border, #e5e7eb);
+      background: var(--background-darkest, #ffffff);
+      border: 1px solid var(--border, #e5e7eb);
       border-radius: 12px;
     }
 
@@ -201,7 +201,7 @@ import type { Mission } from '../../utils/mission.model';
       width: 32px;
       height: 32px;
       border: 3px solid var(--color-gray-200, #e5e7eb);
-      border-top-color: var(--color-primary, #3b82f6);
+      border-top-color: var(--primary, #3b82f6);
       border-radius: 50%;
       animation: spin 1s linear infinite;
       margin: 0 auto 1rem;
@@ -221,11 +221,11 @@ import type { Mission } from '../../utils/mission.model';
       font-size: 1.5rem;
       font-weight: 600;
       margin: 0 0 0.5rem;
-      color: var(--color-text-primary, #111827);
+      color: var(--text, #111827);
     }
 
     .empty-state p {
-      color: var(--color-text-secondary, #6b7280);
+      color: var(--text-secondary, #6b7280);
       margin: 0 0 2rem;
     }
 
@@ -244,8 +244,8 @@ import type { Mission } from '../../utils/mission.model';
     }
 
     .stat-card {
-      background: var(--color-background-lightest, #ffffff);
-      border: 1px solid var(--color-border, #e5e7eb);
+      background: var(--background-darkest, #ffffff);
+      border: 1px solid var(--border, #e5e7eb);
       border-radius: 8px;
       padding: 1.5rem;
       text-align: center;
@@ -254,19 +254,19 @@ import type { Mission } from '../../utils/mission.model';
     .stat-value {
       font-size: 2rem;
       font-weight: 700;
-      color: var(--color-primary, #3b82f6);
+      color: var(--primary, #3b82f6);
       margin-bottom: 0.5rem;
     }
 
     .stat-label {
-      color: var(--color-text-secondary, #6b7280);
+      color: var(--text-secondary, #6b7280);
       font-size: 0.875rem;
       font-weight: 500;
     }
 
     .missions-table-container {
-      background: var(--color-background-lightest, #ffffff);
-      border: 1px solid var(--color-border, #e5e7eb);
+      background: var(--background-darkest, #ffffff);
+      border: 1px solid var(--border, #e5e7eb);
       border-radius: 12px;
       overflow: hidden;
       overflow-x: auto;
@@ -282,15 +282,15 @@ import type { Mission } from '../../utils/mission.model';
       padding: 1rem;
       text-align: left;
       font-weight: 600;
-      color: var(--color-text-primary, #111827);
-      border-bottom: 1px solid var(--color-border, #e5e7eb);
+      color: var(--text, #111827);
+      border-bottom: 1px solid var(--border, #e5e7eb);
       font-size: 0.875rem;
       white-space: nowrap;
     }
 
     .missions-table td {
       padding: 1.25rem 1rem;
-      border-bottom: 1px solid var(--color-border, #e5e7eb);
+      border-bottom: 1px solid var(--border, #e5e7eb);
       vertical-align: top;
     }
 
@@ -305,19 +305,19 @@ import type { Mission } from '../../utils/mission.model';
     }
 
     .name-content strong {
-      color: var(--color-text-primary, #111827);
+      color: var(--text, #111827);
       font-weight: 600;
     }
 
     .mission-id {
       font-size: 0.75rem;
-      color: var(--color-text-secondary, #6b7280);
+      color: var(--text-secondary, #6b7280);
       font-family: monospace;
     }
 
     .mission-description p {
       margin: 0;
-      color: var(--color-text-secondary, #6b7280);
+      color: var(--text-secondary, #6b7280);
       line-height: 1.5;
       max-width: 300px;
     }
@@ -328,8 +328,8 @@ import type { Mission } from '../../utils/mission.model';
       justify-content: center;
       width: 32px;
       height: 32px;
-      background: var(--color-primary-subtle, rgba(59, 130, 246, 0.1));
-      color: var(--color-primary, #3b82f6);
+      background: var(--primary-subtle, rgba(59, 130, 246, 0.1));
+      color: var(--primary, #3b82f6);
       border-radius: 50%;
       font-weight: 600;
       font-size: 0.875rem;
@@ -360,7 +360,7 @@ import type { Mission } from '../../utils/mission.model';
     }
 
     .no-limit {
-      color: var(--color-text-secondary, #6b7280);
+      color: var(--text-secondary, #6b7280);
       font-style: italic;
       font-size: 0.875rem;
     }
@@ -370,15 +370,15 @@ import type { Mission } from '../../utils/mission.model';
       align-items: center;
       gap: 0.25rem;
       padding: 0.25rem 0.5rem;
-      background: var(--color-warning-subtle, rgba(245, 158, 11, 0.1));
-      color: var(--color-warning, #f59e0b);
+      background: var(--warning-subtle, rgba(245, 158, 11, 0.1));
+      color: var(--warning, #f59e0b);
       border-radius: 12px;
       font-size: 0.75rem;
       font-weight: 500;
     }
 
     .no-reward {
-      color: var(--color-text-secondary, #6b7280);
+      color: var(--text-secondary, #6b7280);
       font-style: italic;
       font-size: 0.875rem;
     }
@@ -392,7 +392,7 @@ import type { Mission } from '../../utils/mission.model';
       margin-top: 3rem;
       padding: 1.5rem;
       background: var(--color-gray-50, #f9fafb);
-      border: 1px solid var(--color-border, #e5e7eb);
+      border: 1px solid var(--border, #e5e7eb);
       border-radius: 8px;
     }
 
@@ -411,10 +411,10 @@ import type { Mission } from '../../utils/mission.model';
     }
 
     .debug-content pre {
-      background: var(--color-background-lightest, #ffffff);
+      background: var(--background-darkest, #ffffff);
       padding: 1rem;
       border-radius: 6px;
-      border: 1px solid var(--color-border, #e5e7eb);
+      border: 1px solid var(--border, #e5e7eb);
       overflow-x: auto;
       font-size: 0.75rem;
       margin: 0;

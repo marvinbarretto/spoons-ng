@@ -16,6 +16,10 @@
   <!-- Desktop Navigation -->
   <nav class="main-nav" *ngIf="!isMobile()">
     <app-nav />
+    <app-user-profile-widget 
+      [user]="user()" 
+      (openProfile)="onOpenProfile()" 
+      class="desktop-profile-widget" />
   </nav>
 
   <!-- Mobile Navigation - minimal header with user profile -->

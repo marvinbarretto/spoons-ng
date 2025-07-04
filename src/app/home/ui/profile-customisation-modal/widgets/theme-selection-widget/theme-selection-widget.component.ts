@@ -71,8 +71,8 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
   styles: `
     .theme-selection-widget {
       padding: 1rem;
-      background: var(--color-background-lightest-elevated);
-      border: 1px solid var(--color-border);
+      background: var(--background-darkest);
+      border: 1px solid var(--border);
       border-radius: 8px;
     }
 
@@ -80,7 +80,7 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
       margin: 0 0 1rem 0;
       font-size: 1rem;
       font-weight: 600;
-      color: var(--color-text);
+      color: var(--text);
     }
 
     /* ✅ Current Theme Display */
@@ -89,8 +89,8 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
       align-items: center;
       gap: 0.75rem;
       padding: 0.75rem;
-      background: var(--color-background-lightest);
-      border: 1px solid var(--color-border);
+      background: var(--background-darkest);
+      border: 1px solid var(--border);
       border-radius: 6px;
       margin-bottom: 1rem;
     }
@@ -103,13 +103,13 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
 
     .theme-name {
       font-weight: 600;
-      color: var(--color-text);
+      color: var(--text);
       font-size: 0.875rem;
     }
 
     .theme-mode {
       font-size: 0.75rem;
-      color: var(--color-text-secondary);
+      color: var(--text-secondary);
     }
 
     /* ✅ Color Swatches */
@@ -138,8 +138,8 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
       justify-content: center;
       gap: 0.5rem;
       padding: 0.75rem;
-      background: var(--color-primary);
-      color: var(--color-primary-text);
+      background: var(--primary);
+      color: var(--primary-contrast);
       border: none;
       border-radius: 6px;
       cursor: pointer;
@@ -149,7 +149,7 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
     }
 
     .quick-toggle-btn:hover {
-      background: var(--color-primary-hover);
+      background: var(--primary-hover);
       transform: translateY(-1px);
     }
 
@@ -170,8 +170,8 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
       align-items: center;
       gap: 0.5rem;
       padding: 0.75rem;
-      background: var(--color-background-lightest);
-      border: 2px solid var(--color-border);
+      background: var(--background-darkest);
+      border: 2px solid var(--border);
       border-radius: 6px;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -179,14 +179,14 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
     }
 
     .theme-option:hover {
-      border-color: var(--color-primary);
+      border-color: var(--primary);
       transform: translateY(-1px);
     }
 
     .theme-option.selected {
-      border-color: var(--color-primary);
-      background: var(--color-primary);
-      color: var(--color-primary-text);
+      border-color: var(--primary);
+      background: var(--primary);
+      color: var(--primary-contrast);
     }
 
     .theme-label {

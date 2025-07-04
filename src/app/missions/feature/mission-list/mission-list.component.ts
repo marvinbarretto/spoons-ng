@@ -140,11 +140,11 @@ import type { Mission } from '../../utils/mission.model';
       font-size: 2rem;
       font-weight: 700;
       margin: 0 0 0.5rem;
-      color: var(--color-text-primary, #111827);
+      color: var(--text, #111827);
     }
 
     .page-subtitle {
-      color: var(--color-text-secondary, #6b7280);
+      color: var(--text-secondary, #6b7280);
       margin: 0;
       font-size: 1rem;
     }
@@ -155,7 +155,7 @@ import type { Mission } from '../../utils/mission.model';
     .empty-filtered-state {
       text-align: center;
       padding: 3rem 1rem;
-      color: var(--color-text-secondary, #6b7280);
+      color: var(--text-secondary, #6b7280);
     }
 
     .error-state {
@@ -166,8 +166,8 @@ import type { Mission } from '../../utils/mission.model';
     .btn-secondary {
       margin-top: 1rem;
       padding: 0.5rem 1rem;
-      border: 1px solid var(--color-border, #e5e7eb);
-      background: var(--color-background-lightest, #ffffff);
+      border: 1px solid var(--border, #e5e7eb);
+      background: var(--background-darkest, #ffffff);
       border-radius: 6px;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -176,14 +176,14 @@ import type { Mission } from '../../utils/mission.model';
     .retry-btn:hover,
     .btn-secondary:hover {
       background: var(--color-gray-50, #f9fafb);
-      border-color: var(--color-primary, #3b82f6);
+      border-color: var(--primary, #3b82f6);
     }
 
     .filter-controls {
       margin-bottom: 2rem;
       padding: 1rem;
-      background: var(--color-background-lightest, #ffffff);
-      border: 1px solid var(--color-border, #e5e7eb);
+      background: var(--background-darkest, #ffffff);
+      border: 1px solid var(--border, #e5e7eb);
       border-radius: 8px;
     }
 
@@ -196,7 +196,7 @@ import type { Mission } from '../../utils/mission.model';
 
     .control-label {
       font-weight: 500;
-      color: var(--color-text-primary, #111827);
+      color: var(--text, #111827);
       margin-right: 0.5rem;
     }
 
@@ -205,7 +205,7 @@ import type { Mission } from '../../utils/mission.model';
       align-items: center;
       gap: 0.5rem;
       padding: 0.5rem 1rem;
-      border: 1px solid var(--color-border, #e5e7eb);
+      border: 1px solid var(--border, #e5e7eb);
       border-radius: 20px;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -213,9 +213,9 @@ import type { Mission } from '../../utils/mission.model';
     }
 
     .filter-pill:has(input:checked) {
-      background: var(--color-primary, #3b82f6);
+      background: var(--primary, #3b82f6);
       color: white;
-      border-color: var(--color-primary, #3b82f6);
+      border-color: var(--primary, #3b82f6);
     }
 
     .filter-pill input {
@@ -247,7 +247,7 @@ import type { Mission } from '../../utils/mission.model';
       background: white;
       padding: 1rem;
       border-radius: 6px;
-      border: 1px solid var(--color-border, #e5e7eb);
+      border: 1px solid var(--border, #e5e7eb);
     }
 
     .debug-card h4 {
@@ -289,27 +289,27 @@ import type { Mission } from '../../utils/mission.model';
     }
 
     .btn--primary {
-      background: var(--color-primary, #3b82f6);
+      background: var(--primary, #3b82f6);
       color: white;
-      border-color: var(--color-primary, #3b82f6);
+      border-color: var(--primary, #3b82f6);
     }
 
     .btn--primary:hover:not(:disabled) {
-      background: var(--color-primary-dark, #2563eb);
-      border-color: var(--color-primary-dark, #2563eb);
+      background: var(--primary-dark, #2563eb);
+      border-color: var(--primary-dark, #2563eb);
       transform: translateY(-1px);
     }
 
     .btn--secondary {
       background: transparent;
-      color: var(--color-text-secondary, #6b7280);
-      border-color: var(--color-border, #e5e7eb);
+      color: var(--text-secondary, #6b7280);
+      border-color: var(--border, #e5e7eb);
     }
 
     .btn--secondary:hover:not(:disabled) {
       background: var(--color-gray-50, #f9fafb);
       border-color: var(--color-gray-300, #d1d5db);
-      color: var(--color-text-primary, #111827);
+      color: var(--text, #111827);
     }
 
     .btn:disabled {
@@ -346,7 +346,7 @@ import type { Mission } from '../../utils/mission.model';
       gap: 0.25rem;
       font-size: 0.8125rem;
       font-weight: 600;
-      color: var(--color-primary, #3b82f6);
+      color: var(--primary, #3b82f6);
       background: rgba(59, 130, 246, 0.1);
       padding: 0.375rem 0.75rem;
       border-radius: 6px;

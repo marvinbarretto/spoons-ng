@@ -39,6 +39,8 @@ export interface Environment {
   telegram?: {
     botToken: string;
     chatId: string;
+    checkinNotificationsEnabled?: boolean;
+    realUsersOnly?: boolean;
   };
 
   database?: {

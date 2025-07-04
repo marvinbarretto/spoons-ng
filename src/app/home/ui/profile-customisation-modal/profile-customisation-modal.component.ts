@@ -66,8 +66,8 @@ import { ProfileIdentityWidgetComponent } from './widgets/profile-identity-widge
   `,
   styles: `
     .modal-container {
-      background: var(--color-background);
-      border: 1px solid var(--color-border);
+      background: var(--background);
+      border: 1px solid var(--border);
       border-radius: 12px;
       width: 100%;
       height: 100%;
@@ -76,7 +76,7 @@ import { ProfileIdentityWidgetComponent } from './widgets/profile-identity-widge
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      box-shadow: 0 8px 32px var(--color-shadow);
+      box-shadow: 0 8px 32px var(--shadow);
     }
 
     /* ✅ Header */
@@ -85,13 +85,13 @@ import { ProfileIdentityWidgetComponent } from './widgets/profile-identity-widge
       justify-content: space-between;
       align-items: center;
       padding: 1.5rem;
-      border-bottom: 1px solid var(--color-border);
-      background: var(--color-background-lightest);
+      border-bottom: 1px solid var(--border);
+      background: var(--background-darkest);
     }
 
     .modal-header h2 {
       margin: 0;
-      color: var(--color-text);
+      color: var(--text);
       font-size: 1.25rem;
       font-weight: 700;
     }
@@ -101,7 +101,7 @@ import { ProfileIdentityWidgetComponent } from './widgets/profile-identity-widge
       border: none;
       font-size: 1.5rem;
       cursor: pointer;
-      color: var(--color-text-secondary);
+      color: var(--text-secondary);
       padding: 0.25rem;
       line-height: 1;
       border-radius: 4px;
@@ -109,8 +109,8 @@ import { ProfileIdentityWidgetComponent } from './widgets/profile-identity-widge
     }
 
     .close-btn:hover {
-      background: var(--color-background-lightest-elevated);
-      color: var(--color-text);
+      background: var(--background-darkest);
+      color: var(--text);
     }
 
     /* ✅ Body */
@@ -120,7 +120,7 @@ import { ProfileIdentityWidgetComponent } from './widgets/profile-identity-widge
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: thin;
-      scrollbar-color: var(--color-border) transparent;
+      scrollbar-color: var(--border) transparent;
 
       display: flex;
       flex-direction: column;
@@ -136,22 +136,22 @@ import { ProfileIdentityWidgetComponent } from './widgets/profile-identity-widge
     }
 
     .modal-body::-webkit-scrollbar-thumb {
-      background: var(--color-border);
+      background: var(--border);
       border-radius: 3px;
     }
 
     .modal-body::-webkit-scrollbar-thumb:hover {
-      background: var(--color-text-secondary);
+      background: var(--text-secondary);
     }
 
     /* ✅ Footer */
     .modal-footer {
       padding: 1.5rem;
-      border-top: 1px solid var(--color-border);
+      border-top: 1px solid var(--border);
       display: flex;
       justify-content: space-between;
       gap: 1rem;
-      background: var(--color-background-lightest);
+      background: var(--background-darkest);
     }
 
     /* ✅ Responsive */

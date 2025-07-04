@@ -91,8 +91,8 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
   styles: `
     .profile-identity-widget {
       padding: 1.5rem;
-      background: var(--color-background-lightest-elevated);
-      border: 1px solid var(--color-border);
+      background: var(--background-darkest);
+      border: 1px solid var(--border);
       border-radius: 12px;
     }
 
@@ -118,7 +118,7 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
       height: 80px;
       border-radius: 50%;
       object-fit: cover;
-      border: 2px solid var(--color-border);
+      border: 2px solid var(--border);
     }
 
     .status-circle {
@@ -134,7 +134,7 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
       font-size: 14px;
       font-weight: bold;
       color: white;
-      border: 2px solid var(--color-background-lightest);
+      border: 2px solid var(--background-darkest);
       background: #f59e0b;
     }
 
@@ -147,17 +147,17 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
     .name-input {
       width: 100%;
       padding: 0.75rem 1rem;
-      border: 2px solid var(--color-border);
+      border: 2px solid var(--border);
       border-radius: 8px;
       font-size: 1rem;
-      background: var(--color-background-lightest);
-      color: var(--color-text);
+      background: var(--background-darkest);
+      color: var(--text);
       transition: all 0.2s ease;
     }
 
     .name-input:focus {
       outline: none;
-      border-color: var(--color-primary);
+      border-color: var(--primary);
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
 
@@ -174,11 +174,11 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
     }
 
     .char-count {
-      color: var(--color-text-secondary);
+      color: var(--text-secondary);
     }
 
     .char-count.warning {
-      color: var(--color-warning);
+      color: var(--warning);
       font-weight: 600;
     }
 
@@ -202,7 +202,7 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
     }
 
     .shuffle-btn:hover {
-      background: var(--color-background-lightest-elevated);
+      background: var(--background-darkest);
     }
 
     /* ✅ Avatar Grid */
@@ -216,7 +216,7 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
       position: relative;
       width: 60px;
       height: 60px;
-      border: 2px solid var(--color-border);
+      border: 2px solid var(--border);
       border-radius: 50%;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -237,13 +237,13 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
     }
 
     .avatar-option:hover:not(:disabled) {
-      border-color: var(--color-primary);
+      border-color: var(--primary);
       transform: scale(1.05);
     }
 
     .avatar-option.selected {
-      border-color: var(--color-primary);
-      box-shadow: 0 0 0 2px var(--color-primary-light);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px var(--primary-light);
     }
 
     .avatar-option.current {
@@ -255,7 +255,7 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
       position: absolute;
       bottom: 2px;
       right: 2px;
-      background: var(--color-primary);
+      background: var(--primary);
       color: white;
       font-size: 0.625rem;
       font-weight: 600;
@@ -266,7 +266,7 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
     }
 
     .default-badge {
-      background: var(--color-text-secondary);
+      background: var(--text-secondary);
     }
 
     /* ✅ Responsive */

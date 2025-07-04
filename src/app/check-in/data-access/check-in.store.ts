@@ -15,8 +15,12 @@ import { LandlordStore, type LandlordResult } from '../../landlord/data-access/l
 // Remove CheckInModalService import to break circular dependency
 import { BaseStore } from '../../shared/base/base.store';
 import { CameraService } from '../../shared/data-access/camera.service';
+import { TelegramNotificationService } from '../../shared/data-access/telegram-notification.service';
 import type { CheckIn } from '../utils/check-in.models';
+import type { User } from '../../users/utils/user.model';
+import type { Pub } from '../../pubs/utils/pub.models';
 import { Timestamp } from 'firebase/firestore';
+import { environment } from '../../../environments/environment';
 
 
 @Injectable({ providedIn: 'root' })
@@ -30,6 +34,7 @@ export class CheckInStore extends BaseStore<CheckIn> {
   private readonly landlordStore = inject(LandlordStore);
   // Modal service removed to break circular dependency - use event-based approach
   private readonly cameraService = inject(CameraService);
+  private readonly telegramNotificationService = inject(TelegramNotificationService);
 
   // Check-in process state
   private readonly _isProcessing = signal(false);
@@ -431,6 +436,14 @@ export class CheckInStore extends BaseStore<CheckIn> {
       };
 
       console.log('[CheckInStore] 🎉 Success data assembled:', successData);
+      
+      // Send Telegram notification for real user check-ins
+      const currentUser = this.authStore.user();
+      if (currentUser && pub) {
+        console.log('[CheckInStore] 📱 Sending Telegram notification...');
+        await this.sendCheckinNotification(newCheckin, currentUser, pub);
+      }
+      
       console.log('[CheckInStore] ✅ Check-in workflow complete - showing modals');
 
       // Show success overlay
@@ -664,5 +677,69 @@ export class CheckInStore extends BaseStore<CheckIn> {
    */
   clearCheckinResults(): void {
     this._checkinResults.set(null);
+  }
+
+  /**
+   * Check if we should send Telegram notification for this user
+   */
+  private shouldSendNotification(user: User): boolean {
+    if (!environment.telegram?.checkinNotificationsEnabled) {
+      console.log('[CheckInStore] Telegram check-in notifications disabled');
+      return false;
+    }
+    
+    if (environment.telegram?.realUsersOnly && !user.realUser) {
+      console.log('[CheckInStore] Filtering out non-real user:', user.displayName);
+      return false;
+    }
+    
+    return true;
+  }
+
+  /**
+   * Format check-in message for Telegram
+   */
+  private formatCheckinMessage(checkIn: CheckIn, user: User, pub: Pub): string {
+    const emoji = checkIn.madeUserLandlord ? '👑' : '🍺';
+    const userType = user.realUser ? 'Real User' : 'User';
+    
+    let message = `${emoji} *${userType} Check-In*\n\n`;
+    message += `👤 *User:* ${this.telegramNotificationService['escapeMarkdown'](user.displayName)}\n`;
+    message += `🏠 *Pub:* ${this.telegramNotificationService['escapeMarkdown'](pub.name)}\n`;
+    message += `📍 *Location:* ${this.telegramNotificationService['escapeMarkdown'](pub.address)}\n`;
+    
+    if (checkIn.madeUserLandlord) {
+      message += `👑 *New Landlord!*\n`;
+    }
+    
+    if (checkIn.pointsEarned && checkIn.pointsEarned > 0) {
+      message += `🎯 *Points Earned:* ${checkIn.pointsEarned}\n`;
+    }
+    
+    if (checkIn.carpetImageKey) {
+      message += `📸 *Carpet Captured:* Yes\n`;
+    }
+    
+    message += `🕐 *Time:* ${checkIn.timestamp.toDate().toLocaleString()}`;
+    
+    return message;
+  }
+
+  /**
+   * Send Telegram notification for check-in
+   */
+  private async sendCheckinNotification(checkIn: CheckIn, user: User, pub: Pub): Promise<void> {
+    if (!this.shouldSendNotification(user)) {
+      return;
+    }
+
+    try {
+      const message = this.formatCheckinMessage(checkIn, user, pub);
+      await this.telegramNotificationService['sendMessage'](message);
+      console.log('[CheckInStore] Telegram check-in notification sent successfully');
+    } catch (error) {
+      // Don't throw - we don't want Telegram errors to affect check-in flow
+      console.error('[CheckInStore] Failed to send Telegram check-in notification:', error);
+    }
   }
 }

@@ -38,7 +38,7 @@ import { FeedbackModalComponent } from '../feedback-modal/feedback-modal.compone
       border: none;
       border-radius: 24px;
 
-      background: var(--color-warning);
+      background: var(--warning);
       color: var(--color-on-primary);
       font-size: 14px;
       font-weight: 600;
@@ -47,15 +47,15 @@ import { FeedbackModalComponent } from '../feedback-modal/feedback-modal.compone
       transition: all 0.2s ease;
 
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-      border: 2px solid var(--color-primary);
+      border: 2px solid var(--primary);
     }
 
     .feedback-btn:hover:not(:disabled) {
-      background: var(--color-primary);
+      background: var(--primary);
       filter: brightness(1.15);
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-      border-color: var(--color-primary);
+      border-color: var(--primary);
     }
 
     .feedback-btn:active:not(:disabled) {

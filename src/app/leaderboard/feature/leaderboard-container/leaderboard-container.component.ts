@@ -148,14 +148,14 @@ import { combineLatest } from 'rxjs';
 
     .leaderboard-header h1 {
       margin: 0 0 0.5rem;
-      color: var(--color-text);
+      color: var(--text);
       font-size: clamp(1.5rem, 4vw, 2.5rem);
     }
 
     .leaderboard-header p {
       margin: 0;
       opacity: 0.8;
-      color: var(--color-text);
+      color: var(--text);
     }
 
     .time-period-tabs {
@@ -163,20 +163,20 @@ import { combineLatest } from 'rxjs';
       justify-content: center;
       gap: 0.5rem;
       margin-bottom: 2rem;
-      border-bottom: 2px solid var(--color-subtleLighter);
+      border-bottom: 2px solid var(--background-lighter);
     }
 
     .tab-link {
       padding: 0.75rem 1.5rem;
       text-decoration: none;
-      color: var(--color-text);
+      color: var(--text);
       border-bottom: 3px solid transparent;
       transition: all 0.2s ease;
       font-weight: 500;
     }
 
     .tab-link:hover {
-      background: var(--color-subtleLighter);
+      background: var(--background-lighter);
       border-radius: 8px 8px 0 0;
     }
 
@@ -191,7 +191,7 @@ import { combineLatest } from 'rxjs';
     }
 
     .geographic-filters.compact {
-      background: var(--color-subtleLighter);
+      background: var(--background-lighter);
       padding: 0.75rem;
       border-radius: 8px;
     }
@@ -203,11 +203,11 @@ import { combineLatest } from 'rxjs';
     }
 
     .filter-chip {
-      background: var(--color-background);
+      background: var(--background);
       border: 1px solid var(--color-buttonSecondaryBorder);
       border-radius: 20px;
       padding: 0.375rem 0.875rem;
-      color: var(--color-text);
+      color: var(--text);
       cursor: pointer;
       transition: all 0.2s ease;
       font-size: 0.85rem;
@@ -254,7 +254,7 @@ import { combineLatest } from 'rxjs';
 
 
     .user-position-indicator {
-      background: var(--color-subtleLighter);
+      background: var(--background-lighter);
       padding: 1rem;
       border-radius: 8px;
       text-align: center;
@@ -263,7 +263,7 @@ import { combineLatest } from 'rxjs';
 
     .user-position-indicator p {
       margin: 0;
-      color: var(--color-text);
+      color: var(--text);
     }
 
     .leaderboard-content {

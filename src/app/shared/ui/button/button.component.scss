@@ -133,7 +133,7 @@
 
   &[data-variant="danger"] {
     background-color: var(--error);
-    color: var(--color-background-lighter);
+    color: var(--background-lighter);
 
     &:hover:not(:disabled):not(.disabled) {
       background-color: var(--error);
@@ -150,7 +150,7 @@
 
   &[data-variant="success"] {
     background-color: var(--success);
-    color: var(--color-background-lighter);
+    color: var(--background-lighter);
 
     &:hover:not(:disabled):not(.disabled) {
       background-color: var(--success);
@@ -167,7 +167,7 @@
 
   &[data-variant="warning"] {
     background-color: var(--warning);
-    color: var(--color-text);
+    color: var(--text);
 
     &:hover:not(:disabled):not(.disabled) {
       background-color: var(--warning);
@@ -184,7 +184,7 @@
 
   &[data-variant="ghost"] {
     background-color: transparent;
-    color: var(--color-text);
+    color: var(--text);
     border: 1px solid transparent;
 
     &:hover:not(:disabled):not(.disabled) {
@@ -233,7 +233,7 @@
 
   &__badge {
     background-color: currentColor;
-    color: var(--color-background);
+    color: var(--background);
     font-size: 0.75em;
     padding: 0.125rem 0.375rem;
     border-radius: 999px;

@@ -80,8 +80,8 @@ type NavItem = {
       left: 0;
       right: 0;
       display: flex;
-      background-color: var(--color-background-lightest-elevated);
-      border-top: 1px solid var(--color-border);
+      background-color: var(--background-darkest);
+      border-top: 1px solid var(--border);
       padding: 0.5rem 0;
       z-index: 1000;
 
@@ -103,7 +103,7 @@ type NavItem = {
       align-items: center;
       padding: 0.5rem 0.25rem;
       text-decoration: none;
-      color: var(--color-text-muted);
+      color: var(--text-muted);
       transition: all 0.2s ease;
       position: relative;
       border: none;
@@ -115,19 +115,19 @@ type NavItem = {
 
       &:hover,
       &:focus-visible {
-        color: var(--color-primary);
+        color: var(--primary);
         transform: translateY(-1px);
       }
 
       &:focus-visible {
-        outline: 2px solid var(--color-primary);
+        outline: 2px solid var(--primary);
         outline-offset: 2px;
         border-radius: 8px;
       }
     }
 
     .nav-item--active {
-      color: var(--color-primary);
+      color: var(--primary);
 
       .nav-item__icon {
         transform: scale(1.1);
@@ -139,8 +139,8 @@ type NavItem = {
       position: relative;
 
       .nav-item__icon {
-        background: var(--color-primary);
-        color: var(--color-primary-text);
+        background: var(--primary);
+        color: var(--primary-contrast);
         border-radius: 50%;
         width: 48px;
         height: 48px;
@@ -153,7 +153,7 @@ type NavItem = {
 
         /* ✅ Icon color override for check-in */
         .check-in-icon {
-          color: var(--color-primary-text) !important;
+          color: var(--primary-contrast) !important;
         }
       }
 
@@ -161,18 +161,18 @@ type NavItem = {
         margin-top: 4px;
         font-weight: 600;
         font-size: 0.75rem;
-        color: var(--color-primary);
+        color: var(--primary);
       }
 
       /* ✅ Disabled state when can't check in */
       &:disabled {
         .nav-item__icon {
-          background: var(--color-text-muted);
+          background: var(--text-muted);
           opacity: 0.6;
         }
 
         .nav-item__label {
-          color: var(--color-text-muted);
+          color: var(--text-muted);
         }
 
         cursor: not-allowed;
@@ -188,7 +188,7 @@ type NavItem = {
     .nav-item__icon {
       margin-bottom: 0.25rem;
       transition: transform 0.2s ease;
-      color: var(--color-text-muted);
+      color: var(--text-muted);
 
       /* ✅ Icon color inheritance */
       app-icon {
@@ -219,11 +219,11 @@ type NavItem = {
     /* ✅ Active states for regular nav items */
     .nav-item--active:not(.nav-item--check-in) {
       .nav-item__icon {
-        color: var(--color-primary);
+        color: var(--primary);
       }
 
       .nav-item__label {
-        color: var(--color-primary);
+        color: var(--primary);
         font-weight: 600;
       }
     }

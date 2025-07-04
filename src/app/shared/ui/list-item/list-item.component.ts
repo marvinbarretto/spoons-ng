@@ -125,8 +125,8 @@ export type ListItemConfig = {
       align-items: flex-start;
       gap: 0.75rem;
       padding: 1rem;
-      background: var(--color-background-lightest);
-      border: 1px solid var(--color-border);
+      background: var(--background-darkest);
+      border: 1px solid var(--border);
       border-radius: 8px;
       transition: all 0.2s ease;
       position: relative;
@@ -142,7 +142,7 @@ export type ListItemConfig = {
     }
 
     .list-item.clickable:hover:not(.disabled) {
-      border-color: var(--color-primary);
+      border-color: var(--primary);
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       transform: translateY(-1px);
     }
@@ -153,8 +153,8 @@ export type ListItemConfig = {
 
     /* Selected state */
     .list-item.selected {
-      border-color: var(--color-primary);
-      background: var(--color-primary-subtle);
+      border-color: var(--primary);
+      background: var(--primary-subtle);
     }
 
     /* Disabled state */
@@ -180,7 +180,7 @@ export type ListItemConfig = {
       width: 1.25rem;
       height: 1.25rem;
       margin: 0;
-      accent-color: var(--color-primary);
+      accent-color: var(--primary);
     }
 
     /* Media */
@@ -192,7 +192,7 @@ export type ListItemConfig = {
       align-items: center;
       justify-content: center;
       border-radius: 6px;
-      background: var(--color-background);
+      background: var(--background);
     }
 
     .list-item__image {
@@ -224,20 +224,20 @@ export type ListItemConfig = {
       font-size: 1rem;
       font-weight: 600;
       margin: 0;
-      color: var(--color-text);
+      color: var(--text);
       line-height: 1.3;
     }
 
     .list-item__subtitle {
       font-size: 0.875rem;
-      color: var(--color-text-secondary);
+      color: var(--text-secondary);
       margin: 0 0 0.25rem 0;
       line-height: 1.3;
     }
 
     .list-item__description {
       font-size: 0.875rem;
-      color: var(--color-text-secondary);
+      color: var(--text-secondary);
       margin: 0 0 0.5rem 0;
       line-height: 1.4;
     }
@@ -251,7 +251,7 @@ export type ListItemConfig = {
 
     .list-item__distance {
       font-size: 0.75rem;
-      color: var(--color-text-secondary);
+      color: var(--text-secondary);
       display: flex;
       align-items: center;
       gap: 0.25rem;
@@ -263,8 +263,8 @@ export type ListItemConfig = {
       border-radius: 12px;
       font-size: 0.75rem;
       font-weight: 500;
-      background: var(--color-primary);
-      color: var(--color-primary-text);
+      background: var(--primary);
+      color: var(--primary-contrast);
       white-space: nowrap;
     }
 
@@ -274,8 +274,8 @@ export type ListItemConfig = {
     }
 
     .list-item__badge.warning {
-      background: var(--color-warning);
-      color: var(--color-warning-text);
+      background: var(--warning);
+      color: var(--warning-text);
     }
 
     .list-item__badge.error {
@@ -297,8 +297,8 @@ export type ListItemConfig = {
     }
 
     .list-item__status.warning {
-      background: var(--color-warning-subtle);
-      color: var(--color-warning);
+      background: var(--warning-subtle);
+      color: var(--warning);
     }
 
     .list-item__status.error {
@@ -316,10 +316,10 @@ export type ListItemConfig = {
       flex-shrink: 0;
       width: 2.5rem;
       height: 2.5rem;
-      border: 1px solid var(--color-border);
+      border: 1px solid var(--border);
       border-radius: 6px;
-      background: var(--color-background);
-      color: var(--color-text);
+      background: var(--background);
+      color: var(--text);
       cursor: pointer;
       transition: all 0.2s ease;
       display: flex;
@@ -329,9 +329,9 @@ export type ListItemConfig = {
     }
 
     .list-item__action:hover:not(:disabled) {
-      border-color: var(--color-primary);
-      background: var(--color-primary);
-      color: var(--color-primary-text);
+      border-color: var(--primary);
+      background: var(--primary);
+      color: var(--primary-contrast);
     }
 
     .list-item__action:disabled {
@@ -370,7 +370,7 @@ export type ListItemConfig = {
 
       .list-item.clickable {
         /* Enhanced touch feedback */
-        -webkit-tap-highlight-color: var(--color-primary-subtle);
+        -webkit-tap-highlight-color: var(--primary-subtle);
       }
 
       .list-item__title {

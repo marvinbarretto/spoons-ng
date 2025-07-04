@@ -38,7 +38,7 @@ export type UserAvatarData = {
       border-radius: 50%;
       object-fit: cover;
       flex-shrink: 0;
-      border: 2px solid var(--color-subtleLighter);
+      border: 2px solid var(--background-lighter);
     }
 
     .user-name {

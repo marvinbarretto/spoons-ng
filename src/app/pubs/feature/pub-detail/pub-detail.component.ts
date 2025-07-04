@@ -137,8 +137,8 @@ import { calculateDistance } from '@shared/utils/location.utils';
       max-width: 1000px;
       margin: 0 auto;
       padding: 1rem;
-      background: var(--color-background);
-      color: var(--color-text);
+      background: var(--background);
+      color: var(--text);
       min-height: 100vh;
     }
 
@@ -147,7 +147,7 @@ import { calculateDistance } from '@shared/utils/location.utils';
     .not-found-state {
       text-align: center;
       padding: 3rem 1rem;
-      color: var(--color-textSecondary);
+      color: var(--text-secondary);
     }
 
     .error-state {
@@ -157,9 +157,9 @@ import { calculateDistance } from '@shared/utils/location.utils';
     .back-btn,
     .retry-btn {
       padding: 0.5rem 1rem;
-      border: 1px solid var(--color-border);
-      background: var(--color-background-lightest);
-      color: var(--color-text);
+      border: 1px solid var(--border);
+      background: var(--background-darkest);
+      color: var(--text);
       border-radius: 6px;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -173,29 +173,29 @@ import { calculateDistance } from '@shared/utils/location.utils';
 
     .back-btn:hover,
     .retry-btn:hover {
-      background: var(--color-background-lightestElevated);
-      border-color: var(--color-primary);
-      color: var(--color-primary);
+      background: var(--background-darkestElevated);
+      border-color: var(--primary);
+      color: var(--primary);
     }
 
     .pub-header {
       margin-bottom: 2rem;
       padding: 1.5rem;
-      background: var(--color-background-lightest);
+      background: var(--background-darkest);
       border-radius: 12px;
-      border: 1px solid var(--color-border);
+      border: 1px solid var(--border);
     }
 
     .pub-header h1 {
       font-size: 2.5rem;
       font-weight: 700;
       margin: 1rem 0 0.5rem;
-      color: var(--color-text);
+      color: var(--text);
     }
 
     .pub-address {
       font-size: 1.125rem;
-      color: var(--color-textSecondary);
+      color: var(--text-secondary);
       margin: 0;
     }
 
@@ -222,14 +222,14 @@ import { calculateDistance } from '@shared/utils/location.utils';
     }
 
     .action-btn--primary {
-      background: var(--color-primary);
-      color: var(--color-primaryText);
+      background: var(--primary);
+      color: var(--primaryText);
     }
 
     .action-btn--primary:hover {
-      background: var(--color-primaryHover);
+      background: var(--primaryHover);
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px var(--color-shadow);
+      box-shadow: 0 4px 12px var(--shadow);
     }
 
     .status-badge {
@@ -240,7 +240,7 @@ import { calculateDistance } from '@shared/utils/location.utils';
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      border: 1px solid var(--color-border);
+      border: 1px solid var(--border);
     }
 
     .status-badge--success {
@@ -256,9 +256,9 @@ import { calculateDistance } from '@shared/utils/location.utils';
     }
 
     .status-badge--neutral {
-      background: var(--color-background-lightestElevated);
-      color: var(--color-textSecondary);
-      border-color: var(--color-borderSecondary);
+      background: var(--background-darkestElevated);
+      color: var(--text-secondary);
+      border-color: var(--borderSecondary);
     }
 
     .data-sections {
@@ -268,38 +268,38 @@ import { calculateDistance } from '@shared/utils/location.utils';
     }
 
     .data-section {
-      background: var(--color-background-lightest);
-      border: 1px solid var(--color-border);
+      background: var(--background-darkest);
+      border: 1px solid var(--border);
       border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 2px 8px var(--color-shadow);
+      box-shadow: 0 2px 8px var(--shadow);
     }
 
     .data-section h2 {
-      background: var(--color-background-lightestElevated);
+      background: var(--background-darkestElevated);
       margin: 0;
       padding: 1rem;
       font-size: 1.125rem;
       font-weight: 600;
-      color: var(--color-text);
-      border-bottom: 1px solid var(--color-border);
+      color: var(--text);
+      border-bottom: 1px solid var(--border);
     }
 
     .json-display {
       padding: 1rem;
-      background: var(--color-background-lightest);
+      background: var(--background-darkest);
     }
 
     .json-display pre {
-      background: var(--color-background);
-      border: 1px solid var(--color-borderSecondary);
+      background: var(--background);
+      border: 1px solid var(--borderSecondary);
       border-radius: 6px;
       padding: 1rem;
       overflow-x: auto;
       margin: 0;
       font-size: 0.875rem;
       line-height: 1.5;
-      color: var(--color-textMuted);
+      color: var(--textMuted);
       white-space: pre-wrap;
       word-break: break-word;
       font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
@@ -351,14 +351,14 @@ import { calculateDistance } from '@shared/utils/location.utils';
     .back-btn:focus,
     .retry-btn:focus,
     .action-btn:focus {
-      outline: 2px solid var(--color-primary);
+      outline: 2px solid var(--primary);
       outline-offset: 2px;
     }
 
     /* Enhanced hover states */
     .data-section:hover {
-      border-color: var(--color-primary);
-      box-shadow: 0 4px 16px var(--color-shadow);
+      border-color: var(--primary);
+      box-shadow: 0 4px 16px var(--shadow);
     }
 
     /* Loading animation */

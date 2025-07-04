@@ -1,6 +1,6 @@
 @mixin heading {
 
-  color: var(--color-text);
+  color: var(--text);
   font-weight: bold;
   margin-bottom: 0.5rem;
 }
@@ -8,28 +8,28 @@
 @mixin form-field {
   width: 100%;
   padding: 0.5rem;
-  background-color: var(--color-background);
-  border: 1px solid var(--color-shadow, #ccc);
-  color: var(--color-text);
+  background-color: var(--background);
+  border: 1px solid var(--border);
+  color: var(--text);
   border-radius: 0.25rem;
 
   &:focus {
-    border-color: var(--color-text);
+    border-color: var(--text);
     outline: none;
-    box-shadow: 0 0 0 2px var(--color-overlay);
+    box-shadow: 0 0 0 2px var(--overlay);
   }
 }
 
 @mixin button-primary {
-  background-color: var(--color-text);
-  color: var(--color-on-primary);
+  background-color: var(--text);
+  color: var(--primary-contrast);
   padding: 0.5rem 1.25rem;
   text-align: center;
 
   &:hover,
   &:focus {
     background-color: rgba(
-      var(--color-text),
+      var(--text),
       0.85
     ); // requires opacity helper or fallback
     outline: none;
@@ -42,15 +42,15 @@
 }
 
 @mixin button-secondary {
-  background-color: var(--color-secondary);
-  color: var(--color-on-secondary);
+  background-color: var(--secondary);
+  color: var(--secondary-contrast);
   padding: 0.5rem 1.25rem;
   border-radius: 0.25rem;
   font-weight: 600;
 
   &:hover,
   &:focus {
-    background-color: rgba(var(--color-secondary), 0.85);
+    background-color: rgba(var(--secondary), 0.85);
     outline: none;
   }
 
@@ -61,7 +61,7 @@
 }
 
 @mixin nav-link {
-  color: var(--color-text);
+  color: var(--text);
   text-decoration: none;
   padding: 0.5rem 1rem;
   font-weight: 500;
@@ -70,14 +70,14 @@
 
   &:hover,
   &:focus {
-    background-color: rgba(var(--color-overlay), 0.2);
-    color: var(--color-text);
+    background-color: rgba(var(--overlay), 0.2);
+    color: var(--text);
     outline: none;
   }
 
   &.active {
-    background-color: var(--color-text);
-    color: var(--color-on-primary);
+    background-color: var(--text);
+    color: var(--primary-contrast);
   }
 }
 
@@ -98,22 +98,22 @@
 @mixin eyebrow {
   font-size: 0.75rem;
   text-transform: uppercase;
-  color: var(--color-muted);
+  color: var(--text-muted);
   letter-spacing: 0.08em;
 }
 
 @mixin date-text {
   font-size: 0.875rem;
-  color: var(--color-muted);
+  color: var(--text-muted);
 }
 
 @mixin link-style {
   text-decoration: underline;
   text-underline-offset: 2px;
-  color: var(--color-text);
+  color: var(--text);
 
   &:hover {
-    color: var(--color-accent);
+    color: var(--accent);
   }
 }
 

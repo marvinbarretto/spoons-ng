@@ -335,11 +335,11 @@ import type { Pub } from '@pubs/utils/pub.models';
     }
 
     .dropdown-item:hover {
-      background: var(--background-lightest);
+      background: var(--background-darkest);
     }
 
     .dropdown-item.selected {
-      background: var(--background-lightest);
+      background: var(--background-darkest);
       border-bottom-color: var(--accent);
     }
 

@@ -126,7 +126,7 @@ type LandlordStatusData = {
     }
 
     .explanation {
-      background: var(--color-subtleLighter);
+      background: var(--background-lighter);
       padding: 1rem;
       border-radius: 6px;
       margin-top: 1rem;

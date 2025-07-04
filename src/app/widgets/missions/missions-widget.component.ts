@@ -61,9 +61,9 @@ import { MissionCardComponent } from '../../missions/ui/mission-card/mission-car
   styles: [`
     .missions-widget {
       padding: 1rem;
-      background: var(--color-background-lightest, var(--background-lighter));
-      color: var(--color-text, var(--text));
-      border: 1px solid var(--color-border, var(--border));
+      background: var(--background-darkest, var(--background-lighter));
+      color: var(--text, var(--text));
+      border: 1px solid var(--border, var(--border));
       border-radius: 0.5rem;
       box-shadow: var(--shadow);
     }
@@ -79,14 +79,14 @@ import { MissionCardComponent } from '../../missions/ui/mission-card/mission-car
       margin: 0;
       font-size: 1.125rem;
       font-weight: 600;
-      color: var(--color-text, var(--text));
+      color: var(--text, var(--text));
     }
 
     .see-all-btn {
       padding: 0.375rem 0.75rem;
       background: transparent;
-      color: var(--color-primary, var(--primary));
-      border: 1px solid var(--color-primary, var(--primary));
+      color: var(--primary, var(--primary));
+      border: 1px solid var(--primary, var(--primary));
       border-radius: 0.25rem;
       font-size: 0.75rem;
       font-weight: 500;
@@ -96,7 +96,7 @@ import { MissionCardComponent } from '../../missions/ui/mission-card/mission-car
     }
 
     .see-all-btn:hover {
-      background: var(--color-primary, var(--primary));
+      background: var(--primary, var(--primary));
       color: white;
       transform: translateY(-1px);
     }
@@ -110,7 +110,7 @@ import { MissionCardComponent } from '../../missions/ui/mission-card/mission-car
       gap: 0.75rem;
       padding: 2rem 1rem;
       justify-content: center;
-      color: var(--color-text-secondary, var(--text-secondary));
+      color: var(--text-secondary, var(--text-secondary));
     }
 
     .widget-empty {
@@ -146,19 +146,19 @@ import { MissionCardComponent } from '../../missions/ui/mission-card/mission-car
     .empty-title {
       font-weight: 600;
       margin: 0;
-      color: var(--color-text, var(--text));
+      color: var(--text, var(--text));
     }
 
     .empty-subtitle {
       margin: 0;
       font-size: 0.875rem;
-      color: var(--color-text-secondary, var(--text-secondary));
+      color: var(--text-secondary, var(--text-secondary));
     }
 
     .start-mission-btn {
       margin-top: 0.5rem;
       padding: 0.5rem 1rem;
-      background: var(--color-primary, var(--primary));
+      background: var(--primary, var(--primary));
       color: white;
       border: none;
       border-radius: 0.25rem;
@@ -196,7 +196,7 @@ import { MissionCardComponent } from '../../missions/ui/mission-card/mission-car
     }
 
     .mission-card-button:focus {
-      outline: 2px solid var(--color-primary, var(--primary));
+      outline: 2px solid var(--primary, var(--primary));
       outline-offset: 2px;
     }
   `]

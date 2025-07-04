@@ -5,17 +5,17 @@
   @include chip-size('md');
   @include chip-variant('default');
   position: relative;
-  
+
   &.clickable {
     @include chip-clickable;
   }
-  
+
   // Size variants
   &.size--xs { @include chip-size('xs'); }
   &.size--sm { @include chip-size('sm'); }
   &.size--md { @include chip-size('md'); }
   &.size--lg { @include chip-size('lg'); }
-  
+
   // Variant styles
   &.variant--primary { @include chip-variant('primary'); }
   &.variant--secondary { @include chip-variant('secondary'); }
@@ -50,7 +50,7 @@
   padding: 0 4px;
   border: 2px solid white;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  
+
   .size--xs & {
     min-width: 14px;
     height: 14px;
@@ -59,7 +59,7 @@
     right: -4px;
     padding: 0 2px;
   }
-  
+
   .size--sm & {
     min-width: 16px;
     height: 16px;
@@ -68,7 +68,7 @@
     right: -5px;
     padding: 0 3px;
   }
-  
+
   .size--lg & {
     min-width: 22px;
     height: 22px;
@@ -81,11 +81,11 @@
 
 // Variant-specific count badge colors
 .variant--primary .count-badge {
-  background: var(--color-warning, #f59e0b);
+  background: var(--warning, #f59e0b);
 }
 
 .variant--success .count-badge {
-  background: var(--color-primary, #2563eb);
+  background: var(--primary, #2563eb);
 }
 
 .variant--warning .count-badge {
@@ -93,5 +93,5 @@
 }
 
 .variant--error .count-badge {
-  background: var(--color-warning, #f59e0b);
+  background: var(--warning, #f59e0b);
 }

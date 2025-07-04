@@ -70,9 +70,9 @@ export type VirtualListConfig = {
       overflow-y: auto;
       overflow-x: hidden;
       position: relative;
-      border: 1px solid var(--color-border);
+      border: 1px solid var(--border);
       border-radius: 8px;
-      background: var(--color-background);
+      background: var(--background);
     }
 
     .virtual-spacer-top,
@@ -94,11 +94,11 @@ export type VirtualListConfig = {
     .virtual-debug {
       margin-top: 0.5rem;
       padding: 0.5rem;
-      background: var(--color-background-lightest);
-      border: 1px solid var(--color-border);
+      background: var(--background-darkest);
+      border: 1px solid var(--border);
       border-radius: 4px;
       font-family: monospace;
-      color: var(--color-text-secondary);
+      color: var(--text-secondary);
     }
 
     /* Smooth scrolling */
@@ -112,16 +112,16 @@ export type VirtualListConfig = {
     }
 
     .virtual-list::-webkit-scrollbar-track {
-      background: var(--color-background);
+      background: var(--background);
     }
 
     .virtual-list::-webkit-scrollbar-thumb {
-      background: var(--color-border);
+      background: var(--border);
       border-radius: 4px;
     }
 
     .virtual-list::-webkit-scrollbar-thumb:hover {
-      background: var(--color-text-secondary);
+      background: var(--text-secondary);
     }
   `
 })

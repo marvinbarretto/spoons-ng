@@ -196,8 +196,8 @@ export type ListControlsState = {
   `,
   styles: `
     .list-controls {
-      background: var(--color-background-lightest);
-      border: 1px solid var(--color-border);
+      background: var(--background-darkest);
+      border: 1px solid var(--border);
       border-radius: 8px;
       padding: 1rem;
       margin-bottom: 1rem;
@@ -215,20 +215,20 @@ export type ListControlsState = {
       position: relative;
       display: flex;
       align-items: center;
-      background: var(--color-background);
-      border: 1px solid var(--color-border);
+      background: var(--background);
+      border: 1px solid var(--border);
       border-radius: 6px;
       transition: border-color 0.2s ease;
     }
 
     .search-input:focus-within {
-      border-color: var(--color-primary);
-      box-shadow: 0 0 0 2px var(--color-primary-subtle);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px var(--primary-subtle);
     }
 
     .search-input__icon {
       padding: 0.75rem;
-      color: var(--color-text-secondary);
+      color: var(--text-secondary);
     }
 
     .search-input__field {
@@ -237,7 +237,7 @@ export type ListControlsState = {
       outline: none;
       padding: 0.75rem 0;
       background: transparent;
-      color: var(--color-text);
+      color: var(--text);
       font-size: 1rem;
     }
 
@@ -245,7 +245,7 @@ export type ListControlsState = {
       padding: 0.75rem;
       border: none;
       background: transparent;
-      color: var(--color-text-secondary);
+      color: var(--text-secondary);
       cursor: pointer;
       transition: color 0.2s ease;
     }
@@ -272,17 +272,17 @@ export type ListControlsState = {
     .control-label {
       font-size: 0.75rem;
       font-weight: 500;
-      color: var(--color-text-secondary);
+      color: var(--text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
     .control-select {
       padding: 0.5rem 0.75rem;
-      border: 1px solid var(--color-border);
+      border: 1px solid var(--border);
       border-radius: 4px;
-      background: var(--color-background);
-      color: var(--color-text);
+      background: var(--background);
+      color: var(--text);
       font-size: 0.875rem;
       min-width: 140px;
     }
@@ -296,10 +296,10 @@ export type ListControlsState = {
 
     .filter-chip {
       padding: 0.375rem 0.75rem;
-      border: 1px solid var(--color-border);
+      border: 1px solid var(--border);
       border-radius: 12px;
-      background: var(--color-background);
-      color: var(--color-text-secondary);
+      background: var(--background);
+      color: var(--text-secondary);
       font-size: 0.75rem;
       font-weight: 500;
       cursor: pointer;
@@ -311,14 +311,14 @@ export type ListControlsState = {
     }
 
     .filter-chip:hover {
-      border-color: var(--color-primary);
-      color: var(--color-primary);
+      border-color: var(--primary);
+      color: var(--primary);
     }
 
     .filter-chip.active {
-      border-color: var(--color-primary);
-      background: var(--color-primary);
-      color: var(--color-primary-text);
+      border-color: var(--primary);
+      background: var(--primary);
+      color: var(--primary-contrast);
     }
 
     .filter-count {
@@ -329,7 +329,7 @@ export type ListControlsState = {
     /* View Toggle */
     .view-toggle {
       display: flex;
-      border: 1px solid var(--color-border);
+      border: 1px solid var(--border);
       border-radius: 4px;
       overflow: hidden;
     }
@@ -337,12 +337,12 @@ export type ListControlsState = {
     .view-btn {
       padding: 0.5rem 0.75rem;
       border: none;
-      background: var(--color-background);
-      color: var(--color-text-secondary);
+      background: var(--background);
+      color: var(--text-secondary);
       cursor: pointer;
       transition: all 0.2s ease;
       font-size: 0.875rem;
-      border-right: 1px solid var(--color-border);
+      border-right: 1px solid var(--border);
     }
 
     .view-btn:last-child {
@@ -350,22 +350,22 @@ export type ListControlsState = {
     }
 
     .view-btn:hover {
-      background: var(--color-primary-subtle);
-      color: var(--color-primary);
+      background: var(--primary-subtle);
+      color: var(--primary);
     }
 
     .view-btn.active {
-      background: var(--color-primary);
-      color: var(--color-primary-text);
+      background: var(--primary);
+      color: var(--primary-contrast);
     }
 
     /* Bulk Toggle */
     .bulk-toggle {
       padding: 0.5rem 1rem;
-      border: 1px solid var(--color-border);
+      border: 1px solid var(--border);
       border-radius: 4px;
-      background: var(--color-background);
-      color: var(--color-text-secondary);
+      background: var(--background);
+      color: var(--text-secondary);
       font-size: 0.875rem;
       font-weight: 500;
       cursor: pointer;
@@ -373,14 +373,14 @@ export type ListControlsState = {
     }
 
     .bulk-toggle:hover {
-      border-color: var(--color-primary);
-      color: var(--color-primary);
+      border-color: var(--primary);
+      color: var(--primary);
     }
 
     .bulk-toggle.active {
-      border-color: var(--color-primary);
-      background: var(--color-primary);
-      color: var(--color-primary-text);
+      border-color: var(--primary);
+      background: var(--primary);
+      color: var(--primary-contrast);
     }
 
     /* Info Row */
@@ -389,17 +389,17 @@ export type ListControlsState = {
       align-items: center;
       justify-content: space-between;
       padding: 0.5rem 0;
-      border-top: 1px solid var(--color-border);
+      border-top: 1px solid var(--border);
       font-size: 0.875rem;
-      color: var(--color-text-secondary);
+      color: var(--text-secondary);
     }
 
     .clear-filters {
       padding: 0.25rem 0.5rem;
-      border: 1px solid var(--color-border);
+      border: 1px solid var(--border);
       border-radius: 4px;
       background: transparent;
-      color: var(--color-text-secondary);
+      color: var(--text-secondary);
       font-size: 0.75rem;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -415,18 +415,18 @@ export type ListControlsState = {
       display: none;
       width: 100%;
       padding: 0.75rem;
-      border: 1px solid var(--color-border);
+      border: 1px solid var(--border);
       border-radius: 6px;
-      background: var(--color-background);
-      color: var(--color-text);
+      background: var(--background);
+      color: var(--text);
       font-size: 0.875rem;
       cursor: pointer;
       transition: all 0.2s ease;
     }
 
     .mobile-toggle.expanded {
-      border-color: var(--color-primary);
-      background: var(--color-primary-subtle);
+      border-color: var(--primary);
+      background: var(--primary-subtle);
     }
 
     /* Responsive Behavior */

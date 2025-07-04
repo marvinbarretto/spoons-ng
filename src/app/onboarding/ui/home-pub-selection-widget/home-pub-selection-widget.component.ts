@@ -254,7 +254,7 @@ import type { Pub } from '../../../pubs/utils/pub.models';
       margin-bottom: 1.5rem;
       border: 2px solid var(--success);
       border-radius: 0.5rem;
-      background: var(--background-lightest);
+      background: var(--background-darkest);
     }
 
     .selected-header {
@@ -331,7 +331,7 @@ import type { Pub } from '../../../pubs/utils/pub.models';
 
     .suggestion-card:hover {
       border-color: var(--accent);
-      background: var(--background-lightest);
+      background: var(--background-darkest);
     }
 
     .pub-info {
@@ -415,7 +415,7 @@ import type { Pub } from '../../../pubs/utils/pub.models';
     }
 
     .dropdown-item:hover {
-      background: var(--background-lightest);
+      background: var(--background-darkest);
     }
 
     .dropdown-item .pub-name {
@@ -515,7 +515,7 @@ export class HomePubSelectionWidgetComponent extends BaseWidgetComponent {
 
   // DataAggregator for any cross-store needs
   private readonly dataAggregatorService = inject(DataAggregatorService);
-  
+
   // ✅ Movement detection signal
   readonly isMoving = this.locationService.isMoving;
 

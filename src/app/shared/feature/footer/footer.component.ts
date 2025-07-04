@@ -21,11 +21,11 @@ import { environment } from '../../../../environments/environment';
   `,
   styles: `
 .footer {
-      background-color: var(--color-background-lightest, #f8fafc);
-      color: var(--color-text-secondary, #64748b);
+      background-color: var(--background-darkest, #f8fafc);
+      color: var(--text-secondary, #64748b);
       padding: 2rem 1rem 1rem;
       text-align: center;
-      border-top: 1px solid var(--color-border, #e2e8f0);
+      border-top: 1px solid var(--border, #e2e8f0);
 
       /* ✅ Add bottom padding on mobile to account for fixed nav */
       padding-bottom: calc(1rem + env(safe-area-inset-bottom));

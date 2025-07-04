@@ -54,7 +54,7 @@ import { CommonModule } from '@angular/common';
       flex-direction: column;
       align-items: center;
       text-align: center;
-      color: var(--color-text, #1f2937);
+      color: var(--text, #1f2937);
     }
 
     .action-card:hover {

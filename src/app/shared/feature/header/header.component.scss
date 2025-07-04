@@ -17,11 +17,11 @@ nav {
   justify-content: space-between;
   align-items: center;
   flex-direction: column-reverse;
-  color: var(--color-text);
+  color: var(--text);
 
   // ✅ NEW: Theme-aware background
-  background-color: var(--color-background-lightest);
-  border-bottom: 1px solid var(--color-border);
+  background-color: var(--background-darkest);
+  border-bottom: 1px solid var(--border);
 
   // ✅ NEW: Smooth transitions
   transition: background-color 0.3s ease, border-color 0.3s ease;
@@ -35,19 +35,19 @@ nav {
   padding: 1rem 2rem;
 
   // ✅ NEW: Use theme tokens instead of hardcoded colors
-  background-color: var(--color-primary);
-  color: var(--color-primary-text);
+  background-color: var(--primary);
+  color: var(--primary-contrast);
   line-height: 1.2;
 
   // ✅ NEW: Theme-aware styling
   transition: background-color 0.3s ease;
 
   &:hover {
-    background-color: var(--color-primary-hover);
+    background-color: var(--primary-hover);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--color-accent-500);
+    outline: 2px solid var(--accent-500);
     outline-offset: 2px;
   }
 }
@@ -105,9 +105,10 @@ small {
 
 .main-nav {
   // ✅ NEW: Use semantic theme tokens
-  background-color: var(--color-background-lightest-elevated);
-  border-bottom: 1px solid var(--color-border);
+  background-color: var(--background-darkest);
+  border-bottom: 1px solid var(--border);
 
+  display: flex;
   align-items: center;
   justify-content: space-between;
   flex-direction: row-reverse;
@@ -119,15 +120,27 @@ small {
   @media (min-width: $nav-breakpoint) {
     flex-direction: row;
   }
+
+  .desktop-profile-widget {
+    margin-left: 1rem;
+    max-width: 200px;
+    flex-shrink: 0;
+  }
 }
 
 // Mobile navigation styles
 .main-nav--mobile {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
   padding: 0.5rem 1rem;
-  
+  min-height: 60px;
+  background-color: var(--background-darkest);
+  border-bottom: 1px solid var(--border);
+
   .mobile-profile-widget {
     max-width: 200px;
-    margin-left: auto;
+    flex-shrink: 0;
   }
 }
 
@@ -136,12 +149,12 @@ small {
   gap: 0.75rem;
   position: relative;
   z-index: 100;
-  background-color: var(--color-background-lightest);
-  color: var(--color-text);
+  background-color: var(--background-darkest);
+  color: var(--text);
 
   // ✅ NEW: Enhanced styling
   padding: 0.5rem;
-  box-shadow: var(--color-shadow);
+  box-shadow: var(--shadow);
 }
 
 .menu__list {
@@ -160,7 +173,7 @@ button {
   display: block;
   padding: 0.75rem 1rem;
   font-size: var(--font-size);
-  color: var(--color-text);
+  color: var(--text);
   background: transparent;
   border: none;
   text-decoration: none;
@@ -178,7 +191,7 @@ button {
   }
 
   &:focus-visible {
-    outline: 2px solid var(--color-primary);
+    outline: 2px solid var(--primary);
     outline-offset: 2px;
   }
 }
@@ -197,14 +210,14 @@ button {
   align-self: center;
   overflow: hidden;
   text-decoration: none;
-  color: var(--color-text);
+  color: var(--text);
 
   .label {
     @include underline-style;
   }
 
   &:hover .label {
-    color: var(--color-primary);
+    color: var(--primary);
   }
 }
 
@@ -218,11 +231,11 @@ nav ul {
 
 // ✅ NEW: Enhanced selected state
 .selected {
-  background-color: var(--color-primary);
-  color: var(--color-primary-text);
+  background-color: var(--primary);
+  color: var(--primary-contrast);
 
   &:hover {
-    background-color: var(--color-primary-hover);
+    background-color: var(--primary-hover);
   }
 }
 
@@ -239,8 +252,8 @@ nav ul {
   align-items: center;
   justify-content: flex-start;
   background: transparent;
-  color: var(--color-text);
-  border: 1px solid var(--color-border);
+  color: var(--text);
+  border: 1px solid var(--border);
   border-radius: 0.375rem;
   transition: all 0.2s ease;
 
@@ -251,11 +264,11 @@ nav ul {
   &:hover {
     background-color: var(--color-secondary);
     color: var(--color-secondary-text);
-    border-color: var(--color-primary);
+    border-color: var(--primary);
   }
 
   &:focus-visible {
-    outline: 2px solid var(--color-primary);
+    outline: 2px solid var(--primary);
     outline-offset: 2px;
   }
 }
@@ -287,10 +300,10 @@ nav ul {
   gap: 0;
 
   // ✅ NEW: Enhanced mobile menu styling
-  background-color: var(--color-background-lightest-elevated);
-  border: 1px solid var(--color-border);
+  background-color: var(--background-darkest);
+  border: 1px solid var(--border);
   border-radius: 0 0 1rem 1rem;
-  box-shadow: var(--color-shadow);
+  box-shadow: var(--shadow);
 
   .a11y-link {
     width: 100%;
@@ -299,26 +312,26 @@ nav ul {
 
 // ✅ NEW: Theme-specific enhancements
 [data-theme="sage"] .header__title {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-600) 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-600) 100%);
 }
 
 [data-theme="amber"] .main-nav {
-  background: linear-gradient(135deg, var(--color-background-lightest-elevated) 0%, var(--color-background-lightest) 100%);
+  background: linear-gradient(135deg, var(--background-darkest) 0%, var(--background-darkest) 100%);
 }
 
 [data-theme="coral"] .menu {
-  border: 1px solid var(--color-border-secondary);
+  border: 1px solid var(--border-secondary);
 }
 
 // ✅ NEW: Dark mode optimizations
 .dark {
   .header {
-    border-bottom-color: var(--color-border-secondary);
+    border-bottom-color: var(--border-secondary);
   }
 
   .main-nav {
     backdrop-filter: blur(20px);
-    background-color: rgba(var(--color-background-lightest-elevated), 0.9);
+    background-color: rgba(var(--background-darkest), 0.9);
   }
 
   .menu--open {
@@ -329,7 +342,7 @@ nav ul {
 // ✅ NEW: Print styles
 @media print {
   .header {
-    background: var(--background-lightest) !important;
+    background: var(--background-darkest) !important;
     color: var(--text) !important;
     border-bottom: 1px solid var(--border);
   }

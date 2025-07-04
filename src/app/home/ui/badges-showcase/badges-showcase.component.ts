@@ -20,7 +20,7 @@ type BadgeWithStatus = {
       <div class="progress-summary">
         {{ earnedCount() }} of {{ totalBadges() }} badges earned
       </div>
-      
+
       @if (loading()) {
         <div class="loading-state">Loading badges...</div>
       } @else if (error()) {
@@ -28,7 +28,7 @@ type BadgeWithStatus = {
       } @else {
         <div class="badges-grid">
           @for (item of allBadgesWithStatus(); track item.badge.id) {
-            <app-badge-crest 
+            <app-badge-crest
               [badge]="item.badge"
               [isEarned]="item.isEarned"
               size="medium"
@@ -49,7 +49,7 @@ type BadgeWithStatus = {
       font-weight: 700;
       margin-bottom: 0.5rem;
       text-align: center;
-      color: var(--color-text, #1f2937);
+      color: var(--text, #1f2937);
     }
 
     .progress-summary {
@@ -87,7 +87,7 @@ export class BadgesShowcaseComponent implements OnInit {
   readonly allBadgesWithStatus = computed(() => {
     const definitions = this.badgeStore.definitions();
     const earned = this.badgeStore.earnedBadges();
-    
+
     return definitions.map(badge => ({
       badge,
       isEarned: earned.some(e => e.badgeId === badge.id)

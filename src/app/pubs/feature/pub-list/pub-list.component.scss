@@ -1,7 +1,7 @@
 .pub-list-page {
   min-height: 100vh;
   padding: 0.5rem;
-  background: var(--color-background);
+  background: var(--background);
 
   /* ✅ Better space allocation */
   display: flex;
@@ -22,7 +22,7 @@
 .page-header h1 {
   font-size: 1.5rem;
   font-weight: 600;
-  color: var(--color-text);
+  color: var(--text);
   margin: 0;
 
   /* ✅ Better responsive sizing */
@@ -39,9 +39,9 @@
   gap: 0.75rem;
   margin-bottom: 1rem;
   padding: 1rem;
-  background: var(--color-background-lightest);
+  background: var(--background-darkest);
   border-radius: 12px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--border);
 }
 
 .search-group {
@@ -51,21 +51,21 @@
 .search-input {
   flex: 1;
   padding: 0.75rem 1rem;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--border);
   border-radius: 8px;
-  background: var(--color-background);
-  color: var(--color-text);
+  background: var(--background);
+  color: var(--text);
   font-size: 1rem;
   transition: border-color 0.2s ease;
 
   &::placeholder {
-    color: var(--color-textMuted);
+    color: var(--textMuted);
   }
 
   &:focus {
     outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px var(--color-shadow);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--shadow);
   }
 }
 
@@ -86,10 +86,10 @@
 .filter-pill {
   flex: 1;
   padding: 0.5rem 0.75rem;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--border);
   border-radius: 6px;
-  background: var(--color-background);
-  color: var(--color-textSecondary);
+  background: var(--background);
+  color: var(--text-secondary);
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
@@ -99,38 +99,38 @@
   text-align: center;
 
   &:hover {
-    background: var(--color-background-lightestElevated);
-    color: var(--color-primary);
-    border-color: var(--color-primary);
+    background: var(--background-darkestElevated);
+    color: var(--primary);
+    border-color: var(--primary);
   }
 
   &.active {
-    background: var(--color-primary);
-    color: var(--color-primaryText);
-    border-color: var(--color-primary);
+    background: var(--primary);
+    color: var(--primaryText);
+    border-color: var(--primary);
   }
 }
 
 .sort-toggle {
   padding: 0.5rem 0.75rem;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--border);
   border-radius: 6px;
-  background: var(--color-background);
-  color: var(--color-text);
+  background: var(--background);
+  color: var(--text);
   font-size: 0.875rem;
   cursor: pointer;
   min-width: 100px;
   transition: all 0.2s ease;
 
   &:hover {
-    background: var(--color-background-lightestElevated);
-    color: var(--color-primary);
-    border-color: var(--color-primary);
+    background: var(--background-darkestElevated);
+    color: var(--primary);
+    border-color: var(--primary);
   }
 
   &:focus {
     outline: none;
-    border-color: var(--color-primary);
+    border-color: var(--primary);
   }
 }
 
@@ -169,7 +169,7 @@
   }
 
   &:focus {
-    outline: 2px solid var(--color-primary);
+    outline: 2px solid var(--primary);
     outline-offset: 2px;
     border-radius: 8px;
   }
@@ -181,15 +181,15 @@
 .empty-state {
   text-align: center;
   padding: 3rem 1rem;
-  background: var(--color-background-lightest);
-  border: 1px solid var(--color-border);
+  background: var(--background-darkest);
+  border: 1px solid var(--border);
   border-radius: 12px;
   margin: 2rem 0;
 }
 
 .loading-state p {
   font-size: 1rem;
-  color: var(--color-textSecondary);
+  color: var(--text-secondary);
   margin: 0;
 }
 
@@ -202,34 +202,34 @@
 .retry-btn,
 .clear-filters-btn {
   padding: 0.75rem 1.5rem;
-  border: 1px solid var(--color-primary);
+  border: 1px solid var(--primary);
   border-radius: 8px;
-  background: var(--color-primary);
-  color: var(--color-primaryText);
+  background: var(--primary);
+  color: var(--primaryText);
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
-    background: var(--color-primaryHover);
+    background: var(--primaryHover);
     transform: translateY(-1px);
   }
 
   &:focus {
-    outline: 2px solid var(--color-primary);
+    outline: 2px solid var(--primary);
     outline-offset: 2px;
   }
 }
 
 .empty-state h3 {
   font-size: 1.25rem;
-  color: var(--color-text);
+  color: var(--text);
   margin: 0 0 0.5rem 0;
   font-weight: 600;
 }
 
 .empty-state p {
-  color: var(--color-textSecondary);
+  color: var(--text-secondary);
   margin: 0 0 1.5rem 0;
 }
 
@@ -265,14 +265,14 @@
 /* ✅ DARK THEME IMPROVEMENTS */
 @media (prefers-color-scheme: dark) {
   .search-input {
-    background: var(--color-background-lightest);
+    background: var(--background-darkest);
   }
 
   .filter-pill:not(.active) {
-    background: var(--color-background-lightest);
+    background: var(--background-darkest);
   }
 
   .sort-select {
-    background: var(--color-background-lightest);
+    background: var(--background-darkest);
   }
 }

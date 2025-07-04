@@ -23,8 +23,8 @@ export type SortState = {
           <thead>
             <tr>
               @for (column of displayColumns(); track column.key) {
-                <th 
-                  [class]="getHeaderClass(column)" 
+                <th
+                  [class]="getHeaderClass(column)"
                   [style.width]="column.width"
                   (click)="handleHeaderClick(column)"
                 >
@@ -42,7 +42,7 @@ export type SortState = {
           </thead>
           <tbody>
             @for (row of displayData(); track getTrackByValue(row); let i = $index) {
-              <tr 
+              <tr
                 [class.highlight]="shouldHighlightRow(row)"
                 [class]="getRowClassName(row)"
                 (click)="handleRowClick(row)"
@@ -52,7 +52,7 @@ export type SortState = {
                     @if (column.renderer) {
                       <!-- Custom renderer content -->
                       @if (column.key === 'displayName') {
-                        <app-user-chip 
+                        <app-user-chip
                           [user]="getUserChipData(row)"
                           size="sm"
                           [clickable]="false"
@@ -86,13 +86,13 @@ export type SortState = {
     th, td {
       padding: 0.75rem;
       text-align: left;
-      border-bottom: 1px solid var(--color-subtleLighter);
+      border-bottom: 1px solid var(--background-lighter);
     }
 
     th {
       font-weight: 600;
-      background: var(--color-subtleLighter);
-      color: var(--color-text);
+      background: var(--background-lighter);
+      color: var(--text);
       position: relative;
     }
 
@@ -118,7 +118,7 @@ export type SortState = {
     }
 
     td {
-      color: var(--color-text);
+      color: var(--text);
     }
 
     .number {
@@ -151,7 +151,7 @@ export type SortState = {
       border-radius: 50%;
       object-fit: cover;
       flex-shrink: 0;
-      border: 2px solid var(--color-subtleLighter);
+      border: 2px solid var(--background-lighter);
     }
 
     .user-cell .user-name {
@@ -162,16 +162,16 @@ export type SortState = {
     }
 
     tbody tr:nth-child(even) {
-      background: color-mix(in srgb, var(--color-subtleLighter) 15%, transparent);
+      background: color-mix(in srgb, var(--background-lighter) 15%, transparent);
     }
 
     tbody tr:hover {
-      background: var(--color-subtleLighter);
+      background: var(--background-lighter);
       cursor: pointer;
     }
 
     .highlight {
-      background: color-mix(in srgb, var(--color-accent) 15%, transparent) !important;
+      background: color-mix(in srgb, var(--accent) 15%, transparent) !important;
       font-weight: 600;
     }
 
@@ -179,7 +179,7 @@ export type SortState = {
       padding: 2rem;
       text-align: center;
       opacity: 0.7;
-      color: var(--color-text);
+      color: var(--text);
     }
 
     .date {
@@ -206,7 +206,7 @@ export type SortState = {
       border-radius: 50%;
       object-fit: cover;
       flex-shrink: 0;
-      border: 2px solid var(--color-subtleLighter);
+      border: 2px solid var(--background-lighter);
     }
 
     .user-name {
@@ -258,11 +258,11 @@ export class DataTableComponent {
   readonly displayColumns = computed(() => {
     const allColumns = this.columns();
     const isMobile = this.viewportService.isMobile();
-    
+
     if (!isMobile) {
       return allColumns;
     }
-    
+
     // On mobile, filter out columns that have hideOnMobile property
     return allColumns.filter(column => !column.hideOnMobile);
   });
@@ -271,9 +271,9 @@ export class DataTableComponent {
   readonly filteredData = computed(() => {
     const search = this.searchTerm().toLowerCase();
     if (!search) return this.data();
-    
-    return this.data().filter(row => 
-      Object.values(row).some(value => 
+
+    return this.data().filter(row =>
+      Object.values(row).some(value =>
         String(value).toLowerCase().includes(search)
       )
     );
@@ -283,7 +283,7 @@ export class DataTableComponent {
   readonly displayData = computed(() => {
     const filtered = this.filteredData();
     const sort = this.sortState();
-    
+
     if (!sort.column || !sort.direction) {
       return filtered;
     }
@@ -291,10 +291,10 @@ export class DataTableComponent {
     return [...filtered].sort((a, b) => {
       const aValue = a[sort.column!];
       const bValue = b[sort.column!];
-      
+
       // Handle different data types
       let comparison = 0;
-      
+
       if (typeof aValue === 'number' && typeof bValue === 'number') {
         comparison = aValue - bValue;
       } else {
@@ -302,18 +302,18 @@ export class DataTableComponent {
         const bStr = String(bValue || '').toLowerCase();
         comparison = aStr.localeCompare(bStr);
       }
-      
+
       return sort.direction === 'asc' ? comparison : -comparison;
     });
   });
 
   getCellValue(column: TableColumn, row: any, index: number): string {
     const value = row[column.key];
-    
+
     if (column.formatter) {
       return column.formatter(value, row, index);
     }
-    
+
     return String(value ?? '');
   }
 
@@ -343,13 +343,13 @@ export class DataTableComponent {
     if (!column.sortable) return;
 
     const currentSort = this.sortState();
-    
+
     if (currentSort.column === column.key) {
       // Cycle through: asc -> desc -> null
-      const newDirection: SortDirection = 
+      const newDirection: SortDirection =
         currentSort.direction === 'asc' ? 'desc' :
         currentSort.direction === 'desc' ? null : 'asc';
-      
+
       this.sortState.set({
         column: newDirection ? column.key : null,
         direction: newDirection

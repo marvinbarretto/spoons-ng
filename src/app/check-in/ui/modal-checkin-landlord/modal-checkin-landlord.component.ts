@@ -161,8 +161,8 @@ type LandlordModalData = {
   `,
   styles: [`
     .modal-container {
-      background: var(--color-background);
-      border: 1px solid var(--color-subtleDarker);
+      background: var(--background);
+      border: 1px solid var(--background-darker);
       border-radius: 8px;
       max-width: 420px;
       width: 100%;
@@ -179,7 +179,7 @@ type LandlordModalData = {
     }
 
     .modal-header {
-      border-bottom: 1px solid var(--color-subtleLighter);
+      border-bottom: 1px solid var(--background-lighter);
       text-align: center;
       padding: 0.75rem 1rem;
     }
@@ -190,7 +190,7 @@ type LandlordModalData = {
 
     .modal-header h2 {
       margin: 0;
-      color: var(--color-textPrimary);
+      color: var(--textPrimary);
       font-size: 1.25rem;
     }
 
@@ -199,7 +199,7 @@ type LandlordModalData = {
     }
 
     .modal-footer {
-      border-top: 1px solid var(--color-subtleLighter);
+      border-top: 1px solid var(--background-lighter);
       padding: 0.75rem 1rem;
     }
 
@@ -211,7 +211,7 @@ type LandlordModalData = {
     h3 {
       margin: 0 0 0.75rem 0;
       font-size: 1rem;
-      color: var(--color-textPrimary);
+      color: var(--textPrimary);
     }
 
     .modal-container.new-landlord h3 {
@@ -220,7 +220,7 @@ type LandlordModalData = {
 
     /* Explanation Section */
     .explanation-section {
-      background: var(--color-subtleLighter);
+      background: var(--background-lighter);
       border-radius: 6px;
       padding: 1rem;
       margin-bottom: 1rem;
@@ -261,9 +261,9 @@ type LandlordModalData = {
       align-items: center;
       gap: 0.5rem;
       padding: 0.5rem;
-      background: var(--color-subtleLighter);
+      background: var(--background-lighter);
       border-radius: 4px;
-      border: 1px solid var(--color-subtleDarker);
+      border: 1px solid var(--background-darker);
     }
 
     .modal-container.new-landlord .landlord-card-compact {
@@ -312,7 +312,7 @@ type LandlordModalData = {
     .landlord-name-compact {
       font-weight: bold;
       font-size: 0.85rem;
-      color: var(--color-textPrimary);
+      color: var(--textPrimary);
     }
 
     .modal-container.new-landlord .landlord-name-compact {
@@ -329,7 +329,7 @@ type LandlordModalData = {
       align-items: center;
       gap: 0.25rem;
       font-size: 0.7rem;
-      color: var(--color-textSecondary);
+      color: var(--text-secondary);
     }
 
     .modal-container.new-landlord .landlord-meta {
@@ -372,8 +372,8 @@ type LandlordModalData = {
     }
 
     .status-content.regular-checkin {
-      background: var(--color-subtleLighter);
-      border: 1px solid var(--color-subtleDarker);
+      background: var(--background-lighter);
+      border: 1px solid var(--background-darker);
     }
 
     .main-icon {
@@ -423,7 +423,7 @@ type LandlordModalData = {
     .history-note {
       margin: 0;
       font-size: 0.85rem;
-      color: var(--color-textSecondary);
+      color: var(--text-secondary);
       font-style: italic;
     }
 

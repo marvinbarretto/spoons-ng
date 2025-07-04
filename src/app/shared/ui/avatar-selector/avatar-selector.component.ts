@@ -72,8 +72,8 @@ type AvatarOption = {
   `,
   styles: [`
     .modal-container {
-      background: var(--color-background);
-      border: 1px solid var(--color-subtleDarker);
+      background: var(--background);
+      border: 1px solid var(--background-darker);
       border-radius: 12px;
       max-width: 600px;
       width: 90vw;
@@ -85,18 +85,18 @@ type AvatarOption = {
 
     .modal-header {
       padding: 1.5rem;
-      border-bottom: 1px solid var(--color-subtleLighter);
+      border-bottom: 1px solid var(--background-lighter);
       text-align: center;
 
       h2 {
         margin: 0 0 0.5rem;
-        color: var(--color-text);
+        color: var(--text);
       }
 
       .subtitle {
         margin: 0;
         opacity: 0.8;
-        color: var(--color-text);
+        color: var(--text);
       }
     }
 
@@ -111,7 +111,7 @@ type AvatarOption = {
       align-items: center;
       gap: 1rem;
       padding: 1rem;
-      background: var(--color-subtleLighter);
+      background: var(--background-lighter);
       border-radius: 8px;
       margin-bottom: 1.5rem;
 
@@ -122,12 +122,12 @@ type AvatarOption = {
 
       .preview-info h3 {
         margin: 0 0 0.25rem;
-        color: var(--color-text);
+        color: var(--text);
       }
 
       .preview-info small {
         opacity: 0.7;
-        color: var(--color-text);
+        color: var(--text);
       }
     }
 
@@ -143,8 +143,8 @@ type AvatarOption = {
       align-items: center;
       gap: 0.5rem;
       padding: 1rem;
-      background: var(--color-background);
-      border: 2px solid var(--color-subtleLighter);
+      background: var(--background);
+      border: 2px solid var(--background-lighter);
       border-radius: 8px;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -168,13 +168,13 @@ type AvatarOption = {
         font-size: 0.85rem;
         font-weight: 500;
         text-align: center;
-        color: var(--color-text);
+        color: var(--text);
       }
     }
 
     .modal-footer {
       padding: 1.5rem;
-      border-top: 1px solid var(--color-subtleLighter);
+      border-top: 1px solid var(--background-lighter);
       display: flex;
       justify-content: space-between;
       gap: 1rem;

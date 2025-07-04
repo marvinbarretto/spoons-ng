@@ -56,8 +56,8 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
   styles: `
     .avatar-selection-widget {
       padding: 1rem;
-      background: var(--color-background-lightest-elevated);
-      border: 1px solid var(--color-border);
+      background: var(--background-darkest);
+      border: 1px solid var(--border);
       border-radius: 8px;
     }
 
@@ -65,7 +65,7 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
       margin: 0 0 1rem 0;
       font-size: 1rem;
       font-weight: 600;
-      color: var(--color-text);
+      color: var(--text);
     }
 
     .current-avatar {
@@ -73,8 +73,8 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
       align-items: center;
       gap: 1rem;
       padding: 1rem;
-      background: var(--color-background-lightest);
-      border: 1px solid var(--color-border);
+      background: var(--background-darkest);
+      border: 1px solid var(--border);
       border-radius: 6px;
       margin-bottom: 1rem;
     }
@@ -88,7 +88,7 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
       height: 60px;
       border-radius: 50%;
       object-fit: cover;
-      border: 2px solid var(--color-border);
+      border: 2px solid var(--border);
     }
 
     .status-circle {
@@ -104,7 +104,7 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
       font-size: 12px;
       font-weight: bold;
       color: white;
-      border: 2px solid var(--color-background-lightest);
+      border: 2px solid var(--background-darkest);
     }
 
     .status-circle.saving {
@@ -123,13 +123,13 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
 
     .avatar-name {
       font-weight: 600;
-      color: var(--color-text);
+      color: var(--text);
       font-size: 0.875rem;
     }
 
     .avatar-type {
       font-size: 0.75rem;
-      color: var(--color-text-secondary);
+      color: var(--text-secondary);
     }
 
     .avatar-grid {
@@ -143,7 +143,7 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
       position: relative;
       width: 60px;
       height: 60px;
-      border: 2px solid var(--color-border);
+      border: 2px solid var(--border);
       border-radius: 50%;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -164,13 +164,13 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
     }
 
     .avatar-option:hover:not(:disabled) {
-      border-color: var(--color-primary);
+      border-color: var(--primary);
       transform: scale(1.05);
     }
 
     .avatar-option.selected {
-      border-color: var(--color-primary);
-      box-shadow: 0 0 0 2px var(--color-primary-light);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px var(--primary-light);
     }
 
     .avatar-option.current {
@@ -182,7 +182,7 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
       position: absolute;
       bottom: -2px;
       right: -2px;
-      background: var(--color-primary);
+      background: var(--primary);
       color: white;
       font-size: 0.625rem;
       font-weight: 600;
@@ -193,7 +193,7 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
     }
 
     .default-badge {
-      background: var(--color-text-secondary);
+      background: var(--text-secondary);
     }
 
     .error-message {

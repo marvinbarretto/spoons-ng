@@ -24,7 +24,7 @@ type LocalLeaderboardEntry = LeaderboardEntry & {
           <span class="location-badge">{{ currentUserCity() }}</span>
         }
       </h3>
-      
+
       @if (leaderboardStore.loading()) {
         <div class="widget-loading">
           <span class="loading-spinner"></span>
@@ -48,35 +48,35 @@ type LocalLeaderboardEntry = LeaderboardEntry & {
           @for (entry of localLeaderboard(); track entry.userId) {
             <div class="leaderboard-entry" [class.current-user]="entry.isCurrentUser">
               <span class="rank">{{ '#' + entry.position }}</span>
-              
-              <app-user-avatar 
-                [user]="entryAsUser(entry)" 
-                size="sm" 
-                [clickable]="false" 
+
+              <app-user-avatar
+                [user]="entryAsUser(entry)"
+                size="sm"
+                [clickable]="false"
               />
-              
+
               <div class="user-info">
                 <span class="name">{{ entry.displayName }}</span>
                 <span class="stats">
                   {{ formatPoints(entry.totalPoints) }} • {{ entry.uniquePubs }} pubs
                 </span>
               </div>
-              
+
               @if (entry.isCurrentUser) {
                 <span class="you-indicator">You</span>
               }
             </div>
           }
         </div>
-        
+
         @if (totalLocalUsers() > localLeaderboard().length) {
           <div class="more-users-indicator">
             +{{ totalLocalUsers() - localLeaderboard().length }} more locals
           </div>
         }
-        
-        <button 
-          class="view-full-local" 
+
+        <button
+          class="view-full-local"
           (click)="navigateToLocalLeaderboard()"
           type="button"
         >
@@ -88,11 +88,11 @@ type LocalLeaderboardEntry = LeaderboardEntry & {
   styles: [`
     .local-leaderboard-widget {
       padding: 1rem;
-      background: var(--color-background);
-      color: var(--color-text);
+      background: var(--background);
+      color: var(--text);
       border: 1px solid var(--color-buttonSecondaryBorder);
       border-radius: 0.5rem;
-      box-shadow: var(--color-shadow);
+      box-shadow: var(--shadow);
     }
 
     .widget-title {
@@ -102,7 +102,7 @@ type LocalLeaderboardEntry = LeaderboardEntry & {
       margin: 0 0 1rem 0;
       font-size: 1.125rem;
       font-weight: 600;
-      color: var(--color-text);
+      color: var(--text);
     }
 
     .location-badge {
@@ -122,7 +122,7 @@ type LocalLeaderboardEntry = LeaderboardEntry & {
       gap: 0.75rem;
       padding: 2rem 1rem;
       justify-content: center;
-      color: var(--color-textSecondary);
+      color: var(--text-secondary);
     }
 
     .loading-spinner {
@@ -158,13 +158,13 @@ type LocalLeaderboardEntry = LeaderboardEntry & {
     .empty-title {
       margin: 0;
       font-weight: 600;
-      color: var(--color-text);
+      color: var(--text);
     }
 
     .empty-subtitle {
       margin: 0;
       font-size: 0.875rem;
-      color: var(--color-textSecondary);
+      color: var(--text-secondary);
     }
 
     .local-leaderboard-list {
@@ -179,14 +179,14 @@ type LocalLeaderboardEntry = LeaderboardEntry & {
       align-items: center;
       gap: 0.75rem;
       padding: 0.75rem;
-      background: var(--color-subtleLighter);
+      background: var(--background-lighter);
       border: 1px solid var(--color-buttonSecondaryBorder);
       border-radius: 0.375rem;
       transition: all 0.2s ease;
     }
 
     .leaderboard-entry:hover {
-      background: var(--color-subtleDarker);
+      background: var(--background-darker);
     }
 
     .leaderboard-entry.current-user {
@@ -205,7 +205,7 @@ type LocalLeaderboardEntry = LeaderboardEntry & {
       font-size: 0.875rem;
       min-width: 2rem;
       text-align: center;
-      color: var(--color-textSecondary);
+      color: var(--text-secondary);
     }
 
     .leaderboard-entry.current-user .rank {
@@ -223,7 +223,7 @@ type LocalLeaderboardEntry = LeaderboardEntry & {
     .name {
       font-weight: 500;
       font-size: 0.875rem;
-      color: var(--color-text);
+      color: var(--text);
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
@@ -235,7 +235,7 @@ type LocalLeaderboardEntry = LeaderboardEntry & {
 
     .stats {
       font-size: 0.75rem;
-      color: var(--color-textSecondary);
+      color: var(--text-secondary);
       font-weight: 500;
     }
 
@@ -256,7 +256,7 @@ type LocalLeaderboardEntry = LeaderboardEntry & {
     .more-users-indicator {
       text-align: center;
       font-size: 0.75rem;
-      color: var(--color-textSecondary);
+      color: var(--text-secondary);
       margin-bottom: 0.75rem;
       font-style: italic;
     }
@@ -318,12 +318,12 @@ export class LocalLeaderboardWidgetComponent extends BaseWidgetComponent {
 
   // Current user context
   protected readonly currentUserId = computed(() => this.authStore.user()?.uid);
-  
+
   // Get current user's cities for local filtering
   protected readonly currentUserCities = computed(() => {
     const userId = this.currentUserId();
     if (!userId) return new Set<string>();
-    
+
     const visits = this.pubGroupingService.userPubVisits();
     return new Set(
       visits
@@ -349,7 +349,7 @@ export class LocalLeaderboardWidgetComponent extends BaseWidgetComponent {
   protected readonly localCompetitors = computed(() => {
     const userId = this.currentUserId();
     if (!userId) return [];
-    
+
     const userCities = this.currentUserCities();
     if (userCities.size === 0) return [];
 
@@ -375,15 +375,15 @@ export class LocalLeaderboardWidgetComponent extends BaseWidgetComponent {
   protected readonly localLeaderboard = computed((): LocalLeaderboardEntry[] => {
     const competitors = this.localCompetitors();
     const userId = this.currentUserId();
-    
+
     if (competitors.length === 0) return [];
 
     // Sort by points
     const sorted = [...competitors].sort((a, b) => b.totalPoints - a.totalPoints);
-    
+
     // Take top 5
     let result = sorted.slice(0, 5);
-    
+
     // If current user is not in top 5, add them
     if (userId) {
       const userInTop5 = result.some(entry => entry.userId === userId);
