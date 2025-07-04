@@ -105,8 +105,8 @@ export function getCurrentPosition(): Promise<GeolocationPosition> {
       },
       {
         enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 30000,
+        timeout: 10000,        // Match LocationService timeout
+        maximumAge: 10000,     // Match LocationService maxAge  
       }
     );
   });
