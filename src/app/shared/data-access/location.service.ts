@@ -49,7 +49,7 @@ export class LocationService {
   readonly lastMovementCheck = signal<number | null>(null);
 
   constructor() {
-    this.getCurrentLocation();
+    console.log('[LocationService] 📍 Service initialized - location request deferred until needed');
   }
 
   getCurrentLocation(): void {

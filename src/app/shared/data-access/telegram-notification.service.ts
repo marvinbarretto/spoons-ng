@@ -47,7 +47,7 @@ export class TelegramNotificationService {
     }
 
     message += `\n💬 *Message:*\n${this.escapeMarkdown(feedback.message)}\n\n`;
-    message += `🔗 *URL:* ${this.escapeMarkdown(feedback.context.currentUrl)}\n`;
+    message += `🔗 *URL:* ${this.escapeMarkdown(this.extractPath(feedback.context.currentUrl))}\n`;
     message += `📱 *Device:* ${userAgent}\n`;
     message += `📐 *Viewport:* ${feedback.context.viewport.width}x${feedback.context.viewport.height}\n`;
     message += `🕐 *Time:* ${new Date(feedback.createdAt).toLocaleString()}`;
@@ -71,6 +71,16 @@ export class TelegramNotificationService {
   private escapeMarkdown(text: string): string {
     // Escape special Markdown characters
     return text.replace(/[*_`\[\]()~>#+=|{}.!-]/g, '\\$&');
+  }
+
+  private extractPath(url: string): string {
+    try {
+      const urlObj = new URL(url);
+      return urlObj.pathname + urlObj.search + urlObj.hash;
+    } catch {
+      // If URL parsing fails, return the original URL
+      return url;
+    }
   }
 
   private parseUserAgent(userAgent: string): string {

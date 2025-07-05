@@ -1,7 +1,8 @@
 // src/app/home/ui/profile-customisation-modal/widgets/profile-identity-widget/profile-identity-widget.component.ts
-import { Component, input, output, signal, computed, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, input, output, signal, computed, inject, ChangeDetectionStrategy, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TooltipComponent } from '@shared/ui/tooltip/tooltip.component';
 import { generateRandomName } from '../../../../../shared/utils/anonymous-names';
 import { AvatarService } from '@shared/data-access/avatar.service';
 import { UserStore } from '@users/data-access/user.store';
@@ -11,7 +12,7 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
 @Component({
   selector: 'app-profile-identity-widget',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TooltipComponent],
   template: `
     <div class="profile-identity-widget">
       <!-- ✅ Main Profile Section -->
@@ -32,17 +33,19 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
 
         <!-- Display Name Input -->
         <div class="name-section">
-          <input
-            id="displayName"
-            type="text"
-            class="name-input"
-            [class.error]="hasError()"
-            [value]="displayName()"
-            (input)="updateDisplayName($event)"
-            placeholder="currentUsername"
-            [attr.maxlength]="maxLength"
-            autocomplete="nickname"
-          />
+          <app-tooltip text="Customize this">
+            <input
+              id="displayName"
+              type="text"
+              class="name-input"
+              [class.error]="hasError()"
+              [value]="displayName()"
+              (input)="updateDisplayName($event)"
+              placeholder="currentUsername"
+              [attr.maxlength]="maxLength"
+              autocomplete="nickname"
+            />
+          </app-tooltip>
           <div class="input-meta">
             <span class="char-count" [class.warning]="isNearLimit()">
               {{ displayName().length }}/{{ maxLength }}
@@ -406,6 +409,22 @@ export class ProfileIdentityWidgetComponent {
   isCurrent(avatar: AvatarOption): boolean {
     return avatar.url === this.currentAvatarUrl() && !this._selectedAvatarId();
   }
+
+  // ✅ Auto-preselect NPC avatar effect
+  private readonly autoPreSelectNpcEffect = effect(() => {
+    const avatars = this.availableAvatars();
+    const currentSelectedId = this.selectedAvatarId();
+
+    // Only auto-preselect if no avatar is currently selected and avatars are available
+    if (!currentSelectedId && avatars.length > 0) {
+      const npcAvatar = avatars.find(avatar => avatar.id === 'npc');
+      if (npcAvatar) {
+        this._selectedAvatarId.set('npc');
+        this.avatarSelected.emit('npc');
+        console.log('[ProfileIdentityWidget] Auto-preselected NPC avatar');
+      }
+    }
+  });
 
   selectAvatar(avatarId: string): void {
     const avatar = this.availableAvatars().find(a => a.id === avatarId);

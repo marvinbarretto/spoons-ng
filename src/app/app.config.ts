@@ -1,5 +1,6 @@
 import { ApplicationConfig, ErrorHandler, inject, provideAppInitializer, provideZoneChangeDetection, isDevMode } from '@angular/core';
-import { provideRouter, TitleStrategy } from '@angular/router';
+import { provideRouter, TitleStrategy, withPreloading } from '@angular/router';
+import { OnboardingAwarePreloadingStrategy } from './shared/strategies/onboarding-aware-preloading.strategy';
 
 import { appRoutes } from './app.routes';
 import { USER_THEME_TOKEN } from '../libs/tokens/user-theme.token';
@@ -21,7 +22,7 @@ export const appConfig: ApplicationConfig = {
       inject(ThemeStore);
     }),
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(appRoutes),
+    provideRouter(appRoutes, withPreloading(OnboardingAwarePreloadingStrategy)),
     provideHttpClient(withFetch()),
     { provide: 'environment', useValue: environment },
     { provide: TitleStrategy, useClass: TemplatePageTitleStrategy }, provideServiceWorker('ngsw-worker.js', {

@@ -53,47 +53,8 @@ export class HomeComponent extends BaseComponent {
 
   constructor() {
     super();
-
-    // Watch for auth changes and redirect brand new users to onboarding
-    // CRITICAL: Use DataAggregator.user() to get onboardingCompleted field
-    // AuthStore.user() lacks this field, causing redirect loops after onboarding
-    effect(() => {
-      const user = this.dataAggregatorService.user();
-      const currentUrl = this.router.url;
-
-      console.log('[Home] 🔍 Onboarding check effect triggered:', {
-        hasUser: !!user,
-        userId: user?.uid?.slice(0, 8),
-        onboardingCompleted: user?.onboardingCompleted,
-        isNewUser: this.isNewUser(),
-        currentUrl,
-        isComingFromOnboarding: currentUrl.includes('/onboarding') || currentUrl === '/'
-      });
-
-      // Prevent redirect loop: don't redirect if we're already coming from onboarding completion
-      if (currentUrl === '/' && user?.onboardingCompleted === true) {
-        console.log('[Home] ✅ User completed onboarding, staying on home page');
-        return;
-      }
-
-      // Skip onboarding redirect if development flag is enabled
-      if (environment.ALLOW_ONBOARDING_ACCESS) {
-        console.log('[Home] 🧪 DEV MODE: Onboarding access allowed, skipping redirect checks');
-        return;
-      }
-
-      // Only redirect if we have a user and they haven't completed onboarding
-      if (user && !user.onboardingCompleted && this.isNewUser() && !currentUrl.includes('/onboarding')) {
-        console.log('[Home] 🚀 Brand new user detected, redirecting to onboarding');
-        this.router.navigate(['/onboarding']);
-        return;
-      }
-
-      if (user?.onboardingCompleted) {
-        console.log('[Home] ✅ User has completed onboarding, staying on home');
-      }
-    });
-
+    
+    console.log('[Home] 🏠 HomeComponent initialized - onboarding handled by guard');
   }
 
 

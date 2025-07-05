@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { HomeComponent } from './home/feature/home/home.component';
+import { onboardingGuard } from './shared/guards/onboarding.guard';
 import {
   UrlSegment,
   Route,
@@ -11,15 +11,21 @@ import {
 export const appRoutes: Routes = [
   {
     path: '',
-    component: HomeComponent,
-    data: { shell: 'dashboard' }
+    redirectTo: '/app',
+    pathMatch: 'full'
   },
   {
     path: 'onboarding',
     title: 'Welcome to Spooncount',
-    loadComponent: () =>
-      import('./onboarding/feature/onboarding/onboarding.component').then(m => m.OnboardingComponent),
+    loadComponent: () => import('./onboarding/feature/onboarding/onboarding.component').then(m => m.OnboardingComponent),
     data: { shell: 'fullscreen' }
+  },
+  {
+    path: 'app',
+    canLoad: [onboardingGuard],
+    canActivate: [onboardingGuard],
+    loadComponent: () => import('./home/feature/home/home.component').then(m => m.HomeComponent),
+    data: { shell: 'dashboard', preload: true }
   },
   {
     path: 'pubs',

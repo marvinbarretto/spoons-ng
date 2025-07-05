@@ -1,5 +1,5 @@
 // src/app/onboarding/feature/onboarding/onboarding.component.ts
-import { Component, computed, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, computed, inject, signal, ChangeDetectionStrategy, effect } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { BaseComponent } from '@shared/base/base.component';
@@ -8,44 +8,29 @@ import { UserStore } from '@users/data-access/user.store';
 import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
 import { AvatarService } from '../../../shared/data-access/avatar.service';
 import { NotificationService } from '../../../shared/data-access/notification.service';
-import { LocationService } from '../../../shared/data-access/location.service';
 import { ThemeStore } from '../../../shared/data-access/theme.store';
-import { ButtonComponent } from '@shared/ui/button/button.component';
-import { HomePubSelectionWidgetComponent } from '../../ui/home-pub-selection-widget/home-pub-selection-widget.component';
 import { generateRandomName } from '../../../shared/utils/anonymous-names';
 import type { Pub } from '../../../pubs/utils/pub.models';
 
 // Step components
-import { AskNotificationsStepComponent } from '../../ui/steps/ask-notifications-step.component';
-import { AskLocationStepComponent } from '../../ui/steps/ask-location-step.component';
 import { WelcomeMessageStepComponent } from '../../ui/steps/welcome-message-step.component';
-import { AuthChoiceStepComponent } from '../../ui/steps/auth-choice-step.component';
 import { CustomizeProfileStepComponent } from '../../ui/steps/customize-profile-step.component';
-import { ReadyToStartStepComponent } from '../../ui/steps/ready-to-start-step.component';
+import { ChooseLocalStepComponent } from '../../ui/steps/choose-local-step.component';
 
 type OnboardingStep =
-  | 'ask-notifications'     // Request notification permissions (optional)
-  | 'ask-location'          // Request location permissions (REQUIRED)
   | 'welcome-message'       // "You gotta catch them all" welcome
-  | 'auth-choice'           // Google login OR Custom profile choice
-  | 'customize-profile'     // Avatar + display name (only if custom chosen)
-  | 'choose-home-pub'       // Home pub selection
-  | 'ready-to-start';       // Final step with real user checkbox
+  | 'customize-profile'     // Avatar + display name + Google auth option
+  | 'choose-local';         // Combined home pub selection + location permission
 
 @Component({
   selector: 'app-onboarding',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     FormsModule,
-    ButtonComponent,
-    HomePubSelectionWidgetComponent,
     // Step components
-    AskNotificationsStepComponent,
-    AskLocationStepComponent,
     WelcomeMessageStepComponent,
-    AuthChoiceStepComponent,
     CustomizeProfileStepComponent,
-    ReadyToStartStepComponent,
+    ChooseLocalStepComponent,
   ],
   template: `
     <div class="onboarding-container">
@@ -57,30 +42,9 @@ type OnboardingStep =
       <!-- Step content using step components -->
       <div class="step-content">
         @switch (currentStep()) {
-          @case ('ask-notifications') {
-            <app-ask-notifications-step
-              (enableNotifications)="requestNotificationPermission()"
-              (skipNotifications)="skipNotifications()"
-            />
-          }
-
-          @case ('ask-location') {
-            <app-ask-location-step
-              [isRequesting]="locationRequired()"
-              (enableLocation)="requestLocationPermission()"
-            />
-          }
-
           @case ('welcome-message') {
             <app-welcome-message-step
-              (continue)="proceedToAuthChoice()"
-            />
-          }
-
-          @case ('auth-choice') {
-            <app-auth-choice-step
-              (googleLogin)="handleGoogleLogin()"
-              (customProfile)="proceedToCustomizeProfile()"
+              (continue)="proceedToCustomizeProfile()"
             />
           }
 
@@ -92,33 +56,21 @@ type OnboardingStep =
               (avatarSelected)="onAvatarSelected($event)"
               (nameChanged)="onDisplayNameChange($event)"
               (generateRandom)="generateRandomDisplayName()"
+              (googleLogin)="handleGoogleLogin()"
               (back)="goBackToPreviousStep()"
-              (continue)="proceedToHomePubSelection()"
+              (continue)="proceedToChooseLocal()"
             />
           }
 
-          @case ('choose-home-pub') {
-            <div class="step">
-              <h2>Choose Your Home Pub</h2>
-              <p>Your home pub gives you bonus points when you check in!</p>
-              <app-home-pub-selection-widget
-                (pubSelected)="onHomePubSelected($event)"
-              />
-              <div class="step-actions">
-                <app-button variant="secondary" (onClick)="goBackToPreviousStep()">Back</app-button>
-                <app-button (onClick)="proceedToReadyToStart()">Continue</app-button>
-              </div>
-            </div>
-          }
-
-          @case ('ready-to-start') {
-            <app-ready-to-start-step
-              [displayName]="displayName()"
-              [hasHomePub]="!!selectedHomePubId()"
-              [notificationsEnabled]="notificationsGranted()"
-              [locationEnabled]="locationGranted()"
-              [isSaving]="saving()"
-              (startExploring)="completeOnboardingWithRealUser($event)"
+          @case ('choose-local') {
+            <app-choose-local-step
+              [selectedPub]="selectedHomePub()"
+              [locationGranted]="locationGranted()"
+              [locationRequired]="locationRequired()"
+              (pubSelected)="onHomePubSelected($event)"
+              (locationRequested)="requestLocationPermission()"
+              (back)="goBackToPreviousStep()"
+              (complete)="completeOnboarding()"
             />
           }
         }
@@ -130,19 +82,32 @@ type OnboardingStep =
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
+      position: relative;
+      overflow: hidden;
+      
+      /* TODO: Look at carpet pattern designs more closely - using actual carpet images for now */
+      /* Carpet background with dark overlay */
+      background-image: 
+        linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.8)),
+        url('/assets/carpets/moon-under-water-watford.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      
+      color: var(--text-on-dark, white);
     }
 
     .progress-bar {
       width: 100%;
       height: 4px;
       background: rgba(255, 255, 255, 0.2);
+      position: relative;
+      z-index: 10;
     }
 
     .progress-fill {
       height: 100%;
-      background: #4ade80;
+      background: var(--success, #4ade80);
       transition: width 0.3s ease;
     }
 
@@ -151,7 +116,25 @@ type OnboardingStep =
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 2rem;
+      padding: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Step transition animations */
+    .step-content > * {
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
     }
 
     .step {
@@ -164,11 +147,29 @@ type OnboardingStep =
       display: flex;
       gap: 1rem;
       justify-content: center;
-      margin-top: 2rem;
+      margin-top: 1.5rem;
     }
 
     .step-actions app-button {
       min-width: 120px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .step-content {
+        padding: 1rem;
+      }
+      
+      .step-actions {
+        flex-direction: column;
+        width: 100%;
+        max-width: 300px;
+        margin: 1.5rem auto 0;
+      }
+      
+      .step-actions app-button {
+        width: 100%;
+      }
     }
   `
 })
@@ -178,18 +179,18 @@ export class OnboardingComponent extends BaseComponent {
   private readonly dataAggregator = inject(DataAggregatorService);
   private readonly avatarService = inject(AvatarService);
   private readonly notificationService = inject(NotificationService);
-  private readonly locationService = inject(LocationService);
   private readonly themeStore = inject(ThemeStore);
 
   // Component state
-  readonly currentStep = signal<OnboardingStep>('ask-notifications');
+  readonly currentStep = signal<OnboardingStep>('welcome-message');
   readonly displayName = signal('');
   readonly selectedAvatarId = signal('');
   readonly selectedHomePubId = signal<string | null>(null);
+  readonly selectedHomePub = signal<Pub | null>(null);
   readonly saving = signal(false);
+  readonly realUser = signal(true);
 
   // Permission states
-  readonly notificationsGranted = signal(false);
   readonly locationGranted = signal(false);
   readonly locationRequired = signal(false);
 
@@ -198,38 +199,85 @@ export class OnboardingComponent extends BaseComponent {
   // AuthStore.user() alone lacks this field, causing infinite redirect loops
   readonly user = this.dataAggregator.user;
 
+  // Carpet backgrounds - cycling through different images per step
+  private readonly carpetImages = [
+    'bangor.jpg',
+    'john-jaques.jpg',
+    'moon-under-water-watford.jpg',
+    'red-lion.jpg'
+  ];
+  
+  // Track current carpet background
+  readonly currentCarpetBackground = signal<string>('');
+
   // Computed properties
   readonly progressPercentage = computed(() => {
-    const steps: OnboardingStep[] = [
-      'ask-notifications', 'ask-location', 'welcome-message',
-      'auth-choice', 'customize-profile', 'choose-home-pub', 'ready-to-start'
-    ];
+    const steps: OnboardingStep[] = ['welcome-message', 'customize-profile', 'choose-local'];
     const currentIndex = steps.indexOf(this.currentStep());
     return Math.max(0, (currentIndex / (steps.length - 1)) * 100);
   });
 
-  override async onInit() {
-    console.log('[Onboarding] Component initialized');
+  // Effect to update carpet background when step changes
+  private readonly stepBackgroundEffect = effect(() => {
+    const currentStep = this.currentStep();
+    this.updateCarpetBackground(currentStep);
+  });
 
-    // Pre-populate display name if user already has one
+  override async onInit() {
+    console.log('[Onboarding] Component initialized with step:', this.currentStep());
+
+    // Initial carpet background will be set by the effect
+    
+    // Pre-populate display name if user already has one, otherwise generate random name
     const user = this.user();
     if (user?.displayName) {
       this.displayName.set(user.displayName);
+      console.log('[Onboarding] Pre-populated display name:', user.displayName);
+    } else if (user?.uid) {
+      // Generate random name for new users
+      const randomName = generateRandomName(user.uid);
+      this.displayName.set(randomName);
+      console.log('[Onboarding] Generated random display name:', randomName);
+    }
+
+    // Auto-preselect NPC avatar
+    this.selectedAvatarId.set('npc');
+    console.log('[Onboarding] Pre-selected NPC avatar');
+  }
+
+  private updateCarpetBackground(step: OnboardingStep): void {
+    const stepIndex = this.stepOrder.indexOf(step);
+    if (stepIndex === -1) return;
+
+    // Use different carpet for each step, cycling through available images
+    const carpetIndex = stepIndex % this.carpetImages.length;
+    const selectedCarpet = this.carpetImages[carpetIndex];
+    
+    // Skip if already using this carpet
+    if (this.currentCarpetBackground() === selectedCarpet) return;
+
+    const container = document.querySelector('.onboarding-container') as HTMLElement;
+    if (container) {
+      container.style.backgroundImage = `
+        linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.8)),
+        url('/assets/carpets/${selectedCarpet}')
+      `;
+      this.currentCarpetBackground.set(selectedCarpet);
+      console.log('[Onboarding] Updated carpet background for step', step, ':', selectedCarpet);
     }
   }
 
   // Step navigation with readable method names
-  private readonly stepOrder: OnboardingStep[] = [
-    'ask-notifications', 'ask-location', 'welcome-message',
-    'auth-choice', 'customize-profile', 'choose-home-pub', 'ready-to-start'
-  ];
+  private readonly stepOrder: OnboardingStep[] = ['welcome-message', 'customize-profile', 'choose-local'];
 
   proceedToNextStep(): void {
     const current = this.currentStep();
     const currentIndex = this.stepOrder.indexOf(current);
 
     if (currentIndex < this.stepOrder.length - 1) {
-      this.currentStep.set(this.stepOrder[currentIndex + 1]);
+      const nextStep = this.stepOrder[currentIndex + 1];
+      console.log('[Onboarding] Navigating from', current, 'to', nextStep);
+      this.currentStep.set(nextStep);
     }
   }
 
@@ -238,31 +286,24 @@ export class OnboardingComponent extends BaseComponent {
     const currentIndex = this.stepOrder.indexOf(current);
 
     if (currentIndex > 0) {
-      this.currentStep.set(this.stepOrder[currentIndex - 1]);
+      const prevStep = this.stepOrder[currentIndex - 1];
+      console.log('[Onboarding] Navigating back from', current, 'to', prevStep);
+      this.currentStep.set(prevStep);
     }
   }
 
   // Specific navigation methods for clarity
-  proceedToLocationRequest(): void { this.currentStep.set('ask-location'); }
-  proceedToWelcome(): void { this.currentStep.set('welcome-message'); }
-  proceedToAuthChoice(): void { this.currentStep.set('auth-choice'); }
-  proceedToCustomizeProfile(): void { this.currentStep.set('customize-profile'); }
-  proceedToHomePubSelection(): void { this.currentStep.set('choose-home-pub'); }
-  proceedToReadyToStart(): void { this.currentStep.set('ready-to-start'); }
+  proceedToCustomizeProfile(): void { 
+    console.log('[Onboarding] Proceeding to customize profile');
+    this.currentStep.set('customize-profile'); 
+  }
+  
+  proceedToChooseLocal(): void { 
+    console.log('[Onboarding] Proceeding to choose local pub');
+    this.currentStep.set('choose-local'); 
+  }
 
   // Permission handling methods
-  async requestNotificationPermission(): Promise<void> {
-    try {
-      if ('Notification' in window) {
-        const permission = await Notification.requestPermission();
-        this.notificationsGranted.set(permission === 'granted');
-      }
-      this.proceedToLocationRequest();
-    } catch (error) {
-      console.error('[Onboarding] Notification permission error:', error);
-      this.proceedToLocationRequest(); // Continue anyway
-    }
-  }
 
   async requestLocationPermission(): Promise<void> {
     console.log('[Onboarding] 📍 Starting location permission request...');
@@ -307,7 +348,7 @@ export class OnboardingComponent extends BaseComponent {
         accuracy: position.coords.accuracy
       });
 
-      this.proceedToWelcome();
+      // Don't navigate automatically - let the choose-local step handle it
 
     } catch (error: any) {
       this.locationRequired.set(false);
@@ -356,18 +397,6 @@ export class OnboardingComponent extends BaseComponent {
     }
   }
 
-  // Optional: Add a method to skip location if needed
-  skipLocationPermission(): void {
-    console.log('[Onboarding] ⏭️ Skipping location permission');
-    this.locationGranted.set(false);
-    this.locationRequired.set(false);
-    this.proceedToWelcome();
-  }
-
-  skipNotifications(): void {
-    this.notificationsGranted.set(false);
-    this.proceedToLocationRequest();
-  }
 
   // Random name generation
   generateRandomDisplayName(): void {
@@ -389,73 +418,20 @@ export class OnboardingComponent extends BaseComponent {
 
   onHomePubSelected(pub: Pub | null): void {
     this.selectedHomePubId.set(pub?.id || null);
-    console.log('[Onboarding] Home pub selected:', pub);
+    this.selectedHomePub.set(pub);
+    console.log('[Onboarding] Home pub selected:', pub?.name || 'none');
   }
 
   // New methods for updated flow
   async handleGoogleLogin(): Promise<void> {
     console.log('[Onboarding] 🚀 Google login requested');
-    // TODO: Implement Google Firebase auth
-    console.log('[Onboarding] TODO: Implement Google login with Firebase Auth');
-    
-    // For now, just proceed to home pub selection (skip profile customization)
-    this.proceedToHomePubSelection();
-  }
-
-  // New method to handle completion with realUser flag
-  async completeOnboardingWithRealUser(data: { realUser: boolean }): Promise<void> {
-    if (this.saving()) return;
-
-    this.saving.set(true);
-
     try {
-      const user = this.user();
-      if (!user) {
-        throw new Error('No user found');
-      }
-
-      console.log('[Onboarding] 🚀 Completing onboarding with data:', {
-        displayName: this.displayName(),
-        avatarId: this.selectedAvatarId(),
-        homePubId: this.selectedHomePubId(),
-        realUser: data.realUser,
-        userId: user.uid
-      });
-
-      // Save all onboarding data to user profile including realUser flag
-      const updateData = {
-        displayName: this.displayName(),
-        photoURL: this.getAvatarUrlById(this.selectedAvatarId()),
-        homePubId: this.selectedHomePubId() || undefined,
-        onboardingCompleted: true,
-        realUser: data.realUser
-      };
-
-      console.log('[Onboarding] 📝 Updating user profile with:', updateData);
-      await this.userStore.updateProfile(updateData);
-
-      console.log('[Onboarding] ✅ User profile updated successfully');
-
-      // Verify the update took effect
-      const updatedUser = this.user();
-      console.log('[Onboarding] 🔍 User after update:', {
-        userId: updatedUser?.uid?.slice(0, 8),
-        onboardingCompleted: updatedUser?.onboardingCompleted,
-        displayName: updatedUser?.displayName,
-        realUser: updatedUser?.realUser
-      });
-
-      console.log('[Onboarding] 🧭 Navigating to home page...');
-      
-      // Navigate to home
-      await this.router.navigate(['/']);
-      console.log('[Onboarding] ✅ Navigation to home completed');
-
-    } catch (error: any) {
-      console.error('[Onboarding] ❌ Failed to complete onboarding:', error);
-      this.showError('Failed to save your preferences. Please try again.');
-    } finally {
-      this.saving.set(false);
+      await this.authStore.loginWithGoogle();
+      console.log('[Onboarding] Google login successful');
+      // The auth state change will handle navigation
+    } catch (error) {
+      console.error('[Onboarding] Google login failed:', error);
+      this.showError('Google login failed. Please try again.');
     }
   }
 
@@ -483,7 +459,8 @@ export class OnboardingComponent extends BaseComponent {
         displayName: this.displayName(),
         photoURL: this.getAvatarUrlById(this.selectedAvatarId()),
         homePubId: this.selectedHomePubId() || undefined,
-        onboardingCompleted: true
+        onboardingCompleted: true,
+        realUser: this.realUser()
       };
 
       console.log('[Onboarding] 📝 Updating user profile with:', updateData);
@@ -500,9 +477,6 @@ export class OnboardingComponent extends BaseComponent {
       });
 
       console.log('[Onboarding] 🧭 Navigating to home page...');
-      
-      // TODO: Show success overlay instead of redirect
-      console.log('[Onboarding] TODO: Show success overlay instead of redirect');
       
       // Navigate to home
       await this.router.navigate(['/']);

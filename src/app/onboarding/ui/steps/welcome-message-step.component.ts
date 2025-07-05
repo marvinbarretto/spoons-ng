@@ -1,4 +1,4 @@
-import { Component, output, ChangeDetectionStrategy } from '@angular/core';
+import { Component, output, signal, ChangeDetectionStrategy } from '@angular/core';
 import { ButtonComponent } from '@shared/ui/button/button.component';
 
 @Component({
@@ -6,57 +6,44 @@ import { ButtonComponent } from '@shared/ui/button/button.component';
   imports: [ButtonComponent],
   template: `
     <div class="step">
-      <h1>🍺 You Gotta Catch Them All!</h1>
-      <p>Welcome to the world's quirkiest collecting game</p>
+      <!-- Corner controls for real user check -->
+      <div class="corner-controls">
+        <label class="real-user-check">
+          <input type="checkbox" [checked]="isRealUser()" (change)="toggleRealUser($event)">
+          I'm real
+        </label>
+      </div>
+
+      <h1>🍺 It's the stupidest competition you'll actually care about winning</h1>
+      <p>Track every Wetherspoons you've actually been to - because someone has to, and it might as well be you.</p>
       
       <div class="game-benefits">
         <div class="benefit">
           <span class="icon">📸</span>
           <div>
-            <strong>Carpet Photography</strong>
-            <span>The world's quirkiest collecting game</span>
+            <strong>Photograph Pub Carpets</strong>
+            <span>"I photograph pub carpets" - instant conversation starter</span>
           </div>
         </div>
         <div class="benefit">
-          <span class="icon">🏆</span>
+          <span class="icon">✈️</span>
           <div>
-            <strong>Real Achievement System</strong>
-            <span>Earn badges that actually mean something</span>
+            <strong>Perfect for Travelers</strong>
+            <span>Stuck in Birmingham for 3 days? At least you can tick off The Moon & Sixpence</span>
           </div>
         </div>
         <div class="benefit">
-          <span class="icon">👑</span>
+          <span class="icon">🤝</span>
           <div>
-            <strong>Become a Landlord</strong>
-            <span>Claim ownership of your favorite pubs</span>
+            <strong>Authentically British</strong>
+            <span>Nobody expects carpets to be unique - genuine surprise and delight</span>
           </div>
         </div>
         <div class="benefit">
-          <span class="icon">🗺️</span>
+          <span class="icon">🎉</span>
           <div>
-            <strong>Explore Like Never Before</strong>
-            <span>Turn every pub visit into an adventure</span>
-          </div>
-        </div>
-        <div class="benefit">
-          <span class="icon">🎮</span>
-          <div>
-            <strong>Social Competition</strong>
-            <span>Battle friends for pub supremacy</span>
-          </div>
-        </div>
-        <div class="benefit">
-          <span class="icon">💯</span>
-          <div>
-            <strong>100% Real World</strong>
-            <span>No virtual coins, just real pub experiences</span>
-          </div>
-        </div>
-        <div class="benefit">
-          <span class="icon">🎯</span>
-          <div>
-            <strong>Strategic Gameplay</strong>
-            <span>Choose home pubs, plan routes, maximize points</span>
+            <strong>Brilliantly Absurd</strong>
+            <span>You can brag about it precisely because it's ridiculous</span>
           </div>
         </div>
       </div>
@@ -67,6 +54,35 @@ import { ButtonComponent } from '@shared/ui/button/button.component';
     </div>
   `,
   styles: `
+    .step {
+      position: relative;
+    }
+
+    .corner-controls {
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      align-items: flex-end;
+    }
+
+    .real-user-check {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.9);
+      cursor: pointer;
+    }
+
+    .real-user-check input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--primary, #4ade80);
+    }
+
     .game-benefits {
       display: grid;
       gap: 1rem;
@@ -113,6 +129,12 @@ import { ButtonComponent } from '@shared/ui/button/button.component';
     }
 
     @media (max-width: 768px) {
+      .corner-controls {
+        position: static;
+        margin-bottom: 1rem;
+        align-items: center;
+      }
+
       .game-benefits {
         gap: 0.75rem;
       }
@@ -126,4 +148,13 @@ import { ButtonComponent } from '@shared/ui/button/button.component';
 })
 export class WelcomeMessageStepComponent {
   readonly continue = output<void>();
+
+  // Real user state (default: true)
+  readonly isRealUser = signal(true);
+
+  toggleRealUser(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.isRealUser.set(target.checked);
+    console.log('[WelcomeStep] Real user toggled:', target.checked);
+  }
 }

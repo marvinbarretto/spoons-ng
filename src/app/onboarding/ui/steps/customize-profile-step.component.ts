@@ -1,62 +1,55 @@
-import { Component, input, output, ChangeDetectionStrategy } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component, input, output, ChangeDetectionStrategy, computed } from '@angular/core';
 import { ButtonComponent } from '@shared/ui/button/button.component';
-import { AvatarSelectionWidgetComponent } from '@home/ui/profile-customisation-modal/widgets/avatar-selection-widget/avatar-selection-widget.component';
+import { ProfileIdentityWidgetComponent } from '@home/ui/profile-customisation-modal/widgets/profile-identity-widget/profile-identity-widget.component';
 import type { User } from '@users/utils/user.model';
 
 @Component({
   selector: 'app-customize-profile-step',
-  imports: [ButtonComponent, AvatarSelectionWidgetComponent, FormsModule],
+  imports: [ButtonComponent, ProfileIdentityWidgetComponent],
   template: `
     <div class="step customize-profile-step">
-      <h2>Customize Your Profile</h2>
-      <p>Make yourself at home in the pub collecting world</p>
+      <h1>Customize Your Profile</h1>
+      <p class="subtitle">Join the stupidest competition you'll actually care about winning</p>
 
-      <!-- Avatar Selection -->
-      <div class="avatar-section">
-        <h3>Choose Your Avatar</h3>
-        <app-avatar-selection-widget
+      <!-- Profile Identity Widget (Avatar + Name) -->
+      <div class="profile-section">
+        <app-profile-identity-widget
+          [user]="user()"
+          [displayName]="displayName()"
           [selectedAvatarId]="selectedAvatarId()"
-          (avatarSelected)="avatarSelected.emit($event)"
+          (displayNameChanged)="onDisplayNameChange($event)"
+          (avatarSelected)="onAvatarSelected($event)"
         />
       </div>
 
-      <!-- Display Name Section -->
-      <div class="name-section">
-        <h3>Your Display Name</h3>
-        <div class="name-input-group">
-          <input
-            type="text"
-            class="name-input"
-            [value]="displayName()"
-            (input)="onDisplayNameChange($event)"
-            placeholder="Enter your name"
-            maxlength="30"
-          />
-          <app-button
-            variant="ghost"
-            iconLeft="casino"
-            size="md"
-            (onClick)="generateRandom.emit()"
-            class="randomize-btn"
-          >
-            Randomize
-          </app-button>
+      <!-- Google Auth Option -->
+      <div class="auth-option">
+        <div class="divider">
+          <span>or</span>
         </div>
-        <div class="name-help">
-          <span class="character-count">{{ displayName().length }}/30</span>
-        </div>
+        <app-button
+          variant="secondary"
+          iconLeft="google"
+          size="lg"
+          (onClick)="onGoogleLogin()"
+          class="google-button"
+        >
+          Sign in with Google
+        </app-button>
+        <p class="google-hint">Use your Google account for a more personalized experience</p>
       </div>
 
       <!-- Actions -->
       <div class="step-actions">
-        <app-button variant="secondary" (onClick)="back.emit()">
-          Back
-        </app-button>
+        @if (showBackButton()) {
+          <app-button variant="secondary" (onClick)="back.emit()">
+            Back
+          </app-button>
+        }
         <app-button
           variant="primary"
           [disabled]="!isValid()"
-          (onClick)="continue.emit()"
+          (onClick)="onContinue()"
         >
           Continue
         </app-button>
@@ -65,96 +58,113 @@ import type { User } from '@users/utils/user.model';
   `,
   styles: `
     .customize-profile-step {
-      max-width: 600px;
+      max-width: 650px;
       width: 100%;
+      margin: 0 auto;
     }
 
-    .avatar-section {
-      margin: 2rem 0;
+    h1 {
+      font-size: 2.5rem;
+      margin: 0 0 0.5rem 0;
+      color: var(--text-on-dark, white);
+      text-align: center;
     }
 
-    .name-section {
-      margin: 2rem 0;
-    }
-
-    .avatar-section h3,
-    .name-section h3 {
-      color: white;
+    .subtitle {
       font-size: 1.125rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
+      margin: 0 0 2rem 0;
+      color: rgba(255, 255, 255, 0.9);
+      text-align: center;
     }
 
-    .name-input-group {
-      display: flex;
-      gap: 0.75rem;
-      align-items: stretch;
+    .profile-section {
+      margin-bottom: 2rem;
     }
 
-    .name-input {
-      flex: 1;
-      padding: 0.75rem 1rem;
-      border: 2px solid rgba(255, 255, 255, 0.2);
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.1);
-      color: white;
-      font-size: 1rem;
-      backdrop-filter: blur(10px);
-      transition: all 0.2s ease;
+    /* Google Auth Section */
+    .auth-option {
+      margin: 2rem 0;
+      text-align: center;
     }
 
-    .name-input:focus {
-      outline: none;
-      border-color: rgba(255, 255, 255, 0.5);
-      background: rgba(255, 255, 255, 0.15);
+    .divider {
+      position: relative;
+      margin: 2rem 0;
+      text-align: center;
     }
 
-    .name-input::placeholder {
-      color: rgba(255, 255, 255, 0.6);
+    .divider::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.2);
     }
 
-    .randomize-btn {
-      flex-shrink: 0;
-      border: 2px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .name-help {
-      display: flex;
-      justify-content: flex-end;
-      margin-top: 0.5rem;
-    }
-
-    .character-count {
+    .divider span {
+      position: relative;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 0 1rem;
       color: rgba(255, 255, 255, 0.6);
       font-size: 0.875rem;
     }
 
+    .google-button {
+      width: 100%;
+      max-width: 300px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      background: rgba(255, 255, 255, 0.95);
+      color: var(--text-dark);
+      border: none;
+      transition: all 0.2s ease;
+    }
+
+    .google-button:hover {
+      background: white;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .google-hint {
+      margin: 0.75rem 0 0 0;
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    /* Action Buttons */
     .step-actions {
       display: flex;
       gap: 1rem;
-      justify-content: space-between;
-      margin-top: 3rem;
+      justify-content: center;
+      margin-top: 2rem;
     }
 
     .step-actions app-button {
-      flex: 1;
+      min-width: 120px;
     }
 
     @media (max-width: 768px) {
-      .name-input-group {
-        flex-direction: column;
-        gap: 1rem;
+      h1 {
+        font-size: 2rem;
       }
 
-      .randomize-btn {
-        align-self: stretch;
+      .subtitle {
+        font-size: 1rem;
       }
 
       .step-actions {
         flex-direction: column;
-        gap: 1rem;
+        width: 100%;
+        max-width: 300px;
+        margin: 2rem auto 0;
       }
-
+      
       .step-actions app-button {
         width: 100%;
       }
@@ -170,15 +180,44 @@ export class CustomizeProfileStepComponent {
   readonly avatarSelected = output<string>();
   readonly nameChanged = output<string>();
   readonly generateRandom = output<void>();
+  readonly googleLogin = output<void>();
   readonly back = output<void>();
   readonly continue = output<void>();
 
-  onDisplayNameChange(event: Event): void {
-    const target = event.target as HTMLInputElement;
-    this.nameChanged.emit(target.value);
+  // Computed properties
+  readonly showBackButton = computed(() => true); // Always show back button
+  readonly isAnonymous = computed(() => {
+    return this.user()?.isAnonymous ?? true;
+  });
+
+  onDisplayNameChange(newName: string): void {
+    console.log('[CustomizeProfileStep] Display name changed:', newName);
+    this.nameChanged.emit(newName);
+  }
+
+  onAvatarSelected(avatarId: string): void {
+    console.log('[CustomizeProfileStep] Avatar selected:', avatarId);
+    this.avatarSelected.emit(avatarId);
+  }
+
+  onGoogleLogin(): void {
+    console.log('[CustomizeProfileStep] Google login requested');
+    this.googleLogin.emit();
+  }
+
+  onContinue(): void {
+    if (this.isValid()) {
+      console.log('[CustomizeProfileStep] Continuing with profile:', {
+        displayName: this.displayName(),
+        avatarId: this.selectedAvatarId()
+      });
+      this.continue.emit();
+    }
   }
 
   isValid(): boolean {
-    return this.selectedAvatarId().length > 0 && this.displayName().trim().length > 0;
+    const hasName = this.displayName().trim().length >= 2;
+    const hasAvatar = this.selectedAvatarId().length > 0;
+    return hasName && hasAvatar;
   }
 }

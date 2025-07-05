@@ -21,7 +21,6 @@ import { NavComponent } from "../nav/nav.component";
 import { UserProfileWidgetComponent } from '../../../home/ui/user-profile-widget/user-profile-widget.component';
 import { ProfileCustomisationModalComponent } from '../../../home/ui/profile-customisation-modal/profile-customisation-modal.component';
 import { LandlordStore } from '../../../landlord/data-access/landlord.store';
-import { NearbyPubStore } from '../../../pubs/data-access/nearby-pub.store';
 import { AuthStore } from '../../../auth/data-access/auth.store';
 import { OverlayService } from '../../data-access/overlay.service';
 
@@ -59,14 +58,12 @@ export class HeaderComponent extends BaseComponent implements AfterViewInit {
   private readonly viewportService = inject(ViewportService);
   private readonly panelStore = inject(PanelStore);
   private readonly landlordStore = inject(LandlordStore);
-  private readonly nearbyPubStore = inject(NearbyPubStore);
   private readonly authStore = inject(AuthStore);
   private readonly userStore = inject(UserStore);
   private readonly overlayService = inject(OverlayService);
 
   // ✅ Reactive viewport detection
   readonly isMobile = this.viewportService.isMobile;
-  readonly closestPub = computed(() => this.nearbyPubStore.closestPub());
 
   readonly version = APP_VERSION;
   

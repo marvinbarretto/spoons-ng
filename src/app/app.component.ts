@@ -1,5 +1,5 @@
 import { Component, inject, computed, effect } from '@angular/core';
-import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
+import { Router, ActivatedRoute, NavigationEnd, RouterOutlet } from '@angular/router';
 import { PanelStore } from './shared/ui/panel/panel.store';
 import { filter } from 'rxjs';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
@@ -17,24 +17,27 @@ import { FeatureShell } from './shared/feature/shells/feature.shell';
 @Component({
   selector: 'app-root',
   imports: [
+    RouterOutlet,
     FullScreenShell,
     DashboardShell,
     FeatureShell,
   ],
   template: `
-    @switch (currentShell()) {
-      @case ('fullscreen') {
-        <app-full-screen-shell />
+    @if (currentShell()) {
+      @switch (currentShell()) {
+        @case ('fullscreen') {
+          <app-full-screen-shell />
+        }
+        @case ('dashboard') {
+          <app-dashboard-shell />
+        }
+        @case ('feature') {
+          <app-feature-shell />
+        }
       }
-      @case ('dashboard') {
-        <app-dashboard-shell />
-      }
-      @case ('feature') {
-        <app-feature-shell />
-      }
-      @default {
-        <app-dashboard-shell />
-      }
+    } @else {
+      <!-- Minimal render while route resolves -->
+      <router-outlet></router-outlet>
     }
   `,
   styleUrl: './app.component.scss'
@@ -80,10 +83,10 @@ export class AppComponent {
     const shell = routeData?.['shell'];
     
     console.log('[AppComponent] 🎯 Final route data:', routeData);
-    console.log('[AppComponent] 🏠 Shell selected:', shell || 'dashboard (default)');
+    console.log('[AppComponent] 🏠 Shell selected:', shell || 'none (waiting for route)');
     console.log('[AppComponent] 📍 Current URL:', this.router.url);
     
-    return shell || 'dashboard';
+    return shell; // No default - wait for route data
   });
 
   constructor() {

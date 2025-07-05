@@ -136,20 +136,6 @@ import type { Pub } from '../../../pubs/utils/pub.models';
               </div>
             }
           }
-
-          <!-- Skip Option -->
-          @if (!selectedPub()) {
-            <div class="skip-section">
-              <button
-                type="button"
-                class="skip-btn"
-                (click)="skipSelection()"
-              >
-                Skip for now
-              </button>
-              <p class="skip-hint">You can always set this later in your profile</p>
-            </div>
-          }
         </div>
       }
     </div>
