@@ -6,74 +6,134 @@ import { ButtonComponent } from '@shared/ui/button/button.component';
   imports: [ButtonComponent],
   template: `
     <div class="step">
-      <!-- Corner controls for real user check -->
-      <div class="corner-controls">
-        <label class="real-user-check">
-          <input type="checkbox" [checked]="isRealUser()" (change)="toggleRealUser($event)">
-          I'm real
-        </label>
+      <div class="hero-section">
+        <h1>🍺 Think you love Spoons?<br>Prove it.</h1>
+        <p>Accumulate points with every visit. Complete missions. 
+        Become the Spoons champion you were born to be.</p>
       </div>
-
-      <h1>🍺 It's the stupidest competition you'll actually care about winning</h1>
-      <p>Track every Wetherspoons you've actually been to - because someone has to, and it might as well be you.</p>
       
       <div class="game-benefits">
         <div class="benefit">
-          <span class="icon">📸</span>
-          <div>
-            <strong>Photograph Pub Carpets</strong>
-            <span>"I photograph pub carpets" - instant conversation starter</span>
-          </div>
+          <span class="icon">🎯</span>
+          <span>Complete Missions</span>
         </div>
         <div class="benefit">
-          <span class="icon">✈️</span>
-          <div>
-            <strong>Perfect for Travelers</strong>
-            <span>Stuck in Birmingham for 3 days? At least you can tick off The Moon & Sixpence</span>
-          </div>
+          <span class="icon">🗺️</span>
+          <span>Travel = More Points</span>
         </div>
         <div class="benefit">
-          <span class="icon">🤝</span>
-          <div>
-            <strong>Authentically British</strong>
-            <span>Nobody expects carpets to be unique - genuine surprise and delight</span>
-          </div>
+          <span class="icon">🏆</span>
+          <span>Win Prizes</span>
         </div>
         <div class="benefit">
-          <span class="icon">🎉</span>
-          <div>
-            <strong>Brilliantly Absurd</strong>
-            <span>You can brag about it precisely because it's ridiculous</span>
-          </div>
+          <span class="icon">😈</span>
+          <span>Automatic Sex Appeal</span>
         </div>
       </div>
 
-      <app-button variant="primary" (onClick)="continue.emit()">
-        Let's Start Customizing!
-      </app-button>
+      <div class="cta-section">
+        <app-button variant="primary" (onClick)="continue.emit()">
+          Continue
+        </app-button>
+      </div>
+
+      <!-- Alpha testing checkbox -->
+      <div class="alpha-testing-check">
+        <label class="real-user-check">
+          <input type="checkbox" [checked]="isRealUser()" (change)="toggleRealUser($event)">
+          Alpha testing - I'm real, don't delete my data
+        </label>
+      </div>
     </div>
   `,
   styles: `
     .step {
       position: relative;
-    }
-
-    .corner-controls {
-      position: absolute;
-      top: 0;
-      right: 0;
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
-      align-items: flex-end;
+      gap: 2rem;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .hero-section {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    .hero-section h1 {
+      font-size: 2.5rem;
+      line-height: 1.2;
+      margin-bottom: 1rem;
+      font-weight: 700;
+    }
+
+    .hero-section p {
+      font-size: 1.125rem;
+      line-height: 1.6;
+      color: var(--text-primary, white);
+      margin: 0;
+    }
+
+    .game-benefits {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin: 0;
+    }
+
+    .benefit {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1.5rem 1rem;
+      background: var(--surface-secondary, rgba(255, 255, 255, 0.1));
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+      text-align: center;
+      transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+
+    .benefit:hover {
+      transform: translateY(-2px);
+      background: var(--surface-secondary, rgba(255, 255, 255, 0.15));
+    }
+
+    .benefit .icon {
+      font-size: 2rem;
+      flex-shrink: 0;
+    }
+
+    .benefit span:last-child {
+      color: var(--text-primary, white);
+      font-weight: 600;
+      font-size: 0.9rem;
+      line-height: 1.3;
+    }
+
+    .cta-section {
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    .cta-section app-button {
+      transform: scale(1.1);
+      min-width: 200px;
+    }
+
+    .alpha-testing-check {
+      margin-top: 2rem;
+      text-align: center;
     }
 
     .real-user-check {
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 0.5rem;
-      font-size: 0.875rem;
-      color: rgba(255, 255, 255, 0.9);
+      font-size: 0.75rem;
+      color: var(--text-primary, white);
       cursor: pointer;
     }
 
@@ -83,56 +143,17 @@ import { ButtonComponent } from '@shared/ui/button/button.component';
       accent-color: var(--primary, #4ade80);
     }
 
-    .game-benefits {
-      display: grid;
-      gap: 1rem;
-      margin: 2rem 0;
-      text-align: left;
-    }
-
-    .benefit {
-      display: flex;
-      align-items: flex-start;
-      gap: 1rem;
-      padding: 1rem;
-      background: rgba(255, 255, 255, 0.1);
-      border-radius: 8px;
-      backdrop-filter: blur(10px);
-    }
-
-    .benefit .icon {
-      font-size: 1.5rem;
-      flex-shrink: 0;
-      margin-top: 0.25rem;
-    }
-
-    .benefit div {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-    }
-
-    .benefit strong {
-      color: white;
-      font-weight: 600;
-      font-size: 1rem;
-    }
-
-    .benefit span:last-child {
-      color: rgba(255, 255, 255, 0.8);
-      font-size: 0.875rem;
-      line-height: 1.4;
-    }
-
-    app-button {
-      margin-top: 1rem;
-    }
-
     @media (max-width: 768px) {
-      .corner-controls {
-        position: static;
-        margin-bottom: 1rem;
-        align-items: center;
+      .step {
+        gap: 1.5rem;
+      }
+
+      .hero-section h1 {
+        font-size: 2rem;
+      }
+
+      .hero-section p {
+        font-size: 1rem;
       }
 
       .game-benefits {
@@ -140,7 +161,33 @@ import { ButtonComponent } from '@shared/ui/button/button.component';
       }
       
       .benefit {
-        padding: 0.75rem;
+        padding: 1rem 0.75rem;
+      }
+
+      .benefit .icon {
+        font-size: 1.75rem;
+      }
+
+      .cta-section app-button {
+        transform: scale(1.05);
+        min-width: 180px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .game-benefits {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+
+      .benefit {
+        flex-direction: row;
+        text-align: left;
+        padding: 1rem;
+      }
+
+      .benefit .icon {
+        font-size: 1.5rem;
       }
     }
   `,

@@ -9,6 +9,7 @@ import { DataAggregatorService } from '../../../shared/data-access/data-aggregat
 import { AvatarService } from '../../../shared/data-access/avatar.service';
 import { NotificationService } from '../../../shared/data-access/notification.service';
 import { ThemeStore } from '../../../shared/data-access/theme.store';
+import { LocationService } from '../../../shared/data-access/location.service';
 import { generateRandomName } from '../../../shared/utils/anonymous-names';
 import type { Pub } from '../../../pubs/utils/pub.models';
 
@@ -67,6 +68,7 @@ type OnboardingStep =
               [selectedPub]="selectedHomePub()"
               [locationGranted]="locationGranted()"
               [locationRequired]="locationRequired()"
+              [hasExistingLocationPermission]="hasExistingLocationPermission()"
               (pubSelected)="onHomePubSelected($event)"
               (locationRequested)="requestLocationPermission()"
               (back)="goBackToPreviousStep()"
@@ -180,6 +182,7 @@ export class OnboardingComponent extends BaseComponent {
   private readonly avatarService = inject(AvatarService);
   private readonly notificationService = inject(NotificationService);
   private readonly themeStore = inject(ThemeStore);
+  private readonly locationService = inject(LocationService);
 
   // Component state
   readonly currentStep = signal<OnboardingStep>('welcome-message');
@@ -193,6 +196,11 @@ export class OnboardingComponent extends BaseComponent {
   // Permission states
   readonly locationGranted = signal(false);
   readonly locationRequired = signal(false);
+  
+  // Check if we already have location permission
+  readonly hasExistingLocationPermission = computed(() => {
+    return this.locationService.location() !== null;
+  });
 
   // Reactive data - Use DataAggregator for complete user state
   // CRITICAL: DataAggregator.user() includes onboardingCompleted from UserStore

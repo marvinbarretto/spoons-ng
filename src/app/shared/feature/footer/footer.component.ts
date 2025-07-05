@@ -15,7 +15,7 @@ import { environment } from '../../../../environments/environment';
         <app-dev-debug />
       }
       <div class="footer-content">
-        <p>&copy; {{ currentYear }} Spooncount {{ version }}</p>
+        <p>&copy; {{ currentYear }} Spoonscount {{ version }}</p>
       </div>
     </footer>
   `,

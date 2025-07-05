@@ -8,8 +8,10 @@ import type { User } from '@users/utils/user.model';
   imports: [ButtonComponent, ProfileIdentityWidgetComponent],
   template: `
     <div class="step customize-profile-step">
-      <h1>Customize Your Profile</h1>
-      <p class="subtitle">Join the stupidest competition you'll actually care about winning</p>
+      <div class="hero-section">
+        <h1>Right then, let's get you set up</h1>
+        <p class="subtitle">Choose a username and pick an avatar</p>
+      </div>
 
       <!-- Profile Identity Widget (Avatar + Name) -->
       <div class="profile-section">
@@ -29,7 +31,6 @@ import type { User } from '@users/utils/user.model';
         </div>
         <app-button
           variant="secondary"
-          iconLeft="google"
           size="lg"
           (onClick)="onGoogleLogin()"
           class="google-button"
@@ -40,50 +41,60 @@ import type { User } from '@users/utils/user.model';
       </div>
 
       <!-- Actions -->
-      <div class="step-actions">
-        @if (showBackButton()) {
-          <app-button variant="secondary" (onClick)="back.emit()">
-            Back
+      <div class="cta-section">
+        <div class="step-actions">
+          @if (showBackButton()) {
+            <app-button variant="secondary" (onClick)="back.emit()">
+              Back
+            </app-button>
+          }
+          <app-button
+            variant="primary"
+            [disabled]="!isValid()"
+            (onClick)="onContinue()"
+          >
+            Continue
           </app-button>
-        }
-        <app-button
-          variant="primary"
-          [disabled]="!isValid()"
-          (onClick)="onContinue()"
-        >
-          Continue
-        </app-button>
+        </div>
       </div>
     </div>
   `,
   styles: `
     .customize-profile-step {
-      max-width: 650px;
-      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      max-width: 500px;
       margin: 0 auto;
     }
 
-    h1 {
-      font-size: 2.5rem;
-      margin: 0 0 0.5rem 0;
-      color: var(--text-on-dark, white);
+    .hero-section {
       text-align: center;
+      margin-bottom: 1rem;
     }
 
-    .subtitle {
+    .hero-section h1 {
+      font-size: 2.5rem;
+      line-height: 1.2;
+      margin-bottom: 1rem;
+      font-weight: 700;
+      color: var(--text-primary, white);
+    }
+
+    .hero-section .subtitle {
       font-size: 1.125rem;
-      margin: 0 0 2rem 0;
-      color: rgba(255, 255, 255, 0.9);
-      text-align: center;
+      line-height: 1.6;
+      color: var(--text-primary, white);
+      margin: 0;
     }
 
     .profile-section {
-      margin-bottom: 2rem;
+      margin: 0;
     }
 
     /* Google Auth Section */
     .auth-option {
-      margin: 2rem 0;
+      margin: 0;
       text-align: center;
     }
 
@@ -100,61 +111,56 @@ import type { User } from '@users/utils/user.model';
       left: 0;
       right: 0;
       height: 1px;
-      background: rgba(255, 255, 255, 0.2);
+      background: var(--border-secondary, rgba(255, 255, 255, 0.2));
     }
 
     .divider span {
       position: relative;
-      background: rgba(0, 0, 0, 0.8);
+      background: var(--surface-primary, rgba(0, 0, 0, 0.8));
       padding: 0 1rem;
-      color: rgba(255, 255, 255, 0.6);
+      color: var(--text-primary, white);
       font-size: 0.875rem;
     }
 
-    .google-button {
-      width: 100%;
-      max-width: 300px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.75rem;
-      background: rgba(255, 255, 255, 0.95);
-      color: var(--text-dark);
-      border: none;
-      transition: all 0.2s ease;
-    }
-
-    .google-button:hover {
-      background: white;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    }
 
     .google-hint {
       margin: 0.75rem 0 0 0;
       font-size: 0.875rem;
-      color: rgba(255, 255, 255, 0.7);
+      color: var(--text-primary, white);
     }
 
     /* Action Buttons */
+    .cta-section {
+      text-align: center;
+      margin-top: 1rem;
+    }
+
     .step-actions {
       display: flex;
       gap: 1rem;
       justify-content: center;
-      margin-top: 2rem;
+      margin: 0;
     }
 
     .step-actions app-button {
       min-width: 120px;
     }
 
+    .step-actions app-button[variant="primary"] {
+      transform: scale(1.05);
+      min-width: 150px;
+    }
+
     @media (max-width: 768px) {
-      h1 {
+      .customize-profile-step {
+        gap: 1.5rem;
+      }
+
+      .hero-section h1 {
         font-size: 2rem;
       }
 
-      .subtitle {
+      .hero-section .subtitle {
         font-size: 1rem;
       }
 
@@ -162,11 +168,16 @@ import type { User } from '@users/utils/user.model';
         flex-direction: column;
         width: 100%;
         max-width: 300px;
-        margin: 2rem auto 0;
+        margin: 0 auto;
       }
       
       .step-actions app-button {
         width: 100%;
+      }
+
+      .step-actions app-button[variant="primary"] {
+        transform: scale(1.02);
+        min-width: auto;
       }
     }
   `,

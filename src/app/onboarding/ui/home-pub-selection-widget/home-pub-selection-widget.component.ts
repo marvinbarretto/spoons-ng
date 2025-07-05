@@ -74,10 +74,10 @@ import type { Pub } from '../../../pubs/utils/pub.models';
             </div>
           }
 
-          <!-- Suggested Nearest Pubs -->
-          @if (!selectedPub() && nearbyPubs().length > 0 && !hasSearchTerm()) {
+          <!-- Suggested Nearest Pubs - Show when location is available and no search term -->
+          @if (!selectedPub() && nearbyPubs().length > 0 && !hasSearchTerm() && hasLocationPermission()) {
             <div class="suggestions-section">
-              <h4 class="suggestions-title">Suggested based on your location:</h4>
+              <h4 class="suggestions-title">Nearest pubs to you:</h4>
               <div class="suggestions-list">
                 @for (pub of nearbyPubs().slice(0, 3); track pub.id) {
                   <div
@@ -288,36 +288,42 @@ import type { Pub } from '../../../pubs/utils/pub.models';
 
     .suggestions-section {
       margin-bottom: 1.5rem;
+      margin-top: 1rem;
     }
 
     .suggestions-title {
       margin: 0 0 1rem 0;
-      font-size: 1rem;
-      font-weight: 500;
-      color: var(--text);
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     .suggestions-list {
       display: flex;
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 0.75rem;
     }
 
     .suggestion-card {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0.75rem;
+      padding: 1rem;
       border: 1px solid var(--border);
-      border-radius: 0.5rem;
+      border-radius: 0.75rem;
       cursor: pointer;
       transition: all 0.2s ease;
       background: var(--background);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
 
     .suggestion-card:hover {
       border-color: var(--accent);
-      background: var(--background-darkest);
+      background: var(--background-lighter);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
 
     .pub-info {
@@ -522,6 +528,7 @@ export class HomePubSelectionWidgetComponent extends BaseWidgetComponent {
   protected readonly allPubs = computed(() => this.pubStore.data());
   protected readonly nearbyPubs = computed(() => this.nearbyPubStore.nearbyPubs());
   protected readonly hasSearchTerm = computed(() => this.searchTerm().trim().length > 0);
+  protected readonly hasLocationPermission = computed(() => this.locationService.location() !== null);
 
   protected readonly filteredPubs = computed(() => {
     const searchTerm = this.searchTerm().toLowerCase().trim();

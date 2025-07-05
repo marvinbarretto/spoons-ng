@@ -13,7 +13,7 @@ import { ButtonSize } from '@shared/ui/button/button.params';
       <h1>Choose Your Local</h1>
       <p class="subtitle">Pick your regular spot for bonus points!</p>
 
-      @if (!locationGranted() && !locationRequired()) {
+      @if (!locationGranted() && !locationRequired() && !hasExistingLocationPermission()) {
         <!-- Initial state - show pub selector with location request -->
         <div class="location-notice">
           <div class="notice-icon">📍</div>
@@ -76,23 +76,23 @@ import { ButtonSize } from '@shared/ui/button/button.params';
     h1 {
       font-size: 2.5rem;
       margin: 0 0 0.5rem 0;
-      color: var(--text-on-dark, white);
+      color: var(--text);
     }
 
     .subtitle {
       font-size: 1.125rem;
       margin: 0 0 2rem 0;
-      color: rgba(255, 255, 255, 0.9);
+      color: var(--text-secondary);
     }
 
     .location-notice {
-      background: rgba(255, 255, 255, 0.1);
+      background: var(--background-lighter);
       backdrop-filter: blur(10px);
       border-radius: 12px;
       padding: 1.5rem;
       margin-bottom: 2rem;
       text-align: center;
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      border: 1px solid var(--border);
     }
 
     .notice-icon {
@@ -103,7 +103,7 @@ import { ButtonSize } from '@shared/ui/button/button.params';
     .notice-text {
       margin: 0 0 1rem 0;
       font-size: 1rem;
-      color: var(--text-on-dark, white);
+      color: var(--text);
     }
 
     .location-loading {
@@ -112,14 +112,14 @@ import { ButtonSize } from '@shared/ui/button/button.params';
       align-items: center;
       gap: 1rem;
       margin: 2rem 0;
-      color: var(--text-on-dark, white);
+      color: var(--text);
     }
 
     .loading-spinner {
       width: 2rem;
       height: 2rem;
-      border: 3px solid rgba(255, 255, 255, 0.3);
-      border-top-color: white;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
@@ -177,6 +177,7 @@ export class ChooseLocalStepComponent {
   readonly selectedPub = input<Pub | null>(null);
   readonly locationGranted = input<boolean>(false);
   readonly locationRequired = input<boolean>(false);
+  readonly hasExistingLocationPermission = input<boolean>(false);
 
   // Outputs
   readonly pubSelected = output<Pub | null>();

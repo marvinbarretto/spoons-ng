@@ -50,7 +50,7 @@ import type { User } from '@users/utils/user.model';
       <div class="user-actions">
         @if (isBrandNew()) {
           <p class="welcome-hint">
-            Welcome to Spooncount! Start checking in to pubs to earn badges, score points and track your progress.
+            Welcome to Spoonscount! Start checking in to pubs to earn badges, score points and track your progress.
           </p>
         }
 

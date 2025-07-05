@@ -28,6 +28,7 @@ import { LeaderboardWidgetComponent } from '../../../widgets/leaderboard/leaderb
 import { LocalLeaderboardWidgetComponent } from '../../../widgets/local-leaderboard/local-leaderboard-widget.component';
 import { RecentActivityWidgetComponent } from '../../../widgets/recent-activity/recent-activity-widget.component';
 import { ScoreboardHeroWidgetComponent } from '../../../widgets/scoreboard-hero/scoreboard-hero-widget.component';
+import { WelcomeModalComponent } from '../../ui/welcome-modal/welcome-modal.component';
 
 
 @Component({
@@ -53,8 +54,50 @@ export class HomeComponent extends BaseComponent {
 
   constructor() {
     super();
-    
+
     console.log('[Home] 🏠 HomeComponent initialized - onboarding handled by guard');
+  }
+
+  override async onInit() {
+    console.log('[Home] Initializing home component with micro-widgets...');
+
+    // Check if user should see welcome modal (first time after onboarding)
+    const user = this.user();
+    if (user && user.onboardingCompleted && !user.hasSeenWelcome) {
+      console.log('[Home] User completed onboarding but hasn\'t seen welcome, showing modal');
+      this.showWelcomeModal();
+    }
+
+    // Load only the stores we have available
+    try {
+      this.missionStore?.loadOnce?.();
+    } catch (error) {
+      console.warn('[Home] Some stores not available:', error);
+    }
+
+    console.log('[Home] Component initialized');
+  }
+
+  private async showWelcomeModal(): Promise<void> {
+    const overlayResult = this.overlayService.open(
+      WelcomeModalComponent,
+      {
+        hasBackdrop: true,
+        backdropClass: 'overlay-backdrop',
+        maxWidth: '500px',
+        width: 'auto'
+      }
+    );
+
+    console.log('[Home] Welcome modal opened, waiting for result...');
+    const result = await overlayResult.result;
+    console.log('[Home] Welcome modal closed with result:', result);
+
+    // Update user profile to mark welcome as seen
+    if (result === 'closed') {
+      await this.userStore.updateProfile({ hasSeenWelcome: true });
+      console.log('[Home] User profile updated - hasSeenWelcome set to true');
+    }
   }
 
 
@@ -182,23 +225,5 @@ handleOpenProfile(): void {
     }
   }));
 
-
-
-
-  // ✅ Data Loading
-  protected override async onInit() {
-    console.log('[Home] Initializing home component with micro-widgets...');
-
-
-
-    // Load only the stores we have available
-    try {
-      this.missionStore?.loadOnce?.();
-    } catch (error) {
-      console.warn('[Home] Some stores not available:', error);
-    }
-
-    console.log('[Home] Component initialized');
-  }
 
 }

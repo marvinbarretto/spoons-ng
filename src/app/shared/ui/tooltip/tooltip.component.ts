@@ -18,8 +18,8 @@ import { Component, input, ChangeDetectionStrategy } from '@angular/core';
     .tooltip-text {
       visibility: hidden;
       opacity: 0;
-      background-color: var(--background-darkest, #1a1a1a);
-      color: var(--text-on-dark, white);
+      background-color: var(--background-darker);
+      color: var(--text);
       text-align: center;
       border-radius: 6px;
       padding: 0.5rem 0.75rem;
@@ -47,12 +47,12 @@ import { Component, input, ChangeDetectionStrategy } from '@angular/core';
         left: 50%;
         transform: translateX(-50%);
         border: 5px solid transparent;
-        border-top-color: var(--background-darkest, #1a1a1a);
+        border-top-color: var(--background-darker);
       }
 
       /* Border and shadow for better visibility */
-      border: 1px solid var(--border, rgba(255, 255, 255, 0.2));
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+      box-shadow: 0 4px 12px var(--shadow-md);
     }
 
     .tooltip-container:hover .tooltip-text {

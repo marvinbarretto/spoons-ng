@@ -284,6 +284,6 @@ export const themes: Record<ThemeType, Theme> = {
 };
 
 export const defaultTheme: { type: ThemeType; theme: Theme } = {
-  type: 'fresh',
-  theme: themes.fresh
+  type: 'forest',
+  theme: themes.forest
 };

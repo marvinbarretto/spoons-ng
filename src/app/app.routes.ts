@@ -16,7 +16,7 @@ export const appRoutes: Routes = [
   },
   {
     path: 'onboarding',
-    title: 'Welcome to Spooncount',
+    title: 'Welcome to Spoonscount',
     loadComponent: () => import('./onboarding/feature/onboarding/onboarding.component').then(m => m.OnboardingComponent),
     data: { shell: 'fullscreen' }
   },

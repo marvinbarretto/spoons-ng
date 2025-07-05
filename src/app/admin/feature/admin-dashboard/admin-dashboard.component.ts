@@ -35,7 +35,7 @@ type StatData = {
     <div class="admin-dashboard">
       <header class="dashboard-header">
         <h1>Admin Dashboard</h1>
-        <p class="dashboard-subtitle">Monitor and manage your Spooncount application</p>
+        <p class="dashboard-subtitle">Monitor and manage your Spoonscount application</p>
       </header>
 
       <!-- Quick Stats Overview -->

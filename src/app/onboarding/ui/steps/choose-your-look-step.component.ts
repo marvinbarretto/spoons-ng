@@ -8,8 +8,8 @@ import type { User } from '@users/utils/user.model';
   imports: [ButtonComponent, AvatarSelectionWidgetComponent],
   template: `
     <div class="step">
-      <h2>Choose Your Look</h2>
-      <p>Customize your avatar and theme</p>
+      <h2>Right then, let's get you set up</h2>
+      <p>Choose a username and pick an avatar</p>
 
       <!-- Avatar Selection -->
       <h3>Your Avatar</h3>

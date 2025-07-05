@@ -45,6 +45,17 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
               [attr.maxlength]="maxLength"
               autocomplete="nickname"
             />
+            <!-- Shuffle button for anonymous users -->
+            @if (isAnonymous()) {
+              <button
+                type="button"
+                class="shuffle-btn"
+                (click)="shuffleRandomName()"
+                title="Generate a random pub-themed name"
+              >
+                🎲
+              </button>
+            }
           </app-tooltip>
           <div class="input-meta">
             <span class="char-count" [class.warning]="isNearLimit()">
@@ -55,17 +66,7 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
             }
           </div>
 
-          <!-- Shuffle button for anonymous users -->
-          @if (isAnonymous()) {
-            <button
-              type="button"
-              class="shuffle-btn"
-              (click)="shuffleRandomName()"
-              title="Generate a random pub-themed name"
-            >
-              🎲
-            </button>
-          }
+
         </div>
       </div>
 
@@ -94,7 +95,8 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
   styles: `
     .profile-identity-widget {
       padding: 1.5rem;
-      background: var(--background-darkest);
+      background-color: rgba(0,0,0,.5);
+      // background: var(--background);
       border: 1px solid var(--border);
       border-radius: 12px;
     }
@@ -149,19 +151,21 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
 
     .name-input {
       width: 100%;
-      padding: 0.75rem 1rem;
-      border: 2px solid var(--border);
+      padding: 0.875rem 3rem 0.875rem 1rem;
+      border: 2px solid var(--border-secondary, rgba(255, 255, 255, 0.3));
       border-radius: 8px;
-      font-size: 1rem;
-      background: var(--background-darkest);
-      color: var(--text);
+      font-size: 1.125rem;
+      font-weight: 500;
+      background: var(--surface-primary, white);
+      color: var(--text-dark, #1a1a1a);
       transition: all 0.2s ease;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     .name-input:focus {
       outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      border-color: var(--primary, #4ade80);
+      box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.2), 0 4px 8px rgba(0, 0, 0, 0.15);
     }
 
     .name-input.error {
@@ -192,20 +196,31 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
 
     .shuffle-btn {
       position: absolute;
-      right: 8px;
+      right: 12px;
       top: 50%;
       transform: translateY(-50%);
-      background: none;
-      border: none;
+      background: var(--surface-secondary, rgba(0, 0, 0, 0.05));
+      border: 1px solid var(--border-secondary, rgba(0, 0, 0, 0.1));
+      border-radius: 6px;
       font-size: 1.25rem;
       cursor: pointer;
-      padding: 0.25rem;
-      border-radius: 4px;
+      padding: 0.5rem;
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       transition: all 0.2s ease;
     }
 
     .shuffle-btn:hover {
-      background: var(--background-darkest);
+      background: var(--surface-secondary, rgba(0, 0, 0, 0.1));
+      border-color: var(--border-primary, rgba(0, 0, 0, 0.2));
+      transform: translateY(-50%) scale(1.05);
+    }
+
+    .shuffle-btn:active {
+      transform: translateY(-50%) scale(0.95);
     }
 
     /* ✅ Avatar Grid */

@@ -117,10 +117,9 @@ import type { User } from '@users/utils/user.model';
       cursor: not-allowed;
     }
 
-    /* ✅ Input Meta */
     .input-meta {
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       align-items: center;
       margin-top: 0.5rem;
       font-size: 0.75rem;

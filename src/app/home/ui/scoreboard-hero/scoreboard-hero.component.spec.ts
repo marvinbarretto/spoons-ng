@@ -344,7 +344,7 @@ describe('ScoreboardHeroComponent', () => {
       const compiled = fixture.nativeElement;
       const hint = compiled.querySelector('.onboarding-hint');
       expect(hint).toBeTruthy();
-      expect(hint.textContent).toContain('Welcome to Spooncount!');
+      expect(hint.textContent).toContain('Welcome to Spoonscount!');
     });
   });
 
