@@ -13,6 +13,7 @@ import { PointsStore } from '@points/data-access/points.store';
 import { CheckInStore } from '../../../check-in/data-access/check-in.store';
 import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
 import { PubStore } from '../../../pubs/data-access/pub.store';
+import { LocationService } from '../../../shared/data-access/location.service';
 
 // Import micro-widget components
 import { ScoreboardData, ScoreboardHeroComponent } from '@home/ui/scoreboard-hero/scoreboard-hero.component';
@@ -68,6 +69,12 @@ export class HomeComponent extends BaseComponent {
       this.showWelcomeModal();
     }
 
+    // Initialize location service for proximity-based features
+    if (user && user.onboardingCompleted) {
+      console.log('[Home] User completed onboarding, initializing location service...');
+      this.locationService.getCurrentLocation();
+    }
+
     // Load only the stores we have available
     try {
       this.missionStore?.loadOnce?.();
@@ -119,6 +126,7 @@ export class HomeComponent extends BaseComponent {
   protected readonly checkinStore = inject(CheckInStore);
   protected readonly dataAggregatorService = inject(DataAggregatorService);
   protected readonly pubStore = inject(PubStore);
+  private readonly locationService = inject(LocationService);
 
 
 
