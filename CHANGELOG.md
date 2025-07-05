@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.81](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.80...v0.0.81) (2025-07-05)
+
+
+### Features
+
+* Onboarding loading strategy defined ([8500a84](https://github.com/marvinbarretto/spoons-ng/commit/8500a8446eed9043f892597fca8c9274a7765a56))
+* Update onboarding ([6b07c51](https://github.com/marvinbarretto/spoons-ng/commit/6b07c5148d7e21938d280c76188b8ac86898225c))
+
 ### [0.0.80](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.79...v0.0.80) (2025-07-04)
 
 
