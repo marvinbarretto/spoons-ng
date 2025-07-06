@@ -1,5 +1,6 @@
 import { Component, output, signal, ChangeDetectionStrategy } from '@angular/core';
 import { ButtonComponent } from '@shared/ui/button/button.component';
+import { ButtonSize } from '@shared/ui/button/button.params';
 
 @Component({
   selector: 'app-welcome-message-step',
@@ -32,7 +33,11 @@ import { ButtonComponent } from '@shared/ui/button/button.component';
       </div>
 
       <div class="cta-section">
-        <app-button variant="primary" (onClick)="continue.emit()">
+        <app-button 
+          variant="primary" 
+          [size]="ButtonSize.LG"
+          (onClick)="continue.emit()"
+        >
           Continue
         </app-button>
       </div>
@@ -117,10 +122,6 @@ import { ButtonComponent } from '@shared/ui/button/button.component';
       margin-top: 1rem;
     }
 
-    .cta-section app-button {
-      transform: scale(1.1);
-      min-width: 200px;
-    }
 
     .alpha-testing-check {
       margin-top: 2rem;
@@ -168,10 +169,6 @@ import { ButtonComponent } from '@shared/ui/button/button.component';
         font-size: 1.75rem;
       }
 
-      .cta-section app-button {
-        transform: scale(1.05);
-        min-width: 180px;
-      }
     }
 
     @media (max-width: 480px) {
@@ -198,6 +195,9 @@ export class WelcomeMessageStepComponent {
 
   // Real user state (default: true)
   readonly isRealUser = signal(true);
+  
+  // Expose ButtonSize for template
+  readonly ButtonSize = ButtonSize;
 
   toggleRealUser(event: Event): void {
     const target = event.target as HTMLInputElement;

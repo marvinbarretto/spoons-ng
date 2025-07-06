@@ -1,5 +1,6 @@
 import { Component, input, output, ChangeDetectionStrategy } from '@angular/core';
 import { ButtonComponent } from '@shared/ui/button/button.component';
+import { ButtonSize } from '@shared/ui/button/button.params';
 
 @Component({
   selector: 'app-ask-location-step',
@@ -59,6 +60,7 @@ import { ButtonComponent } from '@shared/ui/button/button.component';
       <div class="step-actions">
         <app-button
           variant="primary"
+          [size]="ButtonSize.LG"
           [loading]="isRequesting()"
           [disabled]="isRequesting()"
           (onClick)="enableLocation.emit()"
@@ -147,4 +149,7 @@ import { ButtonComponent } from '@shared/ui/button/button.component';
 export class AskLocationStepComponent {
   readonly isRequesting = input<boolean>(false);
   readonly enableLocation = output<void>();
+  
+  // Expose ButtonSize for template
+  readonly ButtonSize = ButtonSize;
 }

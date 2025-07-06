@@ -1,5 +1,6 @@
 import { Component, input, output, ChangeDetectionStrategy } from '@angular/core';
 import { ButtonComponent } from '@shared/ui/button/button.component';
+import { ButtonSize } from '@shared/ui/button/button.params';
 import { AvatarSelectionWidgetComponent } from '@home/ui/profile-customisation-modal/widgets/avatar-selection-widget/avatar-selection-widget.component';
 import type { User } from '@users/utils/user.model';
 
@@ -24,8 +25,21 @@ import type { User } from '@users/utils/user.model';
       <p>TODO: Color selection grid</p>
 
       <div>
-        <app-button (onClick)="back.emit()">Back</app-button>
-        <app-button [disabled]="!selectedAvatarId()" (onClick)="continue.emit()">Continue</app-button>
+        <app-button 
+          variant="secondary"
+          [size]="ButtonSize.MD" 
+          (onClick)="back.emit()"
+        >
+          Back
+        </app-button>
+        <app-button 
+          variant="primary"
+          [size]="ButtonSize.LG" 
+          [disabled]="!selectedAvatarId()" 
+          (onClick)="continue.emit()"
+        >
+          Continue
+        </app-button>
       </div>
     </div>
   `,
@@ -37,4 +51,7 @@ export class ChooseYourLookStepComponent {
   readonly avatarSelected = output<string>();
   readonly back = output<void>();
   readonly continue = output<void>();
+  
+  // Expose ButtonSize for template
+  readonly ButtonSize = ButtonSize;
 }

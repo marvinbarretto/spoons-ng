@@ -1,6 +1,7 @@
 import { Component, input, output, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonComponent } from '@shared/ui/button/button.component';
+import { ButtonSize } from '@shared/ui/button/button.params';
 
 @Component({
   selector: 'app-choose-your-name-step',
@@ -29,8 +30,21 @@ import { ButtonComponent } from '@shared/ui/button/button.component';
       <small>💡 You can always change this later in your profile settings</small>
 
       <div>
-        <app-button (onClick)="back.emit()">Back</app-button>
-        <app-button [disabled]="!displayName().trim()" (onClick)="continue.emit()">Continue</app-button>
+        <app-button 
+          variant="secondary"
+          [size]="ButtonSize.MD" 
+          (onClick)="back.emit()"
+        >
+          Back
+        </app-button>
+        <app-button 
+          variant="primary"
+          [size]="ButtonSize.LG" 
+          [disabled]="!displayName().trim()" 
+          (onClick)="continue.emit()"
+        >
+          Continue
+        </app-button>
       </div>
     </div>
   `,
@@ -42,6 +56,9 @@ export class ChooseYourNameStepComponent {
   readonly generateRandom = output<void>();
   readonly back = output<void>();
   readonly continue = output<void>();
+  
+  // Expose ButtonSize for template
+  readonly ButtonSize = ButtonSize;
 
   onNameChange(event: Event): void {
     const input = event.target as HTMLInputElement;

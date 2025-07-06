@@ -74,7 +74,7 @@ describe('ChooseLocalStepComponent', () => {
 
       const notice = fixture.nativeElement.querySelector('.location-notice');
       expect(notice).toBeTruthy();
-      expect(notice.textContent).toContain('We need location access for check-ins to work');
+      expect(notice.textContent).toContain('We need location access to verify check-ins');
     });
 
     it('should show loading spinner when location is being requested', () => {
@@ -112,12 +112,12 @@ describe('ChooseLocalStepComponent', () => {
       expect(continueBtn.textContent).toContain('Continue');
     });
 
-    it('should show Skip button when no pub is selected', () => {
+    it('should not show Continue button when no pub is selected', () => {
       fixture.componentRef.setInput('selectedPub', null);
       fixture.detectChanges();
 
-      const skipBtn = fixture.nativeElement.querySelector('.step-actions app-button[variant="primary"]');
-      expect(skipBtn.textContent).toContain('Skip for now');
+      const continueBtn = fixture.nativeElement.querySelector('.step-actions app-button[variant="primary"]');
+      expect(continueBtn).toBeFalsy();
     });
   });
 
@@ -141,8 +141,9 @@ describe('ChooseLocalStepComponent', () => {
       expect(backSpy).toHaveBeenCalled();
     });
 
-    it('should emit complete when Continue is clicked', () => {
+    it('should emit complete when Continue is clicked with selected pub', () => {
       const completeSpy = jest.spyOn(component.complete, 'emit');
+      fixture.componentRef.setInput('selectedPub', mockPub);
       
       component.onContinue();
       
@@ -192,7 +193,7 @@ describe('ChooseLocalStepComponent', () => {
       
       component.onContinue();
       
-      expect(consoleSpy).toHaveBeenCalledWith('[ChooseLocalStep] Continuing without pub selection');
+      expect(consoleSpy).toHaveBeenCalledWith('[ChooseLocalStep] Cannot continue without pub selection');
     });
   });
 });

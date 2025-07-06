@@ -1,5 +1,6 @@
 import { Component, input, output, ChangeDetectionStrategy, computed } from '@angular/core';
 import { ButtonComponent } from '@shared/ui/button/button.component';
+import { ButtonSize } from '@shared/ui/button/button.params';
 import { ProfileIdentityWidgetComponent } from '@home/ui/profile-customisation-modal/widgets/profile-identity-widget/profile-identity-widget.component';
 import type { User } from '@users/utils/user.model';
 
@@ -44,12 +45,17 @@ import type { User } from '@users/utils/user.model';
       <div class="cta-section">
         <div class="step-actions">
           @if (showBackButton()) {
-            <app-button variant="secondary" (onClick)="back.emit()">
+            <app-button 
+              variant="secondary" 
+              [size]="ButtonSize.MD"
+              (onClick)="back.emit()"
+            >
               Back
             </app-button>
           }
           <app-button
             variant="primary"
+            [size]="ButtonSize.LG"
             [disabled]="!isValid()"
             (onClick)="onContinue()"
           >
@@ -146,11 +152,6 @@ import type { User } from '@users/utils/user.model';
       min-width: 120px;
     }
 
-    .step-actions app-button[variant="primary"] {
-      transform: scale(1.05);
-      min-width: 150px;
-    }
-
     @media (max-width: 768px) {
       .customize-profile-step {
         gap: 1.5rem;
@@ -175,10 +176,6 @@ import type { User } from '@users/utils/user.model';
         width: 100%;
       }
 
-      .step-actions app-button[variant="primary"] {
-        transform: scale(1.02);
-        min-width: auto;
-      }
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -194,6 +191,9 @@ export class CustomizeProfileStepComponent {
   readonly googleLogin = output<void>();
   readonly back = output<void>();
   readonly continue = output<void>();
+  
+  // Expose ButtonSize for template
+  readonly ButtonSize = ButtonSize;
 
   // Computed properties
   readonly showBackButton = computed(() => true); // Always show back button
