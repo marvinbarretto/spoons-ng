@@ -16,6 +16,7 @@ export interface Environment {
 
   // Check-in configuration
   checkInDistanceThresholdMeters?: number;
+  nearbyPubsRadiusMeters?: number;
 
   // External services
   strapiUrl?: string;

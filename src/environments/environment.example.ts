@@ -13,6 +13,7 @@ export const environment: Environment = {
   DESKTOP_TESTING_DELAY: 2000,
   LLM_TO_PHOTO_DELAY: 3000,
   checkInDistanceThresholdMeters: 200,
+  nearbyPubsRadiusMeters: 50000,
   firebaseConfig: {
     apiKey: 'API_KEY',
     authDomain: 'AUTH_DOMAIN',

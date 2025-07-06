@@ -31,20 +31,31 @@ export class NearbyPubStore {
     const pubs = this.allPubs();
 
     if (!location || !pubs.length) {
+      console.log('[NearbyPubStore] 📍 No location or pubs available:', { hasLocation: !!location, pubCount: pubs.length });
       return [];
     }
 
     const userLocation = { lat: location.lat, lng: location.lng };
+    const radiusMeters = environment.nearbyPubsRadiusMeters || 50000; // 50km default
 
     const pubsWithDistances: PubWithDistance[] = pubs.map((pub) => ({
       ...pub,
       distance: haversineDistanceInMeters(userLocation, pub.location),
     }));
 
-    return pubsWithDistances
-      .filter((pub) => pub.distance < (environment.checkInDistanceThresholdMeters || 200))
+    const filteredPubs = pubsWithDistances
+      .filter((pub) => pub.distance < radiusMeters)
       .sort((a, b) => a.distance - b.distance)
       .slice(0, MAX_NEARBY_PUBS);
+
+    console.log('[NearbyPubStore] 📍 Filtered pubs:', {
+      totalPubs: pubs.length,
+      radiusMeters,
+      nearbyPubsFound: filteredPubs.length,
+      closestDistance: filteredPubs[0]?.distance || 'N/A'
+    });
+
+    return filteredPubs;
   });
 
   readonly closestPub: Signal<PubWithDistance | null> = computed(() => {
@@ -84,7 +95,9 @@ export class NearbyPubStore {
    */
   isWithinCheckInRange(pubId: string): boolean {
     const distance = this.getDistanceToPub(pubId);
-    return distance !== null && distance < (environment.checkInDistanceThresholdMeters || 200);
+    const checkInThreshold = environment.checkInDistanceThresholdMeters || 200;
+    console.log('[NearbyPubStore] 📍 Check-in range check:', { pubId, distance, checkInThreshold, withinRange: distance !== null && distance < checkInThreshold });
+    return distance !== null && distance < checkInThreshold;
   }
 
   /**

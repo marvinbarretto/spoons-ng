@@ -21,11 +21,14 @@ import type { Pub } from '../../pubs/utils/pub.models';
         <div class="widget-error">
           <span class="error-icon">⚠️</span>
           <span>{{ error() }}</span>
+          @if (error()?.includes('permission')) {
+            <button class="retry-button" (click)="requestLocation()">Grant Location Access</button>
+          }
         </div>
       } @else if (!hasNearbyPubs()) {
         <div class="widget-empty">
           <span class="empty-icon">📍</span>
-          <span>No pubs within 50km</span>
+          <span>{{ getEmptyStateMessage() }}</span>
         </div>
       } @else {
         <div class="nearby-pubs">
@@ -88,6 +91,21 @@ import type { Pub } from '../../pubs/utils/pub.models';
       flex-direction: column;
       gap: 0.75rem;
     }
+
+    .retry-button {
+      margin-top: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 0.25rem;
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+
+    .retry-button:hover {
+      background: var(--primary-dark);
+    }
   `],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -119,12 +137,40 @@ export class NearestPubComponent extends BaseWidgetComponent {
     const hasLocation = this.nearbyPubStore.location();
     const locationError = this.locationService.error();
     
+    console.log('[NearestPubComponent] 📍 Location status:', {
+      loading: locationLoading,
+      hasLocation: !!hasLocation,
+      error: locationError,
+      nearbyPubsCount: this.nearbyPubs().length
+    });
+    
     if (!locationLoading && !hasLocation && locationError) {
       this.error.set(locationError);
     }
   }
 
+  protected getEmptyStateMessage(): string {
+    const hasLocation = this.nearbyPubStore.location();
+    const locationError = this.locationService.error();
+    
+    if (!hasLocation && locationError) {
+      return 'Location permission needed to find nearby pubs';
+    }
+    
+    if (!hasLocation) {
+      return 'Getting your location...';
+    }
+    
+    return 'No pubs within 50km';
+  }
+
   protected navigateToPub(pubId: string): void {
     this.router.navigate(['/pubs', pubId]);
+  }
+
+  protected requestLocation(): void {
+    console.log('[NearestPubComponent] 📍 Requesting location access...');
+    this.error.set(null);
+    this.locationService.getCurrentLocation();
   }
 }
