@@ -35,7 +35,7 @@ export class SimpleMetricsService {
   // Motion detection state
   private previousFrameData: ImageData | null = null;
   private motionHistory: number[] = []; // Track recent motion levels
-  private readonly MOTION_HISTORY_SIZE = 3; // Reduced from 5 for faster response
+  private readonly MOTION_HISTORY_SIZE = 5; // Increased back to 5 for better stability detection
   
   // Memory management
   private analysisCount = 0;
@@ -426,7 +426,11 @@ export class SimpleMetricsService {
     let sampleCount = 0;
     
     // Sample every 16th pixel for performance (64x64 grid at 640x480)
+    // FIXED: Properly sample every 16th pixel (16 pixels × 4 bytes = 64 bytes)
     for (let i = 0; i < current.length; i += 64) {
+      // Ensure we don't go out of bounds
+      if (i + 2 >= current.length) break;
+      
       const currentBrightness = 0.299 * current[i] + 0.587 * current[i + 1] + 0.114 * current[i + 2];
       const previousBrightness = 0.299 * previous[i] + 0.587 * previous[i + 1] + 0.114 * previous[i + 2];
       
@@ -435,7 +439,8 @@ export class SimpleMetricsService {
     }
     
     const avgDifference = totalDifference / sampleCount;
-    const motionLevel = Math.min(100, Math.round(avgDifference / 4)); // Reduced sensitivity from /2 to /4
+    // FIXED: Increased sensitivity to properly detect walking motion
+    const motionLevel = Math.min(100, Math.round(avgDifference / 1.5)); // Much more sensitive
     
     // Track motion history for stability detection
     this.motionHistory.push(motionLevel);
@@ -445,7 +450,8 @@ export class SimpleMetricsService {
     
     // Consider stable if recent motion is consistently low
     const recentAvgMotion = this.motionHistory.reduce((a, b) => a + b, 0) / this.motionHistory.length;
-    const isStable = recentAvgMotion < 20 && this.motionHistory.length >= 2; // Reduced from 3 to 2 frames
+    // FIXED: Much stricter threshold - walking should NOT be considered stable
+    const isStable = recentAvgMotion < 8 && this.motionHistory.length >= 3; // Stricter threshold and more frames
     
     console.log('[SimpleMetrics] Motion Debug:', {
       rawAvgDifference: Math.round(avgDifference * 100) / 100,
@@ -454,7 +460,12 @@ export class SimpleMetricsService {
       recentAvgMotion: Math.round(recentAvgMotion * 100) / 100,
       isStable,
       historyLength: this.motionHistory.length,
-      sampleCount
+      sampleCount,
+      // Enhanced debugging for motion detection issues
+      stabilityThreshold: 8,
+      motionAboveThreshold: recentAvgMotion >= 8,
+      frameDataSize: current.length,
+      samplingInterval: 64
     });
     
     return { motionLevel, isStable };

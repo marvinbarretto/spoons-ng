@@ -224,6 +224,123 @@ describe('CheckinComponent', () => {
     });
   });
 
+  describe('Motion Detection', () => {
+    beforeEach(() => {
+      // Reset motion service state
+      mockMetricsService.metrics = signal({
+        brightness: 128,
+        contrast: 50,
+        sharpness: 25,
+        dominantColors: ['#808080'],
+        colorVariance: 30,
+        saturation: 20,
+        edgeDensity: 40,
+        textureComplexity: 35,
+        repetition: 15,
+        motionLevel: 0,
+        isStable: true,
+        analysisTime: 50,
+        frameSize: '640x480',
+        timestamp: Date.now()
+      });
+    });
+
+    it('should detect high motion levels during movement', () => {
+      // Simulate high motion scenario
+      const highMotionMetrics = {
+        brightness: 128,
+        contrast: 50,
+        sharpness: 25,
+        dominantColors: ['#808080'],
+        colorVariance: 30,
+        saturation: 20,
+        edgeDensity: 40,
+        textureComplexity: 35,
+        repetition: 15,
+        motionLevel: 45,
+        isStable: false,
+        analysisTime: 50,
+        frameSize: '640x480',
+        timestamp: Date.now()
+      };
+      
+      // Update the mock signal directly
+      mockMetricsService.metrics.set(highMotionMetrics);
+      
+      // Override the component's metrics property to use our mock
+      (component as any).metrics = mockMetricsService.metrics;
+
+      const gates = (component as any).gatesPassed();
+      
+      expect(gates.isStable).toBe(false);
+      expect(gates.lowMotion).toBe(false); // Motion level 45 should be > 20 threshold
+    });
+
+    it('should only consider stable when motion is very low', () => {
+      // Simulate low motion scenario
+      const lowMotionMetrics = {
+        brightness: 128,
+        contrast: 50,
+        sharpness: 25,
+        dominantColors: ['#808080'],
+        colorVariance: 30,
+        saturation: 20,
+        edgeDensity: 40,
+        textureComplexity: 35,
+        repetition: 15,
+        motionLevel: 5,
+        isStable: true,
+        analysisTime: 50,
+        frameSize: '640x480',
+        timestamp: Date.now()
+      };
+      
+      // Update the mock signal directly
+      mockMetricsService.metrics.set(lowMotionMetrics);
+      
+      // Override the component's metrics property to use our mock  
+      (component as any).metrics = mockMetricsService.metrics;
+
+      const gates = (component as any).gatesPassed();
+      
+      
+      expect(gates.isStable).toBe(true);
+      expect(gates.lowMotion).toBe(true); // Motion level 5 should be < 20 threshold
+    });
+
+    it('should not allow check-in during high motion', () => {
+      // Set all other gates to pass but motion fails
+      const highMotionMetrics = {
+        brightness: 128,
+        contrast: 50,
+        sharpness: 35, // Good sharpness
+        dominantColors: ['#808080'],
+        colorVariance: 30,
+        saturation: 20,
+        edgeDensity: 50, // Good edges
+        textureComplexity: 25, // Good texture
+        repetition: 15,
+        motionLevel: 50, // HIGH MOTION
+        isStable: false, // NOT STABLE
+        analysisTime: 50,
+        frameSize: '640x480',
+        timestamp: Date.now()
+      };
+      // Update the mock signal directly  
+      mockMetricsService.metrics.set(highMotionMetrics);
+      
+      // Override the component's metrics property to use our mock
+      (component as any).metrics = mockMetricsService.metrics;
+
+      // Mock device orientation as good
+      (component as any).deviceOrientation.set({ beta: 30, gamma: 0, stable: true });
+
+      const allGatesPassed = (component as any).allGatesPassed();
+      
+      expect(allGatesPassed).toBe(false); // Should fail due to motion
+    });
+  });
+
   describe('LLM Analysis', () => {
     // TODO: Fix async timing issues in LLM tests
     // The tests below fail due to complex async/fakeAsync timing with Promises

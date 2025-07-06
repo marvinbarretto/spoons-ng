@@ -5,6 +5,7 @@ import { getShareMessage } from '../../data-access/share-messages';
 import { SsrPlatformService } from '../../../shared/utils/ssr/ssr-platform.service';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { QrCodeComponent } from '../../../shared/ui/qr-code/qr-code.component';
+import { BaseComponent } from '../../../shared/base/base.component';
 
 @Component({
   selector: 'app-share-panel',
@@ -92,7 +93,7 @@ import { QrCodeComponent } from '../../../shared/ui/qr-code/qr-code.component';
     }
   `]
 })
-export class SharePanelComponent {
+export class SharePanelComponent extends BaseComponent {
   private readonly _share: ShareService = inject(ShareService);
   private readonly _socialMedia: SocialMediaService = inject(SocialMediaService);
   private readonly _platform: SsrPlatformService = inject(SsrPlatformService);
@@ -115,8 +116,7 @@ export class SharePanelComponent {
     this._platform.onlyOnBrowser(() => {
       navigator.clipboard.writeText(this.shareUrl()).then(() => {
         console.log('[Share] Link copied');
-        // replace with toast if you have one
-        alert('Link copied!');
+        this.showSuccess('Link copied!');
       });
     });
   }

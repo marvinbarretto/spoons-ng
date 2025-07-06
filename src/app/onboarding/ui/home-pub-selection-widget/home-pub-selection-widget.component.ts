@@ -482,7 +482,7 @@ export class HomePubSelectionWidgetComponent extends BaseWidgetComponent {
   private readonly locationService = inject(LocationService);
 
   // DataAggregator for any cross-store needs
-  private readonly dataAggregatorService = inject(DataAggregatorService);
+  protected readonly dataAggregatorService = inject(DataAggregatorService);
 
   // ✅ Movement detection signal
   readonly isMoving = this.locationService.isMoving;

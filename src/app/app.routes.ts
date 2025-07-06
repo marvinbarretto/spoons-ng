@@ -123,11 +123,18 @@ export const appRoutes: Routes = [
     data: { shell: 'feature' }
   },
   {
-    path: 'share',
+    path: 'profile',
+    title: 'Profile',
+    canActivate: [onboardingGuard],
     loadComponent: () =>
-      import('./share/feature/share-container/share-container.component')
-        .then(m => m.ShareContainerComponent),
+      import('./profile/feature/profile/profile.component')
+        .then(m => m.ProfileComponent),
     data: { shell: 'feature' }
+  },
+  {
+    path: 'share',
+    redirectTo: '/profile',
+    pathMatch: 'full'
   },
   {
     path: '**',

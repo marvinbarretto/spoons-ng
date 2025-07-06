@@ -802,9 +802,7 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
 
   private handleCheckinError(message: string): void {
     console.error('[Checkin] 🚨 Handling check-in error:', message);
-    // For now, show error and allow user to exit
-    // TODO: Implement proper error UI in future iterations
-    alert(`Check-in failed: ${message}`);
+    this.showError(`Check-in failed: ${message}`);
     this.setPhase('WAITING_FOR_GATES');
   }
 

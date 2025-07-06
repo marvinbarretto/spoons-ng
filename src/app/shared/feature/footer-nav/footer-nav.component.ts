@@ -305,10 +305,10 @@ export class FooterNavComponent extends BaseComponent {
         isActive: this.isOnRoute('/leaderboard')()
       },
       {
-        label: 'Share',
-        route: '/share',
-        iconName: 'share',
-        isActive: this.isOnRoute('/share')()
+        label: 'Profile',
+        route: '/profile',
+        iconName: 'person',
+        isActive: this.isOnRoute('/profile')()
       }
     ];
   });
