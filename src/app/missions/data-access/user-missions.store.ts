@@ -224,12 +224,65 @@ export class UserMissionsStore {
       throw new Error('User must be available to enroll in missions');
     }
 
+    console.log('🎯 [UserMissionsStore] Starting enrollInMission for:', missionId);
+    
+    // Log state BEFORE enrollment
+    const beforeProgress = this._userProgress();
+    const beforeAvailable = this.availableMissions();
+    const beforeActive = this.activeMissions();
+    const beforeCompleted = this.completedMissions();
+    
+    console.log('📊 [UserMissionsStore] BEFORE enrollment state:', {
+      userProgressCount: beforeProgress.length,
+      availableCount: beforeAvailable.length,
+      activeCount: beforeActive.length,
+      completedCount: beforeCompleted.length,
+      userProgressIds: beforeProgress.map(p => p.missionId),
+      availableIds: beforeAvailable.map(m => m.mission.id),
+      activeIds: beforeActive.map(m => m.mission.id),
+      targetMissionInProgress: beforeProgress.some(p => p.missionId === missionId),
+      targetMissionInAvailable: beforeAvailable.some(m => m.mission.id === missionId)
+    });
+
     try {
+      console.log('⚡ [UserMissionsStore] Calling userMissionProgressService.enrollInMission...');
       await this.userMissionProgressService.enrollInMission(user.uid, missionId);
+      console.log('✅ [UserMissionsStore] Service call completed, now reloading missions...');
+      
       // Reload user missions to reflect changes
       await this.loadUserMissions();
+      console.log('🔄 [UserMissionsStore] loadUserMissions completed');
+      
+      // Log state AFTER enrollment
+      const afterProgress = this._userProgress();
+      const afterAvailable = this.availableMissions();
+      const afterActive = this.activeMissions();
+      const afterCompleted = this.completedMissions();
+      
+      console.log('📊 [UserMissionsStore] AFTER enrollment state:', {
+        userProgressCount: afterProgress.length,
+        availableCount: afterAvailable.length,
+        activeCount: afterActive.length,
+        completedCount: afterCompleted.length,
+        userProgressIds: afterProgress.map(p => p.missionId),
+        availableIds: afterAvailable.map(m => m.mission.id),
+        activeIds: afterActive.map(m => m.mission.id),
+        targetMissionInProgress: afterProgress.some(p => p.missionId === missionId),
+        targetMissionInActive: afterActive.some(m => m.mission.id === missionId)
+      });
+      
+      // Log changes
+      console.log('🔀 [UserMissionsStore] Changes detected:', {
+        progressChange: afterProgress.length - beforeProgress.length,
+        availableChange: afterAvailable.length - beforeAvailable.length,
+        activeChange: afterActive.length - beforeActive.length,
+        missionMovedToActive: !beforeActive.some(m => m.mission.id === missionId) && afterActive.some(m => m.mission.id === missionId),
+        missionRemovedFromAvailable: beforeAvailable.some(m => m.mission.id === missionId) && !afterAvailable.some(m => m.mission.id === missionId)
+      });
+      
+      console.log('🎉 [UserMissionsStore] Enrollment completed successfully for:', missionId);
     } catch (error: any) {
-      console.error('[UserMissionsStore] Failed to enroll in mission:', error);
+      console.error('❌ [UserMissionsStore] Failed to enroll in mission:', error);
       this._error.set(error?.message || 'Failed to enroll in mission');
       throw error;
     }

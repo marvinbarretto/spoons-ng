@@ -38,19 +38,14 @@ import type { Pub } from '../../../pubs/utils/pub.models';
             }
           </div>
         </div>
-        <div class="mission-card__status">
-          @if (isJoined()) {
+        @if (isJoined()) {
+          <div class="mission-card__status">
             <span class="status-badge status-badge--joined">
               <span class="status-badge__icon">🎯</span>
               <span class="status-badge__text">In Progress</span>
             </span>
-          } @else {
-            <span class="status-badge status-badge--available">
-              <span class="status-badge__icon">🚀</span>
-              <span class="status-badge__text">Start Mission</span>
-            </span>
-          }
-        </div>
+          </div>
+        }
       </header>
 
       <div class="mission-card__content">

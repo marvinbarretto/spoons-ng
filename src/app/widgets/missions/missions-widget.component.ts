@@ -5,11 +5,11 @@ import { BaseWidgetComponent } from '../base/base-widget.component';
 import { UserMissionsStore } from '../../missions/data-access/user-missions.store';
 import { MissionDisplayData } from '../../missions/utils/user-mission-progress.model';
 import { Mission } from '../../missions/utils/mission.model';
-import { MissionCardComponent } from '../../missions/ui/mission-card/mission-card.component';
+import { MissionCardLightComponent } from '../../home/ui/mission-card-light/mission-card-light.component';
 
 @Component({
   selector: 'app-missions-widget',
-  imports: [CommonModule, MissionCardComponent],
+  imports: [CommonModule, MissionCardLightComponent],
   template: `
     <div class="missions-widget">
       <div class="widget-header">
@@ -43,16 +43,12 @@ import { MissionCardComponent } from '../../missions/ui/mission-card/mission-car
       } @else {
         <div class="missions-grid">
           @for (missionData of activeMissions(); track missionData.mission.id) {
-            <button
-              class="mission-card-button"
-              (click)="onMissionCardClicked(missionData.mission)"
-            >
-              <app-mission-card
-                [mission]="missionData.mission"
-                [isJoined]="missionData.isActive"
-                [progress]="missionData.completedCount"
-              />
-            </button>
+            <app-mission-card-light
+              [mission]="missionData.mission"
+              [isJoined]="missionData.isActive"
+              [progress]="missionData.completedCount"
+              (missionClick)="onMissionCardClicked($event)"
+            />
           }
         </div>
       }
@@ -178,26 +174,6 @@ import { MissionCardComponent } from '../../missions/ui/mission-card/mission-car
       display: flex;
       flex-direction: column;
       gap: 1rem;
-    }
-
-    .mission-card-button {
-      background: none;
-      border: none;
-      padding: 0;
-      cursor: pointer;
-      width: 100%;
-      display: block;
-      text-align: left;
-      transition: all 0.2s ease;
-    }
-
-    .mission-card-button:hover {
-      transform: translateY(-2px);
-    }
-
-    .mission-card-button:focus {
-      outline: 2px solid var(--primary, var(--primary));
-      outline-offset: 2px;
     }
   `]
 })
