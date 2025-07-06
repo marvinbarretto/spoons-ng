@@ -134,7 +134,7 @@ export class LeaderboardStore extends BaseStore<LeaderboardEntry> {
     }
 
     const now = new Date();
-    const checkins = this.checkinStore.checkins();
+    const checkins = this.checkinService.allCheckIns();
 
     // Calculate date threshold
     let threshold: Date;
