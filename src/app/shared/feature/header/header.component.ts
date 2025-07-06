@@ -23,6 +23,7 @@ import { ProfileCustomisationModalComponent } from '../../../home/ui/profile-cus
 import { LandlordStore } from '../../../landlord/data-access/landlord.store';
 import { AuthStore } from '../../../auth/data-access/auth.store';
 import { OverlayService } from '../../data-access/overlay.service';
+import { DataAggregatorService } from '../../data-access/data-aggregator.service';
 
 import { APP_VERSION } from '../../utils/version';
 import { UserStore } from '../../../users/data-access/user.store';
@@ -61,6 +62,7 @@ export class HeaderComponent extends BaseComponent implements AfterViewInit {
   private readonly authStore = inject(AuthStore);
   private readonly userStore = inject(UserStore);
   private readonly overlayService = inject(OverlayService);
+  private readonly dataAggregator = inject(DataAggregatorService);
 
   // ✅ Reactive viewport detection
   readonly isMobile = this.viewportService.isMobile;
@@ -81,7 +83,7 @@ export class HeaderComponent extends BaseComponent implements AfterViewInit {
   // ✅ Auth signals
   readonly user = this.authStore.user;
   readonly isAnonymous = this.authStore.isAnonymous;
-  readonly displayName = this.userStore.displayName;
+  readonly displayName = this.dataAggregator.displayName;
 
   // ✅ Auth actions
   handleLogin = () => this.authStore.loginWithGoogle();

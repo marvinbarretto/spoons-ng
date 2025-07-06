@@ -16,6 +16,7 @@ type CheckinPhase =
   | 'WAITING_FOR_GATES'
   | 'PHOTO_CAPTURED'
   | 'LLM_THINKING'
+  | 'NOT_CARPET_DETECTED'
   | 'CHECK_IN_PROCESSING'
   | 'SUCCESS_MODAL';
 
@@ -608,20 +609,12 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
         return;
       }
 
-      // STUB: Replace LLM service call for debugging
-      console.log('[Checkin] 🧪 STUBBED LLM - always returning carpet detected');
-      const result = {
-        success: true,
-        data: {
-          isCarpet: true,
-          confidence: 0.9,
-          reasoning: 'Stubbed response - always detects carpet for debugging',
-          visualElements: ['stubbed carpet pattern']
-        }
-      };
+      // Call real LLM service for carpet detection
+      console.log('[Checkin] 🤖 Calling LLM service for carpet detection');
+      const result = await this.llmService.detectCarpet(photoData);
 
       this.stopAnalysisMessageCycling();
-      console.log('[Checkin] 🤖 LLM analysis complete (STUBBED):', result);
+      console.log('[Checkin] 🤖 LLM analysis complete:', result);
 
       if (result.success && result.data.isCarpet) {
         console.log('[Checkin] ✅ LLM confirmed carpet detected! Confidence:', result.data.confidence);
@@ -633,14 +626,21 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
         console.log('[Checkin] ❌ LLM did not detect carpet or failed');
         console.log('[Checkin] 🗨️ LLM reasoning:', result.data?.reasoning || 'No reasoning provided');
 
-        // Show negative result briefly, then return to gates
-        const identification = this.getLLMIdentification(result.data);
-        this.currentAnalysisMessage.set(`Not a carpet - ${identification}`);
+        // Show user-friendly message for non-carpet detection
+        console.log('[Checkin] 📱 Showing NOT_CARPET_DETECTED message to user');
+        this.setPhase('NOT_CARPET_DETECTED');
 
-        console.log('[Checkin] 🔄 Returning to gate monitoring after negative LLM result');
-        this.resetForRetry().then(() => {
-          this.startGateMonitoring();
-        });
+        // Wait 3 seconds before returning to camera for retry
+        this.safeSetTimeout(() => {
+          console.log('[Checkin] 🔄 Returning to gate monitoring after user feedback');
+          this.resetForRetry().then(() => {
+            this.startGateMonitoring();
+          }).catch((error) => {
+            console.error('[Checkin] ❌ Failed to restart after carpet rejection:', error);
+            // Ultimate fallback - navigate away to prevent infinite loop
+            this.exitToHomepage();
+          });
+        }, 3000);
       }
     } catch (error) {
       console.error('[Checkin] ❌ LLM analysis error:', error);
@@ -650,15 +650,22 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
   }
 
   private handleLLMError(errorMessage: string): void {
-    console.log('[Checkin] 🔧 Handling LLM error, returning to gates instead of exiting');
+    console.log('[Checkin] 🔧 Handling LLM error, showing user feedback');
 
-    // Show error message briefly, then return to gates
-    this.currentAnalysisMessage.set(`Analysis error - ${errorMessage}`);
-
-    console.log('[Checkin] 🔄 Returning to gate monitoring after LLM error');
-    this.resetForRetry().then(() => {
-      this.startGateMonitoring();
-    });
+    // Show user-friendly error message
+    this.setPhase('NOT_CARPET_DETECTED');
+    
+    // Wait 3 seconds before returning to camera for retry
+    this.safeSetTimeout(() => {
+      console.log('[Checkin] 🔄 Returning to gate monitoring after LLM error');
+      this.resetForRetry().then(() => {
+        this.startGateMonitoring();
+      }).catch((error) => {
+        console.error('[Checkin] ❌ Failed to restart after LLM error:', error);
+        // Ultimate fallback - navigate away to prevent infinite loop
+        this.exitToHomepage();
+      });
+    }, 3000);
   }
 
   private startAnalysisMessageCycling(): void {
@@ -743,7 +750,26 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
     console.log('[Checkin] 🔄 Setting phase to WAITING_FOR_GATES to ensure video element visibility');
     this.setPhase('WAITING_FOR_GATES');
 
-    console.log('[Checkin] 📺 Video element available after phase change:', !!this.videoElement?.nativeElement);
+    // Wait for DOM to update and video element to become available
+    console.log('[Checkin] ⏳ Waiting for DOM update...');
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Poll for video element availability with timeout
+    const maxAttempts = 20; // 2 seconds max wait
+    let attempts = 0;
+    
+    while (attempts < maxAttempts && !this.videoElement?.nativeElement) {
+      console.log('[Checkin] 📺 Waiting for video element... attempt', attempts + 1);
+      await new Promise(resolve => setTimeout(resolve, 100));
+      attempts++;
+    }
+
+    if (!this.videoElement?.nativeElement) {
+      console.error('[Checkin] ❌ Video element never became available after', maxAttempts * 100, 'ms');
+      return;
+    }
+
+    console.log('[Checkin] 📺 Video element available after', attempts * 100, 'ms');
 
     // Start fresh camera
     try {

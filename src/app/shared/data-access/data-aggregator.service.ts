@@ -260,6 +260,35 @@ export class DataAggregatorService {
   }
 
   /**
+   * Reactive display name (single source of truth for UI)
+   * @description Properly merges UserStore + AuthStore display names with immediate reactivity
+   */
+  readonly displayName = computed(() => {
+    this.debug.standard('[DataAggregator] Computing displayName');
+
+    const userProfile = this.userStore.user();
+    const authUser = this.authStore.user();
+
+    if (!authUser) {
+      this.debug.standard('[DataAggregator] No auth user - returning null displayName');
+      return null;
+    }
+
+    // Priority: UserStore displayName > AuthStore displayName > fallback
+    const displayName = userProfile?.displayName || authUser.displayName || 'User';
+
+    this.debug.standard('[DataAggregator] DisplayName computed', {
+      uid: authUser.uid?.slice(0, 8),
+      userStoreDisplayName: userProfile?.displayName,
+      authStoreDisplayName: authUser.displayName,
+      finalDisplayName: displayName,
+      source: userProfile?.displayName ? 'UserStore' : 'AuthStore'
+    });
+
+    return displayName;
+  });
+
+  /**
    * Aggregated user data (combines Auth + User store)
    * @description Single source of truth for complete user data
    */

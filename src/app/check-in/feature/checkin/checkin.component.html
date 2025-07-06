@@ -78,6 +78,12 @@
           <div class="thinking-spinner">🤖</div>
         }
 
+        @case ('NOT_CARPET_DETECTED') {
+          <div class="status-message not-carpet">That doesn't look like a carpet</div>
+          <div class="status-submessage">Try pointing at a carpet pattern</div>
+          <div class="retry-countdown">Returning to camera in a moment...</div>
+        }
+
         @case ('CHECK_IN_PROCESSING') {
           <div class="status-message">{{ pubName() }}</div>
         }
