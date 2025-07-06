@@ -332,7 +332,7 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
     });
 
     // Consider stable if movement is small and enough time has passed
-    const stable = movement < 5 && timeSinceLastUpdate > 1000;
+    const stable = movement < 5 && timeSinceLastUpdate > 2000;
 
     console.log('[Checkin] 📱 Orientation update:', { beta, gamma, stable, movement });
 
