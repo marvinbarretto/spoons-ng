@@ -27,14 +27,14 @@ import type { User } from '@users/utils/user.model';
       <div>
         <app-button 
           variant="secondary"
-          [size]="ButtonSize.MD" 
+          [size]="ButtonSize.MEDIUM" 
           (onClick)="back.emit()"
         >
           Back
         </app-button>
         <app-button 
           variant="primary"
-          [size]="ButtonSize.LG" 
+          [size]="ButtonSize.LARGE" 
           [disabled]="!selectedAvatarId()" 
           (onClick)="continue.emit()"
         >

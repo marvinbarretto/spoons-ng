@@ -1,29 +1,32 @@
 /**
- * @fileoverview FirebaseMetricsService - Track and measure Firebase operation calls
+ * @fileoverview FirebaseMetricsService - Raw Firebase Operation Tracker
  * 
- * PURPOSE:
- * - Monitor Firebase read/write/delete operations across the app
- * - Provide session-based metrics to measure optimization efforts
- * - Reset counters on new sessions for clear regression testing
- * - Generate reports showing Firebase usage patterns
+ * Tracks raw Firebase operations (reads, writes, deletes) for session analysis.
+ * Resets on page reload. Used by DatabaseMetricsService for cost calculations.
  * 
- * USAGE:
- * ```typescript
- * // In FirestoreCrudService or any Firebase operation
- * this.metricsService.trackCall('read', 'users');
- * this.metricsService.trackCall('write', 'checkins');
- * 
- * // Get current session metrics
- * const summary = this.metricsService.getSessionSummary();
- * 
- * // Reset for new test session
- * this.metricsService.resetSession();
- * ```
+ * RESPONSIBILITIES:
+ * - Track individual Firebase operations with timing and metadata
+ * - Session-based tracking (resets on browser refresh)
+ * - Error tracking and retry monitoring
+ * - Performance analysis (latency, P95, etc.)
  * 
  * INTEGRATION:
- * - Wraps around existing Firestore operations
- * - Provides console summaries and debug info
- * - Enables before/after optimization comparisons
+ * - Called by CachedFirestoreService during operations
+ * - Data consumed by DatabaseMetricsService for business analytics
+ * - Provides real-time operation feed for admin dashboard
+ * 
+ * @example
+ * ```typescript
+ * // Basic usage in services
+ * this.firebaseMetricsService.trackCall('read', 'users', 'getAll', {
+ *   latency: 45,
+ *   cached: false
+ * });
+ * 
+ * // Get session data for analysis
+ * const summary = this.firebaseMetricsService.getSessionSummary();
+ * console.log(`Cache hit ratio: ${summary.cacheHitRatio}`);
+ * ```
  */
 
 import { Injectable } from '@angular/core';
@@ -35,6 +38,11 @@ export type FirebaseCallMetrics = {
   collection: string;
   timestamp: number;
   callId: string;
+  documentId?: string;
+  latency?: number;
+  cached?: boolean;
+  error?: string;
+  retryAttempt?: number;
 };
 
 export type SessionSummary = {
@@ -46,6 +54,10 @@ export type SessionSummary = {
   callsPerMinute: number;
   mostActiveCollection: string;
   recentCalls: FirebaseCallMetrics[];
+  cacheHitRatio: number;
+  averageLatency: number;
+  errorRate: number;
+  totalErrors: number;
 };
 
 @Injectable({ providedIn: 'root' })
@@ -75,8 +87,20 @@ export class FirebaseMetricsService {
    * @param operation - Type of Firebase operation
    * @param collection - Collection name being accessed
    * @param details - Optional additional details for debugging
+   * @param options - Optional operation metadata
    */
-  trackCall(operation: FirebaseOperation, collection: string, details?: string): void {
+  trackCall(
+    operation: FirebaseOperation, 
+    collection: string, 
+    details?: string,
+    options?: {
+      documentId?: string;
+      latency?: number;
+      cached?: boolean;
+      error?: string;
+      retryAttempt?: number;
+    }
+  ): void {
     const callId = `${operation}-${collection}-${++this.callCounter}`;
     const timestamp = Date.now();
     
@@ -90,7 +114,12 @@ export class FirebaseMetricsService {
       operation,
       collection,
       timestamp,
-      callId
+      callId,
+      documentId: options?.documentId,
+      latency: options?.latency,
+      cached: options?.cached,
+      error: options?.error,
+      retryAttempt: options?.retryAttempt
     };
     
     this.callHistory.push(callMetrics);
@@ -100,8 +129,15 @@ export class FirebaseMetricsService {
       this.callHistory.shift();
     }
     
-    // Log the call
-    console.log(`🔥 [FirebaseMetrics] ${operation.toUpperCase()} ${collection}${details ? ` (${details})` : ''} [${callId}]`);
+    // Enhanced logging
+    const cacheStatus = options?.cached ? ' (cached)' : '';
+    const latencyInfo = options?.latency ? ` ${options.latency.toFixed(1)}ms` : '';
+    const errorInfo = options?.error ? ` ERROR: ${options.error}` : '';
+    const retryInfo = options?.retryAttempt ? ` (retry ${options.retryAttempt})` : '';
+    
+    console.log(
+      `🔥 [FirebaseMetrics] ${operation.toUpperCase()} ${collection}${cacheStatus}${latencyInfo}${errorInfo}${retryInfo}${details ? ` (${details})` : ''} [${callId}]`
+    );
     
     // Log milestone summaries
     const totalCalls = Array.from(this.operationCalls.values()).reduce((sum, count) => sum + count, 0);
@@ -111,7 +147,13 @@ export class FirebaseMetricsService {
   }
 
   /**
-   * Get comprehensive session summary
+   * Get comprehensive session summary with calculated metrics
+   * 
+   * Aggregates all tracked operations into business metrics:
+   * - Cache hit ratio (cached calls / total calls)
+   * - Average latency across all operations
+   * - Error rate calculation
+   * - Operations per minute based on session duration
    */
   getSessionSummary(): SessionSummary {
     const now = Date.now();
@@ -149,6 +191,20 @@ export class FirebaseMetricsService {
     // Calculate calls per minute
     const callsPerMinute = sessionDuration > 0 ? (totalCalls / (sessionDuration / 60000)) : 0;
     
+    // Calculate cache hit ratio
+    const cachedCalls = this.callHistory.filter(call => call.cached).length;
+    const cacheHitRatio = totalCalls > 0 ? cachedCalls / totalCalls : 0;
+    
+    // Calculate average latency
+    const callsWithLatency = this.callHistory.filter(call => call.latency !== undefined);
+    const averageLatency = callsWithLatency.length > 0 
+      ? callsWithLatency.reduce((sum, call) => sum + (call.latency || 0), 0) / callsWithLatency.length 
+      : 0;
+    
+    // Calculate error rate
+    const errorCalls = this.callHistory.filter(call => call.error).length;
+    const errorRate = totalCalls > 0 ? errorCalls / totalCalls : 0;
+    
     return {
       totalCalls,
       breakdown,
@@ -157,7 +213,11 @@ export class FirebaseMetricsService {
       sessionStart: this.sessionStart,
       callsPerMinute,
       mostActiveCollection,
-      recentCalls: [...this.callHistory].slice(-10) // Last 10 calls
+      recentCalls: [...this.callHistory].slice(-10), // Last 10 calls
+      cacheHitRatio,
+      averageLatency,
+      errorRate,
+      totalErrors: errorCalls
     };
   }
 
@@ -217,6 +277,11 @@ export class FirebaseMetricsService {
 
   /**
    * Get breakdown by collection (for identifying optimization targets)
+   * 
+   * Groups operations by collection and operation type to identify:
+   * - Which collections are accessed most frequently
+   * - Read vs write patterns per collection
+   * - Targets for caching optimization
    */
   getCollectionBreakdown(): Array<{ collection: string; totalCalls: number; operations: Record<FirebaseOperation, number> }> {
     const collectionMap = new Map<string, Record<FirebaseOperation, number>>();
@@ -256,6 +321,87 @@ export class FirebaseMetricsService {
     const callsPerMinute = (totalCalls / (duration / 60000)).toFixed(1);
     
     console.log(`🔥 [FirebaseMetrics] 📊 Milestone: ${totalCalls} calls (${callsPerMinute}/min)`);
+  }
+
+  /**
+   * Get recent Firebase operations for real-time monitoring
+   */
+  getRecentOperations(limit = 50): FirebaseCallMetrics[] {
+    return [...this.callHistory].slice(-limit).reverse(); // Most recent first
+  }
+
+  /**
+   * Get operations for the last N minutes
+   */
+  getRecentOperationsByTime(minutes = 5): FirebaseCallMetrics[] {
+    const cutoff = Date.now() - (minutes * 60 * 1000);
+    return this.callHistory.filter(call => call.timestamp > cutoff);
+  }
+
+  /**
+   * Get error analysis
+   */
+  getErrorAnalysis(): {
+    totalErrors: number;
+    errorsByCollection: Record<string, number>;
+    errorsByType: Record<string, number>;
+    recentErrors: FirebaseCallMetrics[];
+  } {
+    const errorCalls = this.callHistory.filter(call => call.error);
+    
+    const errorsByCollection = errorCalls.reduce((acc, call) => {
+      acc[call.collection] = (acc[call.collection] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    const errorsByType = errorCalls.reduce((acc, call) => {
+      const errorType = call.error?.split(':')[0] || 'unknown';
+      acc[errorType] = (acc[errorType] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    
+    return {
+      totalErrors: errorCalls.length,
+      errorsByCollection,
+      errorsByType,
+      recentErrors: errorCalls.slice(-10) // Last 10 errors
+    };
+  }
+
+  /**
+   * Get performance statistics
+   */
+  getPerformanceStats(): {
+    averageLatency: number;
+    p95Latency: number;
+    slowestOperations: FirebaseCallMetrics[];
+    fastestOperations: FirebaseCallMetrics[];
+  } {
+    const callsWithLatency = this.callHistory.filter(call => call.latency !== undefined);
+    
+    if (callsWithLatency.length === 0) {
+      return {
+        averageLatency: 0,
+        p95Latency: 0,
+        slowestOperations: [],
+        fastestOperations: []
+      };
+    }
+    
+    const latencies = callsWithLatency.map(call => call.latency!).sort((a, b) => a - b);
+    const averageLatency = latencies.reduce((sum, lat) => sum + lat, 0) / latencies.length;
+    const p95Index = Math.floor(latencies.length * 0.95);
+    const p95Latency = latencies[p95Index] || 0;
+    
+    const sortedBySlowest = [...callsWithLatency].sort((a, b) => (b.latency || 0) - (a.latency || 0));
+    const sortedByFastest = [...callsWithLatency].sort((a, b) => (a.latency || 0) - (b.latency || 0));
+    
+    return {
+      averageLatency,
+      p95Latency,
+      slowestOperations: sortedBySlowest.slice(0, 5),
+      fastestOperations: sortedByFastest.slice(0, 5)
+    };
   }
 
   /**

@@ -8,7 +8,7 @@ import { AuthStore } from '@auth/data-access/auth.store';
 import { PubStore } from '@pubs/data-access/pub.store';
 import { CarpetStorageService } from '@carpets/data-access/carpet-storage.service';
 import { BADGE_DEFINITIONS } from '@badges/utils/badge.config';
-import { ButtonVariant } from '@shared/ui/button/button.params';
+import { ButtonSize } from '@shared/ui/button/button.params';
 import { environment } from '../../../../environments/environment';
 import { CheckInResultData } from '../../utils/check-in.models';
 
@@ -168,7 +168,8 @@ type PointsBreakdownItem = {
       <div class="modal-footer">
         <div class="button-group">
           <app-button
-            [variant]="ButtonVariant.PRIMARY"
+            variant="primary"
+            [size]="ButtonSize.LARGE"
             [fullWidth]="true"
             (onClick)="handleDismiss()"
           >
@@ -709,7 +710,7 @@ type PointsBreakdownItem = {
   `]
 })
 export class ModalCheckinSuccessComponent {
-  protected readonly ButtonVariant = ButtonVariant;
+  readonly ButtonSize = ButtonSize;
 
   // Inputs
   readonly data = input.required<CheckInResultData>();

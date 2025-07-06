@@ -1,4 +1,4 @@
-import { Component, output, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, input, output, signal, ChangeDetectionStrategy } from '@angular/core';
 import { ButtonComponent } from '@shared/ui/button/button.component';
 import { ButtonSize } from '@shared/ui/button/button.params';
 
@@ -35,7 +35,9 @@ import { ButtonSize } from '@shared/ui/button/button.params';
       <div class="cta-section">
         <app-button 
           variant="primary" 
-          [size]="ButtonSize.LG"
+          [size]="ButtonSize.LARGE"
+          [loading]="loading()"
+          loadingText="Getting started..."
           (onClick)="continue.emit()"
         >
           Continue
@@ -191,6 +193,7 @@ import { ButtonSize } from '@shared/ui/button/button.params';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WelcomeMessageStepComponent {
+  readonly loading = input<boolean>(false);
   readonly continue = output<void>();
 
   // Real user state (default: true)

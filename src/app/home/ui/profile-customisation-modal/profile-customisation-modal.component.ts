@@ -57,6 +57,7 @@ import { ProfileIdentityWidgetComponent } from './widgets/profile-identity-widge
           variant="primary"
           (onClick)="saveChanges()"
           [loading]="saving()"
+          loadingText="Saving profile..."
           [disabled]="!hasChanges() || saving()"
         >
           Save Changes

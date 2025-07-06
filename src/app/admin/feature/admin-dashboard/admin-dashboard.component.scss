@@ -419,6 +419,325 @@
   }
 }
 
+// Firebase Operations Section
+.firebase-operations-section {
+  margin-bottom: 48px;
+  padding: 24px;
+  background: var(--background);
+  border: 2px solid var(--primary, #3b82f6);
+  border-radius: 12px;
+
+  h2 {
+    margin: 0;
+    color: var(--primary, #3b82f6);
+    font-size: 1.5rem;
+  }
+}
+
+.firebase-controls {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.clear-cache-btn {
+  background: var(--color-error, #ef4444);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: var(--color-error-dark, #dc2626);
+  }
+}
+
+.metrics-link {
+  background: var(--primary, #3b82f6);
+  color: white;
+  text-decoration: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: var(--primary-dark, #2563eb);
+  }
+}
+
+.firebase-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin: 24px 0;
+}
+
+.firebase-card {
+  background: var(--background-darkest);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+
+  h3 {
+    margin: 0 0 16px 0;
+    font-size: 1.125rem;
+    color: var(--text);
+  }
+}
+
+.firebase-stats {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.firebase-stat {
+  text-align: center;
+  flex: 1;
+}
+
+.firebase-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary, #3b82f6);
+  margin-bottom: 4px;
+}
+
+.firebase-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cache-metrics {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.cache-ratio {
+  text-align: center;
+}
+
+.ratio-circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--color-success, #10b981) 0deg calc(var(--ratio, 0) * 360deg),
+    var(--background) calc(var(--ratio, 0) * 360deg) 360deg
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin: 0 auto 8px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    background: var(--background-darkest);
+    border-radius: 50%;
+  }
+}
+
+.ratio-text {
+  position: relative;
+  z-index: 1;
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: var(--text);
+}
+
+.ratio-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.cache-details {
+  flex: 1;
+}
+
+.cache-detail {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.cache-icon {
+  width: 16px;
+}
+
+.collections-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.collection-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--background);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.collection-name {
+  font-weight: 500;
+  color: var(--text);
+}
+
+.collection-stats {
+  display: flex;
+  gap: 12px;
+  font-size: 0.75rem;
+}
+
+.collection-ops {
+  color: var(--primary, #3b82f6);
+  font-weight: 500;
+}
+
+.collection-cache {
+  color: var(--color-success, #10b981);
+}
+
+.error-stats {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.error-summary {
+  text-align: center;
+}
+
+.error-rate {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-success, #10b981);
+  margin-bottom: 4px;
+
+  &.has-errors {
+    color: var(--color-error, #ef4444);
+  }
+}
+
+.error-label {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.error-details {
+  flex: 1;
+  font-size: 0.875rem;
+}
+
+.error-count {
+  color: var(--color-error, #ef4444);
+  font-weight: 500;
+}
+
+.no-errors {
+  color: var(--color-success, #10b981);
+}
+
+.recent-operations {
+  margin-top: 24px;
+
+  h3 {
+    margin: 0 0 16px 0;
+    font-size: 1.125rem;
+    color: var(--text);
+  }
+}
+
+.operations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.operation-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--background-darkest);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.75rem;
+
+  &.cached {
+    border-left: 3px solid var(--color-success, #10b981);
+  }
+
+  &.error {
+    border-left: 3px solid var(--color-error, #ef4444);
+  }
+}
+
+.operation-type {
+  background: var(--primary, #3b82f6);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+  min-width: 50px;
+  text-align: center;
+}
+
+.operation-collection {
+  color: var(--text);
+  font-weight: 500;
+  min-width: 80px;
+}
+
+.operation-latency {
+  color: var(--text-secondary);
+  min-width: 40px;
+}
+
+.operation-cache {
+  color: var(--color-success, #10b981);
+  font-weight: 500;
+}
+
+.operation-error {
+  color: var(--color-error, #ef4444);
+  font-weight: 500;
+  flex: 1;
+}
+
+.operation-time {
+  color: var(--text-tertiary);
+  margin-left: auto;
+}
+
+.no-operations,
+.no-collections {
+  text-align: center;
+  color: var(--text-secondary);
+  font-style: italic;
+  padding: 20px;
+}
+
 // Data Debug Section
 .data-debug-section {
   margin-top: 48px;

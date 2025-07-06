@@ -20,7 +20,7 @@ import { ButtonSize } from '@shared/ui/button/button.params';
           <p class="notice-text">We need location access to verify check-ins</p>
           <app-button
             variant="secondary"
-            [size]="ButtonSize.SM"
+            [size]="ButtonSize.SMALL"
             (onClick)="requestLocation()"
           >
             Enable Location
@@ -46,7 +46,7 @@ import { ButtonSize } from '@shared/ui/button/button.params';
       <div class="step-actions">
         <app-button
           variant="secondary"
-          [size]="ButtonSize.MD"
+          [size]="ButtonSize.MEDIUM"
           (onClick)="back.emit()"
           [disabled]="locationRequired()"
         >
@@ -56,9 +56,11 @@ import { ButtonSize } from '@shared/ui/button/button.params';
         @if (selectedPub()) {
           <app-button
             variant="primary"
-            [size]="ButtonSize.LG"
+            [size]="ButtonSize.LARGE"
             (onClick)="onContinue()"
-            [disabled]="locationRequired()"
+            [disabled]="locationRequired() || loading()"
+            [loading]="loading()"
+            loadingText="Completing setup..."
           >
             Continue
           </app-button>
@@ -178,6 +180,7 @@ export class ChooseLocalStepComponent {
   readonly locationGranted = input<boolean>(false);
   readonly locationRequired = input<boolean>(false);
   readonly hasExistingLocationPermission = input<boolean>(false);
+  readonly loading = input<boolean>(false);
 
   // Outputs
   readonly pubSelected = output<Pub | null>();

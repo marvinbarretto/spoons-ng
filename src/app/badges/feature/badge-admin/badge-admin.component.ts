@@ -1,5 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { BadgeIconComponent } from '../../ui/badge-icon/badge-icon.component';
+import { ButtonComponent } from '../../../shared/ui/button/button.component';
+import { ButtonSize } from '../../../shared/ui/button/button.params';
 import type { Badge } from '../../utils/badge.model';
 import { BadgeFormComponent } from '../../ui/badge-form/badge-form.component';
 import { OverlayService } from '../../../shared/data-access/overlay.service';
@@ -7,14 +9,14 @@ import { BadgeStore } from '../../data-access/badge.store';
 
 @Component({
   selector: 'app-badge-admin-page',
-  imports: [BadgeIconComponent],
+  imports: [BadgeIconComponent, ButtonComponent],
   template: `
     <div class="admin-container">
       <header class="admin-header">
         <h1>Badge Administration</h1>
-        <button (click)="createBadge()" class="btn-primary">
+        <app-button variant="primary" (onClick)="createBadge()">
           + Create New Badge
-        </button>
+        </app-button>
       </header>
 
       @if (loading()) {
@@ -24,14 +26,14 @@ import { BadgeStore } from '../../data-access/badge.store';
       } @else if (error()) {
         <div class="error-state">
           <p>Error: {{ error() }}</p>
-          <button (click)="retry()" class="btn-secondary">Retry</button>
+          <app-button variant="secondary" (onClick)="retry()">Retry</app-button>
         </div>
       } @else if (badges().length === 0) {
         <div class="empty-state">
           <p>No badges created yet.</p>
-          <button (click)="createBadge()" class="btn-primary">
+          <app-button variant="primary" (onClick)="createBadge()">
             Create your first badge
-          </button>
+          </app-button>
         </div>
       } @else {
         <div class="table-container">
@@ -57,18 +59,20 @@ import { BadgeStore } from '../../data-access/badge.store';
                     <code>{{ badge.criteria }}</code>
                   </td>
                   <td class="actions-cell">
-                    <button
-                      (click)="editBadge(badge)"
-                      class="btn-secondary btn-small"
+                    <app-button
+                      variant="secondary"
+                      [size]="ButtonSize.SMALL"
+                      (onClick)="editBadge(badge)"
                     >
                       Edit
-                    </button>
-                    <button
-                      (click)="deleteBadge(badge)"
-                      class="btn-danger btn-small"
+                    </app-button>
+                    <app-button
+                      variant="danger"
+                      [size]="ButtonSize.SMALL"
+                      (onClick)="deleteBadge(badge)"
                     >
                       Delete
-                    </button>
+                    </app-button>
                   </td>
                 </tr>
               }
@@ -239,6 +243,9 @@ export class BadgeAdminComponent implements OnInit {
   protected readonly badges = this.badgeStore.definitions;
   protected readonly loading = this.badgeStore.definitionsLoading;
   protected readonly error = this.badgeStore.definitionsError;
+
+  // ✅ Expose ButtonSize for template
+  readonly ButtonSize = ButtonSize;
 
   ngOnInit(): void {
     console.log('[BadgeAdminPageComponent] ngOnInit');

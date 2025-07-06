@@ -1,7 +1,8 @@
 // src/app/shared/ui/database-metrics-dashboard/database-metrics-dashboard.component.ts
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DatabaseMetricsService } from '../../data-access/database-metrics.service';
+import { FirebaseMetricsService } from '../../data-access/firebase-metrics.service';
 
 @Component({
   selector: 'app-database-metrics-dashboard',
@@ -48,12 +49,12 @@ import { DatabaseMetricsService } from '../../data-access/database-metrics.servi
         <h3>Cost Analysis</h3>
         <div class="metrics-grid">
           <div class="metric-card">
-            <div class="metric-value">$ {{ formatCurrency(costs().firestore.monthlyCost) }}</div>
+            <div class="metric-value">&dollar;{{ formatCurrency(costs().firestore.monthlyCost) }}</div>
             <div class="metric-label">Current Monthly Cost</div>
             <div class="metric-detail">{{ costs().firestore.reads }} reads, {{ costs().firestore.writes }} writes</div>
           </div>
           <div class="metric-card savings">
-            <div class="metric-value">$ {{ formatCurrency(costs().savings.monthlySavings) }}</div>
+            <div class="metric-value">&dollar;{{ formatCurrency(costs().savings.monthlySavings) }}</div>
             <div class="metric-label">Monthly Savings</div>
             <div class="metric-detail">{{ costs().savings.preventedReads }} prevented reads</div>
           </div>
@@ -132,6 +133,116 @@ import { DatabaseMetricsService } from '../../data-access/database-metrics.servi
         </div>
       </section>
 
+      <!-- Real-time Firebase Operations Feed -->
+      <section class="metrics-section">
+        <h3>🔥 Real-time Firebase Operations</h3>
+        <div class="firebase-realtime">
+          <div class="realtime-stats">
+            <div class="realtime-stat">
+              <div class="stat-value">{{ firebaseMetrics().operationsPerMinute.toFixed(1) }}</div>
+              <div class="stat-label">Ops/Min</div>
+            </div>
+            <div class="realtime-stat">
+              <div class="stat-value">{{ firebaseMetrics().errorAnalysis.totalErrors }}</div>
+              <div class="stat-label">Errors</div>
+            </div>
+            <div class="realtime-stat">
+              <div class="stat-value">{{ (performance().errorRate * 100).toFixed(1) }}%</div>
+              <div class="stat-label">Error Rate</div>
+            </div>
+          </div>
+          
+          <div class="operations-feed">
+            <h4>Recent Operations (Last 50)</h4>
+            <div class="feed-container">
+              @for (op of firebaseMetrics().recentOperations; track op.callId) {
+                <div class="feed-item" 
+                     [class.cached]="op.cached" 
+                     [class.error]="op.error"
+                     [class.slow]="op.latency && op.latency > 1000">
+                  <div class="feed-timestamp">{{ formatDetailedTime(op.timestamp) }}</div>
+                  <div class="feed-operation">{{ op.operation.toUpperCase() }}</div>
+                  <div class="feed-collection">{{ op.collection }}</div>
+                  @if (op.documentId) {
+                    <div class="feed-document">{{ op.documentId }}</div>
+                  }
+                  @if (op.latency) {
+                    <div class="feed-latency">{{ op.latency.toFixed(0) }}ms</div>
+                  }
+                  <div class="feed-status">
+                    @if (op.error) {
+                      <span class="status-error">❌ {{ op.error }}</span>
+                    } @else if (op.cached) {
+                      <span class="status-cached">⚡ cached</span>
+                    } @else {
+                      <span class="status-network">🌐 network</span>
+                    }
+                  </div>
+                </div>
+              } @empty {
+                <div class="feed-empty">No operations recorded yet</div>
+              }
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Cache Performance Breakdown -->
+      <section class="metrics-section">
+        <h3>⚡ Cache Performance Analysis</h3>
+        <div class="cache-analysis">
+          <div class="cache-summary">
+            <div class="cache-stat-card">
+              <div class="cache-stat-value">{{ formatBytes(cachePerformance().totalCacheSize) }}</div>
+              <div class="cache-stat-label">Total Cache Size</div>
+            </div>
+            <div class="cache-stat-card">
+              <div class="cache-stat-value">{{ cachePerformance().cacheSavings.operationsSaved }}</div>
+              <div class="cache-stat-label">Operations Saved</div>
+            </div>
+            <div class="cache-stat-card">
+              <div class="cache-stat-value">{{ cachePerformance().cacheSavings.timeSaved.toFixed(0) }}ms</div>
+              <div class="cache-stat-label">Time Saved</div>
+            </div>
+            <div class="cache-stat-card">
+              <div class="cache-stat-value">&dollar;{{ formatCurrency(cachePerformance().cacheSavings.costSaved) }}</div>
+              <div class="cache-stat-label">Cost Saved</div>
+            </div>
+          </div>
+          
+          <div class="cache-by-collection">
+            <h4>Cache Performance by Collection</h4>
+            <div class="collection-cache-list">
+              @for (cache of cachePerformance().cachesByCollection; track cache.collection) {
+                <div class="collection-cache-item">
+                  <div class="collection-cache-name">{{ cache.collection }}</div>
+                  <div class="collection-cache-metrics">
+                    <div class="cache-metric">
+                      <span class="metric-label">Hit Ratio:</span>
+                      <span class="metric-value">{{ (cache.hitRatio * 100).toFixed(1) }}%</span>
+                    </div>
+                    <div class="cache-metric">
+                      <span class="metric-label">Hits:</span>
+                      <span class="metric-value hits">{{ cache.totalHits }}</span>
+                    </div>
+                    <div class="cache-metric">
+                      <span class="metric-label">Misses:</span>
+                      <span class="metric-value misses">{{ cache.totalMisses }}</span>
+                    </div>
+                    <div class="cache-metric">
+                      <span class="metric-label">Avg Latency:</span>
+                      <span class="metric-value">{{ cache.avgLatency.toFixed(0) }}ms</span>
+                    </div>
+                  </div>
+                </div>
+              } @empty {
+                <div class="no-cache-data">No cache data available</div>
+              }
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- Export Section -->
       <section class="metrics-section">
         <h3>Export Data</h3>
@@ -152,12 +263,14 @@ import { DatabaseMetricsService } from '../../data-access/database-metrics.servi
   `,
   styleUrl: './database-metrics-dashboard.component.scss'
 })
-export class DatabaseMetricsDashboardComponent {
+export class DatabaseMetricsDashboardComponent implements OnInit, OnDestroy {
   private readonly metricsService = inject(DatabaseMetricsService);
+  private readonly firebaseMetricsService = inject(FirebaseMetricsService);
 
   // Component state
   readonly isResetting = signal(false);
   readonly isExporting = signal(false);
+  private refreshInterval?: number;
 
   // Computed metrics
   readonly performance = this.metricsService.performanceMetrics;
@@ -175,6 +288,25 @@ export class DatabaseMetricsDashboardComponent {
     const totalOps = this.performance().totalOperations;
     return totalOps * 1024; // Estimate 1KB per operation
   });
+
+  // Firebase-specific metrics
+  readonly firebaseMetrics = computed(() => this.metricsService.getFirebaseMetrics());
+  readonly cachePerformance = computed(() => this.metricsService.getCachePerformanceBreakdown());
+
+  ngOnInit(): void {
+    // Refresh metrics every 5 seconds for real-time updates
+    this.refreshInterval = window.setInterval(() => {
+      // Force recomputation by accessing signals
+      this.performance();
+      this.firebaseMetrics();
+    }, 5000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.refreshInterval) {
+      clearInterval(this.refreshInterval);
+    }
+  }
 
   async resetMetrics(): Promise<void> {
     this.isResetting.set(true);
@@ -240,5 +372,16 @@ export class DatabaseMetricsDashboardComponent {
   getBarHeight(value: number, max: number): number {
     const maxHeight = 50; // Maximum bar height in pixels
     return max > 0 ? (value / max) * maxHeight : 0;
+  }
+
+  formatDetailedTime(timestamp: number): string {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString('en-US', { 
+      hour12: false, 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      second: '2-digit',
+      fractionalSecondDigits: 3
+    });
   }
 }

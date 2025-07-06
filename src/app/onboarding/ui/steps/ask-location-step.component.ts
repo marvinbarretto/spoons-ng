@@ -60,7 +60,7 @@ import { ButtonSize } from '@shared/ui/button/button.params';
       <div class="step-actions">
         <app-button
           variant="primary"
-          [size]="ButtonSize.LG"
+          [size]="ButtonSize.LARGE"
           [loading]="isRequesting()"
           [disabled]="isRequesting()"
           (onClick)="enableLocation.emit()"

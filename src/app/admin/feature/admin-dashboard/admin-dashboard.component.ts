@@ -1,8 +1,9 @@
 // src/app/admin/feature/admin-dashboard/admin-dashboard.component.ts
-import { Component, inject, computed, isDevMode } from '@angular/core';
+import { Component, inject, computed, isDevMode, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { DatabaseMetricsService } from '../../../shared/data-access/database-metrics.service';
+import { FirebaseMetricsService } from '../../../shared/data-access/firebase-metrics.service';
 import { LeaderboardStore } from '../../../leaderboard/data-access/leaderboard.store';
 import { FeedbackStore } from '../../../feedback/data-access/feedback.store';
 import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
@@ -112,6 +113,138 @@ type StatData = {
           }
         </div>
       </section>
+
+      <!-- Firebase Operations Widget -->
+      @if (showFirebaseWidget()) {
+        <section class="firebase-operations-section">
+          <div class="section-header">
+            <h2>🔥 Firebase Operations Monitor</h2>
+            <div class="firebase-controls">
+              <button
+                class="clear-cache-btn"
+                (click)="clearFirebaseCache()"
+                title="Clear Firebase cache and reset metrics"
+              >
+                🗑️ Clear Cache
+              </button>
+              <a
+                class="metrics-link"
+                routerLink="/admin/metrics"
+                title="View detailed metrics"
+              >
+                📊 Detailed Metrics
+              </a>
+            </div>
+          </div>
+          
+          <div class="firebase-grid">
+            <!-- Operations Summary -->
+            <div class="firebase-card operations-summary">
+              <h3>📈 Live Operations</h3>
+              <div class="firebase-stats">
+                <div class="firebase-stat">
+                  <div class="firebase-value">{{ firebaseOperations().totalOperations }}</div>
+                  <div class="firebase-label">Total Operations</div>
+                </div>
+                <div class="firebase-stat">
+                  <div class="firebase-value">{{ firebaseOperations().operationsPerMinute.toFixed(1) }}</div>
+                  <div class="firebase-label">Ops/Min</div>
+                </div>
+                <div class="firebase-stat">
+                  <div class="firebase-value">{{ (firebaseOperations().averageLatency || 0).toFixed(0) }}ms</div>
+                  <div class="firebase-label">Avg Latency</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Cache Performance -->
+            <div class="firebase-card cache-performance">
+              <h3>⚡ Cache Performance</h3>
+              <div class="cache-metrics">
+                <div class="cache-ratio">
+                  <div class="ratio-circle" [style.--ratio]="firebaseOperations().cacheHitRatio">
+                    <span class="ratio-text">{{ (firebaseOperations().cacheHitRatio * 100).toFixed(0) }}%</span>
+                  </div>
+                  <div class="ratio-label">Hit Ratio</div>
+                </div>
+                <div class="cache-details">
+                  <div class="cache-detail">
+                    <span class="cache-icon">✅</span>
+                    <span>Cache Hits</span>
+                  </div>
+                  <div class="cache-detail">
+                    <span class="cache-icon">🔄</span>
+                    <span>Speed Boost: {{ cacheEffectiveness().speedImprovement.toFixed(1) }}x</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Top Collections -->
+            <div class="firebase-card top-collections">
+              <h3>🏆 Top Collections</h3>
+              <div class="collections-list">
+                @for (collection of firebaseOperations().topCollections; track collection.collection) {
+                  <div class="collection-row">
+                    <div class="collection-name">{{ collection.collection }}</div>
+                    <div class="collection-stats">
+                      <span class="collection-ops">{{ collection.operations }} ops</span>
+                      <span class="collection-cache">{{ (collection.cacheHitRatio * 100).toFixed(0) }}% cached</span>
+                    </div>
+                  </div>
+                } @empty {
+                  <div class="no-collections">No operations yet</div>
+                }
+              </div>
+            </div>
+
+            <!-- Error Tracking -->
+            <div class="firebase-card error-tracking">
+              <h3>⚠️ Error Monitor</h3>
+              <div class="error-stats">
+                <div class="error-summary">
+                  <div class="error-rate" [class.has-errors]="firebaseOperations().errorRate > 0">
+                    {{ (firebaseOperations().errorRate * 100).toFixed(1) }}%
+                  </div>
+                  <div class="error-label">Error Rate</div>
+                </div>
+                <div class="error-details">
+                  @if (firebaseOperations().totalErrors > 0) {
+                    <div class="error-count">{{ firebaseOperations().totalErrors }} total errors</div>
+                  } @else {
+                    <div class="no-errors">✅ No errors detected</div>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Operations -->
+          <div class="recent-operations">
+            <h3>📋 Recent Operations (Last 10)</h3>
+            <div class="operations-list">
+              @for (op of firebaseOperations().recentOperations; track op.callId) {
+                <div class="operation-item" [class.cached]="op.cached" [class.error]="op.error">
+                  <div class="operation-type">{{ op.operation.toUpperCase() }}</div>
+                  <div class="operation-collection">{{ op.collection }}</div>
+                  @if (op.latency) {
+                    <div class="operation-latency">{{ op.latency.toFixed(0) }}ms</div>
+                  }
+                  @if (op.cached) {
+                    <div class="operation-cache">⚡ cached</div>
+                  }
+                  @if (op.error) {
+                    <div class="operation-error">❌ {{ op.error }}</div>
+                  }
+                  <div class="operation-time">{{ formatTime(op.timestamp) }}</div>
+                </div>
+              } @empty {
+                <div class="no-operations">No recent operations</div>
+              }
+            </div>
+          </div>
+        </section>
+      }
 
       <!-- System Status -->
       <section class="system-status">
@@ -283,9 +416,13 @@ type StatData = {
 })
 export class AdminDashboardComponent {
   private readonly metricsService = inject(DatabaseMetricsService);
+  private readonly firebaseMetricsService = inject(FirebaseMetricsService);
   protected readonly leaderboardStore = inject(LeaderboardStore);
   protected readonly feedbackStore = inject(FeedbackStore);
   private readonly dataAggregator = inject(DataAggregatorService);
+
+  // Firebase operations state
+  readonly showFirebaseWidget = signal(true);
 
   // Computed stats from metrics service
   readonly performanceMetrics = this.metricsService.performanceMetrics;
@@ -522,6 +659,42 @@ export class AdminDashboardComponent {
       status: 'coming-soon'
     }
   ];
+
+  // Firebase-specific computed properties
+  readonly firebaseOperations = computed(() => {
+    const fbMetrics = this.firebaseMetricsService.getSessionSummary();
+    const recent = this.firebaseMetricsService.getRecentOperations(10);
+    const errors = this.firebaseMetricsService.getErrorAnalysis();
+    
+    return {
+      totalOperations: fbMetrics.totalCalls,
+      operationsPerMinute: fbMetrics.callsPerMinute,
+      cacheHitRatio: fbMetrics.cacheHitRatio,
+      errorRate: fbMetrics.errorRate,
+      averageLatency: fbMetrics.averageLatency,
+      recentOperations: recent,
+      topCollections: this.metricsService.getTopCollections(3),
+      totalErrors: errors.totalErrors
+    };
+  });
+
+  readonly cacheEffectiveness = computed(() => this.metricsService.getCacheEffectiveness());
+
+  clearFirebaseCache(): void {
+    // This will be implemented when we integrate the CachedFirestoreService
+    this.firebaseMetricsService.resetSession('Manual cache clear from dashboard');
+    console.log('🗑️ [AdminDashboard] Firebase cache cleared');
+  }
+
+  formatTime(timestamp: number): string {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString('en-US', { 
+      hour12: false, 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      second: '2-digit' 
+    });
+  }
 
   formatJSON(data: any): string {
     try {

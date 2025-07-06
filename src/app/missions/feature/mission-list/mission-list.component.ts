@@ -7,12 +7,14 @@ import { AuthStore } from '@auth/data-access/auth.store';
 import { BaseComponent } from '../../../shared/base/base.component';
 import { ListFilterControlsComponent } from '../../../shared/ui/list-filter-controls/list-filter-controls.component';
 import { ListFilterStore } from '../../../shared/data-access/list-filter.store';
+import { ButtonComponent } from '../../../shared/ui/button/button.component';
+import { ButtonSize } from '../../../shared/ui/button/button.params';
 import type { Mission } from '../../utils/mission.model';
 import type { MissionDisplayData } from '../../utils/user-mission-progress.model';
 
 @Component({
   selector: 'app-mission-list',
-  imports: [CommonModule, MissionCardComponent, ListFilterControlsComponent],
+  imports: [CommonModule, MissionCardComponent, ListFilterControlsComponent, ButtonComponent],
   providers: [ListFilterStore],
   template: `
     <section class="mission-list-page">
@@ -30,7 +32,7 @@ import type { MissionDisplayData } from '../../utils/user-mission-progress.model
       } @else if (userMissionsStore.error()) {
         <div class="error-state">
           <p>❌ {{ userMissionsStore.error() }}</p>
-          <button (click)="retryLoad()" class="retry-btn">Try Again</button>
+          <app-button variant="secondary" (onClick)="retryLoad()">Try Again</app-button>
         </div>
       } @else if (totalMissionsCount() === 0) {
         <div class="empty-state">
@@ -94,37 +96,30 @@ import type { MissionDisplayData } from '../../utils/user-mission-progress.model
             >
               <div slot="actions">
                 @if (missionData.isActive || missionData.isCompleted) {
-                  <button
-                    class="btn btn--secondary btn--small"
-                    (click)="handleLeaveMissionClick(missionData.mission)"
-                    [disabled]="userMissionsStore.loading()"
+                  <app-button
+                    variant="secondary"
+                    [size]="ButtonSize.SMALL"
+                    (onClick)="handleLeaveMissionClick(missionData.mission)"
+                    [loading]="userMissionsStore.loading()"
+                    loadingText="Leaving..."
                   >
-                    @if (userMissionsStore.loading()) {
-                      <span class="btn__spinner">⏳</span>
-                    }
                     Leave Mission
-                  </button>
+                  </app-button>
                   @if (missionData.isCompleted) {
                     <span class="completion-badge">✅ Completed</span>
                   } @else {
                     <span class="progress-badge">📍 {{ missionData.completedCount }}/{{ missionData.totalCount }}</span>
                   }
                 } @else {
-                  <button
-                    class="btn btn--primary btn--small"
-                    (click)="handleStartMissionClick(missionData.mission)"
-                    [disabled]="userMissionsStore.loading() || enrollingMissionId() === missionData.mission.id"
+                  <app-button
+                    variant="primary"
+                    [size]="ButtonSize.SMALL"
+                    (onClick)="handleStartMissionClick(missionData.mission)"
+                    [loading]="userMissionsStore.loading() || enrollingMissionId() === missionData.mission.id"
+                    [loadingText]="enrollingMissionId() === missionData.mission.id ? 'Joining...' : 'Loading...'"
                   >
-                    @if (enrollingMissionId() === missionData.mission.id) {
-                      <span class="btn__spinner">⏳</span>
-                      Joining...
-                    } @else if (userMissionsStore.loading()) {
-                      <span class="btn__spinner">⏳</span>
-                      Loading...
-                    } @else {
-                      Join Mission
-                    }
-                  </button>
+                    Join Mission
+                  </app-button>
                 }
               </div>
             </app-mission-card>
@@ -134,9 +129,9 @@ import type { MissionDisplayData } from '../../utils/user-mission-progress.model
         @if (filteredAndSearchedMissions().length === 0) {
           <div class="empty-filtered-state">
             <p>No missions match the current filter.</p>
-            <button (click)="setFilter('all')" class="btn-secondary">
+            <app-button variant="secondary" (onClick)="setFilter('all')">
               Show All Missions
-            </button>
+            </app-button>
           </div>
         }
       }
@@ -409,6 +404,9 @@ export class MissionListComponent extends BaseComponent {
   private readonly _filterMode = signal<'all' | 'available' | 'joined'>('all');
   private readonly _activeQuickFilter = signal<string>('');
   private readonly _enrollingMissionId = signal<string | null>(null);
+
+  // ✅ Expose ButtonSize for template
+  readonly ButtonSize = ButtonSize;
 
   // ✅ Expose state for template
   protected readonly filterMode = this._filterMode.asReadonly();

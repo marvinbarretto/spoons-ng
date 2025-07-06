@@ -341,6 +341,44 @@ export class DataAggregatorService {
   });
 
   /**
+   * Check if a pub is the user's designated home pub
+   * @param pubId - Pub ID to check
+   * @param userId - User ID (defaults to current user)
+   * @returns True if this pub is the user's home pub
+   */
+  isLocalPub(pubId: string, userId?: string): boolean {
+    const targetUserId = userId || this.authStore.user()?.uid;
+
+    this.debug.extreme('[DataAggregator] Checking if pub is user home pub', {
+      pubId,
+      userId: targetUserId,
+      usingCurrentUser: !userId
+    });
+
+    if (!targetUserId) {
+      this.debug.standard('[DataAggregator] No user ID available for home pub check');
+      return false;
+    }
+
+    const user = this.userStore.user();
+    if (!user) {
+      this.debug.standard('[DataAggregator] No user profile available for home pub check');
+      return false;
+    }
+
+    const isHomePub = user.homePubId === pubId;
+
+    this.debug.extreme('[DataAggregator] Home pub check result', {
+      pubId,
+      userId: targetUserId,
+      homePubId: user.homePubId,
+      isHomePub
+    });
+
+    return isHomePub;
+  }
+
+  /**
    * Get recent check-ins for a user
    * @param userId - User ID
    * @param limit - Number of recent check-ins to return

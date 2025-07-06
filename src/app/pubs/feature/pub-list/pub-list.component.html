@@ -80,6 +80,7 @@
               [hasCheckedIn]="dataAggregatorService.hasVisitedPub(pub.id)"
               [checkinCount]="dataAggregatorService.getVisitCountForPub(pub.id)"
               [showCheckinCount]="dataAggregatorService.hasVisitedPub(pub.id)"
+              [isLocalPub]="dataAggregatorService.isLocalPub(pub.id)"
             />
           </a>
         }

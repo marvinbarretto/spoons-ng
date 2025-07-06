@@ -32,14 +32,14 @@ import { ButtonSize } from '@shared/ui/button/button.params';
       <div>
         <app-button 
           variant="secondary"
-          [size]="ButtonSize.MD" 
+          [size]="ButtonSize.MEDIUM" 
           (onClick)="back.emit()"
         >
           Back
         </app-button>
         <app-button 
           variant="primary"
-          [size]="ButtonSize.LG" 
+          [size]="ButtonSize.LARGE" 
           [disabled]="!displayName().trim()" 
           (onClick)="continue.emit()"
         >

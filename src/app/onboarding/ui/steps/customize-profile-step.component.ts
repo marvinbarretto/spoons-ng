@@ -47,7 +47,7 @@ import type { User } from '@users/utils/user.model';
           @if (showBackButton()) {
             <app-button 
               variant="secondary" 
-              [size]="ButtonSize.MD"
+              [size]="ButtonSize.MEDIUM"
               (onClick)="back.emit()"
             >
               Back
@@ -55,8 +55,10 @@ import type { User } from '@users/utils/user.model';
           }
           <app-button
             variant="primary"
-            [size]="ButtonSize.LG"
+            [size]="ButtonSize.LARGE"
             [disabled]="!isValid()"
+            [loading]="loading()"
+            loadingText="Saving profile..."
             (onClick)="onContinue()"
           >
             Continue
@@ -184,6 +186,7 @@ export class CustomizeProfileStepComponent {
   readonly user = input<User | null>(null);
   readonly selectedAvatarId = input<string>('');
   readonly displayName = input<string>('');
+  readonly loading = input<boolean>(false);
 
   readonly avatarSelected = output<string>();
   readonly nameChanged = output<string>();

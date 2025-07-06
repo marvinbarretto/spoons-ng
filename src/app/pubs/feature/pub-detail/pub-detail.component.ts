@@ -8,49 +8,77 @@ import { UserStore } from '@users/data-access/user.store';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { LocationService } from '@shared/data-access/location.service';
 import { BaseComponent } from '@shared/base/base.component';
+import { ButtonComponent } from '@shared/ui/button/button.component';
+import { ButtonSize } from '@shared/ui/button/button.params';
 import type { Pub } from '../../utils/pub.models';
 import { calculateDistance } from '@shared/utils/location.utils';
+import { generateRandomName } from '@shared/utils/anonymous-names';
+import type { Landlord } from '@app/landlord/utils/landlord.model';
+import type { CheckIn } from '@app/check-in/utils/check-in.models';
 
 @Component({
   selector: 'app-pub-detail',
-  imports: [CommonModule],
+  imports: [CommonModule, ButtonComponent],
   template: `
     <section class="pub-detail-page">
       @if (isDataLoading()) {
         <div class="loading-state">
-          <p>🍺 Loading pub details...</p>
+          <div class="loading-skeleton">
+            <div class="skeleton-header"></div>
+            <div class="skeleton-content"></div>
+            <div class="skeleton-actions"></div>
+          </div>
         </div>
       } @else if (dataError()) {
         <div class="error-state">
           <p>❌ {{ dataError() }}</p>
-          <button (click)="retryLoad()" class="retry-btn">Try Again</button>
+          <app-button variant="secondary" (onClick)="retryLoad()">Try Again</app-button>
         </div>
       } @else if (!pubId() || !pub()) {
         <div class="not-found-state">
           <p>🍺 Pub not found</p>
-          <button (click)="goBack()" class="back-btn">← Back to Pubs</button>
+          <app-button variant="secondary" (onClick)="goBack()">← Back to Pubs</app-button>
         </div>
       } @else {
         <!-- Header with Back Button -->
         <header class="pub-header">
-          <button (click)="goBack()" class="back-btn">← Back to Pubs</button>
-          <h1>{{ pub()!.name }}</h1>
-          <p class="pub-address">{{ pub()!.address }}</p>
+          <app-button variant="ghost" [size]="ButtonSize.SMALL" (onClick)="goBack()">← Back</app-button>
+          
+          <!-- Pub Hero Section -->
+          <div class="pub-hero">
+            @if (pub()!.carpetUrl) {
+              <div class="carpet-image">
+                <img [src]="pub()!.carpetUrl" [alt]="pub()!.name + ' carpet'" />
+              </div>
+            }
+            <div class="pub-info">
+              <h1>{{ pub()!.name }}</h1>
+              <p class="pub-address">{{ pub()!.address }}</p>
+              <div class="pub-location">
+                <span class="location-icon">📍</span>
+                <span>{{ pub()!.city }}, {{ pub()!.region }}</span>
+              </div>
+            </div>
+          </div>
         </header>
 
         <!-- Quick Actions -->
         <div class="quick-actions">
           @if (canCheckIn()) {
-            <button class="action-btn action-btn--primary">
-              📍 Check In Here
-            </button>
+            <app-button 
+              variant="primary" 
+              [size]="ButtonSize.LARGE" 
+              (onClick)="initiateCheckIn()"
+            >
+              📸 Check In Here
+            </app-button>
           } @else if (hasCheckedIn()) {
             <div class="status-badge status-badge--success">
-              ✅ You've been here
+              ✅ You've been here {{ userCheckins().length }} time{{ userCheckins().length === 1 ? '' : 's' }}
             </div>
           } @else if (isNearby()) {
             <div class="status-badge status-badge--info" [class.distance-pulsing]="isMoving()">
-              📍 You're nearby ({{ distanceText() }})
+              🚶 You're nearby ({{ distanceText() }})
             </div>
           } @else {
             <div class="status-badge status-badge--neutral" [class.distance-pulsing]="isMoving()">
@@ -59,90 +87,167 @@ import { calculateDistance } from '@shared/utils/location.utils';
           }
         </div>
 
-        <!-- Reactive Data Display -->
-        <div class="data-sections">
-          <!-- Basic Pub Info -->
-          <section class="data-section">
-            <h2>Pub Information</h2>
-            <div class="json-display">
-              <pre>{{ pubBasicInfo() | json }}</pre>
+        <!-- Main Content Sections -->
+        <div class="content-sections">
+          <!-- About Section -->
+          <section class="content-section">
+            <h2>About This Pub</h2>
+            <div class="pub-details">
+              <div class="detail-item">
+                <span class="detail-label">Address</span>
+                <span class="detail-value">{{ pub()!.address }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Location</span>
+                <span class="detail-value">{{ pub()!.city }}, {{ pub()!.region }}, {{ pub()!.country }}</span>
+              </div>
+              @if (checkinStats()?.totalCheckins) {
+                <div class="detail-item">
+                  <span class="detail-label">Total Check-ins</span>
+                  <span class="detail-value">{{ checkinStats()!.totalCheckins }}</span>
+                </div>
+              }
             </div>
           </section>
 
-          <!-- Location Data -->
-          <section class="data-section">
-            <h2>Location & Distance</h2>
-            <div class="json-display">
-              <pre>{{ locationData() | json }}</pre>
-            </div>
-          </section>
+          <!-- Your Activity Section -->
+          @if (user()) {
+            <section class="content-section">
+              <h2>Your Activity</h2>
+              <div class="activity-summary">
+                @if (hasCheckedIn()) {
+                  <div class="activity-stat">
+                    <span class="stat-number">{{ userCheckins().length }}</span>
+                    <span class="stat-label">Check-in{{ userCheckins().length === 1 ? '' : 's' }}</span>
+                  </div>
+                  @if (userCheckins().length > 0) {
+                    <div class="last-visit">
+                      <span class="visit-label">Last visit:</span>
+                      <span class="visit-date">{{ formatDate(userCheckins()[0].timestamp) }}</span>
+                    </div>
+                  }
+                } @else {
+                  <div class="no-activity">
+                    <p>You haven't checked in here yet!</p>
+                    @if (canCheckIn()) {
+                      <p class="encourage-checkin">You're close enough to check in now 📸</p>
+                    }
+                  </div>
+                }
+              </div>
+            </section>
+          }
 
-          <!-- User-Specific Data -->
-          <section class="data-section">
-            <h2>Your Activity</h2>
-            <div class="json-display">
-              <pre>{{ userActivityData() | json }}</pre>
-            </div>
-          </section>
-
-          <!-- Check-in Statistics -->
-          <section class="data-section">
-            <h2>Check-in Statistics</h2>
-            <div class="json-display">
-              <pre>{{ checkinStats() | json }}</pre>
-            </div>
-          </section>
-
-          <!-- Landlord Information -->
+          <!-- Landlord Section -->
           @if (pub()!.currentLandlord || pub()!.todayLandlord) {
-            <section class="data-section">
-              <h2>Landlord Information</h2>
-              <div class="json-display">
-                <pre>{{ landlordData() | json }}</pre>
+            <section class="content-section">
+              <h2>👑 Landlord</h2>
+              <div class="landlord-info">
+                @if (pub()!.currentLandlord) {
+                  <div class="current-landlord">
+                    <span class="landlord-label">Current Landlord:</span>
+                    <span class="landlord-name">{{ getLandlordDisplayName(pub()!.currentLandlord!) }}</span>
+                  </div>
+                }
+                @if (pub()!.todayLandlord && pub()!.todayLandlord !== pub()!.currentLandlord) {
+                  <div class="today-landlord">
+                    <span class="landlord-label">Today's Landlord:</span>
+                    <span class="landlord-name">{{ getLandlordDisplayName(pub()!.todayLandlord!) }}</span>
+                  </div>
+                }
               </div>
             </section>
           }
 
-          <!-- Recent Check-ins -->
+          <!-- Recent Activity Section -->
           @if (recentCheckins().length > 0) {
-            <section class="data-section">
-              <h2>Recent Check-ins ({{ recentCheckins().length }})</h2>
-              <div class="json-display">
-                <pre>{{ recentCheckins() | json }}</pre>
+            <section class="content-section">
+              <h2>Recent Check-ins</h2>
+              <div class="recent-checkins">
+                @for (checkin of recentCheckins().slice(0, 5); track checkin.id) {
+                  <div class="checkin-item">
+                    <div class="checkin-user">
+                      <span class="user-name">{{ getCheckinUserDisplayName(checkin) }}</span>
+                    </div>
+                    <div class="checkin-time">
+                      {{ formatDate(checkin.timestamp) }}
+                    </div>
+                  </div>
+                }
               </div>
             </section>
           }
 
-          <!-- Authentication State -->
-          <section class="data-section">
-            <h2>Authentication State</h2>
-            <div class="json-display">
-              <pre>{{ authData() | json }}</pre>
-            </div>
-          </section>
-
-          <!-- Store States -->
-          <section class="data-section">
-            <h2>Store States</h2>
-            <div class="json-display">
-              <pre>{{ storeStates() | json }}</pre>
-            </div>
-          </section>
+          <!-- Statistics Section -->
+          @if (checkinStats()) {
+            <section class="content-section">
+              <h2>📊 Statistics</h2>
+              <div class="stats-grid">
+                @if (checkinStats()!.totalCheckins) {
+                  <div class="stat-card">
+                    <span class="stat-number">{{ checkinStats()!.totalCheckins }}</span>
+                    <span class="stat-label">Total Check-ins</span>
+                  </div>
+                }
+                @if (checkinStats()!.longestStreak) {
+                  <div class="stat-card">
+                    <span class="stat-number">{{ checkinStats()!.longestStreak }}</span>
+                    <span class="stat-label">Longest Streak</span>
+                  </div>
+                }
+              </div>
+            </section>
+          }
         </div>
       }
     </section>
   `,
   styles: `
     .pub-detail-page {
-      max-width: 1000px;
+      max-width: 800px;
       margin: 0 auto;
-      padding: 1rem;
+      padding: 0;
       background: var(--background);
       color: var(--text);
       min-height: 100vh;
     }
 
-    .loading-state,
+    /* Loading States */
+    .loading-state {
+      padding: 2rem 1rem;
+    }
+
+    .loading-skeleton {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .skeleton-header,
+    .skeleton-content,
+    .skeleton-actions {
+      background: var(--background-darkest);
+      border-radius: 8px;
+      animation: skeleton-pulse 1.5s ease-in-out infinite;
+    }
+
+    .skeleton-header {
+      height: 200px;
+    }
+
+    .skeleton-content {
+      height: 100px;
+    }
+
+    .skeleton-actions {
+      height: 50px;
+    }
+
+    @keyframes skeleton-pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
     .error-state,
     .not-found-state {
       text-align: center;
@@ -154,13 +259,23 @@ import { calculateDistance } from '@shared/utils/location.utils';
       color: var(--color-error);
     }
 
+    /* Header */
+    .pub-header {
+      position: relative;
+      margin-bottom: 1rem;
+    }
+
     .back-btn,
     .retry-btn {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      z-index: 10;
       padding: 0.5rem 1rem;
       border: 1px solid var(--border);
       background: var(--background-darkest);
       color: var(--text);
-      border-radius: 6px;
+      border-radius: 20px;
       cursor: pointer;
       transition: all 0.2s ease;
       text-decoration: none;
@@ -169,6 +284,7 @@ import { calculateDistance } from '@shared/utils/location.utils';
       gap: 0.5rem;
       font-size: 0.875rem;
       font-family: inherit;
+      backdrop-filter: blur(10px);
     }
 
     .back-btn:hover,
@@ -178,29 +294,68 @@ import { calculateDistance } from '@shared/utils/location.utils';
       color: var(--primary);
     }
 
-    .pub-header {
-      margin-bottom: 2rem;
-      padding: 1.5rem;
+    .pub-hero {
+      position: relative;
+      border-radius: 0 0 20px 20px;
+      overflow: hidden;
       background: var(--background-darkest);
-      border-radius: 12px;
-      border: 1px solid var(--border);
+      min-height: 300px;
     }
 
-    .pub-header h1 {
-      font-size: 2.5rem;
+    .carpet-image {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 1;
+    }
+
+    .carpet-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .pub-info {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 2;
+      padding: 2rem 1.5rem 1.5rem;
+      background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+      color: white;
+    }
+
+    .pub-info h1 {
+      font-size: 2rem;
       font-weight: 700;
-      margin: 1rem 0 0.5rem;
-      color: var(--text);
+      margin: 0 0 0.5rem;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
     }
 
     .pub-address {
-      font-size: 1.125rem;
-      color: var(--text-secondary);
-      margin: 0;
+      font-size: 1rem;
+      margin: 0 0 0.5rem;
+      opacity: 0.9;
     }
 
+    .pub-location {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      opacity: 0.8;
+    }
+
+    .location-icon {
+      font-size: 1rem;
+    }
+
+    /* Actions */
     .quick-actions {
-      margin-bottom: 2rem;
+      margin: 1.5rem 1rem;
       display: flex;
       gap: 1rem;
       align-items: center;
@@ -208,9 +363,9 @@ import { calculateDistance } from '@shared/utils/location.utils';
     }
 
     .action-btn {
-      padding: 0.75rem 1.5rem;
+      padding: 0.875rem 1.5rem;
       border: none;
-      border-radius: 8px;
+      border-radius: 12px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -219,28 +374,31 @@ import { calculateDistance } from '@shared/utils/location.utils';
       align-items: center;
       gap: 0.5rem;
       font-family: inherit;
+      font-size: 1rem;
     }
 
     .action-btn--primary {
       background: var(--primary);
       color: var(--primaryText);
+      box-shadow: 0 2px 8px var(--shadow);
     }
 
     .action-btn--primary:hover {
       background: var(--primaryHover);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px var(--shadow);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px var(--shadow);
     }
 
     .status-badge {
-      padding: 0.5rem 1rem;
-      border-radius: 20px;
+      padding: 0.75rem 1.25rem;
+      border-radius: 25px;
       font-size: 0.875rem;
       font-weight: 500;
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
       border: 1px solid var(--border);
+      transition: all 0.2s ease;
     }
 
     .status-badge--success {
@@ -261,70 +419,233 @@ import { calculateDistance } from '@shared/utils/location.utils';
       border-color: var(--borderSecondary);
     }
 
-    .data-sections {
+    .distance-pulsing {
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    /* Content Sections */
+    .content-sections {
       display: flex;
       flex-direction: column;
-      gap: 2rem;
+      gap: 1rem;
+      padding: 0 1rem 2rem;
     }
 
-    .data-section {
+    .content-section {
       background: var(--background-darkest);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      overflow: hidden;
+      border-radius: 16px;
+      padding: 1.5rem;
       box-shadow: 0 2px 8px var(--shadow);
+      transition: all 0.2s ease;
     }
 
-    .data-section h2 {
-      background: var(--background-darkestElevated);
-      margin: 0;
-      padding: 1rem;
-      font-size: 1.125rem;
+    .content-section:hover {
+      box-shadow: 0 4px 16px var(--shadow);
+    }
+
+    .content-section h2 {
+      margin: 0 0 1rem;
+      font-size: 1.25rem;
       font-weight: 600;
       color: var(--text);
+    }
+
+    /* Pub Details */
+    .pub-details {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .detail-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 0;
       border-bottom: 1px solid var(--border);
     }
 
-    .json-display {
+    .detail-item:last-child {
+      border-bottom: none;
+    }
+
+    .detail-label {
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .detail-value {
+      font-weight: 600;
+      color: var(--text);
+      text-align: right;
+    }
+
+    /* Activity */
+    .activity-summary {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .activity-stat {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .stat-number {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .stat-label {
+      font-size: 1rem;
+      color: var(--text-secondary);
+    }
+
+    .last-visit {
       padding: 1rem;
+      background: var(--background-darkestElevated);
+      border-radius: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .visit-label {
+      color: var(--text-secondary);
+    }
+
+    .visit-date {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .no-activity {
+      text-align: center;
+      padding: 1rem;
+      color: var(--text-secondary);
+    }
+
+    .encourage-checkin {
+      color: var(--primary);
+      font-weight: 500;
+      margin-top: 0.5rem;
+    }
+
+    /* Landlord */
+    .landlord-info {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .current-landlord,
+    .today-landlord {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      background: var(--background-darkestElevated);
+      border-radius: 12px;
+    }
+
+    .landlord-label {
+      color: var(--text-secondary);
+    }
+
+    .landlord-name {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* Recent Check-ins */
+    .recent-checkins {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .checkin-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      background: var(--background-darkestElevated);
+      border-radius: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .checkin-item:hover {
       background: var(--background-darkest);
     }
 
-    .json-display pre {
-      background: var(--background);
-      border: 1px solid var(--borderSecondary);
-      border-radius: 6px;
-      padding: 1rem;
-      overflow-x: auto;
-      margin: 0;
+    .user-name {
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .checkin-time {
       font-size: 0.875rem;
-      line-height: 1.5;
-      color: var(--textMuted);
-      white-space: pre-wrap;
-      word-break: break-word;
-      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      color: var(--text-secondary);
+    }
+
+    /* Statistics */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 1rem;
+    }
+
+    .stat-card {
+      text-align: center;
+      padding: 1.5rem 1rem;
+      background: var(--background-darkestElevated);
+      border-radius: 12px;
+      transition: all 0.2s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px var(--shadow);
+    }
+
+    .stat-card .stat-number {
+      display: block;
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-card .stat-label {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
     }
 
     /* Mobile Optimizations */
     @media (max-width: 768px) {
       .pub-detail-page {
-        padding: 0.5rem;
+        padding: 0;
       }
 
-      .pub-header {
-        padding: 1rem;
-        margin-bottom: 1.5rem;
+      .pub-hero {
+        min-height: 250px;
       }
 
-      .pub-header h1 {
-        font-size: 2rem;
-        margin: 0.5rem 0 0.25rem;
+      .pub-info {
+        padding: 1.5rem 1rem 1rem;
+      }
+
+      .pub-info h1 {
+        font-size: 1.75rem;
       }
 
       .quick-actions {
         flex-direction: column;
         align-items: stretch;
-        gap: 0.75rem;
       }
 
       .action-btn,
@@ -333,17 +654,22 @@ import { calculateDistance } from '@shared/utils/location.utils';
         justify-content: center;
       }
 
-      .data-sections {
-        gap: 1.5rem;
+      .content-sections {
+        padding: 0 0.75rem 1.5rem;
       }
 
-      .json-display {
-        padding: 0.75rem;
+      .content-section {
+        padding: 1.25rem;
       }
 
-      .json-display pre {
-        font-size: 0.75rem;
-        padding: 0.75rem;
+      .detail-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+      }
+
+      .detail-value {
+        text-align: left;
       }
     }
 
@@ -355,20 +681,9 @@ import { calculateDistance } from '@shared/utils/location.utils';
       outline-offset: 2px;
     }
 
-    /* Enhanced hover states */
-    .data-section:hover {
-      border-color: var(--primary);
-      box-shadow: 0 4px 16px var(--shadow);
-    }
-
-    /* Loading animation */
-    .loading-state p {
-      animation: pulse 2s ease-in-out infinite;
-    }
-
     @keyframes pulse {
       0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
+      50% { opacity: 0.6; }
     }
   `
 })
@@ -381,6 +696,9 @@ export class PubDetailComponent extends BaseComponent {
   private readonly locationService = inject(LocationService);
   protected override readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+
+  // ✅ Expose ButtonSize for template
+  readonly ButtonSize = ButtonSize;
 
   // ✅ Route parameter from ActivatedRoute
   protected readonly pubId = computed(() => this.route.snapshot.paramMap.get('pubId') || '');
@@ -591,5 +909,53 @@ export class PubDetailComponent extends BaseComponent {
 
   goBack(): void {
     this.router.navigate(['/pubs']);
+  }
+
+  initiateCheckIn(): void {
+    const pubId = this.pubId();
+    const user = this.user();
+    
+    if (!pubId) {
+      console.error('No pub ID available for check-in');
+      return;
+    }
+    
+    if (!user) {
+      console.error('User not authenticated for check-in');
+      return;
+    }
+    
+    // Navigate to the dedicated check-in page
+    this.router.navigate(['/check-in', pubId]);
+  }
+
+  getLandlordDisplayName(landlord: Landlord): string {
+    // For landlords, we only have the userId, so we need to generate a display name
+    // TODO: In a real app, you'd want to resolve the userId to the actual user's display name
+    return generateRandomName(landlord.userId);
+  }
+
+  getCheckinUserDisplayName(checkin: CheckIn): string {
+    // For check-ins, we only have the userId, so we need to generate a display name
+    // TODO: In a real app, you'd want to resolve the userId to the actual user's display name
+    return generateRandomName(checkin.userId);
+  }
+
+  formatDate(timestamp: any): string {
+    if (!timestamp) return 'Unknown';
+    
+    const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+    const now = new Date();
+    const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
+    
+    if (diffInHours < 1) {
+      return 'Just now';
+    } else if (diffInHours < 24) {
+      return `${Math.floor(diffInHours)} hour${Math.floor(diffInHours) === 1 ? '' : 's'} ago`;
+    } else if (diffInHours < 48) {
+      return 'Yesterday';
+    } else {
+      return date.toLocaleDateString();
+    }
   }
 }

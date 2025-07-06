@@ -55,6 +55,56 @@ export class BadgeLogicService {
   }
 
   /**
+   * Check if user should earn the "Early Bird" badge (check-in before noon)
+   */
+  checkEarlyBirdBadge(context: BadgeTriggerContext): boolean {
+    console.log('[BadgeLogic] Checking Early Bird badge', {
+      userId: context.userId,
+      checkInCount: context.userCheckIns.length
+    });
+
+    // Check if any check-ins were before noon
+    const hasEarlyCheckIn = context.userCheckIns.some(checkIn => {
+      const checkInTime = checkIn.timestamp.toDate();
+      const hour = checkInTime.getHours();
+      return hour < 12;
+    });
+
+    if (hasEarlyCheckIn) {
+      console.log('🏅 [BadgeLogic] User eligible for Early Bird badge!');
+      return true;
+    }
+
+    console.log('📝 [BadgeLogic] No check-ins before noon, skipping Early Bird badge');
+    return false;
+  }
+
+  /**
+   * Check if user should earn the "Night Owl" badge (check-in after 9 PM)
+   */
+  checkNightOwlBadge(context: BadgeTriggerContext): boolean {
+    console.log('[BadgeLogic] Checking Night Owl badge', {
+      userId: context.userId,
+      checkInCount: context.userCheckIns.length
+    });
+
+    // Check if any check-ins were after 9 PM
+    const hasLateCheckIn = context.userCheckIns.some(checkIn => {
+      const checkInTime = checkIn.timestamp.toDate();
+      const hour = checkInTime.getHours();
+      return hour >= 21;
+    });
+
+    if (hasLateCheckIn) {
+      console.log('🏅 [BadgeLogic] User eligible for Night Owl badge!');
+      return true;
+    }
+
+    console.log('📝 [BadgeLogic] No check-ins after 9 PM, skipping Night Owl badge');
+    return false;
+  }
+
+  /**
    * Check if user should earn the "Explorer" badge (5 different pubs)
    */
   checkExplorerBadge(context: BadgeTriggerContext): boolean {
@@ -78,7 +128,7 @@ export class BadgeLogicService {
 
     if (hasVisitedFivePubs) {
       // Check if they already have this badge - using correct ID
-      const alreadyHasBadge = this._badgeStore.hasEarnedBadge('explorer');
+      const alreadyHasBadge = this._badgeStore.hasEarnedBadge('regional-champion');
 
       if (!alreadyHasBadge) {
         console.log('🏅 [BadgeLogic] User eligible for Explorer badge!');
@@ -102,17 +152,25 @@ export class BadgeLogicService {
 
     const eligibleBadges: string[] = [];
 
-    // Check each badge type - using the correct IDs from your badge store
+    // Check each badge type - using the correct IDs from badge seed data
     if (this.checkFirstTimeBadge(context)) {
-      eligibleBadges.push('first-checkin');
+      eligibleBadges.push('first-timer');
     }
 
     if (this.checkRegularBadge(context)) {
-      eligibleBadges.push('regular');
+      eligibleBadges.push('local-legend'); // 10 checkins qualifies as becoming a local legend
     }
 
     if (this.checkExplorerBadge(context)) {
-      eligibleBadges.push('explorer');
+      eligibleBadges.push('regional-champion'); // 5 different pubs qualifies as regional champion
+    }
+
+    if (this.checkEarlyBirdBadge(context)) {
+      eligibleBadges.push('early-bird');
+    }
+
+    if (this.checkNightOwlBadge(context)) {
+      eligibleBadges.push('night-owl');
     }
 
     // Future badges can be added here easily:
@@ -143,7 +201,9 @@ export class BadgeLogicService {
       badgeChecks: {
         firstTime: this.checkFirstTimeBadge(context),
         regular: this.checkRegularBadge(context),
-        explorer: this.checkExplorerBadge(context)
+        explorer: this.checkExplorerBadge(context),
+        earlyBird: this.checkEarlyBirdBadge(context),
+        nightOwl: this.checkNightOwlBadge(context)
       }
     };
   }

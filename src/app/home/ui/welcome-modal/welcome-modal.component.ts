@@ -26,7 +26,7 @@ import { OverlayService } from '../../../shared/data-access/overlay.service';
         <div class="cta-section">
           <app-button
             variant="primary"
-            [size]="ButtonSize.LG"
+            [size]="ButtonSize.LARGE"
             (onClick)="onClose()"
           >
             Begin

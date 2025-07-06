@@ -1,3 +1,36 @@
+/**
+ * @fileoverview DatabaseMetricsService - Business Intelligence Aggregator
+ * 
+ * Combines Firebase + IndexedDB metrics to calculate business insights:
+ * - Cost estimates and savings based on Firebase pricing
+ * - Cache hit ratios and effectiveness analysis
+ * - Performance comparisons between Firebase and IndexedDB
+ * - Real-time operation monitoring for admin dashboard
+ * 
+ * RESPONSIBILITIES:
+ * - Aggregate data from FirebaseMetricsService and IndexedDbService
+ * - Calculate cost estimates using current Firebase pricing
+ * - Provide cache effectiveness metrics
+ * - Generate dashboard-ready performance analytics
+ * 
+ * INTEGRATION:
+ * - Consumes data from FirebaseMetricsService (raw operations)
+ * - Consumes data from IndexedDbService (cache metrics)
+ * - Called by CachedFirestoreService for operation logging
+ * - Provides computed signals for admin dashboard components
+ * 
+ * @example
+ * ```typescript
+ * // Get comprehensive metrics for dashboard
+ * const performance = this.databaseMetricsService.performanceMetrics();
+ * const costs = this.databaseMetricsService.costEstimate();
+ * const cacheStats = this.databaseMetricsService.getCacheEffectiveness();
+ * 
+ * // Record an operation (called by CachedFirestoreService)
+ * this.databaseMetricsService.recordOperation('firestore', 'read', 'users', 45, false);
+ * ```
+ */
+
 // src/app/shared/data-access/database-metrics.service.ts
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { IndexedDbService } from './indexed-db.service';
@@ -37,6 +70,9 @@ type PerformanceMetrics = {
   cacheHitRatio: number;
   totalOperations: number;
   operationsToday: number;
+  realtimeOpsPerMinute: number;
+  errorRate: number;
+  cacheEfficiency: number;
 };
 
 @Injectable({ providedIn: 'root' })
@@ -65,14 +101,29 @@ export class DatabaseMetricsService {
     const firestoreOps = ops.filter(op => op.type === 'firestore' && op.duration);
     const indexedDbOps = ops.filter(op => op.type === 'indexeddb' && op.duration);
     
+    // Calculate real-time operations per minute (last 5 minutes)
+    const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
+    const recentOps = ops.filter(op => op.timestamp > fiveMinutesAgo);
+    const realtimeOpsPerMinute = recentOps.length > 0 ? (recentOps.length / 5) : 0;
+    
+    // Calculate cache efficiency (speed improvement)
+    const avgFirestoreLatency = firestoreOps.length > 0 
+      ? firestoreOps.reduce((sum, op) => sum + (op.duration || 0), 0) / firestoreOps.length 
+      : 0;
+    const avgIndexedDbLatency = indexedDbMetrics.performance.avgReadTime;
+    const cacheEfficiency = avgFirestoreLatency > 0 && avgIndexedDbLatency > 0 
+      ? avgFirestoreLatency / avgIndexedDbLatency 
+      : 1;
+    
     return {
-      avgFirestoreLatency: firestoreOps.length > 0 
-        ? firestoreOps.reduce((sum, op) => sum + (op.duration || 0), 0) / firestoreOps.length 
-        : 0,
-      avgIndexedDbLatency: indexedDbMetrics.performance.avgReadTime,
+      avgFirestoreLatency,
+      avgIndexedDbLatency,
       cacheHitRatio: this.calculateCacheHitRatio(),
       totalOperations: ops.length,
-      operationsToday: todayOps.length
+      operationsToday: todayOps.length,
+      realtimeOpsPerMinute,
+      errorRate: firebaseMetrics.errorRate,
+      cacheEfficiency
     };
   });
 
@@ -236,7 +287,12 @@ export class DatabaseMetricsService {
   }
 
   /**
-   * Get cache effectiveness summary
+   * Get cache effectiveness summary with business metrics
+   * 
+   * Calculates key performance indicators:
+   * - Hit/miss ratios for cache performance
+   * - Speed improvement (how much faster cache is vs Firebase)
+   * - Cost savings percentage based on prevented Firebase operations
    */
   getCacheEffectiveness(): {
     hitRatio: number;
@@ -265,7 +321,11 @@ export class DatabaseMetricsService {
   }
 
   /**
-   * Calculate cache hit ratio
+   * Calculate cache hit ratio for read operations
+   * 
+   * Formula: (cached reads / total reads)
+   * Only considers read operations since writes always go to Firebase.
+   * Returns 0 if no read operations have been recorded.
    */
   private calculateCacheHitRatio(): number {
     const ops = this.operations();
@@ -303,5 +363,102 @@ export class DatabaseMetricsService {
       })
       .sort((a, b) => b.operations - a.operations)
       .slice(0, limit);
+  }
+
+  /**
+   * Get Firebase-specific metrics
+   */
+  getFirebaseMetrics(): {
+    recentOperations: any[];
+    operationsPerMinute: number;
+    errorAnalysis: any;
+    performanceStats: any;
+    collectionBreakdown: any[];
+  } {
+    const firebaseMetrics = this.firebaseMetricsService.getSessionSummary();
+    
+    return {
+      recentOperations: this.firebaseMetricsService.getRecentOperations(50),
+      operationsPerMinute: firebaseMetrics.callsPerMinute,
+      errorAnalysis: this.firebaseMetricsService.getErrorAnalysis(),
+      performanceStats: this.firebaseMetricsService.getPerformanceStats(),
+      collectionBreakdown: this.firebaseMetricsService.getCollectionBreakdown()
+    };
+  }
+
+  /**
+   * Get cache performance breakdown
+   */
+  getCachePerformanceBreakdown(): {
+    totalCacheSize: number;
+    cachesByCollection: Array<{
+      collection: string;
+      hitRatio: number;
+      totalHits: number;
+      totalMisses: number;
+      avgLatency: number;
+    }>;
+    cacheSavings: {
+      operationsSaved: number;
+      timeSaved: number;
+      costSaved: number;
+    };
+  } {
+    const ops = this.operations();
+    const costs = this.costEstimate();
+    
+    // Group by collection and calculate cache metrics
+    const cachesByCollection: Record<string, {
+      hits: number;
+      misses: number;
+      totalLatency: number;
+      operationCount: number;
+    }> = {};
+    
+    ops.forEach(op => {
+      if (!cachesByCollection[op.collection]) {
+        cachesByCollection[op.collection] = {
+          hits: 0,
+          misses: 0,
+          totalLatency: 0,
+          operationCount: 0
+        };
+      }
+      
+      const cache = cachesByCollection[op.collection];
+      cache.operationCount++;
+      
+      if (op.cached) {
+        cache.hits++;
+      } else {
+        cache.misses++;
+      }
+      
+      if (op.duration) {
+        cache.totalLatency += op.duration;
+      }
+    });
+    
+    const collectionBreakdown = Object.entries(cachesByCollection).map(([collection, data]) => ({
+      collection,
+      hitRatio: data.operationCount > 0 ? data.hits / data.operationCount : 0,
+      totalHits: data.hits,
+      totalMisses: data.misses,
+      avgLatency: data.operationCount > 0 ? data.totalLatency / data.operationCount : 0
+    }));
+    
+    const totalHits = Object.values(cachesByCollection).reduce((sum, data) => sum + data.hits, 0);
+    const performance = this.performanceMetrics();
+    const timeSaved = totalHits * (performance.avgFirestoreLatency - performance.avgIndexedDbLatency);
+    
+    return {
+      totalCacheSize: this.indexedDbService.getMetrics().totalSize,
+      cachesByCollection: collectionBreakdown,
+      cacheSavings: {
+        operationsSaved: totalHits,
+        timeSaved: Math.max(0, timeSaved),
+        costSaved: costs.savings.monthlySavings
+      }
+    };
   }
 }

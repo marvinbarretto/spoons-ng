@@ -45,6 +45,7 @@ type OnboardingStep =
         @switch (currentStep()) {
           @case ('welcome-message') {
             <app-welcome-message-step
+              [loading]="saving()"
               (continue)="proceedToCustomizeProfile()"
             />
           }
@@ -54,6 +55,7 @@ type OnboardingStep =
               [user]="user()"
               [selectedAvatarId]="selectedAvatarId()"
               [displayName]="displayName()"
+              [loading]="saving()"
               (avatarSelected)="onAvatarSelected($event)"
               (nameChanged)="onDisplayNameChange($event)"
               (generateRandom)="generateRandomDisplayName()"
@@ -69,6 +71,7 @@ type OnboardingStep =
               [locationGranted]="locationGranted()"
               [locationRequired]="locationRequired()"
               [hasExistingLocationPermission]="hasExistingLocationPermission()"
+              [loading]="saving()"
               (pubSelected)="onHomePubSelected($event)"
               (locationRequested)="requestLocationPermission()"
               (back)="goBackToPreviousStep()"
@@ -301,14 +304,30 @@ export class OnboardingComponent extends BaseComponent {
   }
 
   // Specific navigation methods for clarity
-  proceedToCustomizeProfile(): void { 
+  async proceedToCustomizeProfile(): Promise<void> { 
     console.log('[Onboarding] Proceeding to customize profile');
-    this.currentStep.set('customize-profile'); 
+    this.saving.set(true);
+    
+    try {
+      // Brief delay for user feedback
+      await new Promise(resolve => setTimeout(resolve, 300));
+      this.currentStep.set('customize-profile'); 
+    } finally {
+      this.saving.set(false);
+    }
   }
   
-  proceedToChooseLocal(): void { 
+  async proceedToChooseLocal(): Promise<void> { 
     console.log('[Onboarding] Proceeding to choose local pub');
-    this.currentStep.set('choose-local'); 
+    this.saving.set(true);
+    
+    try {
+      // Brief delay for user feedback
+      await new Promise(resolve => setTimeout(resolve, 300));
+      this.currentStep.set('choose-local'); 
+    } finally {
+      this.saving.set(false);
+    }
   }
 
   // Permission handling methods

@@ -84,9 +84,17 @@ async checkAndAwardBadges(userId: string): Promise<string[]> {
     try {
       // 0. Ensure badge definitions are loaded (force clear cache first)
       console.log('[BadgeAward] 🔄 Clearing badge definitions cache...');
-      // Force clear the cache to ensure fresh data
-      this._badgeStore['cacheService'].clear('badge-definitions');
-      this._badgeStore['_definitionsLoaded'] = false;
+      // Force clear the cache to ensure fresh data (defensive access)
+      try {
+        if (this._badgeStore['cacheService']) {
+          this._badgeStore['cacheService'].clear('badge-definitions');
+        }
+        if (this._badgeStore['_definitionsLoaded'] !== undefined) {
+          this._badgeStore['_definitionsLoaded'] = false;
+        }
+      } catch (error) {
+        console.log('[BadgeAward] 📝 Cache clearing failed (likely in test environment):', error);
+      }
       
       console.log('[BadgeAward] 🔄 Loading badge definitions...');
       await this._badgeStore.loadDefinitions();
@@ -96,7 +104,22 @@ async checkAndAwardBadges(userId: string): Promise<string[]> {
       const context = this.buildTriggerContext(userId, newCheckIn, allUserCheckIns);
 
       // 2. Evaluate which badges should be awarded
+      console.log('🔍 [BadgeAward] Evaluating badges with context:', {
+        userId: context.userId,
+        totalCheckIns: context.totalCheckIns,
+        uniquePubs: new Set(context.userCheckIns.map(c => c.pubId)).size,
+        currentBadges: context.userBadges.map(b => b.badgeId),
+        lastCheckInPub: context.checkIn.pubId,
+        checkInTime: new Date(context.checkIn.timestamp.toMillis()).toLocaleString()
+      });
+
       const eligibleBadgeIds = this._badgeLogic.evaluateAllBadges(context);
+
+      console.log('🎯 [BadgeAward] Badge evaluation results:', {
+        eligibleBadgeIds,
+        totalEligible: eligibleBadgeIds.length,
+        badgeDefinitionsAvailable: this._badgeStore.definitions().map(d => d.id)
+      });
 
       if (eligibleBadgeIds.length === 0) {
         console.log('📝 [BadgeAward] No badges eligible for this check-in');
@@ -108,7 +131,21 @@ async checkAndAwardBadges(userId: string): Promise<string[]> {
 
       for (const badgeId of eligibleBadgeIds) {
         try {
-          console.log(`🏅 [BadgeAward] Attempting to award badge: ${badgeId}`);
+          // Check if badge definition exists before awarding
+          const badgeDefinition = this._badgeStore.definitions().find(d => d.id === badgeId);
+          if (!badgeDefinition) {
+            console.error(`❌ [BadgeAward] Badge definition not found for ID: ${badgeId}`);
+            console.error(`Available badge IDs:`, this._badgeStore.definitions().map(d => d.id));
+            continue;
+          }
+
+          // Check if user already has this badge
+          if (context.userBadges.some(b => b.badgeId === badgeId)) {
+            console.log(`📝 [BadgeAward] User already has badge: ${badgeId}, skipping`);
+            continue;
+          }
+
+          console.log(`🏅 [BadgeAward] Attempting to award badge: ${badgeId} (${badgeDefinition.name})`);
 
           const earnedBadge = await this._badgeStore.awardBadge(badgeId, {
             triggeredBy: 'check-in',
@@ -118,7 +155,7 @@ async checkAndAwardBadges(userId: string): Promise<string[]> {
           });
 
           awardedBadges.push(earnedBadge);
-          console.log(`✅ [BadgeAward] Successfully awarded badge: ${badgeId}`);
+          console.log(`✅ [BadgeAward] Successfully awarded badge: ${badgeId} (${badgeDefinition.name})`);
 
         } catch (error) {
           console.error(`❌ [BadgeAward] Failed to award badge ${badgeId}:`, error);
