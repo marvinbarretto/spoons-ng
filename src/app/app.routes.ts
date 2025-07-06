@@ -11,7 +11,7 @@ import {
 export const appRoutes: Routes = [
   {
     path: '',
-    redirectTo: '/app',
+    redirectTo: '/home',
     pathMatch: 'full'
   },
   {
@@ -21,7 +21,7 @@ export const appRoutes: Routes = [
     data: { shell: 'fullscreen' }
   },
   {
-    path: 'app',
+    path: 'home',
     canLoad: [onboardingGuard],
     canActivate: [onboardingGuard],
     loadComponent: () => import('./home/feature/home/home.component').then(m => m.HomeComponent),
@@ -30,6 +30,7 @@ export const appRoutes: Routes = [
   {
     path: 'pubs',
     title: 'Pubs',
+    canActivate: [onboardingGuard],
     loadChildren: () =>
       import('./pubs/data-access/pub.routes').then((m) => m.PUBS_ROUTES),
     data: { shell: 'feature' }
@@ -37,12 +38,14 @@ export const appRoutes: Routes = [
   {
     path: 'check-in/:pubId',
     title: 'Check In',
+    canActivate: [onboardingGuard],
     loadComponent: () =>
       import('./check-in/feature/check-in-page/check-in-page.component').then(m => m.CheckInPageComponent),
     data: { shell: 'fullscreen' }
   },
   {
     path: 'carpets',
+    canActivate: [onboardingGuard],
     loadChildren: () =>
       import('./carpets/data-access/carpet.routes').then((m) => m.CARPETS_ROUTES),
     data: { shell: 'feature' }
@@ -51,6 +54,7 @@ export const appRoutes: Routes = [
   {
     path: 'missions',
     title: 'Missions',
+    canActivate: [onboardingGuard],
     loadChildren: () =>
       import('./missions/data-access/mission.routes').then((m) => m.MISSIONS_ROUTES),
     data: { shell: 'feature' }
@@ -58,6 +62,7 @@ export const appRoutes: Routes = [
   {
     path: 'leaderboard',
     title: 'Leaderboard',
+    canActivate: [onboardingGuard],
     loadChildren: () =>
       import('./leaderboard/data-access/leaderboard.routes').then((m) => m.LEADERBOARD_ROUTES),
     data: { shell: 'feature' }
