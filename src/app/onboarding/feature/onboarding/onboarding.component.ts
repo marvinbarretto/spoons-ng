@@ -59,7 +59,6 @@ type OnboardingStep =
               (avatarSelected)="onAvatarSelected($event)"
               (nameChanged)="onDisplayNameChange($event)"
               (generateRandom)="generateRandomDisplayName()"
-              @comment {(googleLogin)="handleGoogleLogin()"}
               (back)="goBackToPreviousStep()"
               (continue)="proceedToChooseLocal()"
             />
