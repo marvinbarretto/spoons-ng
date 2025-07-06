@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.85](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.84...v0.0.85) (2025-07-06)
+
+
+### Features
+
+* [Checkin] handle non carpet situation better, wip ([64bde42](https://github.com/marvinbarretto/spoons-ng/commit/64bde427ecf3873a1ceabfbeefa587c6f7858f47))
+* Remove google login for time being ([f183c19](https://github.com/marvinbarretto/spoons-ng/commit/f183c197bbf2e41bd8430c585276e469821eb914))
+
+
+### Bug Fixes
+
+* Checkin: Make stability less harsh ([dea210b](https://github.com/marvinbarretto/spoons-ng/commit/dea210be5bf80d49361f66c4ffa867499c053a30))
+
 ### [0.0.84](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.83...v0.0.84) (2025-07-06)
 
 
