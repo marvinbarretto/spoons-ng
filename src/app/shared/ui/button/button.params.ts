@@ -9,11 +9,11 @@ export const ButtonVariant = {
 } as const;
 
 export const ButtonSize = {
-  XS: 'xs',
-  SM: 'sm',
-  MD: 'md',
-  LG: 'lg',
-  XL: 'xl',
+  EXTRA_SMALL: 'xs',
+  SMALL: 'sm',
+  MEDIUM: 'md',
+  LARGE: 'lg',
+  EXTRA_LARGE: 'xl',
 } as const;
 
 export type ButtonVariantType = typeof ButtonVariant[keyof typeof ButtonVariant];

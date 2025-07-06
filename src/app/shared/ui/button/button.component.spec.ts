@@ -21,10 +21,10 @@ describe('ButtonComponent', () => {
   describe('Signal-driven behavior', () => {
     it('should react to loading state changes', () => {
       // Arrange
-      const loadingWatcher = watchSignal(component.loading$$).startWatching();
+      const loadingWatcher = watchSignal(component.loading).startWatching();
 
       // Act
-      fixture.componentRef.setInput('loading$$', true);
+      fixture.componentRef.setInput('loading', true);
       fixture.detectChanges();
 
       const button = fixture.debugElement.query(By.css('button'));
@@ -38,7 +38,7 @@ describe('ButtonComponent', () => {
     it('should emit onClick when clicked and not disabled', () => {
       // Arrange
       jest.spyOn(component.onClick, 'emit');
-      fixture.componentRef.setInput('disabled$$', false);
+      fixture.componentRef.setInput('disabled', false);
       fixture.detectChanges();
 
       // Act
@@ -52,7 +52,7 @@ describe('ButtonComponent', () => {
     it('should not emit onClick when disabled', () => {
       // Arrange
       jest.spyOn(component.onClick, 'emit');
-      fixture.componentRef.setInput('disabled$$', true);
+      fixture.componentRef.setInput('disabled', true);
       fixture.detectChanges();
 
       // Act
@@ -67,7 +67,7 @@ describe('ButtonComponent', () => {
   describe('Variant rendering', () => {
     it('should apply correct data-variant attribute', () => {
       // Arrange & Act
-      fixture.componentRef.setInput('variant$$', 'primary');
+      fixture.componentRef.setInput('variant', 'primary');
       fixture.detectChanges();
 
       // Assert
@@ -77,7 +77,7 @@ describe('ButtonComponent', () => {
 
     it('should render icon when provided', () => {
       // Arrange & Act
-      fixture.componentRef.setInput('icon$$', 'search');
+      fixture.componentRef.setInput('iconLeft', 'search');
       fixture.detectChanges();
 
       // Assert
@@ -88,12 +88,12 @@ describe('ButtonComponent', () => {
 
     it('should render spinner instead of icon when loading', () => {
       // Arrange & Act
-      fixture.componentRef.setInput('loading$$', true);
-      fixture.componentRef.setInput('icon$$', 'search');
+      fixture.componentRef.setInput('loading', true);
+      fixture.componentRef.setInput('iconLeft', 'search');
       fixture.detectChanges();
 
       // Assert
-      const spinner = fixture.debugElement.query(By.css('.spinner'));
+      const spinner = fixture.debugElement.query(By.css('.btn__spinner'));
       const icon = fixture.debugElement.query(By.css('.material-symbols-outlined'));
 
       expect(spinner).toBeTruthy();
@@ -104,7 +104,7 @@ describe('ButtonComponent', () => {
   describe('Full width behavior', () => {
     it('should apply full-width class when fullWidth$$ is true', () => {
       // Arrange & Act
-      fixture.componentRef.setInput('fullWidth$$', true);
+      fixture.componentRef.setInput('fullWidth', true);
       fixture.detectChanges();
 
       // Assert
@@ -116,7 +116,7 @@ describe('ButtonComponent', () => {
   describe('Accessibility', () => {
     it('should have correct aria-busy attribute when loading', () => {
       // Arrange & Act
-      fixture.componentRef.setInput('loading$$', true);
+      fixture.componentRef.setInput('loading', true);
       fixture.detectChanges();
 
       // Assert
@@ -126,7 +126,7 @@ describe('ButtonComponent', () => {
 
     it('should have correct type attribute', () => {
       // Arrange & Act
-      fixture.componentRef.setInput('type$$', 'submit');
+      fixture.componentRef.setInput('type', 'submit');
       fixture.detectChanges();
 
       // Assert

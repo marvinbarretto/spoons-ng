@@ -87,7 +87,7 @@ import { ButtonVariant, ButtonSize, ButtonVariantType, ButtonSizeType } from './
 export class ButtonComponent {
   // Core props
   readonly variant = input<ButtonVariantType>(ButtonVariant.SECONDARY);
-  readonly size = input<ButtonSizeType>(ButtonSize.MD);
+  readonly size = input<ButtonSizeType>(ButtonSize.MEDIUM);
   readonly type = input<'button' | 'submit' | 'reset'>('button');
 
   // State
