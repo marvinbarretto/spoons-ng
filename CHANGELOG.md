@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.84](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.83...v0.0.84) (2025-07-06)
+
+
+### Features
+
+* Add CachedFirestoreService to reduce calls ([daa1ba1](https://github.com/marvinbarretto/spoons-ng/commit/daa1ba1f8869a34a6d150e08e137cf318c48854a))
+* Add profile link in the FooterNav ([9ede486](https://github.com/marvinbarretto/spoons-ng/commit/9ede486eebfb267ff869d7eeb88548b47d539205))
+* Create MissionCardLight for homepage ([87d3b2c](https://github.com/marvinbarretto/spoons-ng/commit/87d3b2cc52f09841644edc7bb73ed29fa2d2d095))
+* Implement initial carpet storage strategy ([1c430cf](https://github.com/marvinbarretto/spoons-ng/commit/1c430cf89a0a23e7bba1ebda38fdf8d332722921))
+* Integrated optimistic cached store ([b3004d8](https://github.com/marvinbarretto/spoons-ng/commit/b3004d87a8115d65e2bdb8ad8983e7d3167c95c4))
+* Normalise buttons on onboarding ([41606b0](https://github.com/marvinbarretto/spoons-ng/commit/41606b0519136a98aee2db376c746e1fa442c5bb))
+* Only show onboarding once per user ([f0058b0](https://github.com/marvinbarretto/spoons-ng/commit/f0058b05e7e7e30a0f810fadd4992912204a7634))
+* PubCardLight for consistency ([1e59eda](https://github.com/marvinbarretto/spoons-ng/commit/1e59edaf3b6841c855ba2dbe7246566fae880307))
+
+
+### Bug Fixes
+
+* ensure monthly tables show correct pub data ([81c68db](https://github.com/marvinbarretto/spoons-ng/commit/81c68db3bfe57fe44bd35e994a192517ef9357e0))
+* Ensure nearest pub widget has sensible threshold ([6773996](https://github.com/marvinbarretto/spoons-ng/commit/67739962f234564ca8ccc6cbba0ff6180cbc0d1c))
+
 ### [0.0.83](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.82...v0.0.83) (2025-07-06)
 
 
