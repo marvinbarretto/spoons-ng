@@ -7,6 +7,7 @@ import { PubStore } from '../../data-access/pub.store';
 import { CheckInStore } from '../../../check-in/data-access/check-in.store';
 import { UserStore } from '@users/data-access/user.store';
 import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
+import { LocationService } from '../../../shared/data-access/location.service';
 import { PubCardComponent } from '../../ui/pub-card/pub-card.component';
 import type { Pub } from '../../utils/pub.models';
 
@@ -24,6 +25,7 @@ export class PubListComponent extends BaseComponent implements OnInit {
   private readonly checkinStore = inject(CheckInStore);
   private readonly userStore = inject(UserStore);
   protected readonly dataAggregatorService = inject(DataAggregatorService);
+  private readonly locationService = inject(LocationService);
 
   // ✅ Local state
   private readonly _searchTerm = signal('');
@@ -157,10 +159,19 @@ export class PubListComponent extends BaseComponent implements OnInit {
   protected override onInit(): void {
     this.pubStore.loadOnce();
 
+    // ✅ Initialize location if not already set
+    if (!this.locationService.location()) {
+      console.log('[PubList] 📍 No location data, requesting current location...');
+      this.locationService.getCurrentLocation();
+    } else {
+      console.log('[PubList] 📍 Location already available:', this.locationService.location());
+    }
+
     // ✅ Console debug logging
     console.group('🍺 PubListComponent Debug');
     console.log('Filter State:', this.debugFilterInfo());
     console.log('Pub Stats:', this.debugPubStats());
+    console.log('Location:', this.locationService.location());
     console.groupEnd();
   }
 
