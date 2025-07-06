@@ -277,6 +277,229 @@
   }
 }
 
+// Tier Analysis Styles
+.tier-analysis {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 24px;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tier-overview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.tier-card {
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+  }
+  
+  &.tier-static {
+    border-left: 4px solid #10b981; // Green for static
+  }
+  
+  &.tier-personal {
+    border-left: 4px solid #3b82f6; // Blue for personal
+  }
+  
+  &.tier-social {
+    border-left: 4px solid #f59e0b; // Orange for social
+  }
+  
+  &.tier-custom {
+    border-left: 4px solid #8b5cf6; // Purple for custom
+  }
+}
+
+.tier-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  
+  h4 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+}
+
+.tier-badge {
+  background: var(--background-darkest);
+  color: var(--text-secondary);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.tier-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.tier-metric {
+  text-align: center;
+  
+  .metric-value {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+  
+  .metric-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+  }
+}
+
+.tier-recommendations {
+  h4 {
+    margin: 0 0 12px 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+}
+
+.recommendation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.recommendation-item {
+  padding: 12px;
+  border-radius: 6px;
+  border-left: 4px solid;
+  
+  &.severity-info {
+    background: rgba(59, 130, 246, 0.1);
+    border-left-color: #3b82f6;
+  }
+  
+  &.severity-warning {
+    background: rgba(245, 158, 11, 0.1);
+    border-left-color: #f59e0b;
+  }
+  
+  &.severity-error {
+    background: rgba(239, 68, 68, 0.1);
+    border-left-color: #ef4444;
+  }
+}
+
+.recommendation-tier {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.recommendation-message {
+  font-size: 0.875rem;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.tier-config-analysis {
+  grid-column: 1 / -1;
+  margin-top: 16px;
+  padding: 16px;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  
+  h4 {
+    margin: 0 0 12px 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+}
+
+.config-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.config-stat {
+  text-align: center;
+  
+  .stat-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+  }
+}
+
+.config-recommendations {
+  margin-bottom: 12px;
+}
+
+.config-recommendation {
+  padding: 8px 12px;
+  background: rgba(245, 158, 11, 0.1);
+  border-left: 3px solid #f59e0b;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  color: var(--text);
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.unconfigured-collections {
+  padding: 8px 12px;
+  background: rgba(156, 163, 175, 0.1);
+  border-radius: 4px;
+  font-size: 0.875rem;
+  
+  strong {
+    color: var(--text);
+  }
+  
+  .collection-list {
+    color: var(--text-secondary);
+    font-family: var(--font-mono, 'SF Mono', 'Monaco', 'Cascadia Code', monospace);
+  }
+}
+
+.no-tier-data,
+.no-recommendations {
+  text-align: center;
+  color: var(--text-secondary);
+  font-style: italic;
+  padding: 24px;
+}
+
 // Dark mode support
 @media (prefers-color-scheme: dark) {
   .metrics-dashboard {

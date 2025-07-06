@@ -143,6 +143,33 @@ export class LLMService {
   }
 
   /**
+   * 🎯 Carpet analysis for CarpetStrategyService
+   * Returns simplified result format optimized for the carpet workflow
+   */
+  async analyzeCarpet(imageData: string): Promise<{ isCarpet: boolean; confidence: number }> {
+    console.log('[LLMService] 🎯 Analyzing carpet for strategy workflow...');
+
+    try {
+      const result = await this.detectCarpet(imageData);
+      
+      if (result.success) {
+        console.log(`[LLMService] ✅ Strategy analysis complete - isCarpet: ${result.data.isCarpet}, confidence: ${result.data.confidence}%`);
+        return {
+          isCarpet: result.data.isCarpet,
+          confidence: result.data.confidence
+        };
+      } else {
+        console.error('[LLMService] ❌ Strategy analysis failed:', result.error);
+        return { isCarpet: false, confidence: 0 };
+      }
+      
+    } catch (error) {
+      console.error('[LLMService] ❌ Strategy analysis error:', error);
+      return { isCarpet: false, confidence: 0 };
+    }
+  }
+
+  /**
    * Streaming carpet detection with real-time feedback
    */
   async detectCarpetStream(imageData: string): Promise<LLMStreamResponse<CarpetDetectionResult>> {

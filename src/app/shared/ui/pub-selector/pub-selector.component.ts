@@ -3,11 +3,13 @@ import { Component, computed, inject, input, output, signal, effect } from '@ang
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PubStore } from '@pubs/data-access/pub.store';
+import { DataAggregatorService } from '../../data-access/data-aggregator.service';
+import { PubCardLightComponent } from '../../../pubs/ui/pub-card-light/pub-card-light.component';
 import type { Pub } from '@pubs/utils/pub.models';
 
 @Component({
   selector: 'app-pub-selector',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PubCardLightComponent],
   template: `
     <div class="pub-selector">
       <label class="selector-label">
@@ -80,10 +82,13 @@ import type { Pub } from '@pubs/utils/pub.models';
                   [class.selected]="isPubSelected(pub)"
                   (click)="togglePub(pub)"
                 >
-                  <div class="pub-info">
-                    <div class="pub-name">{{ pub.name }}</div>
-                    <div class="pub-location">{{ getPubLocationText(pub) }}</div>
-                  </div>
+                  <app-pub-card-light
+                    [pub]="pub"
+                    [showAddress]="false"
+                    [showDistance]="false"
+                    [isLocalPub]="dataAggregatorService.isLocalPub(pub.id)"
+                    variant="compact"
+                  />
                   <div class="selection-indicator">
                     @if (isPubSelected(pub)) {
                       <span class="selected-icon">✓</span>
@@ -343,15 +348,7 @@ import type { Pub } from '@pubs/utils/pub.models';
       border-bottom-color: var(--accent);
     }
 
-    .pub-info {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .dropdown-item .pub-name {
-      display: block;
-      margin-bottom: 0.25rem;
-    }
+    /* Removed .pub-info styles - now handled by pub-card-light component */
 
     .selection-indicator {
       flex-shrink: 0;
@@ -447,6 +444,7 @@ import type { Pub } from '@pubs/utils/pub.models';
 export class PubSelectorComponent {
   // ✅ Dependencies
   private readonly pubStore = inject(PubStore);
+  protected readonly dataAggregatorService = inject(DataAggregatorService);
 
   // ✅ Inputs
   readonly label = input<string>('Select Pubs');

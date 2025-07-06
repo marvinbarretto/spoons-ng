@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { FirestoreCrudService } from '../../shared/data-access/firestore-crud.service';
+import { CachedFirestoreService } from '../../shared/data-access/cached-firestore.service';
 import { Observable } from 'rxjs';
 import type { Pub } from '../utils/pub.models';
 import type { CheckIn } from '@check-in/utils/check-in.models';
@@ -9,8 +9,16 @@ import { earliest, latest } from '../../shared/utils/date-utils';
 @Injectable({
   providedIn: 'root'
 })
-export class PubService extends FirestoreCrudService<Pub> {
+export class PubService extends CachedFirestoreService {
   protected path = 'pubs';
+  
+  // Configure caching for pubs collection to use STATIC tier
+  protected override cacheConfig = {
+    'pubs': {
+      ttl: 7 * 24 * 60 * 60 * 1000, // 7 days (STATIC tier)
+      strategy: 'cache-first' as const
+    }
+  };
 
   loadPubs(): Observable<Pub[]> {
     return this.collection$<Pub>('pubs');
@@ -88,6 +96,29 @@ export class PubService extends FirestoreCrudService<Pub> {
     });
 
     console.log('[PubService] Pub history updated successfully:', pubId);
+  }
+
+  /**
+   * 🏷️ Update pub carpet status - Used by CarpetStrategyService
+   */
+  async updatePubHasCarpet(pubId: string, hasCarpet: boolean): Promise<void> {
+    console.log('[PubService] 🏷️ Updating pub carpet status:', pubId, '→', hasCarpet);
+    
+    try {
+      await this.updateDoc<Pub>(`${this.path}/${pubId}`, { 
+        hasCarpet,
+        carpetUpdatedAt: serverTimestamp() as any
+      });
+      
+      console.log('[PubService] ✅ Pub carpet status updated');
+      
+      // Invalidate cache to force refresh on next read
+      await this.invalidateCache(`${this.path}/${pubId}`);
+      
+    } catch (error) {
+      console.error('[PubService] ❌ Failed to update pub carpet status:', error);
+      throw error;
+    }
   }
 
   /**

@@ -35,6 +35,7 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { IndexedDbService } from './indexed-db.service';
 import { FirebaseMetricsService } from './firebase-metrics.service';
+import { CacheTier, getCacheTierForCollection } from './cache-tiers';
 
 type DatabaseType = 'firestore' | 'indexeddb';
 
@@ -45,6 +46,7 @@ type DatabaseOperation = {
   timestamp: number;
   duration?: number;
   cached?: boolean;
+  tier?: CacheTier | 'custom';
 };
 
 type CostEstimate = {
@@ -166,7 +168,7 @@ export class DatabaseMetricsService {
   });
 
   /**
-   * Record a database operation
+   * Record a database operation with tier tracking
    */
   recordOperation(
     type: DatabaseType,
@@ -175,13 +177,22 @@ export class DatabaseMetricsService {
     duration?: number,
     cached = false
   ): void {
+    // Determine cache tier for the collection
+    let tier: CacheTier | 'custom';
+    try {
+      tier = getCacheTierForCollection(collection);
+    } catch (error) {
+      tier = 'custom';
+    }
+    
     const newOperation: DatabaseOperation = {
       type,
       operation,
       collection,
       timestamp: Date.now(),
       duration,
-      cached
+      cached,
+      tier
     };
 
     const currentOps = this.operations();
@@ -194,7 +205,7 @@ export class DatabaseMetricsService {
 
     this.operations.set(updatedOps);
 
-    console.log(`📊 [DatabaseMetrics] Recorded ${type} ${operation} on ${collection} ${cached ? '(cached)' : ''}`);
+    console.log(`📊 [DatabaseMetrics] Recorded ${type} ${operation} on ${collection} [${tier}] ${cached ? '(cached)' : ''}`);
   }
 
   /**
@@ -459,6 +470,171 @@ export class DatabaseMetricsService {
         timeSaved: Math.max(0, timeSaved),
         costSaved: costs.savings.monthlySavings
       }
+    };
+  }
+  
+  /**
+   * Get cache performance metrics by tier
+   * 
+   * Provides tier-specific insights to understand which cache strategies
+   * are performing best and identify optimization opportunities.
+   */
+  getCachePerformanceByTier(): {
+    tierBreakdown: Array<{
+      tier: CacheTier | 'custom';
+      collections: number;
+      totalOperations: number;
+      cacheHitRatio: number;
+      avgLatency: number;
+      costSavings: number;
+    }>;
+    tierRecommendations: Array<{
+      tier: CacheTier | 'custom';
+      message: string;
+      severity: 'info' | 'warning' | 'error';
+    }>;
+  } {
+    const ops = this.operations();
+    
+    // Group operations by tier
+    const tierGroups: Record<string, DatabaseOperation[]> = {};
+    ops.forEach(op => {
+      const tier = op.tier || 'custom';
+      if (!tierGroups[tier]) {
+        tierGroups[tier] = [];
+      }
+      tierGroups[tier].push(op);
+    });
+    
+    const tierBreakdown = Object.entries(tierGroups).map(([tierName, tierOps]) => {
+      const tier = tierName as CacheTier | 'custom';
+      const readOps = tierOps.filter(op => op.operation === 'read');
+      const cachedReads = readOps.filter(op => op.cached);
+      const collections = new Set(tierOps.map(op => op.collection)).size;
+      
+      const avgLatency = tierOps.length > 0 
+        ? tierOps.reduce((sum, op) => sum + (op.duration || 0), 0) / tierOps.length
+        : 0;
+      
+      const hitRatio = readOps.length > 0 ? cachedReads.length / readOps.length : 0;
+      const costSavings = cachedReads.length * this.FIRESTORE_READ_COST;
+      
+      return {
+        tier,
+        collections,
+        totalOperations: tierOps.length,
+        cacheHitRatio: hitRatio,
+        avgLatency,
+        costSavings
+      };
+    });
+    
+    // Generate tier-specific recommendations
+    const tierRecommendations = tierBreakdown.map(tier => {
+      if (tier.tier === 'static' && tier.cacheHitRatio < 0.8) {
+        return {
+          tier: tier.tier,
+          message: `Static tier cache hit ratio is ${(tier.cacheHitRatio * 100).toFixed(1)}%. Consider increasing TTL for better performance.`,
+          severity: 'warning' as const
+        };
+      }
+      
+      if (tier.tier === 'social' && tier.cacheHitRatio > 0.5) {
+        return {
+          tier: tier.tier,
+          message: `Social tier has high cache hit ratio (${(tier.cacheHitRatio * 100).toFixed(1)}%). Consider reducing TTL to ensure data freshness.`,
+          severity: 'info' as const
+        };
+      }
+      
+      if (tier.tier === 'personal' && tier.avgLatency > 100) {
+        return {
+          tier: tier.tier,
+          message: `Personal tier latency is ${tier.avgLatency.toFixed(1)}ms. Check for performance bottlenecks.`,
+          severity: 'warning' as const
+        };
+      }
+      
+      return {
+        tier: tier.tier,
+        message: `${tier.tier} tier performing well (${(tier.cacheHitRatio * 100).toFixed(1)}% hit ratio)`,
+        severity: 'info' as const
+      };
+    });
+    
+    return {
+      tierBreakdown,
+      tierRecommendations
+    };
+  }
+  
+  /**
+   * Get tier configuration effectiveness analysis
+   * 
+   * Analyzes whether current tier configurations align with actual usage patterns.
+   */
+  getTierConfigurationAnalysis(): {
+    configuredCollections: number;
+    unconfiguredCollections: string[];
+    tierUtilization: Record<CacheTier, {
+      collections: number;
+      operationsPerDay: number;
+      efficiency: number;
+    }>;
+    recommendations: string[];
+  } {
+    const ops = this.operations();
+    const collections = new Set(ops.map(op => op.collection));
+    const unconfiguredCollections: string[] = [];
+    const tierUtilization: Record<CacheTier, {
+      collections: number;
+      operationsPerDay: number;
+      efficiency: number;
+    }> = {
+      [CacheTier.STATIC]: { collections: 0, operationsPerDay: 0, efficiency: 0 },
+      [CacheTier.PERSONAL]: { collections: 0, operationsPerDay: 0, efficiency: 0 },
+      [CacheTier.SOCIAL]: { collections: 0, operationsPerDay: 0, efficiency: 0 }
+    };
+    
+    collections.forEach(collection => {
+      try {
+        const tier = getCacheTierForCollection(collection);
+        const collectionOps = ops.filter(op => op.collection === collection);
+        const dailyOps = collectionOps.length / 7; // Approximate daily operations
+        
+        tierUtilization[tier].collections++;
+        tierUtilization[tier].operationsPerDay += dailyOps;
+        
+        // Calculate efficiency (cache hits / total reads)
+        const reads = collectionOps.filter(op => op.operation === 'read');
+        const cachedReads = reads.filter(op => op.cached);
+        const efficiency = reads.length > 0 ? cachedReads.length / reads.length : 0;
+        tierUtilization[tier].efficiency = Math.max(tierUtilization[tier].efficiency, efficiency);
+        
+      } catch (error) {
+        unconfiguredCollections.push(collection);
+      }
+    });
+    
+    const recommendations: string[] = [];
+    
+    if (unconfiguredCollections.length > 0) {
+      recommendations.push(`${unconfiguredCollections.length} collections are not tier-configured: ${unconfiguredCollections.join(', ')}`);
+    }
+    
+    Object.entries(tierUtilization).forEach(([tier, data]) => {
+      if (data.collections === 0) {
+        recommendations.push(`${tier} tier is not being used - consider reviewing tier assignments`);
+      } else if (data.efficiency < 0.5) {
+        recommendations.push(`${tier} tier has low efficiency (${(data.efficiency * 100).toFixed(1)}%) - review TTL settings`);
+      }
+    });
+    
+    return {
+      configuredCollections: collections.size - unconfiguredCollections.length,
+      unconfiguredCollections,
+      tierUtilization,
+      recommendations
     };
   }
 }

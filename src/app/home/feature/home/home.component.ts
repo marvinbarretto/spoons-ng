@@ -15,11 +15,8 @@ import { DataAggregatorService } from '../../../shared/data-access/data-aggregat
 import { PubStore } from '../../../pubs/data-access/pub.store';
 import { LocationService } from '../../../shared/data-access/location.service';
 
-// Import micro-widget components
-import { ScoreboardData, ScoreboardHeroComponent } from '@home/ui/scoreboard-hero/scoreboard-hero.component';
 import { BadgesShowcaseComponent } from '@home/ui/badges-showcase/badges-showcase.component';
 import { MissionsWidgetComponent } from '../../../widgets/missions/missions-widget.component';
-import { UserProfileWidgetComponent } from '@home/ui/user-profile-widget/user-profile-widget.component';
 import { ProfileCustomisationModalComponent } from '@home/ui/profile-customisation-modal/profile-customisation-modal.component';
 import { CarpetCollectionWidgetComponent } from '../../../widgets/carpet-collection/carpet-collection-widget.component';
 // import { LLMTestComponent } from '../../../shared/ui/llm-test/llm-test.component';
@@ -39,7 +36,6 @@ import { WelcomeModalComponent } from '../../ui/welcome-modal/welcome-modal.comp
     ScoreboardHeroWidgetComponent,
     BadgesShowcaseComponent,
     MissionsWidgetComponent,
-    UserProfileWidgetComponent,
     CarpetCollectionWidgetComponent,
     RouterModule,
     NearestPubComponent,

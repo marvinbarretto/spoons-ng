@@ -3,6 +3,8 @@ import { Component, input, computed, ChangeDetectionStrategy, inject } from '@an
 import type { CheckIn } from '@/app/check-in/utils/check-in.models';
 import type { Pub } from '@pubs/utils/pub.models';
 import { LocationService } from '../../../shared/data-access/location.service';
+import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
+import { PubCardLightComponent } from '../../../pubs/ui/pub-card-light/pub-card-light.component';
 
 type NearbyPub = {
   id: string;
@@ -14,7 +16,7 @@ type NearbyPub = {
 
 @Component({
   selector: 'app-nearby-pub-list',
-  imports: [],
+  imports: [PubCardLightComponent],
   template: `
     <section class="nearby-pubs">
       <h2>📍 Nearby Pubs ({{ pubs().length }})</h2>
@@ -28,15 +30,14 @@ type NearbyPub = {
         <ul class="pub-list">
           @for (pub of pubsWithStatus(); track pub.id) {
             <li class="pub-item" [class.visited-today]="pub.visitedToday">
-              <div class="pub-info">
-                <h4 class="pub-name">{{ pub.name }}</h4>
-                <div class="pub-details">
-                  <span class="distance" [class.distance-pulsing]="isMoving()">{{ pub.distanceText }}</span>
-                  @if (pub.address) {
-                    <span class="address">{{ pub.address }}</span>
-                  }
-                </div>
-              </div>
+              <app-pub-card-light
+                [pub]="convertToPub(pub)"
+                [distance]="pub.distance"
+                [showDistance]="true"
+                [showLocation]="false"
+                [isLocalPub]="dataAggregatorService.isLocalPub(pub.id)"
+                variant="normal"
+              />
 
               <div class="pub-status">
                 @if (pub.visitedToday) {
@@ -126,36 +127,7 @@ type NearbyPub = {
       padding: 1rem 0.5rem;
     }
 
-    .pub-info {
-      flex: 1;
-      min-width: 0; /* Allow text truncation */
-    }
-
-    .pub-name {
-      margin: 0 0 0.25rem 0;
-      color: #333;
-      font-size: 1.05rem;
-      font-weight: 600;
-      line-height: 1.3;
-    }
-
-    .pub-details {
-      display: flex;
-      flex-direction: column;
-      gap: 0.125rem;
-    }
-
-    .distance {
-      color: #007bff;
-      font-weight: 500;
-      font-size: 0.9rem;
-    }
-
-    .address {
-      color: #6c757d;
-      font-size: 0.85rem;
-      line-height: 1.3;
-    }
+    /* Removed .pub-info styles - now handled by pub-card-light component */
 
     .pub-status {
       flex-shrink: 0;
@@ -230,6 +202,7 @@ type NearbyPub = {
 export class NearbyPubListComponent {
   // ✅ Inject LocationService for movement detection
   private readonly locationService = inject(LocationService);
+  protected readonly dataAggregatorService = inject(DataAggregatorService);
   
   // ✅ Properly typed inputs
   readonly pubs = input.required<NearbyPub[]>();
@@ -282,5 +255,23 @@ export class NearbyPubListComponent {
     // TODO: This should probably come from a configuration store
     const CHECK_IN_RANGE_METERS = 500;
     return distanceInMeters <= CHECK_IN_RANGE_METERS;
+  }
+
+  /**
+   * Convert NearbyPub to Pub format for pub-card-light component
+   */
+  convertToPub(nearbyPub: NearbyPub): Pub {
+    return {
+      id: nearbyPub.id,
+      name: nearbyPub.name,
+      address: nearbyPub.address || '',
+      city: '', // Not available in NearbyPub
+      region: '', // Not available in NearbyPub
+      postcode: nearbyPub.postcode || '',
+      location: { lat: 0, lng: 0 }, // Not available in NearbyPub
+      carpetImageUrl: '', // Not needed for this display
+      thumbnailImageUrl: '', // Not needed for this display
+      websiteUrl: '' // Not needed for this display
+    } as Pub;
   }
 }

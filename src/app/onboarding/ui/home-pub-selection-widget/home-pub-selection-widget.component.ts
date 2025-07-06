@@ -6,11 +6,12 @@ import { PubStore } from '../../../pubs/data-access/pub.store';
 import { NearbyPubStore } from '../../../pubs/data-access/nearby-pub.store';
 import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
 import { LocationService } from '../../../shared/data-access/location.service';
+import { PubCardLightComponent } from '../../../pubs/ui/pub-card-light/pub-card-light.component';
 import type { Pub } from '../../../pubs/utils/pub.models';
 
 @Component({
   selector: 'app-home-pub-selection-widget',
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PubCardLightComponent],
   template: `
     <div class="widget-container">
       @if (loading()) {
@@ -62,13 +63,13 @@ import type { Pub } from '../../../pubs/utils/pub.models';
                 </button>
               </div>
               <div class="selected-pub-card">
-                <div class="pub-info">
-                  <h4 class="pub-name">{{ selectedPub()!.name }}</h4>
-                  <p class="pub-address">{{ getPubLocationText(selectedPub()!) }}</p>
-                  @if (selectedPubDistance()) {
-                    <p class="pub-distance" [class.distance-pulsing]="isMoving()">📍 {{ formatDistance(selectedPubDistance()!) }}</p>
-                  }
-                </div>
+                <app-pub-card-light
+                  [pub]="selectedPub()!"
+                  [distance]="selectedPubDistance()"
+                  [showDistance]="selectedPubDistance() !== null"
+                  [isLocalPub]="dataAggregatorService.isLocalPub(selectedPub()!.id)"
+                  variant="normal"
+                />
                 <div class="selection-check">✓</div>
               </div>
             </div>
@@ -84,11 +85,13 @@ import type { Pub } from '../../../pubs/utils/pub.models';
                     class="suggestion-card"
                     (click)="selectPub(pub)"
                   >
-                    <div class="pub-info">
-                      <h5 class="pub-name">{{ pub.name }}</h5>
-                      <p class="pub-address">{{ getPubLocationText(pub) }}</p>
-                      <p class="pub-distance" [class.distance-pulsing]="isMoving()">📍 {{ formatDistance(pub.distance) }}</p>
-                    </div>
+                    <app-pub-card-light
+                      [pub]="pub"
+                      [distance]="pub.distance"
+                      [showDistance]="true"
+                      [isLocalPub]="dataAggregatorService.isLocalPub(pub.id)"
+                      variant="normal"
+                    />
                     <div class="select-icon">+</div>
                   </div>
                 }
@@ -110,10 +113,13 @@ import type { Pub } from '../../../pubs/utils/pub.models';
                       class="dropdown-item"
                       (click)="selectPub(pub)"
                     >
-                      <div class="pub-info">
-                        <div class="pub-name">{{ pub.name }}</div>
-                        <div class="pub-location">{{ getPubLocationText(pub) }}</div>
-                      </div>
+                      <app-pub-card-light
+                        [pub]="pub"
+                        [showAddress]="false"
+                        [showDistance]="false"
+                        [isLocalPub]="dataAggregatorService.isLocalPub(pub.id)"
+                        variant="compact"
+                      />
                       <div class="select-icon">+</div>
                     </div>
                   }
@@ -326,29 +332,7 @@ import type { Pub } from '../../../pubs/utils/pub.models';
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
 
-    .pub-info {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .pub-name {
-      margin: 0;
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: var(--text);
-    }
-
-    .pub-address {
-      margin: 0.25rem 0 0 0;
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-    }
-
-    .pub-distance {
-      margin: 0.25rem 0 0 0;
-      font-size: 0.75rem;
-      color: var(--text-muted);
-    }
+    /* Removed .pub-info styles - now handled by pub-card-light component */
 
     .select-icon {
       color: var(--accent);
@@ -410,15 +394,7 @@ import type { Pub } from '../../../pubs/utils/pub.models';
       background: var(--background-darkest);
     }
 
-    .dropdown-item .pub-name {
-      display: block;
-      margin-bottom: 0.25rem;
-    }
-
-    .dropdown-item .pub-location {
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-    }
+    /* Removed dropdown pub-info styles - now handled by pub-card-light component */
 
     .dropdown-footer {
       padding: 0.5rem 1rem;

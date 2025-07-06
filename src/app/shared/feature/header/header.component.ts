@@ -50,7 +50,7 @@ import { environment } from '../../../../environments/environment';
     CommonModule,
     NavComponent,
     UserProfileWidgetComponent,
-    ProfileCustomisationModalComponent,
+    // ProfileCustomisationModalComponent,
   ],
 })
 export class HeaderComponent extends BaseComponent implements AfterViewInit {
@@ -66,7 +66,7 @@ export class HeaderComponent extends BaseComponent implements AfterViewInit {
   readonly isMobile = this.viewportService.isMobile;
 
   readonly version = APP_VERSION;
-  
+
   // ✅ Environment detection
   readonly environmentName = computed(() => {
     if (environment.production) {

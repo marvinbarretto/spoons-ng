@@ -92,3 +92,7 @@ PATTERNS.md
 upload-tasks.sh
 CLAUDE.local.md
 tools/seed/parsed-pubs.backup.ts
+REVIEW_CHECKLIST.md
+VALUE_PROPOSITION.md
+OFFLINE_FIRST_DB_PLAN.md
+CARPET_STRATEGY_IMPLEMENTATION.md

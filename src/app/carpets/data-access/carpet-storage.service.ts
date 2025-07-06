@@ -349,6 +349,45 @@ async getPhotoUrl(filename: string): Promise<string | null> {
 
 
 /**
+ * 💾 Store local version (600x600 AVIF for UI) - Used by CarpetStrategyService
+ */
+async storeLocalVersion(blob: Blob, pubId: string, pubName: string): Promise<string> {
+  console.log('[CarpetStorage] 💾 Storing local version for:', pubName);
+  console.log('[CarpetStorage] 📊 Blob size:', (blob.size / 1024).toFixed(1) + 'KB');
+
+  const userId = this.authStore.uid();
+  if (!userId) {
+    throw new Error('No authenticated user found');
+  }
+
+  await this.ensureInitialized();
+
+  const dateKey = `${pubName.toLowerCase().replace(/\s+/g, '-')}_${new Date().toISOString().split('T')[0]}`;
+  
+  const carpetData: CarpetImageData = {
+    userId,
+    pubId,
+    pubName,
+    date: new Date().toISOString(),
+    dateKey,
+    blob,
+    size: blob.size,
+    type: blob.type,
+    width: 600,
+    height: 600
+  };
+
+  const key = `${userId}_${pubId}_${dateKey}`;
+  const dbConfig = this.getDatabaseConfig();
+  await this.indexedDb.put(dbConfig.name, dbConfig.stores.carpets, carpetData, key);
+  
+  await this.updateStats();
+  
+  console.log('[CarpetStorage] ✅ Local carpet stored with key:', key);
+  return key;
+}
+
+/**
  * ✅ Helper to revoke object URLs (prevent memory leaks)
  */
 revokePhotoUrl(url: string): void {

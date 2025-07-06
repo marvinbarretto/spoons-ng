@@ -12,6 +12,7 @@ import { PointsStore } from '../../points/data-access/points.store';
 import { UserStore } from '../../users/data-access/user.store';
 import { BadgeAwardService } from '../../badges/data-access/badge-award.service';
 import { LandlordStore, type LandlordResult } from '../../landlord/data-access/landlord.store';
+import { CarpetStrategyService } from '../../carpets/data-access/carpet-strategy.service';
 // Remove CheckInModalService import to break circular dependency
 import { BaseStore } from '../../shared/base/base.store';
 import { CameraService } from '../../shared/data-access/camera.service';
@@ -32,6 +33,7 @@ export class CheckInStore extends BaseStore<CheckIn> {
   private readonly userStore = inject(UserStore);
   private readonly badgeAwardService = inject(BadgeAwardService);
   private readonly landlordStore = inject(LandlordStore);
+  private readonly carpetStrategy = inject(CarpetStrategyService);
   // Modal service removed to break circular dependency - use event-based approach
   private readonly cameraService = inject(CameraService);
   private readonly telegramNotificationService = inject(TelegramNotificationService);
@@ -670,6 +672,42 @@ export class CheckInStore extends BaseStore<CheckIn> {
     //   console.error('❌ [CheckInStore] Badge evaluation failed:', error);
     //   return { error: error.message };
     // }
+  }
+
+  /**
+   * 🎨 Handle carpet workflow orchestration using CarpetStrategyService
+   */
+  async handleCarpetWorkflow(
+    fullResCanvas: HTMLCanvasElement,
+    pubId: string,
+    pubName: string
+  ): Promise<string | undefined> {
+    console.log('[CheckInStore] 🎨 Starting carpet workflow orchestration');
+
+    try {
+      const result = await this.carpetStrategy.processCarpetCapture(
+        fullResCanvas,
+        pubId,
+        pubName
+      );
+
+      if (!result.llmConfirmed) {
+        console.log('[CheckInStore] ❌ Carpet workflow failed - LLM rejected');
+        throw new Error(result.error || 'LLM analysis failed');
+      }
+
+      console.log('[CheckInStore] ✅ Carpet workflow complete:');
+      console.log('  Local stored:', result.localStored);
+      console.log('  Firestore uploaded:', result.firestoreUploaded);
+      console.log('  Local key:', result.localKey);
+
+      // Return the local key for check-in association
+      return result.localKey;
+
+    } catch (error) {
+      console.error('[CheckInStore] ❌ Carpet workflow error:', error);
+      throw error;
+    }
   }
 
   /**

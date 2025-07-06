@@ -84,6 +84,86 @@ import { FirebaseMetricsService } from '../../data-access/firebase-metrics.servi
         </div>
       </section>
 
+      <!-- Cache Tier Performance -->
+      <section class="metrics-section">
+        <h3>Cache Tier Performance</h3>
+        <div class="tier-analysis">
+          <div class="tier-overview">
+            @for (tier of tierMetrics().tierBreakdown; track tier.tier) {
+              <div class="tier-card" [class]="'tier-' + tier.tier">
+                <div class="tier-header">
+                  <h4>{{ tier.tier.toUpperCase() }} Tier</h4>
+                  <span class="tier-badge">{{ tier.collections }} collections</span>
+                </div>
+                <div class="tier-metrics">
+                  <div class="tier-metric">
+                    <div class="metric-value">{{ formatPercentage(tier.cacheHitRatio) }}</div>
+                    <div class="metric-label">Hit Ratio</div>
+                  </div>
+                  <div class="tier-metric">
+                    <div class="metric-value">{{ tier.totalOperations }}</div>
+                    <div class="metric-label">Operations</div>
+                  </div>
+                  <div class="tier-metric">
+                    <div class="metric-value">{{ formatLatency(tier.avgLatency) }}</div>
+                    <div class="metric-label">Avg Latency</div>
+                  </div>
+                  <div class="tier-metric">
+                    <div class="metric-value">&dollar;{{ formatCurrency(tier.costSavings) }}</div>
+                    <div class="metric-label">Savings</div>
+                  </div>
+                </div>
+              </div>
+            } @empty {
+              <div class="no-tier-data">No tier data available</div>
+            }
+          </div>
+          
+          <div class="tier-recommendations">
+            <h4>Tier Recommendations</h4>
+            <div class="recommendation-list">
+              @for (rec of tierMetrics().tierRecommendations; track rec.tier + rec.message) {
+                <div class="recommendation-item" [class]="'severity-' + rec.severity">
+                  <div class="recommendation-tier">{{ rec.tier.toUpperCase() }}</div>
+                  <div class="recommendation-message">{{ rec.message }}</div>
+                </div>
+              } @empty {
+                <div class="no-recommendations">All tiers performing optimally</div>
+              }
+            </div>
+          </div>
+          
+          <div class="tier-config-analysis">
+            <h4>Configuration Analysis</h4>
+            <div class="config-stats">
+              <div class="config-stat">
+                <div class="stat-value">{{ tierConfigAnalysis().configuredCollections }}</div>
+                <div class="stat-label">Configured Collections</div>
+              </div>
+              <div class="config-stat">
+                <div class="stat-value">{{ tierConfigAnalysis().unconfiguredCollections.length }}</div>
+                <div class="stat-label">Unconfigured Collections</div>
+              </div>
+            </div>
+            
+            @if (tierConfigAnalysis().recommendations.length > 0) {
+              <div class="config-recommendations">
+                @for (rec of tierConfigAnalysis().recommendations; track rec) {
+                  <div class="config-recommendation">{{ rec }}</div>
+                }
+              </div>
+            }
+            
+            @if (tierConfigAnalysis().unconfiguredCollections.length > 0) {
+              <div class="unconfigured-collections">
+                <strong>Unconfigured:</strong>
+                <span class="collection-list">{{ tierConfigAnalysis().unconfiguredCollections.join(', ') }}</span>
+              </div>
+            }
+          </div>
+        </div>
+      </section>
+
       <!-- Top Collections -->
       <section class="metrics-section">
         <h3>Most Active Collections</h3>
@@ -292,6 +372,10 @@ export class DatabaseMetricsDashboardComponent implements OnInit, OnDestroy {
   // Firebase-specific metrics
   readonly firebaseMetrics = computed(() => this.metricsService.getFirebaseMetrics());
   readonly cachePerformance = computed(() => this.metricsService.getCachePerformanceBreakdown());
+  
+  // Tier-specific metrics
+  readonly tierMetrics = computed(() => this.metricsService.getCachePerformanceByTier());
+  readonly tierConfigAnalysis = computed(() => this.metricsService.getTierConfigurationAnalysis());
 
   ngOnInit(): void {
     // Refresh metrics every 5 seconds for real-time updates

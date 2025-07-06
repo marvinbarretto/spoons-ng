@@ -5,15 +5,23 @@
 // src/app/checkin/data-access/checkin.service.ts
 import { Injectable, inject, signal } from '@angular/core';
 import { Timestamp, where } from 'firebase/firestore';
-import { FirestoreCrudService } from '../../shared/data-access/firestore-crud.service';
+import { CachedFirestoreService } from '../../shared/data-access/cached-firestore.service';
 import { NearbyPubStore } from '../../pubs/data-access/nearby-pub.store';
 import { AuthStore } from '../../auth/data-access/auth.store';
 import type { CheckIn } from '../utils/check-in.models';
 import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
-export class CheckInService extends FirestoreCrudService<CheckIn> {
-  protected override path: string = 'checkins';
+export class CheckInService extends CachedFirestoreService {
+  protected path: string = 'checkins';
+  
+  // Configure caching for checkins collection to use PERSONAL tier
+  protected override cacheConfig = {
+    'checkins': {
+      ttl: 24 * 60 * 60 * 1000, // 24 hours (PERSONAL tier)
+      strategy: 'cache-first' as const
+    }
+  };
   
   // Global check-ins signal for leaderboard reactivity
   private readonly _allCheckIns = signal<CheckIn[]>([]);
