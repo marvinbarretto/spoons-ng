@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.86](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.85...v0.0.86) (2025-07-06)
+
+
+### Features
+
+* [DevDebug] Show Firebase operations ([40aa764](https://github.com/marvinbarretto/spoons-ng/commit/40aa76417280bd384277fe3f281c9b34b2477279))
+
+
+### Bug Fixes
+
+* [Onboarding] Remove old google reference ([b9f4e29](https://github.com/marvinbarretto/spoons-ng/commit/b9f4e291a5d63979d2f1c31aa74669b0f92b7b84))
+
 ### [0.0.85](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.84...v0.0.85) (2025-07-06)
 
 
