@@ -59,7 +59,7 @@ type OnboardingStep =
               (avatarSelected)="onAvatarSelected($event)"
               (nameChanged)="onDisplayNameChange($event)"
               (generateRandom)="generateRandomDisplayName()"
-              (googleLogin)="handleGoogleLogin()"
+              @comment {(googleLogin)="handleGoogleLogin()"}
               (back)="goBackToPreviousStep()"
               (continue)="proceedToChooseLocal()"
             />
@@ -450,6 +450,8 @@ export class OnboardingComponent extends BaseComponent {
   }
 
   // New methods for updated flow
+  // Commented out Google login for MVP - reducing UI noise
+  /*
   async handleGoogleLogin(): Promise<void> {
     console.log('[Onboarding] 🚀 Google login requested');
     try {
@@ -461,6 +463,7 @@ export class OnboardingComponent extends BaseComponent {
       this.showError('Google login failed. Please try again.');
     }
   }
+  */
 
   // Complete onboarding
   async completeOnboarding(): Promise<void> {

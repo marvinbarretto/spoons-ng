@@ -26,6 +26,7 @@ import type { User } from '@users/utils/user.model';
       </div>
 
       <!-- Google Auth Option -->
+      <!-- Commented out for now - reducing UI noise during MVP
       <div class="auth-option">
         <div class="divider">
           <span>or</span>
@@ -40,6 +41,7 @@ import type { User } from '@users/utils/user.model';
         </app-button>
         <p class="google-hint">Use your Google account for a more personalized experience</p>
       </div>
+      -->
 
       <!-- Actions -->
       <div class="cta-section">
@@ -100,7 +102,8 @@ import type { User } from '@users/utils/user.model';
       margin: 0;
     }
 
-    /* Google Auth Section */
+    /* Google Auth Section - commented out for MVP */
+    /*
     .auth-option {
       margin: 0;
       text-align: center;
@@ -136,6 +139,7 @@ import type { User } from '@users/utils/user.model';
       font-size: 0.875rem;
       color: var(--text-primary, white);
     }
+    */
 
     /* Action Buttons */
     .cta-section {
@@ -191,7 +195,7 @@ export class CustomizeProfileStepComponent {
   readonly avatarSelected = output<string>();
   readonly nameChanged = output<string>();
   readonly generateRandom = output<void>();
-  readonly googleLogin = output<void>();
+  // readonly googleLogin = output<void>(); // Commented out for MVP
   readonly back = output<void>();
   readonly continue = output<void>();
   
@@ -214,10 +218,13 @@ export class CustomizeProfileStepComponent {
     this.avatarSelected.emit(avatarId);
   }
 
+  // Commented out Google login for MVP
+  /*
   onGoogleLogin(): void {
     console.log('[CustomizeProfileStep] Google login requested');
     this.googleLogin.emit();
   }
+  */
 
   onContinue(): void {
     if (this.isValid()) {
