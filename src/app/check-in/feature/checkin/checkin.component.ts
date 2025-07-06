@@ -164,7 +164,7 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
     return {
       deviceOriented,
       isStable: data ? data.isStable : false,
-      lowMotion: data ? data.motionLevel < 20 : false, // Increased from 10 to 20
+      lowMotion: data ? data.motionLevel < 15 : false, // Increased from 10 to 20
       metricsReady: data !== null,
       carpetConfidence, // 'red', 'yellow', 'green'
       goodSharpness: data ? data.sharpness > 20 : false,
@@ -180,9 +180,9 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
     const { sharpness, edgeDensity, textureComplexity } = data;
 
     // GREEN: Definite carpet (2 of 3 metrics must pass - more forgiving)
-    const sharpnessPass = sharpness > 25;  // Reduced from 30
-    const edgesPass = edgeDensity > 40;    // Reduced from 45
-    const texturePass = textureComplexity > 18; // Reduced from 22
+    const sharpnessPass = sharpness > 20;  // Reduced from 30
+    const edgesPass = edgeDensity > 30;    // Reduced from 45
+    const texturePass = textureComplexity > 15; // Reduced from 22
     const passCount = [sharpnessPass, edgesPass, texturePass].filter(Boolean).length;
 
     if (passCount >= 2) {
@@ -333,7 +333,7 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
     });
 
     // Consider stable if movement is small and enough time has passed
-    const stable = movement < 5 && timeSinceLastUpdate > 2000;
+    const stable = movement < 5 && timeSinceLastUpdate > 1000;
 
     console.log('[Checkin] 📱 Orientation update:', { beta, gamma, stable, movement });
 
@@ -654,7 +654,7 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
 
     // Show user-friendly error message
     this.setPhase('NOT_CARPET_DETECTED');
-    
+
     // Wait 3 seconds before returning to camera for retry
     this.safeSetTimeout(() => {
       console.log('[Checkin] 🔄 Returning to gate monitoring after LLM error');
@@ -757,7 +757,7 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
     // Poll for video element availability with timeout
     const maxAttempts = 20; // 2 seconds max wait
     let attempts = 0;
-    
+
     while (attempts < maxAttempts && !this.videoElement?.nativeElement) {
       console.log('[Checkin] 📺 Waiting for video element... attempt', attempts + 1);
       await new Promise(resolve => setTimeout(resolve, 100));
