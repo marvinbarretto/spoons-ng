@@ -6,6 +6,9 @@ import { DatePipe, JsonPipe } from '@angular/common';
 import { BaseComponent } from '@shared/base/base.component';
 import { CleanupService, type CleanupResult, type UserDeletionSummary } from '@shared/utils/cleanup.service';
 import { CarpetStorageService } from '@carpets/data-access/carpet-storage.service';
+import { DatabaseMetricsService } from '@shared/data-access/database-metrics.service';
+import { FirebaseMetricsService } from '@shared/data-access/firebase-metrics.service';
+import { DataAggregatorService } from '@shared/data-access/data-aggregator.service';
 
 // Stores
 import { AuthStore } from '@auth/data-access/auth.store';
@@ -15,6 +18,8 @@ import { NearbyPubStore } from '@pubs/data-access/nearby-pub.store';
 import { CheckInStore } from '@/app/check-in/data-access/check-in.store';
 import { LandlordStore } from '@landlord/data-access/landlord.store';
 import { BadgeStore } from '@badges/data-access/badge.store';
+import { LeaderboardStore } from '../../../leaderboard/data-access/leaderboard.store';
+import { FeedbackStore } from '../../../feedback/data-access/feedback.store';
 
 @Component({
   selector: 'app-dev-debug',
@@ -36,9 +41,14 @@ export class DevDebugComponent extends BaseComponent {
   protected readonly checkinStore = inject(CheckInStore);
   protected readonly landlordStore = inject(LandlordStore);
   protected readonly badgeStore = inject(BadgeStore);
+  protected readonly leaderboardStore = inject(LeaderboardStore);
+  protected readonly feedbackStore = inject(FeedbackStore);
 
   private readonly cleanupService = inject(CleanupService);
   private readonly carpetStorageService = inject(CarpetStorageService);
+  private readonly metricsService = inject(DatabaseMetricsService);
+  private readonly firebaseMetricsService = inject(FirebaseMetricsService);
+  private readonly dataAggregator = inject(DataAggregatorService);
 
   // ===================================
   // 📊 STATE MANAGEMENT
@@ -75,6 +85,19 @@ export class DevDebugComponent extends BaseComponent {
   // User analysis state
   protected readonly userAnalysis = signal<UserDeletionSummary | null>(null);
   protected readonly analysisLoading = signal(false);
+
+  // Firebase operations state
+  readonly showFirebaseWidget = signal(true);
+
+  // Computed stats from metrics service
+  readonly performanceMetrics = this.metricsService.performanceMetrics;
+  readonly costEstimate = this.metricsService.costEstimate;
+
+  // Real business data from stores
+  readonly siteStats = this.leaderboardStore.siteStats;
+  readonly globalDataStats = this.leaderboardStore.globalDataStats;
+  readonly pendingFeedback = this.feedbackStore.pendingFeedback;
+  readonly scoreboardData = this.dataAggregator.scoreboardData;
 
   // ===================================
   // 🔍 COMPUTED DATA FOR DISPLAY
@@ -146,6 +169,26 @@ export class DevDebugComponent extends BaseComponent {
       lastUpdated: summary?.lastUpdated
     };
   });
+
+  // Firebase-specific computed properties
+  readonly firebaseOperations = computed(() => {
+    const fbMetrics = this.firebaseMetricsService.getSessionSummary();
+    const recent = this.firebaseMetricsService.getRecentOperations(10);
+    const errors = this.firebaseMetricsService.getErrorAnalysis();
+    
+    return {
+      totalOperations: fbMetrics.totalCalls,
+      operationsPerMinute: fbMetrics.callsPerMinute,
+      cacheHitRatio: fbMetrics.cacheHitRatio,
+      errorRate: fbMetrics.errorRate,
+      averageLatency: fbMetrics.averageLatency,
+      recentOperations: recent,
+      topCollections: this.metricsService.getTopCollections(3),
+      totalErrors: errors.totalErrors
+    };
+  });
+
+  readonly cacheEffectiveness = computed(() => this.metricsService.getCacheEffectiveness());
 
   // ===================================
   // 🚀 INITIALIZATION
@@ -531,4 +574,31 @@ export class DevDebugComponent extends BaseComponent {
 
   // Debugging methods removed for UI simplification  
   // Use browser dev tools and console logs from cleanup operations instead
+
+  // ===================================
+  // 🔥 FIREBASE OPERATIONS HELPERS
+  // ===================================
+
+  clearFirebaseCache(): void {
+    this.firebaseMetricsService.resetSession('Manual cache clear from dev-debug');
+    console.log('🗑️ [DevDebugComponent] Firebase cache cleared');
+  }
+
+  formatTime(timestamp: number): string {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString('en-US', { 
+      hour12: false, 
+      hour: '2-digit', 
+      minute: '2-digit', 
+      second: '2-digit' 
+    });
+  }
+
+  formatJSON(data: any): string {
+    try {
+      return JSON.stringify(data, null, 2);
+    } catch (error) {
+      return `[Error formatting JSON: ${error}]`;
+    }
+  }
 }

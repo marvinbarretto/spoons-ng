@@ -109,6 +109,111 @@
         </div>
       </div>
 
+      <!-- Firebase Operations Widget -->
+      @if (showFirebaseWidget()) {
+        <div class="section">
+          <div class="section-header">
+            <h4>🔥 Firebase Operations Monitor</h4>
+            <button
+              class="btn-tiny"
+              (click)="clearFirebaseCache()"
+              title="Clear Firebase cache and reset metrics"
+            >
+              🗑️ Clear Cache
+            </button>
+          </div>
+          
+          <div class="firebase-grid">
+            <!-- Operations Summary -->
+            <div class="firebase-card operations-summary">
+              <h5>📈 Live Operations</h5>
+              <div class="firebase-stats">
+                <div class="firebase-stat">
+                  <div class="firebase-value">{{ firebaseOperations().totalOperations }}</div>
+                  <div class="firebase-label">Total Operations</div>
+                </div>
+                <div class="firebase-stat">
+                  <div class="firebase-value">{{ firebaseOperations().operationsPerMinute.toFixed(1) }}</div>
+                  <div class="firebase-label">Ops/Min</div>
+                </div>
+                <div class="firebase-stat">
+                  <div class="firebase-value">{{ (firebaseOperations().averageLatency || 0).toFixed(0) }}ms</div>
+                  <div class="firebase-label">Avg Latency</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Cache Performance -->
+            <div class="firebase-card cache-performance">
+              <h5>⚡ Cache Performance</h5>
+              <div class="cache-metrics">
+                <div class="cache-ratio">
+                  <div class="ratio-circle" [style.--ratio]="firebaseOperations().cacheHitRatio">
+                    <span class="ratio-text">{{ (firebaseOperations().cacheHitRatio * 100).toFixed(0) }}%</span>
+                  </div>
+                  <div class="ratio-label">Hit Ratio</div>
+                </div>
+                <div class="cache-details">
+                  <div class="cache-detail">
+                    <span class="cache-icon">✅</span>
+                    <span>Cache Hits</span>
+                  </div>
+                  <div class="cache-detail">
+                    <span class="cache-icon">🔄</span>
+                    <span>Speed: {{ cacheEffectiveness().speedImprovement.toFixed(1) }}x</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Error Tracking -->
+            <div class="firebase-card error-tracking">
+              <h5>⚠️ Error Monitor</h5>
+              <div class="error-stats">
+                <div class="error-summary">
+                  <div class="error-rate" [class.has-errors]="firebaseOperations().errorRate > 0">
+                    {{ (firebaseOperations().errorRate * 100).toFixed(1) }}%
+                  </div>
+                  <div class="error-label">Error Rate</div>
+                </div>
+                <div class="error-details">
+                  @if (firebaseOperations().totalErrors > 0) {
+                    <div class="error-count">{{ firebaseOperations().totalErrors }} total errors</div>
+                  } @else {
+                    <div class="no-errors">✅ No errors detected</div>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Operations -->
+          <div class="recent-operations">
+            <h5>📋 Recent Operations (Last 10)</h5>
+            <div class="operations-list">
+              @for (op of firebaseOperations().recentOperations; track op.callId) {
+                <div class="operation-item" [class.cached]="op.cached" [class.error]="op.error">
+                  <div class="operation-type">{{ op.operation.toUpperCase() }}</div>
+                  <div class="operation-collection">{{ op.collection }}</div>
+                  @if (op.latency) {
+                    <div class="operation-latency">{{ op.latency.toFixed(0) }}ms</div>
+                  }
+                  @if (op.cached) {
+                    <div class="operation-cache">⚡ cached</div>
+                  }
+                  @if (op.error) {
+                    <div class="operation-error">❌ {{ op.error }}</div>
+                  }
+                  <div class="operation-time">{{ formatTime(op.timestamp) }}</div>
+                </div>
+              } @empty {
+                <div class="no-operations">No recent operations</div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+
       <!-- Cleanup Actions -->
       <div class="section">
         <div class="section-header">
@@ -248,6 +353,58 @@
             <details class="debug-details">
               <summary>Auth Data</summary>
               <pre>{{ authData() | json }}</pre>
+            </details>
+
+            <details class="debug-details">
+              <summary>Firebase Operations</summary>
+              <pre>{{ firebaseOperations() | json }}</pre>
+            </details>
+
+            <details class="debug-details">
+              <summary>Performance Metrics</summary>
+              <pre>{{ performanceMetrics() | json }}</pre>
+            </details>
+
+            <details class="debug-details">
+              <summary>Cost Estimates</summary>
+              <pre>{{ costEstimate() | json }}</pre>
+            </details>
+
+            <details class="debug-details">
+              <summary>Cache Effectiveness</summary>
+              <pre>{{ cacheEffectiveness() | json }}</pre>
+            </details>
+
+            <details class="debug-details">
+              <summary>Site Stats</summary>
+              <pre>{{ siteStats() | json }}</pre>
+            </details>
+
+            <details class="debug-details">
+              <summary>Global Data Stats</summary>
+              <pre>{{ globalDataStats() | json }}</pre>
+            </details>
+
+            <details class="debug-details">
+              <summary>Scoreboard Data</summary>
+              <pre>{{ scoreboardData() | json }}</pre>
+            </details>
+
+            <details class="debug-details">
+              <summary>Firebase Store Status</summary>
+              <pre>{{ formatJSON({
+                leaderboard: {
+                  loading: leaderboardStore.loading(),
+                  error: leaderboardStore.error(),
+                  dataCount: leaderboardStore.data().length
+                },
+                feedback: {
+                  loading: feedbackStore.loading(),
+                  error: feedbackStore.error(),
+                  dataCount: feedbackStore.data().length,
+                  pendingCount: pendingFeedback().length
+                }
+              }) }}</pre>
             </details>
           </div>
         </div>
