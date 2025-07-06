@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.83](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.82...v0.0.83) (2025-07-06)
+
+
+### Features
+
+* ensure pub list has the location service ([ad2e717](https://github.com/marvinbarretto/spoons-ng/commit/ad2e71790b66dabb6a963c9c998182a0c5f6e139))
+
+
+### Bug Fixes
+
+* Add guard for all pages so new users need onboarding ([12d2a4c](https://github.com/marvinbarretto/spoons-ng/commit/12d2a4c76a418e742493bb6b4e8d9595deee0ddd))
+
 ### [0.0.82](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.81...v0.0.82) (2025-07-05)
 
 
