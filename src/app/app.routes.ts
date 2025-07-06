@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { onboardingGuard } from './shared/guards/onboarding.guard';
+import { reverseOnboardingGuard } from './shared/guards/reverse-onboarding.guard';
 import {
   UrlSegment,
   Route,
@@ -17,6 +18,7 @@ export const appRoutes: Routes = [
   {
     path: 'onboarding',
     title: 'Welcome to Spoonscount',
+    canActivate: [reverseOnboardingGuard],
     loadComponent: () => import('./onboarding/feature/onboarding/onboarding.component').then(m => m.OnboardingComponent),
     data: { shell: 'fullscreen' }
   },
