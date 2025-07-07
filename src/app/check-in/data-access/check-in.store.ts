@@ -20,6 +20,7 @@ import { TelegramNotificationService } from '../../shared/data-access/telegram-n
 import type { CheckIn } from '../utils/check-in.models';
 import type { User } from '../../users/utils/user.model';
 import type { Pub } from '../../pubs/utils/pub.models';
+import type { EarnedBadgeWithDetails } from '../../badges/utils/badge.model';
 import { Timestamp } from 'firebase/firestore';
 import { environment } from '../../../environments/environment';
 
@@ -388,7 +389,7 @@ export class CheckInStore extends BaseStore<CheckIn> {
       const allUserCheckIns = this.checkins().filter(c => c.userId === userId);
 
       // Evaluate and award badges using the same method as legacy flow
-      let awardedBadges: any[] = [];
+      let awardedBadges: EarnedBadgeWithDetails[] = [];
       try {
         awardedBadges = await this.badgeAwardService.evaluateAndAwardBadges(
           userId,
@@ -570,7 +571,10 @@ export class CheckInStore extends BaseStore<CheckIn> {
           name: data.pub.name
         },
         points: data.points,
-        badges: data.badges || [],
+        badges: (data.badges || []).map((badgeWithDetails: EarnedBadgeWithDetails) => ({
+          badgeId: badgeWithDetails.earnedBadge.badgeId,
+          name: badgeWithDetails.badge.name
+        })),
         isNewLandlord: data.isNewLandlord,
         landlordMessage: data.landlordMessage,
         carpetCaptured: data.carpetCaptured

@@ -163,14 +163,12 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
     // ANALYSIS: Orientation logic was backwards! When pointing DOWN at carpet, we want YES
     // When looking UP (beta near 0), we want NO. So we need LESS than threshold degrees for pointing down
     const deviceOriented = Math.abs(orientation.beta) < this.GATE_THRESHOLDS.deviceAngle; // Phone pointing down at carpet
-    const deviceStable = orientation.stable; // Movement stability from orientation events
 
     console.log('[Checkin] 🚦 Gate calculations:', {
       beta: orientation.beta,
       betaAbs: Math.abs(orientation.beta),
       deviceOriented,
-      deviceStable,
-      stable: orientation.stable
+      orientationStable: orientation.stable
     });
 
     // 2-TIER CARPET DETECTION THRESHOLDS:
@@ -180,7 +178,7 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
 
     return {
       deviceOriented,
-      isStable: data ? data.isStable : false,
+      isStable: orientation.stable, // Use device orientation stability (more appropriate for mobile)
       lowMotion: data ? data.motionLevel < this.GATE_THRESHOLDS.motionLevel : false,
       metricsReady: data !== null,
       carpetConfidence, // 'no' | 'possible'

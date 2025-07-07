@@ -34,3 +34,9 @@ export type EarnedBadge = {
 
 // For creating new earned badges (omit auto-generated fields)
 export type CreateEarnedBadge = Omit<EarnedBadge, 'id' | 'awardedAt'>;
+
+// Enriched badge data that includes the full badge definition
+export type EarnedBadgeWithDetails = {
+  earnedBadge: EarnedBadge;
+  badge: Badge; // Full definition including name, description, emoji, etc.
+};

@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { BadgeLogicService } from './badge-logic.service';
 import { BadgeStore } from './badge.store'; // ✅ Use unified BadgeStore
 import type { CheckIn } from '@check-in/utils/check-in.models';
-import type { BadgeTriggerContext, EarnedBadge } from '../utils/badge.model';
+import type { BadgeTriggerContext, EarnedBadge, EarnedBadgeWithDetails } from '../utils/badge.model';
 
 /**
  * Orchestrates badge evaluation and awarding after check-ins.
@@ -69,12 +69,13 @@ async checkAndAwardBadges(userId: string): Promise<string[]> {
 
   /**
    * Main entry point: evaluate and award badges after a check-in
+   * Returns enriched badge data including full badge definitions
    */
   async evaluateAndAwardBadges(
     userId: string,
     newCheckIn: CheckIn,
     allUserCheckIns: CheckIn[]
-  ): Promise<EarnedBadge[]> {
+  ): Promise<EarnedBadgeWithDetails[]> {
     console.log('🎬 [BadgeAward] Starting badge evaluation process', {
       userId,
       newCheckInId: newCheckIn.id,
@@ -127,7 +128,7 @@ async checkAndAwardBadges(userId: string): Promise<string[]> {
       }
 
       // 3. Award each eligible badge using unified BadgeStore
-      const awardedBadges: EarnedBadge[] = [];
+      const awardedBadges: EarnedBadgeWithDetails[] = [];
 
       for (const badgeId of eligibleBadgeIds) {
         try {
@@ -154,7 +155,11 @@ async checkAndAwardBadges(userId: string): Promise<string[]> {
             awardedAt: Date.now()
           });
 
-          awardedBadges.push(earnedBadge);
+          // Return enriched badge data with full definition
+          awardedBadges.push({
+            earnedBadge,
+            badge: badgeDefinition
+          });
           console.log(`✅ [BadgeAward] Successfully awarded badge: ${badgeId} (${badgeDefinition.name})`);
 
         } catch (error) {
@@ -166,7 +171,10 @@ async checkAndAwardBadges(userId: string): Promise<string[]> {
       console.log('🎉 [BadgeAward] Badge evaluation complete!', {
         userId,
         totalAwarded: awardedBadges.length,
-        awardedBadges: awardedBadges.map(b => b.badgeId)
+        awardedBadges: awardedBadges.map(b => ({
+          badgeId: b.earnedBadge.badgeId,
+          name: b.badge.name
+        }))
       });
 
       return awardedBadges;
