@@ -9,13 +9,14 @@ import { UserStore } from '@users/data-access/user.store';
 import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
 import { LocationService } from '../../../shared/data-access/location.service';
 import { PubCardComponent } from '../../ui/pub-card/pub-card.component';
+import { LoadingStateComponent, ErrorStateComponent, EmptyStateComponent } from '../../../shared/ui/state-components';
 import type { Pub } from '../../utils/pub.models';
 
 type FilterOption = 'all' | 'visited' | 'unvisited' | 'nearby';
 
 @Component({
   selector: 'app-pub-list',
-  imports: [CommonModule, RouterModule, PubCardComponent],
+  imports: [CommonModule, RouterModule, PubCardComponent, LoadingStateComponent, ErrorStateComponent, EmptyStateComponent],
   templateUrl: './pub-list.component.html',
   styleUrl: './pub-list.component.scss'
 })

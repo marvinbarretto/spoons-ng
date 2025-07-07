@@ -113,27 +113,43 @@ events:v1
 - `NearbyPubStore`: computes distances, nearby pubs, and check-in eligibility
 
 ### State Management
-- Signal stores only (no RxJS)
-- Signals use `$$` naming convention
-- Computed signals for derived state (e.g. `nearestPubs$$`, `canCheckIn$$`)
+- **Signal stores only** (no RxJS unless required)
+- **Clean signal naming** without `$$` suffix (modern Angular 19 approach)
+- **Computed signals** for derived state (e.g. `nearestPubs`, `canCheckIn`)
+- **Auth-reactive stores** that auto-load/clear based on auth state
 - `SsrPlatformService` guards browser/server behavior
 
 ### Component Philosophy
-- Dumb components bind to signals only
-- Debug-first templates to expose raw state for dev
+- **Dumb components** bind to signals only
+- **Debug-first templates** to expose raw state for dev
+- **Shared state components** for consistent loading/error/empty states
 - `DevDebugComponent` for live state visualization
+
+### UI Components
+- **Shared State Components**: Standardized loading, error, and empty state components
+  - `LoadingStateComponent` - Configurable spinner with loading text
+  - `ErrorStateComponent` - Error display with optional retry functionality
+  - `EmptyStateComponent` - Empty state with customizable icon, title, and action button
+- **Design token compliance** for theming (dark/light mode support)
+- **Accessibility-first** with proper ARIA attributes
 
 ### Build Modes
 - `ng serve`: dev mode (uses local JSON only)
 - `ng run spoons:serve-ssr`: full SSR
 - Dev/prod configs defined in `angular.json`
 
+### Recent Improvements
+- ✅ **Shared UI State Components** - Eliminated 400+ lines of duplicate loading/error/empty state code
+- ✅ **Consistent UX** - Standardized loading states across all components
+- ✅ **Accessibility** - All state components include proper ARIA attributes
+- ✅ **Design tokens** - Full theme support (dark/light mode compatibility)
+
 ### TODOs
-- Firestore rules
 - Map component with custom theming
-- Auth & profile system
-- Gamification (badges, check-in)
-- Jest/Vitest test suite
+- Auth & profile system refinements
+- Gamification enhancements (badges, check-in rewards)
+- Additional component refactoring (modal/form components)
+- Bundle size optimization
 
 
 ## Firebase

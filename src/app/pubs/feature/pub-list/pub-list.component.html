@@ -49,24 +49,23 @@
   <!-- ✅ Main content area with better space usage -->
   <section class="pub-list-container">
     @if (pubStore.loading()) {
-      <div class="loading-state">
-        <p>🍺 Loading pubs...</p>
-      </div>
+      <app-loading-state text="Loading pubs..." />
     } @else if (pubStore.error()) {
-      <div class="error-state">
-        <p>❌ {{ pubStore.error() }}</p>
-        <button class="retry-btn" (click)="retryLoad()">
-          Try Again
-        </button>
-      </div>
+      <app-error-state 
+        [message]="pubStore.error()!"
+        [showRetry]="true"
+        retryText="Try Again"
+        (retry)="retryLoad()"
+      />
     } @else if (filteredPubs().length === 0) {
-      <div class="empty-state">
-        <h3>No pubs found</h3>
-        <p>Try adjusting your search or filters.</p>
-        <button class="clear-filters-btn" (click)="resetFilters()">
-          Clear Filters
-        </button>
-      </div>
+      <app-empty-state 
+        icon="🍺"
+        title="No pubs found"
+        subtitle="Try adjusting your search or filters."
+        [showAction]="true"
+        actionText="Clear Filters"
+        (action)="resetFilters()"
+      />
     } @else {
       <div class="pub-grid">
         @for (pub of filteredPubs(); track pub.id) {

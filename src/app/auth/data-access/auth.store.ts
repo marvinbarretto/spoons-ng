@@ -96,6 +96,10 @@ export class AuthStore {
         landlordCount: 0,
         landlordPubIds: [],
         joinedMissionIds: [],
+        manuallyAddedPubIds: [],
+        verifiedPubCount: 0,
+        unverifiedPubCount: 0,
+        totalPubCount: 0,
       };
 
       // ✅ Update auth state only

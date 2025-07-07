@@ -721,6 +721,7 @@ export class CheckInStore extends BaseStore<CheckIn> {
     this._checkinResults.set(null);
   }
 
+
   /**
    * Check if we should send Telegram notification for this user
    */

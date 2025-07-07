@@ -115,6 +115,10 @@ export class AuthService {
           landlordCount: 0,
           landlordPubIds: [],
           joinedMissionIds: [],
+          manuallyAddedPubIds: [],
+          verifiedPubCount: 0,
+          unverifiedPubCount: 0,
+          totalPubCount: 0,
         };
 
         await setDoc(userRef, newUser);
@@ -191,6 +195,10 @@ export class AuthService {
           landlordCount: 0,
           landlordPubIds: [],
           joinedMissionIds: [],
+          manuallyAddedPubIds: [],
+          verifiedPubCount: 0,
+          unverifiedPubCount: 0,
+          totalPubCount: 0,
         };
 
         await setDoc(userRef, newUser);

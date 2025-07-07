@@ -31,6 +31,12 @@ export type User = {
 
   totalPoints?: number;  // ✅ Add this
 
+  // ✅ Pub tracking fields
+  manuallyAddedPubIds: string[]; // Pubs user manually marked as visited
+  verifiedPubCount: number;      // Pubs visited through app check-ins
+  unverifiedPubCount: number;    // Pubs manually added by user
+  totalPubCount: number;         // verifiedPubCount + unverifiedPubCount
+
   // Onboarding flow
   onboardingCompleted?: boolean; // Flag to track if user has completed initial setup
   hasSeenWelcome?: boolean; // Flag to track if user has seen the welcome modal after onboarding

@@ -5,6 +5,7 @@ import { CheckInStore } from '../../check-in/data-access/check-in.store';
 import { PubStore } from '../../pubs/data-access/pub.store';
 import { AuthStore } from '../../auth/data-access/auth.store';
 import { CommonModule } from '@angular/common';
+import { LoadingStateComponent, ErrorStateComponent, EmptyStateComponent } from '../../shared/ui/state-components';
 import type { CheckIn } from '../../check-in/utils/check-in.models';
 import type { Pub } from '../../pubs/utils/pub.models';
 
@@ -17,29 +18,21 @@ type RecentActivityEntry = {
 
 @Component({
   selector: 'app-recent-activity-widget',
-  imports: [CommonModule],
+  imports: [CommonModule, LoadingStateComponent, ErrorStateComponent, EmptyStateComponent],
   template: `
     <div class="recent-activity-widget">
       <h3 class="widget-title">Recent Activity</h3>
       
       @if (checkinStore.loading()) {
-        <div class="widget-loading">
-          <span class="loading-spinner"></span>
-          <span>Loading activity...</span>
-        </div>
+        <app-loading-state text="Loading activity..." />
       } @else if (checkinStore.error()) {
-        <div class="widget-error">
-          <span class="error-icon">⚠️</span>
-          <span>{{ checkinStore.error() }}</span>
-        </div>
+        <app-error-state [message]="checkinStore.error()!" />
       } @else if (recentActivity().length === 0) {
-        <div class="widget-empty">
-          <span class="empty-icon">📱</span>
-          <div class="empty-content">
-            <p class="empty-title">No Recent Activity</p>
-            <p class="empty-subtitle">Start checking in to pubs to see your activity here</p>
-          </div>
-        </div>
+        <app-empty-state 
+          icon="📱"
+          title="No Recent Activity"
+          subtitle="Start checking in to pubs to see your activity here"
+        />
       } @else {
         <div class="activity-list">
           @for (activity of recentActivity(); track activity.checkIn.id) {
@@ -103,58 +96,6 @@ type RecentActivityEntry = {
       color: var(--text);
     }
 
-    .widget-loading,
-    .widget-error,
-    .widget-empty {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 2rem 1rem;
-      justify-content: center;
-      color: var(--text-secondary);
-    }
-
-    .loading-spinner {
-      width: 1rem;
-      height: 1rem;
-      border: 2px solid currentColor;
-      border-top-color: transparent;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .widget-empty {
-      flex-direction: column;
-      text-align: center;
-      gap: 0.5rem;
-    }
-
-    .empty-icon {
-      font-size: 2rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .empty-content {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-    }
-
-    .empty-title {
-      margin: 0;
-      font-weight: 600;
-      color: var(--text);
-    }
-
-    .empty-subtitle {
-      margin: 0;
-      font-size: 0.875rem;
-      color: var(--text-secondary);
-    }
 
     .activity-list {
       display: flex;

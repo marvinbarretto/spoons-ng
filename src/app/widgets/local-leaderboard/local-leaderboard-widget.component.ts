@@ -5,6 +5,7 @@ import { PubGroupingService } from '../../shared/data-access/pub-grouping.servic
 import { AuthStore } from '../../auth/data-access/auth.store';
 import { CommonModule } from '@angular/common';
 import { UserAvatarComponent } from '../user-avatar/user-avatar.component';
+import { LoadingStateComponent, ErrorStateComponent, EmptyStateComponent } from '../../shared/ui/state-components';
 import type { LeaderboardEntry } from '../../leaderboard/utils/leaderboard.models';
 import type { User } from '../../users/utils/user.model';
 
@@ -15,7 +16,7 @@ type LocalLeaderboardEntry = LeaderboardEntry & {
 
 @Component({
   selector: 'app-local-leaderboard-widget',
-  imports: [CommonModule, UserAvatarComponent],
+  imports: [CommonModule, UserAvatarComponent, LoadingStateComponent, ErrorStateComponent, EmptyStateComponent],
   template: `
     <div class="local-leaderboard-widget">
       <h3 class="widget-title">
@@ -26,23 +27,15 @@ type LocalLeaderboardEntry = LeaderboardEntry & {
       </h3>
 
       @if (leaderboardStore.loading()) {
-        <div class="widget-loading">
-          <span class="loading-spinner"></span>
-          <span>Loading local rankings...</span>
-        </div>
+        <app-loading-state text="Loading local rankings..." />
       } @else if (leaderboardStore.error()) {
-        <div class="widget-error">
-          <span class="error-icon">⚠️</span>
-          <span>{{ leaderboardStore.error() }}</span>
-        </div>
+        <app-error-state [message]="leaderboardStore.error()!" />
       } @else if (!hasLocalData()) {
-        <div class="widget-empty">
-          <span class="empty-icon">🏘️</span>
-          <div class="empty-content">
-            <p class="empty-title">No Local Data Yet</p>
-            <p class="empty-subtitle">Visit more pubs in your area to see local rankings</p>
-          </div>
-        </div>
+        <app-empty-state 
+          icon="🏘️"
+          title="No Local Data Yet"
+          subtitle="Visit more pubs in your area to see local rankings"
+        />
       } @else {
         <div class="local-leaderboard-list">
           @for (entry of localLeaderboard(); track entry.userId) {
@@ -114,58 +107,6 @@ type LocalLeaderboardEntry = LeaderboardEntry & {
       border-radius: 0.25rem;
     }
 
-    .widget-loading,
-    .widget-error,
-    .widget-empty {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 2rem 1rem;
-      justify-content: center;
-      color: var(--text-secondary);
-    }
-
-    .loading-spinner {
-      width: 1rem;
-      height: 1rem;
-      border: 2px solid currentColor;
-      border-top-color: transparent;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .widget-empty {
-      flex-direction: column;
-      text-align: center;
-      gap: 0.5rem;
-    }
-
-    .empty-icon {
-      font-size: 2rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .empty-content {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-    }
-
-    .empty-title {
-      margin: 0;
-      font-weight: 600;
-      color: var(--text);
-    }
-
-    .empty-subtitle {
-      margin: 0;
-      font-size: 0.875rem;
-      color: var(--text-secondary);
-    }
 
     .local-leaderboard-list {
       display: flex;
@@ -428,7 +369,11 @@ export class LocalLeaderboardWidgetComponent extends BaseWidgetComponent {
       badgeIds: [],
       landlordCount: 0,
       landlordPubIds: [],
-      totalPoints: entry.totalPoints
+      totalPoints: entry.totalPoints,
+      manuallyAddedPubIds: [],
+      verifiedPubCount: 0,
+      unverifiedPubCount: 0,
+      totalPubCount: 0
     };
   }
 

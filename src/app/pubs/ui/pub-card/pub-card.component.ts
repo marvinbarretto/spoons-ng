@@ -29,8 +29,8 @@ import { LocationService } from '../../../shared/data-access/location.service';
 
     <header class="pub-card__header">
         <div class="pub-card__title-container">
-        @if (hasCheckedIn()) {
-          <span class="pub-card__badge pub-card__badge--success">✅ Visited</span>
+        @if (shouldShowVerificationBadge() || hasCheckedIn()) {
+          <span class="pub-card__badge" [class]="visitBadgeClass()">{{ visitBadgeText() }}</span>
         }
           <h3 class="pub-card__title">{{ pub().name }}</h3>
           @if (isLocalPub()) {
@@ -38,9 +38,14 @@ import { LocationService } from '../../../shared/data-access/location.service';
           }
         </div>
 
-        @if (canCheckIn()) {
-          <span class="pub-card__badge pub-card__badge--info">📍 Can check in</span>
-        }
+        <div class="pub-card__status-badges">
+          @if (isNearestUnvisited()) {
+            <span class="pub-card__badge pub-card__badge--target">🎯 Next Target</span>
+          }
+          @if (canCheckIn()) {
+            <span class="pub-card__badge pub-card__badge--info">📍 Can check in</span>
+          }
+        </div>
       </header>
 
       <div class="pub-card__content">
@@ -112,6 +117,13 @@ import { LocationService } from '../../../shared/data-access/location.service';
       margin-bottom: 0.75rem;
     }
 
+    .pub-card__status-badges {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      align-items: flex-end;
+    }
+
     .pub-card__title-container {
       display: flex;
       align-items: center;
@@ -149,6 +161,35 @@ import { LocationService } from '../../../shared/data-access/location.service';
     .pub-card__badge--info {
       background: var(--info);
       color: var(--background);
+    }
+
+    .pub-card__badge--verified {
+      background: var(--success);
+      color: var(--background);
+    }
+
+    .pub-card__badge--unverified {
+      background: var(--info);
+      color: var(--background);
+      opacity: 0.8;
+    }
+
+    .pub-card__badge--target {
+      background: var(--warning);
+      color: var(--background);
+      font-weight: 600;
+      animation: pulse-glow 2s infinite;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { 
+        transform: scale(1);
+        box-shadow: 0 0 0 0 var(--warning);
+      }
+      50% { 
+        transform: scale(1.02);
+        box-shadow: 0 0 0 4px rgba(var(--warning-rgb, 255, 165, 0), 0.2);
+      }
     }
 
     .pub-card__content {
@@ -228,6 +269,12 @@ import { LocationService } from '../../../shared/data-access/location.service';
         align-items: flex-start;
         gap: 0.5rem;
       }
+
+      .pub-card__status-badges {
+        flex-direction: row;
+        align-items: flex-start;
+        flex-wrap: wrap;
+      }
     }
 
     /* Theme-aware shadows already defined above */
@@ -254,6 +301,11 @@ export class PubCardComponent {
   readonly showCheckinCount = input<boolean>(false);
   readonly isLocalPub = input<boolean>(false);
 
+  // ✅ New visit status inputs
+  readonly hasVerifiedVisit = input<boolean>(false);    // App check-in exists
+  readonly hasUnverifiedVisit = input<boolean>(false);  // Manual addition exists  
+  readonly isNearestUnvisited = input<boolean>(false);  // Closest unvisited pub
+
   // ✅ Outputs for interactions
   readonly cardClicked = output<Pub>();
   readonly selectionChanged = output<{ pub: Pub; selected: boolean }>();
@@ -278,6 +330,29 @@ export class PubCardComponent {
   readonly canCheckIn = computed(() => {
     const distance = this.pub().distance;
     return distance !== null && distance <= 500 && !this.hasCheckedIn();
+  });
+
+  // ✅ New visit status computed properties
+  readonly visitStatus = computed(() => {
+    if (this.hasVerifiedVisit()) return 'verified';
+    if (this.hasUnverifiedVisit()) return 'unverified'; 
+    return 'unvisited';
+  });
+
+  readonly shouldShowVerificationBadge = computed(() => 
+    this.hasVerifiedVisit() || this.hasUnverifiedVisit()
+  );
+
+  readonly visitBadgeText = computed(() => {
+    if (this.hasVerifiedVisit()) return '✅ Verified Visit';
+    if (this.hasUnverifiedVisit()) return '📝 Manual Visit';
+    return '✅ Visited'; // fallback for legacy hasCheckedIn
+  });
+
+  readonly visitBadgeClass = computed(() => {
+    if (this.hasVerifiedVisit()) return 'pub-card__badge--verified';
+    if (this.hasUnverifiedVisit()) return 'pub-card__badge--unverified';
+    return 'pub-card__badge--success'; // fallback
   });
 
   // ✅ Development helper

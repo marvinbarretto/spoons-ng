@@ -18,9 +18,18 @@ export type PubCardVariant = 'compact' | 'normal' | 'overlay';
       <div class="pub-header">
         <div class="pub-title">
           <span class="pub-name">{{ pub().name }}</span>
-          @if (isLocalPub()) {
-            <span class="pub-home-icon">🏠</span>
-          }
+          <div class="pub-indicators">
+            @if (visitIndicator()) {
+              <span class="pub-visit-indicator" 
+                    [title]="visitIndicatorTitle()"
+                    [class.indicator--target]="isNearestUnvisited()">
+                {{ visitIndicator() }}
+              </span>
+            }
+            @if (isLocalPub()) {
+              <span class="pub-home-icon" title="Your local pub">🏠</span>
+            }
+          </div>
         </div>
       </div>
 
@@ -114,9 +123,17 @@ export type PubCardVariant = 'compact' | 'normal' | 'overlay';
     .pub-title {
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 0.5rem;
       flex: 1;
       min-width: 0;
+    }
+
+    .pub-indicators {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      flex-shrink: 0;
     }
 
     .pub-name {
@@ -132,6 +149,29 @@ export type PubCardVariant = 'compact' | 'normal' | 'overlay';
       font-size: 0.875rem;
       opacity: 0.8;
       flex-shrink: 0;
+    }
+
+    .pub-visit-indicator {
+      font-size: 0.875rem;
+      opacity: 0.8;
+      flex-shrink: 0;
+      transition: all 0.2s ease;
+    }
+
+    .pub-visit-indicator.indicator--target {
+      opacity: 1;
+      animation: pulse-indicator 2s infinite;
+    }
+
+    @keyframes pulse-indicator {
+      0%, 100% { 
+        transform: scale(1);
+        opacity: 1;
+      }
+      50% { 
+        transform: scale(1.1);
+        opacity: 0.7;
+      }
     }
 
     .pub-details {
@@ -224,6 +264,11 @@ export class PubCardLightComponent {
   readonly showDistance = input<boolean>(false);
   readonly isLocalPub = input<boolean>(false);
 
+  // ✅ New visit status inputs
+  readonly hasVerifiedVisit = input<boolean>(false);    // App check-in exists
+  readonly hasUnverifiedVisit = input<boolean>(false);  // Manual addition exists  
+  readonly isNearestUnvisited = input<boolean>(false);  // Closest unvisited pub
+
   // Output events
   readonly pubClick = output<Pub>();
 
@@ -245,6 +290,21 @@ export class PubCardLightComponent {
       return `${Math.round(dist)}m away`;
     }
     return `${(dist / 1000).toFixed(1)}km away`;
+  });
+
+  // ✅ New visit status computed properties
+  readonly visitIndicator = computed(() => {
+    if (this.hasVerifiedVisit()) return '✅';
+    if (this.hasUnverifiedVisit()) return '📝';
+    if (this.isNearestUnvisited()) return '🎯';
+    return null;
+  });
+
+  readonly visitIndicatorTitle = computed(() => {
+    if (this.hasVerifiedVisit()) return 'Verified visit (app check-in)';
+    if (this.hasUnverifiedVisit()) return 'Manual visit (added by user)';
+    if (this.isNearestUnvisited()) return 'Next target pub';
+    return '';
   });
 
   handleClick(): void {

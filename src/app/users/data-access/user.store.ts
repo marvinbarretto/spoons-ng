@@ -314,6 +314,10 @@ export class UserStore {
             landlordCount: 0,
             landlordPubIds: [],
             joinedMissionIds: [],
+            manuallyAddedPubIds: [],
+            verifiedPubCount: 0,
+            unverifiedPubCount: 0,
+            totalPubCount: 0,
           };
 
           // ✅ Create the document in Firestore
@@ -355,6 +359,63 @@ export class UserStore {
   updateLandlordSummary(summary: UserLandlordSummary): void {
     console.log('[UserStore] 👑 Updating landlord summary:', summary);
     this.patchUser(summary);
+  }
+
+  /**
+   * Add a pub to user's visited list (for manual "I've been here" associations)
+   */
+  async addVisitedPub(pubId: string): Promise<void> {
+    const current = this._user();
+    if (!current) {
+      throw new Error('No user found');
+    }
+
+    const currentManualPubs = current.manuallyAddedPubIds || [];
+    if (currentManualPubs.includes(pubId)) {
+      console.log('[UserStore] Pub already in manually added list:', pubId);
+      return;
+    }
+
+    const updatedManualPubs = [...currentManualPubs, pubId];
+    
+    // Update both locally and in Firestore
+    await this.updateProfile({ 
+      manuallyAddedPubIds: updatedManualPubs,
+      unverifiedPubCount: updatedManualPubs.length,
+      totalPubCount: (current.verifiedPubCount || 0) + updatedManualPubs.length
+    });
+
+    console.log('[UserStore] Added pub to visited list:', pubId);
+  }
+
+  /**
+   * Remove a pub from user's visited list
+   */
+  async removeVisitedPub(pubId: string): Promise<void> {
+    const current = this._user();
+    if (!current) {
+      throw new Error('No user found');
+    }
+
+    const currentManualPubs = current.manuallyAddedPubIds || [];
+    const updatedManualPubs = currentManualPubs.filter(id => id !== pubId);
+    
+    // Update both locally and in Firestore
+    await this.updateProfile({ 
+      manuallyAddedPubIds: updatedManualPubs,
+      unverifiedPubCount: updatedManualPubs.length,
+      totalPubCount: (current.verifiedPubCount || 0) + updatedManualPubs.length
+    });
+
+    console.log('[UserStore] Removed pub from visited list:', pubId);
+  }
+
+  /**
+   * Check if user has marked a pub as visited
+   */
+  hasVisitedPub(pubId: string): boolean {
+    const user = this._user();
+    return user?.manuallyAddedPubIds?.includes(pubId) || false;
   }
 
   /**

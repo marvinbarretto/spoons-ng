@@ -64,22 +64,13 @@ export class DataAggregatorService {
   }
 
   /**
-   * Compute pubsVisited from check-in data (eliminates circular dependency)
+   * Compute verified pub count from check-in data
    * @description Gets unique pub count from CheckInStore for current user
    */
-  readonly pubsVisited = computed(() => {
+  readonly verifiedPubsCount = computed(() => {
     const currentUser = this.authStore.user();
 
-    console.log('🔍 [DataAggregator] === COMPUTING PUBS VISITED ===');
-    console.log('🔍 [DataAggregator] Current user:', {
-      hasUser: !!currentUser,
-      userId: currentUser?.uid?.slice(0, 8),
-      isAnonymous: currentUser?.isAnonymous,
-      timestamp: new Date().toISOString()
-    });
-
     if (!currentUser) {
-      console.log('❌ [DataAggregator] No current user - returning 0 pubs visited');
       return 0;
     }
 
@@ -88,33 +79,39 @@ export class DataAggregatorService {
     const userCheckins = checkins.filter(checkin => checkin.userId === currentUser.uid);
     const uniquePubIds = new Set(userCheckins.map(checkin => checkin.pubId));
 
-    const pubCount = uniquePubIds.size;
+    return uniquePubIds.size;
+  });
 
-    console.log('📊 [DataAggregator] PubsVisited DETAILED BREAKDOWN:', {
-      totalCheckinsInSystem: checkins.length,
-      userSpecificCheckins: userCheckins.length,
-      uniquePubsCalculated: pubCount,
-      allUniquePubIds: Array.from(uniquePubIds),
-      sampleUserCheckins: userCheckins.slice(0, 3).map(c => ({
-        pubId: c.pubId,
-        timestamp: c.timestamp.toDate().toISOString(),
-        userId: c.userId?.slice(0, 8)
-      })),
-      checkinStoreLoading: this.checkinStore.loading(),
-      checkinStoreError: this.checkinStore.error()
+  /**
+   * Compute unverified pub count from user's manually added list
+   * @description Gets count from user's manuallyAddedPubIds array
+   */
+  readonly unverifiedPubsCount = computed(() => {
+    const user = this.userStore.user();
+
+    if (!user) {
+      return 0;
+    }
+
+    return user.manuallyAddedPubIds?.length || 0;
+  });
+
+  /**
+   * Compute total pub count (verified + unverified)
+   * @description Primary pub count used throughout the app
+   */
+  readonly pubsVisited = computed(() => {
+    const verified = this.verifiedPubsCount();
+    const unverified = this.unverifiedPubsCount();
+    const total = verified + unverified;
+
+    console.log('📊 [DataAggregator] Total pubs calculated:', {
+      verified,
+      unverified,
+      total
     });
 
-    // Additional verification logging
-    if (userCheckins.length > 0 && pubCount === 0) {
-      console.warn('⚠️ [DataAggregator] ANOMALY: User has check-ins but 0 unique pubs!');
-      console.warn('⚠️ [DataAggregator] Checkin pub IDs:', userCheckins.map(c => c.pubId));
-    }
-
-    if (pubCount > 0) {
-      console.log('✅ [DataAggregator] Successfully calculated pubs visited:', pubCount);
-    }
-
-    return pubCount;
+    return total;
   });
 
   /**

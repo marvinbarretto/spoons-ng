@@ -9,12 +9,13 @@ import { ListFilterControlsComponent } from '../../../shared/ui/list-filter-cont
 import { ListFilterStore } from '../../../shared/data-access/list-filter.store';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { ButtonSize } from '../../../shared/ui/button/button.params';
+import { LoadingStateComponent, ErrorStateComponent, EmptyStateComponent } from '../../../shared/ui/state-components';
 import type { Mission } from '../../utils/mission.model';
 import type { MissionDisplayData } from '../../utils/user-mission-progress.model';
 
 @Component({
   selector: 'app-mission-list',
-  imports: [CommonModule, MissionCardComponent, ListFilterControlsComponent, ButtonComponent],
+  imports: [CommonModule, MissionCardComponent, ListFilterControlsComponent, ButtonComponent, LoadingStateComponent, ErrorStateComponent, EmptyStateComponent],
   providers: [ListFilterStore],
   template: `
     <section class="mission-list-page">
@@ -26,19 +27,20 @@ import type { MissionDisplayData } from '../../utils/user-mission-progress.model
       </header>
 
       @if (userMissionsStore.loading()) {
-        <div class="loading-state">
-          <p>📝 Loading missions...</p>
-        </div>
+        <app-loading-state text="Loading missions..." />
       } @else if (userMissionsStore.error()) {
-        <div class="error-state">
-          <p>❌ {{ userMissionsStore.error() }}</p>
-          <app-button variant="secondary" (onClick)="retryLoad()">Try Again</app-button>
-        </div>
+        <app-error-state 
+          [message]="userMissionsStore.error()!"
+          [showRetry]="true"
+          retryText="Try Again"
+          (retry)="retryLoad()"
+        />
       } @else if (totalMissionsCount() === 0) {
-        <div class="empty-state">
-          <p>📝 No missions available yet.</p>
-          <p>Check back later for new challenges!</p>
-        </div>
+        <app-empty-state 
+          icon="📝"
+          title="No missions available yet"
+          subtitle="Check back later for new challenges!"
+        />
       } @else {
         <!-- Filter Controls -->
         <div class="filter-controls">
@@ -127,12 +129,13 @@ import type { MissionDisplayData } from '../../utils/user-mission-progress.model
         </div>
 
         @if (filteredAndSearchedMissions().length === 0) {
-          <div class="empty-filtered-state">
-            <p>No missions match the current filter.</p>
-            <app-button variant="secondary" (onClick)="setFilter('all')">
-              Show All Missions
-            </app-button>
-          </div>
+          <app-empty-state 
+            icon="🔍"
+            title="No missions match the current filter"
+            [showAction]="true"
+            actionText="Show All Missions"
+            (action)="setFilter('all')"
+          />
         }
       }
 
@@ -162,18 +165,6 @@ import type { MissionDisplayData } from '../../utils/user-mission-progress.model
       font-size: 1rem;
     }
 
-    .loading-state,
-    .error-state,
-    .empty-state,
-    .empty-filtered-state {
-      text-align: center;
-      padding: 3rem 1rem;
-      color: var(--text-secondary, #6b7280);
-    }
-
-    .error-state {
-      color: var(--color-error, #ef4444);
-    }
 
     .retry-btn,
     .btn-secondary {

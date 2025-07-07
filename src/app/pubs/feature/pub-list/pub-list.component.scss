@@ -175,63 +175,7 @@
   }
 }
 
-/* ✅ STATE COMPONENTS */
-.loading-state,
-.error-state,
-.empty-state {
-  text-align: center;
-  padding: 3rem 1rem;
-  background: var(--background-darkest);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  margin: 2rem 0;
-}
-
-.loading-state p {
-  font-size: 1rem;
-  color: var(--text-secondary);
-  margin: 0;
-}
-
-.error-state p {
-  color: var(--color-error);
-  margin: 0 0 1rem 0;
-  font-weight: 500;
-}
-
-.retry-btn,
-.clear-filters-btn {
-  padding: 0.75rem 1.5rem;
-  border: 1px solid var(--primary);
-  border-radius: 8px;
-  background: var(--primary);
-  color: var(--primaryText);
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: var(--primaryHover);
-    transform: translateY(-1px);
-  }
-
-  &:focus {
-    outline: 2px solid var(--primary);
-    outline-offset: 2px;
-  }
-}
-
-.empty-state h3 {
-  font-size: 1.25rem;
-  color: var(--text);
-  margin: 0 0 0.5rem 0;
-  font-weight: 600;
-}
-
-.empty-state p {
-  color: var(--text-secondary);
-  margin: 0 0 1.5rem 0;
-}
+/* State components now handled by shared components */
 
 /* ✅ RESPONSIVE ADJUSTMENTS */
 @media (max-width: 480px) {
