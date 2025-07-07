@@ -48,16 +48,6 @@ export class AuthStore {
   readonly isAuthenticated = computed(() => !!this.token());
   readonly isAnonymous = computed(() => this.user()?.isAnonymous ?? true);
   readonly uid = computed(() => this.user()?.uid ?? null);
-  
-  // ✅ Fresh display name from Firebase Auth (no stale cache)
-  readonly freshDisplayName = computed(() => {
-    const user = this.user();
-    if (!user) return null;
-    
-    // Always read fresh from Firebase Auth since UserStore keeps it in sync
-    const firebaseUser = this.platform.isBrowser ? getAuth().currentUser : null;
-    return firebaseUser?.displayName || user.displayName || 'User';
-  });
 
   constructor() {
     this.platform.onlyOnBrowser(() => {
@@ -143,6 +133,33 @@ export class AuthStore {
   // ✅ ONLY auth operations
   logout(): void {
     this.authService.logout();
+  }
+
+  // ✅ Refresh current user data from Firebase Auth (called when profile updates)
+  refreshCurrentUser(): void {
+    this.platform.onlyOnBrowser(() => {
+      const firebaseUser = getAuth().currentUser;
+      if (firebaseUser && this._user()) {
+        // Update our user signal with fresh Firebase Auth data
+        const currentUser = this._user()!;
+        const updatedUser: User = {
+          ...currentUser,
+          displayName: firebaseUser.displayName || currentUser.displayName,
+          photoURL: firebaseUser.photoURL || currentUser.photoURL,
+        };
+
+        this._user.set(updatedUser);
+        this._userChangeCounter.update(c => c + 1);
+
+        // Update localStorage
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+
+        console.log('[AuthStore] ✅ Refreshed user from Firebase Auth:', {
+          uid: updatedUser.uid.slice(0, 8),
+          displayName: updatedUser.displayName
+        });
+      }
+    });
   }
 
   loginWithGoogle(): void {

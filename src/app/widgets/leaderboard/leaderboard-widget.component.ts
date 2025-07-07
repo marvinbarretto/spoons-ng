@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject } from '@angular/core';
 import { BaseWidgetComponent } from '../base/base-widget.component';
 import { LeaderboardStore } from '../../leaderboard/data-access/leaderboard.store';
 import { AuthStore } from '../../auth/data-access/auth.store';
@@ -18,7 +18,7 @@ type LeaderboardContextEntry = LeaderboardEntry & {
   template: `
     <div class="leaderboard-widget">
       <h3 class="widget-title">Your Leaderboard Position</h3>
-      
+
       @if (leaderboardStore.loading()) {
         <div class="widget-loading">
           <span class="loading-spinner"></span>
@@ -42,22 +42,22 @@ type LeaderboardContextEntry = LeaderboardEntry & {
           @for (entry of userContext(); track entry.userId) {
             <div class="leaderboard-entry" [class.current-user]="entry.isCurrentUser">
               <span class="rank">{{ '#' + entry.position }}</span>
-              
-              <app-user-avatar 
-                [user]="entryAsUser(entry)" 
-                size="sm" 
-                [clickable]="false" 
+
+              <app-user-avatar
+                [user]="entryAsUser(entry)"
+                size="sm"
+                [clickable]="false"
               />
-              
+
               <div class="user-info">
                 <span class="name">{{ entry.displayName }}</span>
                 <span class="points">{{ formatPoints(entry.totalPoints) }}</span>
               </div>
-              
+
               @if (entry.positionChange) {
-                <span 
-                  class="position-change" 
-                  [class.up]="entry.positionChange > 0" 
+                <span
+                  class="position-change"
+                  [class.up]="entry.positionChange > 0"
                   [class.down]="entry.positionChange < 0"
                 >
                   {{ entry.positionChange > 0 ? '↑' : '↓' }}{{ abs(entry.positionChange) }}
@@ -66,9 +66,9 @@ type LeaderboardContextEntry = LeaderboardEntry & {
             </div>
           }
         </div>
-        
-        <button 
-          class="view-full-leaderboard" 
+
+        <button
+          class="view-full-leaderboard"
           (click)="navigateToFullLeaderboard()"
           type="button"
         >
@@ -303,7 +303,7 @@ export class LeaderboardWidgetComponent extends BaseWidgetComponent {
   constructor() {
     super();
     console.log('[LeaderboardWidget] 🏗️ Component constructed');
-    
+
     // Add effect to track when topByPoints changes
     effect(() => {
       const topByPoints = this.leaderboardStore.topByPoints();
@@ -323,41 +323,41 @@ export class LeaderboardWidgetComponent extends BaseWidgetComponent {
   protected readonly userContext = computed((): LeaderboardContextEntry[] => {
     const allUsers = this.leaderboardStore.topByPoints();
     const currentUserId = this.authStore.user()?.uid;
-    
+
     console.log('[LeaderboardWidget] 🔄 userContext computed:', {
       allUsersCount: allUsers.length,
       currentUserId: currentUserId?.slice(0, 8),
       allUserDisplayNames: allUsers.map(u => u.displayName),
       timestamp: new Date().toISOString()
     });
-    
+
     if (!currentUserId || allUsers.length === 0) {
       console.log('[LeaderboardWidget] ❌ No users or current user - returning empty context');
       return [];
     }
-    
+
     const userIndex = allUsers.findIndex(u => u.userId === currentUserId);
     if (userIndex === -1) {
       console.log('[LeaderboardWidget] ❌ Current user not found in rankings');
       return []; // User not found in rankings
     }
-    
+
     // Extract ±2 positions around user
     const start = Math.max(0, userIndex - 2);
     const end = Math.min(allUsers.length, userIndex + 3);
-    
+
     const context = allUsers.slice(start, end).map((entry, index) => ({
       ...entry,
       position: start + index + 1,
       isCurrentUser: entry.userId === currentUserId
     }));
-    
+
     console.log('[LeaderboardWidget] ✅ userContext computed result:', {
       contextCount: context.length,
       contextDisplayNames: context.map(c => c.displayName),
       currentUserEntry: context.find(c => c.isCurrentUser)?.displayName
     });
-    
+
     return context;
   });
 

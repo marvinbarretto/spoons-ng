@@ -200,6 +200,9 @@ export class UserStore {
             photoURL: updates.photoURL || fbUser.photoURL,
           });
           console.log('[UserStore] ✅ Firebase Auth profile updated');
+          
+          // ✅ Tell AuthStore to refresh its user signal with fresh Firebase Auth data
+          this.authStore.refreshCurrentUser();
         }
       }
 
