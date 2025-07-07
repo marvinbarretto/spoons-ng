@@ -249,19 +249,20 @@ export class OnboardingComponent extends BaseComponent {
   override async onInit() {
     console.log('[Onboarding] Component initialized with step:', this.currentStep());
 
+
     // Initial carpet background will be set by the effect
 
-    // Pre-populate display name if user already has one, otherwise generate random name
+    // Pre-populate display name if user already has one
+    // NOTE: We no longer auto-generate random names on init - users must either type their own or use the shuffle button
+
+    // Removed: Auto-generation of random names for new users
+    // Users now start with an empty display name field and can use the shuffle button to generate one
+
     const user = this.user();
-    if (user?.displayName) {
-      this.displayName.set(user.displayName);
-      console.log('[Onboarding] Pre-populated display name:', user.displayName);
-    } else if (user?.uid) {
-      // Generate random name for new users
-      const randomName = generateRandomName(user.uid);
-      this.displayName.set(randomName);
-      console.log('[Onboarding] Generated random display name:', randomName);
-    }
+    // if (user?.displayName) {
+    //   this.displayName.set(user.displayName);
+    //   console.log('[Onboarding] Pre-populated display name:', user.displayName);
+    // }
 
     // Auto-preselect NPC avatar
     this.selectedAvatarId.set('npc');
