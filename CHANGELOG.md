@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.93](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.92...v0.0.93) (2025-07-07)
+
+
+### Features
+
+* Add offline pubs to User ([bb831d0](https://github.com/marvinbarretto/spoons-ng/commit/bb831d0315f5059fd7b3bc4904481623f101ea4b))
+* Suggested Mission widget ([a9dde24](https://github.com/marvinbarretto/spoons-ng/commit/a9dde24a2779a2ace0b67644c9c5b6244734378a))
+
+
+### Bug Fixes
+
+* [Checkin / LLM] Stop LLM getting too clever with cache ([25fee74](https://github.com/marvinbarretto/spoons-ng/commit/25fee7450c4ad932bbecd102d86a7e09916dcdd6))
+
 ### [0.0.92](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.91...v0.0.92) (2025-07-07)
 
 
