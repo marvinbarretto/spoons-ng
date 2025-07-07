@@ -37,10 +37,11 @@
  */
 
 // src/app/shared/data-access/cached-firestore.service.ts
-import { inject } from '@angular/core';
+import { inject, effect } from '@angular/core';
 import { FirestoreService } from './firestore.service';
 import { IndexedDbService } from './indexed-db.service';
 import { DatabaseMetricsService } from './database-metrics.service';
+import { CacheCoherenceService } from './cache-coherence.service';
 import { Observable, from, of } from 'rxjs';
 import { tap, switchMap, catchError } from 'rxjs/operators';
 import { FirebaseMetricsService } from './firebase-metrics.service';
@@ -60,6 +61,7 @@ export abstract class CachedFirestoreService extends FirestoreService {
   protected indexedDbService = inject(IndexedDbService);
   protected databaseMetricsService = inject(DatabaseMetricsService);
   protected firebaseMetricsService = inject(FirebaseMetricsService);
+  protected cacheCoherence = inject(CacheCoherenceService);
   
   // Default cache configuration (fallback for unmapped collections)
   protected defaultCacheConfig: CacheConfig = {
@@ -78,7 +80,140 @@ export abstract class CachedFirestoreService extends FirestoreService {
   
   constructor() {
     super();
+    this.setupCacheInvalidationListener();
     this.initializeCache();
+  }
+  
+  /**
+   * Setup cache invalidation listener using Angular signals
+   * Listens for invalidation events from CacheCoherenceService
+   */
+  private setupCacheInvalidationListener(): void {
+    console.log('🔗 [CachedFirestore] Setting up cache invalidation listener');
+    
+    effect(() => {
+      const invalidation = this.cacheCoherence.invalidations();
+      if (invalidation) {
+        console.log(`🗑️ [CachedFirestore] === CACHE INVALIDATION RECEIVED ===`);
+        console.log(`🗑️ [CachedFirestore] Collection: ${invalidation.collection}`);
+        console.log(`🗑️ [CachedFirestore] Reason: ${invalidation.reason || 'unspecified'}`);
+        console.log(`🗑️ [CachedFirestore] Request ID: ${invalidation.requestId}`);
+        
+        this.handleCacheInvalidation(invalidation.collection, invalidation.reason);
+      }
+    });
+  }
+  
+  /**
+   * Handle cache invalidation for a specific collection
+   * @param collection - Collection to invalidate
+   * @param reason - Reason for invalidation (for logging)
+   */
+  private async handleCacheInvalidation(collection: string, reason?: string): Promise<void> {
+    const startTime = performance.now();
+    
+    try {
+      console.log(`🧹 [CachedFirestore] Starting cache clear for: ${collection}`);
+      
+      // Clear collection cache
+      await this.clearCollectionCache(collection);
+      
+      // Clear any ongoing promises for this collection to force fresh loads
+      this.clearLoadingPromises(collection);
+      
+      const duration = performance.now() - startTime;
+      console.log(`✅ [CachedFirestore] Cache invalidation completed for: ${collection} (${duration.toFixed(1)}ms)`);
+      console.log(`✅ [CachedFirestore] Reason: ${reason || 'unspecified'}`);
+      
+    } catch (error) {
+      const duration = performance.now() - startTime;
+      console.error(`❌ [CachedFirestore] Cache invalidation failed for: ${collection} (${duration.toFixed(1)}ms)`);
+      console.error(`❌ [CachedFirestore] Error:`, error);
+    }
+  }
+  
+  /**
+   * Clear cache for a specific collection
+   * @param collection - Collection name to clear from cache
+   */
+  protected async clearCollectionCache(collection: string): Promise<void> {
+    try {
+      console.log(`🗑️ [CachedFirestore] Clearing cache entries for collection: ${collection}`);
+      
+      // Get all cached items for this collection to count them
+      const collectionKey = `collection:${collection}`;
+      const cachedData = await this.getCachedCollection(collection);
+      
+      if (cachedData) {
+        console.log(`📊 [CachedFirestore] Found cached data for: ${collection} (timestamp: ${new Date(cachedData.timestamp).toISOString()})`);
+        
+        // Delete the collection cache entry
+        await this.indexedDbService.delete(this.dbName, 'collections', collectionKey);
+        console.log(`🗑️ [CachedFirestore] Collection cache entry deleted: ${collectionKey}`);
+        
+        // Also clear any individual document caches for this collection
+        await this.clearDocumentCaches(collection);
+        
+        console.log(`✅ [CachedFirestore] Cache cleared successfully for: ${collection}`);
+      } else {
+        console.log(`ℹ️ [CachedFirestore] No cached data found for: ${collection} (already clean)`);
+      }
+      
+    } catch (error) {
+      console.error(`❌ [CachedFirestore] Failed to clear cache for: ${collection}`, error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Clear individual document caches for a collection
+   * @param collection - Collection name
+   */
+  private async clearDocumentCaches(collection: string): Promise<void> {
+    try {
+      // Get all document keys that start with this collection path
+      const allKeys = await this.indexedDbService.getAllKeys(this.dbName, 'documents');
+      const collectionKeys = allKeys.filter(key => 
+        typeof key === 'string' && key.startsWith(`${collection}/`)
+      );
+      
+      if (collectionKeys.length > 0) {
+        console.log(`🗑️ [CachedFirestore] Clearing ${collectionKeys.length} document caches for: ${collection}`);
+        
+        for (const key of collectionKeys) {
+          await this.indexedDbService.delete(this.dbName, 'documents', key);
+        }
+        
+        console.log(`✅ [CachedFirestore] Cleared ${collectionKeys.length} document caches for: ${collection}`);
+      } else {
+        console.log(`ℹ️ [CachedFirestore] No document caches found for: ${collection}`);
+      }
+    } catch (error) {
+      console.warn(`⚠️ [CachedFirestore] Failed to clear document caches for: ${collection}`, error);
+      // Don't throw - this is secondary cleanup
+    }
+  }
+  
+  /**
+   * Clear loading promises for a collection to force fresh network requests
+   * @param collection - Collection name
+   */
+  private clearLoadingPromises(collection: string): void {
+    const collectionKey = `collection:${collection}`;
+    if (this.loadingPromises.has(collectionKey)) {
+      this.loadingPromises.delete(collectionKey);
+      console.log(`🔄 [CachedFirestore] Cleared loading promise for: ${collection} (will force fresh network request)`);
+    }
+  }
+  
+  /**
+   * Public method to manually clear cache for a collection
+   * @param collection - Collection name to clear
+   */
+  public async clearCache(collection: string): Promise<void> {
+    console.log(`🧹 [CachedFirestore] Manual cache clear requested for: ${collection}`);
+    await this.clearCollectionCache(collection);
+    this.clearLoadingPromises(collection);
   }
   
   /**
@@ -329,27 +464,9 @@ export abstract class CachedFirestoreService extends FirestoreService {
   }
   
   /**
-   * Clear cache for a specific collection
+   * Clear all caches - useful for development and seeded data
    */
-  async clearCollectionCache(collection: string): Promise<void> {
-    try {
-      const allCached = await this.indexedDbService.getAll<any>(this.dbName, 'collections');
-      const toDelete = allCached.filter(item => item.collection === collection);
-      
-      for (const item of toDelete) {
-        await this.indexedDbService.delete(this.dbName, 'collections', item.id);
-      }
-      
-      console.log(`🗑️ [CachedFirestore] Cleared cache for collection: ${collection}`);
-    } catch (error) {
-      console.error(`🗑️ [CachedFirestore] Failed to clear cache for ${collection}:`, error);
-    }
-  }
-  
-  /**
-   * Clear all caches
-   */
-  async clearAllCaches(): Promise<void> {
+  public async clearAllCaches(): Promise<void> {
     try {
       await this.indexedDbService.clear(this.dbName, 'collections');
       await this.indexedDbService.clear(this.dbName, 'documents');

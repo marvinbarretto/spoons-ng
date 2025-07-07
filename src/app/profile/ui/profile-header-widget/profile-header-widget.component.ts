@@ -184,6 +184,9 @@ export class ProfileHeaderWidgetComponent extends BaseComponent {
       }
     );
 
+    // Pass the close callback to the modal component
+    componentRef.setInput('closeCallback', close);
+
     console.log('[ProfileHeaderWidget] Profile customization modal opened');
   }
 }

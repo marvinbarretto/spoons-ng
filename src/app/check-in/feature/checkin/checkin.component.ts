@@ -630,17 +630,11 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
         console.log('[Checkin] 📱 Showing NOT_CARPET_DETECTED message to user');
         this.setPhase('NOT_CARPET_DETECTED');
 
-        // Wait 3 seconds before returning to camera for retry
+        // Do full cleanup and exit to homepage instead of retrying
         this.safeSetTimeout(() => {
-          console.log('[Checkin] 🔄 Returning to gate monitoring after user feedback');
-          this.resetForRetry().then(() => {
-            this.startGateMonitoring();
-          }).catch((error) => {
-            console.error('[Checkin] ❌ Failed to restart after carpet rejection:', error);
-            // Ultimate fallback - navigate away to prevent infinite loop
-            this.exitToHomepage();
-          });
-        }, 3000);
+          console.log('[Checkin] 🏠 LLM rejected carpet - performing full cleanup and exiting to homepage');
+          this.exitToHomepage();
+        }, 2000);
       }
     } catch (error) {
       console.error('[Checkin] ❌ LLM analysis error:', error);
@@ -655,17 +649,11 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
     // Show user-friendly error message
     this.setPhase('NOT_CARPET_DETECTED');
 
-    // Wait 3 seconds before returning to camera for retry
+    // Do full cleanup and exit to homepage instead of retrying
     this.safeSetTimeout(() => {
-      console.log('[Checkin] 🔄 Returning to gate monitoring after LLM error');
-      this.resetForRetry().then(() => {
-        this.startGateMonitoring();
-      }).catch((error) => {
-        console.error('[Checkin] ❌ Failed to restart after LLM error:', error);
-        // Ultimate fallback - navigate away to prevent infinite loop
-        this.exitToHomepage();
-      });
-    }, 3000);
+      console.log('[Checkin] 🏠 LLM error occurred - performing full cleanup and exiting to homepage');
+      this.exitToHomepage();
+    }, 2000);
   }
 
   private startAnalysisMessageCycling(): void {

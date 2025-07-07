@@ -48,6 +48,16 @@ export class AuthStore {
   readonly isAuthenticated = computed(() => !!this.token());
   readonly isAnonymous = computed(() => this.user()?.isAnonymous ?? true);
   readonly uid = computed(() => this.user()?.uid ?? null);
+  
+  // ✅ Fresh display name from Firebase Auth (no stale cache)
+  readonly freshDisplayName = computed(() => {
+    const user = this.user();
+    if (!user) return null;
+    
+    // Always read fresh from Firebase Auth since UserStore keeps it in sync
+    const firebaseUser = this.platform.isBrowser ? getAuth().currentUser : null;
+    return firebaseUser?.displayName || user.displayName || 'User';
+  });
 
   constructor() {
     this.platform.onlyOnBrowser(() => {
@@ -71,7 +81,7 @@ export class AuthStore {
       const token = await firebaseUser.getIdToken();
       let displayName = firebaseUser.displayName;
 
-      // ✅ Only update Firebase Auth profile for anonymous users
+      // ✅ Only update Firebase Auth profile for anonymous users WITHOUT custom names
       if (firebaseUser.isAnonymous && !displayName) {
         displayName = generateRandomName(firebaseUser.uid);
         try {
@@ -86,7 +96,7 @@ export class AuthStore {
         uid: firebaseUser.uid,
         email: firebaseUser.email ?? null,
         photoURL: firebaseUser.photoURL ?? null,
-        displayName: displayName ?? generateRandomName(firebaseUser.uid),
+        displayName: displayName || 'User', // ✅ Anonymous users keep their chosen names
         isAnonymous: firebaseUser.isAnonymous,
         emailVerified: firebaseUser.emailVerified,
         streaks: {},
@@ -128,6 +138,7 @@ export class AuthStore {
       localStorage.removeItem('token');
     });
   }
+
 
   // ✅ ONLY auth operations
   logout(): void {

@@ -1,11 +1,14 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject, effect } from '@angular/core';
 import { FirestoreService } from '../../shared/data-access/firestore.service';
+import { CacheCoherenceService } from '../../shared/data-access/cache-coherence.service';
 import { User } from '../utils/user.model';
 
 @Injectable({
   providedIn: 'root',
 })
 export class UserService extends FirestoreService {
+  private readonly cacheCoherence = inject(CacheCoherenceService);
+  
   // Global users signal for leaderboard reactivity
   private readonly _allUsers = signal<User[]>([]);
   readonly allUsers = this._allUsers.asReadonly();
@@ -13,6 +16,20 @@ export class UserService extends FirestoreService {
   // Loading state for global users
   private readonly _loadingAllUsers = signal(false);
   readonly loadingAllUsers = this._loadingAllUsers.asReadonly();
+
+  constructor() {
+    super();
+    
+    // Listen for cache invalidation events
+    effect(() => {
+      const invalidation = this.cacheCoherence.invalidations();
+      if (invalidation && invalidation.collection === 'users') {
+        console.log('[UserService] 🔄 Cache invalidated, refreshing all users data');
+        console.log('[UserService] 🔄 Reason:', invalidation.reason);
+        this.handleCacheInvalidation(invalidation.collection, invalidation.reason);
+      }
+    });
+  }
 
   getUser(uid: string) {
     return this.doc$<User>(`users/${uid}`);
@@ -80,5 +97,26 @@ export class UserService extends FirestoreService {
       )
     );
     console.log(`[UserService] Updated user ${uid} in global signal`);
+  }
+
+  /**
+   * Handle cache invalidation by refreshing all users data
+   * @param collection - The collection that was invalidated
+   * @param reason - Reason for invalidation
+   */
+  private async handleCacheInvalidation(collection: string, reason?: string): Promise<void> {
+    console.log(`[UserService] 🔄 === HANDLING CACHE INVALIDATION ===`);
+    console.log(`[UserService] 🔄 Collection: ${collection}`);
+    console.log(`[UserService] 🔄 Reason: ${reason || 'unspecified'}`);
+    
+    try {
+      // Refresh all users data to get fresh user profiles with updated display names
+      console.log(`[UserService] 🔄 Refreshing all users data...`);
+      await this.refreshAllUsers();
+      console.log(`[UserService] ✅ All users data refreshed after cache invalidation`);
+      
+    } catch (error) {
+      console.error(`[UserService] ❌ Failed to refresh users data after cache invalidation:`, error);
+    }
   }
 }

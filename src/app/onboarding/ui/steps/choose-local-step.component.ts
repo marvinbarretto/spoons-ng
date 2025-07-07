@@ -10,21 +10,27 @@ import { ButtonSize } from '@shared/ui/button/button.params';
   imports: [ButtonComponent, HomePubSelectionWidgetComponent],
   template: `
     <div class="step choose-local-step">
-      <h1>Choose Your Local</h1>
+      <h1>Choose Your Local,
+        <span class="username">
+          @if (displayName()) { {{ displayName() }}!}
+        </span>
+      </h1>
       <p class="subtitle">Pick your regular spot for bonus points!</p>
 
       @if (!locationGranted() && !locationRequired() && !hasExistingLocationPermission()) {
-        <!-- Initial state - show pub selector with location request -->
-        <div class="location-notice">
-          <div class="notice-icon">📍</div>
-          <p class="notice-text">We need location access to verify check-ins</p>
-          <app-button
-            variant="secondary"
-            [size]="ButtonSize.SMALL"
-            (onClick)="requestLocation()"
-          >
-            Enable Location
-          </app-button>
+        <!-- Initial state - no location permission -->
+        <div class="no-location-state">
+          <div class="location-prompt">
+            <div class="prompt-icon">📍</div>
+            <p class="prompt-text">Enable location to see nearby pubs</p>
+            <app-button
+              variant="primary"
+              [size]="ButtonSize.LARGE"
+              (onClick)="requestLocation()"
+            >
+              Enable Location
+            </app-button>
+          </div>
         </div>
       }
 
@@ -36,12 +42,15 @@ import { ButtonSize } from '@shared/ui/button/button.params';
         </div>
       }
 
-      <!-- Always show pub selection -->
-      <div class="pub-selection-container" [class.disabled]="locationRequired()">
-        <app-home-pub-selection-widget
-          (pubSelected)="onPubSelected($event)"
-        />
-      </div>
+      <!-- Show pub selection when location available or being requested -->
+      @if (locationGranted() || hasExistingLocationPermission() || locationRequired()) {
+        <div class="pub-selection-container" [class.disabled]="locationRequired()">
+          <app-home-pub-selection-widget
+            [hasLocationPermission]="locationGranted() || hasExistingLocationPermission()"
+            (pubSelected)="onPubSelected($event)"
+          />
+        </div>
+      }
 
       <div class="step-actions">
         <app-button
@@ -78,34 +87,46 @@ import { ButtonSize } from '@shared/ui/button/button.params';
     h1 {
       font-size: 2.5rem;
       margin: 0 0 0.5rem 0;
-      color: var(--text);
+    }
+
+    .username {
+      color: gold;
     }
 
     .subtitle {
       font-size: 1.125rem;
       margin: 0 0 2rem 0;
-      color: var(--text-secondary);
     }
 
-    .location-notice {
+    .no-location-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 2rem 0;
+    }
+
+    .location-prompt {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      padding: 2rem;
       background: var(--background-lighter);
-      backdrop-filter: blur(10px);
       border-radius: 12px;
-      padding: 1.5rem;
-      margin-bottom: 2rem;
-      text-align: center;
       border: 1px solid var(--border);
+      text-align: center;
+      max-width: 400px;
     }
 
-    .notice-icon {
-      font-size: 2.5rem;
-      margin-bottom: 0.5rem;
+    .prompt-icon {
+      font-size: 3rem;
     }
 
-    .notice-text {
-      margin: 0 0 1rem 0;
-      font-size: 1rem;
+    .prompt-text {
+      margin: 0;
+      font-size: 1.125rem;
       color: var(--text);
+      font-weight: 500;
     }
 
     .location-loading {
@@ -181,6 +202,7 @@ export class ChooseLocalStepComponent {
   readonly locationRequired = input<boolean>(false);
   readonly hasExistingLocationPermission = input<boolean>(false);
   readonly loading = input<boolean>(false);
+  readonly displayName = input<string>('');
 
   // Outputs
   readonly pubSelected = output<Pub | null>();

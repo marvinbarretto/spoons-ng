@@ -274,15 +274,15 @@ export class DataAggregatorService {
       return null;
     }
 
-    // Priority: UserStore displayName > AuthStore displayName > fallback
-    const displayName = userProfile?.displayName || authUser.displayName || 'User';
+    // Priority: UserStore displayName > AuthStore fresh displayName > fallback
+    const displayName = userProfile?.displayName || this.authStore.freshDisplayName() || 'User';
 
     this.debug.standard('[DataAggregator] DisplayName computed', {
       uid: authUser.uid?.slice(0, 8),
       userStoreDisplayName: userProfile?.displayName,
-      authStoreDisplayName: authUser.displayName,
+      authStoreFreshDisplayName: this.authStore.freshDisplayName(),
       finalDisplayName: displayName,
-      source: userProfile?.displayName ? 'UserStore' : 'AuthStore'
+      source: userProfile?.displayName ? 'UserStore' : 'AuthStore-Fresh'
     });
 
     return displayName;

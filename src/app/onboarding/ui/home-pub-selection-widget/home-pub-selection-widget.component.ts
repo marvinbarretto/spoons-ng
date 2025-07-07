@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BaseWidgetComponent } from '../../../widgets/base/base-widget.component';
@@ -33,21 +33,23 @@ import type { Pub } from '../../../pubs/utils/pub.models';
             </p>
           </div>
 
-          <!-- Search Section -->
-          <div class="search-section">
-            <label class="search-label">Search for your local</label>
-            <div class="search-container">
-              <input
-                type="text"
-                class="search-input"
-                placeholder="Search by pub name or location..."
-                [value]="searchTerm()"
-                (input)="onSearchInput($event)"
-                (focus)="setDropdownOpen(true)"
-              />
-              <div class="search-icon">🔍</div>
+          <!-- Search Section - Only show if location permission available -->
+          @if (actualLocationPermission()) {
+            <div class="search-section">
+              <label class="search-label">Search for your local</label>
+              <div class="search-container">
+                <input
+                  type="text"
+                  class="search-input"
+                  placeholder="Search by pub name or location..."
+                  [value]="searchTerm()"
+                  (input)="onSearchInput($event)"
+                  (focus)="setDropdownOpen(true)"
+                />
+                <div class="search-icon">🔍</div>
+              </div>
             </div>
-          </div>
+          }
 
           <!-- Selected Pub Display -->
           @if (selectedPub()) {
@@ -76,13 +78,13 @@ import type { Pub } from '../../../pubs/utils/pub.models';
           }
 
           <!-- Suggested Nearest Pubs - Show when location is available and no search term -->
-          @if (!selectedPub() && nearbyPubs().length > 0 && !hasSearchTerm() && hasLocationPermission()) {
+          @if (!selectedPub() && nearbyPubs().length > 0 && !hasSearchTerm() && actualLocationPermission()) {
             <div class="suggestions-section">
               <h4 class="suggestions-title">Nearest pubs to you:</h4>
               <div class="suggestions-list">
                 @for (pub of nearbyPubs().slice(0, 3); track pub.id) {
                   <div
-                    class="suggestion-card"
+                    class="suggestion-card prominent"
                     (click)="selectPub(pub)"
                   >
                     <app-pub-card-light
@@ -299,11 +301,11 @@ import type { Pub } from '../../../pubs/utils/pub.models';
 
     .suggestions-title {
       margin: 0 0 1rem 0;
-      font-size: 0.875rem;
+      font-size: 1rem;
       font-weight: 600;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+      color: var(--text);
+      text-transform: none;
+      letter-spacing: normal;
     }
 
     .suggestions-list {
@@ -325,11 +327,22 @@ import type { Pub } from '../../../pubs/utils/pub.models';
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     }
 
+    .suggestion-card.prominent {
+      border: 2px solid var(--accent);
+      background: var(--background-lighter);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
     .suggestion-card:hover {
       border-color: var(--accent);
       background: var(--background-lighter);
       transform: translateY(-1px);
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .suggestion-card.prominent:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
     }
 
     /* Removed .pub-info styles - now handled by pub-card-light component */
@@ -487,6 +500,9 @@ export class HomePubSelectionWidgetComponent extends BaseWidgetComponent {
   // ✅ Movement detection signal
   readonly isMoving = this.locationService.isMoving;
 
+  // Input for location permission state
+  readonly hasLocationPermission = input<boolean>(false);
+
   // Output for selected pub
   readonly pubSelected = output<Pub | null>();
 
@@ -504,7 +520,10 @@ export class HomePubSelectionWidgetComponent extends BaseWidgetComponent {
   protected readonly allPubs = computed(() => this.pubStore.data());
   protected readonly nearbyPubs = computed(() => this.nearbyPubStore.nearbyPubs());
   protected readonly hasSearchTerm = computed(() => this.searchTerm().trim().length > 0);
-  protected readonly hasLocationPermission = computed(() => this.locationService.location() !== null);
+  protected readonly locationServiceHasPermission = computed(() => this.locationService.location() !== null);
+  protected readonly actualLocationPermission = computed(() => 
+    this.hasLocationPermission() || this.locationServiceHasPermission()
+  );
 
   protected readonly filteredPubs = computed(() => {
     const searchTerm = this.searchTerm().toLowerCase().trim();

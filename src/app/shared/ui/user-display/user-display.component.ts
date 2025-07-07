@@ -267,10 +267,7 @@ export class UserDisplayComponent {
     const currentUser = this.user();
     if (!currentUser) return 'Unknown User';
 
-    if (currentUser.isAnonymous) {
-      return `Anonymous User ${currentUser.uid.slice(-6)}`;
-    }
-
+    // ✅ Anonymous users are first-class citizens - respect their chosen display name
     return currentUser.displayName || currentUser.email || 'User';
   });
 

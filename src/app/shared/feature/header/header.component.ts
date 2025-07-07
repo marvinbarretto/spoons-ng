@@ -62,7 +62,7 @@ export class HeaderComponent extends BaseComponent implements AfterViewInit {
   private readonly authStore = inject(AuthStore);
   private readonly userStore = inject(UserStore);
   private readonly overlayService = inject(OverlayService);
-  private readonly dataAggregator = inject(DataAggregatorService);
+  protected readonly dataAggregator = inject(DataAggregatorService);
 
   // ✅ Reactive viewport detection
   readonly isMobile = this.viewportService.isMobile;
@@ -149,6 +149,9 @@ export class HeaderComponent extends BaseComponent implements AfterViewInit {
         maxHeight: '90vh'
       }
     );
+
+    // Pass the close callback to the modal component
+    componentRef.setInput('closeCallback', close);
 
     console.log('[HeaderComponent] Profile modal opened, close function available');
   }

@@ -196,7 +196,9 @@ handleOpenProfile(): void {
     }
   );
 
-  // ✅ No need to subscribe to modal events - the close function handles everything
+  // Pass the close callback to the modal component
+  componentRef.setInput('closeCallback', close);
+
   console.log('[Home] Profile modal opened, close function available');
 }
 

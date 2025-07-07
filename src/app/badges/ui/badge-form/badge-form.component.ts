@@ -2,7 +2,6 @@ import { Component, Input, computed, inject, OnInit } from '@angular/core';
 import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Timestamp } from 'firebase/firestore';
 import type { Badge } from '../../utils/badge.model';
-import { OverlayService } from '../../../shared/data-access/overlay.service';
 
 @Component({
   selector: 'app-badge-form',
@@ -236,7 +235,6 @@ import { OverlayService } from '../../../shared/data-access/overlay.service';
 })
 export class BadgeFormComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
-  private readonly overlayService = inject(OverlayService);
 
   @Input() badge?: Badge;
   closeCallback?: (badge: Badge | null) => void;
@@ -303,11 +301,9 @@ export class BadgeFormComponent implements OnInit {
         };
 
     this.closeCallback?.(badge);
-    this.overlayService.closeFromComponent();
   }
 
   cancel(): void {
     this.closeCallback?.(null);
-    this.overlayService.closeFromComponent();
   }
 }

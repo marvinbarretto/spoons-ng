@@ -71,6 +71,7 @@ type OnboardingStep =
               [locationRequired]="locationRequired()"
               [hasExistingLocationPermission]="hasExistingLocationPermission()"
               [loading]="saving()"
+              [displayName]="displayName()"
               (pubSelected)="onHomePubSelected($event)"
               (locationRequested)="requestLocationPermission()"
               (back)="goBackToPreviousStep()"

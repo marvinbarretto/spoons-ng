@@ -1,10 +1,9 @@
 // src/app/home/ui/profile-customisation-modal/profile-customisation-modal.component.ts
-import { Component, inject, signal, computed, ChangeDetectionStrategy, OnInit } from '@angular/core';
+import { Component, inject, signal, computed, ChangeDetectionStrategy, OnInit, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UserStore } from '@users/data-access/user.store';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { AvatarService } from '@shared/data-access/avatar.service';
-import { OverlayService } from '@shared/data-access/overlay.service';
 import { ButtonComponent } from '@shared/ui/button/button.component';
 
 // Import widgets
@@ -177,7 +176,9 @@ export class ProfileCustomisationModalComponent implements OnInit {
   private readonly userStore = inject(UserStore);
   private readonly authStore = inject(AuthStore);
   private readonly avatarService = inject(AvatarService);
-  private readonly overlayService = inject(OverlayService);
+  
+  // Input for close callback
+  closeCallback = input<() => void>();
 
   // ✅ Component State
   readonly tempDisplayName = signal('');  // Temporary value during editing
@@ -261,7 +262,10 @@ export class ProfileCustomisationModalComponent implements OnInit {
   }
 
   close(): void {
-    this.overlayService.closeFromComponent();
+    const callback = this.closeCallback();
+    if (callback) {
+      callback();
+    }
   }
 
   // ✅ Utility Methods

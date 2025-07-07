@@ -46,15 +46,6 @@ import type { User } from '@users/utils/user.model';
       <!-- Actions -->
       <div class="cta-section">
         <div class="step-actions">
-          @if (showBackButton()) {
-            <app-button 
-              variant="secondary" 
-              [size]="ButtonSize.MEDIUM"
-              (onClick)="back.emit()"
-            >
-              Back
-            </app-button>
-          }
           <app-button
             variant="primary"
             [size]="ButtonSize.LARGE"
@@ -177,7 +168,7 @@ import type { User } from '@users/utils/user.model';
         max-width: 300px;
         margin: 0 auto;
       }
-      
+
       .step-actions app-button {
         width: 100%;
       }
@@ -198,7 +189,7 @@ export class CustomizeProfileStepComponent {
   // readonly googleLogin = output<void>(); // Commented out for MVP
   readonly back = output<void>();
   readonly continue = output<void>();
-  
+
   // Expose ButtonSize for template
   readonly ButtonSize = ButtonSize;
 

@@ -1,6 +1,8 @@
 import { Injectable, computed, inject, signal, effect } from "@angular/core";
 import { AuthStore } from "../../auth/data-access/auth.store";
 import { BaseStore } from "../../shared/base/base.store";
+import { CacheCoherenceService } from "../../shared/data-access/cache-coherence.service";
+import { DataAggregatorService } from "../../shared/data-access/data-aggregator.service";
 import { LeaderboardEntry, LeaderboardTimeRange, LeaderboardGeographicFilter } from "../utils/leaderboard.models";
 import { generateRandomName } from "../../shared/utils/anonymous-names";
 import { UserService } from "../../users/data-access/user.service";
@@ -23,6 +25,8 @@ export class LeaderboardStore extends BaseStore<LeaderboardEntry> {
   private readonly pubStore = inject(PubStore);
   private readonly pubGroupingService = inject(PubGroupingService);
   private readonly userStore = inject(UserStore);
+  private readonly cacheCoherence = inject(CacheCoherenceService);
+  private readonly dataAggregator = inject(DataAggregatorService);
 
   // Time range filter
   private readonly _timeRange = signal<LeaderboardTimeRange>('all-time');
@@ -87,6 +91,19 @@ export class LeaderboardStore extends BaseStore<LeaderboardEntry> {
         this.updateCurrentUserInLeaderboard(currentUser, userCheckIns);
       }
     });
+
+    // Effect 3: React to cache invalidation for user profile updates
+    effect(() => {
+      const invalidation = this.cacheCoherence.invalidations();
+      if (invalidation && (invalidation.collection === 'users' || invalidation.collection === 'leaderboards')) {
+        console.log('[LeaderboardStore] 🔄 Cache invalidated, refreshing leaderboard data');
+        console.log('[LeaderboardStore] 🔄 Collection:', invalidation.collection);
+        console.log('[LeaderboardStore] 🔄 Reason:', invalidation.reason);
+        
+        // Force refresh of leaderboard data to ensure fresh display names
+        this.handleCacheInvalidation(invalidation.collection, invalidation.reason);
+      }
+    });
   }
 
   /**
@@ -109,6 +126,26 @@ export class LeaderboardStore extends BaseStore<LeaderboardEntry> {
     }
   }
 
+  /**
+   * Handle cache invalidation by refreshing leaderboard data
+   * @param collection - The collection that was invalidated
+   * @param reason - Reason for invalidation
+   */
+  private async handleCacheInvalidation(collection: string, reason?: string): Promise<void> {
+    console.log(`[LeaderboardStore] 🔄 === HANDLING CACHE INVALIDATION ===`);
+    console.log(`[LeaderboardStore] 🔄 Collection: ${collection}`);
+    console.log(`[LeaderboardStore] 🔄 Reason: ${reason || 'unspecified'}`);
+    
+    try {
+      // Force reload global data to get fresh user profiles with updated display names
+      console.log(`[LeaderboardStore] 🔄 Refreshing global user and checkin data...`);
+      await this.loadGlobalData();
+      console.log(`[LeaderboardStore] ✅ Leaderboard data refreshed after cache invalidation`);
+      
+    } catch (error) {
+      console.error(`[LeaderboardStore] ❌ Failed to refresh leaderboard data after cache invalidation:`, error);
+    }
+  }
 
   // 📊 Filter data by time range and geography
   readonly filteredData = computed(() => {
@@ -384,9 +421,13 @@ private getDisplayName(userId: string, user: User): string {
 
   // ✅ Check if it's current user first
   if (currentUser?.uid === userId) {
-    if (user.isAnonymous) {
-      return `${generateRandomName(userId)} (You)`;
+    // For current user, ALWAYS use DataAggregator's fresh display name + "(You)"
+    // Anonymous users can have custom display names too!
+    const freshDisplayName = this.dataAggregator.displayName();
+    if (freshDisplayName) {
+      return `${freshDisplayName} (You)`;
     }
+    // Fallback - should rarely happen
     return `${user.displayName || user.email || 'You'} (You)`;
   }
 

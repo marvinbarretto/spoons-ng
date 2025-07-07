@@ -300,6 +300,21 @@ export class LeaderboardWidgetComponent extends BaseWidgetComponent {
   protected readonly leaderboardStore = inject(LeaderboardStore);
   private readonly authStore = inject(AuthStore);
 
+  constructor() {
+    super();
+    console.log('[LeaderboardWidget] 🏗️ Component constructed');
+    
+    // Add effect to track when topByPoints changes
+    effect(() => {
+      const topByPoints = this.leaderboardStore.topByPoints();
+      console.log('[LeaderboardWidget] 🔄 topByPoints changed:', {
+        count: topByPoints.length,
+        displayNames: topByPoints.map(u => u.displayName),
+        timestamp: new Date().toISOString()
+      });
+    });
+  }
+
   // Core leaderboard signals
   protected readonly currentUserRank = this.leaderboardStore.userRankByPoints;
   protected readonly isUserRanked = computed(() => this.currentUserRank() !== null);
@@ -309,12 +324,21 @@ export class LeaderboardWidgetComponent extends BaseWidgetComponent {
     const allUsers = this.leaderboardStore.topByPoints();
     const currentUserId = this.authStore.user()?.uid;
     
+    console.log('[LeaderboardWidget] 🔄 userContext computed:', {
+      allUsersCount: allUsers.length,
+      currentUserId: currentUserId?.slice(0, 8),
+      allUserDisplayNames: allUsers.map(u => u.displayName),
+      timestamp: new Date().toISOString()
+    });
+    
     if (!currentUserId || allUsers.length === 0) {
+      console.log('[LeaderboardWidget] ❌ No users or current user - returning empty context');
       return [];
     }
     
     const userIndex = allUsers.findIndex(u => u.userId === currentUserId);
     if (userIndex === -1) {
+      console.log('[LeaderboardWidget] ❌ Current user not found in rankings');
       return []; // User not found in rankings
     }
     
@@ -322,11 +346,19 @@ export class LeaderboardWidgetComponent extends BaseWidgetComponent {
     const start = Math.max(0, userIndex - 2);
     const end = Math.min(allUsers.length, userIndex + 3);
     
-    return allUsers.slice(start, end).map((entry, index) => ({
+    const context = allUsers.slice(start, end).map((entry, index) => ({
       ...entry,
       position: start + index + 1,
       isCurrentUser: entry.userId === currentUserId
     }));
+    
+    console.log('[LeaderboardWidget] ✅ userContext computed result:', {
+      contextCount: context.length,
+      contextDisplayNames: context.map(c => c.displayName),
+      currentUserEntry: context.find(c => c.isCurrentUser)?.displayName
+    });
+    
+    return context;
   });
 
   // Utility methods

@@ -82,12 +82,8 @@ export class UserProfileWidgetComponent {
     const currentUser = this.user();
     if (!currentUser) return null;
 
+    // ✅ Anonymous users are first-class citizens - respect their chosen display name
     let displayName = currentUser.displayName || 'User';
-
-    // ✅ Handle anonymous users with better names
-    if (currentUser.isAnonymous && displayName.startsWith('Anonymous')) {
-      displayName = displayName.replace('Anonymous', 'Explorer');
-    }
 
     return {
       displayName,

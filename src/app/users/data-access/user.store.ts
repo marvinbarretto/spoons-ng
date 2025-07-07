@@ -30,6 +30,7 @@ import { getAuth, updateProfile } from 'firebase/auth';
 import { firstValueFrom } from 'rxjs';
 import { UserService } from './user.service';
 import { AuthStore } from '../../auth/data-access/auth.store';
+import { CacheCoherenceService } from '../../shared/data-access/cache-coherence.service';
 import type { User, UserBadgeSummary, UserLandlordSummary } from '../utils/user.model';
 
 @Injectable({ providedIn: 'root' })
@@ -37,6 +38,7 @@ export class UserStore {
   // 🔧 Dependencies
   private readonly userService = inject(UserService);
   private readonly authStore = inject(AuthStore);
+  private readonly cacheCoherence = inject(CacheCoherenceService);
 
   // ✅ User profile state
   private readonly _user = signal<User | null>(null);
@@ -105,6 +107,15 @@ export class UserStore {
       console.log('[UserStore] 👤 Loading profile for user:', authUser.uid);
       this.lastLoadedUserId = authUser.uid;
       this.loadOrCreateUser(authUser.uid);
+    });
+    
+    // ✅ Listen to cache invalidation signals
+    effect(() => {
+      const invalidation = this.cacheCoherence.invalidations();
+      if (invalidation?.collection === 'users' && this.authStore.user()) {
+        console.log('[UserStore] 🔄 Cache invalidated, reloading user data');
+        this.handleCacheInvalidation(invalidation.reason);
+      }
     });
   }
 
@@ -202,6 +213,10 @@ export class UserStore {
         displayName: finalUser?.displayName
       });
       
+      // ✅ NEW: Trigger cache invalidation to ensure UI consistency
+      console.log('[UserStore] 🔄 Triggering cache invalidation for user profile update');
+      this.cacheCoherence.invalidate('users', 'profile-update');
+      
     } catch (error: any) {
       // ❌ Rollback optimistic update
       console.log('[UserStore] ❌ Rolling back optimistic update due to error');
@@ -226,6 +241,34 @@ export class UserStore {
    */
   async updateDisplayName(displayName: string): Promise<void> {
     await this.updateProfile({ displayName });
+  }
+
+  // ===================================
+  // CACHE INVALIDATION HANDLING
+  // ===================================
+  
+  /**
+   * Handle cache invalidation by reloading fresh user data
+   * @param reason - Reason for the invalidation (for logging)
+   */
+  private async handleCacheInvalidation(reason?: string): Promise<void> {
+    const currentUser = this.authStore.user();
+    if (!currentUser) {
+      console.log('[UserStore] ⚠️ No current user for cache invalidation');
+      return;
+    }
+    
+    console.log('[UserStore] 🔄 === HANDLING CACHE INVALIDATION ===');
+    console.log('[UserStore] 🔄 Reason:', reason || 'unspecified');
+    console.log('[UserStore] 🔄 User ID:', currentUser.uid.slice(0, 8));
+    
+    try {
+      // Reload fresh user data from Firestore (bypasses cache)
+      await this.loadOrCreateUser(currentUser.uid);
+      console.log('[UserStore] ✅ Fresh user data loaded after cache invalidation');
+    } catch (error) {
+      console.error('[UserStore] ❌ Failed to reload user data after cache invalidation:', error);
+    }
   }
 
   // ===================================

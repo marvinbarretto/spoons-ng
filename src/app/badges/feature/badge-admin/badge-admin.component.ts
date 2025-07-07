@@ -260,6 +260,7 @@ export class BadgeAdminComponent implements OnInit {
         console.log('[BadgeAdminPageComponent] Creating badge:', badge);
         this.badgeStore.saveBadge(badge);
       }
+      close(badge);
     };
   }
 
@@ -277,6 +278,7 @@ export class BadgeAdminComponent implements OnInit {
         console.log('[BadgeAdmin] Saving updated badge:', updated);
         this.badgeStore.saveBadge(updated);
       }
+      close(updated);
     };
   }
 
