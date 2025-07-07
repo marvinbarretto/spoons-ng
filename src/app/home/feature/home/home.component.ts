@@ -18,7 +18,7 @@ import { LocationService } from '../../../shared/data-access/location.service';
 import { BadgesShowcaseComponent } from '@home/ui/badges-showcase/badges-showcase.component';
 import { MissionsWidgetComponent } from '../../../widgets/missions/missions-widget.component';
 import { ProfileCustomisationModalComponent } from '@home/ui/profile-customisation-modal/profile-customisation-modal.component';
-import { CarpetCollectionWidgetComponent } from '../../../widgets/carpet-collection/carpet-collection-widget.component';
+import { CarpetWidgetComponent } from '../../../widgets/carpet/carpet-widget.component';
 // import { LLMTestComponent } from '../../../shared/ui/llm-test/llm-test.component';
 import { UserAvatarComponent } from "../../../shared/ui/user-avatar/user-avatar.component";
 import { NearestPubComponent } from '../../../widgets/nearest-pub/nearest-pub.component';
@@ -36,7 +36,7 @@ import { WelcomeModalComponent } from '../../ui/welcome-modal/welcome-modal.comp
     ScoreboardHeroWidgetComponent,
     BadgesShowcaseComponent,
     MissionsWidgetComponent,
-    CarpetCollectionWidgetComponent,
+    CarpetWidgetComponent,
     RouterModule,
     NearestPubComponent,
     LeaderboardWidgetComponent,

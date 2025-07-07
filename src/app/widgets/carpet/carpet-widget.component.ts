@@ -1,24 +1,21 @@
-import { Component, signal, OnDestroy, effect, ChangeDetectionStrategy, inject, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BaseWidgetComponent } from '../base/base-widget.component';
-import { ObjectUrlManager } from '@shared/utils/object-url-manager';
-import { formatShortDate } from '@shared/utils/date-formatter';
 import { CarpetStorageService } from '@carpets/data-access/carpet-storage.service';
 import { AuthStore } from '@auth/data-access/auth.store';
 
-export type CarpetDisplayData = {
+type CarpetDisplay = {
   key: string;
-  pubId: string;
   pubName: string;
   date: string;
   imageUrl: string;
 };
 
 @Component({
-  selector: 'app-carpet-collection-widget',
+  selector: 'app-carpet-widget',
   imports: [CommonModule],
   template: `
-    <div class="carpet-collection-widget">
+    <div class="carpet-widget">
       <h3 class="widget-title">Your Carpet Collection</h3>
 
       @if (loading()) {
@@ -47,11 +44,11 @@ export type CarpetDisplayData = {
         <div class="carpet-grid">
           @for (carpet of carpets(); track carpet.key) {
             <div class="carpet-item">
-              <img
-                [src]="carpet.imageUrl"
+              <img 
+                [src]="carpet.imageUrl" 
                 [alt]="'Carpet from ' + carpet.pubName"
-                (error)="onImageError($event)"
-                loading="lazy">
+                loading="lazy"
+                (error)="onImageError($event)">
               <div class="carpet-info">
                 <span class="pub-name">{{ carpet.pubName }}</span>
                 <span class="date">{{ formatDate(carpet.date) }}</span>
@@ -63,7 +60,7 @@ export type CarpetDisplayData = {
     </div>
   `,
   styles: [`
-    .carpet-collection-widget {
+    .carpet-widget {
       padding: 1rem;
       background: var(--background-lighter);
       color: var(--text);
@@ -132,7 +129,6 @@ export type CarpetDisplayData = {
       color: var(--text-secondary);
     }
 
-    /* Header */
     .carpet-header {
       display: flex;
       justify-content: flex-end;
@@ -146,14 +142,12 @@ export type CarpetDisplayData = {
       font-weight: 500;
     }
 
-    /* Grid */
     .carpet-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
       gap: 1rem;
     }
 
-    /* Carpet Item */
     .carpet-item {
       position: relative;
       aspect-ratio: 1;
@@ -177,22 +171,6 @@ export type CarpetDisplayData = {
       object-fit: cover;
     }
 
-    .carpet-item.error img {
-      display: none;
-    }
-
-    .carpet-item.error::before {
-      content: '🏞️';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 2rem;
-      opacity: 0.3;
-      color: var(--text-secondary);
-    }
-
-    /* Info */
     .carpet-info {
       position: absolute;
       bottom: 0;
@@ -219,9 +197,8 @@ export type CarpetDisplayData = {
       opacity: 0.9;
     }
 
-    /* Mobile responsive */
     @media (max-width: 640px) {
-      .carpet-collection-widget {
+      .carpet-widget {
         padding: 0.75rem;
       }
 
@@ -237,28 +214,16 @@ export type CarpetDisplayData = {
   `],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CarpetCollectionWidgetComponent extends BaseWidgetComponent implements OnDestroy {
+export class CarpetWidgetComponent extends BaseWidgetComponent implements OnDestroy {
   private readonly carpetStorageService = inject(CarpetStorageService);
   private readonly authStore = inject(AuthStore);
-  private readonly urlManager = new ObjectUrlManager();
 
-  // Internal carpet state
-  private readonly _carpets = signal<CarpetDisplayData[]>([]);
+  // Widget state
+  private readonly _carpets = signal<CarpetDisplay[]>([]);
   protected readonly carpets = this._carpets.asReadonly();
 
   private lastLoadedUserId: string | null = null;
-
-  ngOnDestroy(): void {
-    this.urlManager.cleanup();
-    this.clearCarpets();
-  }
-
-  formatDate = formatShortDate;
-
-  onImageError(event: Event): void {
-    const img = event.target as HTMLImageElement;
-    img.parentElement?.classList.add('error');
-  }
+  private objectUrls: string[] = [];
 
   constructor() {
     super();
@@ -268,16 +233,7 @@ export class CarpetCollectionWidgetComponent extends BaseWidgetComponent impleme
       const user = this.authStore.user();
       const userId = user?.uid;
 
-      console.log('[CarpetWidget] Auth effect triggered:', {
-        hasUser: !!user,
-        userId: userId?.slice(0, 8),
-        isAnonymous: user?.isAnonymous,
-        previousUserId: this.lastLoadedUserId?.slice(0, 8)
-      });
-
-      // Clear carpets if no user
       if (!user) {
-        console.log('[CarpetWidget] No user, clearing carpets');
         this.clearCarpets();
         this.lastLoadedUserId = null;
         return;
@@ -285,28 +241,31 @@ export class CarpetCollectionWidgetComponent extends BaseWidgetComponent impleme
 
       // Load carpets if user changed
       if (userId !== this.lastLoadedUserId) {
-        console.log('[CarpetWidget] User changed, loading carpets for:', userId?.slice(0, 8));
         this.lastLoadedUserId = userId || null;
-
-        // Use setTimeout to handle async operation outside effect
-        setTimeout(() => this.loadUserCarpets(), 0);
+        this.loadUserCarpets();
       }
-    });
-
-    // Track URL changes reactively
-    effect(() => {
-      this.urlManager.trackUrls(this.carpets());
     });
   }
 
-  private async loadUserCarpets(): Promise<void> {
-    console.log('[CarpetWidget] Loading user carpets...');
+  ngOnDestroy(): void {
+    this.clearObjectUrls();
+  }
 
-    // Prevent multiple simultaneous loads
-    if (this.loading()) {
-      console.log('[CarpetWidget] Already loading carpets, skipping...');
-      return;
-    }
+  formatDate(dateString: string): string {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB', { 
+      day: 'numeric', 
+      month: 'short' 
+    });
+  }
+
+  onImageError(event: Event): void {
+    const img = event.target as HTMLImageElement;
+    img.style.display = 'none';
+  }
+
+  private async loadUserCarpets(): Promise<void> {
+    if (this.loading()) return;
 
     this.loading.set(true);
     this.error.set(null);
@@ -315,44 +274,46 @@ export class CarpetCollectionWidgetComponent extends BaseWidgetComponent impleme
       // Ensure carpet storage is initialized
       await this.carpetStorageService.initialize();
 
-      // Get carpet data from storage
+      // Get carpet data from IndexedDB
       const carpetData = await this.carpetStorageService.getUserCarpets();
-      console.log('[CarpetWidget] Got carpet data from storage:', {
-        userId: this.authStore.user()?.uid?.slice(0, 8),
-        carpetCount: carpetData.length
+
+      // Convert to display format with object URLs
+      const displayData: CarpetDisplay[] = carpetData.map(carpet => {
+        const imageUrl = URL.createObjectURL(carpet.blob);
+        this.objectUrls.push(imageUrl); // Track for cleanup
+        
+        return {
+          key: `${carpet.pubId}_${carpet.dateKey}`,
+          pubName: carpet.pubName || 'Unknown Pub',
+          date: carpet.date,
+          imageUrl
+        };
       });
 
-      // Convert to display format - create object URLs here
-      const displayData: CarpetDisplayData[] = carpetData.map(carpet => ({
-        key: `${carpet.pubId}_${carpet.dateKey}`,
-        pubId: carpet.pubId,
-        pubName: carpet.pubName || 'Unknown Pub',
-        date: carpet.date,
-        imageUrl: URL.createObjectURL(carpet.blob)
-      }));
-
       // Sort by date, newest first
-      displayData.sort((a, b) =>
+      displayData.sort((a, b) => 
         new Date(b.date).getTime() - new Date(a.date).getTime()
       );
 
       this._carpets.set(displayData);
-      console.log('[CarpetWidget] Carpets loaded successfully:', {
-        userId: this.authStore.user()?.uid?.slice(0, 8),
-        carpetCount: displayData.length
-      });
 
-    } catch (error) {
-      console.error('[CarpetWidget] Error loading carpets:', error);
-      this.error.set(error instanceof Error ? error.message : 'Failed to load carpets');
+    } catch (err: any) {
+      this.error.set(err?.message || 'Failed to load carpets');
+      console.error('[CarpetWidget] Error loading carpets:', err);
     } finally {
       this.loading.set(false);
     }
   }
 
   private clearCarpets(): void {
-    console.log('[CarpetWidget] Clearing carpet data');
+    this.clearObjectUrls();
     this._carpets.set([]);
     this.error.set(null);
+  }
+
+  private clearObjectUrls(): void {
+    // Clean up object URLs to prevent memory leaks
+    this.objectUrls.forEach(url => URL.revokeObjectURL(url));
+    this.objectUrls = [];
   }
 }
