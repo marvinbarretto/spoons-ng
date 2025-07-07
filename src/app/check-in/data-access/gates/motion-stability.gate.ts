@@ -5,8 +5,8 @@ import { CHECKIN_GATE_THRESHOLDS } from './checkin-thresholds.config';
 @Injectable({ providedIn: 'root' })
 export class MotionStabilityGate implements CheckinGate {
   readonly name = 'Motion Stability';
-  readonly description = CHECKIN_GATE_THRESHOLDS.motion.description;
-  readonly threshold = CHECKIN_GATE_THRESHOLDS.motion.max;
+  readonly description = CHECKIN_GATE_THRESHOLDS.deviceStability.description;
+  readonly threshold = CHECKIN_GATE_THRESHOLDS.deviceStability.maxMovement;
 
   // Internal state
   private readonly _motionLevel = signal<number>(0);
@@ -15,20 +15,20 @@ export class MotionStabilityGate implements CheckinGate {
   // Public signals
   readonly motionLevel = this._motionLevel.asReadonly();
   readonly isStable = this._isStable.asReadonly();
-  
+
   readonly currentValue = computed(() => this._motionLevel());
-  
+
   readonly passed = computed(() => {
     const motion = this._motionLevel();
     const stable = this._isStable();
-    
+
     console.log('[MotionStabilityGate] Check:', {
       motionLevel: motion,
       threshold: this.threshold,
       isStable: stable,
       passed: motion < this.threshold && stable
     });
-    
+
     return motion < this.threshold && stable;
   });
 

@@ -1,8 +1,7 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { 
-  getCarpetByPubId, 
-  getCarpetsByLocation, 
-  getPatternThresholds,
+import {
+  getCarpetByPubId,
+  getCarpetsByLocation,
   type CarpetData,
   type CarpetSignature
 } from '../utils/carpet-database.utils';
@@ -55,7 +54,7 @@ export class LocationAwareThresholdService {
    */
   updateLocation(context: LocationContext): void {
     console.log('[LocationAwareThreshold] Updating location context:', context);
-    
+
     this._locationContext.set(context);
     const thresholds = this.calculateAdaptiveThresholds(context);
     this._adaptiveThresholds.set(thresholds);
@@ -105,7 +104,7 @@ export class LocationAwareThresholdService {
    */
   private createPubSpecificThresholds(carpet: CarpetData): AdaptiveThresholds {
     const signature = carpet.signature;
-    
+
     // Convert 0-1 signature values to gate threshold ranges
     const baseSharpness = Math.round(signature.textureScore * 30); // 0-30 range
     const baseContrast = Math.round(signature.contrast * 60); // 0-60 range
@@ -120,7 +119,7 @@ export class LocationAwareThresholdService {
       contrast: Math.max(10, baseContrast + patternAdjustments.contrast),
       edgeDensity: Math.max(8, baseEdges + patternAdjustments.edgeDensity),
       textureComplexity: Math.max(5, baseTexture + patternAdjustments.textureComplexity),
-      motionLevel: CHECKIN_GATE_THRESHOLDS.motion.max, // Keep motion threshold standard
+      motionLevel: CHECKIN_GATE_THRESHOLDS.deviceStability.maxMovement, // Keep motion threshold standard
       source: 'pub-specific',
       confidence: 0.9,
       carpetInfo: {
@@ -147,7 +146,7 @@ export class LocationAwareThresholdService {
       counts[carpet.signature.pattern] = (counts[carpet.signature.pattern] || 0) + 1;
       return counts;
     }, {} as Record<string, number>);
-    
+
     const mostCommonPattern = Object.entries(patternCounts)
       .sort(([,a], [,b]) => b - a)[0]?.[0] as CarpetSignature['pattern'] || 'mixed';
 
@@ -156,7 +155,7 @@ export class LocationAwareThresholdService {
       contrast: Math.round(avgSignature.contrast * 50),
       edgeDensity: Math.round(avgSignature.complexity * 35),
       textureComplexity: Math.round(avgSignature.complexity * 25),
-      motionLevel: CHECKIN_GATE_THRESHOLDS.motion.max,
+      motionLevel: CHECKIN_GATE_THRESHOLDS.deviceStability.maxMovement,
       source: 'location-based',
       confidence: 0.7,
       carpetInfo: {
@@ -179,7 +178,7 @@ export class LocationAwareThresholdService {
           edgeDensity: 8,    // Clear edges
           textureComplexity: 0 // Usually simpler textures
         };
-      
+
       case 'ornamental':
         return {
           sharpness: -2,     // Softer edges
@@ -187,7 +186,7 @@ export class LocationAwareThresholdService {
           edgeDensity: 2,    // Some edge definition
           textureComplexity: 8 // Complex textures
         };
-      
+
       case 'plain':
         return {
           sharpness: -5,     // Very soft
@@ -195,7 +194,7 @@ export class LocationAwareThresholdService {
           edgeDensity: -5,   // Few edges
           textureComplexity: -3 // Simple texture
         };
-      
+
       case 'mixed':
       default:
         return {
@@ -216,7 +215,7 @@ export class LocationAwareThresholdService {
       contrast: CHECKIN_GATE_THRESHOLDS.contrast.min,
       edgeDensity: CHECKIN_GATE_THRESHOLDS.edgeDensity.min,
       textureComplexity: CHECKIN_GATE_THRESHOLDS.textureComplexity.min,
-      motionLevel: CHECKIN_GATE_THRESHOLDS.motion.max,
+      motionLevel: CHECKIN_GATE_THRESHOLDS.deviceStability.maxMovement,
       source: 'default',
       confidence: 0.5
     };

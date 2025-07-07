@@ -10,14 +10,12 @@ export class MockDeviceOrientationGate {
   readonly description = 'Phone should point downward at carpet';
   readonly threshold = 45;
 
-  private readonly _orientation = signal<DeviceOrientationData>({ 
+  private readonly _orientation = signal<DeviceOrientationData>({
     beta: 30, // Default to pointing down
-    gamma: 0, 
-    stable: true 
   });
 
   readonly orientation = this._orientation.asReadonly();
-  
+
   readonly currentValue = computed(() => {
     const orientation = this._orientation();
     return Math.abs(orientation.beta);
@@ -27,7 +25,7 @@ export class MockDeviceOrientationGate {
     const orientation = this._orientation();
     const angleFromDown = Math.abs(orientation.beta);
     const isPointing = angleFromDown < this.threshold;
-    return isPointing && orientation.stable;
+    return isPointing;
   });
 
   cleanup(): void {
@@ -50,8 +48,6 @@ export class MockDeviceOrientationGate {
   simulatePointingDown(): void {
     this._orientation.set({
       beta: 30, // Less than 45 degree threshold
-      gamma: 0,
-      stable: true
     });
   }
 
@@ -61,8 +57,6 @@ export class MockDeviceOrientationGate {
   simulateNotPointingDown(): void {
     this._orientation.set({
       beta: 60, // More than 45 degree threshold
-      gamma: 0,
-      stable: true
     });
   }
 

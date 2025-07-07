@@ -24,12 +24,6 @@ export const CHECKIN_GATE_THRESHOLDS = {
     description: 'Carpets have complex textures'
   },
 
-  // Motion & stability thresholds
-  motion: {
-    max: 25,              // Maximum motion level allowed (0-100)
-    description: 'Camera must be stable for clear photo'
-  },
-
   deviceStability: {
     maxMovement: 25,      // Maximum degrees of movement
     minStableTime: 1000,  // Milliseconds of stability required

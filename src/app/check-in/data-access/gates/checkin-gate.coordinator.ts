@@ -8,6 +8,7 @@ import { CarpetEdgeDensityGate } from './carpet-edge-density.gate';
 import { EnhancedColorVarianceGate } from './enhanced-color-variance.gate';
 import { CarpetPatternRecognitionGate } from './carpet-pattern-recognition.gate';
 import { LocationAwareThresholdService } from '../location-aware-threshold.service';
+import { FeatureFlagService } from '../../../shared/data-access/feature-flag.service';
 
 export type IntelligentGateStatus = {
   // Basic gates (always available)
@@ -57,6 +58,9 @@ export class CheckinGateCoordinator {
   
   // Location service
   private readonly locationService = inject(LocationAwareThresholdService);
+  
+  // Feature flag service
+  private readonly featureFlagService = inject(FeatureFlagService);
 
   // Configuration
   private readonly _config = signal<IntelligentGateConfig>({
@@ -115,14 +119,30 @@ export class CheckinGateCoordinator {
   // Simple gate status for debugging
   readonly gateStatus = computed(() => {
     return {
-      deviceOriented: this.simpleOrientationGate.passed(),
-      motionStable: this.motionStabilityGate.passed(),
-      goodSharpness: this.imageSharpnessGate.passed(),
-      goodContrast: this.imageContrastGate.passed(),
-      hasTexture: this.carpetTextureGate.passed(),
-      hasEdges: this.carpetEdgeDensityGate.passed(),
-      colorVariance: this.enhancedColorGate.passed(),
-      patternRecognition: this.patternRecognitionGate.passed()
+      deviceOriented: this.featureFlagService.isEnabled('checkinGates.pointDown') 
+        ? this.simpleOrientationGate.passed() 
+        : true,
+      motionStable: this.featureFlagService.isEnabled('checkinGates.holdSteady') 
+        ? this.motionStabilityGate.passed() 
+        : true,
+      goodSharpness: this.featureFlagService.isEnabled('checkinGates.sharpness') 
+        ? this.imageSharpnessGate.passed() 
+        : true,
+      goodContrast: this.featureFlagService.isEnabled('checkinGates.contrast') 
+        ? this.imageContrastGate.passed() 
+        : true,
+      hasTexture: this.featureFlagService.isEnabled('checkinGates.texture') 
+        ? this.carpetTextureGate.passed() 
+        : true,
+      hasEdges: this.featureFlagService.isEnabled('checkinGates.pattern') 
+        ? this.carpetEdgeDensityGate.passed() 
+        : true,
+      colorVariance: this.featureFlagService.isEnabled('checkinGates.colorVariance') 
+        ? this.enhancedColorGate.passed() 
+        : true,
+      patternRecognition: this.featureFlagService.isEnabled('checkinGates.patternRecognition') 
+        ? this.patternRecognitionGate.passed() 
+        : true
     };
   });
 
@@ -164,13 +184,27 @@ export class CheckinGateCoordinator {
    */
   private getBasicGateStatus() {
     return {
-      deviceOriented: this.simpleOrientationGate.passed(),
-      isStable: this.motionStabilityGate.passed(),
-      lowMotion: this.motionStabilityGate.passed(),
-      goodSharpness: this.imageSharpnessGate.passed(),
-      goodContrast: this.imageContrastGate.passed(),
-      hasTexture: this.carpetTextureGate.passed(),
-      hasEdges: this.carpetEdgeDensityGate.passed()
+      deviceOriented: this.featureFlagService.isEnabled('checkinGates.pointDown') 
+        ? this.simpleOrientationGate.passed() 
+        : true,
+      isStable: this.featureFlagService.isEnabled('checkinGates.holdSteady') 
+        ? this.motionStabilityGate.passed() 
+        : true,
+      lowMotion: this.featureFlagService.isEnabled('checkinGates.holdSteady') 
+        ? this.motionStabilityGate.passed() 
+        : true,
+      goodSharpness: this.featureFlagService.isEnabled('checkinGates.sharpness') 
+        ? this.imageSharpnessGate.passed() 
+        : true,
+      goodContrast: this.featureFlagService.isEnabled('checkinGates.contrast') 
+        ? this.imageContrastGate.passed() 
+        : true,
+      hasTexture: this.featureFlagService.isEnabled('checkinGates.texture') 
+        ? this.carpetTextureGate.passed() 
+        : true,
+      hasEdges: this.featureFlagService.isEnabled('checkinGates.pattern') 
+        ? this.carpetEdgeDensityGate.passed() 
+        : true
     };
   }
 

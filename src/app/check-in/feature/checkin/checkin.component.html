@@ -31,7 +31,7 @@
         @case ('WAITING_FOR_GATES') {
           <div class="status-message">Point at the carpet</div>
           <div class="gates-status">
-            
+
             <!-- Core Device Requirements -->
             <div class="gate-group">
               <h4>Device Position</h4>
@@ -40,9 +40,9 @@
                 <br><small>Beta: {{ deviceOrientation().beta }}°</small>
               </div>
               <div class="gate" [class.passed]="gatesPassed().motionStable">
-                🎥 Hold Steady: {{ gatesPassed().motionStable ? 'YES' : 'NO' }}
+                🎥 Hold Steady: {{ gatesPassed().motionStable }}
                 @if (metrics()) {
-                  <br><small>Motion: {{ metrics()!.motionLevel }}/100, Stable: {{ metrics()!.isStable ? 'YES' : 'NO' }}</small>
+                  <br><small>Motion: {{ metrics()!.motionLevel }}/100, Stable: {{ metrics()!.isStable }}</small>
                 }
               </div>
             </div>
@@ -67,12 +67,6 @@
                 </div>
                 <div class="gate" [class.passed]="gatesPassed().hasEdges">
                   📐 Pattern: {{ metrics()!.edgeDensity }}/15{{ gatesPassed().hasEdges ? ' ✓' : ' (need > 15)' }}
-                </div>
-                <div class="gate" [class.passed]="gatesPassed().colorVariance">
-                  🎯 Color Analysis: {{ gatesPassed().colorVariance ? 'PASS' : 'ANALYZING...' }}
-                </div>
-                <div class="gate" [class.passed]="gatesPassed().patternRecognition">
-                  🧩 Pattern Recognition: {{ gatesPassed().patternRecognition ? 'PASS' : 'ANALYZING...' }}
                 </div>
               </div>
             }

@@ -72,5 +72,15 @@ export interface Environment {
     research?: boolean;
     siteMap?: boolean;
     accessibility?: boolean;
+    checkinGates?: {
+      pointDown?: boolean,
+      holdSteady?: boolean,
+      sharpness?: boolean,
+      contrast?: boolean,
+      texture?: boolean,
+      pattern?: boolean,
+      colorVariance?: boolean,
+      patternRecognition?: boolean
+    }
   };
 }
