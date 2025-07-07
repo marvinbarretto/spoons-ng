@@ -13,6 +13,7 @@ export interface Environment {
   MODAL_NAVIGATION_TIMEOUT?: number;
   DESKTOP_TESTING_DELAY?: number;
   LLM_TO_PHOTO_DELAY?: number;
+  LLM_CHECK: boolean;
 
   // Check-in configuration
   checkInDistanceThresholdMeters?: number;

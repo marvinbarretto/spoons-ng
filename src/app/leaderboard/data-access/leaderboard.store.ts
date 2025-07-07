@@ -206,18 +206,8 @@ export class LeaderboardStore extends BaseStore<LeaderboardEntry> {
       return adjustedEntry;
     });
 
-    // For time-based views, show users with activity OR users with significant all-time stats
-    const result = filteredUsers.filter(entry => {
-      // Show users who either:
-      // 1. Have activity in the time period, OR
-      // 2. Have significant all-time stats (more than 5 total points or 3+ pubs visited)
-      const hasRecentActivity = range === 'this-month' ?
-        entry.totalCheckins > 0 : true;
-      const originalUser = allData.find(u => u.userId === entry.userId);
-      const hasSignificantStats = entry.totalPoints > 5 || (originalUser?.uniquePubs ?? 0) >= 3;
-
-      return hasRecentActivity || hasSignificantStats;
-    });
+    // Show all users regardless of activity
+    const result = filteredUsers;
 
     console.log('[LeaderboardStore] Filtered users:', result.length, 'Time range:', range, 'Geographic filter:', geoFilter);
     return result;

@@ -52,9 +52,8 @@
               <div class="gate simple">🌈 Dominant Colors: {{ metrics()!.dominantColors.join(', ') }}</div>
 
               <!-- Pattern analysis -->
-              <div class="gate" [class.carpet-red]="gatesPassed().carpetConfidence === 'red'"
-                   [class.carpet-yellow]="gatesPassed().carpetConfidence === 'yellow'"
-                   [class.carpet-green]="gatesPassed().carpetConfidence === 'green'">🎯 Carpet Detection: {{ gatesPassed().carpetConfidence.toUpperCase() }}</div>
+              <div class="gate" [class.carpet-no]="gatesPassed().carpetConfidence === 'no'"
+                   [class.carpet-possible]="gatesPassed().carpetConfidence === 'possible'">🎯 Carpet Detection: {{ gatesPassed().carpetConfidence.toUpperCase() }}</div>
               <div class="gate simple" [class.passed]="gatesPassed().hasEdges">📐 Edge Density: {{ metrics()!.edgeDensity }}%</div>
               <div class="gate simple" [class.passed]="gatesPassed().hasTexture">🧵 Texture Complexity: {{ metrics()!.textureComplexity }}%</div>
 

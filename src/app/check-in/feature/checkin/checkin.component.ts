@@ -108,6 +108,7 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
 
   // Constants
   protected readonly ACTIVE_DEVELOPMENT_MODE = environment.ACTIVE_DEVELOPMENT_MODE;
+  protected readonly LLM_CHECK = environment.LLM_CHECK;
 
   // Helper for motion history display
   protected getMotionHistoryString(): string {
@@ -155,16 +156,15 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
       stable: orientation.stable
     });
 
-    // 3-TIER CARPET DETECTION THRESHOLDS based on real data:
-    // RED (not carpet): Sharpness <20, Edges <30%, Texture <15%
-    // YELLOW (borderline): Sharpness 20-30, Edges 30-45%, Texture 15-22%
-    // GREEN (carpet): Sharpness >30, Edges >45%, Texture >22%
+    // 2-TIER CARPET DETECTION THRESHOLDS:
+    // NO (not carpet): Most metrics fail
+    // POSSIBLE (likely carpet): At least some metrics pass - LLM will do the heavy lifting
     const carpetConfidence = this.calculateCarpetConfidence(data);
 
     return {
       deviceOriented,
       isStable: data ? data.isStable : false,
-      lowMotion: data ? data.motionLevel < 15 : false, // Increased from 10 to 20
+      lowMotion: data ? data.motionLevel < 25 : false, // Very lenient - increased from 15 to 25
       metricsReady: data !== null,
       carpetConfidence, // 'red', 'yellow', 'green'
       goodSharpness: data ? data.sharpness > 20 : false,
@@ -174,37 +174,33 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
     };
   });
 
-  private calculateCarpetConfidence(data: any): 'red' | 'yellow' | 'green' {
-    if (!data) return 'red';
+  private calculateCarpetConfidence(data: any): 'no' | 'possible' {
+    if (!data) return 'no';
 
     const { sharpness, edgeDensity, textureComplexity } = data;
 
-    // GREEN: Definite carpet (2 of 3 metrics must pass - more forgiving)
-    const sharpnessPass = sharpness > 20;  // Reduced from 30
-    const edgesPass = edgeDensity > 30;    // Reduced from 45
-    const texturePass = textureComplexity > 15; // Reduced from 22
+    // Very lenient thresholds - we want to pass most things to LLM
+    const sharpnessPass = sharpness > 15;  // Very low threshold
+    const edgesPass = edgeDensity > 20;    // Very low threshold
+    const texturePass = textureComplexity > 10; // Very low threshold
     const passCount = [sharpnessPass, edgesPass, texturePass].filter(Boolean).length;
 
-    if (passCount >= 2) {
-      return 'green';
+    // POSSIBLE: At least 1 metric passes - let LLM decide
+    if (passCount >= 1) {
+      return 'possible';
     }
 
-    // RED: Definitely not carpet (all metrics low)
-    if (sharpness < 15 && edgeDensity < 25 && textureComplexity < 12) {
-      return 'red';
-    }
-
-    // YELLOW: Borderline detection
-    return 'yellow';
+    // NO: All metrics are very low
+    return 'no';
   }
 
   protected readonly allGatesPassed = computed(() => {
     const gates = this.gatesPassed();
 
-    // ALL gates must be green/passed for auto check-in
+    // ALL gates must be passed for auto check-in
     const allPassed = gates.deviceOriented &&
                      gates.isStable &&
-                     gates.carpetConfidence === 'green' &&
+                     gates.carpetConfidence === 'possible' &&
                      gates.goodSharpness &&
                      gates.goodContrast &&
                      gates.hasTexture &&
@@ -332,8 +328,8 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
       timeSinceLastUpdate
     });
 
-    // Consider stable if movement is small and enough time has passed
-    const stable = movement < 5 && timeSinceLastUpdate > 1000;
+    // Consider stable if movement is small and enough time has passed - more lenient
+    const stable = movement < 10 && timeSinceLastUpdate > 500; // Doubled movement threshold, halved time
 
     console.log('[Checkin] 📱 Orientation update:', { beta, gamma, stable, movement });
 
@@ -595,7 +591,7 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
 
   private async startLLMAnalysis(): Promise<void> {
     console.log('[Checkin] startLLMAnalysis() - 🤖 LLM analysis started');
-    console.log('[Checkin] startLLMAnalysis() - 💭 Starting message cycling');
+    console.log('[Checkin] startLLMAnalysis() - 🔧 LLM_CHECK:', this.LLM_CHECK);
 
     this.setPhase('LLM_THINKING');
     this.startAnalysisMessageCycling();
@@ -606,6 +602,28 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
         console.error('[Checkin] ❌ No photo data available for LLM analysis');
         this.stopAnalysisMessageCycling();
         this.handleLLMError('No photo data available');
+        return;
+      }
+
+      // Check if LLM checking is enabled
+      if (!this.LLM_CHECK) {
+        console.log('[Checkin] 🔧 LLM_CHECK is disabled - skipping LLM call and assuming carpet detected');
+        
+        // Wait briefly to show the processing message
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        this.stopAnalysisMessageCycling();
+        
+        // Create mock successful result
+        this.llmResponse = {
+          isCarpet: true,
+          confidence: 0.95,
+          reasoning: 'LLM check disabled - assuming carpet detected',
+          visualElements: ['mock-pattern', 'mock-texture']
+        };
+        
+        console.log('[Checkin] ✅ LLM check bypassed - proceeding with check-in');
+        this.executeCheckin();
         return;
       }
 

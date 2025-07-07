@@ -106,20 +106,13 @@
     }
   }
 
-  &.carpet-red {
+  &.carpet-no {
     background: rgba(var(--error-rgb, 220, 53, 69), 0.4) !important;
     border-left: 3px solid var(--error) !important;
     font-weight: bold;
   }
 
-  &.carpet-yellow {
-    background: rgba(var(--warning-rgb, 255, 193, 7), 0.4) !important;
-    border-left: 3px solid var(--warning) !important;
-    font-weight: bold;
-    color: var(--text);
-  }
-
-  &.carpet-green {
+  &.carpet-possible {
     background: rgba(var(--success-rgb, 40, 167, 69), 0.4) !important;
     border-left: 3px solid var(--success) !important;
     font-weight: bold;
