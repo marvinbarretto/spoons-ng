@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.90](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.89...v0.0.90) (2025-07-07)
+
+
+### Bug Fixes
+
+* [Checkin] Ensure there are only 1 source of thresholds ([fa508ac](https://github.com/marvinbarretto/spoons-ng/commit/fa508ac2e7b18bb843806e5efd9841c43dd8d33e))
+* Ensure badges are awarded on checkin ([f784de5](https://github.com/marvinbarretto/spoons-ng/commit/f784de5f465ab33a1a5011a9e99aea1899b30e85))
+
 ### [0.0.89](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.88...v0.0.89) (2025-07-07)
 
 
