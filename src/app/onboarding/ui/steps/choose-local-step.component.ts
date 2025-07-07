@@ -1,4 +1,4 @@
-import { Component, input, output, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Component, input, output, ChangeDetectionStrategy } from '@angular/core';
 import { ButtonComponent } from '@shared/ui/button/button.component';
 import { HomePubSelectionWidgetComponent } from '../home-pub-selection-widget/home-pub-selection-widget.component';
 import type { Pub } from '../../../pubs/utils/pub.models';
@@ -56,7 +56,7 @@ import { ButtonSize } from '@shared/ui/button/button.params';
         <app-button
           variant="secondary"
           [size]="ButtonSize.MEDIUM"
-          (onClick)="back.emit()"
+          (onClick)="onBack()"
           [disabled]="locationRequired()"
         >
           Back
@@ -220,6 +220,11 @@ export class ChooseLocalStepComponent {
   requestLocation(): void {
     console.log('[ChooseLocalStep] Location permission requested');
     this.locationRequested.emit();
+  }
+
+  onBack(): void {
+    console.log('[ChooseLocalStep] Going back to profile step');
+    this.back.emit();
   }
 
   onContinue(): void {

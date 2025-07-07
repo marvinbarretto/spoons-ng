@@ -1,57 +1,70 @@
-import { Component, input, output, ChangeDetectionStrategy, computed } from '@angular/core';
+import { Component, input, output, inject, ChangeDetectionStrategy, computed } from '@angular/core';
 import { ButtonComponent } from '@shared/ui/button/button.component';
 import { ButtonSize } from '@shared/ui/button/button.params';
-import { ProfileIdentityWidgetComponent } from '@home/ui/profile-customisation-modal/widgets/profile-identity-widget/profile-identity-widget.component';
+import { AvatarService } from '@shared/data-access/avatar.service';
 import type { User } from '@users/utils/user.model';
+import type { AvatarOption } from '@shared/data-access/avatar.service';
 
 @Component({
   selector: 'app-customize-profile-step',
-  imports: [ButtonComponent, ProfileIdentityWidgetComponent],
+  imports: [ButtonComponent],
   template: `
     <div class="step customize-profile-step">
-      <div class="hero-section">
-        <h1>Right then, let's get you set up</h1>
-        <p class="subtitle">Choose a username and pick an avatar</p>
-      </div>
-
-      <!-- Profile Identity Widget (Avatar + Name) -->
-      <div class="profile-section">
-        <app-profile-identity-widget
-          [user]="user()"
-          [displayName]="displayName()"
-          [selectedAvatarId]="selectedAvatarId()"
-          (displayNameChanged)="onDisplayNameChange($event)"
-          (avatarSelected)="onAvatarSelected($event)"
+      <!-- Large Selected Avatar Display -->
+      <div class="selected-avatar-display">
+        <img 
+          class="selected-avatar-large"
+          [src]="selectedAvatarUrl()" 
+          [alt]="displayName() + ' avatar'"
         />
       </div>
 
-      <!-- Google Auth Option -->
-      <!-- Commented out for now - reducing UI noise during MVP
-      <div class="auth-option">
-        <div class="divider">
-          <span>or</span>
-        </div>
-        <app-button
-          variant="secondary"
-          size="lg"
-          (onClick)="onGoogleLogin()"
-          class="google-button"
-        >
-          Sign in with Google
-        </app-button>
-        <p class="google-hint">Use your Google account for a more personalized experience</p>
+      <div class="hero-section">
+        <h1>Pick your avatar,
+          <span class="username">
+            @if (displayName()) { {{ displayName() }}!}
+          </span>
+        </h1>
+        <p class="subtitle">Choose how you want to appear to other players</p>
       </div>
-      -->
+
+      <!-- Simple Avatar Grid -->
+      <div class="avatar-grid">
+        @for (avatar of availableAvatars(); track avatar.id) {
+          <button
+            type="button"
+            class="avatar-option"
+            [class.selected]="isSelected(avatar)"
+            [disabled]="loading()"
+            (click)="onAvatarSelected(avatar.id)"
+            [title]="avatar.name"
+          >
+            <img [src]="avatar.url" [alt]="avatar.name" />
+            @if (isSelected(avatar)) {
+              <div class="selected-badge">✓</div>
+            }
+          </button>
+        }
+      </div>
 
       <!-- Actions -->
       <div class="cta-section">
         <div class="step-actions">
           <app-button
+            variant="secondary"
+            [size]="ButtonSize.MEDIUM"
+            (onClick)="onBack()"
+            [disabled]="loading()"
+          >
+            Back
+          </app-button>
+          
+          <app-button
             variant="primary"
             [size]="ButtonSize.LARGE"
             [disabled]="!isValid()"
             [loading]="loading()"
-            loadingText="Saving profile..."
+            loadingText="Saving..."
             (onClick)="onContinue()"
           >
             Continue
@@ -89,8 +102,85 @@ import type { User } from '@users/utils/user.model';
       margin: 0;
     }
 
-    .profile-section {
-      margin: 0;
+    .selected-avatar-display {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+
+    .selected-avatar-large {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid var(--primary, #4ade80);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .username {
+      color: gold;
+    }
+
+    .avatar-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+      gap: 0.75rem;
+      margin: 2rem 0;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .avatar-option {
+      position: relative;
+      width: 60px;
+      height: 60px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: none;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .avatar-option:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .avatar-option img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .avatar-option:hover:not(:disabled) {
+      border-color: var(--primary, #4ade80);
+      transform: scale(1.05);
+    }
+
+    .avatar-option.selected {
+      border-color: var(--primary, #4ade80);
+      box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.3);
+    }
+
+    .selected-badge {
+      position: absolute;
+      bottom: -2px;
+      right: -2px;
+      background: var(--primary, #4ade80);
+      color: white;
+      font-size: 0.625rem;
+      font-weight: 600;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid var(--surface-primary, white);
     }
 
     /* Google Auth Section - commented out for MVP */
@@ -135,7 +225,7 @@ import type { User } from '@users/utils/user.model';
     /* Action Buttons */
     .cta-section {
       text-align: center;
-      margin-top: 1rem;
+      margin-top: 2rem;
     }
 
     .step-actions {
@@ -154,12 +244,27 @@ import type { User } from '@users/utils/user.model';
         gap: 1.5rem;
       }
 
+      .selected-avatar-large {
+        width: 120px;
+        height: 120px;
+      }
+
       .hero-section h1 {
         font-size: 2rem;
       }
 
       .hero-section .subtitle {
         font-size: 1rem;
+      }
+
+      .avatar-grid {
+        grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+        max-width: 300px;
+      }
+
+      .avatar-option {
+        width: 50px;
+        height: 50px;
       }
 
       .step-actions {
@@ -172,21 +277,21 @@ import type { User } from '@users/utils/user.model';
       .step-actions app-button {
         width: 100%;
       }
-
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CustomizeProfileStepComponent {
+  private readonly avatarService = inject(AvatarService);
+  
+  // Inputs
   readonly user = input<User | null>(null);
   readonly selectedAvatarId = input<string>('');
   readonly displayName = input<string>('');
   readonly loading = input<boolean>(false);
 
+  // Outputs
   readonly avatarSelected = output<string>();
-  readonly nameChanged = output<string>();
-  readonly generateRandom = output<void>();
-  // readonly googleLogin = output<void>(); // Commented out for MVP
   readonly back = output<void>();
   readonly continue = output<void>();
 
@@ -194,14 +299,33 @@ export class CustomizeProfileStepComponent {
   readonly ButtonSize = ButtonSize;
 
   // Computed properties
-  readonly showBackButton = computed(() => true); // Always show back button
-  readonly isAnonymous = computed(() => {
-    return this.user()?.isAnonymous ?? true;
+  readonly isValid = computed(() => {
+    return this.selectedAvatarId().length > 0;
   });
 
-  onDisplayNameChange(newName: string): void {
-    console.log('[CustomizeProfileStep] Display name changed:', newName);
-    this.nameChanged.emit(newName);
+  readonly selectedAvatarUrl = computed(() => {
+    const avatarId = this.selectedAvatarId();
+    const user = this.user();
+    
+    if (!avatarId || !user) {
+      return '/assets/avatars/npc.webp';
+    }
+
+    // Generate avatar options for this user and find the selected one
+    const avatarOptions = this.avatarService.generateAvatarOptions(user.uid);
+    const selectedOption = avatarOptions.find(option => option.id === avatarId);
+
+    return selectedOption?.url || '/assets/avatars/npc.webp';
+  });
+
+  readonly availableAvatars = computed((): AvatarOption[] => {
+    const user = this.user();
+    if (!user) return [];
+    return this.avatarService.generateAvatarOptions(user.uid);
+  });
+
+  isSelected(avatar: AvatarOption): boolean {
+    return this.selectedAvatarId() === avatar.id;
   }
 
   onAvatarSelected(avatarId: string): void {
@@ -209,27 +333,18 @@ export class CustomizeProfileStepComponent {
     this.avatarSelected.emit(avatarId);
   }
 
-  // Commented out Google login for MVP
-  /*
-  onGoogleLogin(): void {
-    console.log('[CustomizeProfileStep] Google login requested');
-    this.googleLogin.emit();
+  onBack(): void {
+    console.log('[CustomizeProfileStep] Going back to previous step');
+    this.back.emit();
   }
-  */
 
   onContinue(): void {
     if (this.isValid()) {
-      console.log('[CustomizeProfileStep] Continuing with profile:', {
+      console.log('[CustomizeProfileStep] Continuing with avatar:', {
         displayName: this.displayName(),
         avatarId: this.selectedAvatarId()
       });
       this.continue.emit();
     }
-  }
-
-  isValid(): boolean {
-    const hasName = this.displayName().trim().length >= 2;
-    const hasAvatar = this.selectedAvatarId().length > 0;
-    return hasName && hasAvatar;
   }
 }

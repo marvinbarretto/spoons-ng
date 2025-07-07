@@ -15,12 +15,14 @@ import type { Pub } from '../../../pubs/utils/pub.models';
 
 // Step components
 import { WelcomeMessageStepComponent } from '../../ui/steps/welcome-message-step.component';
+import { DisplayNameStepComponent } from '../../ui/steps/display-name-step.component';
 import { CustomizeProfileStepComponent } from '../../ui/steps/customize-profile-step.component';
 import { ChooseLocalStepComponent } from '../../ui/steps/choose-local-step.component';
 
 type OnboardingStep =
   | 'welcome-message'       // "You gotta catch them all" welcome
-  | 'customize-profile'     // Avatar + display name + Google auth option
+  | 'display-name'          // Simple display name input + random generator
+  | 'customize-profile'     // Avatar selection only
   | 'choose-local';         // Combined home pub selection + location permission
 
 @Component({
@@ -30,6 +32,7 @@ type OnboardingStep =
     FormsModule,
     // Step components
     WelcomeMessageStepComponent,
+    DisplayNameStepComponent,
     CustomizeProfileStepComponent,
     ChooseLocalStepComponent,
   ],
@@ -46,6 +49,17 @@ type OnboardingStep =
           @case ('welcome-message') {
             <app-welcome-message-step
               [loading]="saving()"
+              (continue)="proceedToDisplayName()"
+            />
+          }
+
+          @case ('display-name') {
+            <app-display-name-step
+              [displayName]="displayName()"
+              [loading]="saving()"
+              (nameChanged)="onDisplayNameChange($event)"
+              (generateRandom)="generateRandomDisplayName()"
+              (back)="goBackToPreviousStep()"
               (continue)="proceedToCustomizeProfile()"
             />
           }
@@ -57,8 +71,6 @@ type OnboardingStep =
               [displayName]="displayName()"
               [loading]="saving()"
               (avatarSelected)="onAvatarSelected($event)"
-              (nameChanged)="onDisplayNameChange($event)"
-              (generateRandom)="generateRandomDisplayName()"
               (back)="goBackToPreviousStep()"
               (continue)="proceedToChooseLocal()"
             />
@@ -89,16 +101,16 @@ type OnboardingStep =
       flex-direction: column;
       position: relative;
       overflow: hidden;
-      
+
       /* TODO: Look at carpet pattern designs more closely - using actual carpet images for now */
       /* Carpet background with dark overlay */
-      background-image: 
+      background-image:
         linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.8)),
         url('/assets/carpets/moon-under-water-watford.jpg');
       background-size: cover;
       background-position: center;
       background-attachment: fixed;
-      
+
       color: var(--text-on-dark, white);
     }
 
@@ -112,7 +124,7 @@ type OnboardingStep =
 
     .progress-fill {
       height: 100%;
-      background: var(--success, #4ade80);
+      background: linear-gradient(90deg, #10b981 0%, #059669 100%);
       transition: width 0.3s ease;
     }
 
@@ -164,14 +176,14 @@ type OnboardingStep =
       .step-content {
         padding: 1rem;
       }
-      
+
       .step-actions {
         flex-direction: column;
         width: 100%;
         max-width: 300px;
         margin: 1.5rem auto 0;
       }
-      
+
       .step-actions app-button {
         width: 100%;
       }
@@ -199,7 +211,7 @@ export class OnboardingComponent extends BaseComponent {
   // Permission states
   readonly locationGranted = signal(false);
   readonly locationRequired = signal(false);
-  
+
   // Check if we already have location permission
   readonly hasExistingLocationPermission = computed(() => {
     return this.locationService.location() !== null;
@@ -217,13 +229,13 @@ export class OnboardingComponent extends BaseComponent {
     'moon-under-water-watford.jpg',
     'red-lion.jpg'
   ];
-  
+
   // Track current carpet background
   readonly currentCarpetBackground = signal<string>('');
 
   // Computed properties
   readonly progressPercentage = computed(() => {
-    const steps: OnboardingStep[] = ['welcome-message', 'customize-profile', 'choose-local'];
+    const steps: OnboardingStep[] = ['welcome-message', 'display-name', 'customize-profile', 'choose-local'];
     const currentIndex = steps.indexOf(this.currentStep());
     return Math.max(0, (currentIndex / (steps.length - 1)) * 100);
   });
@@ -238,7 +250,7 @@ export class OnboardingComponent extends BaseComponent {
     console.log('[Onboarding] Component initialized with step:', this.currentStep());
 
     // Initial carpet background will be set by the effect
-    
+
     // Pre-populate display name if user already has one, otherwise generate random name
     const user = this.user();
     if (user?.displayName) {
@@ -263,7 +275,7 @@ export class OnboardingComponent extends BaseComponent {
     // Use different carpet for each step, cycling through available images
     const carpetIndex = stepIndex % this.carpetImages.length;
     const selectedCarpet = this.carpetImages[carpetIndex];
-    
+
     // Skip if already using this carpet
     if (this.currentCarpetBackground() === selectedCarpet) return;
 
@@ -279,7 +291,7 @@ export class OnboardingComponent extends BaseComponent {
   }
 
   // Step navigation with readable method names
-  private readonly stepOrder: OnboardingStep[] = ['welcome-message', 'customize-profile', 'choose-local'];
+  private readonly stepOrder: OnboardingStep[] = ['welcome-message', 'display-name', 'customize-profile', 'choose-local'];
 
   proceedToNextStep(): void {
     const current = this.currentStep();
@@ -304,27 +316,40 @@ export class OnboardingComponent extends BaseComponent {
   }
 
   // Specific navigation methods for clarity
-  async proceedToCustomizeProfile(): Promise<void> { 
-    console.log('[Onboarding] Proceeding to customize profile');
+  async proceedToDisplayName(): Promise<void> {
+    console.log('[Onboarding] Proceeding to display name step');
     this.saving.set(true);
-    
+
     try {
       // Brief delay for user feedback
       await new Promise(resolve => setTimeout(resolve, 300));
-      this.currentStep.set('customize-profile'); 
+      this.currentStep.set('display-name');
     } finally {
       this.saving.set(false);
     }
   }
-  
-  async proceedToChooseLocal(): Promise<void> { 
-    console.log('[Onboarding] Proceeding to choose local pub');
+
+  async proceedToCustomizeProfile(): Promise<void> {
+    console.log('[Onboarding] Proceeding to customize profile');
     this.saving.set(true);
-    
+
     try {
       // Brief delay for user feedback
       await new Promise(resolve => setTimeout(resolve, 300));
-      this.currentStep.set('choose-local'); 
+      this.currentStep.set('customize-profile');
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
+  async proceedToChooseLocal(): Promise<void> {
+    console.log('[Onboarding] Proceeding to choose local pub');
+    this.saving.set(true);
+
+    try {
+      // Brief delay for user feedback
+      await new Promise(resolve => setTimeout(resolve, 300));
+      this.currentStep.set('choose-local');
     } finally {
       this.saving.set(false);
     }
@@ -507,7 +532,7 @@ export class OnboardingComponent extends BaseComponent {
       });
 
       console.log('[Onboarding] 🧭 Navigating to home page...');
-      
+
       // Navigate to home
       await this.router.navigate(['/']);
       console.log('[Onboarding] ✅ Navigation to home completed');

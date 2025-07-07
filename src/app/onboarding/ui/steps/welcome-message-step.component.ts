@@ -9,36 +9,19 @@ import { ButtonSize } from '@shared/ui/button/button.params';
     <div class="step">
       <div class="hero-section">
         <h1>🍺 Think you love Spoons?<br>Prove it.</h1>
-        <p>Accumulate points with every visit. Complete missions. 
+        <p>Accumulate points with every visit. Complete missions.
         Become the Spoons champion you were born to be.</p>
       </div>
-      
-      <div class="game-benefits">
-        <div class="benefit">
-          <span class="icon">🎯</span>
-          <span>Complete Missions</span>
-        </div>
-        <div class="benefit">
-          <span class="icon">🗺️</span>
-          <span>Travel = More Points</span>
-        </div>
-        <div class="benefit">
-          <span class="icon">🏆</span>
-          <span>Win Prizes</span>
-        </div>
-        <div class="benefit">
-          <span class="icon">😈</span>
-          <span>Automatic Sex Appeal</span>
-        </div>
-      </div>
+
+
 
       <div class="cta-section">
-        <app-button 
-          variant="primary" 
+        <app-button
+          variant="primary"
           [size]="ButtonSize.LARGE"
           [loading]="loading()"
           loadingText="Getting started..."
-          (onClick)="continue.emit()"
+          (onClick)="onContinue()"
         >
           Continue
         </app-button>
@@ -82,43 +65,6 @@ import { ButtonSize } from '@shared/ui/button/button.params';
       margin: 0;
     }
 
-    .game-benefits {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      margin: 0;
-    }
-
-    .benefit {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 1.5rem 1rem;
-      background: var(--surface-secondary, rgba(255, 255, 255, 0.1));
-      border-radius: 12px;
-      backdrop-filter: blur(10px);
-      text-align: center;
-      transition: transform 0.2s ease, background-color 0.2s ease;
-    }
-
-    .benefit:hover {
-      transform: translateY(-2px);
-      background: var(--surface-secondary, rgba(255, 255, 255, 0.15));
-    }
-
-    .benefit .icon {
-      font-size: 2rem;
-      flex-shrink: 0;
-    }
-
-    .benefit span:last-child {
-      color: var(--text-primary, white);
-      font-weight: 600;
-      font-size: 0.9rem;
-      line-height: 1.3;
-    }
-
     .cta-section {
       text-align: center;
       margin-top: 1rem;
@@ -152,53 +98,27 @@ import { ButtonSize } from '@shared/ui/button/button.params';
       }
 
       .hero-section h1 {
-        font-size: 2rem;
+        font-size: 3rem;
       }
 
       .hero-section p {
         font-size: 1rem;
       }
 
-      .game-benefits {
-        gap: 0.75rem;
-      }
-      
-      .benefit {
-        padding: 1rem 0.75rem;
-      }
-
-      .benefit .icon {
-        font-size: 1.75rem;
-      }
-
-    }
-
-    @media (max-width: 480px) {
-      .game-benefits {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-      }
-
-      .benefit {
-        flex-direction: row;
-        text-align: left;
-        padding: 1rem;
-      }
-
-      .benefit .icon {
-        font-size: 1.5rem;
-      }
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WelcomeMessageStepComponent {
+  // Inputs
   readonly loading = input<boolean>(false);
+
+  // Outputs  
   readonly continue = output<void>();
 
   // Real user state (default: true)
   readonly isRealUser = signal(true);
-  
+
   // Expose ButtonSize for template
   readonly ButtonSize = ButtonSize;
 
@@ -206,5 +126,10 @@ export class WelcomeMessageStepComponent {
     const target = event.target as HTMLInputElement;
     this.isRealUser.set(target.checked);
     console.log('[WelcomeStep] Real user toggled:', target.checked);
+  }
+
+  onContinue(): void {
+    console.log('[WelcomeStep] Continuing to next step');
+    this.continue.emit();
   }
 }
