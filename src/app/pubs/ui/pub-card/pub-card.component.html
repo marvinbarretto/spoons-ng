@@ -1,1 +1,63 @@
-<p>pub-card works!</p>
+<div class="pub-card"
+     [class.pub-card--selected]="isSelected()"
+     [class.pub-card--selectable]="selectable()"
+     (click)="handleClick($event)"
+   >
+
+   <!-- ✅ Semantic checkbox when in selectable mode -->
+   @if (selectable()) {
+     <div class="pub-card__checkbox">
+       <input
+         type="checkbox"
+         [id]="checkboxId()"
+         [checked]="isSelected()"
+         [attr.aria-label]="'Select ' + pub().name + ' to add to your history'"
+         (change)="handleCheckboxChange($event)"
+         (click)="$event.stopPropagation()"
+         class="pub-checkbox"
+       />
+       <label [for]="checkboxId()" class="sr-only">
+         Select {{ pub().name }}
+       </label>
+     </div>
+   }
+
+   <header class="pub-card__header">
+       <div class="pub-card__title-container">
+       @if (shouldShowVerificationBadge() || hasCheckedIn()) {
+         <span class="pub-card__badge" [class]="visitBadgeClass()">{{ visitBadgeText() }}</span>
+       }
+         <h3 class="pub-card__title">{{ pub().name }}</h3>
+         @if (isLocalPub()) {
+           <span class="pub-card__home-icon">🏠</span>
+         }
+       </div>
+
+       <div class="pub-card__status-badges">
+         @if (isNearestUnvisited()) {
+           <span class="pub-card__badge pub-card__badge--target">🎯 Next Target</span>
+         }
+         @if (canCheckIn()) {
+           <span class="pub-card__badge pub-card__badge--info">📍 Can check in</span>
+         }
+       </div>
+     </header>
+
+     <div class="pub-card__content">
+       <p class="pub-card__address">{{ pub().address }}</p>
+
+       @if (locationText()) {
+         <p class="pub-card__location">{{ locationText() }}</p>
+       }
+
+       @if (distanceText()) {
+         <p class="pub-card__distance" [class.distance-pulsing]="isMoving()">{{ distanceText() }}</p>
+       }
+
+       @if (showCheckinCount() && checkinCount() > 0) {
+         <p class="pub-card__checkins">
+           {{ checkinCount() }} check-in{{ checkinCount() !== 1 ? 's' : '' }}
+         </p>
+       }
+     </div>
+   </div>

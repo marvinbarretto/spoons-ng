@@ -31,10 +31,14 @@ export class PubListComponent extends BaseComponent implements OnInit {
   // ✅ Local state
   private readonly _searchTerm = signal('');
   private readonly _filterMode = signal<FilterOption>('all');
+  private readonly _isManagementMode = signal(false);
+  private readonly _selectedForAddition = signal<Set<string>>(new Set());
 
   // ✅ Expose state for template
   protected readonly searchTerm = this._searchTerm.asReadonly();
   protected readonly filterMode = this._filterMode.asReadonly();
+  protected readonly isManagementMode = this._isManagementMode.asReadonly();
+  protected readonly selectedForAddition = this._selectedForAddition.asReadonly();
 
   // ✅ Configuration for template
   protected readonly filterOptions = [
@@ -61,6 +65,15 @@ export class PubListComponent extends BaseComponent implements OnInit {
     const userCheckins = checkins.filter((c: any) => c.userId === user.uid);
     return [...new Set(userCheckins.map((c: any) => c.pubId))];
   });
+
+  // ✅ New computed properties for visit status
+  protected readonly managementStats = computed(() => ({
+    verified: this.dataAggregatorService.verifiedPubsCount(),
+    unverified: this.dataAggregatorService.unverifiedPubsCount(),
+    total: this.dataAggregatorService.pubsVisited()
+  }));
+
+  protected readonly selectedCount = computed(() => this.selectedForAddition().size);
 
   protected readonly searchFilteredPubs = computed(() => {
     const pubs = this.pubsWithDistance();
@@ -134,6 +147,19 @@ export class PubListComponent extends BaseComponent implements OnInit {
     return this.userCheckedInPubIds().includes(pubId);
   }
 
+  // ✅ New visit status helpers
+  hasVerifiedCheckIn(pubId: string): boolean {
+    return this.userCheckedInPubIds().includes(pubId);
+  }
+
+  hasUnverifiedVisit(pubId: string): boolean {
+    return this.userStore.hasVisitedPub(pubId);
+  }
+
+  hasAnyVisit(pubId: string): boolean {
+    return this.hasVerifiedCheckIn(pubId) || this.hasUnverifiedVisit(pubId);
+  }
+
   // ✅ Development helper
   protected readonly isDevelopment = computed(() => true);
 
@@ -201,8 +227,68 @@ export class PubListComponent extends BaseComponent implements OnInit {
     this.pubStore.load();
   }
 
+  // ✅ Management mode methods
+  toggleManagementMode(): void {
+    const newMode = !this._isManagementMode();
+    this._isManagementMode.set(newMode);
+    
+    // Clear selections when toggling
+    this._selectedForAddition.set(new Set());
+    
+    console.log('[PubList] Management mode:', newMode ? 'enabled' : 'disabled');
+  }
+
+  handleSelectionChange(event: { pub: Pub; selected: boolean }): void {
+    const current = new Set(this._selectedForAddition());
+    
+    if (event.selected) {
+      current.add(event.pub.id);
+    } else {
+      current.delete(event.pub.id);
+    }
+    
+    this._selectedForAddition.set(current);
+    console.log('[PubList] Selection changed:', event.pub.name, event.selected);
+  }
+
+  async addSelectedAsManual(): Promise<void> {
+    const selections = Array.from(this._selectedForAddition());
+    
+    if (selections.length === 0) {
+      console.log('[PubList] No pubs selected for addition');
+      return;
+    }
+
+    console.log('[PubList] Adding', selections.length, 'pubs as manually visited');
+    
+    try {
+      for (const pubId of selections) {
+        await this.userStore.addVisitedPub(pubId);
+      }
+      
+      // Clear selections and show success feedback
+      this._selectedForAddition.set(new Set());
+      console.log('[PubList] Successfully added manual visits');
+      
+      // TODO: Show toast notification
+      
+    } catch (error) {
+      console.error('[PubList] Failed to add manual visits:', error);
+      // TODO: Show error notification
+    }
+  }
+
+  clearSelections(): void {
+    this._selectedForAddition.set(new Set());
+  }
+
   // ✅ Navigation helper (for future use)
   handlePubClick(pub: Pub): void {
+    // Don't navigate in management mode
+    if (this._isManagementMode()) {
+      return;
+    }
+    
     console.log('[PubList] Pub clicked:', pub.name);
     // Navigation is now handled by the router links in template
   }

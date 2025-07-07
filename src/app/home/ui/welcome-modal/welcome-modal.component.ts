@@ -1,3 +1,16 @@
+/**
+ * @deprecated This component has been deprecated and removed from the app flow.
+ * 
+ * REASON FOR REMOVAL:
+ * - The welcome modal provided no value to users (only placeholder content)
+ * - Better UX to let users go directly to home page after onboarding
+ * - Home page already provides personalized content and prominent check-in button
+ * - Removing modal interruption improves onboarding flow
+ * 
+ * This file is kept for reference but should not be used.
+ * Consider deleting this file entirely in a future cleanup.
+ */
+
 import { Component, inject, ChangeDetectionStrategy, output } from '@angular/core';
 import { ButtonComponent } from '@shared/ui/button/button.component';
 import { ButtonSize } from '@shared/ui/button/button.params';

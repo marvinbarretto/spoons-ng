@@ -8,7 +8,7 @@ import { ButtonSize } from '@shared/ui/button/button.params';
   template: `
     <div class="step">
       <div class="hero-section">
-        <h1>🍺 Think you love Spoons?<br>Prove it.</h1>
+        <h1>🍺<br>Think you love Spoons?<br>Prove it.</h1>
         <p>Accumulate points with every visit. Complete missions.
         Become the Spoons champion you were born to be.</p>
       </div>
@@ -113,7 +113,7 @@ export class WelcomeMessageStepComponent {
   // Inputs
   readonly loading = input<boolean>(false);
 
-  // Outputs  
+  // Outputs
   readonly continue = output<void>();
 
   // Real user state (default: true)

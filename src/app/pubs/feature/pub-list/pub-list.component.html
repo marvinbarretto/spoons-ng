@@ -11,6 +11,21 @@
     </p>
   </header>
 
+  <!-- ✅ Management stats header (when in management mode) -->
+  @if (isManagementMode()) {
+    <section class="management-stats">
+      <h2>📝 Manage Your Pub History</h2>
+      <p class="stats-summary">
+        Total: <strong>{{ managementStats().total }}</strong> pubs
+        (<strong>{{ managementStats().verified }}</strong> ✅ verified, 
+         <strong>{{ managementStats().unverified }}</strong> 📝 manual)
+      </p>
+      <p class="help-text">
+        Select unvisited pubs you've been to before and add them to your history
+      </p>
+    </section>
+  }
+
   <!-- ✅ Condensed controls using your exact signal structure -->
   <section class="controls-section">
     <div class="search-group">
@@ -43,8 +58,46 @@
         }
       </div>
 
+      <!-- ✅ Management mode toggle -->
+      <button 
+        class="manage-toggle"
+        [class.active]="isManagementMode()"
+        (click)="toggleManagementMode()"
+        type="button"
+      >
+        @if (isManagementMode()) {
+          ✓ Done Managing
+        } @else {
+          📝 Manage History
+        }
+      </button>
     </div>
   </section>
+
+  <!-- ✅ Bulk actions bar (when selections made) -->
+  @if (isManagementMode() && selectedCount() > 0) {
+    <section class="bulk-actions-bar">
+      <span class="selection-count">
+        {{ selectedCount() }} pub{{ selectedCount() !== 1 ? 's' : '' }} selected
+      </span>
+      <div class="bulk-actions">
+        <button 
+          class="action-btn action-btn--secondary"
+          (click)="clearSelections()"
+          type="button"
+        >
+          Clear
+        </button>
+        <button 
+          class="action-btn action-btn--primary"
+          (click)="addSelectedAsManual()"
+          type="button"
+        >
+          Add as Visited
+        </button>
+      </div>
+    </section>
+  }
 
   <!-- ✅ Main content area with better space usage -->
   <section class="pub-list-container">
@@ -69,19 +122,41 @@
     } @else {
       <div class="pub-grid">
         @for (pub of filteredPubs(); track pub.id) {
-          <a
-            [routerLink]="['/pubs', pub.id]"
-            class="pub-card-link"
-            [attr.aria-label]="'View details for ' + pub.name"
-          >
-            <app-pub-card
-              [pub]="pub"
-              [hasCheckedIn]="dataAggregatorService.hasVisitedPub(pub.id)"
-              [checkinCount]="dataAggregatorService.getVisitCountForPub(pub.id)"
-              [showCheckinCount]="dataAggregatorService.hasVisitedPub(pub.id)"
-              [isLocalPub]="dataAggregatorService.isLocalPub(pub.id)"
-            />
-          </a>
+          @if (isManagementMode()) {
+            <!-- In management mode: no navigation, show selection -->
+            <div class="pub-card-container">
+              <app-pub-card
+                [pub]="pub"
+                [hasCheckedIn]="hasAnyVisit(pub.id)"
+                [hasVerifiedVisit]="hasVerifiedCheckIn(pub.id)"
+                [hasUnverifiedVisit]="hasUnverifiedVisit(pub.id)"
+                [checkinCount]="dataAggregatorService.getVisitCountForPub(pub.id)"
+                [showCheckinCount]="hasAnyVisit(pub.id)"
+                [isLocalPub]="dataAggregatorService.isLocalPub(pub.id)"
+                [selectable]="!hasAnyVisit(pub.id)"
+                [isSelected]="selectedForAddition().has(pub.id)"
+                (selectionChanged)="handleSelectionChange($event)"
+                (cardClicked)="handlePubClick(pub)"
+              />
+            </div>
+          } @else {
+            <!-- Normal mode: navigation enabled -->
+            <a
+              [routerLink]="['/pubs', pub.id]"
+              class="pub-card-link"
+              [attr.aria-label]="'View details for ' + pub.name"
+            >
+              <app-pub-card
+                [pub]="pub"
+                [hasCheckedIn]="hasAnyVisit(pub.id)"
+                [hasVerifiedVisit]="hasVerifiedCheckIn(pub.id)"
+                [hasUnverifiedVisit]="hasUnverifiedVisit(pub.id)"
+                [checkinCount]="dataAggregatorService.getVisitCountForPub(pub.id)"
+                [showCheckinCount]="hasAnyVisit(pub.id)"
+                [isLocalPub]="dataAggregatorService.isLocalPub(pub.id)"
+              />
+            </a>
+          }
         }
       </div>
     }

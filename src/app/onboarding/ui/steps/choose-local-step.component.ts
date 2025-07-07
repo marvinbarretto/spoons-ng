@@ -7,6 +7,8 @@ import { PubStore } from '../../../pubs/data-access/pub.store';
 import { NearbyPubStore } from '../../../pubs/data-access/nearby-pub.store';
 import { PubCardLightComponent } from '../../../pubs/ui/pub-card-light/pub-card-light.component';
 import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
+import { CheckInStore } from '../../../check-in/data-access/check-in.store';
+import { LocationService } from '../../../shared/data-access/location.service';
 
 
 @Component({
@@ -86,23 +88,26 @@ import { DataAggregatorService } from '../../../shared/data-access/data-aggregat
               </div>
             </div>
 
-            <!-- Nearest Pubs Suggestions -->
-            @if (nearbyPubs().length > 0 && !hasSearchTerm()) {
-              <div class="suggestions-section">
-                <h3 class="suggestions-title">Nearest pubs to you:</h3>
-                <div class="suggestions-list">
-                  @for (pub of nearbyPubs().slice(0, 3); track pub.id) {
-                    <div class="suggestion-card" (click)="selectPub(pub)">
-                      <app-pub-card-light
-                        [pub]="pub"
-                        [distance]="pub.distance"
-                        [showDistance]="true"
-                        [isLocalPub]="dataAggregatorService.isLocalPub(pub.id)"
-                        variant="normal"
-                      />
-                      <div class="select-icon">+</div>
-                    </div>
-                  }
+            <!-- Nearby Pubs List -->
+            @if (nearbyPubsForList().length > 0 && !hasSearchTerm()) {
+              <div class="nearby-pubs-section">
+                <div class="nearby-pubs-wrapper">
+                  <h3 class="nearby-pubs-title">📍 Nearby Pubs ({{ nearbyPubsForList().length }})</h3>
+                  <div class="clickable-pub-list">
+                    @for (pub of nearbyPubsForList(); track pub.id) {
+                      <div class="clickable-pub-item" (click)="selectPubFromNearby(pub)">
+                        <app-pub-card-light
+                          [pub]="convertNearbyPubToPub(pub)"
+                          [distance]="pub.distance"
+                          [showDistance]="true"
+                          [showLocation]="false"
+                          [isLocalPub]="dataAggregatorService.isLocalPub(pub.id)"
+                          variant="normal"
+                        />
+                        <div class="select-icon">+</div>
+                      </div>
+                    }
+                  </div>
                 </div>
               </div>
             }
@@ -318,43 +323,53 @@ import { DataAggregatorService } from '../../../shared/data-access/data-aggregat
       font-weight: bold;
     }
 
-    /* Suggestions */
-    .suggestions-section {
+    /* Nearby Pubs Section */
+    .nearby-pubs-section {
       margin-bottom: 1.5rem;
     }
 
-    .suggestions-title {
-      margin: 0 0 1rem 0;
-      font-size: 1rem;
+    .nearby-pubs-wrapper {
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      overflow: hidden;
+    }
+
+    .nearby-pubs-title {
+      margin: 0;
+      padding: 1rem 1.5rem;
+      font-size: 1.1rem;
       font-weight: 600;
       color: var(--text);
+      background: var(--background-darker);
+      border-bottom: 1px solid var(--border);
     }
 
-    .suggestions-list {
+    .clickable-pub-list {
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
     }
 
-    .suggestion-card {
+    .clickable-pub-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 1rem;
-      border: 1px solid var(--border);
-      border-radius: 0.5rem;
+      padding: 1rem 1.5rem;
       cursor: pointer;
       transition: all 0.2s ease;
-      background: var(--background);
+      border-bottom: 1px solid var(--border);
     }
 
-    .suggestion-card:hover {
-      border-color: var(--accent);
+    .clickable-pub-item:last-child {
+      border-bottom: none;
+    }
+
+    .clickable-pub-item:hover {
       background: var(--background-lighter);
       transform: translateY(-1px);
     }
 
-    .select-icon {
+    .clickable-pub-item .select-icon {
       color: var(--accent);
       font-size: 1.25rem;
       margin-left: 1rem;
@@ -461,6 +476,7 @@ import { DataAggregatorService } from '../../../shared/data-access/data-aggregat
       gap: 1rem;
       justify-content: center;
       margin-top: 2rem;
+      text-align: center;
     }
 
     .step-actions app-button {
@@ -495,6 +511,8 @@ export class ChooseLocalStepComponent {
   // Injected services
   private readonly pubStore = inject(PubStore);
   private readonly nearbyPubStore = inject(NearbyPubStore);
+  private readonly checkInStore = inject(CheckInStore);
+  private readonly locationService = inject(LocationService);
   protected readonly dataAggregatorService = inject(DataAggregatorService);
 
   // Inputs
@@ -524,6 +542,26 @@ export class ChooseLocalStepComponent {
   protected readonly allPubs = computed(() => this.pubStore.data());
   protected readonly nearbyPubs = computed(() => this.nearbyPubStore.nearbyPubs());
   protected readonly hasSearchTerm = computed(() => this.searchTerm().trim().length > 0);
+  protected readonly userCheckins = computed(() => this.checkInStore.userCheckins());
+  
+  // Location-related signals
+  protected readonly locationServiceLocation = computed(() => this.locationService.location());
+  protected readonly locationServiceLoading = computed(() => this.locationService.loading());
+  protected readonly locationServiceError = computed(() => this.locationService.error());
+  
+  // Convert nearby pubs to format expected by our clickable list
+  protected readonly nearbyPubsForList = computed(() => {
+    const pubs = this.nearbyPubs();
+    const location = this.locationServiceLocation();
+    console.log('[ChooseLocalStep] nearbyPubsForList computed - pubs:', pubs.length, 'location:', location);
+    
+    return pubs.map(pub => ({
+      id: pub.id,
+      name: pub.name,
+      distance: pub.distance || 0,
+      address: pub.address
+    }));
+  });
 
   protected readonly filteredPubs = computed(() => {
     const searchTerm = this.searchTerm().toLowerCase().trim();
@@ -572,6 +610,27 @@ export class ChooseLocalStepComponent {
     console.log('[ChooseLocalStep] Pub selected:', pub.name);
   }
 
+  protected selectPubFromNearby(nearbyPub: {id: string, name: string, distance: number, address?: string}): void {
+    // Find the full pub data from nearby pubs
+    const fullPub = this.nearbyPubs().find(p => p.id === nearbyPub.id);
+    if (fullPub) {
+      this.selectPub(fullPub);
+    }
+  }
+
+  protected convertNearbyPubToPub(nearbyPub: {id: string, name: string, distance: number, address?: string}): Pub {
+    return {
+      id: nearbyPub.id,
+      name: nearbyPub.name,
+      address: nearbyPub.address || '',
+      city: '', 
+      region: '', 
+      location: { lat: 0, lng: 0 }, 
+      carpetUrl: '', 
+      hasCarpet: false
+    } as Pub;
+  }
+
   protected clearSelection(): void {
     this._internalSelectedPub.set(null);
     this.pubSelected.emit(null);
@@ -580,6 +639,12 @@ export class ChooseLocalStepComponent {
 
   requestLocation(): void {
     console.log('[ChooseLocalStep] Location permission requested');
+    
+    // Call LocationService to update app-wide location signals
+    this.locationService.getCurrentLocation();
+    console.log('[ChooseLocalStep] LocationService.getCurrentLocation() called');
+    
+    // Also emit to parent for existing onboarding flow
     this.locationRequested.emit();
   }
 
