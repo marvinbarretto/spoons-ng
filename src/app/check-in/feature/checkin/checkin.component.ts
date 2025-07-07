@@ -110,6 +110,23 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
   protected readonly ACTIVE_DEVELOPMENT_MODE = environment.ACTIVE_DEVELOPMENT_MODE;
   protected readonly LLM_CHECK = environment.LLM_CHECK;
 
+  // Single source of truth for ALL gate thresholds
+  private readonly GATE_THRESHOLDS = {
+    // Image quality thresholds
+    sharpness: 10,         // Minimum sharpness score
+    contrast: 20,          // Minimum contrast score
+    edgeDensity: 15,       // Minimum edge density percentage
+    textureComplexity: 10, // Minimum texture complexity percentage
+    
+    // Motion & stability thresholds  
+    motionLevel: 25,       // Maximum motion level allowed
+    deviceMovement: 15,    // Maximum degrees of movement for stability
+    stabilityTime: 1000,   // Minimum milliseconds of stability required
+    
+    // Device orientation
+    deviceAngle: 45        // Maximum angle from pointing down
+  } as const;
+
   // Helper for motion history display
   protected getMotionHistoryString(): string {
     // Access motion history from service for debugging display
@@ -144,8 +161,8 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
     console.log('[Checkin] 🧮 Computing gates with orientation:', orientation);
 
     // ANALYSIS: Orientation logic was backwards! When pointing DOWN at carpet, we want YES
-    // When looking UP (beta near 0), we want NO. So we need LESS than 45 degrees for pointing down
-    const deviceOriented = Math.abs(orientation.beta) < 45; // Phone pointing down at carpet
+    // When looking UP (beta near 0), we want NO. So we need LESS than threshold degrees for pointing down
+    const deviceOriented = Math.abs(orientation.beta) < this.GATE_THRESHOLDS.deviceAngle; // Phone pointing down at carpet
     const deviceStable = orientation.stable; // Movement stability from orientation events
 
     console.log('[Checkin] 🚦 Gate calculations:', {
@@ -164,13 +181,13 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
     return {
       deviceOriented,
       isStable: data ? data.isStable : false,
-      lowMotion: data ? data.motionLevel < 25 : false, // Very lenient - increased from 15 to 25
+      lowMotion: data ? data.motionLevel < this.GATE_THRESHOLDS.motionLevel : false,
       metricsReady: data !== null,
-      carpetConfidence, // 'red', 'yellow', 'green'
-      goodSharpness: data ? data.sharpness > 15 : false, // Lowered from 20 to 15
-      goodContrast: data ? data.contrast > 20 : false,
-      hasTexture: data ? data.textureComplexity > 10 : false, // Lowered from 15 to 10
-      hasEdges: data ? data.edgeDensity > 30 : false
+      carpetConfidence, // 'no' | 'possible'
+      goodSharpness: data ? data.sharpness > this.GATE_THRESHOLDS.sharpness : false,
+      goodContrast: data ? data.contrast > this.GATE_THRESHOLDS.contrast : false,
+      hasTexture: data ? data.textureComplexity > this.GATE_THRESHOLDS.textureComplexity : false,
+      hasEdges: data ? data.edgeDensity > this.GATE_THRESHOLDS.edgeDensity : false
     };
   });
 
@@ -179,10 +196,10 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
 
     const { sharpness, edgeDensity, textureComplexity } = data;
 
-    // Very lenient thresholds - we want to pass most things to LLM
-    const sharpnessPass = sharpness > 15;  // Very low threshold
-    const edgesPass = edgeDensity > 20;    // Very low threshold
-    const texturePass = textureComplexity > 10; // Very low threshold
+    // Use centralized thresholds - consistent with gatesPassed()
+    const sharpnessPass = sharpness > this.GATE_THRESHOLDS.sharpness;
+    const edgesPass = edgeDensity > this.GATE_THRESHOLDS.edgeDensity;
+    const texturePass = textureComplexity > this.GATE_THRESHOLDS.textureComplexity;
     const passCount = [sharpnessPass, edgesPass, texturePass].filter(Boolean).length;
 
     // POSSIBLE: At least 1 metric passes - let LLM decide
@@ -211,12 +228,23 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
       deviceOriented: gates.deviceOriented,
       isStable: gates.isStable,
       carpetConfidence: gates.carpetConfidence,
+      carpetConfidencePass: gates.carpetConfidence === 'possible',
       goodSharpness: gates.goodSharpness,
       goodContrast: gates.goodContrast,
       hasTexture: gates.hasTexture,
       hasEdges: gates.hasEdges,
       lowMotion: gates.lowMotion,
-      allPassed
+      allPassed,
+      failedGates: [
+        !gates.deviceOriented && 'deviceOriented',
+        !gates.isStable && 'isStable', 
+        gates.carpetConfidence !== 'possible' && 'carpetConfidence',
+        !gates.goodSharpness && 'goodSharpness',
+        !gates.goodContrast && 'goodContrast',
+        !gates.hasTexture && 'hasTexture',
+        !gates.hasEdges && 'hasEdges',
+        !gates.lowMotion && 'lowMotion'
+      ].filter(Boolean)
     });
 
     return allPassed;
@@ -328,8 +356,8 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
       timeSinceLastUpdate
     });
 
-    // Consider stable if movement is small and enough time has passed - more lenient movement threshold
-    const stable = movement < 15 && timeSinceLastUpdate > 1000; // Lenient movement, 1 second time
+    // Consider stable if movement is small and enough time has passed - using centralized thresholds
+    const stable = movement < this.GATE_THRESHOLDS.deviceMovement && timeSinceLastUpdate > this.GATE_THRESHOLDS.stabilityTime;
 
     console.log('[Checkin] 📱 Orientation update:', { beta, gamma, stable, movement });
 
@@ -489,10 +517,12 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
     // Monitor simple metrics status
     this.gateMonitoringInterval = window.setInterval(() => {
       const gates = this.gatesPassed();
+      const allPassed = this.allGatesPassed();
       console.log('[Checkin] 🚦 Simple metrics gates status:', gates);
+      console.log('[Checkin] 🎯 AUTO-CAPTURE CHECK: allGatesPassed() =', allPassed);
 
       // Auto-trigger photo capture when all gates pass
-      if (this.allGatesPassed()) {
+      if (allPassed) {
         console.log('[Checkin] startGateMonitoring() - ✅ ALL GATES PASSED! Auto-capturing photo');
 
         // Stop gate monitoring since we're moving to next phase
