@@ -1,7 +1,7 @@
 {
   "name": "spoons",
   "description": "The unofficial Wetherspoons passport app",
-  "version": "0.0.90",
+  "version": "0.0.91",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",

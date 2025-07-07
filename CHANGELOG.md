@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.91](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.90...v0.0.91) (2025-07-07)
+
+
+### Bug Fixes
+
+* [Checkin] Device beta numbers off ([b34ec12](https://github.com/marvinbarretto/spoons-ng/commit/b34ec1201da5411d0d0c810d45caef21fd80e4a5))
+
 ### [0.0.90](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.89...v0.0.90) (2025-07-07)
 
 
