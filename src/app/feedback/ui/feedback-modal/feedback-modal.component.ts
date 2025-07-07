@@ -104,7 +104,7 @@ import { FormsModule } from '@angular/forms';
       align-items: center;
       justify-content: space-between;
       padding: 16px 20px;
-      border-bottom: 1px solid var(--color-outline);
+      border-bottom: 1px solid var(--border);
     }
 
     @media (max-width: 320px) {
@@ -117,7 +117,7 @@ import { FormsModule } from '@angular/forms';
       margin: 0;
       font-size: 18px;
       font-weight: 600;
-      color: var(--color-on-surface);
+      color: var(--text);
     }
 
     @media (max-width: 320px) {
@@ -132,12 +132,12 @@ import { FormsModule } from '@angular/forms';
       padding: 8px;
       cursor: pointer;
       border-radius: 8px;
-      color: var(--color-on-surface-variant);
+      color: var(--text-secondary);
       transition: background-color 0.2s;
     }
 
     .feedback-modal__close:hover {
-      background: var(--background-darkest-variant);
+      background: var(--background-darker);
     }
 
     .feedback-modal__content {
@@ -155,7 +155,7 @@ import { FormsModule } from '@angular/forms';
     .feedback-modal__label {
       display: block;
       font-weight: 500;
-      color: var(--color-on-surface);
+      color: var(--text);
       margin-bottom: 12px;
     }
 
@@ -182,7 +182,7 @@ import { FormsModule } from '@angular/forms';
       align-items: center;
       gap: 8px;
       padding: 16px 12px;
-      border: 2px solid var(--color-outline);
+      border: 2px solid var(--border);
       border-radius: 8px;
       background: var(--background-darkest);
       cursor: pointer;
@@ -203,23 +203,23 @@ import { FormsModule } from '@angular/forms';
 
     .feedback-type-option:hover {
       border-color: var(--primary);
-      background: var(--background-darkest-variant);
+      background: var(--background-darker);
     }
 
     .feedback-type-option--selected {
       border-color: var(--primary);
       background: var(--primary);
-      color: var(--color-on-primary);
+      color: var(--primary-contrast);
       transform: scale(1.02);
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     }
 
     .feedback-type-option--selected .feedback-type-option__icon {
-      color: var(--color-on-primary);
+      color: var(--primary-contrast);
     }
 
     .feedback-type-option--selected .feedback-type-option__label {
-      color: var(--color-on-primary);
+      color: var(--primary-contrast);
       font-weight: 600;
     }
 
@@ -234,7 +234,7 @@ import { FormsModule } from '@angular/forms';
     .feedback-type-option__label {
       display: block;
       font-weight: 500;
-      color: var(--color-on-surface);
+      color: var(--text);
       margin-bottom: 4px;
     }
 
@@ -243,10 +243,10 @@ import { FormsModule } from '@angular/forms';
     .feedback-modal__textarea {
       width: 100%;
       padding: 16px;
-      border: 2px solid var(--color-outline);
+      border: 2px solid var(--border);
       border-radius: 8px;
-      background: var(--background-darkest-variant);
-      color: var(--color-on-surface);
+      background: var(--background-darker);
+      color: var(--text);
       font-family: inherit;
       font-size: 16px;
       resize: vertical;
@@ -274,8 +274,8 @@ import { FormsModule } from '@angular/forms';
       align-items: center;
       gap: 8px;
       padding: 12px;
-      background: var(--color-error-container);
-      color: var(--color-on-error-container);
+      background: var(--error);
+      color: var(--background);
       border-radius: 8px;
       margin-top: 16px;
     }
@@ -289,7 +289,7 @@ import { FormsModule } from '@angular/forms';
       gap: 12px;
       justify-content: flex-end;
       padding: 16px 20px;
-      border-top: 1px solid var(--color-outline);
+      border-top: 1px solid var(--border);
     }
 
     @media (max-width: 320px) {

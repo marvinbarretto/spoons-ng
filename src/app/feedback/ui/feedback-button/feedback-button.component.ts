@@ -38,8 +38,8 @@ import { FeedbackModalComponent } from '../feedback-modal/feedback-modal.compone
       border: none;
       border-radius: 24px;
 
-      background: #F00;
-      color: #FFF;
+      background: var(--accent);
+      color: var(--accent-contrast);
       font-size: 14px;
       font-weight: 600;
 
@@ -50,7 +50,7 @@ import { FeedbackModalComponent } from '../feedback-modal/feedback-modal.compone
     }
 
     .feedback-btn:hover:not(:disabled) {
-      background: #F00;
+      background: var(--accent);
       filter: brightness(1.15);
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);

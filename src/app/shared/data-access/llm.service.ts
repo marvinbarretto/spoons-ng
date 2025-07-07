@@ -10,7 +10,9 @@ export class LLMService {
   private readonly _genAI = new GoogleGenerativeAI(environment.llm?.gemini || '');
   private readonly _model = this._genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
-  // Simple cache for testing
+  // Simple cache for testing - TEMPORARILY DISABLED
+  // Cache was causing permanent blocking after rejections due to weak cache key
+  // and caching of negative results. Re-enable once improved.
   private readonly _cache = new Map<string, any>();
 
   // Basic state tracking
@@ -69,14 +71,17 @@ export class LLMService {
     // Cache key based on optimized image
     const cacheKey = this.hashString(optimizedImage.slice(0, 100));
 
-    if (this._cache.has(cacheKey)) {
-      console.log('[LLMService] ✅ Cache hit for carpet detection');
-      return {
-        success: true,
-        data: this._cache.get(cacheKey),
-        cached: true
-      };
-    }
+    // TODO: Cache temporarily disabled - was causing permanent blocking after rejections
+    // Weak cache key meant similar photos got same cached rejection, preventing retries
+    // Re-enable once cache key is improved and only successful results are cached
+    // if (this._cache.has(cacheKey)) {
+    //   console.log('[LLMService] ✅ Cache hit for carpet detection');
+    //   return {
+    //     success: true,
+    //     data: this._cache.get(cacheKey),
+    //     cached: true
+    //   };
+    // }
 
     this._isProcessing.set(true);
 
@@ -92,8 +97,8 @@ export class LLMService {
       // Parse response
       const carpetResult = this.parseCarpetResponse(responseText);
 
-      // Cache result
-      this._cache.set(cacheKey, carpetResult);
+      // TODO: Cache storage temporarily disabled - prevent caching rejections
+      // this._cache.set(cacheKey, carpetResult);
       this._requestCount.update(count => count + 1);
 
       console.log('[LLMService] ✅ Carpet detection complete:', carpetResult);
