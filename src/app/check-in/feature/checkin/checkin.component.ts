@@ -167,9 +167,9 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
       lowMotion: data ? data.motionLevel < 25 : false, // Very lenient - increased from 15 to 25
       metricsReady: data !== null,
       carpetConfidence, // 'red', 'yellow', 'green'
-      goodSharpness: data ? data.sharpness > 20 : false,
+      goodSharpness: data ? data.sharpness > 15 : false, // Lowered from 20 to 15
       goodContrast: data ? data.contrast > 20 : false,
-      hasTexture: data ? data.textureComplexity > 15 : false,
+      hasTexture: data ? data.textureComplexity > 10 : false, // Lowered from 15 to 10
       hasEdges: data ? data.edgeDensity > 30 : false
     };
   });
@@ -328,8 +328,8 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
       timeSinceLastUpdate
     });
 
-    // Consider stable if movement is small and enough time has passed - more lenient
-    const stable = movement < 10 && timeSinceLastUpdate > 500; // Doubled movement threshold, halved time
+    // Consider stable if movement is small and enough time has passed - more lenient movement threshold
+    const stable = movement < 15 && timeSinceLastUpdate > 1000; // Lenient movement, 1 second time
 
     console.log('[Checkin] 📱 Orientation update:', { beta, gamma, stable, movement });
 
