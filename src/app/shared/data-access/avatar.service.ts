@@ -14,17 +14,17 @@ export type AvatarOption = {
 export class AvatarService {
   private readonly userStore = inject(UserStore); // ✅ Use UserStore, not AuthStore
 
-  private readonly DICEBEAR_BASE_URL = 'https://api.dicebear.com/7.x/avataaars/svg';
+  private readonly DICEBEAR_BASE_URL = 'https://api.dicebear.com/9.x/bottts/svg';
   private readonly NPC_AVATAR_URL = 'assets/avatars/npc.webp';
 
   /**
-   * Generate 11 deterministic DiceBear avatars + 1 NPC option
+   * Generate 14 deterministic DiceBear avatars + 1 NPC option
    */
   generateAvatarOptions(seed: string): AvatarOption[] {
     const avatars: AvatarOption[] = [];
 
-    // Generate 11 DiceBear avatars with different variations
-    for (let i = 0; i < 11; i++) {
+    // Generate DiceBear avatars with different variations
+    for (let i = 0; i < 14; i++) {
       const avatarSeed = `${seed}-${i}`;
       const url = `${this.DICEBEAR_BASE_URL}?seed=${encodeURIComponent(avatarSeed)}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`;
 
@@ -35,7 +35,7 @@ export class AvatarService {
       });
     }
 
-    // Add NPC option as 12th choice
+    // Add NPC option as 15th choice
     avatars.push({
       id: 'npc',
       name: 'Anonymous NPC',
