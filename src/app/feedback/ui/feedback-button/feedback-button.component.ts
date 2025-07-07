@@ -26,20 +26,20 @@ import { FeedbackModalComponent } from '../feedback-modal/feedback-modal.compone
   styles: [`
     .feedback-btn {
       position: fixed;
-      top: 20px;
-      right: 20px;
+      top: 12px;
+      right: 12px;
       z-index: 1000;
 
       display: flex;
       align-items: center;
       gap: 8px;
 
-      padding: 12px 16px;
+      padding: 12px;
       border: none;
       border-radius: 24px;
 
-      background: var(--warning);
-      color: var(--color-on-primary);
+      background: #F00;
+      color: #FFF;
       font-size: 14px;
       font-weight: 600;
 
@@ -47,11 +47,10 @@ import { FeedbackModalComponent } from '../feedback-modal/feedback-modal.compone
       transition: all 0.2s ease;
 
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-      border: 2px solid var(--primary);
     }
 
     .feedback-btn:hover:not(:disabled) {
-      background: var(--primary);
+      background: #F00;
       filter: brightness(1.15);
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
@@ -87,19 +86,18 @@ import { FeedbackModalComponent } from '../feedback-modal/feedback-modal.compone
 
     @media (max-width: 640px) {
       .feedback-btn {
-        bottom: 80px; /* Account for mobile navigation */
-        right: 16px;
+        right: 12px;
         padding: 10px 14px;
       }
 
       .feedback-btn__text {
-        display: none; /* Show only icon on mobile */
+        display: none;
       }
 
       .feedback-btn {
         border-radius: 50%;
-        width: 48px;
-        height: 48px;
+        width: 36px;
+        height: 36px;
         padding: 0;
         justify-content: center;
       }
