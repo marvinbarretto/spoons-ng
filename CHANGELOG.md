@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.89](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.88...v0.0.89) (2025-07-07)
+
+
+### Bug Fixes
+
+* [Checkin] thresholds ([71de4dc](https://github.com/marvinbarretto/spoons-ng/commit/71de4dc9639e2c355c1598439ef4ee4d31ca3eae))
+
 ### [0.0.88](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.87...v0.0.88) (2025-07-07)
 
 ### [0.0.87](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.86...v0.0.87) (2025-07-07)
