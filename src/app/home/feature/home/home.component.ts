@@ -26,7 +26,7 @@ import { LeaderboardWidgetComponent } from '../../../widgets/leaderboard/leaderb
 import { LocalLeaderboardWidgetComponent } from '../../../widgets/local-leaderboard/local-leaderboard-widget.component';
 import { RecentActivityWidgetComponent } from '../../../widgets/recent-activity/recent-activity-widget.component';
 import { ScoreboardHeroWidgetComponent } from '../../../widgets/scoreboard-hero/scoreboard-hero-widget.component';
-import { WelcomeModalComponent } from '../../ui/welcome-modal/welcome-modal.component';
+import { SuggestedMissionWidgetComponent } from '../../../widgets/suggested-mission/suggested-mission-widget.component';
 
 
 @Component({
@@ -36,6 +36,7 @@ import { WelcomeModalComponent } from '../../ui/welcome-modal/welcome-modal.comp
     ScoreboardHeroWidgetComponent,
     BadgesShowcaseComponent,
     MissionsWidgetComponent,
+    SuggestedMissionWidgetComponent,
     CarpetWidgetComponent,
     RouterModule,
     NearestPubComponent,
@@ -58,14 +59,8 @@ export class HomeComponent extends BaseComponent {
   override async onInit() {
     console.log('[Home] Initializing home component with micro-widgets...');
 
-    // Check if user should see welcome modal (first time after onboarding)
-    const user = this.user();
-    if (user && user.onboardingCompleted && !user.hasSeenWelcome) {
-      console.log('[Home] User completed onboarding but hasn\'t seen welcome, showing modal');
-      this.showWelcomeModal();
-    }
-
     // Initialize location service for proximity-based features
+    const user = this.user();
     if (user && user.onboardingCompleted) {
       console.log('[Home] User completed onboarding, initializing location service...');
       this.locationService.getCurrentLocation();
@@ -81,27 +76,6 @@ export class HomeComponent extends BaseComponent {
     console.log('[Home] Component initialized');
   }
 
-  private async showWelcomeModal(): Promise<void> {
-    const overlayResult = this.overlayService.open(
-      WelcomeModalComponent,
-      {
-        hasBackdrop: true,
-        backdropClass: 'overlay-backdrop',
-        maxWidth: '500px',
-        width: 'auto'
-      }
-    );
-
-    console.log('[Home] Welcome modal opened, waiting for result...');
-    const result = await overlayResult.result;
-    console.log('[Home] Welcome modal closed with result:', result);
-
-    // Update user profile to mark welcome as seen
-    if (result === 'closed') {
-      await this.userStore.updateProfile({ hasSeenWelcome: true });
-      console.log('[Home] User profile updated - hasSeenWelcome set to true');
-    }
-  }
 
 
 

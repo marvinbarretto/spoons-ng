@@ -26,6 +26,10 @@
   <!-- ✅ Nearest Pub Widget -->
   <app-nearest-pub></app-nearest-pub>
 
+  <!-- ✅ Suggested Mission Widget (for new users) -->
+  @if (isNewUser()) {
+    <app-suggested-mission-widget></app-suggested-mission-widget>
+  }
 
   <!-- ✅ Missions Widget -->
   <app-missions-widget></app-missions-widget>
