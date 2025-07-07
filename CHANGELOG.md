@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.92](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.91...v0.0.92) (2025-07-07)
+
+
+### Features
+
+* [Avatar] Change avatars, increase number ([ac2c126](https://github.com/marvinbarretto/spoons-ng/commit/ac2c12696e6380aa3ec54df59d43d23943bf4309))
+* [Onboarding] Stop assigning display name automatically ([d8ac837](https://github.com/marvinbarretto/spoons-ng/commit/d8ac83754f1092b28df9cf931108336aa04c3a92))
+* Add shared state components for consistency ([575372a](https://github.com/marvinbarretto/spoons-ng/commit/575372aad3f75bf51e797ac6963bc2cf4f1f14d8))
+
 ### [0.0.91](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.90...v0.0.91) (2025-07-07)
 
 
