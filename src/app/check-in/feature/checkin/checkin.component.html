@@ -31,34 +31,50 @@
         @case ('WAITING_FOR_GATES') {
           <div class="status-message">Point at the carpet</div>
           <div class="gates-status">
-            <!-- Core device gates -->
-            <div class="gate" [class.passed]="gatesPassed().deviceOriented">📱 Device Oriented: {{ gatesPassed().deviceOriented ? 'YES' : 'NO' }}</div>
-            <div class="gate" [class.passed]="gatesPassed().isStable">🎥 Camera Stable: {{ gatesPassed().isStable ? 'YES' : 'NO' }}</div>
+            
+            <!-- Core Device Requirements -->
+            <div class="gate-group">
+              <h4>Device Position</h4>
+              <div class="gate" [class.passed]="gatesPassed().deviceOriented">
+                📱 Point Down: {{ gatesPassed().deviceOriented ? 'YES' : 'NO' }}
+                <br><small>Beta: {{ deviceOrientation().beta }}°</small>
+              </div>
+              <div class="gate" [class.passed]="gatesPassed().motionStable">
+                🎥 Hold Steady: {{ gatesPassed().motionStable ? 'YES' : 'NO' }}
+                @if (metrics()) {
+                  <br><small>Motion: {{ metrics()!.motionLevel }}/100, Stable: {{ metrics()!.isStable ? 'YES' : 'NO' }}</small>
+                }
+              </div>
+            </div>
 
-            <!-- Raw data only -->
-            <div class="gate simple">🔬 Analysis Count: {{ metrics()?.timestamp ? 'YES' : 'NO DATA' }}</div>
-            <div class="gate simple">📊 Processing: {{ (metrics()?.analysisTime ?? 0) | number:'1.0-0' }}ms</div>
-
-            <!-- Real-time metrics - always show if available -->
             @if (metrics()) {
-              <!-- Image quality -->
-              <div class="gate simple" [class.passed]="gatesPassed().goodSharpness">🔍 Sharpness: {{ metrics()!.sharpness }}/100</div>
-              <div class="gate simple" [class.passed]="gatesPassed().goodContrast">⚡ Contrast: {{ metrics()!.contrast }}/100</div>
-              <div class="gate simple">💡 Brightness: {{ metrics()!.brightness }}/255</div>
-              <div class="gate simple" [class.passed]="gatesPassed().lowMotion">🏃 Motion Level: {{ metrics()!.motionLevel }}/100</div>
-              <div class="gate simple">📊 Motion History: [{{ getMotionHistoryString() }}]</div>
+              <!-- Image Quality Requirements -->
+              <div class="gate-group">
+                <h4>Image Quality</h4>
+                <div class="gate" [class.passed]="gatesPassed().goodSharpness">
+                  🔍 Sharpness: {{ metrics()!.sharpness }}/10{{ gatesPassed().goodSharpness ? ' ✓' : ' (need > 10)' }}
+                </div>
+                <div class="gate" [class.passed]="gatesPassed().goodContrast">
+                  ⚡ Contrast: {{ metrics()!.contrast }}/20{{ gatesPassed().goodContrast ? ' ✓' : ' (need > 20)' }}
+                </div>
+              </div>
 
-              <!-- Color analysis -->
-              <div class="gate simple">🌈 Dominant Colors: {{ metrics()!.dominantColors.join(', ') }}</div>
-
-              <!-- Pattern analysis -->
-              <div class="gate" [class.carpet-no]="gatesPassed().carpetConfidence === 'no'"
-                   [class.carpet-possible]="gatesPassed().carpetConfidence === 'possible'">🎯 Carpet Detection: {{ gatesPassed().carpetConfidence.toUpperCase() }}</div>
-              <div class="gate simple" [class.passed]="gatesPassed().hasEdges">📐 Edge Density: {{ metrics()!.edgeDensity }}%</div>
-              <div class="gate simple" [class.passed]="gatesPassed().hasTexture">🧵 Texture Complexity: {{ metrics()!.textureComplexity }}%</div>
-
-              <!-- Technical info -->
-              <div class="gate simple">⏱️ Analysis Time: {{ metrics()!.analysisTime | number:'1.0-0' }}ms</div>
+              <!-- Carpet Pattern Detection -->
+              <div class="gate-group">
+                <h4>Carpet Detection</h4>
+                <div class="gate" [class.passed]="gatesPassed().hasTexture">
+                  🧵 Texture: {{ metrics()!.textureComplexity }}/10{{ gatesPassed().hasTexture ? ' ✓' : ' (need > 10)' }}
+                </div>
+                <div class="gate" [class.passed]="gatesPassed().hasEdges">
+                  📐 Pattern: {{ metrics()!.edgeDensity }}/15{{ gatesPassed().hasEdges ? ' ✓' : ' (need > 15)' }}
+                </div>
+                <div class="gate" [class.passed]="gatesPassed().colorVariance">
+                  🎯 Color Analysis: {{ gatesPassed().colorVariance ? 'PASS' : 'ANALYZING...' }}
+                </div>
+                <div class="gate" [class.passed]="gatesPassed().patternRecognition">
+                  🧩 Pattern Recognition: {{ gatesPassed().patternRecognition ? 'PASS' : 'ANALYZING...' }}
+                </div>
+              </div>
             }
           </div>
           @if (allGatesPassed()) {

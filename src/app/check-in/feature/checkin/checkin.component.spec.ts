@@ -11,12 +11,15 @@ import { of } from 'rxjs';
 import { CheckinComponent } from './checkin.component';
 import { CheckInStore } from '../../../check-in/data-access/check-in.store';
 import { PubStore } from '../../../pubs/data-access/pub.store';
-import { SimpleMetricsService } from '../../data-access/simple-metrics.service';
+import { CarpetImageAnalysisService } from '../../data-access/carpet-image-analysis.service';
 import { UserProgressionService } from '@shared/data-access/user-progression.service';
 import { UserStore } from '../../../users/data-access/user.store';
 import { LLMService } from '@shared/data-access/llm.service';
 import { CarpetStorageService } from '../../../carpets/data-access/carpet-storage.service';
 import { environment } from '../../../../environments/environment';
+
+// Import mock services
+import { MockCarpetImageAnalysisService } from '../../data-access/testing';
 
 describe('CheckinComponent', () => {
   let component: CheckinComponent;
@@ -25,7 +28,7 @@ describe('CheckinComponent', () => {
   let mockActivatedRoute: any;
   let mockCheckinStore: jest.Mocked<CheckInStore>;
   let mockPubStore: jest.Mocked<PubStore>;
-  let mockMetricsService: jest.Mocked<SimpleMetricsService>;
+  let mockMetricsService: jest.Mocked<CarpetImageAnalysisService>;
 
   beforeEach(async () => {
     // Create mocks
@@ -92,7 +95,7 @@ describe('CheckinComponent', () => {
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
         { provide: CheckInStore, useValue: mockCheckinStore },
         { provide: PubStore, useValue: mockPubStore },
-        { provide: SimpleMetricsService, useValue: mockMetricsService },
+        { provide: CarpetImageAnalysisService, useValue: mockMetricsService },
         { provide: UserProgressionService, useValue: mockUserProgressionService },
         { provide: UserStore, useValue: mockUserStore },
         { provide: LLMService, useValue: mockLLMService },

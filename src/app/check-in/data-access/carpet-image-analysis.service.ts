@@ -1,6 +1,15 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
+import { 
+  MotionStabilityGate,
+  ImageSharpnessGate,
+  ImageContrastGate,
+  CarpetTextureGate,
+  CarpetEdgeDensityGate,
+  EnhancedColorVarianceGate,
+  CarpetPatternRecognitionGate
+} from './gates';
 
-export type SimpleMetrics = {
+export type CarpetImageMetrics = {
   // Basic image properties
   brightness: number;           // 0-255 average brightness
   contrast: number;            // 0-100 contrast level
@@ -27,9 +36,18 @@ export type SimpleMetrics = {
 };
 
 @Injectable({ providedIn: 'root' })
-export class SimpleMetricsService {
+export class CarpetImageAnalysisService {
   
-  private readonly _metrics = signal<SimpleMetrics | null>(null);
+  // Inject gates for updating their values
+  private readonly motionGate = inject(MotionStabilityGate);
+  private readonly sharpnessGate = inject(ImageSharpnessGate);
+  private readonly contrastGate = inject(ImageContrastGate);
+  private readonly textureGate = inject(CarpetTextureGate);
+  private readonly edgeDensityGate = inject(CarpetEdgeDensityGate);
+  private readonly enhancedColorGate = inject(EnhancedColorVarianceGate);
+  private readonly patternRecognitionGate = inject(CarpetPatternRecognitionGate);
+
+  private readonly _metrics = signal<CarpetImageMetrics | null>(null);
   private readonly _isAnalyzing = signal(false);
   
   // Motion detection state
@@ -49,7 +67,7 @@ export class SimpleMetricsService {
   readonly isAnalyzing = this._isAnalyzing.asReadonly();
 
   clearState(): void {
-    console.log('[SimpleMetrics] 🧹 Clearing accumulated state');
+    console.log('[CarpetImageAnalysis] 🧹 Clearing accumulated state');
     
     // Clear previous frame data to prevent memory accumulation
     this.previousFrameData = null;
@@ -72,21 +90,21 @@ export class SimpleMetricsService {
       this.ctx = null;
     }
     
-    console.log('[SimpleMetrics] 🧹 State cleared - memory should be freed');
+    console.log('[CarpetImageAnalysis] 🧹 State cleared - memory should be freed');
   }
   
-  async analyzeVideoFrame(videoElement: HTMLVideoElement): Promise<SimpleMetrics> {
+  async analyzeVideoFrame(videoElement: HTMLVideoElement): Promise<CarpetImageMetrics> {
     this._isAnalyzing.set(true);
     const startTime = performance.now();
     
     // Increment analysis count and check for memory management
     this.analysisCount++;
     if (this.analysisCount > this.MAX_ANALYSIS_COUNT) {
-      console.log('[SimpleMetrics] 🧹 Reached max analysis count, clearing state for memory management');
+      console.log('[CarpetImageAnalysis] 🧹 Reached max analysis count, clearing state for memory management');
       this.clearState();
     }
     
-    console.log('📊 [SimpleMetrics] Running analysis...', this.analysisCount);
+    console.log('📊 [CarpetImageAnalysis] Running analysis...', this.analysisCount);
     
     try {
       // Initialize canvas once and reuse it
@@ -109,7 +127,7 @@ export class SimpleMetricsService {
       
       // Validate video element before drawing
       if (videoElement.readyState < 2 || videoElement.videoWidth === 0 || videoElement.videoHeight === 0) {
-        console.log('[SimpleMetrics] Video not ready for analysis:', {
+        console.log('[CarpetImageAnalysis] Video not ready for analysis:', {
           readyState: videoElement.readyState,
           dimensions: `${videoElement.videoWidth}x${videoElement.videoHeight}`
         });
@@ -122,7 +140,7 @@ export class SimpleMetricsService {
       // Calculate motion detection
       const motionData = this.calculateMotion(imageData);
       
-      const metrics: SimpleMetrics = {
+      const metrics: CarpetImageMetrics = {
         brightness: this.calculateBrightness(imageData),
         contrast: this.calculateContrast(imageData),
         sharpness: this.calculateSharpness(imageData),
@@ -142,7 +160,13 @@ export class SimpleMetricsService {
       // Store this frame for next motion comparison
       this.previousFrameData = imageData;
       
-      console.log('📊 [SimpleMetrics] Analysis complete:', {
+      // Update gate values
+      this.updateGates(metrics);
+      
+      // Update enhanced gates with video frame (non-blocking)
+      this.updateEnhancedGates(videoElement);
+      
+      console.log('📊 [CarpetImageAnalysis] Analysis complete:', {
         sharpness: metrics.sharpness,
         contrast: metrics.contrast,
         edgeDensity: metrics.edgeDensity,
@@ -154,6 +178,27 @@ export class SimpleMetricsService {
       
     } finally {
       this._isAnalyzing.set(false);
+    }
+  }
+  
+  private updateGates(metrics: CarpetImageMetrics): void {
+    // Update all gate values
+    this.motionGate.updateMotionData(metrics.motionLevel, metrics.isStable);
+    this.sharpnessGate.updateSharpness(metrics.sharpness);
+    this.contrastGate.updateContrast(metrics.contrast);
+    this.textureGate.updateTextureComplexity(metrics.textureComplexity);
+    this.edgeDensityGate.updateEdgeDensity(metrics.edgeDensity);
+  }
+  
+  private async updateEnhancedGates(videoElement: HTMLVideoElement): Promise<void> {
+    // Update enhanced gates with video frame analysis
+    try {
+      await Promise.all([
+        this.enhancedColorGate.analyzeFrame(videoElement),
+        this.patternRecognitionGate.analyzeFrame(videoElement)
+      ]);
+    } catch (error) {
+      console.error('[CarpetImageAnalysis] Enhanced gate analysis failed:', error);
     }
   }
   
@@ -453,7 +498,7 @@ export class SimpleMetricsService {
     // FIXED: Much stricter threshold - walking should NOT be considered stable
     const isStable = recentAvgMotion < 8 && this.motionHistory.length >= 3; // Stricter threshold and more frames
     
-    console.log('[SimpleMetrics] Motion Debug:', {
+    console.log('[CarpetImageAnalysis] Motion Debug:', {
       rawAvgDifference: Math.round(avgDifference * 100) / 100,
       motionLevel,
       motionHistory: [...this.motionHistory],
