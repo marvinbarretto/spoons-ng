@@ -1,0 +1,62 @@
+.widget-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2rem 1rem;
+  justify-content: center;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.empty-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.empty-title {
+  margin: 0;
+  font-weight: 600;
+  color: var(--text);
+  font-size: 0.875rem;
+}
+
+.empty-subtitle {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  max-width: 300px;
+  line-height: 1.4;
+}
+
+.action-button {
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.action-button:hover {
+  background: var(--primary-hover, var(--primary));
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.action-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent);
+}

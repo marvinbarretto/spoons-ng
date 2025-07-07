@@ -1,0 +1,44 @@
+.widget-error {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 2rem 1rem;
+  justify-content: center;
+  color: var(--text-secondary);
+  flex-wrap: wrap;
+}
+
+.error-icon {
+  font-size: 1.125rem;
+  color: var(--error);
+}
+
+.error-message {
+  font-size: 0.875rem;
+  text-align: center;
+  flex: 1;
+  min-width: max-content;
+}
+
+.retry-button {
+  padding: 0.375rem 0.75rem;
+  background: var(--error);
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.retry-button:hover {
+  background: var(--error-hover, var(--error));
+  opacity: 0.9;
+}
+
+.retry-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent);
+}
