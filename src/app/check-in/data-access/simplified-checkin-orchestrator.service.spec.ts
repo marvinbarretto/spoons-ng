@@ -103,10 +103,19 @@ describe('SimplifiedCheckinOrchestrator', () => {
 
     service = TestBed.inject(SimplifiedCheckinOrchestrator);
   });
+  
+  function verifyTimerSetup(): void {
+    if (!jest.isMockFunction(setTimeout)) {
+      throw new Error('setTimeout is not mocked - jest.useFakeTimers() may not have been called');
+    }
+    if (!jest.isMockFunction(setInterval)) {
+      throw new Error('setInterval is not mocked - jest.useFakeTimers() may not have been called');
+    }
+  }
 
   afterEach(() => {
     // Clean up any running operations
-    service.cleanup();
+    service?.cleanup();
     
     // Restore environment
     Object.assign(environment, originalEnvironment);
@@ -114,8 +123,9 @@ describe('SimplifiedCheckinOrchestrator', () => {
     // Clear all mocks
     jest.clearAllMocks();
     
-    // Clear any intervals/timeouts
+    // Clear any intervals/timeouts and restore real timers
     jest.clearAllTimers();
+    jest.useRealTimers();
   });
 
   function setupBrowserAPIMocks(): void {
@@ -609,7 +619,7 @@ describe('SimplifiedCheckinOrchestrator', () => {
         jest.advanceTimersByTime(500);
 
         // Wait for async operations
-        await jest.runAllTimersAsync();
+        await jest.runOnlyPendingTimers();
 
         expect(service.stage()).toBe('PROCESSING');
         expect(service.photoDataUrl()).toBe('data:image/jpeg;base64,mock-data');
@@ -627,7 +637,7 @@ describe('SimplifiedCheckinOrchestrator', () => {
         jest.advanceTimersByTime(200);
         jest.advanceTimersByTime(500);
 
-        await jest.runAllTimersAsync();
+        await jest.runOnlyPendingTimers();
 
         expect(service.stage()).toBe('FAILED');
         expect(service.error()).toBe('Failed to capture photo');
@@ -640,7 +650,7 @@ describe('SimplifiedCheckinOrchestrator', () => {
         jest.advanceTimersByTime(200);
         jest.advanceTimersByTime(500);
 
-        await jest.runAllTimersAsync();
+        await jest.runOnlyPendingTimers();
 
         expect(mockCanvas.width).toBe(1280);
         expect(mockCanvas.height).toBe(720);
@@ -665,7 +675,7 @@ describe('SimplifiedCheckinOrchestrator', () => {
         jest.advanceTimersByTime(200);
         jest.advanceTimersByTime(500);
 
-        await jest.runAllTimersAsync();
+        await jest.runOnlyPendingTimers();
 
         expect(mockLLMService.detectCarpet).toHaveBeenCalledWith('data:image/jpeg;base64,mock-data');
         expect(service.stage()).toBe('PROCESSING');
@@ -683,14 +693,14 @@ describe('SimplifiedCheckinOrchestrator', () => {
         jest.advanceTimersByTime(200);
         jest.advanceTimersByTime(500);
 
-        await jest.runAllTimersAsync();
+        await jest.runOnlyPendingTimers();
 
         expect(service.stage()).toBe('FAILED');
         expect(service.error()).toBe('Not a carpet: Not a carpet');
 
         // Should auto-retry after 3 seconds
         jest.advanceTimersByTime(3000);
-        await jest.runAllTimersAsync();
+        await jest.runOnlyPendingTimers();
 
         expect(mockMediaDevices.getUserMedia).toHaveBeenCalledTimes(2); // Initial + retry
       });
@@ -704,7 +714,7 @@ describe('SimplifiedCheckinOrchestrator', () => {
         jest.advanceTimersByTime(200);
         jest.advanceTimersByTime(500);
 
-        await jest.runAllTimersAsync();
+        await jest.runOnlyPendingTimers();
 
         expect(service.stage()).toBe('FAILED');
         expect(service.error()).toBe('Failed to verify carpet');
@@ -719,7 +729,7 @@ describe('SimplifiedCheckinOrchestrator', () => {
         jest.advanceTimersByTime(200);
         jest.advanceTimersByTime(500);
 
-        await jest.runAllTimersAsync();
+        await jest.runOnlyPendingTimers();
 
         expect(mockCarpetStorageService.saveCarpetImage).toHaveBeenCalled();
         expect(mockCheckinStore.checkinToPub).toHaveBeenCalledWith('test-pub-123');
@@ -735,7 +745,7 @@ describe('SimplifiedCheckinOrchestrator', () => {
         jest.advanceTimersByTime(200);
         jest.advanceTimersByTime(500);
 
-        await jest.runAllTimersAsync();
+        await jest.runOnlyPendingTimers();
 
         expect(service.stage()).toBe('FAILED');
         expect(service.error()).toBe('Check-in failed');
@@ -750,7 +760,7 @@ describe('SimplifiedCheckinOrchestrator', () => {
         jest.advanceTimersByTime(200);
         jest.advanceTimersByTime(500);
 
-        await jest.runAllTimersAsync();
+        await jest.runOnlyPendingTimers();
 
         expect(service.stage()).toBe('FAILED');
         expect(service.error()).toBe('Check-in failed');
@@ -790,7 +800,7 @@ describe('SimplifiedCheckinOrchestrator', () => {
       jest.advanceTimersByTime(200);
       jest.advanceTimersByTime(500);
 
-      await jest.runAllTimersAsync();
+      await jest.runOnlyPendingTimers();
 
       expect(service.stage()).toBe('FAILED');
       expect(service.error()).toContain('This is a shoe');
@@ -802,7 +812,7 @@ describe('SimplifiedCheckinOrchestrator', () => {
       });
 
       jest.advanceTimersByTime(3000);
-      await jest.runAllTimersAsync();
+      await jest.runOnlyPendingTimers();
 
       expect(service.stage()).toBe('SCANNING'); // Back to scanning after retry
     });
@@ -823,7 +833,7 @@ describe('SimplifiedCheckinOrchestrator', () => {
       jest.advanceTimersByTime(200);
       jest.advanceTimersByTime(500);
 
-      await jest.runAllTimersAsync();
+      await jest.runOnlyPendingTimers();
 
       expect(service.stage()).toBe('FAILED');
 
@@ -832,7 +842,7 @@ describe('SimplifiedCheckinOrchestrator', () => {
 
       // Advance past auto-retry time
       jest.advanceTimersByTime(3000);
-      await jest.runAllTimersAsync();
+      await jest.runOnlyPendingTimers();
 
       // Should not have retried
       expect(mockMediaDevices.getUserMedia).toHaveBeenCalledTimes(1);
@@ -996,7 +1006,7 @@ describe('SimplifiedCheckinOrchestrator', () => {
         jest.advanceTimersByTime(200);
         jest.advanceTimersByTime(500);
 
-        await jest.runAllTimersAsync();
+        await jest.runOnlyPendingTimers();
 
         // Verify final state
         expect(service.stage()).toBe('SUCCESS');
@@ -1029,7 +1039,7 @@ describe('SimplifiedCheckinOrchestrator', () => {
         jest.advanceTimersByTime(200);
         jest.advanceTimersByTime(500);
 
-        await jest.runAllTimersAsync();
+        await jest.runOnlyPendingTimers();
 
         expect(service.stage()).toBe('FAILED');
         expect(service.error()).toBe('Check-in failed');
@@ -1064,7 +1074,7 @@ describe('SimplifiedCheckinOrchestrator', () => {
 
         // Advance past capture timeout
         jest.advanceTimersByTime(500);
-        await jest.runAllTimersAsync();
+        await jest.runOnlyPendingTimers();
 
         // Should be in clean state
         expect(service.stage()).toBe('INITIALIZING');
@@ -1085,7 +1095,7 @@ describe('SimplifiedCheckinOrchestrator', () => {
         jest.advanceTimersByTime(200);
         jest.advanceTimersByTime(500);
 
-        await jest.runAllTimersAsync();
+        await jest.runOnlyPendingTimers();
 
         expect(mockLLMService.detectCarpet).not.toHaveBeenCalled();
         expect(service.stage()).toBe('SUCCESS');
@@ -1107,7 +1117,11 @@ describe('SimplifiedCheckinOrchestrator', () => {
         jest.advanceTimersByTime(200);
         jest.advanceTimersByTime(500);
 
-        await jest.runAllTimersAsync();
+        await jest.runOnlyPendingTimers();
+        
+        // Allow additional async operations (storage, check-in processing) to complete
+        jest.advanceTimersByTime(100);
+        await jest.runOnlyPendingTimers();
 
         expect(mockLLMService.detectCarpet).toHaveBeenCalled();
         expect(service.stage()).toBe('SUCCESS');
