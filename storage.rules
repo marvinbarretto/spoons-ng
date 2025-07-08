@@ -1,0 +1,22 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Carpet photos in /carpets/ directory
+    match /carpets/{carpetId} {
+      // Allow anyone to read carpet photos (public photos)
+      allow read: if true;
+      
+      // Allow anyone to upload carpet photos with restrictions
+      // Only allow image files under 5MB
+      // Note: LLM validation, daily limits, and pub deduplication 
+      // provide sufficient protection against abuse
+      allow write: if request.resource.size < 5 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+    
+    // Deny all other access
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
