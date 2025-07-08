@@ -2,6 +2,12 @@ export * from './mock-auth.store';
 export * from './mock-user.store';
 export * from './mock-checkin.store';
 
+// Service mocks (Firebase best practices - mock at service level)
+export * from './mock-landlord.service';
+export * from './mock-user.service';
+export * from './mock-earned-badge.service';
+export * from './mock-cache-coherence.service';
+
 // Factory functions for quick creation with defaults
 import { MockAuthStore } from './mock-auth.store';
 import { MockUserStore } from './mock-user.store';
