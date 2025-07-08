@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.96](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.95...v0.0.96) (2025-07-08)
+
+
+### Features
+
+* [Checkin] Carpet saving into Firestore ([e535054](https://github.com/marvinbarretto/spoons-ng/commit/e535054b9cb4289b91631636f284d848d644eaf4))
+
 ### [0.0.95](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.94...v0.0.95) (2025-07-08)
 
 
