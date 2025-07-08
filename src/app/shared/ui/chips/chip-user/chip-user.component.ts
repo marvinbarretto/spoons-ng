@@ -11,10 +11,10 @@ export type ChipSize = 'xs' | 'sm' | 'md' | 'lg';
 export type ChipVariant = 'default' | 'primary' | 'secondary';
 
 @Component({
-  selector: 'app-user-chip',
+  selector: 'app-chip-user',
   template: `
     <div
-      class="user-chip"
+      class="chip-user"
       [class]="chipClasses()"
       [attr.role]="clickable() ? 'button' : null"
       [attr.tabindex]="clickable() ? '0' : null"
@@ -35,9 +35,9 @@ export type ChipVariant = 'default' | 'primary' | 'secondary';
       }
     </div>
   `,
-  styleUrl: './user-chip.component.scss'
+  styleUrl: './chip-user.component.scss'
 })
-export class UserChipComponent {
+export class ChipUserComponent {
   readonly user = input.required<UserChipData>();
   readonly size = input<ChipSize>('md');
   readonly variant = input<ChipVariant>('default');

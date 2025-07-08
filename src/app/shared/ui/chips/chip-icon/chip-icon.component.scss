@@ -1,6 +1,6 @@
 @use 'styles/mixins' as *;
 
-.icon-chip {
+.chip-icon {
   @include chip-base;
   @include chip-size('md');
   @include chip-variant('default');

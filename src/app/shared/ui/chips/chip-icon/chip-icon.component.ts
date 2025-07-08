@@ -5,11 +5,11 @@ export type ChipSize = 'xs' | 'sm' | 'md' | 'lg';
 export type ChipVariant = 'default' | 'primary' | 'secondary' | 'success' | 'warning' | 'error';
 
 @Component({
-  selector: 'app-icon-chip',
+  selector: 'app-chip-icon',
   imports: [IconComponent],
   template: `
     <div
-      class="icon-chip"
+      class="chip-icon"
       [class]="chipClasses()"
       [attr.role]="clickable() ? 'button' : null"
       [attr.tabindex]="clickable() ? '0' : null"
@@ -38,9 +38,9 @@ export type ChipVariant = 'default' | 'primary' | 'secondary' | 'success' | 'war
       }
     </div>
   `,
-  styleUrl: './icon-chip.component.scss'
+  styleUrl: './chip-icon.component.scss'
 })
-export class IconChipComponent {
+export class ChipIconComponent {
   readonly icon = input.required<string>();
   readonly label = input<string>();
   readonly count = input<number | null>(null);

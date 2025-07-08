@@ -1,6 +1,6 @@
 @use 'styles/mixins' as *;
 
-.badge-chip {
+.chip-badge {
   @include chip-base;
   @include chip-size('md');
   position: relative;

@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { IconChipComponent } from './icon-chip.component';
+import { ChipIconComponent } from './chip-icon.component';
 import { IconComponent } from '../../icon/icon.component';
 
-describe('IconChipComponent', () => {
-  let component: IconChipComponent;
-  let fixture: ComponentFixture<IconChipComponent>;
+describe('ChipIconComponent', () => {
+  let component: ChipIconComponent;
+  let fixture: ComponentFixture<ChipIconComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [IconChipComponent, IconComponent]
+      imports: [ChipIconComponent, IconComponent]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(IconChipComponent);
+    fixture = TestBed.createComponent(ChipIconComponent);
     component = fixture.componentInstance;
     
     // Set required input
@@ -68,7 +68,7 @@ describe('IconChipComponent', () => {
     fixture.componentRef.setInput('size', 'lg');
     fixture.detectChanges();
     
-    const chipElement = fixture.nativeElement.querySelector('.icon-chip');
+    const chipElement = fixture.nativeElement.querySelector('.chip-icon');
     expect(chipElement.classList).toContain('size--lg');
   });
 
@@ -76,7 +76,7 @@ describe('IconChipComponent', () => {
     fixture.componentRef.setInput('variant', 'success');
     fixture.detectChanges();
     
-    const chipElement = fixture.nativeElement.querySelector('.icon-chip');
+    const chipElement = fixture.nativeElement.querySelector('.chip-icon');
     expect(chipElement.classList).toContain('variant--success');
   });
 
@@ -84,7 +84,7 @@ describe('IconChipComponent', () => {
     fixture.componentRef.setInput('clickable', true);
     fixture.detectChanges();
     
-    const chipElement = fixture.nativeElement.querySelector('.icon-chip');
+    const chipElement = fixture.nativeElement.querySelector('.chip-icon');
     expect(chipElement.classList).toContain('clickable');
   });
 
@@ -92,24 +92,26 @@ describe('IconChipComponent', () => {
     fixture.componentRef.setInput('clickable', true);
     fixture.detectChanges();
     
-    spyOn(component.clicked, 'emit');
+    const clickedSpy = jest.fn();
+    component.clicked.subscribe(clickedSpy);
     
-    const chipElement = fixture.nativeElement.querySelector('.icon-chip');
+    const chipElement = fixture.nativeElement.querySelector('.chip-icon');
     chipElement.click();
     
-    expect(component.clicked.emit).toHaveBeenCalledWith('star');
+    expect(clickedSpy).toHaveBeenCalledWith('star');
   });
 
   it('should not emit clicked event when not clickable', () => {
     fixture.componentRef.setInput('clickable', false);
     fixture.detectChanges();
     
-    spyOn(component.clicked, 'emit');
+    const clickedSpy = jest.fn();
+    component.clicked.subscribe(clickedSpy);
     
-    const chipElement = fixture.nativeElement.querySelector('.icon-chip');
+    const chipElement = fixture.nativeElement.querySelector('.chip-icon');
     chipElement.click();
     
-    expect(component.clicked.emit).not.toHaveBeenCalled();
+    expect(clickedSpy).not.toHaveBeenCalled();
   });
 
   it('should map chip size to icon size correctly', () => {

@@ -1,0 +1,108 @@
+@import '../../../../../styles/mixins/chip-mixins';
+
+.chip-status {
+  @include chip-base;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  
+  // Size variations
+  &.size--xs {
+    @include chip-size('xs');
+  }
+  
+  &.size--sm {
+    @include chip-size('sm');
+  }
+  
+  &.size--md {
+    @include chip-size('md');
+  }
+  
+  &.size--lg {
+    @include chip-size('lg');
+  }
+  
+  // Type variations with semantic colors
+  &.type--loading {
+    background: var(--info);
+    color: var(--background);
+    border-color: var(--info);
+  }
+  
+  &.type--success {
+    background: var(--success);
+    color: var(--background);
+    border-color: var(--success);
+  }
+  
+  &.type--error {
+    background: var(--error);
+    color: var(--background);
+    border-color: var(--error);
+  }
+  
+  &.type--warning {
+    background: var(--warning);
+    color: var(--background);
+    border-color: var(--warning);
+  }
+  
+  &.type--info {
+    background: var(--info);
+    color: var(--background);
+    border-color: var(--info);
+  }
+  
+  &.type--active {
+    background: var(--success);
+    color: var(--background);
+    border-color: var(--success);
+  }
+  
+  &.type--inactive {
+    background: var(--background-darker);
+    color: var(--text-muted);
+    border-color: var(--border);
+  }
+  
+  &.type--neutral {
+    background: var(--background-lighter);
+    color: var(--text);
+    border-color: var(--border);
+  }
+  
+  // Icon only variation
+  &.icon-only {
+    padding: 0.25rem;
+    aspect-ratio: 1;
+    justify-content: center;
+    
+    .chip-icon {
+      margin: 0;
+    }
+  }
+  
+  // Animation for loading state
+  &.animated.type--loading {
+    .chip-icon {
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+  }
+}
+
+.chip-icon {
+  @include chip-icon;
+  font-size: 1em;
+  line-height: 1;
+}
+
+.chip-text {
+  @include chip-text;
+  font-size: inherit;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}

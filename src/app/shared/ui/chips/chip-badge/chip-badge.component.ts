@@ -4,10 +4,10 @@ import type { Badge } from '@badges/utils/badge.model';
 export type ChipSize = 'xs' | 'sm' | 'md' | 'lg';
 
 @Component({
-  selector: 'app-badge-chip',
+  selector: 'app-chip-badge',
   template: `
     <div
-      class="badge-chip"
+      class="chip-badge"
       [class]="chipClasses()"
       [attr.role]="clickable() ? 'button' : null"
       [attr.tabindex]="clickable() ? '0' : null"
@@ -28,9 +28,9 @@ export type ChipSize = 'xs' | 'sm' | 'md' | 'lg';
       }
     </div>
   `,
-  styleUrl: './badge-chip.component.scss'
+  styleUrl: './chip-badge.component.scss'
 })
-export class BadgeChipComponent {
+export class ChipBadgeComponent {
   readonly badge = input.required<Badge>();
   readonly earned = input(false);
   readonly size = input<ChipSize>('md');

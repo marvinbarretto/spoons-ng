@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { UserChipComponent, UserChipData } from './user-chip.component';
+import { ChipUserComponent, UserChipData } from './chip-user.component';
 
-describe('UserChipComponent', () => {
-  let component: UserChipComponent;
-  let fixture: ComponentFixture<UserChipComponent>;
+describe('ChipUserComponent', () => {
+  let component: ChipUserComponent;
+  let fixture: ComponentFixture<ChipUserComponent>;
 
   const mockUser: UserChipData = {
     displayName: 'Test User',
@@ -13,10 +13,10 @@ describe('UserChipComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [UserChipComponent]
+      imports: [ChipUserComponent]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(UserChipComponent);
+    fixture = TestBed.createComponent(ChipUserComponent);
     component = fixture.componentInstance;
     
     // Set required input
@@ -48,7 +48,7 @@ describe('UserChipComponent', () => {
     fixture.componentRef.setInput('size', 'lg');
     fixture.detectChanges();
     
-    const chipElement = fixture.nativeElement.querySelector('.user-chip');
+    const chipElement = fixture.nativeElement.querySelector('.chip-user');
     expect(chipElement.classList).toContain('size--lg');
   });
 
@@ -56,7 +56,7 @@ describe('UserChipComponent', () => {
     fixture.componentRef.setInput('clickable', true);
     fixture.detectChanges();
     
-    const chipElement = fixture.nativeElement.querySelector('.user-chip');
+    const chipElement = fixture.nativeElement.querySelector('.chip-user');
     expect(chipElement.classList).toContain('clickable');
   });
 
@@ -64,24 +64,26 @@ describe('UserChipComponent', () => {
     fixture.componentRef.setInput('clickable', true);
     fixture.detectChanges();
     
-    spyOn(component.clicked, 'emit');
+    const clickedSpy = jest.fn();
+    component.clicked.subscribe(clickedSpy);
     
-    const chipElement = fixture.nativeElement.querySelector('.user-chip');
+    const chipElement = fixture.nativeElement.querySelector('.chip-user');
     chipElement.click();
     
-    expect(component.clicked.emit).toHaveBeenCalledWith(mockUser);
+    expect(clickedSpy).toHaveBeenCalledWith(mockUser);
   });
 
   it('should not emit clicked event when not clickable', () => {
     fixture.componentRef.setInput('clickable', false);
     fixture.detectChanges();
     
-    spyOn(component.clicked, 'emit');
+    const clickedSpy = jest.fn();
+    component.clicked.subscribe(clickedSpy);
     
-    const chipElement = fixture.nativeElement.querySelector('.user-chip');
+    const chipElement = fixture.nativeElement.querySelector('.chip-user');
     chipElement.click();
     
-    expect(component.clicked.emit).not.toHaveBeenCalled();
+    expect(clickedSpy).not.toHaveBeenCalled();
   });
 
   it('should use fallback avatar for anonymous users', () => {

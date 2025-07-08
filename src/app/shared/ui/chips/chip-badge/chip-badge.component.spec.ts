@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { BadgeChipComponent } from './badge-chip.component';
+import { ChipBadgeComponent } from './chip-badge.component';
 import type { Badge } from '@badges/utils/badge.model';
 
-describe('BadgeChipComponent', () => {
-  let component: BadgeChipComponent;
-  let fixture: ComponentFixture<BadgeChipComponent>;
+describe('ChipBadgeComponent', () => {
+  let component: ChipBadgeComponent;
+  let fixture: ComponentFixture<ChipBadgeComponent>;
 
   const mockBadge: Badge = {
     id: 'first-checkin',
@@ -15,10 +15,10 @@ describe('BadgeChipComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [BadgeChipComponent]
+      imports: [ChipBadgeComponent]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(BadgeChipComponent);
+    fixture = TestBed.createComponent(ChipBadgeComponent);
     component = fixture.componentInstance;
     
     // Set required input
@@ -73,7 +73,7 @@ describe('BadgeChipComponent', () => {
     fixture.componentRef.setInput('earned', true);
     fixture.detectChanges();
     
-    const chipElement = fixture.nativeElement.querySelector('.badge-chip');
+    const chipElement = fixture.nativeElement.querySelector('.chip-badge');
     expect(chipElement.classList).toContain('earned');
   });
 
@@ -81,7 +81,7 @@ describe('BadgeChipComponent', () => {
     fixture.componentRef.setInput('earned', false);
     fixture.detectChanges();
     
-    const chipElement = fixture.nativeElement.querySelector('.badge-chip');
+    const chipElement = fixture.nativeElement.querySelector('.chip-badge');
     expect(chipElement.classList).toContain('unearned');
   });
 
@@ -89,12 +89,13 @@ describe('BadgeChipComponent', () => {
     fixture.componentRef.setInput('clickable', true);
     fixture.detectChanges();
     
-    spyOn(component.clicked, 'emit');
+    const clickedSpy = jest.fn();
+    component.clicked.subscribe(clickedSpy);
     
-    const chipElement = fixture.nativeElement.querySelector('.badge-chip');
+    const chipElement = fixture.nativeElement.querySelector('.chip-badge');
     chipElement.click();
     
-    expect(component.clicked.emit).toHaveBeenCalledWith(mockBadge);
+    expect(clickedSpy).toHaveBeenCalledWith(mockBadge);
   });
 
   it('should fall back to icon mapping when badge has no emoji', () => {

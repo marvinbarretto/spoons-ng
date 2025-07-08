@@ -1,6 +1,6 @@
 @use 'styles/mixins' as *;
 
-.user-chip {
+.chip-user {
   @include chip-base;
   @include chip-size('md');
   @include chip-variant('default');
