@@ -1,18 +1,13 @@
-// module.exports = {
-//     preset: 'jest-preset-angular',
-//     setupFilesAfterEnv: ['<rootDir>/setup-jest.ts'],
-//     watchPathIgnorePatterns: ['<rootDir>/node_modules', '<rootDir>/dist'],
-//     testEnvironment: 'jsdom',
-// };
+const { createCjsPreset } = require('jest-preset-angular/presets');
 
-export default {
-  preset: 'jest-preset-angular',
+module.exports = {
+  ...createCjsPreset(),
   setupFilesAfterEnv: ['<rootDir>/setup-jest.ts'],
   watchPathIgnorePatterns: ['<rootDir>/node_modules', '<rootDir>/dist'],
   testEnvironment: 'jsdom',
-  moduleFileExtensions: ['ts', 'js', 'html', 'json', 'mjs'],
-  testMatch: ['**/+(*.)+(spec|test).+(ts|js)'],
-
+  transformIgnorePatterns: [
+    'node_modules/(?!(.*\\.mjs$)|nanoid)'
+  ],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@app/(.*)$': '<rootDir>/src/app/$1',
@@ -29,4 +24,4 @@ export default {
     '^@landlord/(.*)$': '<rootDir>/src/app/landlord/$1',
     '^@feedback/(.*)$': '<rootDir>/src/app/feedback/$1'
   }
-}
+};
