@@ -1,6 +1,6 @@
 // src/app/pubs/feature/pub-detail/pub-detail.component.ts
 import { Component, computed, inject, input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, JsonPipe } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { PubStore } from '../../data-access/pub.store';
 import { CheckInStore } from '@/app/check-in/data-access/check-in.store';
@@ -18,9 +18,17 @@ import type { CheckIn } from '@app/check-in/utils/check-in.models';
 
 @Component({
   selector: 'app-pub-detail',
-  imports: [CommonModule, ButtonComponent],
+  imports: [CommonModule, ButtonComponent, JsonPipe],
   template: `
-    <section class="pub-detail-page">
+    <section class="pub-detail-page" [class.has-carpet]="pub()?.carpetUrl">
+      @if (pub()?.carpetUrl) {
+        <div class="page-background">
+          <div class="carpet-bg">
+            <img [src]="pub()!.carpetUrl" [alt]="pub()!.name + ' background'" />
+          </div>
+          <div class="bg-overlay"></div>
+        </div>
+      }
       @if (isDataLoading()) {
         <div class="loading-state">
           <div class="loading-skeleton">
@@ -43,7 +51,7 @@ import type { CheckIn } from '@app/check-in/utils/check-in.models';
         <!-- Header with Back Button -->
         <header class="pub-header">
           <app-button variant="ghost" [size]="ButtonSize.SMALL" (onClick)="goBack()">← Back</app-button>
-          
+
           <!-- Pub Hero Section -->
           <div class="pub-hero">
             @if (pub()!.carpetUrl) {
@@ -65,9 +73,9 @@ import type { CheckIn } from '@app/check-in/utils/check-in.models';
         <!-- Quick Actions -->
         <div class="quick-actions">
           @if (canCheckIn()) {
-            <app-button 
-              variant="primary" 
-              [size]="ButtonSize.LARGE" 
+            <app-button
+              variant="primary"
+              [size]="ButtonSize.LARGE"
               (onClick)="initiateCheckIn()"
             >
               📸 Check In Here
@@ -210,6 +218,56 @@ import type { CheckIn } from '@app/check-in/utils/check-in.models';
       background: var(--background);
       color: var(--text);
       min-height: 100vh;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pub-detail-page.has-carpet {
+      background: transparent;
+    }
+
+    /* Page Background with Carpet */
+    .page-background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .carpet-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      opacity: 0.15;
+      filter: blur(2px) saturate(0.7);
+    }
+
+    .carpet-bg img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scale(1.1);
+    }
+
+    .bg-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(
+        180deg,
+        var(--background) 0%,
+        rgba(var(--background-rgb), 0.95) 10%,
+        rgba(var(--background-rgb), 0.85) 50%,
+        rgba(var(--background-rgb), 0.95) 90%,
+        var(--background) 100%
+      );
     }
 
     /* Loading States */
@@ -299,7 +357,16 @@ import type { CheckIn } from '@app/check-in/utils/check-in.models';
       border-radius: 0 0 20px 20px;
       overflow: hidden;
       background: var(--background-darkest);
-      min-height: 300px;
+      min-height: 400px;
+      margin-bottom: 2rem;
+    }
+
+    .has-carpet .pub-hero {
+      min-height: 500px;
+      background: transparent;
+      backdrop-filter: blur(1px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     }
 
     .carpet-image {
@@ -315,6 +382,7 @@ import type { CheckIn } from '@app/check-in/utils/check-in.models';
       width: 100%;
       height: 100%;
       object-fit: cover;
+      filter: saturate(1.2) contrast(1.1);
     }
 
     .pub-info {
@@ -323,22 +391,47 @@ import type { CheckIn } from '@app/check-in/utils/check-in.models';
       left: 0;
       right: 0;
       z-index: 2;
-      padding: 2rem 1.5rem 1.5rem;
-      background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+      padding: 3rem 1.5rem 2rem;
+      background: linear-gradient(
+        transparent 0%,
+        rgba(0, 0, 0, 0.4) 30%,
+        rgba(0, 0, 0, 0.8) 70%,
+        rgba(0, 0, 0, 0.95) 100%
+      );
       color: white;
+    }
+
+    .has-carpet .pub-info {
+      background: linear-gradient(
+        transparent 0%,
+        rgba(0, 0, 0, 0.3) 20%,
+        rgba(0, 0, 0, 0.7) 60%,
+        rgba(0, 0, 0, 0.9) 100%
+      );
+      backdrop-filter: blur(8px);
     }
 
     .pub-info h1 {
       font-size: 2rem;
       font-weight: 700;
       margin: 0 0 0.5rem;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+      color: white;
+    }
+
+    .has-carpet .pub-info h1 {
+      font-size: 2.5rem;
+      text-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.9),
+        0 4px 16px rgba(0, 0, 0, 0.6);
     }
 
     .pub-address {
       font-size: 1rem;
       margin: 0 0 0.5rem;
       opacity: 0.9;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+      color: rgba(255, 255, 255, 0.95);
     }
 
     .pub-location {
@@ -347,6 +440,8 @@ import type { CheckIn } from '@app/check-in/utils/check-in.models';
       gap: 0.5rem;
       font-size: 0.875rem;
       opacity: 0.8;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+      color: rgba(255, 255, 255, 0.9);
     }
 
     .location-icon {
@@ -429,6 +524,8 @@ import type { CheckIn } from '@app/check-in/utils/check-in.models';
       flex-direction: column;
       gap: 1rem;
       padding: 0 1rem 2rem;
+      position: relative;
+      z-index: 1;
     }
 
     .content-section {
@@ -440,8 +537,21 @@ import type { CheckIn } from '@app/check-in/utils/check-in.models';
       transition: all 0.2s ease;
     }
 
+    .has-carpet .content-section {
+      background: rgba(var(--background-darkest-rgb, 18, 20, 23), 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+
     .content-section:hover {
       box-shadow: 0 4px 16px var(--shadow);
+    }
+
+    .has-carpet .content-section:hover {
+      background: rgba(var(--background-darkest-rgb, 18, 20, 23), 0.9);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      transform: translateY(-2px);
     }
 
     .content-section h2 {
@@ -635,12 +745,20 @@ import type { CheckIn } from '@app/check-in/utils/check-in.models';
         min-height: 250px;
       }
 
+      .has-carpet .pub-hero {
+        min-height: 350px;
+      }
+
       .pub-info {
         padding: 1.5rem 1rem 1rem;
       }
 
       .pub-info h1 {
         font-size: 1.75rem;
+      }
+
+      .has-carpet .pub-info h1 {
+        font-size: 2rem;
       }
 
       .quick-actions {
@@ -914,17 +1032,17 @@ export class PubDetailComponent extends BaseComponent {
   initiateCheckIn(): void {
     const pubId = this.pubId();
     const user = this.user();
-    
+
     if (!pubId) {
       console.error('No pub ID available for check-in');
       return;
     }
-    
+
     if (!user) {
       console.error('User not authenticated for check-in');
       return;
     }
-    
+
     // Navigate to the dedicated check-in page
     this.router.navigate(['/check-in', pubId]);
   }
@@ -943,11 +1061,11 @@ export class PubDetailComponent extends BaseComponent {
 
   formatDate(timestamp: any): string {
     if (!timestamp) return 'Unknown';
-    
+
     const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
     const now = new Date();
     const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
-    
+
     if (diffInHours < 1) {
       return 'Just now';
     } else if (diffInHours < 24) {

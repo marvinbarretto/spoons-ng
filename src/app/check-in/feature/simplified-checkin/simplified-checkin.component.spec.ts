@@ -9,20 +9,19 @@ import { signal } from '@angular/core';
 describe('SimplifiedCheckinComponent', () => {
   let component: SimplifiedCheckinComponent;
   let fixture: ComponentFixture<SimplifiedCheckinComponent>;
-  let mockOrchestrator: jasmine.SpyObj<SimplifiedCheckinOrchestrator>;
-  let mockNearbyPubStore: jasmine.SpyObj<NearbyPubStore>;
-  let mockPubStore: jasmine.SpyObj<PubStore>;
-  let mockCheckinStore: jasmine.SpyObj<CheckInStore>;
+  let mockOrchestrator: any;
+  let mockNearbyPubStore: any;
+  let mockPubStore: any;
+  let mockCheckinStore: any;
 
   beforeEach(async () => {
-    // Create mock services
-    mockOrchestrator = jasmine.createSpyObj('SimplifiedCheckinOrchestrator', [
-      'startCheckin',
-      'stopCheckin',
-      'retryCheckin',
-      'cleanup',
-      'setVideoElement'
-    ], {
+    // Create mock services using Jest
+    mockOrchestrator = {
+      startCheckin: jest.fn(),
+      stopCheckin: jest.fn(),
+      retryCheckin: jest.fn(),
+      cleanup: jest.fn(),
+      setVideoElement: jest.fn(),
       stage: signal('INITIALIZING'),
       pubId: signal(null),
       error: signal(null),
@@ -33,18 +32,20 @@ describe('SimplifiedCheckinComponent', () => {
       conditionsMet: signal(false),
       showCamera: signal(false),
       photoDataUrl: signal(null)
-    });
+    };
 
-    mockNearbyPubStore = jasmine.createSpyObj('NearbyPubStore', ['closestPub'], {
+    mockNearbyPubStore = {
       closestPub: signal({ id: 'test-pub-id', name: 'Test Pub' })
-    });
+    };
 
-    mockPubStore = jasmine.createSpyObj('PubStore', ['get']);
-    mockPubStore.get.and.returnValue({ id: 'test-pub-id', name: 'Test Pub' });
+    mockPubStore = {
+      get: jest.fn().mockReturnValue({ id: 'test-pub-id', name: 'Test Pub' })
+    };
 
-    mockCheckinStore = jasmine.createSpyObj('CheckInStore', ['checkinToPub'], {
+    mockCheckinStore = {
+      checkinToPub: jest.fn(),
       checkinResults: signal({ success: true, points: { total: 100 }, badges: [] })
-    });
+    };
 
     await TestBed.configureTestingModule({
       imports: [SimplifiedCheckinComponent],
@@ -78,7 +79,7 @@ describe('SimplifiedCheckinComponent', () => {
     it('should start check-in when nearby pub is available', () => {
       // Setup
       const testPub = { id: 'test-pub-id', name: 'Test Pub' };
-      mockNearbyPubStore.closestPub.and.returnValue(testPub);
+      mockNearbyPubStore.closestPub.set(testPub);
 
       // Act
       component.ngOnInit();
@@ -89,7 +90,7 @@ describe('SimplifiedCheckinComponent', () => {
 
     it('should stop check-in when no nearby pub is available', () => {
       // Setup
-      mockNearbyPubStore.closestPub.and.returnValue(null);
+      mockNearbyPubStore.closestPub.set(null);
 
       // Act
       component.ngOnInit();
@@ -151,7 +152,7 @@ describe('SimplifiedCheckinComponent', () => {
   describe('Computed Properties', () => {
     it('should return pub name when pub is available', () => {
       // Setup
-      mockOrchestrator.pubId = signal('test-pub-id');
+      mockOrchestrator.pubId.set('test-pub-id');
 
       // Act
       const result = component.pubName();
@@ -162,8 +163,8 @@ describe('SimplifiedCheckinComponent', () => {
 
     it('should return "Unknown Pub" when pub is not found', () => {
       // Setup
-      mockOrchestrator.pubId = signal('nonexistent-pub-id');
-      mockPubStore.get.and.returnValue(null);
+      mockOrchestrator.pubId.set('nonexistent-pub-id');
+      mockPubStore.get.mockReturnValue(null);
 
       // Act
       const result = component.pubName();

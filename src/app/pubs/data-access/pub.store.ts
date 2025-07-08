@@ -172,4 +172,63 @@ export class PubStore extends BaseStore<Pub> {
       throw error;
     }
   }
+
+  /**
+   * Update pub carpet URL efficiently using signal updates
+   * 
+   * 🎯 PERFORMANCE OPTIMIZATION:
+   * Instead of invalidating the entire pub cache when one carpet URL changes,
+   * we update the specific pub object in the signal directly. This provides:
+   * - Instant UI updates via signal reactivity
+   * - No cache invalidation overhead
+   * - No network requests to reload all pubs
+   * - Preserves cached data for other pubs
+   * 
+   * 📊 FLOW:
+   * 1. User checks in and uploads carpet image
+   * 2. CarpetStorageService calls this method
+   * 3. Firebase is updated via PubService
+   * 4. In-memory signal is updated directly
+   * 5. Template reactivity triggers immediate UI update
+   * 
+   * ⚡ CACHE STRATEGY:
+   * We deliberately avoid cache invalidation because:
+   * - Carpet URLs are user-generated content that changes frequently
+   * - Full cache reload would refetch ALL pubs unnecessarily
+   * - Signal updates are instant and maintain data consistency
+   * - Cache remains valid for all other pub data
+   * 
+   * @param pubId - ID of the pub to update
+   * @param carpetUrl - New carpet image URL from Firebase Storage
+   */
+  async updatePubCarpetUrl(pubId: string, carpetUrl: string): Promise<void> {
+    console.log('[PubStore] 🖼️ Updating pub carpet URL:', { pubId, carpetUrl });
+
+    try {
+      // Step 1: Update Firebase document via PubService
+      // This handles Firestore update and service-level cache invalidation
+      await this.pubService.updatePubCarpetUrl(pubId, carpetUrl);
+
+      // Step 2: Update in-memory signal directly for instant UI reactivity
+      // This is the key optimization - no cache invalidation needed!
+      const updateData = {
+        carpetUrl,
+        hasCarpet: true, // Mark as having carpet when URL is provided
+        carpetUpdatedAt: Timestamp.now() // Track when carpet was last updated
+      };
+
+      // Use BaseStore's updateItem method to modify the signal
+      this.updateItem(
+        pub => pub.id === pubId, // Find the specific pub
+        updateData // Apply the carpet URL updates
+      );
+
+      console.log('[PubStore] ✅ Pub carpet URL updated successfully with signal reactivity:', pubId);
+      console.log('[PubStore] 🚀 UI will update instantly via signal - no cache reload needed!');
+
+    } catch (error) {
+      console.error('[PubStore] ❌ Failed to update pub carpet URL:', error);
+      throw error;
+    }
+  }
 }

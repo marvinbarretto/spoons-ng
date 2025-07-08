@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { CachedFirestoreService } from '../../shared/data-access/cached-firestore.service';
-import { Observable } from 'rxjs';
+import { Observable, firstValueFrom } from 'rxjs';
 import type { Pub } from '../utils/pub.models';
 import type { CheckIn } from '@check-in/utils/check-in.models';
 import { FirestoreDataConverter, collection, getDocs, arrayUnion, increment, serverTimestamp, Timestamp } from 'firebase/firestore';
@@ -26,6 +26,29 @@ export class PubService extends CachedFirestoreService {
 
   getPubById(id: string): Observable<Pub | undefined> {
     return this.doc$<Pub>(`pubs/${id}`);
+  }
+
+  /**
+   * Get a single pub by ID (Promise-based for async/await usage)
+   */
+  async getPub(id: string): Promise<Pub | undefined> {
+    console.log('[PubService] 🔍 Fetching pub by ID:', id);
+    try {
+      const pub = await firstValueFrom(this.doc$<Pub>(`pubs/${id}`));
+      console.log('[PubService] 📋 Pub fetch result:', pub ? 'found' : 'not found');
+      if (pub) {
+        console.log('[PubService] 📋 Pub details:', { 
+          id: pub.id, 
+          name: pub.name, 
+          hasCarpet: pub.hasCarpet,
+          carpetUrl: pub.carpetUrl ? 'present' : 'empty'
+        });
+      }
+      return pub;
+    } catch (error) {
+      console.error('[PubService] ❌ Error fetching pub:', error);
+      throw error;
+    }
   }
 
   getAllPubs(): Promise<Pub[]> {
@@ -124,6 +147,43 @@ export class PubService extends CachedFirestoreService {
       
     } catch (error) {
       console.error('[PubService] ❌ Failed to update pub carpet status:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 📸 Update pub with carpet URL - Used by CarpetStorageService
+   */
+  async updatePubCarpetUrl(pubId: string, carpetUrl: string): Promise<void> {
+    console.log('[PubService] 📸 Updating pub carpet URL:', pubId);
+    console.log('[PubService] 📋 New carpet URL:', carpetUrl);
+    
+    try {
+      const updateData: Partial<Pub> = { 
+        carpetUrl,
+        hasCarpet: true, // Set hasCarpet to true when we have a URL
+        carpetUpdatedAt: serverTimestamp() as any
+      };
+      
+      console.log('[PubService] 🔄 Updating Firestore document...');
+      await this.updateDoc<Pub>(`${this.path}/${pubId}`, updateData);
+      
+      console.log('[PubService] ✅ Pub carpet URL updated successfully');
+      console.log('[PubService] 📋 Updated data:', updateData);
+      
+      // 🚀 PERFORMANCE OPTIMIZATION: Cache invalidation removed
+      // PubStore now handles signal updates directly for instant UI reactivity
+      // No need to invalidate service-level cache since PubStore manages reactivity
+      console.log('[PubService] 🎯 Skipping cache invalidation - PubStore handles signal updates');
+      
+    } catch (error) {
+      console.error('[PubService] ❌ Failed to update pub carpet URL:', error);
+      console.log('[PubService] 📋 Error details:', {
+        pubId,
+        carpetUrl,
+        errorType: error?.constructor?.name,
+        errorMessage: error instanceof Error ? error.message : String(error)
+      });
       throw error;
     }
   }

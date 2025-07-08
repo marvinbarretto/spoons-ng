@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { ModalCheckinLandlordComponent } from './modal-checkin-landlord.component';
+import { getStandardTestProviders } from '../../../testing/test-providers';
 
 describe('ModalCheckinLandlordComponent', () => {
   let component: ModalCheckinLandlordComponent;
@@ -8,7 +8,8 @@ describe('ModalCheckinLandlordComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ModalCheckinLandlordComponent]
+      imports: [ModalCheckinLandlordComponent],
+      providers: getStandardTestProviders()
     })
     .compileComponents();
 
