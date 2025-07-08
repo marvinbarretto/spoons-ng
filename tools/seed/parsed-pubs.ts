@@ -9,8 +9,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.720713,
       "lng": -3.530086
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/1040-feature-448x332.png"
+    }
   },
   {
     "id": "globe-hotel-kings-lynn",
@@ -22,8 +21,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.755716,
       "lng": 0.393689
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/2520-feature-448x332.png"
+    }
   },
   {
     "id": "golden-cross-hotel-bromsgrove",
@@ -35,8 +33,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.333888,
       "lng": -2.061748
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/176-feature-448x332.jpg"
+    }
   },
   {
     "id": "goldengrove-stratford",
@@ -48,12 +45,11 @@ export const parsedPubs = [
     "location": {
       "lat": 51.544062,
       "lng": 0.004052
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/91-feature-448x332.png"
+    }
   },
   {
     "id": "grover-amp-allen-sudbury",
-    "name": "Grover &amp; Allen",
+    "name": "Grover & Allen",
     "address": "68–69 North Street, Sudbury, Suffolk, CO10 1RF",
     "city": "Sudbury",
     "region": "Suffolk",
@@ -61,21 +57,19 @@ export const parsedPubs = [
     "location": {
       "lat": 52.040209,
       "lng": 0.730873
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5285-feature-448x332.jpg"
+    }
   },
   {
     "id": "hamilton-hall-street-level-concourse",
     "name": "Hamilton Hall",
     "address": "Liverpool Street station, Street-level Concourse, City of London, EC2M 7PY",
-    "city": "Street-level Concourse",
+    "city": "London",
     "region": "City of London",
     "country": "England",
     "location": {
       "lat": 51.518092,
       "lng": -0.082102
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/42-feature-448x332.png"
+    }
   },
   {
     "id": "harpsfield-hall-hatfield",
@@ -87,8 +81,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.7635,
       "lng": -0.240838
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5480-feature-448x332.png"
+    }
   },
   {
     "id": "hoylake-lights-hoylake",
@@ -100,8 +93,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.392938,
       "lng": -3.176363
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/541-feature-448x332.png"
+    }
   },
   {
     "id": "hunters-hall-galashiels",
@@ -113,8 +105,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.617769,
       "lng": -2.810322
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/1233-feature-448x332.png"
+    }
   },
   {
     "id": "jj-moons-hornchurch",
@@ -126,8 +117,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.562838,
       "lng": 0.215125
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/89-feature-448x332.png"
+    }
   },
   {
     "id": "jj-moons-kingsbury",
@@ -139,8 +129,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.584598,
       "lng": -0.280321
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/27-feature-448x332.png"
+    }
   },
   {
     "id": "jj-moons-ruislip-manor",
@@ -152,8 +141,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.573462,
       "lng": -0.413564
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/20-feature-448x332.png"
+    }
   },
   {
     "id": "jj-moons-tooting",
@@ -165,8 +153,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.42737,
       "lng": -0.169092
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/39-feature-448x332.png"
+    }
   },
   {
     "id": "jj-moons-wembley",
@@ -178,8 +165,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.553434,
       "lng": -0.292243
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5-feature-448x332.png"
+    }
   },
   {
     "id": "john-the-clerk-of-cramlington-cramlington",
@@ -191,8 +177,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.086591,
       "lng": -1.583676
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7087-feature-448x332.png"
+    }
   },
   {
     "id": "jollys-hotel-broughty-ferry",
@@ -204,8 +189,7 @@ export const parsedPubs = [
     "location": {
       "lat": 56.465977,
       "lng": -2.873762
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6919-feature-448x332.png"
+    }
   },
   {
     "id": "keavans-port-dublin",
@@ -217,8 +201,7 @@ export const parsedPubs = [
     "location": {
       "lat": null,
       "lng": null
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7381-feature-448x332.png"
+    }
   },
   {
     "id": "lloyds-no1-bar-nottingham",
@@ -230,8 +213,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.95366,
       "lng": -1.144479
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2194-feature-448x332.png"
+    }
   },
   {
     "id": "luthers-bar-newcastle-upon-tyne",
@@ -243,8 +225,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.979372,
       "lng": -1.615143
-    },
-    "carpetUrl": "https://carpets.example.com/2024/04/7905-feature-448x332.png"
+    }
   },
   {
     "id": "montgomerys-tower-shrewsbury",
@@ -256,8 +237,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.709285,
       "lng": -2.758861
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6041-feature-448x332.png"
+    }
   },
   {
     "id": "moon-and-starfish-clacton-on-sea",
@@ -269,8 +249,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.787781,
       "lng": 1.15437
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/438-feature-448x332.png"
+    }
   },
   {
     "id": "opera-house-royal-tunbridge-wells",
@@ -282,8 +261,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.133734,
       "lng": 0.263966
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/229-feature-448x332.png"
+    }
   },
   {
     "id": "palladium-electric-radstock",
@@ -295,8 +273,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.285968,
       "lng": -2.481302
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6817-feature-448x332.png"
+    }
   },
   {
     "id": "parsons-barn-shoeburyness",
@@ -308,8 +285,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.542215,
       "lng": 0.784511
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7152-feature-448x332.png"
+    }
   },
   {
     "id": "pen-cob-pwllheli",
@@ -321,8 +297,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.887814,
       "lng": -4.417596
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6682-feature-448x332.png"
+    }
   },
   {
     "id": "penderels-oak-holborn",
@@ -334,8 +309,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.517957,
       "lng": -0.11536
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/506-feature-448x332.png"
+    }
   },
   {
     "id": "ritz-lincoln",
@@ -347,8 +321,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.223815,
       "lng": -0.54361
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/651-feature-448x332.jpg"
+    }
   },
   {
     "id": "robert-fitzharding-bedminster",
@@ -360,8 +333,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.441299,
       "lng": -2.601045
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/456-feature-448x332.jpg"
+    }
   },
   {
     "id": "robert-the-bruce-dumfries",
@@ -373,12 +345,11 @@ export const parsedPubs = [
     "location": {
       "lat": 55.069902,
       "lng": -3.612918
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1204-feature-448x332.jpg"
+    }
   },
   {
     "id": "rose-amp-crown-maldon",
-    "name": "Rose &amp; Crown",
+    "name": "Rose & Crown",
     "address": "109 High Street, Maldon, Essex, CM9 5EP",
     "city": "Maldon",
     "region": "Essex",
@@ -386,8 +357,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.731273,
       "lng": 0.680194
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7286-feature-448x332.png"
+    }
   },
   {
     "id": "royal-victoria-pavilion-ramsgate",
@@ -399,12 +369,11 @@ export const parsedPubs = [
     "location": {
       "lat": 51.331493,
       "lng": 1.422444
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5994-feature-448x332.jpg"
+    }
   },
   {
     "id": "s-fowler-amp-co-ryde",
-    "name": "S. Fowler &amp; Co.",
+    "name": "S. Fowler & Co.",
     "address": "41–43 Union Street, Ryde, Isle of Wight, PO33 2LF",
     "city": "Ryde",
     "region": "Isle of Wight",
@@ -412,8 +381,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.730504,
       "lng": -1.162836
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/904-feature-448x332.jpg"
+    }
   },
   {
     "id": "sanctuary-bar-kingston-upon-hull",
@@ -425,8 +393,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.771798,
       "lng": -0.36639
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7609-feature-448x332.png"
+    }
   },
   {
     "id": "sandford-house-huntingdon",
@@ -438,8 +405,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.330105,
       "lng": -0.187072
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5452-feature-448x332.jpg"
+    }
   },
   {
     "id": "shakespeares-head-holborn",
@@ -451,8 +417,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.5168039,
       "lng": -0.1221543
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/239-feature-448x332.jpg"
+    }
   },
   {
     "id": "sheffield-water-works-company-sheffield",
@@ -464,8 +429,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.380053,
       "lng": -1.474429
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2196-feature-448x332.jpg"
+    }
   },
   {
     "id": "sir-richard-owen-lancaster",
@@ -477,8 +441,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.046905,
       "lng": -2.800729
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1990-feature-448x332.jpg"
+    }
   },
   {
     "id": "spa-lane-vaults-chesterfield",
@@ -490,8 +453,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.234886,
       "lng": -1.42416
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2930-feature-448x332.jpg"
+    }
   },
   {
     "id": "spouters-corner-wood-green",
@@ -503,8 +465,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.596895,
       "lng": -0.108731
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/390-feature-448x332.png"
+    }
   },
   {
     "id": "st-matthews-hall-walsall",
@@ -516,8 +477,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.585257,
       "lng": -1.979967
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6694-feature-448x332.png"
+    }
   },
   {
     "id": "star-light-hounslow",
@@ -529,8 +489,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.459667,
       "lng": -0.447353
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7649-feature-448x332.png"
+    }
   },
   {
     "id": "stick-or-twist-leeds",
@@ -542,8 +501,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.802676,
       "lng": -1.542595
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7517-feature-448x332.png"
+    }
   },
   {
     "id": "tafarn-y-porth-caernarfon",
@@ -555,8 +513,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.140787,
       "lng": -4.274811
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1715-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-acorn-inn-lichfield",
@@ -568,8 +525,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.683712,
       "lng": -1.825369
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/441-feature-448x332.png"
+    }
   },
   {
     "id": "the-admiral-byng-potters-bar",
@@ -581,8 +537,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.699259,
       "lng": -0.190555
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/566-feature-448x332.png"
+    }
   },
   {
     "id": "the-admiral-collingwood-ilfracombe",
@@ -594,8 +549,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.21021,
       "lng": -4.11875
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5556-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-admiral-of-the-humber-kingston-upon-hull",
@@ -607,8 +561,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.743207,
       "lng": -0.343707
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/1699-feature-448x332.png"
+    }
   },
   {
     "id": "the-admiral-sir-john-borlase-warren-nottingham",
@@ -620,8 +573,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.929261,
       "lng": -1.275722
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5467-feature-448x332.png"
+    }
   },
   {
     "id": "the-albany-palace-trowbridge",
@@ -633,8 +585,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.320102,
       "lng": -2.205952
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6265-feature-448x332.png"
+    }
   },
   {
     "id": "the-albert-and-the-lion-blackpool",
@@ -646,8 +597,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.816554,
       "lng": -3.055167
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5649-feature-448x332.png"
+    }
   },
   {
     "id": "the-alexander-graham-bell-128-george-street",
@@ -659,8 +609,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.951693,
       "lng": -3.205087
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6183-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-amber-rooms-loughborough",
@@ -672,8 +621,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.773379,
       "lng": -1.208921
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/4111-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-aneurin-bevan-caerphilly-road",
@@ -685,8 +633,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.509067,
       "lng": -3.199992
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6259-feature-448x332.png"
+    }
   },
   {
     "id": "the-angel-basingstoke",
@@ -698,8 +645,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.265518,
       "lng": -1.084378
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/4084-feature-448x332.png"
+    }
   },
   {
     "id": "the-angel-hotel-whitby",
@@ -711,8 +657,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.48585,
       "lng": -0.614251
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6246-feature-448x332.png"
+    }
   },
   {
     "id": "the-angel-vaults-inn-hitchin",
@@ -724,8 +669,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.946387,
       "lng": -0.278478
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6427-feature-448x332.png"
+    }
   },
   {
     "id": "the-archibald-simpson-5-castle-street",
@@ -737,8 +681,7 @@ export const parsedPubs = [
     "location": {
       "lat": 57.148506,
       "lng": -2.09269
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/331-feature-448x332.png"
+    }
   },
   {
     "id": "the-arnold-machin-newcastle-under-lyme",
@@ -750,8 +693,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.011983,
       "lng": -2.225673
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/1964-feature-448x332.png"
+    }
   },
   {
     "id": "the-art-picture-house-bury",
@@ -763,8 +705,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.592054,
       "lng": -2.297872
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6264-feature-448x332.png"
+    }
   },
   {
     "id": "the-arthur-robertson-birmingham",
@@ -776,8 +717,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.517615,
       "lng": -1.90294
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5834-feature-448x332.png"
+    }
   },
   {
     "id": "the-ash-tree-ashton-under-lyne",
@@ -789,8 +729,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.490031,
       "lng": -2.092621
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/311-feature-448x332.png"
+    }
   },
   {
     "id": "the-assembly-rooms-epsom",
@@ -802,8 +741,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.332737,
       "lng": -0.269504
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/174-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-atrium-birmingham",
@@ -815,8 +753,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.453063,
       "lng": -1.720053
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5397-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-auld-brig-irvine",
@@ -828,8 +765,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.613085,
       "lng": -4.670035
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6736-feature-448x332.png"
+    }
   },
   {
     "id": "the-avion-aldridge",
@@ -841,8 +777,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.603723,
       "lng": -1.91939
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6882-feature-448x332.png"
+    }
   },
   {
     "id": "the-babington-arms-derby",
@@ -854,8 +789,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.919068,
       "lng": -1.476334
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/507-feature-448x332.png"
+    }
   },
   {
     "id": "the-back-of-beyond-reading",
@@ -867,8 +801,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.454748,
       "lng": -0.9636
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/323-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-bank-house-cheltenham",
@@ -880,8 +813,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.901035,
       "lng": -2.075712
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6209-feature-448x332.png"
+    }
   },
   {
     "id": "the-bank-statement-5758-wind-street",
@@ -893,8 +825,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.619321,
       "lng": -3.940535
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/749-feature-448x332.png"
+    }
   },
   {
     "id": "the-bankers-draft-sheffield",
@@ -906,8 +837,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.383397,
       "lng": -1.46633
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/281-feature-448x332.png"
+    }
   },
   {
     "id": "the-barkers-brewery-liverpool",
@@ -919,8 +849,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.411806,
       "lng": -2.839871
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6535-feature-448x332.png"
+    }
   },
   {
     "id": "the-barrel-vault-camden",
@@ -932,8 +861,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.53143,
       "lng": -0.126122
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7498-feature-448x332.png"
+    }
   },
   {
     "id": "the-barum-top-inn-halifax",
@@ -945,8 +873,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.722806,
       "lng": -1.859481
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/446-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-bath-arms-warminster",
@@ -958,8 +885,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.20468,
       "lng": -2.179412
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7089-feature-448x332.png"
+    }
   },
   {
     "id": "the-battesford-court-witham",
@@ -971,8 +897,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.798986,
       "lng": 0.638806
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2495-feature-448x332.png"
+    }
   },
   {
     "id": "the-bear-maidenhead",
@@ -984,8 +909,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.523201,
       "lng": -0.7176
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6220-feature-448x332.png"
+    }
   },
   {
     "id": "the-bear-melksham",
@@ -997,12 +921,11 @@ export const parsedPubs = [
     "location": {
       "lat": 51.375257,
       "lng": -2.139061
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6689-feature-448x332.png"
+    }
   },
   {
     "id": "the-bear-amp-ragged-staff-bedworth",
-    "name": "The Bear &amp; Ragged Staff",
+    "name": "The Bear & Ragged Staff",
     "address": "50 King Street, Bedworth, Warwickshire, CV12 8JA",
     "city": "Bedworth",
     "region": "Warwickshire",
@@ -1010,8 +933,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.479617,
       "lng": -1.47115
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2145-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-beaten-docket-cricklewood",
@@ -1023,8 +945,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.553579,
       "lng": -0.211415
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/35-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-beehive-brixton",
@@ -1036,8 +957,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.463758,
       "lng": -0.114254
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/51-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-beehive-crawley",
@@ -1049,8 +969,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.156249,
       "lng": -0.163169
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6583-feature-448x332.png"
+    }
   },
   {
     "id": "the-bell-amesbury",
@@ -1062,8 +981,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.17198,
       "lng": -1.780391
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6638-feature-448x332.png"
+    }
   },
   {
     "id": "the-bell-hanger-chepstow",
@@ -1075,8 +993,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.642615,
       "lng": -2.673725
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5345-feature-448x332.png"
+    }
   },
   {
     "id": "the-bell-hotel-norwich",
@@ -1088,8 +1005,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.62731,
       "lng": 1.295295
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/136-feature-448x332.png"
+    }
   },
   {
     "id": "the-belle-and-lion-sheerness",
@@ -1101,8 +1017,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.440586,
       "lng": 0.761254
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7185-feature-448x332.png"
+    }
   },
   {
     "id": "the-bellwether-wednesbury",
@@ -1114,8 +1029,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.553729,
       "lng": -2.017753
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1406-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-benjamin-fawcett-driffield",
@@ -1127,8 +1041,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.007308,
       "lng": -0.440854
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6203-feature-448x332.png"
+    }
   },
   {
     "id": "the-benjamin-huntsman-sheffield",
@@ -1140,8 +1053,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.379676,
       "lng": -1.472555
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/721-feature-448x332.png"
+    }
   },
   {
     "id": "the-benjamin-satchwell-royal-leamington-spa",
@@ -1153,8 +1065,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.289842,
       "lng": -1.535806
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/263-feature-448x332.png"
+    }
   },
   {
     "id": "the-berkeley-clifton",
@@ -1166,8 +1077,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.455781,
       "lng": -2.605192
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/222-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-bishop-blaize-stretford",
@@ -1179,8 +1089,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.461404,
       "lng": -2.288614
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1473-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-bishop-vesey-sutton-coldfield",
@@ -1192,8 +1101,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.548635,
       "lng": -1.840976
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/297-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-bishops-mill-durham",
@@ -1205,8 +1113,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.778532,
       "lng": -1.575693
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5326-feature-448x332.png"
+    }
   },
   {
     "id": "the-black-boy-newtown",
@@ -1218,8 +1125,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.516351,
       "lng": -3.315833
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6671-feature-448x332.png"
+    }
   },
   {
     "id": "the-black-bull-inn-bangor",
@@ -1231,8 +1137,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.224158,
       "lng": -4.129403
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1664-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-black-horse-birmingham",
@@ -1244,8 +1149,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.410733,
       "lng": -1.973855
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6234-feature-448x332.png"
+    }
   },
   {
     "id": "the-blackwater-stream-broadstone",
@@ -1257,8 +1161,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.760145,
       "lng": -1.994186
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6476-feature-448x332.png"
+    }
   },
   {
     "id": "the-bloxwich-showman-bloxwich",
@@ -1270,8 +1173,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.614682,
       "lng": -2.004116
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6875-feature-448x332.png"
+    }
   },
   {
     "id": "the-blue-bell-pontefract",
@@ -1283,8 +1185,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.613634,
       "lng": -1.354314
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/7104-feature-448x332.png"
+    }
   },
   {
     "id": "the-blue-bell-inn-scunthorpe",
@@ -1296,8 +1197,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.590495,
       "lng": -0.654474
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/928-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-blue-boar-billericay",
@@ -1309,8 +1209,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.627238,
       "lng": 0.418715
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/1379-feature-448x332.png"
+    }
   },
   {
     "id": "the-bluecoat-rotherham",
@@ -1322,8 +1221,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.429338,
       "lng": -1.355137
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1776-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-bobbing-john-alloa",
@@ -1335,8 +1233,7 @@ export const parsedPubs = [
     "location": {
       "lat": 56.115613,
       "lng": -3.790912
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6390-feature-448x332.png"
+    }
   },
   {
     "id": "the-bole-bridge-tamworth",
@@ -1348,8 +1245,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.633341,
       "lng": -1.691778
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1448-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-booking-office-17-waverley-bridge",
@@ -1361,8 +1257,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.952627,
       "lng": -3.191295
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7164-feature-448x332.png"
+    }
   },
   {
     "id": "the-boot-inn-burnley",
@@ -1374,8 +1269,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.789013,
       "lng": -2.240513
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6165-feature-448x332.png"
+    }
   },
   {
     "id": "the-bottle-kiln-harwich",
@@ -1387,8 +1281,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.936533,
       "lng": 1.280799
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7386-feature-448x332.png"
+    }
   },
   {
     "id": "the-bottle-of-sack-sutton-coldfield",
@@ -1400,8 +1293,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.558998,
       "lng": -1.826867
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1251-feature-448x332.png"
+    }
   },
   {
     "id": "the-botwell-inn-hayes",
@@ -1413,8 +1305,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.508309,
       "lng": -0.416521
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/884-feature-448x332.png"
+    }
   },
   {
     "id": "the-bourtree-hawick",
@@ -1426,8 +1317,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.425516,
       "lng": -2.783644
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6327-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-bowling-green-otley",
@@ -1439,8 +1329,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.9038,
       "lng": -1.692795
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5523-feature-448x332.png"
+    }
   },
   {
     "id": "the-bradley-green-biddulph",
@@ -1452,8 +1341,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.115575,
       "lng": -2.176494
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/1898-feature-448x332.png"
+    }
   },
   {
     "id": "the-brandon-works-motherwell",
@@ -1465,8 +1353,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.791348,
       "lng": -3.99194
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/2468-feature-448x332.png"
+    }
   },
   {
     "id": "the-bransty-arch-whitehaven",
@@ -1478,8 +1365,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.55117,
       "lng": -3.586784
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/4243-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-brass-balance-birkenhead",
@@ -1491,8 +1377,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.39183,
       "lng": -3.018213
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/2071-feature-448x332.png"
+    }
   },
   {
     "id": "the-briar-rose-birmingham",
@@ -1504,8 +1389,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.479944,
       "lng": -1.900048
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/791-feature-448x332.png"
+    }
   },
   {
     "id": "the-bridge-house-chippenham",
@@ -1517,8 +1401,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.458393,
       "lng": -2.116933
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5955-feature-448x332.png"
+    }
   },
   {
     "id": "the-bridge-house-belfast",
@@ -1530,8 +1413,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.593708,
       "lng": -5.931401
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1331-feature-448x332.png"
+    }
   },
   {
     "id": "the-briggate-leeds",
@@ -1543,8 +1425,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.792904,
       "lng": -1.388592
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7283-feature-448x332.png"
+    }
   },
   {
     "id": "the-bright-helm-brighton",
@@ -1556,8 +1437,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.822373,
       "lng": -0.144355
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/896-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-bright-water-inn-shirley",
@@ -1569,8 +1449,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.918793,
       "lng": -1.429307
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/656-feature-448x332.png"
+    }
   },
   {
     "id": "the-britannia-rowley-regis",
@@ -1582,8 +1461,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.47499,
       "lng": -2.040231
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1656-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-britannia-inn-plymouth",
@@ -1595,8 +1473,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.385884,
       "lng": -4.158203
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/1171-feature-448x332.png"
+    }
   },
   {
     "id": "the-brocket-arms-wigan",
@@ -1608,8 +1485,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.556988,
       "lng": -2.634695
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/2963-feature-448x332.png"
+    }
   },
   {
     "id": "the-brockley-barge-brockley",
@@ -1621,8 +1497,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.464508,
       "lng": -0.036696
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1006-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-broken-bridge-pontefract",
@@ -1634,8 +1509,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.692335,
       "lng": -1.308966
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5683-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-buck-inn-northallerton",
@@ -1647,8 +1521,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.341334,
       "lng": -1.435757
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7479-feature-448x332.png"
+    }
   },
   {
     "id": "the-bull-and-stirrup-hotel-chester",
@@ -1660,8 +1533,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.194499,
       "lng": -2.893845
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7295-feature-448x332.png"
+    }
   },
   {
     "id": "the-bulls-head-hotel-manchester",
@@ -1673,8 +1545,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.524208,
       "lng": -2.400162
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6795-feature-448x332.png"
+    }
   },
   {
     "id": "the-butter-cross-bingham",
@@ -1686,8 +1557,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.952695,
       "lng": -0.952142
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6487-feature-448x332.png"
+    }
   },
   {
     "id": "the-caley-picture-house-31-lothian-road",
@@ -1699,8 +1569,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.947857,
       "lng": -3.205929
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7248-feature-448x332.png"
+    }
   },
   {
     "id": "the-calverts-court-stockport",
@@ -1712,8 +1581,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.409982,
       "lng": -2.158064
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1617-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-capital-asset-perth",
@@ -1725,8 +1593,7 @@ export const parsedPubs = [
     "location": {
       "lat": 56.397432,
       "lng": -3.426289
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2959-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-captain-alexander-liverpool",
@@ -1738,8 +1605,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.404739,
       "lng": -2.99134
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6826-feature-448x332.png"
+    }
   },
   {
     "id": "the-captain-flinders-euston",
@@ -1751,8 +1617,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.529378,
       "lng": -0.13278
-    },
-    "carpetUrl": "https://carpets.example.com/2024/04/7618-feature-448x332.png"
+    }
   },
   {
     "id": "the-captain-james-lang-dumbarton",
@@ -1764,8 +1629,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.94331,
       "lng": -4.571759
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7057-feature-448x332.png"
+    }
   },
   {
     "id": "the-captain-noel-newton-oakham",
@@ -1777,8 +1641,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.670042,
       "lng": -0.73029
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7122-feature-448x332.png"
+    }
   },
   {
     "id": "the-carnival-inn-bridgwater",
@@ -1790,8 +1653,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.127575,
       "lng": -3.003683
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/2346-feature-448x332.png"
+    }
   },
   {
     "id": "the-carrick-stone-glasgow",
@@ -1803,8 +1665,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.948199,
       "lng": -3.988857
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6502-feature-448x332.png"
+    }
   },
   {
     "id": "the-carron-works-bank-street",
@@ -1816,8 +1677,7 @@ export const parsedPubs = [
     "location": {
       "lat": 56.000052,
       "lng": -3.78343
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2496-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-castle-hotel-ruthin",
@@ -1829,8 +1689,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.114862,
       "lng": -3.310444
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5536-feature-448x332.png"
+    }
   },
   {
     "id": "the-catherine-wheel-henley-on-thames",
@@ -1842,21 +1701,19 @@ export const parsedPubs = [
     "location": {
       "lat": 51.537841,
       "lng": -0.903089
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/2367-feature-448x332.png"
+    }
   },
   {
     "id": "the-central-bar-shepherds-bush",
     "name": "The Central Bar",
-    "address": "West 12 Shopping Centre, Shepherd’s Bush Green, Shepherd’s Bush, Hammersmith &amp; Fulham, W12 8PH",
+    "address": "West 12 Shopping Centre, Shepherd’s Bush Green, Shepherd’s Bush, Hammersmith & Fulham, W12 8PH",
     "city": "Shepherd’s Bush",
-    "region": "Hammersmith &amp; Fulham",
+    "region": "Hammersmith & Fulham",
     "country": "England",
     "location": {
       "lat": 51.503872,
       "lng": -0.219386
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/4030-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-central-bar-39-windsor-place",
@@ -1868,8 +1725,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.483346,
       "lng": -3.172788
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/2042-feature-448x332.png"
+    }
   },
   {
     "id": "the-central-bar-carrickfergus",
@@ -1881,8 +1737,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.715058,
       "lng": -5.805676
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2245-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-central-hotel-shotton",
@@ -1894,8 +1749,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.212255,
       "lng": -3.039899
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5815-feature-448x332.png"
+    }
   },
   {
     "id": "the-cerdic-chard",
@@ -1907,8 +1761,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.87283,
       "lng": -2.963221
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/2337-feature-448x332.png"
+    }
   },
   {
     "id": "the-charlie-hall-birmingham",
@@ -1920,8 +1773,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.524261,
       "lng": -1.839502
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1355-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-chequers-inn-stourbridge",
@@ -1933,8 +1785,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.455058,
       "lng": -2.143959
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6422-feature-448x332.png"
+    }
   },
   {
     "id": "the-cherry-tree-huddersfield",
@@ -1946,8 +1797,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.647199,
       "lng": -1.782323
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1536-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-chevalier-inn-exeter",
@@ -1959,8 +1809,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.722181,
       "lng": -3.532698
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6217-feature-448x332.png"
+    }
   },
   {
     "id": "the-chief-justice-of-the-common-pleas-keswick",
@@ -1972,8 +1821,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.602015,
       "lng": -3.138132
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6890-feature-448x332.png"
+    }
   },
   {
     "id": "the-childwall-fiveways-hotel-liverpool",
@@ -1985,8 +1833,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.396796,
       "lng": -2.896469
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6235-feature-448x332.png"
+    }
   },
   {
     "id": "the-church-house-wath-upon-dearne",
@@ -1998,8 +1845,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.502585,
       "lng": -1.344831
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/1757-feature-448x332.png"
+    }
   },
   {
     "id": "the-city-and-county-goole",
@@ -2011,8 +1857,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.703537,
       "lng": -0.871089
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/1977-feature-448x332.png"
+    }
   },
   {
     "id": "the-city-arms-coventry",
@@ -2024,8 +1869,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.399005,
       "lng": -1.531827
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1823-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-clairville-wallasey",
@@ -2037,8 +1881,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.419741,
       "lng": -3.047288
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/4259-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-claude-du-vall-camberley",
@@ -2050,8 +1893,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.338249,
       "lng": -0.744231
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2009-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-clifton-sedgley",
@@ -2063,8 +1905,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.541,
       "lng": -2.122286
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/663-feature-448x332.png"
+    }
   },
   {
     "id": "the-clothiers-arms-leeds",
@@ -2076,8 +1917,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.866073,
       "lng": -1.684039
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/7153-feature-448x332.png"
+    }
   },
   {
     "id": "the-coinage-hall-helston",
@@ -2089,8 +1929,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.100774,
       "lng": -5.275668
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7323-feature-448x332.png"
+    }
   },
   {
     "id": "the-coliseum-abergavenny",
@@ -2102,8 +1941,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.823196,
       "lng": -3.017692
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1742-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-coliseum-picture-theatre-cleethorpes",
@@ -2115,8 +1953,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.560888,
       "lng": -0.030906
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7190-feature-448x332.png"
+    }
   },
   {
     "id": "the-college-arms-peterborough",
@@ -2128,8 +1965,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.57519,
       "lng": -0.241905
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/236-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-colley-rowe-inn-collier-row",
@@ -2141,8 +1977,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.599009,
       "lng": 0.161046
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/614-feature-448x332.png"
+    }
   },
   {
     "id": "the-commercial-hotel-accrington",
@@ -2154,8 +1989,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.752029,
       "lng": -2.364428
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6652-feature-448x332.png"
+    }
   },
   {
     "id": "the-commercial-inn-sowerby-bridge",
@@ -2167,8 +2001,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.709434,
       "lng": -1.908474
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6976-feature-448x332.png"
+    }
   },
   {
     "id": "the-commercial-rooms-4345-corn-street",
@@ -2180,8 +2013,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.454487,
       "lng": -2.59451
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/183-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-company-of-weavers-witney",
@@ -2193,8 +2025,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.783578,
       "lng": -1.484665
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6612-feature-448x332.png"
+    }
   },
   {
     "id": "the-company-row-consett",
@@ -2206,8 +2037,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.852522,
       "lng": -1.832546
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/540-feature-448x332.png"
+    }
   },
   {
     "id": "the-conister-arms-douglas",
@@ -2219,8 +2049,7 @@ export const parsedPubs = [
     "location": {
       "lat": null,
       "lng": null
-    },
-    "carpetUrl": "https://carpets.example.com/2025/04/7923-feature-448x332.png"
+    }
   },
   {
     "id": "the-cooper-rose-sunderland",
@@ -2232,8 +2061,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.903263,
       "lng": -1.387964
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6617-feature-448x332.png"
+    }
   },
   {
     "id": "the-cordwainer-northampton",
@@ -2245,8 +2073,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.237974,
       "lng": -0.892407
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6158-feature-448x332.png"
+    }
   },
   {
     "id": "the-corn-exchange-leicester",
@@ -2258,8 +2085,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.634196,
       "lng": -1.134256
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2193-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-corn-exchange-bury-st-edmunds",
@@ -2271,8 +2097,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.244801,
       "lng": 0.713052
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6382-feature-448x332.png"
+    }
   },
   {
     "id": "the-corn-exchange-arbroath",
@@ -2284,8 +2109,7 @@ export const parsedPubs = [
     "location": {
       "lat": 56.558821,
       "lng": -2.582352
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1044-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-coronation-hall-surbiton",
@@ -2297,8 +2121,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.393667,
       "lng": -0.303676
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/453-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-corryvreckan-oban",
@@ -2310,8 +2133,7 @@ export const parsedPubs = [
     "location": {
       "lat": 56.41216,
       "lng": -5.475373
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5717-feature-448x332.png"
+    }
   },
   {
     "id": "the-counting-house-dundee",
@@ -2323,8 +2145,7 @@ export const parsedPubs = [
     "location": {
       "lat": 56.461882,
       "lng": -2.971444
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/358-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-counting-house-2-st-vincent-place",
@@ -2336,8 +2157,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.860813,
       "lng": -4.252066
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/282-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-counting-house-congleton",
@@ -2349,8 +2169,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.163621,
       "lng": -2.214996
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/632-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-county-hotel-ashford",
@@ -2362,8 +2181,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.149166,
       "lng": 0.875009
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/530-feature-448x332.png"
+    }
   },
   {
     "id": "the-court-leet-ormskirk",
@@ -2375,8 +2193,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.56808,
       "lng": -2.885198
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6439-feature-448x332.png"
+    }
   },
   {
     "id": "the-court-of-requests-oldbury",
@@ -2388,8 +2205,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.504843,
       "lng": -2.015758
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6596-feature-448x332.png"
+    }
   },
   {
     "id": "the-cricketers-ipswich",
@@ -2401,8 +2217,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.059695,
       "lng": 1.154666
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/288-feature-448x332.png"
+    }
   },
   {
     "id": "the-cross-inn-kingswinford",
@@ -2414,8 +2229,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.497676,
       "lng": -2.167357
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7226-feature-448x332.png"
+    }
   },
   {
     "id": "the-cross-keys-peterhead",
@@ -2427,8 +2241,7 @@ export const parsedPubs = [
     "location": {
       "lat": 57.505647,
       "lng": -1.77894
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5428-feature-448x332.png"
+    }
   },
   {
     "id": "the-cross-keys-beverley",
@@ -2440,8 +2253,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.842947,
       "lng": -0.433299
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6803-feature-448x332.png"
+    }
   },
   {
     "id": "the-crosse-keys-9-gracechurch-street",
@@ -2453,8 +2265,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.512713,
       "lng": -0.084735
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/364-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-crossed-peels-8-spittal-street",
@@ -2466,8 +2277,7 @@ export const parsedPubs = [
     "location": {
       "lat": 56.1186,
       "lng": -3.93877
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5648-feature-448x332.png"
+    }
   },
   {
     "id": "the-crossed-shuttle-leeds",
@@ -2479,8 +2289,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.796644,
       "lng": -1.661849
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6633-feature-448x332.png"
+    }
   },
   {
     "id": "the-crowborough-cross-crowborough",
@@ -2492,8 +2301,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.060174,
       "lng": 0.160447
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7264-feature-448x332.png"
+    }
   },
   {
     "id": "the-crown-berkhamsted",
@@ -2505,8 +2313,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.759782,
       "lng": -0.563227
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/473-feature-448x332.png"
+    }
   },
   {
     "id": "the-crown-worcester",
@@ -2518,8 +2325,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.193176,
       "lng": -2.22249
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/4086-feature-448x332.png"
+    }
   },
   {
     "id": "the-crown-hotel-biggleswade",
@@ -2531,8 +2337,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.087082,
       "lng": -0.265507
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7243-feature-448x332.png"
+    }
   },
   {
     "id": "the-crown-inn-fareham",
@@ -2544,8 +2349,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.852212,
       "lng": -1.176312
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6148-feature-448x332.png"
+    }
   },
   {
     "id": "the-crown-inn-knaresborough",
@@ -2557,8 +2361,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.008829,
       "lng": -1.467907
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7206-feature-448x332.png"
+    }
   },
   {
     "id": "the-crown-rivers-hounslow",
@@ -2570,8 +2373,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.471493,
       "lng": -0.487239
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5509-feature-448x332.png"
+    }
   },
   {
     "id": "the-crystal-palace-36-jamaica-street",
@@ -2583,8 +2385,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.857965,
       "lng": -4.257446
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/833-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-cuthbert-brodrick-leeds",
@@ -2596,8 +2397,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.801179,
       "lng": -1.54835
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5482-feature-448x332.png"
+    }
   },
   {
     "id": "the-dairyman-brentwood",
@@ -2609,8 +2409,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.620737,
       "lng": 0.304698
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7111-feature-448x332.png"
+    }
   },
   {
     "id": "the-david-macbeth-moir-musselburgh",
@@ -2622,8 +2421,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.943088,
       "lng": -3.056993
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5703-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-david-protheroe-neath",
@@ -2635,8 +2433,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.661838,
       "lng": -3.806317
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/785-feature-448x332.png"
+    }
   },
   {
     "id": "the-dee-hotel-west-kirby",
@@ -2648,8 +2445,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.372749,
       "lng": -3.182691
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2375-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-denmead-queen-waterlooville",
@@ -2661,8 +2457,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.880662,
       "lng": -1.030846
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6256-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-devonshire-inn-skipton",
@@ -2674,8 +2469,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.960337,
       "lng": -2.015925
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1667-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-dockle-farmhouse-swindon",
@@ -2687,8 +2481,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.573489,
       "lng": -1.756386
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5330-feature-448x332.png"
+    }
   },
   {
     "id": "the-dog-beck-penrith",
@@ -2700,12 +2493,11 @@ export const parsedPubs = [
     "location": {
       "lat": 54.661858,
       "lng": -2.750003
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6748-feature-448x332.png"
+    }
   },
   {
     "id": "the-dolphin-amp-anchor-chichester",
-    "name": "The Dolphin &amp; Anchor",
+    "name": "The Dolphin & Anchor",
     "address": "West Street, Chichester, West Sussex, PO19 1QD",
     "city": "Chichester",
     "region": "West Sussex",
@@ -2713,8 +2505,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.83664,
       "lng": -0.779381
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/237-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-dominie-cross-retford",
@@ -2726,8 +2517,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.322501,
       "lng": -0.941022
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5436-feature-448x332.png"
+    }
   },
   {
     "id": "the-drabbet-smock-haverhill",
@@ -2739,8 +2529,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.082669,
       "lng": 0.437547
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/1058-feature-448x332.png"
+    }
   },
   {
     "id": "the-dragon-inn-birmingham",
@@ -2752,8 +2541,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.474547,
       "lng": -1.896601
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5609-feature-448x332.png"
+    }
   },
   {
     "id": "the-drapers-arms-peterborough",
@@ -2765,8 +2553,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.572993,
       "lng": -0.245933
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5362-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-duke-of-wellington-minehead",
@@ -2778,8 +2565,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.20571,
       "lng": -3.479239
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5501-feature-448x332.png"
+    }
   },
   {
     "id": "the-dukes-head-leominster",
@@ -2791,8 +2577,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.227192,
       "lng": -2.73773
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5499-feature-448x332.png"
+    }
   },
   {
     "id": "the-earl-of-dalkeith-kettering",
@@ -2804,8 +2589,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.3996,
       "lng": -0.725613
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/449-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-earl-of-mercia-coventry",
@@ -2817,8 +2601,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.40739,
       "lng": -1.508866
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2192-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-eccles-cross-eccles",
@@ -2830,8 +2613,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.48348,
       "lng": -2.333429
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/312-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-edmund-tylney-leatherhead",
@@ -2843,8 +2625,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.295227,
       "lng": -0.327587
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/520-feature-448x332.png"
+    }
   },
   {
     "id": "the-edwin-waugh-heywood",
@@ -2856,8 +2637,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.593881,
       "lng": -2.222644
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/835-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-eight-bells-dover",
@@ -2869,8 +2649,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.125672,
       "lng": 1.312541
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/397-feature-448x332.png"
+    }
   },
   {
     "id": "the-electrical-wizard-morpeth",
@@ -2882,8 +2661,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.167009,
       "lng": -1.690994
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6500-feature-448x332.png"
+    }
   },
   {
     "id": "the-elihu-yale-4446-regent-street",
@@ -2895,8 +2673,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.047216,
       "lng": -2.997182
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/386-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-elizabeth-of-york-moseley",
@@ -2908,8 +2685,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.446139,
       "lng": -1.887191
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1320-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-elms-leigh-on-sea",
@@ -2921,8 +2697,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.547648,
       "lng": 0.657715
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/143-feature-448x332.png"
+    }
   },
   {
     "id": "the-eric-bartholomew-morecambe",
@@ -2934,8 +2709,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.072394,
       "lng": -2.865804
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/4237-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-ernehale-arnold",
@@ -2947,8 +2721,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.001732,
       "lng": -1.1304
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1168-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-ernest-willows-roath",
@@ -2960,8 +2733,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.486302,
       "lng": -3.165792
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/754-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-esquire-house-1487-great-western-road",
@@ -2973,8 +2745,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.888157,
       "lng": -4.320975
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1660-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-exchange-banbury",
@@ -2986,8 +2757,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.060541,
       "lng": -1.338996
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/258-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-fair-oblair-blairgowrie",
@@ -2999,8 +2769,7 @@ export const parsedPubs = [
     "location": {
       "lat": 56.592497,
       "lng": -3.338053
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6732-feature-448x332.png"
+    }
   },
   {
     "id": "the-falcon-high-wycombe",
@@ -3012,8 +2781,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.629138,
       "lng": -0.751254
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/167-feature-448x332.png"
+    }
   },
   {
     "id": "the-fall-well-liverpool",
@@ -3025,8 +2793,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.406528,
       "lng": -2.980461
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2517-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-felix-holt-nuneaton",
@@ -3038,8 +2805,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.523039,
       "lng": -1.469139
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/576-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-ferry-boat-runcorn",
@@ -3051,8 +2817,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.342581,
       "lng": -2.732335
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/4254-feature-448x332.png"
+    }
   },
   {
     "id": "the-figure-of-eight-birmingham",
@@ -3064,8 +2829,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.476483,
       "lng": -1.912173
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/295-feature-448x332.png"
+    }
   },
   {
     "id": "the-fire-station-whitley-bay",
@@ -3077,8 +2841,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.042969,
       "lng": -1.445257
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/1752-feature-448x332.png"
+    }
   },
   {
     "id": "the-first-post-cosham",
@@ -3090,8 +2853,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.844307,
       "lng": -1.067508
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/684-feature-448x332.png"
+    }
   },
   {
     "id": "the-five-quarter-peterlee",
@@ -3103,8 +2865,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.758329,
       "lng": -1.333387
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/4197-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-five-stones-filey",
@@ -3116,8 +2877,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.189141,
       "lng": -0.28258
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7901-feature-448x332.png"
+    }
   },
   {
     "id": "the-five-swans-newcastle-upon-tyne",
@@ -3129,8 +2889,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.977702,
       "lng": -1.612518
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6367-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-flying-boat-dartford",
@@ -3142,8 +2901,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.444826,
       "lng": 0.213928
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6149-feature-448x332.png"
+    }
   },
   {
     "id": "the-flying-horse-crawley",
@@ -3155,8 +2913,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.156249,
       "lng": -0.163169
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5785-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-flying-standard-coventry",
@@ -3168,8 +2925,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.409496,
       "lng": -1.509269
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/163_5-448x332.jpg"
+    }
   },
   {
     "id": "the-foley-arms-hotel-great-malvern",
@@ -3181,8 +2937,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.112556,
       "lng": -2.3299
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5562-feature-448x332.png"
+    }
   },
   {
     "id": "the-ford-madox-brown-oxford-road",
@@ -3194,8 +2949,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.461541,
       "lng": -2.229392
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5613-feature-448x332.png"
+    }
   },
   {
     "id": "the-forty-foot-dn-laoghaire",
@@ -3207,8 +2961,7 @@ export const parsedPubs = [
     "location": {
       "lat": null,
       "lng": null
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7330-feature-448x332.png"
+    }
   },
   {
     "id": "the-forum-hexham",
@@ -3220,8 +2973,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.97176,
       "lng": -2.101329
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/834-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-four-candles-oxford",
@@ -3233,8 +2985,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.753386,
       "lng": -1.261995
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6019-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-fox-on-the-hill-camberwell",
@@ -3246,8 +2997,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.464829,
       "lng": -0.089879
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/134-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-francis-newton-sheffield",
@@ -3259,8 +3009,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.376438,
       "lng": -1.492858
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6236-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-frank-hornby-liverpool",
@@ -3272,8 +3021,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.515955,
       "lng": -2.938238
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6910-feature-448x332.png"
+    }
   },
   {
     "id": "the-free-man-nottingham",
@@ -3285,8 +3033,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.966202,
       "lng": -1.109271
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5837-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-friar-penketh-warrington",
@@ -3298,8 +3045,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.387404,
       "lng": -2.593978
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/434-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-full-house-hemel-hempstead",
@@ -3311,8 +3057,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.753147,
       "lng": -0.472659
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/269-feature-448x332.png"
+    }
   },
   {
     "id": "the-full-moon-dudley",
@@ -3324,8 +3069,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.509083,
       "lng": -2.085216
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/189-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-furness-railway-barrow-in-furness",
@@ -3337,8 +3081,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.115717,
       "lng": -3.227841
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/516-feature-448x332.png"
+    }
   },
   {
     "id": "the-furze-wren-bexleyheath",
@@ -3350,8 +3093,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.456639,
       "lng": 0.147951
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2862-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-gary-cooper-dunstable",
@@ -3363,8 +3105,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.890142,
       "lng": -0.521667
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5639-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-gate-clock-210-creek-road",
@@ -3376,8 +3117,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.481727,
       "lng": -0.012553
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/585-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-gate-house-doncaster",
@@ -3389,8 +3129,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.522614,
       "lng": -1.134363
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2259-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-gatekeeper-910-westgate-street",
@@ -3402,8 +3141,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.480022,
       "lng": -3.181415
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1749-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-gateway-east-didsbury",
@@ -3415,8 +3153,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.40868,
       "lng": -2.21951
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6738-feature-448x332.png"
+    }
   },
   {
     "id": "the-george-staines-upon-thames",
@@ -3428,8 +3165,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.433772,
       "lng": -0.512727
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/131-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-george-1721-george-street",
@@ -3441,8 +3177,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.374135,
       "lng": -0.098571
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/50-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-george-hotel-peterborough",
@@ -3454,8 +3189,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.55614,
       "lng": -0.127719
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5762-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-george-hotel-hailsham",
@@ -3467,8 +3201,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.861941,
       "lng": 0.25933
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6284-feature-448x332.png"
+    }
   },
   {
     "id": "the-george-hotel-brecon",
@@ -3480,8 +3213,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.948842,
       "lng": -3.39109
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7401-feature-448x332.png"
+    }
   },
   {
     "id": "the-george-inn-sandbach",
@@ -3493,8 +3225,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.142967,
       "lng": -2.361656
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7090-feature-448x332.png"
+    }
   },
   {
     "id": "the-george-inn-littlehampton",
@@ -3506,8 +3237,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.809297,
       "lng": -0.54374
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/534-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-giant-bellflower-selby",
@@ -3519,8 +3249,7 @@ export const parsedPubs = [
     "location": {
       "lat": null,
       "lng": null
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6934-feature-448x332.png"
+    }
   },
   {
     "id": "the-giddy-bridge-southampton",
@@ -3532,8 +3261,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.911123,
       "lng": -1.404253
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/701-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-glass-blower-castleford",
@@ -3545,8 +3273,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.726814,
       "lng": -1.354069
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/855-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-glass-house-st-helens",
@@ -3558,8 +3285,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.45136,
       "lng": -2.7358
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/2026-feature-448x332.png"
+    }
   },
   {
     "id": "the-glass-house-norwich",
@@ -3571,8 +3297,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.632621,
       "lng": 1.297705
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/664-feature-448x332.png"
+    }
   },
   {
     "id": "the-glassmaker-nailsea",
@@ -3584,8 +3309,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.43233,
       "lng": -2.758416
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6229-feature-448x332.png"
+    }
   },
   {
     "id": "the-godfrey-morgan-158-chepstow-road",
@@ -3597,8 +3321,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.589748,
       "lng": -2.978615
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/458-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-gog-and-magog-plymouth",
@@ -3610,8 +3333,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.367802,
       "lng": -4.1374
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/2661-feature-448x332.png"
+    }
   },
   {
     "id": "the-gold-cape-mold",
@@ -3623,8 +3345,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.165987,
       "lng": -3.140977
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2422-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-golden-acorn-glenrothes",
@@ -3636,8 +3357,7 @@ export const parsedPubs = [
     "location": {
       "lat": 56.196474,
       "lng": -3.1679
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/801-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-golden-beam-leeds",
@@ -3649,8 +3369,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.816193,
       "lng": -1.566612
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5713-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-golden-bee-stratford-upon-avon",
@@ -3662,8 +3381,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.19178,
       "lng": -1.705425
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1610-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-golden-hope-sittingbourne",
@@ -3675,8 +3393,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.339829,
       "lng": 0.731543
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7343-feature-448x332.png"
+    }
   },
   {
     "id": "the-golden-lion-rochester",
@@ -3688,8 +3405,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.386601,
       "lng": 0.50689
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/738-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-golden-lion-newmarket",
@@ -3701,8 +3417,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.245281,
       "lng": 0.407848
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/1311-feature-448x332.png"
+    }
   },
   {
     "id": "the-good-yarn-uxbridge",
@@ -3714,8 +3429,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.547741,
       "lng": -0.480542
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/112-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-goodmans-field-tower-hamlets",
@@ -3727,8 +3441,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.511976,
       "lng": -0.073236
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2173-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-gooseberry-bush-nottingham",
@@ -3740,8 +3453,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.960459,
       "lng": -1.153709
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6728-feature-448x332.png"
+    }
   },
   {
     "id": "the-gordon-highlander-inverurie",
@@ -3753,8 +3465,7 @@ export const parsedPubs = [
     "location": {
       "lat": 57.284583,
       "lng": -2.378657
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6424-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-grand-assembly-marlow",
@@ -3766,8 +3477,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.57206,
       "lng": -0.777105
-    },
-    "carpetUrl": "https://carpets.example.com/2025/01/7593-feature-448x332.png"
+    }
   },
   {
     "id": "the-grand-electric-hall-spennymoor",
@@ -3779,8 +3489,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.700241,
       "lng": -1.599459
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6040-feature-448x332.png"
+    }
   },
   {
     "id": "the-great-central-fallowfield",
@@ -3792,8 +3501,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.441525,
       "lng": -2.219197
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2809-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-great-glen-fort-william",
@@ -3805,8 +3513,7 @@ export const parsedPubs = [
     "location": {
       "lat": 56.816795,
       "lng": -5.112942
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6411-feature-448x332.png"
+    }
   },
   {
     "id": "the-great-harry-woolwich",
@@ -3818,8 +3525,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.489758,
       "lng": 0.066477
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1139-feature-448x332.png"
+    }
   },
   {
     "id": "the-great-spoon-of-ilford-ilford",
@@ -3831,8 +3537,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.562305,
       "lng": 0.068408
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/90-feature-448x332.png"
+    }
   },
   {
     "id": "the-great-western-64-st-mary-street",
@@ -3844,8 +3549,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.477149,
       "lng": -3.177424
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5361-feature-448x332.png"
+    }
   },
   {
     "id": "the-great-wood-dublin",
@@ -3857,8 +3561,7 @@ export const parsedPubs = [
     "location": {
       "lat": null,
       "lng": null
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7299-feature-448x332.png"
+    }
   },
   {
     "id": "the-green-dragon-leek",
@@ -3870,8 +3573,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.106013,
       "lng": -2.026978
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7029-feature-448x332.png"
+    }
   },
   {
     "id": "the-green-ginger-torquay",
@@ -3883,8 +3585,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.462174,
       "lng": -3.52598
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6011-feature-448x332.png"
+    }
   },
   {
     "id": "the-green-parrot-perranporth",
@@ -3896,8 +3597,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.344463,
       "lng": -5.156068
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6383-feature-448x332.png"
+    }
   },
   {
     "id": "the-greenwood-hotel-northolt",
@@ -3909,8 +3609,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.553181,
       "lng": -0.352591
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7337-feature-448x332.png"
+    }
   },
   {
     "id": "the-grey-friar-preston",
@@ -3922,8 +3621,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.759773,
       "lng": -2.701045
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/255-feature-448x332.png"
+    }
   },
   {
     "id": "the-greyhound-205-high-street",
@@ -3935,8 +3633,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.406459,
       "lng": 0.01314
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6364-feature-448x332.png"
+    }
   },
   {
     "id": "the-greyhound-bridport",
@@ -3948,12 +3645,11 @@ export const parsedPubs = [
     "location": {
       "lat": 50.733198,
       "lng": -2.757109
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/911-feature-448x332.png"
+    }
   },
   {
     "id": "the-guildhall-amp-linen-exchange-dunfermline",
-    "name": "The Guildhall &amp; Linen Exchange",
+    "name": "The Guildhall & Linen Exchange",
     "address": "79–83 High Street, Dunfermline, Fife, KY12 7DR",
     "city": "Dunfermline",
     "region": "Fife",
@@ -3961,8 +3657,7 @@ export const parsedPubs = [
     "location": {
       "lat": 56.071355,
       "lng": -3.46013
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6198-feature-448x332.png"
+    }
   },
   {
     "id": "the-half-moon-mile-end",
@@ -3974,8 +3669,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.522215,
       "lng": -0.045299
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/590-feature-448x332.png"
+    }
   },
   {
     "id": "the-half-moon-inn-billingham",
@@ -3987,8 +3681,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.607474,
       "lng": -1.294502
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7043-feature-448x332.png"
+    }
   },
   {
     "id": "the-harbord-harbord-middleton",
@@ -4000,8 +3693,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.550052,
       "lng": -2.198281
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/315-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-harry-clasper-whickham",
@@ -4013,8 +3705,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.944472,
       "lng": -1.667536
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6866-feature-448x332.png"
+    }
   },
   {
     "id": "the-hat-and-feathers-seaham-",
@@ -4026,8 +3717,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.837312,
       "lng": -1.333457
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6530-feature-448x332.png"
+    }
   },
   {
     "id": "the-hatchet-inn-newbury",
@@ -4039,8 +3729,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.400794,
       "lng": -1.32281
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6233_feature-448x332.png"
+    }
   },
   {
     "id": "the-hatters-inn-bognor-regis",
@@ -4052,8 +3741,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.783601,
       "lng": -0.67573
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/217-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-hay-stook-east-kilbride",
@@ -4065,8 +3753,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.760905,
       "lng": -4.176009
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6966-feature-448x332.png"
+    }
   },
   {
     "id": "the-hedgeford-lodge-hednesford",
@@ -4078,8 +3765,7 @@ export const parsedPubs = [
     "location": {
       "lat": null,
       "lng": null
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/7136-feature-448x332.png"
+    }
   },
   {
     "id": "the-hedley-verity-leeds",
@@ -4091,8 +3777,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.801969,
       "lng": -1.545837
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6206-feature-448x332.png"
+    }
   },
   {
     "id": "the-henglers-circus-351363-sauchiehall-street",
@@ -4104,8 +3789,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.86568,
       "lng": -4.266971
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1903-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-henry-bell-helensburgh",
@@ -4117,8 +3801,7 @@ export const parsedPubs = [
     "location": {
       "lat": 56.00392,
       "lng": -4.73766
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6453-feature-448x332.png"
+    }
   },
   {
     "id": "the-henry-bessemer-workington",
@@ -4130,8 +3813,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.643126,
       "lng": -3.548554
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1795-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-herbert-wells-woking",
@@ -4143,8 +3825,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.320106,
       "lng": -0.555755
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/194-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-high-cross-leicester",
@@ -4156,8 +3837,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.635722,
       "lng": -1.137684
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/583-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-high-main-newcastle-upon-tyne",
@@ -4169,8 +3849,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.97694,
       "lng": -1.583138
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6777-feature-448x332.png"
+    }
   },
   {
     "id": "the-highland-laddie-norton",
@@ -4182,8 +3861,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.588256,
       "lng": -1.31102
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6906-feature-448x332.png"
+    }
   },
   {
     "id": "the-hippodrome-march",
@@ -4195,8 +3873,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.551415,
       "lng": 0.086505
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5983-feature-448x332.png"
+    }
   },
   {
     "id": "the-hippodrome-market-drayton",
@@ -4208,8 +3885,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.905776,
       "lng": -2.485505
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5534-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-holland-tringham-streatham",
@@ -4221,12 +3897,11 @@ export const parsedPubs = [
     "location": {
       "lat": 51.429821,
       "lng": -0.130066
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/469-feature-448x332.png"
+    }
   },
   {
     "id": "the-hope-amp-champion-beaconsfield",
-    "name": "The Hope &amp; Champion",
+    "name": "The Hope & Champion",
     "address": "Beaconsfield Services, Windsor Road, Beaconsfield, Buckinghamshire, HP9 2SE",
     "city": "Beaconsfield",
     "region": "Buckinghamshire",
@@ -4234,8 +3909,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.587894,
       "lng": -0.628189
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7097-feature-448x332.png"
+    }
   },
   {
     "id": "the-hope-tap-reading",
@@ -4247,8 +3921,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.456479,
       "lng": -0.97437
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/527-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-hornet-birmingham",
@@ -4260,8 +3933,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.492525,
       "lng": -1.819779
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1670_1-448x332.jpg"
+    }
   },
   {
     "id": "the-horse-shoe-inn-crook",
@@ -4273,8 +3945,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.714697,
       "lng": -1.744901
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6687-feature-448x332.png"
+    }
   },
   {
     "id": "the-horseshoe-wombwell",
@@ -4286,8 +3957,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.522361,
       "lng": -1.39804
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/2844-feature-448x332.png"
+    }
   },
   {
     "id": "the-humber-stone-cleethorpes",
@@ -4299,8 +3969,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.534548,
       "lng": 0.004268
-    },
-    "carpetUrl": "https://carpets.example.com/2024/12/7907-feature-448x332.png"
+    }
   },
   {
     "id": "the-humphrey-bean-tonbridge",
@@ -4312,8 +3981,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.195039,
       "lng": 0.274329
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/428-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-ice-wharf-28a28b-jamestown-road",
@@ -4325,8 +3993,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.540185,
       "lng": -0.147422
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2450-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-imperial-exeter",
@@ -4338,8 +4005,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.730289,
       "lng": -3.539778
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/253-feature-448x332.png"
+    }
   },
   {
     "id": "the-iron-duke-wellington",
@@ -4351,8 +4017,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.978541,
       "lng": -3.227759
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7060-feature-448x332.png"
+    }
   },
   {
     "id": "the-ironstone-miner-guisborough",
@@ -4364,8 +4029,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.534537,
       "lng": -1.057161
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7182-feature-448x332.png"
+    }
   },
   {
     "id": "the-isambard-kingdom-brunel-portsmouth",
@@ -4377,8 +4041,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.79653,
       "lng": -1.093064
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/322-feature-448x332.png"
+    }
   },
   {
     "id": "the-ivor-davies-243249-cowbridge-road-east",
@@ -4390,8 +4053,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.481314,
       "lng": -3.200357
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/750-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-ivory-peg-chelmsford",
@@ -4403,8 +4065,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.732801,
       "lng": 0.473139
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/4055-feature-448x332.png"
+    }
   },
   {
     "id": "the-ivy-house-alton",
@@ -4416,8 +4077,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.146929,
       "lng": -0.975102
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5731-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-ivy-wall-spalding",
@@ -4429,8 +4089,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.788591,
       "lng": -0.151603
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2493-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-j-p-joule-sale",
@@ -4442,8 +4101,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.423832,
       "lng": -2.316952
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/511-feature-448x332.png"
+    }
   },
   {
     "id": "the-jack-fairman-horley",
@@ -4455,8 +4113,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.171297,
       "lng": -0.162757
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5363-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-jack-phillips-godalming",
@@ -4468,8 +4125,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.185924,
       "lng": -0.611936
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/557-feature-448x332.png"
+    }
   },
   {
     "id": "the-james-watt-greenock",
@@ -4481,8 +4137,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.946772,
       "lng": -4.752909
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/625-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-jewel-of-the-severn-bridgnorth",
@@ -4494,8 +4149,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.536766,
       "lng": -2.420148
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2092-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-job-bulman-newcastle-upon-tyne",
@@ -4507,8 +4161,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.004673,
       "lng": -1.619342
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/2341-feature-448x332.png"
+    }
   },
   {
     "id": "the-john-fairweather-cambuslang",
@@ -4520,8 +4173,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.818665,
       "lng": -4.166398
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5801-feature-448x332.png"
+    }
   },
   {
     "id": "the-john-fielding-cwmbran",
@@ -4533,8 +4185,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.65497,
       "lng": -3.021191
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5195-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-john-francis-basset-camborne",
@@ -4546,8 +4197,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.213221,
       "lng": -5.30099
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6006-feature-448x332.png"
+    }
   },
   {
     "id": "the-john-jacques-portsmouth",
@@ -4559,8 +4209,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.798695,
       "lng": -1.076703
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/1526-feature-448x332.png"
+    }
   },
   {
     "id": "the-john-logie-baird-hastings",
@@ -4572,8 +4221,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.856554,
       "lng": 0.578615
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1806-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-john-russell-fox-andover",
@@ -4585,8 +4233,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.206879,
       "lng": -1.478931
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/1345-feature-448x332.png"
+    }
   },
   {
     "id": "the-john-wallace-linton-cambrian-road",
@@ -4598,8 +4245,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.588443,
       "lng": -2.997872
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/191-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-jolie-brise-teignmouth",
@@ -4611,8 +4257,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.547198,
       "lng": -3.494339
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7309-feature-448x332.png"
+    }
   },
   {
     "id": "the-jolly-tars-thornton-cleveleys",
@@ -4624,8 +4269,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.876267,
       "lng": -3.037228
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5959-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-joseph-bramah-barnsley",
@@ -4637,8 +4281,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.553034,
       "lng": -1.481816
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5279-feature-448x332.png"
+    }
   },
   {
     "id": "the-joseph-conrad-lowestoft",
@@ -4650,8 +4293,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.473861,
       "lng": 1.750242
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6251-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-joseph-else-nottingham",
@@ -4663,8 +4305,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.952901,
       "lng": -1.150254
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1554-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-joseph-morton-louth",
@@ -4676,8 +4317,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.365292,
       "lng": -0.004402
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6662-feature-448x332.png"
+    }
   },
   {
     "id": "the-jubilee-oak-crawley",
@@ -4689,8 +4329,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.115398,
       "lng": -0.19055
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/206-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-justice-mill-423425-union-street",
@@ -4702,8 +4341,7 @@ export const parsedPubs = [
     "location": {
       "lat": 57.143283,
       "lng": -2.109598
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2460-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-keel-row-newcastle-upon-tyne",
@@ -4715,8 +4353,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.972019,
       "lng": -1.617196
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5126-feature-448x332.png"
+    }
   },
   {
     "id": "the-kentish-drovers-peckham",
@@ -4728,8 +4365,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.47381,
       "lng": -0.069359
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/638-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-kettleby-cross-melton-mowbray",
@@ -4741,8 +4377,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.765709,
       "lng": -0.889063
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5469-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-king-and-castle-windsor",
@@ -4754,8 +4389,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.48377,
       "lng": -0.60875
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/4424-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-king-doniert-liskeard",
@@ -4767,8 +4401,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.454333,
       "lng": -4.464999
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6981-feature-448x332.png"
+    }
   },
   {
     "id": "the-king-of-wessex-bath",
@@ -4780,8 +4413,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.380741,
       "lng": -2.364785
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/2609-feature-448x332.png"
+    }
   },
   {
     "id": "the-kings-head-inn-salisbury",
@@ -4793,8 +4425,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.068503,
       "lng": -1.797794
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/4334-feature-448x332.png"
+    }
   },
   {
     "id": "the-kingfisher-poynton",
@@ -4806,8 +4437,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.346456,
       "lng": -2.124289
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6862-feature-448x332.png"
+    }
   },
   {
     "id": "the-kings-fee-hereford",
@@ -4819,8 +4449,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.057959,
       "lng": -2.711239
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1869-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-kings-ford-chingford",
@@ -4832,8 +4461,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.615992,
       "lng": -0.017049
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/214-feature-448x332.png"
+    }
   },
   {
     "id": "the-kings-head-monmouth",
@@ -4845,8 +4473,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.812142,
       "lng": -2.715776
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/623-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-kings-head-hotel-beccles",
@@ -4858,8 +4485,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.457821,
       "lng": 1.563396
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6377-feature-448x332.png"
+    }
   },
   {
     "id": "the-kings-highway-inverness",
@@ -4871,8 +4497,7 @@ export const parsedPubs = [
     "location": {
       "lat": 57.479825,
       "lng": -4.227444
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/3789-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-kings-tun-153157-clarence-street",
@@ -4884,8 +4509,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.411387,
       "lng": -0.300849
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/266-feature-448x332.png"
+    }
   },
   {
     "id": "the-kingswood-colliers-kingswood",
@@ -4897,8 +4521,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.462309,
       "lng": -2.506704
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/609-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-kirky-puffer-kirkintilloch",
@@ -4910,8 +4533,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.937897,
       "lng": -4.154174
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/2663-feature-448x332.png"
+    }
   },
   {
     "id": "the-knights-templar-temple-quay",
@@ -4923,8 +4545,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.450728,
       "lng": -2.582114
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2703-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-lady-chatterley-nottingham",
@@ -4936,8 +4557,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.017908,
       "lng": -1.3048
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7091-feature-448x332.png"
+    }
   },
   {
     "id": "the-lantokay-street",
@@ -4949,8 +4569,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.125836,
       "lng": -2.741253
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1790-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-last-post-southend-on-sea",
@@ -4962,8 +4581,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.536509,
       "lng": 0.712545
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/148-feature-448x332.png"
+    }
   },
   {
     "id": "the-last-post-paisley",
@@ -4975,8 +4593,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.846411,
       "lng": -4.424353
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/497-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-last-post-beeston",
@@ -4988,8 +4605,7 @@ export const parsedPubs = [
     "location": {
       "lat": null,
       "lng": null
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/758-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-layton-rakes-blackpool",
@@ -5001,8 +4617,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.818244,
       "lng": -3.05524
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5333-feature-448x332.png"
+    }
   },
   {
     "id": "the-leading-light-faversham",
@@ -5014,8 +4629,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.313664,
       "lng": 0.891198
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/498-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-ledger-building-docklands",
@@ -5027,8 +4641,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.507613,
       "lng": -0.024539
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1637-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-leyland-lion-leyland",
@@ -5040,8 +4653,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.695744,
       "lng": -2.692906
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6279-feature-448x332.png"
+    }
   },
   {
     "id": "the-liberty-bounds-tower-hill",
@@ -5053,8 +4665,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.509735,
       "lng": -0.078591
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/550-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-lifeboat-liverpool",
@@ -5066,8 +4677,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.556323,
       "lng": -3.059836
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7216-feature-448x332.png"
+    }
   },
   {
     "id": "the-lime-kiln-liverpool",
@@ -5079,8 +4689,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.403319,
       "lng": -2.980507
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2011-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-limes-fakenham",
@@ -5092,8 +4701,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.828109,
       "lng": 0.8484
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6970-feature-448x332.png"
+    }
   },
   {
     "id": "the-linford-arms-cannock",
@@ -5105,12 +4713,11 @@ export const parsedPubs = [
     "location": {
       "lat": 52.689409,
       "lng": -2.032307
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/1328-feature-448x332.png"
+    }
   },
   {
     "id": "the-lion-amp-the-unicorn-waterloo",
-    "name": "The Lion &amp; The Unicorn",
+    "name": "The Lion & The Unicorn",
     "address": "Upper-Ground Floor, The Sidings, Waterloo station, Waterloo, Lambeth, SE1 7BH",
     "city": "Waterloo",
     "region": "Lambeth",
@@ -5118,8 +4725,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.503364,
       "lng": -0.112692
-    },
-    "carpetUrl": "https://carpets.example.com/2024/07/7650-feature-448x332.png"
+    }
   },
   {
     "id": "the-liquorice-gardens-worksop",
@@ -5131,8 +4737,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.304504,
       "lng": -1.1226
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/2155-feature-448x332.png"
+    }
   },
   {
     "id": "the-lister-arms-ilkley",
@@ -5144,8 +4749,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.925519,
       "lng": -1.825652
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6693-feature-448x332.png"
+    }
   },
   {
     "id": "the-livery-rooms-keighley",
@@ -5157,12 +4761,11 @@ export const parsedPubs = [
     "location": {
       "lat": 53.869015,
       "lng": -1.909877
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/4432-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-london-amp-county-eastbourne",
-    "name": "The London &amp; County",
+    "name": "The London & County",
     "address": "46 Terminus Road, Eastbourne, East Sussex, BN21 3LX",
     "city": "Eastbourne",
     "region": "East Sussex",
@@ -5170,8 +4773,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.768593,
       "lng": 0.282457
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6189-feature-448x332.png"
+    }
   },
   {
     "id": "the-london-and-north-western-smallbrook-queensway",
@@ -5183,8 +4785,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.477389,
       "lng": -1.898037
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7430-feature-448x332.png"
+    }
   },
   {
     "id": "the-london-and-south-western-battersea",
@@ -5196,8 +4797,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.464025,
       "lng": -0.166806
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7249-feature-448x332.png"
+    }
   },
   {
     "id": "the-london-stone-rochester",
@@ -5209,8 +4809,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.477445,
       "lng": 0.644917
-    },
-    "carpetUrl": "https://carpets.example.com/2025/02/7910-feature-448x332.png"
+    }
   },
   {
     "id": "the-lord-burton-burton-upon-trent",
@@ -5222,8 +4821,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.802548,
       "lng": -1.62983
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/412-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-lord-caradoc-port-talbot",
@@ -5235,8 +4833,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.593967,
       "lng": -3.781982
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/729-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-lord-high-constable-of-england-gloucester",
@@ -5248,8 +4845,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.861848,
       "lng": -2.252769
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7102-feature-448x332.png"
+    }
   },
   {
     "id": "the-lord-john-stroud",
@@ -5261,8 +4857,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.744709,
       "lng": -2.218076
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/683-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-lord-keeper-of-the-great-seal-oadby",
@@ -5274,8 +4869,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.599818,
       "lng": -1.08398
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/790-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-lord-of-the-isles-renfrew",
@@ -5287,8 +4881,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.878968,
       "lng": -4.371142
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5520-feature-448x332.png"
+    }
   },
   {
     "id": "the-lord-palmerston-southsea",
@@ -5300,8 +4893,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.784098,
       "lng": -1.089106
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6405-feature-448x332.png"
+    }
   },
   {
     "id": "the-lord-rosebery-scarborough",
@@ -5313,8 +4905,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.281112,
       "lng": -0.404456
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/383-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-lord-wilson-huddersfield",
@@ -5326,8 +4917,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.645866,
       "lng": -1.780802
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2314-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-lord-wimborne-poole",
@@ -5339,8 +4929,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.716026,
       "lng": -1.982037
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1412-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-lynd-cross-horsham",
@@ -5352,8 +4941,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.064964,
       "lng": -0.330672
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/586-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-maidenhead-inn-basingstoke",
@@ -5365,8 +4953,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.262342,
       "lng": -1.087537
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/2803-feature-448x332.png"
+    }
   },
   {
     "id": "the-mail-rooms-ross-on-wye",
@@ -5378,8 +4965,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.913795,
       "lng": -2.582808
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1469-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-malcolm-uphill-8791-cardiff-road",
@@ -5391,8 +4977,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.572245,
       "lng": -3.219967
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6372-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-man-in-the-moon-newport",
@@ -5404,8 +4989,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.70019,
       "lng": -1.296211
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5954-feature-448x332.png"
+    }
   },
   {
     "id": "the-man-in-the-wall-wimborne",
@@ -5417,8 +5001,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.801062,
       "lng": -1.988291
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6269-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-mannamead-plymouth",
@@ -5430,8 +5013,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.382433,
       "lng": -4.133683
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/2365-feature-448x332.png"
+    }
   },
   {
     "id": "the-manor-house-royston",
@@ -5443,8 +5025,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.048347,
       "lng": -0.022989
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6849-feature-448x332.png"
+    }
   },
   {
     "id": "the-mardi-gras-the-trafford-centre",
@@ -5456,8 +5037,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.465612,
       "lng": -2.348562
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6520-feature-448x332.png"
+    }
   },
   {
     "id": "the-mardy-inn-gorseinon",
@@ -5469,8 +5049,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.66897,
       "lng": -4.038583
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6897-feature-448x332.png"
+    }
   },
   {
     "id": "the-mare-pool-mere-green",
@@ -5482,8 +5061,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.586169,
       "lng": -1.829018
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6387-feature-448x332.png"
+    }
   },
   {
     "id": "the-mary-shelley-bournemouth",
@@ -5495,8 +5073,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.721068,
       "lng": -1.875944
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6009-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-masque-haunt-old-street",
@@ -5508,8 +5085,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.525171,
       "lng": -0.09044
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/195-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-mechanical-elephant-margate",
@@ -5521,8 +5097,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.386593,
       "lng": 1.377664
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1685-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-metropolitan-bar-marylebone",
@@ -5534,8 +5109,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.522623,
       "lng": -0.156597
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/1106-feature-448x332.png"
+    }
   },
   {
     "id": "the-mile-castle-newcastle-upon-tyne",
@@ -5547,8 +5121,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.970856,
       "lng": -1.615895
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6180-feature-448x332.png"
+    }
   },
   {
     "id": "the-miles-thompson-kendal",
@@ -5560,8 +5133,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.326907,
       "lng": -2.748704
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2718-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-monkey-walk-coalville",
@@ -5573,8 +5145,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.723314,
       "lng": -1.374736
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1727-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-montagu-pyke-also-at-20-greek-street",
@@ -5586,12 +5157,11 @@ export const parsedPubs = [
     "location": {
       "lat": 51.512632,
       "lng": -0.128205
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/188-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-moon-amp-stars-penge",
-    "name": "The Moon &amp; Stars",
+    "name": "The Moon & Stars",
     "address": "164–166 High Street, Penge, Bromley, SE20 7QS",
     "city": "Penge",
     "region": "Bromley",
@@ -5599,8 +5169,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.412391,
       "lng": -0.05052
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/71-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-moon-and-cross-waltham-cross",
@@ -5612,8 +5181,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.68527,
       "lng": -0.032527
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/569-feature-448x332.png"
+    }
   },
   {
     "id": "the-moon-and-sixpence-hatch-end",
@@ -5625,8 +5193,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.608243,
       "lng": -0.373286
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/37-feature-448x332.png"
+    }
   },
   {
     "id": "the-moon-and-spoon-slough",
@@ -5638,8 +5205,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.509681,
       "lng": -0.596288
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/142-feature-448x332.png"
+    }
   },
   {
     "id": "the-moon-and-stars-romford",
@@ -5651,8 +5217,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.5759,
       "lng": 0.183229
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/79-feature-448x332.png"
+    }
   },
   {
     "id": "the-moon-in-the-square-bournemouth",
@@ -5664,8 +5229,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.719499,
       "lng": -1.880368
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/164-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-moon-on-the-hill-373375-station-road",
@@ -5677,8 +5241,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.579504,
       "lng": -0.334262
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/38-feature-448x332.png"
+    }
   },
   {
     "id": "the-moon-on-the-hill-59-hill-road",
@@ -5690,8 +5253,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.361782,
       "lng": -0.193184
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/106-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-moon-on-the-square-feltham",
@@ -5703,8 +5265,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.446535,
       "lng": -0.410857
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/227-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-moon-under-water-boston",
@@ -5716,8 +5277,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.9765,
       "lng": -0.024306
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/606-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-moon-under-water-colindale",
@@ -5729,8 +5289,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.587364,
       "lng": -0.250825
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/30-feature-448x332.png"
+    }
   },
   {
     "id": "the-moon-under-water-8486-staines-road",
@@ -5742,8 +5301,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.466988,
       "lng": -0.369317
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/33-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-moon-under-water-norbury",
@@ -5755,8 +5313,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.407077,
       "lng": -0.121533
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/81-feature-448x332.png"
+    }
   },
   {
     "id": "the-moon-under-water-28-leicester-square",
@@ -5768,8 +5325,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.510689,
       "lng": -0.129265
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/70-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-moon-under-water-6874-deansgate",
@@ -5781,8 +5337,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.482907,
       "lng": -2.247001
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/193-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-moon-under-water-115117-chase-side",
@@ -5794,8 +5349,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.659157,
       "lng": -0.087544
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/24-feature-448x332.png"
+    }
   },
   {
     "id": "the-moon-under-water-milton-keynes",
@@ -5807,8 +5361,7 @@ export const parsedPubs = [
     "location": {
       "lat": null,
       "lng": null
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1195-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-moon-under-water-cheltenham",
@@ -5820,8 +5373,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.897756,
       "lng": -2.07203
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/778-feature-448x332.png"
+    }
   },
   {
     "id": "the-moon-under-water-wigan",
@@ -5833,8 +5385,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.546318,
       "lng": -2.631381
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/187-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-moon-under-water-watford",
@@ -5846,8 +5397,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.656218,
       "lng": -0.397533
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/95-feature-448x332.png"
+    }
   },
   {
     "id": "the-moon-under-water-cradley-heath",
@@ -5859,8 +5409,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.471992,
       "lng": -2.082876
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/495-feature-448x332.png"
+    }
   },
   {
     "id": "the-moon-under-water-wolverhampton",
@@ -5872,8 +5421,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.58681,
       "lng": -2.12445
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/184-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-mossy-well-muswell-hill",
@@ -5885,8 +5433,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.590864,
       "lng": -0.142127
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6524-feature-448x332.png"
+    }
   },
   {
     "id": "the-mount-stuart-stuart-place",
@@ -5898,8 +5445,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.462921,
       "lng": -3.16691
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6428-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-muckle-cross-elgin",
@@ -5911,8 +5457,7 @@ export const parsedPubs = [
     "location": {
       "lat": 57.648842,
       "lng": -3.312781
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/797-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-muggleton-inn-maidstone",
@@ -5924,8 +5469,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.273853,
       "lng": 0.522555
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/172-feature-448x332.png"
+    }
   },
   {
     "id": "the-myrtle-grove-bingley",
@@ -5937,8 +5481,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.847279,
       "lng": -1.837072
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1739-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-narrows-abingdon-on-thames",
@@ -5950,8 +5493,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.670172,
       "lng": -1.28274
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5779-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-navigation-inn-kings-norton",
@@ -5963,8 +5505,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.407953,
       "lng": -1.926037
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7528-feature-448x332.png"
+    }
   },
   {
     "id": "the-navigator-liverpool",
@@ -5976,8 +5517,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.413061,
       "lng": -2.904273
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2936-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-new-cross-turnpike-welling",
@@ -5989,8 +5529,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.462816,
       "lng": 0.10439
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/728-feature-448x332.png"
+    }
   },
   {
     "id": "the-new-crown-southgate",
@@ -6002,8 +5541,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.633508,
       "lng": -0.130934
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/101-feature-448x332.png"
+    }
   },
   {
     "id": "the-new-fairlop-oak-fairlop",
@@ -6015,8 +5553,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.59408,
       "lng": 0.084997
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/43-feature-448x332.png"
+    }
   },
   {
     "id": "the-newyearfield-livingston",
@@ -6028,8 +5565,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.882885,
       "lng": -3.518336
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6266-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-nine-arches-newton-le-willows",
@@ -6041,8 +5577,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.452124,
       "lng": -2.643986
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7293-feature-448x332.png"
+    }
   },
   {
     "id": "the-nonsuch-inn-north-cheam",
@@ -6054,8 +5589,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.372117,
       "lng": -0.225708
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/154-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-north-western-liverpool",
@@ -6067,8 +5601,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.408511,
       "lng": -2.978701
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6486-feature-448x332.png"
+    }
   },
   {
     "id": "the-obediah-brooke-cleckheaton",
@@ -6080,8 +5613,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.72462,
       "lng": -1.712575
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/1904-feature-448x332.png"
+    }
   },
   {
     "id": "the-observatory-ilkeston",
@@ -6093,8 +5625,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.971359,
       "lng": -1.30897
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1017-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-old-borough-swords",
@@ -6106,8 +5637,7 @@ export const parsedPubs = [
     "location": {
       "lat": null,
       "lng": null
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7278-feature-448x332.png"
+    }
   },
   {
     "id": "the-old-chapel-darwen",
@@ -6119,8 +5649,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.696675,
       "lng": -2.464983
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6666-feature-448x332.png"
+    }
   },
   {
     "id": "the-old-gaolhouse-winchester",
@@ -6132,8 +5661,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.063992,
       "lng": -1.316396
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/468-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-old-manor-bracknell",
@@ -6145,8 +5673,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.416295,
       "lng": -0.746121
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/65-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-old-market-hall-mexborough",
@@ -6158,8 +5685,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.492908,
       "lng": -1.28734
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5600-feature-448x332.png"
+    }
   },
   {
     "id": "the-old-swan-uttoxeter",
@@ -6171,8 +5697,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.897991,
       "lng": -1.86315
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5367-feature-448x332.png"
+    }
   },
   {
     "id": "the-old-swanne-inne-evesham",
@@ -6184,8 +5709,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.094019,
       "lng": -1.946215
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/953-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-old-unicorn-leeds",
@@ -6197,8 +5721,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.810932,
       "lng": -1.627412
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7207-feature-448x332.png"
+    }
   },
   {
     "id": "the-olympia-tredegar",
@@ -6210,12 +5733,11 @@ export const parsedPubs = [
     "location": {
       "lat": 51.770603,
       "lng": -3.244121
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1762-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-ounce-amp-ivy-bush-east-grinstead",
-    "name": "The Ounce &amp; Ivy Bush",
+    "name": "The Ounce & Ivy Bush",
     "address": "The Atrium, Little King Street, East Grinstead, West Sussex, RH19 3DJ",
     "city": "East Grinstead",
     "region": "West Sussex",
@@ -6223,8 +5745,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.126435,
       "lng": -0.008619
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2873-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-oxted-inn-oxted",
@@ -6236,8 +5757,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.257505,
       "lng": -0.004567
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/479-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-packet-station-falmouth",
@@ -6249,8 +5769,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.155041,
       "lng": -5.072986
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/1033-feature-448x332.png"
+    }
   },
   {
     "id": "the-packhorse-inn-sleaford",
@@ -6262,8 +5781,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.999804,
       "lng": -0.41066
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2880-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-paddle-steamer-largs",
@@ -6275,8 +5793,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.795045,
       "lng": -4.869597
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6902-feature-448x332.png"
+    }
   },
   {
     "id": "the-palladium-llandudno",
@@ -6288,8 +5805,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.324991,
       "lng": -3.832524
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1013-feature-448x332.png"
+    }
   },
   {
     "id": "the-panniers-barnstaple",
@@ -6301,8 +5817,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.08078,
       "lng": -4.058104
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/1155-feature-448x332.png"
+    }
   },
   {
     "id": "the-paramount-3335-oxford-street",
@@ -6314,8 +5829,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.476544,
       "lng": -2.242505
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1015-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-parchment-makers-havant",
@@ -6327,8 +5841,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.853311,
       "lng": -0.984845
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/480-feature-448x332.png"
+    }
   },
   {
     "id": "the-parkstone-and-heatherlands-bournemouth",
@@ -6340,8 +5853,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.743795,
       "lng": -1.878166
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5570-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-pennsylvanian-rickmansworth",
@@ -6353,8 +5865,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.63883,
       "lng": -0.469971
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/177-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-penny-black-northwich",
@@ -6366,8 +5877,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.262161,
       "lng": -2.508827
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/418-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-penny-black-bicester",
@@ -6379,8 +5889,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.899117,
       "lng": -1.152612
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/556-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-perkin-warbeck-taunton",
@@ -6392,8 +5901,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.014727,
       "lng": -3.099795
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/234-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-peter-cushing-whitstable",
@@ -6405,8 +5913,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.356464,
       "lng": 1.024172
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6102-feature-448x332.png"
+    }
   },
   {
     "id": "the-picture-house-sutton-in-ashfield",
@@ -6418,8 +5925,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.125024,
       "lng": -1.26011
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1367-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-picture-house-ebbw-vale",
@@ -6431,8 +5937,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.780587,
       "lng": -3.207574
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/680-feature-448x332.png"
+    }
   },
   {
     "id": "the-picture-house-colwyn-bay",
@@ -6444,8 +5949,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.296735,
       "lng": -3.727761
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/807-feature-448x332.png"
+    }
   },
   {
     "id": "the-picture-house-stafford",
@@ -6457,8 +5961,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.804225,
       "lng": -2.115892
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/257-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-picture-house-leeds",
@@ -6470,8 +5973,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.744053,
       "lng": -1.599877
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5771-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-picture-palace-braintree",
@@ -6483,8 +5985,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.876892,
       "lng": 0.553821
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/698-feature-448x332.png"
+    }
   },
   {
     "id": "the-picture-playhouse-bexhill-on-sea",
@@ -6496,8 +5997,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.840262,
       "lng": 0.470727
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7139-feature-448x332.png"
+    }
   },
   {
     "id": "the-pilgrim-oak-hucknall",
@@ -6509,8 +6009,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.038515,
       "lng": -1.203455
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/810-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-pilgrims-progress-bedford",
@@ -6522,8 +6021,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.135918,
       "lng": -0.472417
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/474-feature-1-448x332.jpg"
+    }
   },
   {
     "id": "the-pillar-of-rock-chesterfield",
@@ -6535,8 +6033,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.229627,
       "lng": -1.293753
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6747-feature-448x332.png"
+    }
   },
   {
     "id": "the-playfair-leith-walk",
@@ -6548,8 +6045,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.956196,
       "lng": -3.185495
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/4312-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-playhouse-colchester",
@@ -6561,8 +6057,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.887592,
       "lng": 0.896682
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/137-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-plaza-rugeley",
@@ -6574,8 +6069,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.758463,
       "lng": -1.933821
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/671-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-plimsoll-line-redcar",
@@ -6587,21 +6081,19 @@ export const parsedPubs = [
     "location": {
       "lat": 54.617334,
       "lng": -1.061551
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1587-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-plough-amp-harrow-hammersmith",
-    "name": "The Plough &amp; Harrow",
-    "address": "120–124 King Street, Hammersmith, Hammersmith &amp; Fulham, W6 0QU",
+    "name": "The Plough & Harrow",
+    "address": "120–124 King Street, Hammersmith, Hammersmith & Fulham, W6 0QU",
     "city": "Hammersmith",
-    "region": "Hammersmith &amp; Fulham",
+    "region": "Hammersmith & Fulham",
     "country": "England",
     "location": {
       "lat": 51.492918,
       "lng": -0.233009
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/2175-feature-448x332.png"
+    }
   },
   {
     "id": "the-pommelers-rest-tower-bridge",
@@ -6613,8 +6105,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.502416,
       "lng": -0.077055
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/487-feature-448x332.png"
+    }
   },
   {
     "id": "the-pontlottyn-abertillery",
@@ -6626,8 +6117,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.729947,
       "lng": -3.134259
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5468-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-port-jackson-bishops-stortford",
@@ -6639,8 +6129,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.868467,
       "lng": 0.162071
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6391-feature-448x332.png"
+    }
   },
   {
     "id": "the-portland-hotel-chesterfield",
@@ -6652,8 +6141,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.235181,
       "lng": -1.431213
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2020-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-posset-cup-bristol",
@@ -6665,12 +6153,11 @@ export const parsedPubs = [
     "location": {
       "lat": 51.485553,
       "lng": -2.762424
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7098-feature-448x332.png"
+    }
   },
   {
     "id": "the-post-amp-telegraph-brighton",
-    "name": "The Post &amp; Telegraph",
+    "name": "The Post & Telegraph",
     "address": "155–158 North Street, Brighton, East Sussex, BN1 1EA",
     "city": "Brighton",
     "region": "East Sussex",
@@ -6678,8 +6165,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.822628,
       "lng": -0.139433
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6221-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-postal-order-blackburn",
@@ -6691,8 +6177,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.746865,
       "lng": -2.48293
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/272-feature-448x332.png"
+    }
   },
   {
     "id": "the-poste-of-stone-stone",
@@ -6704,8 +6189,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.903585,
       "lng": -2.148451
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2060-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-postern-gate-york",
@@ -6717,8 +6201,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.956409,
       "lng": -1.077757
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1845-feature-448x332.png"
+    }
   },
   {
     "id": "the-potters-wheel-8586-the-kingsway",
@@ -6730,8 +6213,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.619386,
       "lng": -3.949076
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/175-feature-448x332.png"
+    }
   },
   {
     "id": "the-poulton-elk-poulton-le-fylde",
@@ -6743,8 +6225,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.845053,
       "lng": -2.992424
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7086-feature-448x332.png"
+    }
   },
   {
     "id": "the-powder-monkey-exmouth",
@@ -6756,8 +6237,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.620289,
       "lng": -3.41363
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/259-feature-448x332.png"
+    }
   },
   {
     "id": "the-premier-widnes",
@@ -6769,8 +6249,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.369771,
       "lng": -2.725226
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1970-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-prense-well-heswall",
@@ -6782,8 +6261,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.327393,
       "lng": -3.099514
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7290-feature-448x332.png"
+    }
   },
   {
     "id": "the-prestwick-pioneer-prestwick",
@@ -6795,8 +6273,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.499375,
       "lng": -4.610627
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6319-feature-448x332.png"
+    }
   },
   {
     "id": "the-prince-arthur-fleet",
@@ -6808,8 +6285,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.278674,
       "lng": -0.845488
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/532-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-prince-of-wales-8183-st-mary-street",
@@ -6821,8 +6297,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.477149,
       "lng": -3.177424
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/207-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-prior-john-bridlington",
@@ -6834,8 +6309,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.083514,
       "lng": -0.188121
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1002-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-pump-house-solihull",
@@ -6847,8 +6321,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.412391,
       "lng": -1.827706
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7178-feature-448x332.png"
+    }
   },
   {
     "id": "the-punch-bowl-york",
@@ -6860,8 +6333,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.955644,
       "lng": -1.090651
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2870-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-quarter-jack-wells",
@@ -6873,8 +6345,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.207044,
       "lng": -2.649108
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6507-feature-448x332.png"
+    }
   },
   {
     "id": "the-quayside-newcastle-upon-tyne",
@@ -6886,8 +6357,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.967351,
       "lng": -1.610227
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1810-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-queen-hotel-aldershot",
@@ -6899,8 +6369,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.249878,
       "lng": -0.76677
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7211-feature-448x332.png"
+    }
   },
   {
     "id": "the-queen-of-iceni-norwich",
@@ -6912,8 +6381,7 @@ export const parsedPubs = [
     "location": {
       "lat": null,
       "lng": null
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/1719-feature-448x332.png"
+    }
   },
   {
     "id": "the-queens-head-hotel-tavistock",
@@ -6925,8 +6393,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.549816,
       "lng": -4.146525
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7251-feature-448x332.png"
+    }
   },
   {
     "id": "the-queens-picture-house-liverpool",
@@ -6938,8 +6405,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.474237,
       "lng": -3.027897
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6068-feature-448x332.png"
+    }
   },
   {
     "id": "the-queens-arms-winsford",
@@ -6951,8 +6417,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.191333,
       "lng": -2.530289
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/4260-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-queens-hotel-rotherham",
@@ -6964,8 +6429,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.423616,
       "lng": -1.195574
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6600-feature-448x332.png"
+    }
   },
   {
     "id": "the-railway-rainham",
@@ -6977,8 +6441,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.365882,
       "lng": 0.611744
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7404-feature-448x332.png"
+    }
   },
   {
     "id": "the-railway-bell-13-east-barnet-road",
@@ -6990,8 +6453,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.650205,
       "lng": -0.174236
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/9_feature-448x332.png"
+    }
   },
   {
     "id": "the-railway-hotel-lytham-st-annes",
@@ -7003,8 +6465,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.73786,
       "lng": -2.956758
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6723-feature-448x332.png"
+    }
   },
   {
     "id": "the-railway-inn-rushden",
@@ -7016,8 +6477,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.29321,
       "lng": -0.599177
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6484-feature-448x332.png"
+    }
   },
   {
     "id": "the-ralph-fitz-randal-richmond",
@@ -7029,8 +6489,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.40486,
       "lng": -1.7365
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2121-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-rann-wartha-st-austell",
@@ -7042,8 +6501,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.338583,
       "lng": -4.793592
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5441-feature-448x332.png"
+    }
   },
   {
     "id": "the-raven-liverpool",
@@ -7055,8 +6513,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.463058,
       "lng": -2.959439
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/403-feature-448x332.png"
+    }
   },
   {
     "id": "the-rawson-spring-sheffield",
@@ -7068,8 +6525,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.402133,
       "lng": -1.500525
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5261-feature-448x332.png"
+    }
   },
   {
     "id": "the-raymond-mays-bourne-",
@@ -7081,8 +6537,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.769552,
       "lng": -0.376779
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7370-feature-448x332.png"
+    }
   },
   {
     "id": "the-red-lion-skegness",
@@ -7094,8 +6549,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.14424,
       "lng": 0.336632
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/405-feature-448x332.png"
+    }
   },
   {
     "id": "the-red-lion-thetford",
@@ -7107,8 +6561,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.413129,
       "lng": 0.751196
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6620-feature-448x332.png"
+    }
   },
   {
     "id": "the-red-lion-bedlington",
@@ -7120,8 +6573,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.131014,
       "lng": -1.598757
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6389-feature-448x332.png"
+    }
   },
   {
     "id": "the-red-lion-doncaster",
@@ -7133,8 +6585,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.523822,
       "lng": -1.132408
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/4128-feature-448x332.png"
+    }
   },
   {
     "id": "the-red-lion-crawley",
@@ -7146,8 +6597,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.160824,
       "lng": -0.177946
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/19-feature-448x332.png"
+    }
   },
   {
     "id": "the-red-lion-ripley",
@@ -7159,8 +6609,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.050523,
       "lng": -1.40633
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1556-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-red-lion-petersfield",
@@ -7172,8 +6621,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.004932,
       "lng": -0.933564
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6232-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-red-lion-southampton",
@@ -7185,12 +6633,11 @@ export const parsedPubs = [
     "location": {
       "lat": 50.914272,
       "lng": -1.358977
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7331-feature-448x332.png"
+    }
   },
   {
     "id": "the-red-lion-amp-pineapple-acton",
-    "name": "The Red Lion &amp; Pineapple",
+    "name": "The Red Lion & Pineapple",
     "address": "281 High Street, Acton, Ealing, W3 9BP",
     "city": "Acton",
     "region": "Ealing",
@@ -7198,8 +6645,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.508248,
       "lng": -0.276958
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/59-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-red-lion-inn-morriston",
@@ -7211,8 +6657,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.669226,
       "lng": -3.922697
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6700-feature-448x332.png"
+    }
   },
   {
     "id": "the-red-rocks-exmouth",
@@ -7224,8 +6669,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.614941,
       "lng": -3.366626
-    },
-    "carpetUrl": "https://carpets.example.com/2025/02/7909-feature-448x332.png"
+    }
   },
   {
     "id": "the-red-well-wellingborough",
@@ -7237,8 +6681,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.301888,
       "lng": -0.695155
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/334-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-reeds-arms-burnham-on-sea",
@@ -7250,8 +6693,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.234279,
       "lng": -2.99827
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/4439-feature-448x332.png"
+    }
   },
   {
     "id": "the-regal-cambridge",
@@ -7263,8 +6705,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.203004,
       "lng": 0.123746
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/748-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-regal-gloucester",
@@ -7276,8 +6717,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.866345,
       "lng": -2.24363
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/224-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-regal-moon-rochdale",
@@ -7289,8 +6729,7 @@ export const parsedPubs = [
     "location": {
       "lat": null,
       "lng": null
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/182-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-reginald-mitchell-hanley",
@@ -7302,8 +6741,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.02548,
       "lng": -2.174902
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/199-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-richard-hopkins-newton-abbot",
@@ -7315,8 +6753,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.530601,
       "lng": -3.607993
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/2700-feature-448x332.png"
+    }
   },
   {
     "id": "the-richard-john-blackler-liverpool",
@@ -7328,8 +6765,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.405861,
       "lng": -2.979633
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/198-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-richard-oastler-brighouse",
@@ -7341,8 +6777,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.701322,
       "lng": -1.780228
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/937-feature-448x332.png"
+    }
   },
   {
     "id": "the-richmal-crompton-23-westmoreland-place",
@@ -7354,8 +6789,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.399768,
       "lng": 0.016297
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/704-feature-448x332.png"
+    }
   },
   {
     "id": "the-ritz-wallsend-",
@@ -7367,8 +6801,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.990479,
       "lng": -1.537377
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7134-feature-448x332.png"
+    }
   },
   {
     "id": "the-robert-nairn-kirkcaldy",
@@ -7380,8 +6813,7 @@ export const parsedPubs = [
     "location": {
       "lat": 56.112015,
       "lng": -3.158458
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1065-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-robert-pocock-gravesend",
@@ -7393,8 +6825,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.441772,
       "lng": 0.369242
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/316-feature-448x332.png"
+    }
   },
   {
     "id": "the-robert-shaw-westhoughton",
@@ -7406,8 +6837,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.5489,
       "lng": -2.521213
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2710-feature-448x332.png"
+    }
   },
   {
     "id": "the-rochester-castle-stoke-newington",
@@ -7419,8 +6849,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.561325,
       "lng": -0.07421
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/3-feature-448x332.png"
+    }
   },
   {
     "id": "the-rocket-putney",
@@ -7432,8 +6861,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.46537,
       "lng": -0.213168
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6283-feature-448x332.png"
+    }
   },
   {
     "id": "the-rockingham-arms-elephant-and-castle",
@@ -7445,8 +6873,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.49693,
       "lng": -0.099055
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/1260-feature-448x332.png"
+    }
   },
   {
     "id": "the-rodboro-buildings-guildford",
@@ -7458,8 +6885,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.236451,
       "lng": -0.578071
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/416-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-roebuck-rayleigh",
@@ -7471,8 +6897,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.585028,
       "lng": 0.603505
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1902-feature-448x332.png"
+    }
   },
   {
     "id": "the-roebuck-inn-nottingham",
@@ -7484,8 +6909,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.952871,
       "lng": -1.152368
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1154-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-rohan-kanhai-ashington",
@@ -7497,8 +6921,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.183334,
       "lng": -1.568472
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/548-feature-448x332.png"
+    }
   },
   {
     "id": "the-romany-rye-dereham",
@@ -7510,8 +6933,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.681177,
       "lng": 0.939375
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5937-feature-448x332.png"
+    }
   },
   {
     "id": "the-rose-salterne-bideford",
@@ -7523,8 +6945,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.019918,
       "lng": -4.205569
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6449-feature-448x332.png"
+    }
   },
   {
     "id": "the-royal-enfield-redditch",
@@ -7536,8 +6957,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.306751,
       "lng": -1.942982
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6404-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-royal-hop-pole-tewkesbury",
@@ -7549,8 +6969,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.992076,
       "lng": -2.158398
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5484-feature-448x332.png"
+    }
   },
   {
     "id": "the-royal-oak-dorchester",
@@ -7562,8 +6981,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.715093,
       "lng": -2.438867
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1548-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-royal-tiger-wednesfield",
@@ -7575,8 +6993,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.600243,
       "lng": -2.082233
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/626-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-rupert-brooke-rugby",
@@ -7588,8 +7005,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.373051,
       "lng": -1.259226
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1508-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-salt-cot-saltcoats",
@@ -7601,8 +7017,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.6345,
       "lng": -4.790923
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/943-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-samuel-hall-nottingham",
@@ -7614,8 +7029,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.981738,
       "lng": -1.146322
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6326-feature-448x332.png"
+    }
   },
   {
     "id": "the-samuel-lloyd-corby",
@@ -7627,8 +7041,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.511556,
       "lng": -0.701115
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5385-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-samuel-peto-folkestone",
@@ -7640,8 +7053,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.08041,
       "lng": 1.181326
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/213-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-saracens-head-inn-daventry",
@@ -7653,8 +7065,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.258088,
       "lng": -1.16462
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2890-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-savoy-swindon",
@@ -7666,8 +7077,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.560027,
       "lng": -1.782842
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/247-feature-448x332.png"
+    }
   },
   {
     "id": "the-sawyers-arms-maesteg",
@@ -7679,8 +7089,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.608191,
       "lng": -3.65935
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6954-feature-448x332.png"
+    }
   },
   {
     "id": "the-sawyers-arms-exeter",
@@ -7692,8 +7101,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.71529,
       "lng": -3.544386
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6035-feature-448x332.png"
+    }
   },
   {
     "id": "the-saxon-crown-corby",
@@ -7705,8 +7113,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.487227,
       "lng": -0.699534
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5811-feature-448x332.png"
+    }
   },
   {
     "id": "the-saxon-shore-herne-bay",
@@ -7718,8 +7125,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.372725,
       "lng": 1.12624
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/2957-feature-448x332.png"
+    }
   },
   {
     "id": "the-scarsdale-hundred-sheffield",
@@ -7731,8 +7137,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.344363,
       "lng": -1.349358
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7519-feature-448x332.png"
+    }
   },
   {
     "id": "the-scribbling-mill-leeds",
@@ -7744,8 +7149,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.75787,
       "lng": -1.574143
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7597-feature-448x332.png"
+    }
   },
   {
     "id": "the-sedge-lynn-chorlton-cum-hardy",
@@ -7757,8 +7161,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.444286,
       "lng": -2.279043
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1090-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-sennockian-sevenoaks",
@@ -7770,8 +7173,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.272542,
       "lng": 0.192516
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/360-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-seven-stars-68-dantzic-street",
@@ -7783,8 +7185,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.485185,
       "lng": -2.240775
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2099-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-shay-wake-oldham",
@@ -7796,8 +7197,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.578818,
       "lng": -2.09227
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6499-feature-448x332.png"
+    }
   },
   {
     "id": "the-sheaf-island-sheffield",
@@ -7809,8 +7209,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.372559,
       "lng": -1.481315
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5483-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-shoulder-of-mutton-ashby-de-la-zouch",
@@ -7822,8 +7221,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.746875,
       "lng": -1.472765
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6901-feature-448x332.png"
+    }
   },
   {
     "id": "the-shrewsbury-hotel-shrewsbury",
@@ -7835,8 +7233,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.709113,
       "lng": -2.756298
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/777-feature-448x332.png"
+    }
   },
   {
     "id": "the-silk-mercer-devizes",
@@ -7848,8 +7245,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.351853,
       "lng": -1.995464
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/4351_2-448x332.jpg"
+    }
   },
   {
     "id": "the-silver-penny-dublin",
@@ -7861,8 +7257,7 @@ export const parsedPubs = [
     "location": {
       "lat": null,
       "lng": null
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7380-feature-448x332.png"
+    }
   },
   {
     "id": "the-sir-alec-rose-portsmouth",
@@ -7874,8 +7269,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.84086,
       "lng": -1.097076
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2834-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-sir-daniel-arms-swindon",
@@ -7887,8 +7281,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.562795,
       "lng": -1.786753
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5578-feature-448x332.png"
+    }
   },
   {
     "id": "the-sir-henry-newbolt-bilston",
@@ -7900,8 +7293,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.563925,
       "lng": -2.080041
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1470-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-sir-henry-segrave-southport",
@@ -7913,8 +7305,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.645813,
       "lng": -3.011159
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/203-feature-448x332.png"
+    }
   },
   {
     "id": "the-sir-henry-tate-chorley",
@@ -7926,8 +7317,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.653673,
       "lng": -2.630561
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/2038-feature-448x332.png"
+    }
   },
   {
     "id": "the-sir-john-baker-portsmouth",
@@ -7939,8 +7329,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.814653,
       "lng": -1.079568
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/1855-feature-448x332.png"
+    }
   },
   {
     "id": "the-sir-john-hawkshaw-cannon-street",
@@ -7952,8 +7341,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.511265,
       "lng": -0.090258
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7077-feature-448x332.png"
+    }
   },
   {
     "id": "the-sir-john-moore-260292-argyle-street",
@@ -7965,8 +7353,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.858872,
       "lng": -4.260375
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/2151-feature-448x332.png"
+    }
   },
   {
     "id": "the-sir-john-oldcastle-2935-farringdon-road",
@@ -7978,8 +7365,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.519901,
       "lng": -0.105954
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/430-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-sir-julian-huxley-selsdon",
@@ -7991,8 +7377,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.34365,
       "lng": -0.061896
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1249-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-sir-michael-balcon-4647-the-mall",
@@ -8004,8 +7389,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.51323,
       "lng": -0.297956
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6014-feature-448x332.png"
+    }
   },
   {
     "id": "the-sir-nigel-gresley-swadlincote",
@@ -8017,8 +7401,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.773294,
       "lng": -1.560824
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/1805-feature-448x332.png"
+    }
   },
   {
     "id": "the-sir-norman-wisdom-deal",
@@ -8030,8 +7413,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.222972,
       "lng": 1.401921
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6436-feature-448x332.png"
+    }
   },
   {
     "id": "the-sir-samuel-romilly-barry",
@@ -8043,8 +7425,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.398674,
       "lng": -3.284444
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5574-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-sir-thomas-gerard-ashton-in-makerfield",
@@ -8056,8 +7437,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.4864,
       "lng": -2.63676
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/543-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-sir-thomas-haggerston-berwick-upon-tweed",
@@ -8069,8 +7449,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.686487,
       "lng": -1.934648
-    },
-    "carpetUrl": "https://carpets.example.com/2024/12/7906_4-448x332.jpg"
+    }
   },
   {
     "id": "the-sir-walter-scott-unit-c170",
@@ -8082,8 +7461,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.945621,
       "lng": -3.364203
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6245-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-sir-william-de-wessyngton-washington",
@@ -8095,8 +7473,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.912669,
       "lng": -1.523934
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1893-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-sirhowy-blackwood",
@@ -8108,8 +7485,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.669024,
       "lng": -3.195509
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1381-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-six-bells-lymington",
@@ -8121,8 +7497,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.757456,
       "lng": -1.546119
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6301-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-six-chimneys-wakefield",
@@ -8134,8 +7509,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.682534,
       "lng": -1.493765
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/451-feature-448x332.png"
+    }
   },
   {
     "id": "the-six-gold-martlets-burgess-hill",
@@ -8147,8 +7521,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.956205,
       "lng": -0.131954
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6946-feature-448x332.png"
+    }
   },
   {
     "id": "the-six-templars-hertford",
@@ -8160,8 +7533,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.796011,
       "lng": -0.079089
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/1641-feature-448x332.png"
+    }
   },
   {
     "id": "the-smithy-fold-glossop",
@@ -8173,8 +7545,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.442264,
       "lng": -1.948065
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6416-feature-448x332.png"
+    }
   },
   {
     "id": "the-society-room-151-west-george-street",
@@ -8186,8 +7557,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.862228,
       "lng": -4.25723
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2615-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-society-rooms-maidstone",
@@ -8199,8 +7569,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.277551,
       "lng": 0.521653
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/2505-feature-448x332.png"
+    }
   },
   {
     "id": "the-society-rooms-macclesfield",
@@ -8212,8 +7581,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.256668,
       "lng": -2.12359
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/1635-feature-448x332.png"
+    }
   },
   {
     "id": "the-society-rooms-stalybridge",
@@ -8225,8 +7593,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.481298,
       "lng": -2.056934
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/4079-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-soloman-cutler-birmingham",
@@ -8238,8 +7605,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.477786,
       "lng": -1.910536
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/4124-feature-448x332.png"
+    }
   },
   {
     "id": "the-south-strand-dublin",
@@ -8251,8 +7617,7 @@ export const parsedPubs = [
     "location": {
       "lat": null,
       "lng": null
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7377-feature-448x332.png"
+    }
   },
   {
     "id": "the-sovereign-of-the-seas-petts-wood",
@@ -8264,8 +7629,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.38951,
       "lng": 0.071845
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/140_6-448x332.jpg"
+    }
   },
   {
     "id": "the-spinning-mule-bolton",
@@ -8277,8 +7641,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.577525,
       "lng": -2.426566
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/200-feature-448x332.png"
+    }
   },
   {
     "id": "the-spirit-merchant-newtownards",
@@ -8290,8 +7653,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.594122,
       "lng": -5.7
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/2396-feature-448x332.png"
+    }
   },
   {
     "id": "the-spread-eagle-birmingham",
@@ -8303,8 +7665,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.446794,
       "lng": -1.820304
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/398-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-square-bottle-chester",
@@ -8316,8 +7677,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.191584,
       "lng": -2.883397
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/209-feature-448x332.png"
+    }
   },
   {
     "id": "the-square-peg-birmingham",
@@ -8329,8 +7689,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.482654,
       "lng": -1.894241
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/82-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-square-sail-lincoln",
@@ -8342,12 +7701,11 @@ export const parsedPubs = [
     "location": {
       "lat": 53.229729,
       "lng": -0.546436
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2795-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-stag-amp-pheasant-mansfield",
-    "name": "The Stag &amp; Pheasant",
+    "name": "The Stag & Pheasant",
     "address": "Clumber Street, Mansfield, Nottinghamshire, NG18 1NU",
     "city": "Mansfield",
     "region": "Nottinghamshire",
@@ -8355,8 +7713,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.145828,
       "lng": -1.196763
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6423-feature-448x332.png"
+    }
   },
   {
     "id": "the-stamford-post-stamford",
@@ -8368,8 +7725,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.651325,
       "lng": -0.481255
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6911-feature-448x332.png"
+    }
   },
   {
     "id": "the-standing-order-6266-george-street",
@@ -8381,8 +7737,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.952962,
       "lng": -3.199297
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/371-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-standing-order-derby",
@@ -8394,8 +7749,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.924199,
       "lng": -1.478042
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/170-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-standing-order-southampton",
@@ -8407,8 +7761,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.900894,
       "lng": -1.403445
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/202-feature-448x332.png"
+    }
   },
   {
     "id": "the-standing-order-stevenage",
@@ -8420,8 +7773,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.912135,
       "lng": -0.207877
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1031-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-stanley-jefferson-bishop-auckland",
@@ -8433,8 +7785,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.665252,
       "lng": -1.673228
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5268-feature-448x332.png"
+    }
   },
   {
     "id": "the-stannary-court-plympton",
@@ -8446,8 +7797,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.3878,
       "lng": -4.051299
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6850-feature-448x332.png"
+    }
   },
   {
     "id": "the-staple-hill-oak-staple-hill",
@@ -8459,8 +7809,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.481141,
       "lng": -2.51011
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/640-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-star-gosport",
@@ -8472,8 +7821,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.795459,
       "lng": -1.12108
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/1373-feature-448x332.png"
+    }
   },
   {
     "id": "the-star-hoddesdon",
@@ -8485,8 +7833,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.761398,
       "lng": -0.011945
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7244-feature-448x332.png"
+    }
   },
   {
     "id": "the-star-inn-honiton",
@@ -8498,8 +7845,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.798346,
       "lng": -3.188107
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6790-feature-448x332.png"
+    }
   },
   {
     "id": "the-stargazer-peninsula-square",
@@ -8511,8 +7857,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.502213,
       "lng": 0.002244
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7606-feature-448x332.png"
+    }
   },
   {
     "id": "the-steel-foundry-sheffield",
@@ -8524,8 +7869,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.414085,
       "lng": -1.412793
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/7188-feature-448x332.png"
+    }
   },
   {
     "id": "the-sugar-loaf-market-harborough",
@@ -8537,8 +7881,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.478624,
       "lng": -0.922231
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/789-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-sun-redhill",
@@ -8550,8 +7893,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.241,
       "lng": -0.168292
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/238-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-surrey-docks-rotherhithe",
@@ -8563,8 +7905,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.492239,
       "lng": -0.045113
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/467-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-sussex-rhyl",
@@ -8576,8 +7917,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.321014,
       "lng": -3.491629
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/2000-feature-448x332.png"
+    }
   },
   {
     "id": "the-swan-weymouth",
@@ -8589,12 +7929,11 @@ export const parsedPubs = [
     "location": {
       "lat": 50.608384,
       "lng": -2.454929
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/475-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-swan-amp-angel-st-ives",
-    "name": "The Swan &amp; Angel",
+    "name": "The Swan & Angel",
     "address": "8/9 Market Hill, St Ives, Cambridgeshire, PE27 5AL",
     "city": "St Ives",
     "region": "Cambridgeshire",
@@ -8602,12 +7941,11 @@ export const parsedPubs = [
     "location": {
       "lat": 52.323148,
       "lng": -0.072985
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7140-feature-448x332.png"
+    }
   },
   {
     "id": "the-swan-amp-castle-oxford",
-    "name": "The Swan &amp; Castle",
+    "name": "The Swan & Castle",
     "address": "Castle Street, Oxford, Oxfordshire, OX1 1AY",
     "city": "Oxford",
     "region": "Oxfordshire",
@@ -8615,8 +7953,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.75112,
       "lng": -1.261989
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6191-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-swan-hotel-leighton-buzzard",
@@ -8628,8 +7965,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.91579,
       "lng": -0.663199
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5805-feature-448x332.png"
+    }
   },
   {
     "id": "the-swatters-carr-middlesbrough",
@@ -8641,8 +7977,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.570154,
       "lng": -1.238488
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6692-feature-448x332.png"
+    }
   },
   {
     "id": "the-sweyn-forkbeard-gainsborough",
@@ -8654,8 +7989,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.398965,
       "lng": -0.776648
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/605-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-tailors-chalk-sidcup",
@@ -8667,8 +8001,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.426179,
       "lng": 0.103827
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6151-feature-448x332.png"
+    }
   },
   {
     "id": "the-talk-of-the-town-paignton",
@@ -8680,8 +8013,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.435007,
       "lng": -3.561621
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5879-feature-448x332.png"
+    }
   },
   {
     "id": "the-tanners-hall-darlington",
@@ -8693,8 +8025,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.525239,
       "lng": -1.557276
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/302-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-temeraire-saffron-walden",
@@ -8706,21 +8037,19 @@ export const parsedPubs = [
     "location": {
       "lat": 52.021525,
       "lng": 0.23922
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/736-feature-448x332.png"
+    }
   },
   {
     "id": "the-thomas-botfield-telford",
     "name": "The Thomas Botfield",
-    "address": "Central Square, Telford Shopping Centre, Telford, Telford &amp; Wrekin, TF3 4BW",
+    "address": "Central Square, Telford Shopping Centre, Telford, Telford & Wrekin, TF3 4BW",
     "city": "Telford",
-    "region": "Telford &amp; Wrekin",
+    "region": "Telford & Wrekin",
     "country": "England",
     "location": {
       "lat": 52.675616,
       "lng": -2.446505
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5325-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-thomas-burke-leigh",
@@ -8732,8 +8061,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.500148,
       "lng": -2.518684
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5308-feature-448x332.png"
+    }
   },
   {
     "id": "the-thomas-drummond-fleetwood",
@@ -8745,8 +8073,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.92209,
       "lng": -3.011838
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2218-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-thomas-frost-liverpool",
@@ -8758,8 +8085,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.436678,
       "lng": -2.972544
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2372-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-thomas-ingoldsby-canterbury",
@@ -8771,8 +8097,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.27852,
       "lng": 1.083367
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/291-feature-448x332.png"
+    }
   },
   {
     "id": "the-thomas-lloyd-warwick",
@@ -8784,8 +8109,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.28188,
       "lng": -1.590095
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2201-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-thomas-sheraton-4-bridge-road",
@@ -8797,8 +8121,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.561154,
       "lng": -1.313022
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/303-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-thomas-waghorn-chatham",
@@ -8810,8 +8133,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.383,
       "lng": 0.52335
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6549-feature-448x332.png"
+    }
   },
   {
     "id": "the-three-fishes-worthing",
@@ -8823,8 +8145,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.813114,
       "lng": -0.370513
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6307-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-three-hulats-leeds",
@@ -8836,8 +8157,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.825368,
       "lng": -1.534858
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/546-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-three-john-scotts-kingston-upon-hull",
@@ -8849,8 +8169,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.744063,
       "lng": -0.332801
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1417-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-three-magnets-letchworth",
@@ -8862,8 +8181,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.979288,
       "lng": -0.226308
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/289-feature-448x332.png"
+    }
   },
   {
     "id": "the-three-tuns-thirsk",
@@ -8875,8 +8193,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.232445,
       "lng": -1.341789
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5560-feature-448x332.png"
+    }
   },
   {
     "id": "the-tilley-stone-gateshead",
@@ -8888,8 +8205,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.961852,
       "lng": -1.6018
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6132-feature-448x332.png"
+    }
   },
   {
     "id": "the-tilly-shilling-farnborough",
@@ -8901,8 +8217,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.293293,
       "lng": -0.757303
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6240-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-tim-bobbin-urmston",
@@ -8914,8 +8229,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.448046,
       "lng": -2.358597
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1103-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-tollemache-inn-grantham",
@@ -8927,8 +8241,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.910438,
       "lng": -0.640032
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/219-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-towan-blystra-newquay",
@@ -8940,8 +8253,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.414425,
       "lng": -5.077134
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/1856-feature-448x332.png"
+    }
   },
   {
     "id": "the-trawl-boat-inn-lytham-st-annes",
@@ -8953,8 +8265,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.751107,
       "lng": -3.029792
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/1883-feature-448x332.png"
+    }
   },
   {
     "id": "the-tremenheere-penzance",
@@ -8966,8 +8277,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.118535,
       "lng": -5.536643
-    },
-    "carpetUrl": ""
+    }
   },
   {
     "id": "the-troll-cart-great-yarmouth",
@@ -8979,8 +8289,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.607468,
       "lng": 1.730704
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/210-feature-448x332.png"
+    }
   },
   {
     "id": "the-tumble-inn-pontypridd",
@@ -8992,8 +8301,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.599497,
       "lng": -3.340553
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2470-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-turls-green-bradford",
@@ -9005,8 +8313,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.792327,
       "lng": -1.753296
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/4219-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-twelve-tellers-preston",
@@ -9018,8 +8325,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.75922,
       "lng": -2.695757
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7078-feature-448x332.png"
+    }
   },
   {
     "id": "the-unicorn-altrincham",
@@ -9031,8 +8337,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.383042,
       "lng": -2.351991
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1632-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-unicorn-hotel-ripon",
@@ -9044,8 +8349,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.136494,
       "lng": -1.523011
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6286-feature-448x332.png"
+    }
   },
   {
     "id": "the-union-rooms-batley",
@@ -9057,8 +8361,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.712705,
       "lng": -1.628568
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/2080-feature-448x332.png"
+    }
   },
   {
     "id": "the-union-rooms-plymouth",
@@ -9070,8 +8373,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.369649,
       "lng": -4.147482
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/662-feature-448x332.png"
+    }
   },
   {
     "id": "the-up-steps-inn-oldham",
@@ -9083,8 +8385,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.542181,
       "lng": -2.113316
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/395-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-van-dyck-forum-748756-fishponds-road",
@@ -9096,8 +8397,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.479713,
       "lng": -2.52998
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/559-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-velvet-coaster-blackpool",
@@ -9109,8 +8409,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.794996,
       "lng": -3.055643
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7275-feature-448x332.png"
+    }
   },
   {
     "id": "the-vigilance-brixham",
@@ -9122,8 +8421,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.393792,
       "lng": -3.51575
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/688-feature-448x332.png"
+    }
   },
   {
     "id": "the-village-inn-rayners-lane",
@@ -9135,8 +8433,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.576879,
       "lng": -0.370842
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/53-feature-448x332.png"
+    }
   },
   {
     "id": "the-w-g-grace-7173-whiteladies-road",
@@ -9148,12 +8445,11 @@ export const parsedPubs = [
     "location": {
       "lat": 51.463262,
       "lng": -2.608761
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6907-feature-448x332.png"
+    }
   },
   {
     "id": "the-wagon-amp-horses-sheffield",
-    "name": "The Wagon &amp; Horses",
+    "name": "The Wagon & Horses",
     "address": "2 Market Place, Chapeltown, Sheffield, South Yorkshire, S35 2UU",
     "city": "Sheffield",
     "region": "South Yorkshire",
@@ -9161,8 +8457,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.461623,
       "lng": -1.465983
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7095-feature-448x332.png"
+    }
   },
   {
     "id": "the-wagon-works-eastleigh",
@@ -9174,8 +8469,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.970063,
       "lng": -1.350917
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6147-feature-448x332.png"
+    }
   },
   {
     "id": "the-wallace-hartley-colne",
@@ -9187,8 +8481,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.856722,
       "lng": -2.170316
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5603-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-wallaw-blyth",
@@ -9200,8 +8493,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.126602,
       "lng": -1.50805
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5516-feature-448x332.png"
+    }
   },
   {
     "id": "the-walnut-tree-leytonstone",
@@ -9213,8 +8505,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.569524,
       "lng": 0.012228
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/433-feature-448x332.png"
+    }
   },
   {
     "id": "the-ward-jackson-hartlepool",
@@ -9226,8 +8517,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.685215,
       "lng": -1.209486
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5115-feature-448x332.png"
+    }
   },
   {
     "id": "the-watch-house-198204-high-street",
@@ -9239,8 +8529,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.45983,
       "lng": -0.012065
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/254-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-watch-maker-prescot",
@@ -9252,8 +8541,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.429783,
       "lng": -2.801966
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6103-feature-448x332.png"
+    }
   },
   {
     "id": "the-watchman-new-malden",
@@ -9265,8 +8553,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.399107,
       "lng": -0.2552
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5447-feature-448x332.png"
+    }
   },
   {
     "id": "the-water-gate-barnstaple",
@@ -9278,8 +8565,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.078872,
       "lng": -4.06026
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5978-feature-448x332.png"
+    }
   },
   {
     "id": "the-waterfront-inn-brierley-hill",
@@ -9291,8 +8577,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.486484,
       "lng": -2.114344
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1227-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-waterhouse-6771-princess-street",
@@ -9304,8 +8589,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.479015,
       "lng": -2.242715
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2103-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-weeping-ash-st-neots",
@@ -9317,8 +8601,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.228754,
       "lng": -0.269248
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5588-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-welkin-liverpool",
@@ -9330,8 +8613,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.406072,
       "lng": -2.985685
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2572-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-west-gate-inn-canterbury",
@@ -9343,8 +8625,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.282412,
       "lng": 1.07627
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/673-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-west-kirk-ayr",
@@ -9356,8 +8637,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.46271,
       "lng": -4.634116
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/804-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-west-quay-brighton",
@@ -9369,8 +8649,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.81196,
       "lng": -0.105292
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5340-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-whalebone-downham-market",
@@ -9382,8 +8661,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.602938,
       "lng": 0.373434
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7320-feature-448x332.png"
+    }
   },
   {
     "id": "the-wheatsheaf-ellesmere-port",
@@ -9395,8 +8673,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.282406,
       "lng": -2.92314
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2923-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-wheatsheaf-cheadle",
@@ -9408,8 +8685,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.987036,
       "lng": -1.989277
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6226-feature-448x332.png"
+    }
   },
   {
     "id": "the-wheatsheaf-stoke-on-trent",
@@ -9421,8 +8697,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.004393,
       "lng": -2.1858
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/755-feature-448x332.png"
+    }
   },
   {
     "id": "the-wheatsheaf-inn-kilmarnock",
@@ -9434,8 +8709,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.610995,
       "lng": -4.497164
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/725-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-wheatsheaf-inn-wisbech",
@@ -9447,8 +8721,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.66358,
       "lng": 0.162885
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1725-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-whiffler-norwich",
@@ -9460,8 +8733,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.654537,
       "lng": 1.269229
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/915-feature-448x332.png"
+    }
   },
   {
     "id": "the-whispering-moon-wallington",
@@ -9473,8 +8745,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.360269,
       "lng": -0.149204
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/55-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-white-ball-inn-tiverton",
@@ -9486,8 +8757,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.903029,
       "lng": -3.490929
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2999-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-white-hart-aylesbury",
@@ -9499,8 +8769,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.815843,
       "lng": -0.811076
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6402-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-white-hart-hotel-okehampton",
@@ -9512,8 +8781,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.738841,
       "lng": -4.003386
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7280-feature-448x332.png"
+    }
   },
   {
     "id": "the-white-horse-brigg",
@@ -9525,8 +8793,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.552503,
       "lng": -0.488545
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6788-feature-448x332.png"
+    }
   },
   {
     "id": "the-white-house-leicester",
@@ -9538,8 +8805,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.643539,
       "lng": -1.049015
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6545-feature-448x332.png"
+    }
   },
   {
     "id": "the-white-house-luton",
@@ -9551,8 +8817,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.881558,
       "lng": -0.418851
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/168-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-white-lady-corstorphine",
@@ -9564,8 +8829,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.942903,
       "lng": -3.281762
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6341-feature-448x332.png"
+    }
   },
   {
     "id": "the-white-swan-solihull",
@@ -9577,8 +8841,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.414399,
       "lng": -1.780533
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5178-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-white-swan-255256-upper-street",
@@ -9590,8 +8853,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.545741,
       "lng": -0.103453
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1732-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-wibbas-down-inn-wimbledon",
@@ -9603,8 +8865,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.418223,
       "lng": -0.202163
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/221-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-wicket-gate-chester-le-street",
@@ -9616,8 +8877,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.852779,
       "lng": -1.57353
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6261-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-wild-boar-houghton-le-spring",
@@ -9629,8 +8889,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.843445,
       "lng": -1.46922
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6513-feature-448x332.png"
+    }
   },
   {
     "id": "the-wilfred-owen-oswestry",
@@ -9642,8 +8901,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.861715,
       "lng": -3.059361
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/2773-feature-448x332.png"
+    }
   },
   {
     "id": "the-wilfred-wood-stockport",
@@ -9655,8 +8913,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.379357,
       "lng": -2.120641
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6345-feature-448x332.png"
+    }
   },
   {
     "id": "the-william-adams-great-yarmouth",
@@ -9668,8 +8925,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.580068,
       "lng": 1.728168
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7294-feature-448x332.png"
+    }
   },
   {
     "id": "the-william-aylmer-harlow",
@@ -9681,8 +8937,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.771161,
       "lng": 0.091801
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/2861-feature-448x332.png"
+    }
   },
   {
     "id": "the-william-dampier-yeovil",
@@ -9694,8 +8949,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.941433,
       "lng": -2.627009
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/677-feature-448x332.png"
+    }
   },
   {
     "id": "the-william-henry-weymouth",
@@ -9707,8 +8961,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.611308,
       "lng": -2.454519
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6016-feature-448x332.png"
+    }
   },
   {
     "id": "the-william-jameson-sunderland",
@@ -9720,8 +8973,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.90588,
       "lng": -1.381218
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/370-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-william-morris-oxford",
@@ -9733,21 +8985,19 @@ export const parsedPubs = [
     "location": {
       "lat": 51.732407,
       "lng": -1.217143
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/4469-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-william-morris-hammersmith",
     "name": "The William Morris",
-    "address": "Swan Island, 2–4 King Street, Hammersmith, Hammersmith &amp; Fulham, W6 0QA",
+    "address": "Swan Island, 2–4 King Street, Hammersmith, Hammersmith & Fulham, W6 0QA",
     "city": "Hammersmith",
-    "region": "Hammersmith &amp; Fulham",
+    "region": "Hammersmith & Fulham",
     "country": "England",
     "location": {
       "lat": 51.493021,
       "lng": -0.225485
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/166-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-william-owen-haverfordwest",
@@ -9759,8 +9009,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.801488,
       "lng": -4.967892
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5748-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-william-peverel-nottingham",
@@ -9772,8 +9021,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.002115,
       "lng": -1.196421
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5479-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-william-rufus-carlisle",
@@ -9785,8 +9033,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.890976,
       "lng": -2.931426
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/4365-feature-448x332.png"
+    }
   },
   {
     "id": "the-william-shenstone-halesowen",
@@ -9798,8 +9045,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.449463,
       "lng": -2.051743
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/494-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-william-stead-darlington",
@@ -9811,8 +9057,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.526682,
       "lng": -1.553584
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/4114-feature-448x332.png"
+    }
   },
   {
     "id": "the-william-tyler-birmingham",
@@ -9824,8 +9069,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.468071,
       "lng": -1.807735
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6299-feature-448x332.png"
+    }
   },
   {
     "id": "the-william-webb-ellis-twickenham",
@@ -9837,8 +9081,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.447727,
       "lng": -0.328456
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2650-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-william-withering-wellington",
@@ -9850,8 +9093,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.700628,
       "lng": -2.516814
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/6444-feature-448x332.png"
+    }
   },
   {
     "id": "the-william-wygston-wigston",
@@ -9863,8 +9105,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.587005,
       "lng": -1.106151
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/424-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-willow-tree-stowmarket",
@@ -9876,8 +9117,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.185487,
       "lng": 0.999517
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5478-feature-448x332.png"
+    }
   },
   {
     "id": "the-willow-walk-victoria",
@@ -9889,8 +9129,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.49534,
       "lng": -0.142427
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1169-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-windmill-stansted",
@@ -9902,8 +9141,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.889946,
       "lng": 0.261768
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/7262-feature-448x332.png"
+    }
   },
   {
     "id": "the-winter-gardens-harrogate",
@@ -9915,8 +9153,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.994347,
       "lng": -1.544068
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/893-feature-448x332.png"
+    }
   },
   {
     "id": "the-winter-seam-castleford",
@@ -9928,8 +9165,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.710191,
       "lng": -1.3419
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/2779-feature-448x332.png"
+    }
   },
   {
     "id": "the-wishaw-malt-wishaw",
@@ -9941,8 +9177,7 @@ export const parsedPubs = [
     "location": {
       "lat": 55.773724,
       "lng": -3.918589
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1014-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-woodseats-palace-sheffield",
@@ -9954,8 +9189,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.343936,
       "lng": -1.478403
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/1713-feature-448x332.png"
+    }
   },
   {
     "id": "the-woodthorpe-top-nottingham",
@@ -9967,8 +9201,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.984229,
       "lng": -1.124287
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5571-feature-448x332.png"
+    }
   },
   {
     "id": "the-wouldhave-south-shields",
@@ -9980,8 +9213,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.999667,
       "lng": -1.434067
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/319-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-wrong-un-bexleyheath",
@@ -9993,8 +9225,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.457821,
       "lng": 0.137412
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/100-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-wye-bridge-house-buxton",
@@ -10006,8 +9237,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.259598,
       "lng": -1.905849
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1681-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-wyndham-arms-hotel-dunraven-place",
@@ -10019,8 +9249,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.50664,
       "lng": -3.579286
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1087-feature-448x332.jpg"
+    }
   },
   {
     "id": "the-yarborough-hotel-grimsby",
@@ -10032,8 +9261,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.563827,
       "lng": -0.087998
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/423-feature-448x332.png"
+    }
   },
   {
     "id": "the-york-palace-llanelli",
@@ -10045,8 +9273,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.681,
       "lng": -4.162895
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/465-feature-448x332.png"
+    }
   },
   {
     "id": "thorns-farm-yate",
@@ -10058,8 +9285,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.53924,
       "lng": -2.413143
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6491-feature-448x332.png"
+    }
   },
   {
     "id": "trent-bridge-inn-nottingham",
@@ -10071,8 +9297,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.937206,
       "lng": -1.134164
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6503-feature-448x332.png"
+    }
   },
   {
     "id": "try-dowr-truro",
@@ -10084,8 +9309,7 @@ export const parsedPubs = [
     "location": {
       "lat": 50.261746,
       "lng": -5.050665
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5376-feature-448x332.png"
+    }
   },
   {
     "id": "v-shed-canons-road",
@@ -10097,8 +9321,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.450853,
       "lng": -2.598378
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2473-feature-448x332.jpg"
+    }
   },
   {
     "id": "waggon-and-horses-alfreton",
@@ -10110,8 +9333,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.096987,
       "lng": -1.390174
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5103-feature-448x332.png"
+    }
   },
   {
     "id": "waterend-barn-st-albans",
@@ -10123,8 +9345,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.752595,
       "lng": -0.337332
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/5152-feature-448x332.png"
+    }
   },
   {
     "id": "wetherspoon-birmingham-airport-after-security",
@@ -10136,8 +9357,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.451299,
       "lng": -1.731056
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/6137-feature-448x332.png"
+    }
   },
   {
     "id": "wetherspoons-gateshead",
@@ -10149,8 +9369,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.957922,
       "lng": -1.666941
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/646-feature-448x332.jpg"
+    }
   },
   {
     "id": "wetherspoons-birmingham",
@@ -10162,8 +9381,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.453063,
       "lng": -1.720053
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/5505-feature-448x332.jpg"
+    }
   },
   {
     "id": "wetherspoons-leeds",
@@ -10175,8 +9393,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.79515,
       "lng": -1.546669
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/643-feature-448x332.png"
+    }
   },
   {
     "id": "wetherspoons-victoria",
@@ -10188,8 +9405,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.494975,
       "lng": -0.14433
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/64-feature-448x332.jpg"
+    }
   },
   {
     "id": "wetherspoons-49-piccadilly",
@@ -10201,8 +9417,7 @@ export const parsedPubs = [
     "location": {
       "lat": 53.48117,
       "lng": -2.235117
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/192-feature-448x332.jpg"
+    }
   },
   {
     "id": "wetherspoons-milton-keynes",
@@ -10214,8 +9429,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.03763,
       "lng": -0.767794
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/152-feature-448x332.jpg"
+    }
   },
   {
     "id": "woodrow-wilson-carlisle",
@@ -10227,8 +9441,7 @@ export const parsedPubs = [
     "location": {
       "lat": 54.890976,
       "lng": -2.931426
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/470-feature-448x332.png"
+    }
   },
   {
     "id": "y-dic-penderyn-102103-high-street",
@@ -10240,8 +9453,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.746823,
       "lng": -3.378444
-    },
-    "carpetUrl": "https://carpets.example.com/2024/06/1258-feature-448x332.png"
+    }
   },
   {
     "id": "yr-hen-orsaf-aberystwyth",
@@ -10253,8 +9465,7 @@ export const parsedPubs = [
     "location": {
       "lat": 52.415105,
       "lng": -4.080219
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/1176-feature-448x332.jpg"
+    }
   },
   {
     "id": "yr-ieuan-ap-iago-aberdare",
@@ -10266,8 +9477,7 @@ export const parsedPubs = [
     "location": {
       "lat": 51.7135,
       "lng": -3.447894
-    },
-    "carpetUrl": "https://carpets.example.com/2024/03/2667-feature-448x332.jpg"
+    }
   }
 ];
 
