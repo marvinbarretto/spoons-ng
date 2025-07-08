@@ -9,7 +9,7 @@ import { PubStore } from '../../../pubs/data-access/pub.store';
   selector: 'app-mission-card-light',
   imports: [CommonModule, PubChipComponent],
   template: `
-    <div class="mission-card-light" (click)="handleClick()">
+    <div class="mission-card-light" (click)="onMissionClick()">
       <div class="mission-header">
         <div class="mission-title">
           @if (mission().emoji) {
@@ -75,15 +75,21 @@ import { PubStore } from '../../../pubs/data-access/pub.store';
   styles: `
     .mission-card-light {
       background: linear-gradient(135deg, var(--background-lighter) 0%, var(--background-lightest) 100%);
-      border: 2px solid transparent;
+      border: 2px solid var(--border-strong);
       background-clip: padding-box;
       border-radius: 12px;
       padding: 1.25rem;
-      cursor: pointer;
       transition: all 0.3s ease;
       position: relative;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      overflow: visible;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+    }
+
+    .mission-card-light:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+      border-color: var(--accent);
     }
 
     .mission-card-light::before {
@@ -93,19 +99,11 @@ import { PubStore } from '../../../pubs/data-access/pub.store';
       left: 0;
       right: 0;
       bottom: 0;
-      background: linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%);
+      background: var(--accent);
       opacity: 0.05;
       border-radius: 10px;
-      transition: opacity 0.3s ease;
-    }
-
-    .mission-card-light:active {
-      transform: scale(0.98);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-    }
-
-    .mission-card-light:active::before {
-      opacity: 0.1;
+      pointer-events: none;
+      z-index: 1;
     }
 
     .mission-header {
@@ -302,14 +300,14 @@ import { PubStore } from '../../../pubs/data-access/pub.store';
     .category-badge {
       font-size: 0.75rem;
       padding: 0.375rem 0.75rem;
-      background: linear-gradient(135deg, var(--secondary) 0%, var(--background-lighter) 100%);
-      color: var(--text);
+      background: transparent;
+      color: var(--text-secondary);
       border: 1px solid var(--border);
       border-radius: 16px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      opacity: 0.8;
       position: relative;
       overflow: hidden;
     }
@@ -384,6 +382,8 @@ import { PubStore } from '../../../pubs/data-access/pub.store';
       border: none;
       margin: 0;
       padding: 0;
+      position: relative;
+      z-index: 2;
     }
 
     .pub-list-summary {
@@ -400,11 +400,16 @@ import { PubStore } from '../../../pubs/data-access/pub.store';
       font-weight: 600;
       color: var(--text);
       margin-bottom: 0.75rem;
+      position: relative;
+      z-index: 3;
+      pointer-events: auto;
     }
 
     .pub-list-summary:hover {
       background: var(--background-darkest);
-      border-color: var(--border-strong);
+      border-color: var(--accent);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
     .pub-list-summary::-webkit-details-marker {
@@ -430,6 +435,8 @@ import { PubStore } from '../../../pubs/data-access/pub.store';
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
+      position: relative;
+      z-index: 2;
     }
   `
 })
@@ -443,7 +450,11 @@ export class MissionCardLightComponent {
   readonly showPubDetails = input<boolean>(false);
   
   readonly missionClick = output<Mission>();
-
+  
+  protected onMissionClick(): void {
+    this.missionClick.emit(this.mission());
+  }
+  
   readonly progressPercentage = computed(() => {
     const prog = this.progress();
     const total = this.mission().pubIds.length;
@@ -475,8 +486,4 @@ export class MissionCardLightComponent {
       completedCount: pubDetails.filter(p => p.hasVisited).length
     };
   });
-
-  handleClick(): void {
-    this.missionClick.emit(this.mission());
-  }
 }

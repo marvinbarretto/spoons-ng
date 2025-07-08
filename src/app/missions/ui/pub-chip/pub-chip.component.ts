@@ -9,6 +9,8 @@ import type { Pub } from '../../../pubs/utils/pub.models';
     <div
       class="pub-chip"
       [class.pub-chip--completed]="hasVisited()"
+      [class.pub-chip--clickable]="clickable()"
+      [class.pub-chip--ghost]="!clickable()"
       [title]="pub().name"
     >
       <div class="pub-chip__icon">
@@ -44,29 +46,48 @@ import type { Pub } from '../../../pubs/utils/pub.models';
       align-items: center;
       gap: 0.75rem;
       padding: 0.75rem;
-      background: var(--background-lightest);
-      border: 1px solid var(--border);
       border-radius: 8px;
       transition: all 0.2s ease;
-      cursor: default;
       width: 100%;
     }
 
-    .pub-chip:hover {
+    /* Clickable (solid) styling */
+    .pub-chip--clickable {
+      background: var(--background-lightest);
+      border: 1px solid var(--border);
+      cursor: pointer;
+    }
+
+    .pub-chip--clickable:hover {
       background: var(--background-lighter);
       border-color: var(--primary);
       transform: translateY(-1px);
       box-shadow: var(--shadow);
     }
 
-    .pub-chip--completed {
+    /* Ghost (non-clickable) styling */
+    .pub-chip--ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      opacity: 0.7;
+      cursor: default;
+    }
+
+    .pub-chip--clickable.pub-chip--completed {
       background: var(--secondary);
       border-color: var(--success);
     }
 
-    .pub-chip--completed:hover {
+    .pub-chip--clickable.pub-chip--completed:hover {
       background: var(--secondaryHover);
       border-color: var(--success);
+    }
+
+    .pub-chip--ghost.pub-chip--completed {
+      background: transparent;
+      border-color: var(--success);
+      color: var(--success);
+      opacity: 0.8;
     }
 
     .pub-chip__icon {
@@ -82,9 +103,19 @@ import type { Pub } from '../../../pubs/utils/pub.models';
       background: var(--background-darker);
     }
 
-    .pub-chip--completed .pub-chip__icon {
+    .pub-chip--clickable.pub-chip--completed .pub-chip__icon {
       background: var(--success);
       color: var(--onPrimary);
+    }
+
+    .pub-chip--ghost .pub-chip__icon {
+      background: transparent;
+      color: var(--text-muted);
+    }
+
+    .pub-chip--ghost.pub-chip--completed .pub-chip__icon {
+      background: transparent;
+      color: var(--success);
     }
 
     .pub-chip__content {
@@ -103,7 +134,15 @@ import type { Pub } from '../../../pubs/utils/pub.models';
       word-break: break-word;
     }
 
-    .pub-chip--completed .pub-chip__name {
+    .pub-chip--clickable.pub-chip--completed .pub-chip__name {
+      color: var(--success);
+    }
+
+    .pub-chip--ghost .pub-chip__name {
+      color: var(--text-muted);
+    }
+
+    .pub-chip--ghost.pub-chip--completed .pub-chip__name {
       color: var(--success);
     }
 
@@ -137,7 +176,7 @@ import type { Pub } from '../../../pubs/utils/pub.models';
       transition: transform 0.2s ease;
     }
 
-    .pub-chip:hover .carpet-thumbnail {
+    .pub-chip--clickable:hover .carpet-thumbnail {
       transform: scale(1.05);
     }
 
@@ -153,4 +192,5 @@ export class PubChipComponent {
   readonly visitCount = input<number>(0);
   readonly showLocation = input<boolean>(true);
   readonly showCarpet = input<boolean>(false);
+  readonly clickable = input<boolean>(false);
 }

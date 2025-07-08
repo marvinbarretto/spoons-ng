@@ -10,6 +10,7 @@ import { NearbyPubStore } from '@pubs/data-access/nearby-pub.store';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { CheckInStore } from '@/app/check-in/data-access/check-in.store';
 import { IconComponent } from '@shared/ui/icon/icon.component';
+import { environment } from '../../../../environments/environment';
 
 type NavItem = {
   label: string;
@@ -69,6 +70,24 @@ type NavItem = {
               <span class="nav-item__label">{{ item.label }}</span>
             </a>
           }
+        }
+        
+        <!-- 🧪 DEV MODE: Test button for new simplified check-in -->
+        @if (showTestButton() && canCheckIn()) {
+          <button
+            class="nav-item nav-item--test"
+            (click)="handleTestSimplifiedCheckin()"
+            type="button"
+          >
+            <div class="nav-item__icon">
+              <app-icon
+                name="science"
+                size="md"
+                [filled]="false"
+                weight="regular" />
+            </div>
+            <span class="nav-item__label">Test New</span>
+          </button>
         }
       </nav>
     }
@@ -228,6 +247,27 @@ type NavItem = {
       }
     }
 
+    /* ✅ Test button styles */
+    .nav-item--test {
+      border: 2px dashed orange;
+      border-radius: 8px;
+      background: rgba(255, 165, 0, 0.1);
+      
+      .nav-item__icon {
+        color: orange;
+      }
+      
+      .nav-item__label {
+        color: orange;
+        font-size: 0.7rem;
+      }
+      
+      &:hover {
+        background: rgba(255, 165, 0, 0.2);
+        transform: scale(0.95);
+      }
+    }
+
     /* ✅ Hide on desktop */
     @media (min-width: 768px) {
       .footer-nav {
@@ -282,6 +322,9 @@ export class FooterNavComponent extends BaseComponent {
     // Check if the closest pub is within check-in range
     return this.nearbyPubStore.isWithinCheckInRange(pub.id);
   });
+
+  // ✅ Dev mode helper
+  readonly showTestButton = computed(() => environment.ACTIVE_DEVELOPMENT_MODE);
 
   // ✅ Navigation items with Material Symbols
   readonly navItems = computed((): NavItem[] => {
@@ -341,5 +384,17 @@ export class FooterNavComponent extends BaseComponent {
 
     // Navigate to dedicated check-in page
     this.router.navigate(['/check-in', pub.id]);
+  }
+
+  // ✅ Handle test simplified check-in button
+  handleTestSimplifiedCheckin(): void {
+    const pub = this.closestPub();
+    if (!pub) {
+      console.warn('[FooterNav] No pub available for simplified check-in test');
+      return;
+    }
+
+    console.log('[FooterNav] 🧪 Testing simplified check-in for:', pub.name);
+    this.router.navigate(['/simplified-checkin', pub.id]);
   }
 }

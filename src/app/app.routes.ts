@@ -46,6 +46,14 @@ export const appRoutes: Routes = [
     data: { shell: 'fullscreen' }
   },
   {
+    path: 'simplified-checkin/:pubId',
+    title: 'Test New Check In',
+    canActivate: [onboardingGuard],
+    loadComponent: () =>
+      import('./check-in/feature/simplified-checkin/simplified-checkin.component').then(m => m.SimplifiedCheckinComponent),
+    data: { shell: 'fullscreen' }
+  },
+  {
     path: 'carpets',
     canActivate: [onboardingGuard],
     loadChildren: () =>

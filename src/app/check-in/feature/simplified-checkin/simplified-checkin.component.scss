@@ -1,0 +1,524 @@
+// src/app/check-in/feature/simplified-checkin/simplified-checkin.component.scss
+
+.simplified-checkin {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #000;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+// ===================================
+// 📹 CAMERA & VIEWFINDER
+// ===================================
+
+.camera-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.camera-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+}
+
+.viewfinder-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+// ===================================
+// 🔍 VIEWFINDER FRAME (QR-like)
+// ===================================
+
+.viewfinder-frame {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(2px);
+  overflow: hidden;
+
+  @media (max-width: 480px) {
+    width: 240px;
+    height: 240px;
+  }
+}
+
+// Corner brackets for QR scanner feel
+.corner {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border: 3px solid #00ff88;
+  
+  &.top-left {
+    top: -2px;
+    left: -2px;
+    border-right: none;
+    border-bottom: none;
+  }
+  
+  &.top-right {
+    top: -2px;
+    right: -2px;
+    border-left: none;
+    border-bottom: none;
+  }
+  
+  &.bottom-left {
+    bottom: -2px;
+    left: -2px;
+    border-right: none;
+    border-top: none;
+  }
+  
+  &.bottom-right {
+    bottom: -2px;
+    right: -2px;
+    border-left: none;
+    border-top: none;
+  }
+}
+
+// Scanning line animation
+.scanning-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    transparent, 
+    #00ff88 20%, 
+    #00ff88 80%, 
+    transparent
+  );
+  box-shadow: 0 0 8px #00ff88;
+  animation: scan 2s ease-in-out infinite;
+}
+
+@keyframes scan {
+  0% { transform: translateY(0); opacity: 1; }
+  50% { transform: translateY(276px); opacity: 0.8; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.viewfinder-status {
+  position: absolute;
+  bottom: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 24px;
+  font-size: 16px;
+  font-weight: 500;
+  text-align: center;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  min-width: 200px;
+}
+
+// ===================================
+// 📸 PHOTO PREVIEW
+// ===================================
+
+.photo-preview {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+
+  img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    filter: blur(2px);
+    opacity: 0.7;
+  }
+}
+
+.photo-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  color: white;
+  z-index: 10;
+
+  .status-message {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  }
+}
+
+// ===================================
+// 🚦 CONDITIONS PANEL
+// ===================================
+
+.conditions-panel {
+  position: absolute;
+  bottom: 120px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  pointer-events: none;
+
+  @media (max-width: 480px) {
+    bottom: 100px;
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+.condition {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+  min-width: 140px;
+
+  &.met {
+    border-color: #00ff88;
+    background: rgba(0, 255, 136, 0.1);
+    
+    .condition-icon {
+      filter: drop-shadow(0 0 4px #00ff88);
+    }
+  }
+
+  @media (max-width: 480px) {
+    min-width: 200px;
+  }
+}
+
+.condition-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.condition-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+
+  .condition-label {
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .condition-value {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+  }
+}
+
+.condition-status {
+  font-size: 18px;
+  color: #00ff88;
+  font-weight: bold;
+  flex-shrink: 0;
+}
+
+// ===================================
+// ✅ SUCCESS MODAL
+// ===================================
+
+.success-modal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  animation: fadeIn 0.3s ease;
+}
+
+.success-content {
+  background: var(--background-lighter);
+  border-radius: 16px;
+  padding: 32px 24px;
+  text-align: center;
+  max-width: 320px;
+  margin: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+
+  .success-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    animation: bounce 0.6s ease;
+  }
+
+  h2 {
+    color: var(--text);
+    margin: 0 0 8px 0;
+    font-size: 24px;
+    font-weight: 700;
+  }
+
+  p {
+    color: var(--text-secondary);
+    margin: 0 0 24px 0;
+    font-size: 16px;
+  }
+
+  .points-earned {
+    background: var(--background-lightest);
+    border: 2px solid var(--accent);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .points-label {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .points-value {
+      color: var(--accent);
+      font-size: 24px;
+      font-weight: 700;
+    }
+  }
+
+  .continue-button {
+    background: var(--accent);
+    color: var(--accent-contrast);
+    border: none;
+    padding: 14px 32px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+
+    &:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+}
+
+// ===================================
+// ❌ ERROR MODAL
+// ===================================
+
+.error-modal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  animation: fadeIn 0.3s ease;
+}
+
+.error-content {
+  background: var(--background-lighter);
+  border-radius: 16px;
+  padding: 32px 24px;
+  text-align: center;
+  max-width: 320px;
+  margin: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+
+  .error-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+
+  h3 {
+    color: var(--error);
+    margin: 0 0 8px 0;
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  p {
+    color: var(--text-secondary);
+    margin: 0 0 24px 0;
+    font-size: 16px;
+  }
+
+  .error-actions {
+    display: flex;
+    gap: 12px;
+
+    button {
+      flex: 1;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+
+      &.retry-button {
+        background: var(--accent);
+        color: var(--accent-contrast);
+
+        &:hover {
+          background: var(--accent-hover);
+        }
+      }
+
+      &.exit-button {
+        background: var(--background-lightest);
+        color: var(--text-secondary);
+
+        &:hover {
+          background: var(--background-darker);
+        }
+      }
+    }
+  }
+}
+
+// ===================================
+// 🚪 EXIT BUTTON
+// ===================================
+
+.exit-fab {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 48px;
+  height: 48px;
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 15;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+  pointer-events: auto;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: scale(1.1);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+// ===================================
+// 🔄 LOADING SPINNER
+// ===================================
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid #00ff88;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+
+// ===================================
+// 🐛 DEBUG PANEL
+// ===================================
+
+.debug-panel {
+  position: absolute;
+  top: 80px;
+  left: 20px;
+  background: rgba(0, 0, 0, 0.9);
+  color: #00ff88;
+  padding: 16px;
+  border-radius: 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.4;
+  max-width: 280px;
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  backdrop-filter: blur(8px);
+
+  h4 {
+    margin: 0 0 8px 0;
+    color: white;
+    font-size: 14px;
+  }
+
+  div {
+    margin-bottom: 4px;
+  }
+}
+
+// ===================================
+// 🎭 ANIMATIONS
+// ===================================
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes bounce {
+  0%, 20%, 53%, 80%, 100% { transform: translateY(0); }
+  40%, 43% { transform: translateY(-10px); }
+  70% { transform: translateY(-5px); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
