@@ -58,9 +58,7 @@ export class HeaderComponent extends BaseComponent implements AfterViewInit {
   // 🔧 Services
   private readonly viewportService = inject(ViewportService);
   private readonly panelStore = inject(PanelStore);
-  private readonly landlordStore = inject(LandlordStore);
   private readonly authStore = inject(AuthStore);
-  private readonly userStore = inject(UserStore);
   private readonly overlayService = inject(OverlayService);
   protected readonly dataAggregator = inject(DataAggregatorService);
 

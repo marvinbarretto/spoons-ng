@@ -20,8 +20,6 @@ export interface Environment {
   nearbyPubsRadiusMeters?: number;
 
   // External services
-  strapiUrl?: string;
-  strapiToken?: string;
   mapTilerKey?: string;
 
   firebaseConfig: {
