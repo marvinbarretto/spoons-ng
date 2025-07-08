@@ -137,10 +137,24 @@ export class SimplifiedCheckinOrchestrator {
     this.router.navigate(['/']);
   }
 
-  retryCheckin(): void {
+  async retryCheckin(): Promise<void> {
     console.log('[SimplifiedOrchestrator] 🔄 Retrying check-in');
-    this._error.set(null);
-    this._stage.set('SCANNING');
+    
+    try {
+      // Clear error state
+      this._error.set(null);
+      this._stage.set('INITIALIZING');
+      
+      // Restart camera and monitoring
+      await this.initializeCamera();
+      this.startMonitoring();
+      this._stage.set('SCANNING');
+      
+      console.log('[SimplifiedOrchestrator] ✅ Retry successful - camera restarted');
+    } catch (error: any) {
+      console.error('[SimplifiedOrchestrator] ❌ Retry failed:', error);
+      this.handleError('Failed to restart camera');
+    }
   }
 
   // ===================================
