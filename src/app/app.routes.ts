@@ -42,15 +42,23 @@ export const appRoutes: Routes = [
     title: 'Check In',
     canActivate: [onboardingGuard],
     loadComponent: () =>
-      import('./check-in/feature/check-in-page/check-in-page.component').then(m => m.CheckInPageComponent),
+      import('./check-in/feature/simplified-checkin/simplified-checkin.component').then(m => m.SimplifiedCheckinComponent),
     data: { shell: 'fullscreen' }
   },
   {
-    path: 'simplified-checkin/:pubId',
-    title: 'Test New Check In',
+    path: 'simplified-checkin',
+    title: 'Check In',
     canActivate: [onboardingGuard],
     loadComponent: () =>
       import('./check-in/feature/simplified-checkin/simplified-checkin.component').then(m => m.SimplifiedCheckinComponent),
+    data: { shell: 'fullscreen' }
+  },
+  {
+    path: 'old-check-in/:pubId',
+    title: 'Legacy Check In',
+    canActivate: [onboardingGuard],
+    loadComponent: () =>
+      import('./check-in/feature/check-in-page/check-in-page.component').then(m => m.CheckInPageComponent),
     data: { shell: 'fullscreen' }
   },
   {

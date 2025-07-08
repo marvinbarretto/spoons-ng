@@ -1,3 +1,5 @@
+// @deprecated - This component is deprecated. Use SimplifiedCheckinComponent instead.
+// TODO: Remove this component after SimplifiedCheckinComponent is fully tested and deployed.
 import { Component, inject, OnDestroy, signal, ElementRef, ViewChild, OnInit, AfterViewInit, computed, effect, HostListener } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '@shared/base/base.component';

@@ -135,6 +135,7 @@
                 [isLocalPub]="dataAggregatorService.isLocalPub(pub.id)"
                 [selectable]="!hasAnyVisit(pub.id)"
                 [isSelected]="selectedForAddition().has(pub.id)"
+                [checkInDistanceThreshold]="checkInDistanceThreshold"
                 (selectionChanged)="handleSelectionChange($event)"
                 (cardClicked)="handlePubClick(pub)"
               />
@@ -154,6 +155,7 @@
                 [checkinCount]="dataAggregatorService.getVisitCountForPub(pub.id)"
                 [showCheckinCount]="hasAnyVisit(pub.id)"
                 [isLocalPub]="dataAggregatorService.isLocalPub(pub.id)"
+                [checkInDistanceThreshold]="checkInDistanceThreshold"
               />
             </a>
           }

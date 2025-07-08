@@ -11,17 +11,17 @@
              muted
              autoplay>
       </video>
-      
+
       <!-- Viewfinder Overlay -->
       <div class="viewfinder-overlay">
-        
+
         <!-- Corner brackets for QR-like feel -->
         <div class="viewfinder-frame">
           <div class="corner top-left"></div>
           <div class="corner top-right"></div>
           <div class="corner bottom-left"></div>
           <div class="corner bottom-right"></div>
-          
+
           <!-- Scanning line animation when conditions met -->
           @if (orchestrator.stage() === 'CONDITIONS_MET') {
             <div class="scanning-line"></div>
@@ -55,7 +55,7 @@
   <!-- Condition indicators -->
   @if (orchestrator.showCamera()) {
     <div class="conditions-panel">
-      
+
       <!-- Device orientation indicator -->
       <div class="condition" [class.met]="orchestrator.devicePointingDown()">
         <div class="condition-icon">📱</div>
@@ -90,14 +90,14 @@
         <div class="success-icon">🎉</div>
         <h2>Check-in Successful!</h2>
         <p>Welcome to {{ pubName() }}</p>
-        
+
         @if (pointsEarned() > 0) {
           <div class="points-earned">
             <span class="points-label">Points earned:</span>
             <span class="points-value">{{ pointsEarned() }}</span>
           </div>
         }
-        
+
         <button class="continue-button" (click)="onContinueClick()">
           Continue
         </button>
@@ -112,7 +112,7 @@
         <div class="error-icon">❌</div>
         <h3>{{ orchestrator.error() }}</h3>
         <p>Please try again</p>
-        
+
         <div class="error-actions">
           <button class="retry-button" (click)="onRetryClick()">
             Try Again
@@ -139,7 +139,7 @@
       <div>Pointing Down: {{ orchestrator.devicePointingDown() }}</div>
       <div>Stable: {{ orchestrator.deviceStable() }}</div>
       <div>Motion: {{ orchestrator.stability().motionLevel }}</div>
-      <div>Conditions Met: {{ orchestrator.conditionsMet() }}</div>
+      <div>Conditions Met - TODO - this is giving us false positive {{ orchestrator.conditionsMet() }}</div>
     </div>
   }
 

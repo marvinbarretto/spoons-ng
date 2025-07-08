@@ -1,3 +1,5 @@
+// @deprecated - This service is deprecated. Camera functionality moved to SimplifiedCheckinOrchestrator.
+// TODO: Remove this service after SimplifiedCheckinOrchestrator is fully tested and deployed.
 import { Injectable, signal, computed } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })

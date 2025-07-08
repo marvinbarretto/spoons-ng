@@ -10,7 +10,6 @@ import { NearbyPubStore } from '@pubs/data-access/nearby-pub.store';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { CheckInStore } from '@/app/check-in/data-access/check-in.store';
 import { IconComponent } from '@shared/ui/icon/icon.component';
-import { environment } from '../../../../environments/environment';
 
 type NavItem = {
   label: string;
@@ -70,24 +69,6 @@ type NavItem = {
               <span class="nav-item__label">{{ item.label }}</span>
             </a>
           }
-        }
-        
-        <!-- 🧪 DEV MODE: Test button for new simplified check-in -->
-        @if (showTestButton() && canCheckIn()) {
-          <button
-            class="nav-item nav-item--test"
-            (click)="handleTestSimplifiedCheckin()"
-            type="button"
-          >
-            <div class="nav-item__icon">
-              <app-icon
-                name="science"
-                size="md"
-                [filled]="false"
-                weight="regular" />
-            </div>
-            <span class="nav-item__label">Test New</span>
-          </button>
         }
       </nav>
     }
@@ -200,7 +181,7 @@ type NavItem = {
 
     .nav-item--pulse {
       .nav-item__icon {
-        animation: pulse-success 2s infinite;
+        animation: pulse-success 1.5s infinite;
       }
     }
 
@@ -223,15 +204,15 @@ type NavItem = {
       transition: color 0.2s ease;
     }
 
-    /* ✅ Pulse animation for available check-in */
+    /* ✅ Enhanced pulse animation for available check-in */
     @keyframes pulse-success {
       0%, 100% {
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         transform: translateY(-8px) scale(1);
       }
       50% {
-        box-shadow: 0 6px 20px var(--color-success), 0 0 0 4px rgba(var(--color-success-rgb, 34, 197, 94), 0.2);
-        transform: translateY(-8px) scale(1.05);
+        box-shadow: 0 8px 24px var(--accent), 0 0 0 6px rgba(var(--accent-rgb, 13, 110, 253), 0.3);
+        transform: translateY(-8px) scale(1.15);
       }
     }
 
@@ -247,26 +228,6 @@ type NavItem = {
       }
     }
 
-    /* ✅ Test button styles */
-    .nav-item--test {
-      border: 2px dashed orange;
-      border-radius: 8px;
-      background: rgba(255, 165, 0, 0.1);
-      
-      .nav-item__icon {
-        color: orange;
-      }
-      
-      .nav-item__label {
-        color: orange;
-        font-size: 0.7rem;
-      }
-      
-      &:hover {
-        background: rgba(255, 165, 0, 0.2);
-        transform: scale(0.95);
-      }
-    }
 
     /* ✅ Hide on desktop */
     @media (min-width: 768px) {
@@ -323,8 +284,6 @@ export class FooterNavComponent extends BaseComponent {
     return this.nearbyPubStore.isWithinCheckInRange(pub.id);
   });
 
-  // ✅ Dev mode helper
-  readonly showTestButton = computed(() => environment.ACTIVE_DEVELOPMENT_MODE);
 
   // ✅ Navigation items with Material Symbols
   readonly navItems = computed((): NavItem[] => {
@@ -367,7 +326,7 @@ export class FooterNavComponent extends BaseComponent {
     this.router.navigate(['/debug-carpet-camera']);
   }
 
-  // ✅ Handle check-in button click (uses CheckInStore)
+  // ✅ Handle check-in button click (uses simplified check-in)
   handleCheckIn(): void {
     if (!this.canCheckIn() || this.isCheckingIn()) {
       console.log('[FooterNav] Check-in not available');
@@ -380,21 +339,10 @@ export class FooterNavComponent extends BaseComponent {
       return;
     }
 
-    console.log('[FooterNav] Navigating to check-in page for:', pub.name);
+    console.log('[FooterNav] Navigating to simplified check-in for:', pub.name);
 
-    // Navigate to dedicated check-in page
-    this.router.navigate(['/check-in', pub.id]);
+    // Navigate to simplified check-in page
+    this.router.navigate(['/simplified-checkin']);
   }
 
-  // ✅ Handle test simplified check-in button
-  handleTestSimplifiedCheckin(): void {
-    const pub = this.closestPub();
-    if (!pub) {
-      console.warn('[FooterNav] No pub available for simplified check-in test');
-      return;
-    }
-
-    console.log('[FooterNav] 🧪 Testing simplified check-in for:', pub.name);
-    this.router.navigate(['/simplified-checkin', pub.id]);
-  }
 }

@@ -11,6 +11,7 @@ import { LocationService } from '../../../shared/data-access/location.service';
 import { PubCardComponent } from '../../ui/pub-card/pub-card.component';
 import { LoadingStateComponent, ErrorStateComponent, EmptyStateComponent } from '../../../shared/ui/state-components';
 import type { Pub } from '../../utils/pub.models';
+import { environment } from '../../../../environments/environment';
 
 type FilterOption = 'all' | 'visited' | 'unvisited' | 'nearby';
 
@@ -47,6 +48,9 @@ export class PubListComponent extends BaseComponent implements OnInit {
     { value: 'unvisited' as const, label: 'Unvisited' },
     { value: 'nearby' as const, label: 'Nearby' }
   ];
+
+  // ✅ Check-in distance threshold from environment
+  protected readonly checkInDistanceThreshold = environment.checkInDistanceThresholdMeters || 200;
 
   // ✅ Data computations
   protected readonly pubsWithDistance = this.pubStore.pubsWithDistance;

@@ -311,6 +311,7 @@ export class PubCardComponent {
   readonly checkinCount = input<number>(0);
   readonly showCheckinCount = input<boolean>(false);
   readonly isLocalPub = input<boolean>(false);
+  readonly checkInDistanceThreshold = input<number>(500); // Default 500m for backwards compatibility
 
   // ✅ New visit status inputs
   readonly hasVerifiedVisit = input<boolean>(false);    // App check-in exists
@@ -326,6 +327,11 @@ export class PubCardComponent {
     const distance = this.pub().distance;
     if (!distance) return '';
 
+    // Show "Here" when within check-in range
+    if (this.canCheckIn()) {
+      return `📍 Here`;
+    }
+
     if (distance < 1000) {
       return `📍 ${Math.round(distance)}m away`;
     }
@@ -340,7 +346,7 @@ export class PubCardComponent {
 
   readonly canCheckIn = computed(() => {
     const distance = this.pub().distance;
-    return distance !== null && distance <= 500 && !this.hasCheckedIn();
+    return distance !== null && distance <= this.checkInDistanceThreshold() && !this.hasCheckedIn();
   });
 
   // ✅ New visit status computed properties

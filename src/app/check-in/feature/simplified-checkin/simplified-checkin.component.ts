@@ -1,12 +1,12 @@
 // src/app/check-in/feature/simplified-checkin/simplified-checkin.component.ts
 
 import { Component, ViewChild, ElementRef, AfterViewInit, OnDestroy, computed, inject } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { BaseComponent } from '@shared/base/base.component';
 import { SimplifiedCheckinOrchestrator } from '../../data-access/simplified-checkin-orchestrator.service';
 import { PubStore } from '../../../pubs/data-access/pub.store';
 import { CheckInStore } from '../../data-access/check-in.store';
+import { NearbyPubStore } from '../../../pubs/data-access/nearby-pub.store';
 import { environment } from '../../../../environments/environment';
 
 @Component({
@@ -22,9 +22,9 @@ export class SimplifiedCheckinComponent extends BaseComponent implements AfterVi
   // 🏗️ DEPENDENCIES
   // ===================================
   
-  private readonly route = inject(ActivatedRoute);
   private readonly pubStore = inject(PubStore);
   private readonly checkinStore = inject(CheckInStore);
+  private readonly nearbyPubStore = inject(NearbyPubStore);
   
   // Main orchestrator
   protected readonly orchestrator = inject(SimplifiedCheckinOrchestrator);
@@ -65,19 +65,19 @@ export class SimplifiedCheckinComponent extends BaseComponent implements AfterVi
   override ngOnInit(): void {
     super.ngOnInit();
     
-    // Get pub ID from route
-    const pubId = this.route.snapshot.paramMap.get('pubId');
+    // Get pub from location services
+    const pub = this.nearbyPubStore.closestPub();
     
-    if (!pubId) {
-      console.error('[SimplifiedCheckin] ❌ No pub ID provided');
+    if (!pub) {
+      console.error('[SimplifiedCheckin] ❌ No nearby pub available');
       this.orchestrator.stopCheckin();
       return;
     }
 
-    console.log('[SimplifiedCheckin] 🚀 Starting check-in for pub:', pubId);
+    console.log('[SimplifiedCheckin] 🚀 Starting check-in for pub:', pub.name);
     
     // Start the check-in process
-    this.orchestrator.startCheckin(pubId);
+    this.orchestrator.startCheckin(pub.id);
   }
 
   ngAfterViewInit(): void {
