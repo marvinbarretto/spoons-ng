@@ -4,6 +4,7 @@ import { CommonModule } from "@angular/common";
 import { TableColumn } from './data-table.model';
 import { ChipUserComponent, UserChipData } from '../chips/chip-user/chip-user.component';
 import { ViewportService } from '../../data-access/viewport.service';
+import { IconComponent } from '../icon/icon.component';
 
 export type SortDirection = 'asc' | 'desc' | null;
 export type SortState = {
@@ -13,7 +14,7 @@ export type SortState = {
 
 @Component({
   selector: 'app-data-table',
-  imports: [CommonModule, ChipUserComponent],
+  imports: [CommonModule, ChipUserComponent, IconComponent],
   template: `
     <div class="data-table">
       @if (loading()) {
@@ -31,9 +32,11 @@ export type SortState = {
                   <div class="header-content">
                     <span>{{ column.label }}</span>
                     @if (column.sortable && sortState().column === column.key) {
-                      <span class="sort-indicator">
-                        {{ sortState().direction === 'asc' ? '↑' : '↓' }}
-                      </span>
+                      <app-icon
+                        [name]="sortState().direction === 'asc' ? 'keyboard_arrow_up' : 'keyboard_arrow_down'"
+                        size="sm"
+                        class="sort-indicator"
+                      />
                     }
                   </div>
                 </th>
@@ -85,7 +88,7 @@ export type SortState = {
 
     th, td {
       padding: 0.75rem;
-      text-align: left;
+      text-align: center;
       border-bottom: 1px solid var(--background-lighter);
     }
 
@@ -108,12 +111,11 @@ export type SortState = {
     .header-content {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: space-around;
       gap: 0.5rem;
     }
 
     .sort-indicator {
-      font-size: 0.8rem;
       opacity: 0.7;
     }
 
@@ -122,7 +124,7 @@ export type SortState = {
     }
 
     .number {
-      text-align: right;
+      text-align: center;
       font-variant-numeric: tabular-nums;
       font-size: 0.95rem;
     }

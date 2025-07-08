@@ -336,11 +336,15 @@ export class LeaderboardStore extends BaseStore<LeaderboardEntry> {
     // Calculate current streak
     const currentStreak = this.calculateStreak(userCheckins);
 
+    // Include manual pub counts in total unique pubs calculation
+    const manualPubIds = user.manuallyAddedPubIds || [];
+    const totalUniquePubs = uniquePubIds.size + manualPubIds.length;
+
     return {
       userId,
       displayName,
-      totalVisits: uniquePubIds.size,
-      uniquePubs: uniquePubIds.size,
+      totalVisits: totalUniquePubs,
+      uniquePubs: totalUniquePubs,
       totalCheckins: userCheckins.length,
       totalPoints: user.totalPoints || 0,
       joinedDate: user.joinedAt || new Date().toISOString(),
