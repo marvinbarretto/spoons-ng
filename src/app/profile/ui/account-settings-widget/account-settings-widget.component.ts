@@ -64,7 +64,7 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
           </button>
         </div>
 
-        <p class="danger-warning">
+        <p>
           ⚠️ Deleting your account is permanent and cannot be undone.
           All your data will be lost.
         </p>
@@ -187,16 +187,6 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
     .delete-btn:disabled {
       opacity: 0.6;
       cursor: not-allowed;
-    }
-
-    .danger-warning {
-      margin: 0;
-      padding: 1rem;
-      background: var(--error);
-      color: var(--on-error);
-      border-radius: 8px;
-      font-size: 0.875rem;
-      line-height: 1.4;
     }
 
     /* Mobile responsive */

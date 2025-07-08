@@ -377,6 +377,73 @@ export class DatabaseMetricsService {
   }
 
   /**
+   * Get comprehensive real-time cache analytics
+   */
+  getRealTimeCacheAnalytics(): {
+    liveHitRatio: number;
+    operationsPerSecond: number;
+    cacheLatencyVsNetwork: {
+      cacheAvg: number;
+      networkAvg: number;
+      speedImprovement: number;
+    };
+    tierEffectiveness: Record<string, {
+      hitRatio: number;
+      avgLatency: number;
+      totalOperations: number;
+    }>;
+    costSavingsReal: {
+      operationsSaved: number;
+      costSavedToday: number;
+      projectedMonthlySavings: number;
+    };
+  } {
+    const ops = this.operations();
+    const indexedDbMetrics = this.indexedDbService.getCollectionMetrics();
+    const tierBreakdown = this.indexedDbService.getTierPerformanceBreakdown();
+    
+    // Calculate operations per second (last 60 seconds)
+    const oneMinuteAgo = Date.now() - 60000;
+    const recentOps = ops.filter(op => op.timestamp > oneMinuteAgo);
+    const operationsPerSecond = recentOps.length / 60;
+    
+    // Calculate tier effectiveness
+    const tierEffectiveness: Record<string, { hitRatio: number; avgLatency: number; totalOperations: number }> = {};
+    Object.entries(tierBreakdown).forEach(([tier, data]) => {
+      tierEffectiveness[tier] = {
+        hitRatio: data.totalOperations > 0 ? data.avgLatency / 100 : 0, // Placeholder calculation
+        avgLatency: data.avgLatency,
+        totalOperations: data.totalOperations
+      };
+    });
+    
+    // Calculate actual cost savings
+    const today = new Date().toDateString();
+    const todayOps = ops.filter(op => new Date(op.timestamp).toDateString() === today);
+    const cachedOpsToday = todayOps.filter(op => op.cached);
+    const costSavedToday = cachedOpsToday.length * this.FIRESTORE_READ_COST;
+    const projectedMonthlySavings = costSavedToday * 30;
+    
+    const perf = this.performanceMetrics();
+    
+    return {
+      liveHitRatio: perf.cacheHitRatio,
+      operationsPerSecond,
+      cacheLatencyVsNetwork: {
+        cacheAvg: perf.avgIndexedDbLatency,
+        networkAvg: perf.avgFirestoreLatency,
+        speedImprovement: perf.cacheEfficiency
+      },
+      tierEffectiveness,
+      costSavingsReal: {
+        operationsSaved: cachedOpsToday.length,
+        costSavedToday,
+        projectedMonthlySavings
+      }
+    };
+  }
+
+  /**
    * Get Firebase-specific metrics
    */
   getFirebaseMetrics(): {
@@ -636,5 +703,213 @@ export class DatabaseMetricsService {
       tierUtilization,
       recommendations
     };
+  }
+  
+  /**
+   * Get cache health status with actionable insights
+   */
+  getCacheHealthStatus(): {
+    overall: 'excellent' | 'good' | 'needs-attention' | 'critical';
+    score: number;
+    insights: Array<{
+      type: 'success' | 'warning' | 'error' | 'info';
+      message: string;
+      action?: string;
+    }>;
+    keyMetrics: {
+      hitRatio: number;
+      avgLatency: number;
+      totalOperations: number;
+      errorRate: number;
+    };
+  } {
+    const perf = this.performanceMetrics();
+    const realTime = this.getRealTimeCacheAnalytics();
+    const insights: Array<{ type: 'success' | 'warning' | 'error' | 'info'; message: string; action?: string }> = [];
+    
+    let score = 100;
+    
+    // Analyze hit ratio
+    if (perf.cacheHitRatio > 0.8) {
+      insights.push({
+        type: 'success',
+        message: `Excellent cache hit ratio: ${(perf.cacheHitRatio * 100).toFixed(1)}%`
+      });
+    } else if (perf.cacheHitRatio > 0.6) {
+      score -= 15;
+      insights.push({
+        type: 'warning',
+        message: `Good cache hit ratio: ${(perf.cacheHitRatio * 100).toFixed(1)}%`,
+        action: 'Consider increasing TTL for frequently accessed collections'
+      });
+    } else if (perf.cacheHitRatio > 0.3) {
+      score -= 30;
+      insights.push({
+        type: 'warning',
+        message: `Low cache hit ratio: ${(perf.cacheHitRatio * 100).toFixed(1)}%`,
+        action: 'Review cache strategies and TTL settings'
+      });
+    } else {
+      score -= 50;
+      insights.push({
+        type: 'error',
+        message: `Very low cache hit ratio: ${(perf.cacheHitRatio * 100).toFixed(1)}%`,
+        action: 'Immediate review needed - cache may not be working properly'
+      });
+    }
+    
+    // Analyze performance
+    if (perf.cacheEfficiency > 5) {
+      insights.push({
+        type: 'success',
+        message: `Cache is ${perf.cacheEfficiency.toFixed(1)}x faster than network calls`
+      });
+    } else if (perf.cacheEfficiency > 2) {
+      insights.push({
+        type: 'info',
+        message: `Cache provides ${perf.cacheEfficiency.toFixed(1)}x speed improvement`
+      });
+    } else {
+      score -= 20;
+      insights.push({
+        type: 'warning',
+        message: `Cache performance improvement is low (${perf.cacheEfficiency.toFixed(1)}x)`,
+        action: 'Check IndexedDB performance or consider alternative caching strategies'
+      });
+    }
+    
+    // Analyze error rate
+    if (perf.errorRate > 0.05) {
+      score -= 25;
+      insights.push({
+        type: 'error',
+        message: `High error rate: ${(perf.errorRate * 100).toFixed(1)}%`,
+        action: 'Investigate Firebase connection or permission issues'
+      });
+    } else if (perf.errorRate > 0.01) {
+      score -= 10;
+      insights.push({
+        type: 'warning',
+        message: `Some errors detected: ${(perf.errorRate * 100).toFixed(1)}%`,
+        action: 'Monitor for recurring issues'
+      });
+    }
+    
+    // Analyze operation volume
+    if (realTime.operationsPerSecond > 10) {
+      insights.push({
+        type: 'info',
+        message: `High activity: ${realTime.operationsPerSecond.toFixed(1)} ops/sec`,
+        action: 'Monitor cache performance under load'
+      });
+    } else if (realTime.operationsPerSecond > 5) {
+      insights.push({
+        type: 'info',
+        message: `Moderate activity: ${realTime.operationsPerSecond.toFixed(1)} ops/sec`
+      });
+    }
+    
+    // Cost savings insight
+    if (realTime.costSavingsReal.projectedMonthlySavings > 1) {
+      insights.push({
+        type: 'success',
+        message: `Projected monthly savings: $${realTime.costSavingsReal.projectedMonthlySavings.toFixed(2)}`
+      });
+    }
+    
+    // Determine overall status
+    let overall: 'excellent' | 'good' | 'needs-attention' | 'critical';
+    if (score >= 90) overall = 'excellent';
+    else if (score >= 70) overall = 'good';
+    else if (score >= 50) overall = 'needs-attention';
+    else overall = 'critical';
+    
+    return {
+      overall,
+      score: Math.max(0, score),
+      insights,
+      keyMetrics: {
+        hitRatio: perf.cacheHitRatio,
+        avgLatency: perf.avgIndexedDbLatency,
+        totalOperations: perf.totalOperations,
+        errorRate: perf.errorRate
+      }
+    };
+  }
+  
+  /**
+   * Get collection-specific optimization recommendations
+   */
+  getOptimizationRecommendations(): Array<{
+    collection: string;
+    currentPerformance: {
+      hitRatio: number;
+      avgLatency: number;
+      operations: number;
+    };
+    recommendations: Array<{
+      type: 'ttl' | 'strategy' | 'tier' | 'monitoring';
+      priority: 'high' | 'medium' | 'low';
+      message: string;
+      expectedImpact: string;
+    }>;
+  }> {
+    const collectionMetrics = this.getOperationsByCollection();
+    const recommendations: Array<any> = [];
+    
+    Object.entries(collectionMetrics).forEach(([collection, operations]) => {
+      const reads = operations.filter(op => op.operation === 'read');
+      const cachedReads = reads.filter(op => op.cached);
+      const hitRatio = reads.length > 0 ? cachedReads.length / reads.length : 0;
+      const avgLatency = operations.length > 0 
+        ? operations.reduce((sum, op) => sum + (op.duration || 0), 0) / operations.length 
+        : 0;
+      
+      const collectionRecs: Array<any> = [];
+      
+      // TTL recommendations
+      if (hitRatio < 0.5 && reads.length > 10) {
+        collectionRecs.push({
+          type: 'ttl',
+          priority: 'high',
+          message: 'Increase TTL to improve hit ratio',
+          expectedImpact: 'Could improve hit ratio by 20-40%'
+        });
+      }
+      
+      // Strategy recommendations
+      if (hitRatio > 0.9 && operations.length > 50) {
+        collectionRecs.push({
+          type: 'strategy',
+          priority: 'medium',
+          message: 'Consider cache-only strategy for static data',
+          expectedImpact: 'Eliminate network calls entirely'
+        });
+      }
+      
+      // Performance recommendations
+      if (avgLatency > 100) {
+        collectionRecs.push({
+          type: 'monitoring',
+          priority: 'medium',
+          message: 'High latency detected - investigate performance',
+          expectedImpact: 'Improve user experience'
+        });
+      }
+      
+      if (collectionRecs.length > 0) {
+        recommendations.push({
+          collection,
+          currentPerformance: {
+            hitRatio,
+            avgLatency,
+            operations: operations.length
+          },
+          recommendations: collectionRecs
+        });
+      }
+    });
+    
+    return recommendations.sort((a, b) => b.currentPerformance.operations - a.currentPerformance.operations);
   }
 }

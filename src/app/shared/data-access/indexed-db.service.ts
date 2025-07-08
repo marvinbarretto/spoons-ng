@@ -32,7 +32,18 @@ type DbMetrics = {
       timestamp: number;
       dbName: string;
       storeName: string;
+      collection?: string;
+      tier?: string;
     }>;
+  };
+  collections: {
+    [collection: string]: {
+      operations: number;
+      avgLatency: number;
+      totalSize: number;
+      tier?: string;
+      lastAccessed: number;
+    };
   };
 };
 
@@ -47,7 +58,8 @@ export class IndexedDbService {
       avgReadTime: 0,
       avgWriteTime: 0,
       operations: []
-    }
+    },
+    collections: {}
   };
   private readonly MAX_PERFORMANCE_LOGS = 1000;
 
@@ -192,8 +204,9 @@ export class IndexedDbService {
         console.log(`✅ [IndexedDB] Result key: ${resultKey}`);
         console.log(`✅ [IndexedDB] Target: ${dbName}/${storeName}`);
 
-        // Track metrics
-        this.recordOperation('write', duration, dbName, storeName);
+        // Track metrics with collection context if available
+        const collection = key ? this.extractCollectionFromKey(key) : undefined;
+        this.recordOperation('write', duration, dbName, storeName, collection);
 
         resolve(resultKey);
       };
@@ -245,8 +258,9 @@ export class IndexedDbService {
           console.log(`✅ [IndexedDB] Retrieved blob: ${(result.size / 1024).toFixed(1)}KB (${result.type})`);
         }
 
-        // Track metrics
-        this.recordOperation('read', duration, dbName, storeName);
+        // Track metrics with collection context if available
+        const collection = this.extractCollectionFromKey(key);
+        this.recordOperation('read', duration, dbName, storeName, collection);
 
         resolve(result);
       };
@@ -297,7 +311,7 @@ export class IndexedDbService {
           console.log(`✅ [IndexedDB] Total blob data: ${blobCount} blobs, ${(totalSize / 1024).toFixed(1)}KB`);
         }
 
-        // Track metrics
+        // Track metrics (getAll operations don't have specific collection context)
         this.recordOperation('read', duration, dbName, storeName);
 
         resolve(results);
@@ -399,8 +413,9 @@ export class IndexedDbService {
         const duration = performance.now() - startTime;
         console.log(`✅ [IndexedDB] Delete successful: ${key}`);
         
-        // Track metrics
-        this.recordOperation('delete', duration, dbName, storeName);
+        // Track metrics with collection context if available
+        const collection = this.extractCollectionFromKey(key);
+        this.recordOperation('delete', duration, dbName, storeName, collection);
         
         resolve();
       };
@@ -435,7 +450,7 @@ export class IndexedDbService {
         const duration = performance.now() - startTime;
         console.log(`✅ [IndexedDB] Store cleared: ${storeName}`);
         
-        // Track metrics
+        // Track metrics (clear operations affect entire store)
         this.recordOperation('clear', duration, dbName, storeName);
         
         resolve();
@@ -566,7 +581,8 @@ export class IndexedDbService {
         avgReadTime: 0,
         avgWriteTime: 0,
         operations: []
-      }
+      },
+      collections: {}
     };
     console.log(`📊 [IndexedDB] Metrics reset`);
   }
@@ -577,6 +593,66 @@ export class IndexedDbService {
   getCacheHitRatio(): number {
     const totalOps = Object.values(this.metrics.operations).reduce((sum, count) => sum + count, 0);
     return totalOps > 0 ? this.metrics.operations.read / totalOps : 0;
+  }
+
+  /**
+   * Get collection-specific performance metrics
+   */
+  getCollectionMetrics(): Record<string, {
+    operations: number;
+    avgLatency: number;
+    totalSize: number;
+    tier?: string;
+    lastAccessed: Date;
+  }> {
+    const result: Record<string, any> = {};
+    for (const [collection, metrics] of Object.entries(this.metrics.collections)) {
+      result[collection] = {
+        ...metrics,
+        lastAccessed: new Date(metrics.lastAccessed)
+      };
+    }
+    return result;
+  }
+
+  /**
+   * Get performance breakdown by cache tier
+   */
+  getTierPerformanceBreakdown(): Record<string, {
+    collections: number;
+    totalOperations: number;
+    avgLatency: number;
+    totalSize: number;
+  }> {
+    const tierBreakdown: Record<string, {
+      collections: number;
+      totalOperations: number;
+      avgLatency: number;
+      totalSize: number;
+    }> = {};
+
+    for (const metrics of Object.values(this.metrics.collections)) {
+      const tier = metrics.tier || 'unknown';
+      
+      if (!tierBreakdown[tier]) {
+        tierBreakdown[tier] = {
+          collections: 0,
+          totalOperations: 0,
+          avgLatency: 0,
+          totalSize: 0
+        };
+      }
+
+      tierBreakdown[tier].collections++;
+      tierBreakdown[tier].totalOperations += metrics.operations;
+      tierBreakdown[tier].totalSize += metrics.totalSize;
+      
+      // Weighted average latency
+      const currentTotal = tierBreakdown[tier].avgLatency * (tierBreakdown[tier].collections - 1);
+      tierBreakdown[tier].avgLatency = (currentTotal + metrics.avgLatency) / tierBreakdown[tier].collections;
+    }
+
+    return tierBreakdown;
   }
 
   /**
@@ -593,7 +669,7 @@ export class IndexedDbService {
   /**
    * Record operation metrics (internal helper)
    */
-  private recordOperation(type: DbOperation, duration: number, dbName: string, storeName: string): void {
+  private recordOperation(type: DbOperation, duration: number, dbName: string, storeName: string, collection?: string, tier?: string): void {
     // Update operation count
     this.metrics.operations[type]++;
     this.metrics.lastUpdated = Date.now();
@@ -604,10 +680,17 @@ export class IndexedDbService {
       duration,
       timestamp: Date.now(),
       dbName,
-      storeName
+      storeName,
+      collection,
+      tier
     };
 
     this.metrics.performance.operations.push(operation);
+
+    // Update collection-specific metrics if collection is provided
+    if (collection) {
+      this.updateCollectionMetrics(collection, type, duration, tier);
+    }
 
     // Keep only recent operations (prevent memory bloat)
     if (this.metrics.performance.operations.length > this.MAX_PERFORMANCE_LOGS) {
@@ -617,7 +700,39 @@ export class IndexedDbService {
     // Update average times
     this.updateAverages();
 
-    console.log(`📊 [IndexedDB] Metrics updated: ${type} operation took ${duration.toFixed(1)}ms`);
+    // Enhanced logging with collection context
+    const collectionInfo = collection ? ` | Collection: ${collection}` : '';
+    const tierInfo = tier ? ` | Tier: [${tier}]` : '';
+    console.log(`📊 [IndexedDB] Metrics updated: ${type} operation took ${duration.toFixed(1)}ms${collectionInfo}${tierInfo}`);
+  }
+
+  /**
+   * Update collection-specific metrics
+   */
+  private updateCollectionMetrics(collection: string, type: DbOperation, duration: number, tier?: string): void {
+    if (!this.metrics.collections[collection]) {
+      this.metrics.collections[collection] = {
+        operations: 0,
+        avgLatency: 0,
+        totalSize: 0,
+        tier,
+        lastAccessed: Date.now()
+      };
+    }
+
+    const collectionMetrics = this.metrics.collections[collection];
+    const oldAvg = collectionMetrics.avgLatency;
+    const oldCount = collectionMetrics.operations;
+    
+    // Update running average latency
+    collectionMetrics.avgLatency = (oldAvg * oldCount + duration) / (oldCount + 1);
+    collectionMetrics.operations++;
+    collectionMetrics.lastAccessed = Date.now();
+    
+    // Update tier if provided
+    if (tier) {
+      collectionMetrics.tier = tier;
+    }
   }
 
   /**
@@ -634,6 +749,22 @@ export class IndexedDbService {
     this.metrics.performance.avgWriteTime = writeOps.length > 0 
       ? writeOps.reduce((sum, op) => sum + op.duration, 0) / writeOps.length 
       : 0;
+  }
+
+  /**
+   * Extract collection name from cache key for metrics tracking
+   */
+  private extractCollectionFromKey(key: IDBValidKey): string | undefined {
+    if (typeof key === 'string') {
+      // Handle patterns like "collection:users" or "doc:users/123"
+      if (key.startsWith('collection:')) {
+        return key.replace('collection:', '');
+      } else if (key.startsWith('doc:')) {
+        const path = key.replace('doc:', '');
+        return path.split('/')[0]; // Extract collection from document path
+      }
+    }
+    return undefined;
   }
 
   /**

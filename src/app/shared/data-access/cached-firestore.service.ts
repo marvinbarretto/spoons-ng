@@ -78,6 +78,12 @@ export abstract class CachedFirestoreService extends FirestoreService {
   // Prevent race conditions with concurrent loads
   private loadingPromises = new Map<string, Promise<any>>();
   
+  // Track network latency for performance comparisons
+  private lastNetworkLatency = new Map<string, number>();
+  
+  // Operation counters for real-time metrics
+  private operationCounter = { hits: 0, misses: 0, total: 0 };
+  
   constructor() {
     super();
     this.setupCacheInvalidationListener();
@@ -1063,7 +1069,9 @@ export abstract class CachedFirestoreService extends FirestoreService {
     const duration = performance.now() - startTime;
     const collectionName = path.includes('/') ? this.getCollectionFromPath(path) : path;
     const tier = this.getCacheTier(collectionName);
+    const config = this.getCacheConfig(collectionName);
     
+    // Record in metrics service
     this.databaseMetricsService.recordOperation(
       cached ? 'indexeddb' : 'firestore',
       operation as any,
@@ -1072,13 +1080,86 @@ export abstract class CachedFirestoreService extends FirestoreService {
       cached
     );
     
+    // Enhanced logging with clear cache vs network distinction
+    const source = cached ? '🗄️ INDEXEDDB' : '🔥 FIREBASE';
+    const operationType = cached ? 'CACHE_HIT' : 'NETWORK_CALL';
+    const speedIndicator = cached ? '⚡' : '🌐';
+    
     console.log(
-      `📊 [CachedFirestore] ${operation.toUpperCase()} ${path} [${tier}] - ${duration.toFixed(1)}ms ${cached ? '(cached)' : '(network)'}`
+      `${source} [CachedFirestore] ${operationType} - ${operation.toUpperCase()} ${path}`
     );
+    console.log(
+      `├─ ${speedIndicator} Duration: ${duration.toFixed(1)}ms | Tier: [${tier}] | TTL: ${(config.ttl / 1000 / 60).toFixed(0)}min | Strategy: ${config.strategy}`
+    );
+    
+    // Add performance comparison for cache hits
+    if (cached && this.lastNetworkLatency.has(collectionName)) {
+      const lastNetworkTime = this.lastNetworkLatency.get(collectionName)!;
+      const speedImprovement = lastNetworkTime / duration;
+      console.log(
+        `├─ 🚀 Speed improvement: ${speedImprovement.toFixed(1)}x faster than network (${lastNetworkTime.toFixed(1)}ms vs ${duration.toFixed(1)}ms)`
+      );
+    }
+    
+    // Store network latency for future comparisons
+    if (!cached) {
+      this.lastNetworkLatency.set(collectionName, duration);
+    }
+    
+    console.log(`└─ 📊 Total operations: ${this.getOperationCount()} | Cache hit ratio: ${(this.calculateCurrentHitRatio() * 100).toFixed(1)}%`);
+    
+    // Update operation counters
+    this.operationCounter.total++;
+    if (cached) {
+      this.operationCounter.hits++;
+    } else {
+      this.operationCounter.misses++;
+    }
   }
   
   private getCollectionFromPath(path: string): string {
     return path.split('/')[0];
+  }
+  
+  /**
+   * Get total operation count for logging
+   */
+  private getOperationCount(): number {
+    return this.operationCounter.total;
+  }
+  
+  /**
+   * Get current cache hit ratio for real-time monitoring
+   */
+  private calculateCurrentHitRatio(): number {
+    if (this.operationCounter.total === 0) return 0;
+    return this.operationCounter.hits / this.operationCounter.total;
+  }
+  
+  /**
+   * Get real-time cache performance metrics
+   */
+  public getCachePerformanceMetrics(): {
+    totalOperations: number;
+    cacheHits: number;
+    cacheMisses: number;
+    hitRatio: number;
+    averageNetworkLatency: number;
+    collectionsTracked: number;
+  } {
+    const networkLatencies = Array.from(this.lastNetworkLatency.values());
+    const averageNetworkLatency = networkLatencies.length > 0 
+      ? networkLatencies.reduce((sum, lat) => sum + lat, 0) / networkLatencies.length 
+      : 0;
+    
+    return {
+      totalOperations: this.operationCounter.total,
+      cacheHits: this.operationCounter.hits,
+      cacheMisses: this.operationCounter.misses,
+      hitRatio: this.calculateCurrentHitRatio(),
+      averageNetworkLatency,
+      collectionsTracked: this.lastNetworkLatency.size
+    };
   }
   
   /**
@@ -1095,19 +1176,6 @@ export abstract class CachedFirestoreService extends FirestoreService {
       return jsonSize * 2; // Account for UTF-16 encoding and IndexedDB overhead
     } catch (error) {
       return 1024; // Default 1KB estimate if serialization fails
-    }
-  }
-  
-  /**
-   * Calculate current cache hit ratio from recent operations
-   */
-  private async calculateCurrentHitRatio(): Promise<number> {
-    // This would typically come from DatabaseMetricsService
-    // For now, return a simple calculation
-    try {
-      return this.databaseMetricsService.performanceMetrics().cacheHitRatio || 0;
-    } catch (error) {
-      return 0;
     }
   }
   

@@ -246,6 +246,231 @@ type StatData = {
         </section>
       }
 
+      <!-- Enhanced Cache Analytics -->
+      <section class="cache-analytics-section">
+        <div class="section-header">
+          <h2>🚀 Enhanced Cache Analytics</h2>
+          <div class="cache-health-indicator" [attr.data-status]="cacheHealthStatus().overall">
+            <span class="health-score">{{ cacheHealthStatus().score }}/100</span>
+            <span class="health-label">{{ cacheHealthStatus().overall | titlecase }}</span>
+          </div>
+        </div>
+
+        <!-- Real-time Metrics Grid -->
+        <div class="analytics-grid">
+          <!-- Live Performance -->
+          <div class="analytics-card live-performance">
+            <h3>⚡ Live Performance</h3>
+            <div class="live-metrics">
+              <div class="live-metric">
+                <div class="metric-value">{{ (realTimeCacheAnalytics().liveHitRatio * 100).toFixed(1) }}%</div>
+                <div class="metric-label">Hit Ratio</div>
+              </div>
+              <div class="live-metric">
+                <div class="metric-value">{{ realTimeCacheAnalytics().operationsPerSecond.toFixed(1) }}</div>
+                <div class="metric-label">Ops/Sec</div>
+              </div>
+              <div class="live-metric">
+                <div class="metric-value">{{ realTimeCacheAnalytics().cacheLatencyVsNetwork.speedImprovement.toFixed(1) }}x</div>
+                <div class="metric-label">Speed Boost</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cost Savings -->
+          <div class="analytics-card cost-savings">
+            <h3>💰 Cost Savings</h3>
+            <div class="cost-metrics">
+              <div class="cost-metric">
+                <div class="cost-value">\${{ realTimeCacheAnalytics().costSavingsReal.costSavedToday.toFixed(3) }}</div>
+                <div class="cost-label">Saved Today</div>
+              </div>
+              <div class="cost-metric">
+                <div class="cost-value">\${{ realTimeCacheAnalytics().costSavingsReal.projectedMonthlySavings.toFixed(2) }}</div>
+                <div class="cost-label">Monthly Projection</div>
+              </div>
+              <div class="cost-metric">
+                <div class="cost-value">{{ realTimeCacheAnalytics().costSavingsReal.operationsSaved }}</div>
+                <div class="cost-label">Operations Saved</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cache vs Network -->
+          <div class="analytics-card cache-vs-network">
+            <h3>🏎️ Cache vs Network</h3>
+            <div class="latency-comparison">
+              <div class="latency-bar">
+                <div class="latency-item cache">
+                  <span class="latency-label">Cache</span>
+                  <div class="latency-visual" [style.width]="'20%'"></div>
+                  <span class="latency-value">{{ realTimeCacheAnalytics().cacheLatencyVsNetwork.cacheAvg.toFixed(0) }}ms</span>
+                </div>
+                <div class="latency-item network">
+                  <span class="latency-label">Network</span>
+                  <div class="latency-visual" [style.width]="'100%'"></div>
+                  <span class="latency-value">{{ realTimeCacheAnalytics().cacheLatencyVsNetwork.networkAvg.toFixed(0) }}ms</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Health Insights -->
+          <div class="analytics-card health-insights">
+            <h3>🔍 Health Insights</h3>
+            <div class="insights-list">
+              @for (insight of cacheHealthStatus().insights; track insight.message) {
+                <div class="insight-item" [attr.data-type]="insight.type">
+                  <div class="insight-icon">
+                    @switch (insight.type) {
+                      @case ('success') { ✅ }
+                      @case ('warning') { ⚠️ }
+                      @case ('error') { ❌ }
+                      @case ('info') { ℹ️ }
+                    }
+                  </div>
+                  <div class="insight-content">
+                    <div class="insight-message">{{ insight.message }}</div>
+                    @if (insight.action) {
+                      <div class="insight-action">{{ insight.action }}</div>
+                    }
+                  </div>
+                </div>
+              } @empty {
+                <div class="no-insights">All systems optimal</div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Optimization Recommendations -->
+        @if (optimizationRecommendations().length > 0) {
+          <div class="optimization-section">
+            <h3>🎯 Optimization Recommendations</h3>
+            <div class="recommendations-list">
+              @for (rec of optimizationRecommendations(); track rec.collection) {
+                <div class="recommendation-item">
+                  <div class="recommendation-header">
+                    <div class="collection-name">{{ rec.collection }}</div>
+                    <div class="performance-stats">
+                      <span class="hit-ratio">{{ (rec.currentPerformance.hitRatio * 100).toFixed(0) }}% hit</span>
+                      <span class="operations">{{ rec.currentPerformance.operations }} ops</span>
+                      <span class="latency">{{ rec.currentPerformance.avgLatency.toFixed(0) }}ms avg</span>
+                    </div>
+                  </div>
+                  <div class="recommendation-actions">
+                    @for (action of rec.recommendations; track action.message) {
+                      <div class="action-item" [attr.data-priority]="action.priority">
+                        <div class="action-priority">{{ action.priority.toUpperCase() }}</div>
+                        <div class="action-details">
+                          <div class="action-message">{{ action.message }}</div>
+                          <div class="action-impact">{{ action.expectedImpact }}</div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Cache Tier Analytics -->
+        <div class="tier-analytics-section">
+          <h3>🎯 Cache Tier Performance</h3>
+          <div class="tier-grid">
+            @for (tier of tierPerformance().tierBreakdown; track tier.tier) {
+              <div class="tier-card" [attr.data-tier]="tier.tier">
+                <div class="tier-header">
+                  <div class="tier-name">{{ tier.tier | titlecase }} Tier</div>
+                  <div class="tier-stats">
+                    <span class="tier-collections">{{ tier.collections }} collections</span>
+                    <span class="tier-operations">{{ tier.totalOperations }} ops</span>
+                  </div>
+                </div>
+                <div class="tier-metrics">
+                  <div class="tier-metric">
+                    <div class="tier-metric-value">{{ (tier.cacheHitRatio * 100).toFixed(1) }}%</div>
+                    <div class="tier-metric-label">Hit Ratio</div>
+                  </div>
+                  <div class="tier-metric">
+                    <div class="tier-metric-value">{{ tier.avgLatency.toFixed(0) }}ms</div>
+                    <div class="tier-metric-label">Avg Latency</div>
+                  </div>
+                  <div class="tier-metric">
+                    <div class="tier-metric-value">\${{ tier.costSavings.toFixed(3) }}</div>
+                    <div class="tier-metric-label">Cost Saved</div>
+                  </div>
+                </div>
+              </div>
+            } @empty {
+              <div class="no-tier-data">No tier data available yet</div>
+            }
+          </div>
+
+          <!-- Tier Recommendations -->
+          @if (tierPerformance().tierRecommendations.length > 0) {
+            <div class="tier-recommendations">
+              <h4>💡 Tier-Specific Recommendations</h4>
+              <div class="tier-rec-list">
+                @for (rec of tierPerformance().tierRecommendations; track rec.tier) {
+                  <div class="tier-rec-item" [attr.data-severity]="rec.severity">
+                    <div class="tier-rec-icon">
+                      @switch (rec.severity) {
+                        @case ('info') { ℹ️ }
+                        @case ('warning') { ⚠️ }
+                        @case ('error') { ❌ }
+                      }
+                    </div>
+                    <div class="tier-rec-content">
+                      <div class="tier-rec-tier">{{ rec.tier | titlecase }} Tier</div>
+                      <div class="tier-rec-message">{{ rec.message }}</div>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          <!-- Configuration Status -->
+          <div class="tier-config-status">
+            <h4>⚙️ Configuration Status</h4>
+            <div class="config-summary">
+              <div class="config-stat">
+                <span class="config-value">{{ tierConfiguration().configuredCollections }}</span>
+                <span class="config-label">Configured Collections</span>
+              </div>
+              <div class="config-stat">
+                <span class="config-value">{{ tierConfiguration().unconfiguredCollections.length }}</span>
+                <span class="config-label">Unconfigured</span>
+              </div>
+            </div>
+            
+            @if (tierConfiguration().unconfiguredCollections.length > 0) {
+              <div class="unconfigured-collections">
+                <div class="unconfigured-header">Unconfigured Collections:</div>
+                <div class="unconfigured-list">
+                  @for (collection of tierConfiguration().unconfiguredCollections; track collection) {
+                    <span class="unconfigured-item">{{ collection }}</span>
+                  }
+                </div>
+              </div>
+            }
+
+            @if (tierConfiguration().recommendations.length > 0) {
+              <div class="config-recommendations">
+                <div class="config-rec-header">Configuration Recommendations:</div>
+                <div class="config-rec-list">
+                  @for (rec of tierConfiguration().recommendations; track rec) {
+                    <div class="config-rec-item">{{ rec }}</div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </section>
+
       <!-- System Status -->
       <section class="system-status">
         <h2>System Status</h2>
@@ -689,6 +914,11 @@ export class AdminDashboardComponent {
   });
 
   readonly cacheEffectiveness = computed(() => this.metricsService.getCacheEffectiveness());
+  readonly realTimeCacheAnalytics = computed(() => this.metricsService.getRealTimeCacheAnalytics());
+  readonly cacheHealthStatus = computed(() => this.metricsService.getCacheHealthStatus());
+  readonly optimizationRecommendations = computed(() => this.metricsService.getOptimizationRecommendations());
+  readonly tierPerformance = computed(() => this.metricsService.getCachePerformanceByTier());
+  readonly tierConfiguration = computed(() => this.metricsService.getTierConfigurationAnalysis());
 
   clearFirebaseCache(): void {
     // This will be implemented when we integrate the CachedFirestoreService
