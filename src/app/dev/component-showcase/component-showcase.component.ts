@@ -9,6 +9,13 @@ import { EmptyStateComponent } from '../../shared/ui/empty-state/empty-state.com
 import { PubCardLightComponent } from '../../pubs/ui/pub-card-light/pub-card-light.component';
 import { PubCardComponent } from '../../pubs/ui/pub-card/pub-card.component';
 import { ThemeStore } from '../../shared/data-access/theme.store';
+import { ChipStatusComponent } from '../../shared/ui/chips/chip-status/chip-status.component';
+import { ChipCountComponent } from '../../shared/ui/chips/chip-count/chip-count.component';
+import { ChipFilterComponent } from '../../shared/ui/chips/chip-filter/chip-filter.component';
+import { ChipProgressComponent } from '../../shared/ui/chips/chip-progress/chip-progress.component';
+import { ChipIconComponent } from '../../shared/ui/chips/chip-icon/chip-icon.component';
+import { ChipBadgeComponent } from '../../shared/ui/chips/chip-badge/chip-badge.component';
+import { ChipUserComponent } from '../../shared/ui/chips/chip-user/chip-user.component';
 import { BaseComponent } from '../../shared/base/base.component';
 import { PropControlComponent } from './prop-control.component';
 import { COMPONENT_METADATA, getComponentMetadata, generateDefaultProps } from './component-metadata';
@@ -37,16 +44,23 @@ interface ExampleConfig {
 @Component({
   selector: 'app-component-showcase',
   imports: [
-    CommonModule, 
-    RouterModule, 
-    IconComponent, 
-    ButtonComponent, 
+    CommonModule,
+    RouterModule,
+    IconComponent,
+    ButtonComponent,
     LoadingStateComponent,
     ErrorStateComponent,
     EmptyStateComponent,
     PubCardLightComponent,
     PubCardComponent,
-    PropControlComponent
+    PropControlComponent,
+    ChipStatusComponent,
+    ChipCountComponent,
+    ChipFilterComponent,
+    ChipProgressComponent,
+    ChipIconComponent,
+    ChipBadgeComponent,
+    ChipUserComponent
   ],
   template: `
     <div class="showcase">
@@ -81,7 +95,7 @@ interface ExampleConfig {
               <ul>
                 @for (comp of category.components; track comp.name) {
                   <li>
-                    <button 
+                    <button
                       type="button"
                       [class.active]="activeComponent() === comp.name"
                       (click)="setActiveComponent(comp.name)"
@@ -146,7 +160,7 @@ interface ExampleConfig {
                     <app-icon name="visibility" size="sm" />
                     Live Preview
                   </h3>
-                  <div 
+                  <div
                     class="preview-container"
                     [class.preview-desktop]="previewMode() === 'desktop'"
                     [class.preview-tablet]="previewMode() === 'tablet'"
@@ -156,7 +170,7 @@ interface ExampleConfig {
                     <div class="component-wrapper">
                     @switch (activeComponent()) {
                       @case ('Button') {
-                        <app-button 
+                        <app-button
                           [variant]="currentProps()['variant']"
                           [size]="currentProps()['size']"
                           [loading]="currentProps()['loading']"
@@ -169,7 +183,7 @@ interface ExampleConfig {
                         </app-button>
                       }
                       @case ('Icon') {
-                        <app-icon 
+                        <app-icon
                           [name]="currentProps()['name']"
                           [size]="currentProps()['size']"
                           [filled]="currentProps()['filled']"
@@ -178,12 +192,12 @@ interface ExampleConfig {
                         </app-icon>
                       }
                       @case ('LoadingState') {
-                        <app-loading-state 
+                        <app-loading-state
                           [text]="currentProps()['text']">
                         </app-loading-state>
                       }
                       @case ('ErrorState') {
-                        <app-error-state 
+                        <app-error-state
                           [message]="currentProps()['message']"
                           [showRetry]="currentProps()['showRetry']"
                           [retryText]="currentProps()['retryText']"
@@ -191,7 +205,7 @@ interface ExampleConfig {
                         </app-error-state>
                       }
                       @case ('EmptyState') {
-                        <app-empty-state 
+                        <app-empty-state
                           [title]="currentProps()['title']"
                           [subtitle]="currentProps()['subtitle']"
                           [icon]="currentProps()['icon']"
@@ -200,7 +214,7 @@ interface ExampleConfig {
                         </app-empty-state>
                       }
                       @case ('PubCardLight') {
-                        <app-pub-card-light 
+                        <app-pub-card-light
                           [pub]="mockPub()"
                           [distance]="currentProps()['distance']"
                           [variant]="currentProps()['variant']"
@@ -214,7 +228,7 @@ interface ExampleConfig {
                         </app-pub-card-light>
                       }
                       @case ('PubCard') {
-                        <app-pub-card 
+                        <app-pub-card
                           [pub]="mockPubWithDistance()"
                           [selectable]="currentProps()['selectable']"
                           [isSelected]="currentProps()['isSelected']"
@@ -226,6 +240,78 @@ interface ExampleConfig {
                           [hasUnverifiedVisit]="currentProps()['hasUnverifiedVisit']"
                           [isNearestUnvisited]="currentProps()['isNearestUnvisited']">
                         </app-pub-card>
+                      }
+                      @case ('ChipStatus') {
+                        <app-chip-status
+                          [type]="currentProps()['type']"
+                          [text]="currentProps()['text']"
+                          [icon]="currentProps()['icon']"
+                          [size]="currentProps()['size']"
+                          [showIcon]="currentProps()['showIcon']"
+                          [tooltip]="currentProps()['tooltip']"
+                          [animated]="currentProps()['animated']">
+                        </app-chip-status>
+                      }
+                      @case ('ChipCount') {
+                        <app-chip-count
+                          [count]="currentProps()['count']"
+                          [prefix]="currentProps()['prefix']"
+                          [suffix]="currentProps()['suffix']"
+                          [icon]="currentProps()['icon']"
+                          [label]="currentProps()['label']"
+                          [size]="currentProps()['size']"
+                          [variant]="currentProps()['variant']"
+                          [clickable]="currentProps()['clickable']"
+                          [formatLargeNumbers]="currentProps()['formatLargeNumbers']"
+                          [showSign]="currentProps()['showSign']">
+                        </app-chip-count>
+                      }
+                      @case ('ChipFilter') {
+                        <app-chip-filter
+                          [label]="currentProps()['label']"
+                          [active]="currentProps()['active']"
+                          [count]="currentProps()['count']"
+                          [icon]="currentProps()['icon']"
+                          [size]="currentProps()['size']"
+                          [disabled]="currentProps()['disabled']"
+                          [removable]="currentProps()['removable']"
+                          [formatNumbers]="currentProps()['formatNumbers']">
+                        </app-chip-filter>
+                      }
+                      @case ('ChipProgress') {
+                        <app-chip-progress
+                          [state]="currentProps()['state']"
+                          [label]="currentProps()['label']"
+                          [value]="currentProps()['value']"
+                          [maxValue]="currentProps()['maxValue']"
+                          [size]="currentProps()['size']"
+                          [showIcon]="currentProps()['showIcon']"
+                          [showProgress]="currentProps()['showProgress']"
+                          [showValue]="currentProps()['showValue']"
+                          [isActive]="currentProps()['isActive']"
+                          [unit]="currentProps()['unit']">
+                        </app-chip-progress>
+                      }
+                      @case ('ChipIcon') {
+                        <app-chip-icon
+                          [icon]="currentProps()['icon']"
+                          [label]="currentProps()['label']"
+                          [count]="currentProps()['count']"
+                          [size]="currentProps()['size']"
+                          [variant]="currentProps()['variant']"
+                          [clickable]="currentProps()['clickable']"
+                          [filled]="currentProps()['filled']"
+                          [weight]="currentProps()['weight']">
+                        </app-chip-icon>
+                      }
+                      @case ('ChipUser') {
+                        <app-chip-user
+                          [user]="mockUser()"
+                          [size]="currentProps()['size']"
+                          [variant]="currentProps()['variant']"
+                          [showName]="currentProps()['showName']"
+                          [clickable]="currentProps()['clickable']">
+                        </app-chip-user>
                       }
                       @default {
                         <div class="component-placeholder">
@@ -405,7 +491,7 @@ interface ExampleConfig {
 
     .nav-item-button.active {
       background: var(--primary);
-      color: var(--primary-contrast);
+      color: var(--on-primary);
     }
 
     .nav-item-button:focus {
@@ -548,7 +634,7 @@ interface ExampleConfig {
 
     .mode-button.active {
       background: var(--primary);
-      color: var(--primary-contrast);
+      color: var(--on-primary);
     }
 
     .workspace-grid {
@@ -600,7 +686,7 @@ interface ExampleConfig {
       top: 0.5rem;
       right: 0.5rem;
       background: var(--primary);
-      color: var(--primary-contrast);
+      color: var(--on-primary);
       padding: 0.25rem 0.5rem;
       border-radius: 0.25rem;
       font-size: 0.75rem;
@@ -699,7 +785,6 @@ interface ExampleConfig {
 
     .controls-section {
       overflow-y: auto;
-      max-height: 60vh;
     }
 
     .controls-grid {
@@ -813,8 +898,8 @@ interface ExampleConfig {
   `]
 })
 export class ComponentShowcaseComponent extends BaseComponent {
-  private readonly themeStore = inject(ThemeStore);
-  
+  protected readonly themeStore = inject(ThemeStore);
+
   readonly isDarkTheme = computed(() => this.themeStore.isDark());
 
   readonly currentTheme = computed(() => {
@@ -826,7 +911,7 @@ export class ComponentShowcaseComponent extends BaseComponent {
   readonly liveProps = signal<Record<string, any>>({});
   readonly selectedExample = signal<number>(0);
   readonly previewMode = signal<'desktop' | 'tablet' | 'mobile'>('desktop');
-  
+
   readonly componentMetadata = computed(() => {
     const active = this.activeComponent();
     return getComponentMetadata(active);
@@ -835,9 +920,9 @@ export class ComponentShowcaseComponent extends BaseComponent {
   readonly currentProps = computed(() => {
     const metadata = this.componentMetadata();
     const live = this.liveProps();
-    
+
     if (!metadata) return {};
-    
+
     // Merge default props with live props
     const defaults = generateDefaultProps(metadata.name);
     return { ...defaults, ...live };
@@ -868,11 +953,34 @@ export class ComponentShowcaseComponent extends BaseComponent {
     };
   });
 
-  
+  readonly mockBadge = computed(() => ({
+    id: 'first-checkin',
+    name: 'First Check-in',
+    description: 'Complete your first pub check-in',
+    emoji: '🌟',
+    condition: 'checkInCount >= 1',
+    awardedCount: 1,
+    type: 'milestone' as const,
+    category: 'basic' as const,
+    rarity: 'common' as const,
+    points: 10,
+    isActive: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  }));
+
+  readonly mockUser = computed(() => ({
+    displayName: 'John Doe',
+    photoURL: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+    email: 'john.doe@example.com',
+    realDisplayName: 'John Doe'
+  }));
+
+
   readonly categories = computed(() => {
     const allComponents = Object.values(COMPONENT_METADATA);
     const groupedByCategory: Record<string, ComponentExample[]> = {};
-    
+
     // Group components by category
     allComponents.forEach(comp => {
       if (!groupedByCategory[comp.category]) {
@@ -909,7 +1017,7 @@ export class ComponentShowcaseComponent extends BaseComponent {
       const comp = category.components.find(c => c.name === active);
       if (comp) return comp;
     }
-    
+
     // Auto-select first component if none selected
     if (!active && this.categories().length > 0) {
       const firstCategory = this.categories()[0];
@@ -920,7 +1028,7 @@ export class ComponentShowcaseComponent extends BaseComponent {
         return firstComponent;
       }
     }
-    
+
     return null;
   });
 

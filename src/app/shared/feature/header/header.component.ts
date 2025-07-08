@@ -56,11 +56,11 @@ import { environment } from '../../../../environments/environment';
 })
 export class HeaderComponent extends BaseComponent implements AfterViewInit {
   // 🔧 Services
-  private readonly viewportService = inject(ViewportService);
-  private readonly panelStore = inject(PanelStore);
-  private readonly authStore = inject(AuthStore);
-  private readonly overlayService = inject(OverlayService);
-  protected readonly dataAggregator = inject(DataAggregatorService);
+  protected readonly viewportService = inject(ViewportService);
+  protected readonly panelStore = inject(PanelStore);
+  protected readonly authStore = inject(AuthStore);
+  protected readonly overlayService = inject(OverlayService);
+  protected readonly dataAggregatorService = inject(DataAggregatorService);
 
   // ✅ Reactive viewport detection
   readonly isMobile = this.viewportService.isMobile;
@@ -81,7 +81,7 @@ export class HeaderComponent extends BaseComponent implements AfterViewInit {
   // ✅ Auth signals
   readonly user = this.authStore.user;
   readonly isAnonymous = this.authStore.isAnonymous;
-  readonly displayName = this.dataAggregator.displayName;
+  readonly displayName = this.dataAggregatorService.displayName;
 
   // ✅ Auth actions
   handleLogin = () => this.authStore.loginWithGoogle();

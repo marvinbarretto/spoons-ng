@@ -22,9 +22,9 @@
  * USAGE:
  * ```typescript
  * // In components
- * readonly scoreboardData = this.dataAggregator.scoreboardData;
- * readonly userSummary = this.dataAggregator.userSummary;
- * readonly pubsVisited = this.dataAggregator.pubsVisited;
+ * readonly scoreboardData = this.dataAggregatorService.scoreboardData;
+ * readonly userSummary = this.dataAggregatorService.userSummary;
+ * readonly pubsVisited = this.dataAggregatorService.pubsVisited;
  * ```
  */
 
@@ -55,7 +55,7 @@ export class DataAggregatorService {
   // 🎯 Leaderboard filter state
   private readonly _leaderboardTimeRange = signal<LeaderboardTimeRange>('all-time');
   private readonly _leaderboardGeographicFilter = signal<LeaderboardGeographicFilter>({ type: 'none' });
-  
+
   readonly leaderboardTimeRange = this._leaderboardTimeRange.asReadonly();
   readonly leaderboardGeographicFilter = this._leaderboardGeographicFilter.asReadonly();
 

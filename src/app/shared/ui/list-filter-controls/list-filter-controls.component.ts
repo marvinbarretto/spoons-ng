@@ -245,7 +245,7 @@ import { ListFilterStore, type SortOption } from '../../data-access/list-filter.
     .sort-direction-btn:hover {
       border-color: var(--primary);
       background: var(--primary);
-      color: var(--primary-contrast);
+      color: var(--on-primary);
     }
 
     /* Results Summary */
@@ -321,7 +321,7 @@ import { ListFilterStore, type SortOption } from '../../data-access/list-filter.
     .quick-filter-btn.active {
       border-color: var(--primary);
       background: var(--primary);
-      color: var(--primary-contrast);
+      color: var(--on-primary);
     }
 
     /* Mobile Toggle */

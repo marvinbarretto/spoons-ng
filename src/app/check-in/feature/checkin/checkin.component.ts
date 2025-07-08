@@ -3,7 +3,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '@shared/base/base.component';
 import { CheckInStore } from '../../data-access/check-in.store';
 import { PubStore } from '../../../pubs/data-access/pub.store';
-import { 
+import {
   CarpetImageAnalysisService,
   CheckinCameraService,
   CheckinCaptureService,
@@ -30,19 +30,19 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
   @ViewChild('videoElement', { static: false }) videoElement!: ElementRef<HTMLVideoElement>;
 
   // Core services
-  private readonly route = inject(ActivatedRoute);
-  private readonly checkinStore = inject(CheckInStore);
-  private readonly pubStore = inject(PubStore);
-  private readonly llmService = inject(LLMService);
-  private readonly carpetStorageService = inject(CarpetStorageService);
-  
+  protected readonly activatedRoute = inject(ActivatedRoute);
+  protected readonly checkinStore = inject(CheckInStore);
+  protected readonly pubStore = inject(PubStore);
+  protected readonly llmService = inject(LLMService);
+  protected readonly carpetStorageService = inject(CarpetStorageService);
+
   // New refactored services
-  private readonly cameraService = inject(CheckinCameraService);
-  private readonly captureService = inject(CheckinCaptureService);
-  private readonly stateService = inject(CheckinStateMachineService);
-  private readonly analysisService = inject(CarpetImageAnalysisService);
-  private readonly gateCoordinator = inject(CheckinGateCoordinator);
-  private readonly orientationGate = inject(SimpleOrientationGate);
+  protected readonly cameraService = inject(CheckinCameraService);
+  protected readonly captureService = inject(CheckinCaptureService);
+  protected readonly stateService = inject(CheckinStateMachineService);
+  protected readonly analysisService = inject(CarpetImageAnalysisService);
+  protected readonly gateCoordinator = inject(CheckinGateCoordinator);
+  protected readonly orientationGate = inject(SimpleOrientationGate);
 
   // UI state
   protected readonly pubId = signal<string | null>(null);
@@ -113,7 +113,7 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
   }
 
   override ngOnInit(): void {
-    const pubIdParam = this.route.snapshot.paramMap.get('pubId');
+    const pubIdParam = this.activatedRoute.snapshot.paramMap.get('pubId');
 
     if (!pubIdParam) {
       console.log('[Checkin] ❌ No pub ID provided, navigating to homepage');
@@ -185,10 +185,10 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
     try {
       const video = this.videoElement.nativeElement;
       const photo = await this.captureService.capturePhoto(video);
-      
+
       // Stop camera after capture
       this.cameraService.stopCamera();
-      
+
       this.stateService.transitionTo('PHOTO_CAPTURED');
       this.startLLMAnalysis();
     } catch (error) {
@@ -199,7 +199,7 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
 
   private async startLLMAnalysis(): Promise<void> {
     console.log('[Checkin] 🤖 Starting LLM analysis');
-    
+
     this.stateService.transitionTo('LLM_THINKING');
     this.startAnalysisMessageCycling();
 
@@ -213,14 +213,14 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
       if (!this.LLM_CHECK) {
         console.log('[Checkin] 🔧 LLM check disabled - assuming carpet');
         await new Promise(resolve => setTimeout(resolve, CHECKIN_TIMINGS.LLM_BYPASS_DELAY));
-        
+
         this.llmResponse = {
           isCarpet: true,
           confidence: 0.95,
           reasoning: 'LLM check disabled - assuming carpet detected',
           visualElements: ['mock-pattern']
         };
-        
+
         this.stopAnalysisMessageCycling();
         this.executeCheckin();
         return;
@@ -237,7 +237,7 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
       } else {
         console.log('[Checkin] ❌ Not a carpet');
         this.stateService.transitionTo('NOT_CARPET_DETECTED');
-        
+
         setTimeout(() => {
           this.exitToHomepage();
         }, CHECKIN_TIMINGS.RETRY_DELAY);
@@ -246,7 +246,7 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
       console.error('[Checkin] ❌ LLM analysis error:', error);
       this.stopAnalysisMessageCycling();
       this.stateService.transitionTo('NOT_CARPET_DETECTED');
-      
+
       setTimeout(() => {
         this.exitToHomepage();
       }, CHECKIN_TIMINGS.RETRY_DELAY);
@@ -269,8 +269,8 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
       if (photo && this.llmResponse) {
         console.log('[Checkin] 💾 Storing carpet image');
         await this.carpetStorageService.saveCarpetImage(
-          photo.canvas, 
-          pubId, 
+          photo.canvas,
+          pubId,
           this.pubName()
         );
       }
@@ -278,7 +278,7 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
       // Execute check-in
       await this.checkinStore.checkinToPub(pubId);
       console.log('[Checkin] ✅ Check-in submitted successfully');
-      
+
     } catch (error: any) {
       console.error('[Checkin] ❌ Check-in error:', error);
       this.showError(`Check-in failed: ${error?.message || 'Unknown error'}`);
@@ -333,23 +333,23 @@ export class CheckinComponent extends BaseComponent implements OnInit, AfterView
   onDeviceOrientation(event: DeviceOrientationEvent): void {
     // Round beta to integer
     const roundedBeta = event.beta !== null ? Math.round(event.beta) : null;
-    
+
     // Update the simple orientation gate
     this.orientationGate.updateBeta(roundedBeta);
   }
 
   private cleanup(): void {
     console.log('[Checkin] 🧹 Comprehensive cleanup');
-    
+
     // Clean up intervals
     this.cleanupIntervals();
-    
+
     // Clean up services
     this.cameraService.cleanup();
     this.captureService.cleanup();
     this.analysisService.clearState();
     this.gateCoordinator.cleanup();
-    
+
     // Reset state
     this.stateService.reset();
   }

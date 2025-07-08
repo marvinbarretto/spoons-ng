@@ -15,7 +15,7 @@ import { DataAggregatorService } from '../../../shared/data-access/data-aggregat
 import { PubStore } from '../../../pubs/data-access/pub.store';
 import { LocationService } from '../../../shared/data-access/location.service';
 
-import { BadgesShowcaseComponent } from '@home/ui/badges-showcase/badges-showcase.component';
+import { BadgesWidgetComponent } from '../../../widgets/badges/badges-widget.component';
 import { MissionsWidgetComponent } from '../../../widgets/missions/missions-widget.component';
 import { ProfileCustomisationModalComponent } from '@home/ui/profile-customisation-modal/profile-customisation-modal.component';
 import { CarpetWidgetComponent } from '../../../widgets/carpet/carpet-widget.component';
@@ -34,7 +34,7 @@ import { SuggestedMissionWidgetComponent } from '../../../widgets/suggested-miss
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ScoreboardHeroWidgetComponent,
-    BadgesShowcaseComponent,
+    BadgesWidgetComponent,
     MissionsWidgetComponent,
     SuggestedMissionWidgetComponent,
     CarpetWidgetComponent,
@@ -48,7 +48,7 @@ import { SuggestedMissionWidgetComponent } from '../../../widgets/suggested-miss
   styleUrl: './home.component.scss'
 })
 export class HomeComponent extends BaseComponent {
-  private readonly overlayService = inject(OverlayService);
+  protected readonly overlayService = inject(OverlayService);
 
   constructor() {
     super();
@@ -96,7 +96,7 @@ export class HomeComponent extends BaseComponent {
   protected readonly checkinStore = inject(CheckInStore);
   protected readonly dataAggregatorService = inject(DataAggregatorService);
   protected readonly pubStore = inject(PubStore);
-  private readonly locationService = inject(LocationService);
+  protected readonly locationService = inject(LocationService);
 
 
 

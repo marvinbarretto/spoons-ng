@@ -48,7 +48,7 @@ export class DevDebugComponent extends BaseComponent {
   private readonly carpetStorageService = inject(CarpetStorageService);
   private readonly metricsService = inject(DatabaseMetricsService);
   private readonly firebaseMetricsService = inject(FirebaseMetricsService);
-  private readonly dataAggregator = inject(DataAggregatorService);
+  protected readonly dataAggregatorService = inject(DataAggregatorService);
 
   // ===================================
   // 📊 STATE MANAGEMENT
@@ -97,7 +97,7 @@ export class DevDebugComponent extends BaseComponent {
   readonly siteStats = this.leaderboardStore.siteStats;
   readonly globalDataStats = this.leaderboardStore.globalDataStats;
   readonly pendingFeedback = this.feedbackStore.pendingFeedback;
-  readonly scoreboardData = this.dataAggregator.scoreboardData;
+  readonly scoreboardData = this.dataAggregatorService.scoreboardData;
 
   // ===================================
   // 🔍 COMPUTED DATA FOR DISPLAY
@@ -175,7 +175,7 @@ export class DevDebugComponent extends BaseComponent {
     const fbMetrics = this.firebaseMetricsService.getSessionSummary();
     const recent = this.firebaseMetricsService.getRecentOperations(10);
     const errors = this.firebaseMetricsService.getErrorAnalysis();
-    
+
     return {
       totalOperations: fbMetrics.totalCalls,
       operationsPerMinute: fbMetrics.callsPerMinute,
@@ -572,7 +572,7 @@ export class DevDebugComponent extends BaseComponent {
   // 🔍 DEBUGGING HELPERS
   // ===================================
 
-  // Debugging methods removed for UI simplification  
+  // Debugging methods removed for UI simplification
   // Use browser dev tools and console logs from cleanup operations instead
 
   // ===================================
@@ -586,11 +586,11 @@ export class DevDebugComponent extends BaseComponent {
 
   formatTime(timestamp: number): string {
     const date = new Date(timestamp);
-    return date.toLocaleTimeString('en-US', { 
-      hour12: false, 
-      hour: '2-digit', 
-      minute: '2-digit', 
-      second: '2-digit' 
+    return date.toLocaleTimeString('en-US', {
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
     });
   }
 

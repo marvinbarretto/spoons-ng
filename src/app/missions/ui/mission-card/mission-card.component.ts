@@ -135,12 +135,12 @@ import type { Pub } from '../../../pubs/utils/pub.models';
   `,
   styles: `
     .mission-card {
-      background: linear-gradient(135deg, var(--background-darkest, #ffffff) 0%, rgba(59, 130, 246, 0.02) 100%);
-      border: 2px solid transparent;
+      background: var(--background-lighter);
+      border: 2px solid var(--border);
       border-radius: 8px;
       padding: 1.5rem;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      box-shadow: var(--shadow);
       position: relative;
       overflow: hidden;
     }
@@ -152,7 +152,7 @@ import type { Pub } from '../../../pubs/utils/pub.models';
       left: 0;
       right: 0;
       bottom: 0;
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%);
+      background: var(--primary);
       opacity: 0;
       transition: opacity 0.3s ease;
       pointer-events: none;
@@ -161,12 +161,12 @@ import type { Pub } from '../../../pubs/utils/pub.models';
     /* Hover effects removed - parent components can add their own hover styles */
 
     .mission-card--joined {
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.05) 100%);
-      border-color: rgba(16, 185, 129, 0.3);
+      background: var(--background-lightest);
+      border-color: var(--success);
     }
 
     .mission-card--joined::before {
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.1) 100%);
+      background: var(--success);
     }
 
     .mission-card__header {
@@ -219,50 +219,50 @@ import type { Pub } from '../../../pubs/utils/pub.models';
     }
 
     .meta-badge--category {
-      background: rgba(59, 130, 246, 0.1);
-      color: var(--primary, #3b82f6);
-      border-color: rgba(59, 130, 246, 0.2);
+      background: var(--backgroundLighter);
+      color: var(--primary);
+      border-color: var(--primary);
     }
 
     .meta-badge--subcategory {
-      background: rgba(147, 51, 234, 0.1);
-      color: #9333ea;
-      border-color: rgba(147, 51, 234, 0.2);
+      background: var(--backgroundLighter);
+      color: var(--accent);
+      border-color: var(--accent);
     }
 
     .meta-badge--difficulty {
-      border-color: rgba(156, 163, 175, 0.3);
+      border-color: var(--border);
     }
 
     .meta-badge--easy {
-      background: rgba(34, 197, 94, 0.1);
-      color: #22c55e;
-      border-color: rgba(34, 197, 94, 0.2);
+      background: var(--backgroundLighter);
+      color: var(--success);
+      border-color: var(--success);
     }
 
     .meta-badge--medium {
-      background: rgba(234, 179, 8, 0.1);
-      color: #eab308;
-      border-color: rgba(234, 179, 8, 0.2);
+      background: var(--backgroundLighter);
+      color: var(--warning);
+      border-color: var(--warning);
     }
 
     .meta-badge--hard {
-      background: rgba(239, 68, 68, 0.1);
-      color: #ef4444;
-      border-color: rgba(239, 68, 68, 0.2);
+      background: var(--backgroundLighter);
+      color: var(--error);
+      border-color: var(--error);
     }
 
     .meta-badge--extreme {
-      background: rgba(139, 69, 19, 0.1);
-      color: #8b4513;
-      border-color: rgba(139, 69, 19, 0.2);
+      background: var(--backgroundDarker);
+      color: var(--text);
+      border-color: var(--borderStrong);
     }
 
     .meta-badge--featured {
-      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-      color: white;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-      border-color: #f59e0b;
+      background: var(--accent);
+      color: var(--onAccent);
+      text-shadow: 0 1px 2px var(--overlay);
+      border-color: var(--accent);
     }
 
     .mission-card__status {
@@ -294,29 +294,29 @@ import type { Pub } from '../../../pubs/utils/pub.models';
     }
 
     .status-badge--available {
-      background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-      color: white;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      background: var(--warning);
+      color: var(--onPrimary);
+      text-shadow: 0 1px 2px var(--overlay);
     }
 
     .status-badge--available:hover {
       transform: scale(1.05);
-      box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3);
+      box-shadow: var(--shadow);
     }
 
     .status-badge--joined {
-      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-      color: white;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+      background: var(--success);
+      color: var(--onPrimary);
+      text-shadow: 0 1px 2px var(--overlay);
     }
 
     .status-badge--joined:hover {
       transform: scale(1.05);
-      box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+      box-shadow: var(--shadow);
     }
 
     .mission-card__description {
-      color: var(--text-secondary, #6b7280);
+      color: var(--textSecondary);
       margin: 0 0 1.5rem;
       line-height: 1.6;
       font-size: 0.95rem;
@@ -338,7 +338,7 @@ import type { Pub } from '../../../pubs/utils/pub.models';
 
     .stat__label {
       font-size: 0.75rem;
-      color: var(--text-secondary, #6b7280);
+      color: var(--textSecondary);
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.025em;
@@ -346,19 +346,19 @@ import type { Pub } from '../../../pubs/utils/pub.models';
 
     .stat__value {
       font-size: 0.95rem;
-      color: var(--text, #111827);
+      color: var(--text);
       font-weight: 700;
     }
 
     .stat--highlighted {
       padding: 0.5rem;
-      background: rgba(59, 130, 246, 0.05);
-      border: 1px solid rgba(59, 130, 246, 0.1);
+      background: var(--backgroundLighter);
+      border: 1px solid var(--primary);
       border-radius: 6px;
     }
 
     .stat__value--points {
-      color: var(--primary, #3b82f6);
+      color: var(--primary);
       font-size: 1.1rem;
       font-weight: 800;
     }
@@ -366,22 +366,22 @@ import type { Pub } from '../../../pubs/utils/pub.models';
     .mission-card__progress {
       margin-top: 1rem;
       padding-top: 0.75rem;
-      border-top: 1px solid var(--border, #e5e7eb);
+      border-top: 1px solid var(--border);
     }
 
     .progress-bar {
       height: 10px;
-      background: var(--color-gray-200, #e5e7eb);
+      background: var(--backgroundDarker);
       border-radius: 8px;
       overflow: hidden;
       margin-bottom: 0.75rem;
-      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+      box-shadow: inset 0 2px 4px var(--overlay);
       position: relative;
     }
 
     .progress-bar__fill {
       height: 100%;
-      background: linear-gradient(90deg, #10b981 0%, #059669 50%, #047857 100%);
+      background: var(--success);
       transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
       border-radius: 8px;
       position: relative;
@@ -395,7 +395,7 @@ import type { Pub } from '../../../pubs/utils/pub.models';
       left: 0;
       right: 0;
       bottom: 0;
-      background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+      background: linear-gradient(90deg, transparent 0%, var(--backgroundLightest) 50%, transparent 100%);
       animation: shimmer 2s infinite;
     }
 
@@ -406,7 +406,7 @@ import type { Pub } from '../../../pubs/utils/pub.models';
 
     .progress-text {
       font-size: 0.875rem;
-      color: var(--text-secondary, #6b7280);
+      color: var(--textSecondary);
       display: flex;
       align-items: center;
       gap: 0.5rem;
@@ -416,7 +416,7 @@ import type { Pub } from '../../../pubs/utils/pub.models';
     .progress-text__percentage {
       font-size: 1rem;
       font-weight: 700;
-      color: var(--color-success, #10b981);
+      color: var(--success);
     }
 
     .progress-text__label {
@@ -499,25 +499,11 @@ import type { Pub } from '../../../pubs/utils/pub.models';
       }
     }
 
-    /* Dark mode support */
-    @media (prefers-color-scheme: dark) {
-      .mission-card {
-        background: linear-gradient(135deg, rgba(31, 41, 55, 0.9) 0%, rgba(17, 24, 39, 0.95) 100%);
-        border-color: rgba(75, 85, 99, 0.3);
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
-      }
-
-      /* Hover effects removed - parent components can add their own hover styles */
-
-      /* Title styling handled by theme tokens */
-
-      /* Dark mode styles handled by theme tokens */
-    }
 
     .mission-card__actions {
       margin-top: 1rem;
       padding-top: 1rem;
-      border-top: 1px solid var(--border, #e5e7eb);
+      border-top: 1px solid var(--border);
       display: flex;
       gap: 0.75rem;
       flex-wrap: wrap;
@@ -530,8 +516,8 @@ import type { Pub } from '../../../pubs/utils/pub.models';
 })
 export class MissionCardComponent {
   // ✅ Dependency injection
-  private readonly dataAggregatorService = inject(DataAggregatorService);
-  private readonly pubStore = inject(PubStore);
+  protected readonly dataAggregatorService = inject(DataAggregatorService);
+  protected readonly pubStore = inject(PubStore);
 
   // ✅ Required inputs
   readonly mission = input.required<Mission>();

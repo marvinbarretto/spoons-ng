@@ -118,7 +118,7 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
 
     .setting-badge {
       background: var(--primary);
-      color: var(--primary-contrast);
+      color: var(--on-primary);
       padding: 0.25rem 0.75rem;
       border-radius: 16px;
       font-size: 0.75rem;
@@ -214,8 +214,8 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
   `
 })
 export class AccountSettingsWidgetComponent extends BaseComponent {
-  private readonly authStore = inject(AuthStore);
-  private readonly userStore = inject(UserStore);
+  protected readonly authStore = inject(AuthStore);
+  protected readonly userStore = inject(UserStore);
 
   // Local state
   private readonly _isDeleting = signal(false);

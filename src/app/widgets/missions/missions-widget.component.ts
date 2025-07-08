@@ -123,6 +123,6 @@ export class MissionsWidgetComponent extends BaseWidgetComponent {
 
   onMissionCardClicked(mission: Mission): void {
     console.log('[MissionsWidget] Mission card clicked:', mission.id, mission.name);
-    this.router.navigate(['/missions']);
+    this.router.navigate(['/missions', mission.id]);
   }
 }

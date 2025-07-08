@@ -140,7 +140,7 @@ type NavItem = {
 
       .nav-item__icon {
         background: var(--primary);
-        color: var(--primary-contrast);
+        color: var(--on-primary);
         border-radius: 50%;
         width: 48px;
         height: 48px;
@@ -153,7 +153,7 @@ type NavItem = {
 
         /* ✅ Icon color override for check-in */
         .check-in-icon {
-          color: var(--primary-contrast) !important;
+          color: var(--on-primary) !important;
         }
       }
 
@@ -249,10 +249,10 @@ type NavItem = {
   `
 })
 export class FooterNavComponent extends BaseComponent {
-  private readonly viewportService = inject(ViewportService);
-  private readonly nearbyPubStore = inject(NearbyPubStore);
-  private readonly authStore = inject(AuthStore);
-  private readonly checkinStore = inject(CheckInStore);
+  protected readonly viewportService = inject(ViewportService);
+  protected readonly nearbyPubStore = inject(NearbyPubStore);
+  protected readonly authStore = inject(AuthStore);
+  protected readonly checkinStore = inject(CheckInStore);
 
   // ✅ Local state for check-in process
   private readonly _isCheckingIn = signal(false);
@@ -274,7 +274,13 @@ export class FooterNavComponent extends BaseComponent {
 
   // ✅ Check if user can check in (uses CheckInStore)
   readonly canCheckIn = computed(() => {
-    return !!this.closestPub() && !!this.user() && !this.isCheckingIn() && !this.checkinStore.isProcessing();
+    const pub = this.closestPub();
+    if (!pub || !this.user() || this.isCheckingIn() || this.checkinStore.isProcessing()) {
+      return false;
+    }
+
+    // Check if the closest pub is within check-in range
+    return this.nearbyPubStore.isWithinCheckInRange(pub.id);
   });
 
   // ✅ Navigation items with Material Symbols

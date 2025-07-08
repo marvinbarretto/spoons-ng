@@ -84,7 +84,7 @@ import type { Pub } from '../../../pubs/utils/pub.models';
 
     .pub-chip--completed .pub-chip__icon {
       background: var(--success);
-      color: var(--primaryContrast);
+      color: var(--onPrimary);
     }
 
     .pub-chip__content {

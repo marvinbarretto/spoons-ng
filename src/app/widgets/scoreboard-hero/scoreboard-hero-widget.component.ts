@@ -285,7 +285,7 @@ export type EnhancedScoreboardData = ScoreboardData & {
 
     .metric-card:hover {
       background: var(--primary);
-      color: var(--primaryContrast);
+      color: var(--onPrimary);
       transform: translateY(-2px);
       box-shadow: 0 4px 12px var(--shadow);
     }
@@ -311,7 +311,7 @@ export type EnhancedScoreboardData = ScoreboardData & {
     }
 
     .metric-card:hover .metric-value {
-      color: var(--primaryContrast);
+      color: var(--onPrimary);
     }
 
     .metric-label {
@@ -327,7 +327,7 @@ export type EnhancedScoreboardData = ScoreboardData & {
     }
 
     .metric-card:hover .metric-label {
-      color: var(--primaryContrast);
+      color: var(--onPrimary);
       opacity: 0.9;
     }
 
@@ -357,8 +357,8 @@ export type EnhancedScoreboardData = ScoreboardData & {
     }
 
     .metric-card:hover .more-badges {
-      background: var(--primaryContrast);
-      border-color: var(--primaryContrast);
+      background: var(--onPrimary);
+      border-color: var(--onPrimary);
       color: var(--primary);
     }
 
@@ -464,7 +464,7 @@ export type EnhancedScoreboardData = ScoreboardData & {
 })
 export class ScoreboardHeroWidgetComponent extends BaseWidgetComponent implements OnDestroy {
   // ✅ Self-contained data loading via DataAggregatorService
-  private readonly dataAggregator = inject(DataAggregatorService);
+  protected readonly dataAggregatorService = inject(DataAggregatorService);
   private readonly debug = inject(DebugService);
   private readonly checkinStore = inject(CheckInStore);
   private readonly badgeStore = inject(BadgeStore);
@@ -472,7 +472,7 @@ export class ScoreboardHeroWidgetComponent extends BaseWidgetComponent implement
 
   // ✅ Widget loads its own data
   readonly data = computed((): ScoreboardData => {
-    const scoreboardData = this.dataAggregator.scoreboardData();
+    const scoreboardData = this.dataAggregatorService.scoreboardData();
     this.debug.extreme('[ScoreboardHeroWidget] Data computed:', scoreboardData);
     return scoreboardData;
   });

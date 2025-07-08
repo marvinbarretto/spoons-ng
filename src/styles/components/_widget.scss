@@ -2,7 +2,7 @@
 
 @mixin widget-style {
   background-color: var(--secondary);
-  color: var(--secondary-contrast);
+  color: var(--on-secondary);
   padding: 1rem;
   border-radius: 0.5rem;
   box-shadow: var(--shadow);

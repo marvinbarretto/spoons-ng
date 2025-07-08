@@ -3,10 +3,11 @@ import { CommonModule } from '@angular/common';
 import { SsrPlatformService } from '../../utils/ssr/ssr-platform.service';
 import { RouterModule, Router } from '@angular/router';
 import { LocationService } from '../../data-access/location.service';
+import { ChipStatusComponent } from '../../ui/chips/chip-status/chip-status.component';
 
 @Component({
   selector: 'app-nav',
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, ChipStatusComponent],
   templateUrl: './nav.component.html',
   styleUrl: './nav.component.scss',
 })

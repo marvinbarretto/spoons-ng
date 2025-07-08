@@ -35,6 +35,439 @@ export interface ComponentExample {
 
 // Component metadata definitions
 export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
+  'ChipStatus': {
+    name: 'ChipStatus',
+    description: 'Status indicator chip for displaying loading, success, error, and other states',
+    category: 'Chips & Tags',
+    props: {
+      type: {
+        type: 'select',
+        label: 'Status Type',
+        defaultValue: 'neutral',
+        options: [
+          { label: 'Loading', value: 'loading' },
+          { label: 'Success', value: 'success' },
+          { label: 'Error', value: 'error' },
+          { label: 'Warning', value: 'warning' },
+          { label: 'Info', value: 'info' },
+          { label: 'Active', value: 'active' },
+          { label: 'Inactive', value: 'inactive' },
+          { label: 'Neutral', value: 'neutral' }
+        ]
+      },
+      text: {
+        type: 'text',
+        label: 'Status Text',
+        defaultValue: 'Status'
+      },
+      size: {
+        type: 'select',
+        label: 'Size',
+        defaultValue: 'sm',
+        options: [
+          { label: 'Extra Small', value: 'xs' },
+          { label: 'Small', value: 'sm' },
+          { label: 'Medium', value: 'md' },
+          { label: 'Large', value: 'lg' }
+        ]
+      },
+      showIcon: {
+        type: 'boolean',
+        label: 'Show Icon',
+        defaultValue: true
+      },
+      animated: {
+        type: 'boolean',
+        label: 'Animated',
+        defaultValue: false
+      },
+      icon: {
+        type: 'text',
+        label: 'Custom Icon',
+        defaultValue: ''
+      },
+      tooltip: {
+        type: 'text',
+        label: 'Tooltip',
+        defaultValue: ''
+      }
+    },
+    examples: [
+      { title: 'Loading State', props: { type: 'loading', text: 'Loading...', animated: true } },
+      { title: 'Success State', props: { type: 'success', text: 'Complete' } },
+      { title: 'Error State', props: { type: 'error', text: 'Failed' } },
+      { title: 'Icon Only', props: { type: 'active', text: '', showIcon: true } }
+    ]
+  },
+  'ChipCount': {
+    name: 'ChipCount',
+    description: 'Count display chip with formatting and prefix/suffix support',
+    category: 'Chips & Tags',
+    props: {
+      count: {
+        type: 'number',
+        label: 'Count',
+        defaultValue: 42
+      },
+      prefix: {
+        type: 'text',
+        label: 'Prefix',
+        defaultValue: ''
+      },
+      suffix: {
+        type: 'text',
+        label: 'Suffix',
+        defaultValue: ''
+      },
+      size: {
+        type: 'select',
+        label: 'Size',
+        defaultValue: 'sm',
+        options: [
+          { label: 'Extra Small', value: 'xs' },
+          { label: 'Small', value: 'sm' },
+          { label: 'Medium', value: 'md' },
+          { label: 'Large', value: 'lg' }
+        ]
+      },
+      variant: {
+        type: 'select',
+        label: 'Variant',
+        defaultValue: 'default',
+        options: [
+          { label: 'Default', value: 'default' },
+          { label: 'Primary', value: 'primary' },
+          { label: 'Secondary', value: 'secondary' },
+          { label: 'Success', value: 'success' },
+          { label: 'Warning', value: 'warning' },
+          { label: 'Error', value: 'error' },
+          { label: 'Accent', value: 'accent' }
+        ]
+      },
+      clickable: {
+        type: 'boolean',
+        label: 'Clickable',
+        defaultValue: false
+      },
+      formatLargeNumbers: {
+        type: 'boolean',
+        label: 'Format Large Numbers',
+        defaultValue: true
+      },
+      showSign: {
+        type: 'boolean',
+        label: 'Show Sign',
+        defaultValue: false
+      },
+      icon: {
+        type: 'text',
+        label: 'Icon',
+        defaultValue: ''
+      },
+      label: {
+        type: 'text',
+        label: 'Label',
+        defaultValue: ''
+      }
+    },
+    examples: [
+      { title: 'Basic Count', props: { count: 42 } },
+      { title: 'Points', props: { count: 1250, prefix: '+', suffix: 'pts' } },
+      { title: 'Large Number', props: { count: 12500, formatLargeNumbers: true } },
+      { title: 'Negative', props: { count: -50, showSign: true, variant: 'error' } }
+    ]
+  },
+  'ChipFilter': {
+    name: 'ChipFilter',
+    description: 'Filter pill component for toggleable selections',
+    category: 'Chips & Tags',
+    props: {
+      label: {
+        type: 'text',
+        label: 'Label',
+        defaultValue: 'Filter'
+      },
+      active: {
+        type: 'boolean',
+        label: 'Active',
+        defaultValue: false
+      },
+      count: {
+        type: 'number',
+        label: 'Count',
+        defaultValue: 5
+      },
+      size: {
+        type: 'select',
+        label: 'Size',
+        defaultValue: 'md',
+        options: [
+          { label: 'Extra Small', value: 'xs' },
+          { label: 'Small', value: 'sm' },
+          { label: 'Medium', value: 'md' },
+          { label: 'Large', value: 'lg' }
+        ]
+      },
+      disabled: {
+        type: 'boolean',
+        label: 'Disabled',
+        defaultValue: false
+      },
+      removable: {
+        type: 'boolean',
+        label: 'Removable',
+        defaultValue: false
+      },
+      formatNumbers: {
+        type: 'boolean',
+        label: 'Format Numbers',
+        defaultValue: true
+      },
+      icon: {
+        type: 'text',
+        label: 'Icon',
+        defaultValue: ''
+      }
+    },
+    examples: [
+      { title: 'Basic Filter', props: { label: 'All', count: 42 } },
+      { title: 'Active Filter', props: { label: 'Popular', count: 15, active: true } },
+      { title: 'Removable', props: { label: 'Recent', active: true, removable: true } },
+      { title: 'Disabled', props: { label: 'Archived', count: 0, disabled: true } }
+    ]
+  },
+  'ChipProgress': {
+    name: 'ChipProgress',
+    description: 'Progress indicator chip for step-by-step processes',
+    category: 'Chips & Tags',
+    props: {
+      state: {
+        type: 'select',
+        label: 'State',
+        defaultValue: 'pending',
+        options: [
+          { label: 'Pending', value: 'pending' },
+          { label: 'In Progress', value: 'in-progress' },
+          { label: 'Completed', value: 'completed' },
+          { label: 'Failed', value: 'failed' },
+          { label: 'Warning', value: 'warning' }
+        ]
+      },
+      label: {
+        type: 'text',
+        label: 'Label',
+        defaultValue: 'Step'
+      },
+      value: {
+        type: 'number',
+        label: 'Value',
+        defaultValue: null
+      },
+      maxValue: {
+        type: 'number',
+        label: 'Max Value',
+        defaultValue: null
+      },
+      size: {
+        type: 'select',
+        label: 'Size',
+        defaultValue: 'sm',
+        options: [
+          { label: 'Extra Small', value: 'xs' },
+          { label: 'Small', value: 'sm' },
+          { label: 'Medium', value: 'md' },
+          { label: 'Large', value: 'lg' }
+        ]
+      },
+      showIcon: {
+        type: 'boolean',
+        label: 'Show Icon',
+        defaultValue: true
+      },
+      showProgress: {
+        type: 'boolean',
+        label: 'Show Progress',
+        defaultValue: true
+      },
+      showValue: {
+        type: 'boolean',
+        label: 'Show Value',
+        defaultValue: false
+      },
+      isActive: {
+        type: 'boolean',
+        label: 'Active',
+        defaultValue: false
+      },
+      unit: {
+        type: 'text',
+        label: 'Unit',
+        defaultValue: ''
+      }
+    },
+    examples: [
+      { title: 'Pending', props: { state: 'pending', label: 'Upload' } },
+      { title: 'In Progress', props: { state: 'in-progress', label: 'Processing', isActive: true } },
+      { title: 'Completed', props: { state: 'completed', label: 'Done' } },
+      { title: 'With Value', props: { state: 'in-progress', label: 'Progress', value: 75, maxValue: 100, showValue: true, unit: '%' } }
+    ]
+  },
+  'ChipIcon': {
+    name: 'ChipIcon',
+    description: 'Icon chip with optional label and count',
+    category: 'Chips & Tags',
+    props: {
+      icon: {
+        type: 'text',
+        label: 'Icon Name',
+        defaultValue: 'star'
+      },
+      label: {
+        type: 'text',
+        label: 'Label',
+        defaultValue: ''
+      },
+      count: {
+        type: 'number',
+        label: 'Count',
+        defaultValue: null
+      },
+      size: {
+        type: 'select',
+        label: 'Size',
+        defaultValue: 'md',
+        options: [
+          { label: 'Extra Small', value: 'xs' },
+          { label: 'Small', value: 'sm' },
+          { label: 'Medium', value: 'md' },
+          { label: 'Large', value: 'lg' }
+        ]
+      },
+      variant: {
+        type: 'select',
+        label: 'Variant',
+        defaultValue: 'default',
+        options: [
+          { label: 'Default', value: 'default' },
+          { label: 'Primary', value: 'primary' },
+          { label: 'Secondary', value: 'secondary' },
+          { label: 'Success', value: 'success' },
+          { label: 'Warning', value: 'warning' },
+          { label: 'Error', value: 'error' }
+        ]
+      },
+      clickable: {
+        type: 'boolean',
+        label: 'Clickable',
+        defaultValue: false
+      },
+      filled: {
+        type: 'boolean',
+        label: 'Filled',
+        defaultValue: false
+      },
+      weight: {
+        type: 'select',
+        label: 'Weight',
+        defaultValue: 'regular',
+        options: [
+          { label: 'Light', value: 'light' },
+          { label: 'Regular', value: 'regular' },
+          { label: 'Medium', value: 'medium' },
+          { label: 'Bold', value: 'bold' }
+        ]
+      }
+    },
+    examples: [
+      { title: 'Icon Only', props: { icon: 'favorite' } },
+      { title: 'With Label', props: { icon: 'star', label: 'Rating' } },
+      { title: 'With Count', props: { icon: 'thumb_up', count: 42 } },
+      { title: 'Clickable', props: { icon: 'share', label: 'Share', clickable: true, variant: 'primary' } }
+    ]
+  },
+  'ChipBadge': {
+    name: 'ChipBadge',
+    description: 'Badge chip for displaying achievements and earned items',
+    category: 'Chips & Tags',
+    props: {
+      earned: {
+        type: 'boolean',
+        label: 'Earned',
+        defaultValue: false
+      },
+      size: {
+        type: 'select',
+        label: 'Size',
+        defaultValue: 'md',
+        options: [
+          { label: 'Extra Small', value: 'xs' },
+          { label: 'Small', value: 'sm' },
+          { label: 'Medium', value: 'md' },
+          { label: 'Large', value: 'lg' }
+        ]
+      },
+      showName: {
+        type: 'boolean',
+        label: 'Show Name',
+        defaultValue: true
+      },
+      clickable: {
+        type: 'boolean',
+        label: 'Clickable',
+        defaultValue: false
+      }
+    },
+    examples: [
+      { title: 'Unearned', props: { earned: false } },
+      { title: 'Earned', props: { earned: true } },
+      { title: 'Icon Only', props: { earned: true, showName: false } },
+      { title: 'Clickable', props: { earned: true, clickable: true } }
+    ]
+  },
+  'ChipUser': {
+    name: 'ChipUser',
+    description: 'User chip displaying avatar and name',
+    category: 'Chips & Tags',
+    props: {
+      size: {
+        type: 'select',
+        label: 'Size',
+        defaultValue: 'md',
+        options: [
+          { label: 'Extra Small', value: 'xs' },
+          { label: 'Small', value: 'sm' },
+          { label: 'Medium', value: 'md' },
+          { label: 'Large', value: 'lg' }
+        ]
+      },
+      variant: {
+        type: 'select',
+        label: 'Variant',
+        defaultValue: 'default',
+        options: [
+          { label: 'Default', value: 'default' },
+          { label: 'Primary', value: 'primary' },
+          { label: 'Secondary', value: 'secondary' }
+        ]
+      },
+      showName: {
+        type: 'boolean',
+        label: 'Show Name',
+        defaultValue: true
+      },
+      clickable: {
+        type: 'boolean',
+        label: 'Clickable',
+        defaultValue: false
+      }
+    },
+    examples: [
+      { title: 'Basic User', props: { showName: true } },
+      { title: 'Avatar Only', props: { showName: false } },
+      { title: 'Clickable', props: { clickable: true, variant: 'primary' } },
+      { title: 'Small Size', props: { size: 'sm', showName: true } }
+    ]
+  },
   'Button': {
     name: 'Button',
     description: 'Versatile button component with multiple variants, sizes, and states',

@@ -450,7 +450,7 @@ import type { Pub } from '../../../pubs/utils/pub.models';
 
     .skip-btn {
       background: var(--secondary);
-      color: var(--secondary-contrast);
+      color: var(--on-secondary);
       border: none;
       padding: 0.5rem 1rem;
       border-radius: 0.25rem;
@@ -490,9 +490,9 @@ import type { Pub } from '../../../pubs/utils/pub.models';
 })
 export class HomePubSelectionWidgetComponent extends BaseWidgetComponent {
   // Direct store access for pub data
-  private readonly pubStore = inject(PubStore);
-  private readonly nearbyPubStore = inject(NearbyPubStore);
-  private readonly locationService = inject(LocationService);
+  protected readonly pubStore = inject(PubStore);
+  protected readonly nearbyPubStore = inject(NearbyPubStore);
+  protected readonly locationService = inject(LocationService);
 
   // DataAggregator for any cross-store needs
   protected readonly dataAggregatorService = inject(DataAggregatorService);
@@ -521,7 +521,7 @@ export class HomePubSelectionWidgetComponent extends BaseWidgetComponent {
   protected readonly nearbyPubs = computed(() => this.nearbyPubStore.nearbyPubs());
   protected readonly hasSearchTerm = computed(() => this.searchTerm().trim().length > 0);
   protected readonly locationServiceHasPermission = computed(() => this.locationService.location() !== null);
-  protected readonly actualLocationPermission = computed(() => 
+  protected readonly actualLocationPermission = computed(() =>
     this.hasLocationPermission() || this.locationServiceHasPermission()
   );
 

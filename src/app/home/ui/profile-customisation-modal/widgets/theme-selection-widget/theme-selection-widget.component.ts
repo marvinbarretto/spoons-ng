@@ -139,7 +139,7 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
       gap: 0.5rem;
       padding: 0.75rem;
       background: var(--primary);
-      color: var(--primary-contrast);
+      color: var(--on-primary);
       border: none;
       border-radius: 6px;
       cursor: pointer;
@@ -186,7 +186,7 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
     .theme-option.selected {
       border-color: var(--primary);
       background: var(--primary);
-      color: var(--primary-contrast);
+      color: var(--on-primary);
     }
 
     .theme-label {
@@ -217,7 +217,7 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
   `
 })
 export class ThemeSelectionWidgetComponent {
-  private readonly themeStore = inject(ThemeStore);
+  protected readonly themeStore = inject(ThemeStore);
 
   // ✅ Reactive data
   readonly currentTheme = this.themeStore.themeType;

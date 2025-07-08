@@ -25,7 +25,13 @@
    <header class="pub-card__header">
        <div class="pub-card__title-container">
        @if (shouldShowVerificationBadge() || hasCheckedIn()) {
-         <span class="pub-card__badge" [class]="visitBadgeClass()">{{ visitBadgeText() }}</span>
+         <app-chip-status 
+           [type]="hasVerifiedVisit() ? 'success' : 'info'"
+           [text]="visitBadgeText()"
+           size="xs"
+           [showIcon]="false"
+           customClass="pub-card__badge--ghost"
+         />
        }
          <h3 class="pub-card__title">{{ pub().name }}</h3>
          @if (isLocalPub()) {
@@ -35,10 +41,22 @@
 
        <div class="pub-card__status-badges">
          @if (isNearestUnvisited()) {
-           <span class="pub-card__badge pub-card__badge--target">🎯 Next Target</span>
+           <app-chip-status 
+             type="warning"
+             text="🎯 Next Target"
+             size="xs"
+             [showIcon]="false"
+             customClass="pub-card__badge--target"
+           />
          }
          @if (canCheckIn()) {
-           <span class="pub-card__badge pub-card__badge--info">📍 Can check in</span>
+           <app-chip-status 
+             type="info"
+             text="📍 Can check in"
+             size="xs"
+             [showIcon]="false"
+             customClass="pub-card__badge--info"
+           />
          }
        </div>
      </header>

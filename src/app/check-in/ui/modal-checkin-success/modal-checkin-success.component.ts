@@ -614,7 +614,7 @@ type PointsBreakdownItem = {
       padding: 0.5rem;
       margin-top: 0.25rem;
       background: linear-gradient(135deg, var(--success) 0%, var(--accent) 100%);
-      color: var(--accent-contrast);
+      color: var(--on-accent);
       border-radius: 6px;
       font-weight: bold;
 
@@ -722,9 +722,9 @@ export class ModalCheckinSuccessComponent {
   readonly nextModal = output<void>();
 
   // Store injections
-  private readonly checkinStore = inject(CheckInStore);
-  private readonly authStore = inject(AuthStore);
-  private readonly pubStore = inject(PubStore);
+  protected readonly checkinStore = inject(CheckInStore);
+  protected readonly authStore = inject(AuthStore);
+  protected readonly pubStore = inject(PubStore);
   private readonly carpetStorageService = inject(CarpetStorageService);
 
   // Carpet image state

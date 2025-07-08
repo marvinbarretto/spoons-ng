@@ -15,9 +15,9 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
   template: `
     <div class="sharing-widget">
       <h2 class="widget-title">Share Spoonscount</h2>
-      
+
       <div class="share-actions">
-        <button 
+        <button
           (click)="share()"
           [disabled]="!canShare()"
           class="share-btn primary"
@@ -27,7 +27,7 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
           Share via...
         </button>
 
-        <button 
+        <button
           (click)="copyLink()"
           class="share-btn secondary"
           type="button"
@@ -48,7 +48,7 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
             <app-icon name="public" size="sm" />
             Twitter/X
           </button>
-          
+
           <button
             (click)="shareToSocial('facebook')"
             class="social-btn"
@@ -57,7 +57,7 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
             <app-icon name="public" size="sm" />
             Facebook
           </button>
-          
+
           <button
             (click)="shareToSocial('whatsapp')"
             class="social-btn"
@@ -66,7 +66,7 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
             <app-icon name="chat" size="sm" />
             WhatsApp
           </button>
-          
+
           <button
             (click)="shareToSocial('telegram')"
             class="social-btn"
@@ -93,21 +93,21 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
       padding: 2rem;
       margin-bottom: 1rem;
     }
-    
+
     .widget-title {
       margin: 0 0 1.5rem 0;
       color: var(--text-primary);
       font-size: 1.25rem;
       font-weight: 600;
     }
-    
+
     .share-actions {
       display: flex;
       gap: 1rem;
       flex-wrap: wrap;
       margin-bottom: 2rem;
     }
-    
+
     .share-btn {
       display: flex;
       align-items: center;
@@ -120,50 +120,50 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
       font-size: 0.875rem;
       transition: all 0.2s ease;
     }
-    
+
     .share-btn.primary {
       background: var(--primary);
-      color: var(--primary-contrast);
+      color: var(--on-primary);
     }
-    
+
     .share-btn.primary:hover:not(:disabled) {
       background: var(--primary-dark);
       transform: translateY(-1px);
     }
-    
+
     .share-btn.primary:disabled {
       opacity: 0.6;
       cursor: not-allowed;
     }
-    
+
     .share-btn.secondary {
       background: var(--background);
       color: var(--text-primary);
       border: 1px solid var(--border);
     }
-    
+
     .share-btn.secondary:hover {
       background: var(--background-lighter);
       border-color: var(--primary);
     }
-    
+
     .social-section {
       margin-bottom: 2rem;
     }
-    
+
     .social-section h3 {
       margin: 0 0 1rem 0;
       color: var(--text-primary);
       font-size: 1rem;
       font-weight: 600;
     }
-    
+
     .social-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
       gap: 0.75rem;
     }
-    
+
     .social-btn {
       display: flex;
       align-items: center;
@@ -178,43 +178,43 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
       font-weight: 500;
       transition: all 0.2s ease;
     }
-    
+
     .social-btn:hover {
       background: var(--background-lighter);
       border-color: var(--primary);
       transform: translateY(-1px);
     }
-    
+
     .qr-section {
       text-align: center;
       padding-top: 1.5rem;
       border-top: 1px solid var(--border);
     }
-    
+
     .qr-section h3 {
       margin: 0 0 0.5rem 0;
       color: var(--text-primary);
       font-size: 1rem;
       font-weight: 600;
     }
-    
+
     .qr-description {
       margin: 0 0 1rem 0;
       color: var(--text-muted);
       font-size: 0.875rem;
     }
-    
+
     /* Mobile responsive */
     @media (max-width: 768px) {
       .share-actions {
         flex-direction: column;
       }
-      
+
       .share-btn {
         width: 100%;
         justify-content: center;
       }
-      
+
       .social-grid {
         grid-template-columns: 1fr 1fr;
       }

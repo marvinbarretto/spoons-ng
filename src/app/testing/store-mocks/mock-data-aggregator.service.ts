@@ -29,6 +29,19 @@ export class MockDataAggregatorService {
     return lastUpdate < fiveMinutesAgo;
   });
 
+  // Mock displayName signal to match real service
+  readonly displayName = computed(() => 'Test User');
+
+  // Mock user signal to match real service
+  readonly user = computed(() => ({
+    uid: 'test-user-id',
+    email: 'test@example.com',
+    displayName: 'Test User',
+    photoURL: null,
+    isAnonymous: false,
+    onboardingCompleted: true
+  }));
+
   // Test helper methods
   setLoading(loading: boolean): void {
     this._loading.set(loading);

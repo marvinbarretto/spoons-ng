@@ -4,10 +4,11 @@ import { CommonModule } from '@angular/common';
 import { environment } from '../../../../environments/environment';
 import type { Pub } from '../../utils/pub.models';
 import { LocationService } from '../../../shared/data-access/location.service';
+import { ChipStatusComponent } from '../../../shared/ui/chips/chip-status/chip-status.component';
 
 @Component({
   selector: 'app-pub-card',
-  imports: [CommonModule],
+  imports: [CommonModule, ChipStatusComponent],
   templateUrl: './pub-card.component.html',
   styles: `
     .pub-card {

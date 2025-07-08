@@ -39,6 +39,7 @@ import type { Pub } from '../../pubs/utils/pub.models';
               [hasCheckedIn]="pub.hasVisited"
               [checkinCount]="pub.visitCount"
               [showCheckinCount]="pub.hasVisited"
+              [isLocalPub]="dataAggregatorService.isLocalPub(pub.id)"
               (cardClicked)="navigateToPub($event.id)"
             />
           }
@@ -115,7 +116,7 @@ export class NearestPubComponent extends BaseWidgetComponent {
   private readonly locationService = inject(LocationService);
 
   // DataAggregator for universal cross-store data
-  private readonly dataAggregatorService = inject(DataAggregatorService);
+  protected readonly dataAggregatorService = inject(DataAggregatorService);
 
   // Widget-specific reactive signals
   protected readonly nearbyPubs = this.nearbyPubStore.nearbyPubs;
@@ -136,14 +137,14 @@ export class NearestPubComponent extends BaseWidgetComponent {
     const locationLoading = this.locationService.loading();
     const hasLocation = this.nearbyPubStore.location();
     const locationError = this.locationService.error();
-    
+
     console.log('[NearestPubComponent] 📍 Location status:', {
       loading: locationLoading,
       hasLocation: !!hasLocation,
       error: locationError,
       nearbyPubsCount: this.nearbyPubs().length
     });
-    
+
     if (!locationLoading && !hasLocation && locationError) {
       this.error.set(locationError);
     }
@@ -152,15 +153,15 @@ export class NearestPubComponent extends BaseWidgetComponent {
   protected getEmptyStateMessage(): string {
     const hasLocation = this.nearbyPubStore.location();
     const locationError = this.locationService.error();
-    
+
     if (!hasLocation && locationError) {
       return 'Location permission needed to find nearby pubs';
     }
-    
+
     if (!hasLocation) {
       return 'Getting your location...';
     }
-    
+
     return 'No pubs within 50km';
   }
 

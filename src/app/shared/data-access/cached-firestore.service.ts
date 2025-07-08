@@ -58,10 +58,10 @@ export type CollectionCacheConfig = {
 };
 
 export abstract class CachedFirestoreService extends FirestoreService {
-  protected indexedDbService = inject(IndexedDbService);
-  protected databaseMetricsService = inject(DatabaseMetricsService);
-  protected firebaseMetricsService = inject(FirebaseMetricsService);
-  protected cacheCoherence = inject(CacheCoherenceService);
+  protected readonly indexedDbService = inject(IndexedDbService);
+  protected readonly databaseMetricsService = inject(DatabaseMetricsService);
+  protected readonly firebaseMetricsService = inject(FirebaseMetricsService);
+  protected readonly cacheCoherence = inject(CacheCoherenceService);
   
   // Default cache configuration (fallback for unmapped collections)
   protected defaultCacheConfig: CacheConfig = {

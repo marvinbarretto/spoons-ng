@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 import { HeaderComponent } from './header.component';
 import { MockAuthStore } from '../../../testing/store-mocks/mock-auth.store';
 import { MockUserStore } from '../../../testing/store-mocks/mock-user.store';
@@ -19,7 +20,7 @@ describe('HeaderComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HeaderComponent],
+      imports: [HeaderComponent, RouterTestingModule],
       providers: [
         { provide: AuthStore, useClass: MockAuthStore },
         { provide: ViewportService, useClass: MockViewportService },

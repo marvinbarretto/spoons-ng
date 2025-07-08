@@ -102,7 +102,7 @@
   // Variants
   &[data-variant="primary"] {
     background-color: var(--primary);
-    color: var(--primary-contrast);
+    color: var(--on-primary);
 
     &:hover:not(:disabled):not(.disabled) {
       background-color: var(--primary-hover);
@@ -118,7 +118,7 @@
 
   &[data-variant="secondary"] {
     background-color: var(--secondary);
-    color: var(--secondary-contrast);
+    color: var(--on-secondary);
     border: 1px solid var(--border);
 
     &:hover:not(:disabled):not(.disabled) {

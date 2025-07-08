@@ -39,7 +39,7 @@ import { FeedbackModalComponent } from '../feedback-modal/feedback-modal.compone
       border-radius: 24px;
 
       background: var(--accent);
-      color: var(--accent-contrast);
+      color: var(--on-accent);
       font-size: 14px;
       font-weight: 600;
 

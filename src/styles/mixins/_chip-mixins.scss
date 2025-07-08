@@ -77,11 +77,11 @@
 @mixin chip-variant($variant) {
   @if $variant == 'primary' {
     background: var(--primary);
-    color: var(--primary-contrast);
+    color: var(--on-primary);
     border-color: var(--primary);
   } @else if $variant == 'secondary' {
     background: var(--secondary);
-    color: var(--secondary-contrast);
+    color: var(--on-secondary);
     border-color: var(--border);
   } @else if $variant == 'success' {
     background: var(--success);
@@ -97,7 +97,7 @@
     border-color: var(--error);
   } @else if $variant == 'accent' {
     background: var(--accent);
-    color: var(--accent-contrast);
+    color: var(--on-accent);
     border-color: var(--accent);
   } @else {
     // default variant
@@ -133,7 +133,7 @@
 // Badge-specific styles
 @mixin chip-badge-earned {
   background: linear-gradient(145deg, var(--accent) 0%, var(--accent-hover) 50%, var(--accent) 100%);
-  color: var(--accent-contrast);
+  color: var(--on-accent);
   border-color: var(--accent);
   box-shadow: var(--shadow);
 }

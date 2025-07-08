@@ -3,7 +3,6 @@ import { Router, ActivatedRoute, NavigationEnd, RouterOutlet } from '@angular/ro
 import { PanelStore } from './shared/ui/panel/panel.store';
 import { filter } from 'rxjs';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { DeviceCapabilityService } from './shared/utils/device-capability-check.service';
 import { SsrPlatformService } from './shared/utils/ssr/ssr-platform.service';
 import { PageTitleService } from './shared/data-access/page-title.service';
 import { PubStore } from './pubs/data-access/pub.store';
@@ -43,17 +42,16 @@ import { FeatureShell } from './shared/feature/shells/feature.shell';
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
-  private readonly router = inject(Router);
-  private readonly activatedRoute = inject(ActivatedRoute);
+  protected readonly router = inject(Router);
+  protected readonly activatedRoute = inject(ActivatedRoute);
 
-  readonly device = inject(DeviceCapabilityService);
-  readonly panelStore = inject(PanelStore);
-  readonly platform = inject(SsrPlatformService);
-  readonly titleService = inject(PageTitleService);
-  readonly pubStore = inject(PubStore);
-  readonly landlordStore = inject(LandlordStore);
-  private readonly checkInModalService = inject(CheckInModalService);
-  private readonly checkinStore = inject(CheckInStore);
+  protected readonly panelStore = inject(PanelStore);
+  protected readonly platform = inject(SsrPlatformService);
+  protected readonly titleService = inject(PageTitleService);
+  protected readonly pubStore = inject(PubStore);
+  protected readonly landlordStore = inject(LandlordStore);
+  protected readonly checkInModalService = inject(CheckInModalService);
+  protected readonly checkinStore = inject(CheckInStore);
 
   // Track current shell based on route data
   private readonly navigationEnd$ = this.router.events.pipe(
@@ -65,27 +63,27 @@ export class AppComponent {
   readonly currentShell = computed(() => {
     // Force recomputation on navigation changes
     this.navigationSignal();
-    
+
     console.log('[AppComponent] 🔍 Computing current shell...');
-    
+
     // Get the shell from the deepest activated route
     let route = this.activatedRoute;
     let depth = 0;
-    
+
     console.log('[AppComponent] Starting route traversal...');
     while (route.firstChild) {
       route = route.firstChild;
       depth++;
       console.log(`[AppComponent] Traversed to depth ${depth}, route:`, route);
     }
-    
+
     const routeData = route.snapshot.data;
     const shell = routeData?.['shell'];
-    
+
     console.log('[AppComponent] 🎯 Final route data:', routeData);
     console.log('[AppComponent] 🏠 Shell selected:', shell || 'none (waiting for route)');
     console.log('[AppComponent] 📍 Current URL:', this.router.url);
-    
+
     return shell; // No default - wait for route data
   });
 

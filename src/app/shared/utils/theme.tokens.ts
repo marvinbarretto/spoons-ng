@@ -25,15 +25,15 @@ export type Theme = {
     // Interactive colors (primary, secondary, accent)
     primary: string;             // Primary actions
     primaryHover: string;        // Primary hover
-    primaryContrast: string;     // Text on primary
+    onPrimary: string;     // Text on primary
 
     secondary: string;           // Secondary actions
     secondaryHover: string;      // Secondary hover
-    secondaryContrast: string;   // Text on secondary
+    onSecondary: string;   // Text on secondary
 
     accent: string;              // Pop color that contrasts with theme
     accentHover: string;         // Accent hover
-    accentContrast: string;      // Text on accent
+    onAccent: string;      // Text on accent
 
     // Semantic colors (status indicators)
     success: string;
@@ -76,15 +76,15 @@ export const themes: Record<ThemeType, Theme> = {
       // Interactive colors
       primary: '#059669',             // Primary actions (deeper emerald)
       primaryHover: '#047857',        // Primary hover
-      primaryContrast: '#ffffff',     // Text on primary
+      onPrimary: '#ffffff',     // Text on primary
 
       secondary: '#f0fdf4',           // Secondary actions (very light)
       secondaryHover: '#dcfce7',      // Secondary hover
-      secondaryContrast: '#166534',   // Text on secondary
+      onSecondary: '#166534',   // Text on secondary
 
       accent: '#ff6b6b',              // Bright coral that pops against green
       accentHover: '#ff5252',         // Accent hover
-      accentContrast: '#ffffff',      // Text on accent
+      onAccent: '#ffffff',      // Text on accent
 
       // Semantic colors
       success: '#22c55e',
@@ -122,15 +122,15 @@ export const themes: Record<ThemeType, Theme> = {
       // Interactive colors
       primary: '#f59e0b',             // Primary actions (deeper golden)
       primaryHover: '#d97706',        // Primary hover
-      primaryContrast: '#ffffff',     // Text on primary
+      onPrimary: '#ffffff',     // Text on primary
 
       secondary: '#fffbeb',           // Secondary actions (very light)
       secondaryHover: '#fef3c7',      // Secondary hover
-      secondaryContrast: '#b45309',   // Text on secondary
+      onSecondary: '#b45309',   // Text on secondary
 
       accent: '#3b82f6',              // Electric blue that pops against yellow
       accentHover: '#2563eb',         // Accent hover
-      accentContrast: '#ffffff',      // Text on accent
+      onAccent: '#ffffff',      // Text on accent
 
       // Semantic colors
       success: '#22c55e',
@@ -168,15 +168,15 @@ export const themes: Record<ThemeType, Theme> = {
       // Interactive colors
       primary: '#a78bfa',             // Primary actions (brighter purple)
       primaryHover: '#c4b5fd',        // Primary hover
-      primaryContrast: '#0f0b1a',     // Text on primary
+      onPrimary: '#0f0b1a',     // Text on primary
 
       secondary: '#44375a',           // Secondary actions (muted dark)
       secondaryHover: '#5b4d70',      // Secondary hover
-      secondaryContrast: '#f8fafc',   // Text on secondary
+      onSecondary: '#f8fafc',   // Text on secondary
 
       accent: '#ff6b9d',              // Bright pink that pops against purple
       accentHover: '#ff5e8a',         // Accent hover
-      accentContrast: '#ffffff',      // Text on accent
+      onAccent: '#ffffff',      // Text on accent
 
       // Semantic colors
       success: '#68d391',
@@ -214,15 +214,15 @@ export const themes: Record<ThemeType, Theme> = {
       // Interactive colors
       primary: '#f97316',             // Primary actions (coral)
       primaryHover: '#ea580c',        // Primary hover
-      primaryContrast: '#ffffff',     // Text on primary
+      onPrimary: '#ffffff',     // Text on primary
 
       secondary: '#fdeee7',           // Secondary actions
       secondaryHover: '#fad9d0',      // Secondary hover
-      secondaryContrast: '#4a1a0e',   // Text on secondary
+      onSecondary: '#4a1a0e',   // Text on secondary
 
       accent: '#8b5cf6',              // Purple that pops against coral
       accentHover: '#7c3aed',         // Accent hover
-      accentContrast: '#ffffff',      // Text on accent
+      onAccent: '#ffffff',      // Text on accent
 
       // Semantic colors
       success: '#14b8a6',
@@ -260,15 +260,15 @@ export const themes: Record<ThemeType, Theme> = {
       // Interactive colors
       primary: '#48bb78',             // Primary actions (green)
       primaryHover: '#68d391',        // Primary hover
-      primaryContrast: '#0c1910',     // Text on primary
+      onPrimary: '#0c1910',     // Text on primary
 
       secondary: '#2d3e2d',           // Secondary actions
       secondaryHover: '#405640',      // Secondary hover
-      secondaryContrast: '#f5f9f5',   // Text on secondary
+      onSecondary: '#f5f9f5',   // Text on secondary
 
       accent: '#fbbf24',              // Golden yellow that pops against green
       accentHover: '#f59e0b',         // Accent hover
-      accentContrast: '#0c1910',      // Text on accent
+      onAccent: '#0c1910',      // Text on accent
 
       // Semantic colors
       success: '#48bb78',

@@ -161,7 +161,7 @@ import type { User } from '@users/utils/user.model';
 
     .shuffle-btn:hover {
       background: var(--primary);
-      color: var(--primary-contrast);
+      color: var(--on-primary);
       border-color: var(--primary);
       transform: translateY(-1px);
     }

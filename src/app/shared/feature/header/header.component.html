@@ -16,17 +16,17 @@
   <!-- Desktop Navigation -->
   <nav class="main-nav" *ngIf="!isMobile()">
     <app-nav />
-    <app-user-profile-widget 
-      [user]="dataAggregator.user()" 
-      (openProfile)="onOpenProfile()" 
+    <app-user-profile-widget
+      [user]="dataAggregatorService.user()"
+      (openProfile)="onOpenProfile()"
       class="desktop-profile-widget" />
   </nav>
 
   <!-- Mobile Navigation - minimal header with user profile -->
   <nav class="main-nav main-nav--mobile" *ngIf="isMobile()">
-    <app-user-profile-widget 
-      [user]="dataAggregator.user()" 
-      (openProfile)="onOpenProfile()" 
+    <app-user-profile-widget
+      [user]="dataAggregatorService.user()"
+      (openProfile)="onOpenProfile()"
       class="mobile-profile-widget" />
   </nav>
 </div>

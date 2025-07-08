@@ -18,13 +18,13 @@ import { ProfileCustomisationModalComponent } from '@home/ui/profile-customisati
       <div class="profile-header-content">
         <div class="profile-avatar-section">
           @if (user()) {
-            <app-user-avatar 
-              [user]="user()!" 
+            <app-user-avatar
+              [user]="user()!"
               size="large"
               class="profile-avatar"
             />
           }
-          <button 
+          <button
             (click)="handleEditProfile()"
             class="edit-profile-btn"
             type="button"
@@ -32,7 +32,7 @@ import { ProfileCustomisationModalComponent } from '@home/ui/profile-customisati
             Edit Profile
           </button>
         </div>
-        
+
         <div class="profile-info-section">
           <h2 class="profile-name">{{ user()?.displayName || 'Anonymous User' }}</h2>
           <p class="profile-email">{{ user()?.email || 'No email' }}</p>
@@ -62,28 +62,28 @@ import { ProfileCustomisationModalComponent } from '@home/ui/profile-customisati
       padding: 2rem;
       margin-bottom: 1rem;
     }
-    
+
     .profile-header-content {
       display: flex;
       gap: 2rem;
       align-items: center;
     }
-    
+
     .profile-avatar-section {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 1rem;
     }
-    
+
     .profile-avatar {
       border: 3px solid var(--primary);
       border-radius: 50%;
     }
-    
+
     .edit-profile-btn {
       background: var(--primary);
-      color: var(--primary-contrast);
+      color: var(--on-primary);
       border: none;
       padding: 0.5rem 1rem;
       border-radius: 8px;
@@ -92,54 +92,54 @@ import { ProfileCustomisationModalComponent } from '@home/ui/profile-customisati
       font-size: 0.875rem;
       transition: all 0.2s ease;
     }
-    
+
     .edit-profile-btn:hover {
       background: var(--primary-dark);
       transform: translateY(-1px);
     }
-    
+
     .profile-info-section {
       flex: 1;
     }
-    
+
     .profile-name {
       margin: 0 0 0.5rem 0;
       color: var(--text-primary);
       font-size: 1.5rem;
       font-weight: 600;
     }
-    
+
     .profile-email {
       margin: 0 0 1.5rem 0;
       color: var(--text-muted);
       font-size: 0.875rem;
     }
-    
+
     .profile-stats {
       display: flex;
       gap: 2rem;
     }
-    
+
     .stat-item {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 0.25rem;
     }
-    
+
     .stat-value {
       font-size: 1.5rem;
       font-weight: 700;
       color: var(--primary);
     }
-    
+
     .stat-label {
       font-size: 0.75rem;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
-    
+
     /* Mobile responsive */
     @media (max-width: 768px) {
       .profile-header-content {
@@ -147,7 +147,7 @@ import { ProfileCustomisationModalComponent } from '@home/ui/profile-customisati
         text-align: center;
         gap: 1.5rem;
       }
-      
+
       .profile-stats {
         justify-content: center;
       }
@@ -155,9 +155,9 @@ import { ProfileCustomisationModalComponent } from '@home/ui/profile-customisati
   `
 })
 export class ProfileHeaderWidgetComponent extends BaseComponent {
-  private readonly userStore = inject(UserStore);
-  private readonly authStore = inject(AuthStore);
-  private readonly overlayService = inject(OverlayService);
+  protected readonly userStore = inject(UserStore);
+  protected readonly authStore = inject(AuthStore);
+  protected readonly overlayService = inject(OverlayService);
 
   // Data signals
   readonly user = this.userStore.user;
@@ -175,7 +175,7 @@ export class ProfileHeaderWidgetComponent extends BaseComponent {
 
   handleEditProfile(): void {
     console.log('[ProfileHeaderWidget] Opening profile customization modal');
-    
+
     const { componentRef, close } = this.overlayService.open(
       ProfileCustomisationModalComponent,
       {

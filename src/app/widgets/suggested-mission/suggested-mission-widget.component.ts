@@ -1,6 +1,5 @@
 import { Component, signal, inject, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
 import { BaseWidgetComponent } from '../base/base-widget.component';
 import { UserMissionsStore } from '../../missions/data-access/user-missions.store';
 import { MissionStore } from '../../missions/data-access/mission.store';
@@ -8,39 +7,51 @@ import { AuthStore } from '../../auth/data-access/auth.store';
 import { UserStore } from '../../users/data-access/user.store';
 import { NearbyPubStore } from '../../pubs/data-access/nearby-pub.store';
 import { LocationService } from '../../shared/data-access/location.service';
+import { CheckInStore } from '../../check-in/data-access/check-in.store';
 import { Mission } from '../../missions/utils/mission.model';
 import { LoadingStateComponent, ErrorStateComponent, EmptyStateComponent } from '../../shared/ui/state-components';
+import { MissionCardLightComponent } from '../../home/ui/mission-card-light/mission-card-light.component';
 
 @Component({
   selector: 'app-suggested-mission-widget',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, LoadingStateComponent, ErrorStateComponent, EmptyStateComponent],
+  imports: [CommonModule, LoadingStateComponent, ErrorStateComponent, EmptyStateComponent, MissionCardLightComponent],
   template: `
     <div class="suggested-mission-widget">
       <div class="widget-header">
         <h3 class="widget-title">💡 Suggested Mission</h3>
-        @if (suggestedMission() && !suggestedMission()?.isCurrentUserEnrolled) {
-          <button 
-            class="cycle-btn" 
-            (click)="onCycleSuggestion()"
-            [disabled]="storeLoading()"
-            title="Try a different suggestion"
-          >
-            🔄
-          </button>
+        @if (suggestedMission()) {
+          <div class="suggestion-controls">
+            <button
+              class="cycle-btn"
+              (click)="onCycleSuggestion()"
+              [disabled]="storeLoading() || isAnimating()"
+              title="See another suggestion"
+            >
+              🔄
+            </button>
+            <button
+              class="dismiss-btn"
+              (click)="onDismissSuggestion()"
+              [disabled]="storeLoading() || isAnimating()"
+              title="Not interested"
+            >
+              ✕
+            </button>
+          </div>
         }
       </div>
 
       @if (storeLoading()) {
-        <app-loading-state text="Finding perfect mission..." />
+        <app-loading-state text="Finding your next mission..." />
       } @else if (storeError()) {
-        <app-error-state 
+        <app-error-state
           [message]="getErrorMessage()"
           [showRetry]="true"
           (retry)="onRetryLoadMissions()"
         />
       } @else if (!suggestedMission()) {
-        <app-empty-state 
+        <app-empty-state
           icon="🎯"
           title="No suggestions available"
           subtitle="Try checking back later or explore all missions"
@@ -49,63 +60,43 @@ import { LoadingStateComponent, ErrorStateComponent, EmptyStateComponent } from 
           (action)="onSeeAllMissions()"
         />
       } @else {
-        <div class="mission-suggestion">
-          <div class="mission-card">
-            <div class="mission-header">
-              <div class="mission-emoji">{{ suggestedMission()!.mission.emoji || '🎯' }}</div>
-              <div class="mission-meta">
-                <h4 class="mission-title">{{ suggestedMission()!.mission.name }}</h4>
-                <p class="mission-subtitle">{{ getMissionSubtitle() }}</p>
-              </div>
-            </div>
-            
-            <div class="mission-details">
-              <p class="mission-description">{{ suggestedMission()!.mission.description }}</p>
-              
-              <div class="mission-stats">
-                <div class="stat-item">
-                  <span class="stat-label">Pubs:</span>
-                  <span class="stat-value">{{ suggestedMission()!.mission.pubIds.length }}</span>
+        <div class="mission-carousel">
+          <div class="mission-track"
+               [style.transform]="'translateX(calc(-100% * ' + currentIndex() + '))'">
+            @for (suggestion of suggestions(); track suggestion.mission.id; let i = $index) {
+              <div class="mission-slide">
+                <div class="mission-suggestion">
+                  <div class="mission-subtitle">{{ suggestion.reason }}</div>
+                  <app-mission-card-light
+                    [mission]="suggestion.mission"
+                    [isJoined]="suggestion.isCurrentUserEnrolled"
+                    [showPubDetails]="true"
+                  />
+                  <div class="mission-actions">
+                    @if (suggestion.isCurrentUserEnrolled) {
+                      <button class="action-btn enrolled" (click)="onViewMission()">
+                        View Progress
+                      </button>
+                    } @else {
+                      <button
+                        class="action-btn primary"
+                        (click)="onStartMission()"
+                        [disabled]="enrolling()"
+                      >
+                        @if (enrolling()) {
+                          Enrolling...
+                        } @else {
+                          Start Mission
+                        }
+                      </button>
+                    }
+                    <button class="action-btn secondary" (click)="onSeeAllMissions()">
+                      See All Missions
+                    </button>
+                  </div>
                 </div>
-                @if (suggestedMission()!.mission.difficulty) {
-                  <div class="stat-item">
-                    <span class="stat-label">Difficulty:</span>
-                    <span class="stat-value difficulty-{{ suggestedMission()!.mission.difficulty }}">
-                      {{ formatDifficulty(suggestedMission()!.mission.difficulty!) }}
-                    </span>
-                  </div>
-                }
-                @if (suggestedMission()!.mission.pointsReward) {
-                  <div class="stat-item">
-                    <span class="stat-label">Points:</span>
-                    <span class="stat-value">{{ suggestedMission()!.mission.pointsReward }}</span>
-                  </div>
-                }
               </div>
-            </div>
-            
-            <div class="mission-actions">
-              @if (suggestedMission()!.isCurrentUserEnrolled) {
-                <button class="action-btn enrolled" (click)="onViewMission()">
-                  View Progress
-                </button>
-              } @else {
-                <button 
-                  class="action-btn primary" 
-                  (click)="onStartMission()"
-                  [disabled]="enrolling()"
-                >
-                  @if (enrolling()) {
-                    Enrolling...
-                  } @else {
-                    Start Mission
-                  }
-                </button>
-              }
-              <button class="action-btn secondary" (click)="onSeeAllMissions()">
-                See All Missions
-              </button>
-            </div>
+            }
           </div>
         </div>
       }
@@ -134,7 +125,13 @@ import { LoadingStateComponent, ErrorStateComponent, EmptyStateComponent } from 
       color: var(--text);
     }
 
-    .cycle-btn {
+    .suggestion-controls {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .cycle-btn, .dismiss-btn {
       padding: 0.375rem;
       background: transparent;
       color: var(--text-muted);
@@ -156,115 +153,56 @@ import { LoadingStateComponent, ErrorStateComponent, EmptyStateComponent } from 
       transform: rotate(180deg);
     }
 
-    .cycle-btn:disabled {
+    .dismiss-btn:hover:not(:disabled) {
+      background: var(--background-darkest);
+      color: var(--error);
+      border-color: var(--error);
+    }
+
+    .cycle-btn:disabled, .dismiss-btn:disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
 
-    .mission-suggestion {
+    .mission-carousel {
+      position: relative;
+      width: 100%;
+      overflow: hidden;
       margin-top: 1rem;
     }
 
-    .mission-card {
-      background: var(--background-darkest);
-      border: 1px solid var(--border);
-      border-radius: 0.5rem;
-      padding: 1rem;
-      transition: all 0.2s ease;
-    }
-
-    .mission-card:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow);
-    }
-
-    .mission-header {
+    .mission-track {
       display: flex;
-      gap: 0.75rem;
-      align-items: flex-start;
-      margin-bottom: 0.75rem;
+      transition: transform 0.3s ease-in-out;
+      will-change: transform;
     }
 
-    .mission-emoji {
-      font-size: 2rem;
-      flex-shrink: 0;
+    .mission-slide {
+      flex: 0 0 100%;
+      min-width: 100%;
+      width: 100%;
     }
 
-    .mission-meta {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .mission-title {
-      margin: 0 0 0.25rem 0;
-      font-size: 1rem;
-      font-weight: 600;
-      color: var(--text);
-      line-height: 1.2;
+    .mission-suggestion {
+      width: 100%;
+      padding: 0 0.25rem;
+      box-sizing: border-box;
     }
 
     .mission-subtitle {
-      margin: 0;
+      margin: 0 0 0.75rem 0;
       font-size: 0.875rem;
       color: var(--text-muted);
       line-height: 1.3;
-    }
-
-    .mission-details {
-      margin-bottom: 1rem;
-    }
-
-    .mission-description {
-      margin: 0 0 0.75rem 0;
-      font-size: 0.875rem;
-      color: var(--text-secondary);
-      line-height: 1.4;
-    }
-
-    .mission-stats {
-      display: flex;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-
-    .stat-item {
-      display: flex;
-      gap: 0.25rem;
-      align-items: center;
-      font-size: 0.8rem;
-    }
-
-    .stat-label {
-      color: var(--text-muted);
-      font-weight: 500;
-    }
-
-    .stat-value {
-      color: var(--text);
-      font-weight: 600;
-    }
-
-    .difficulty-easy {
-      color: var(--success);
-    }
-
-    .difficulty-medium {
-      color: var(--warning);
-    }
-
-    .difficulty-hard {
-      color: var(--error);
-    }
-
-    .difficulty-extreme {
-      color: var(--error);
-      font-weight: 700;
+      font-style: italic;
+      text-align: center;
     }
 
     .mission-actions {
       display: flex;
       gap: 0.5rem;
       flex-wrap: wrap;
+      margin-top: 1rem;
     }
 
     .action-btn {
@@ -281,7 +219,7 @@ import { LoadingStateComponent, ErrorStateComponent, EmptyStateComponent } from 
 
     .action-btn.primary {
       background: var(--primary);
-      color: var(--primary-contrast);
+      color: var(--on-primary);
     }
 
     .action-btn.primary:hover:not(:disabled) {
@@ -321,43 +259,56 @@ import { LoadingStateComponent, ErrorStateComponent, EmptyStateComponent } from 
         flex-direction: column;
         gap: 0.5rem;
       }
-      
+
       .mission-actions {
         flex-direction: column;
       }
-      
+
       .action-btn {
         flex: none;
+      }
+    }
+
+    /* Accessibility: Respect reduced motion preference */
+    @media (prefers-reduced-motion: reduce) {
+      .mission-track {
+        transition: none;
       }
     }
   `]
 })
 export class SuggestedMissionWidgetComponent extends BaseWidgetComponent {
-  protected override readonly router = inject(Router);
-  private readonly userMissionsStore = inject(UserMissionsStore);
-  private readonly missionStore = inject(MissionStore);
-  private readonly authStore = inject(AuthStore);
-  private readonly userStore = inject(UserStore);
-  private readonly nearbyPubStore = inject(NearbyPubStore);
-  private readonly locationService = inject(LocationService);
+  protected readonly userMissionsStore = inject(UserMissionsStore);
+  protected readonly missionStore = inject(MissionStore);
+  protected readonly userStore = inject(UserStore);
+  protected readonly nearbyPubStore = inject(NearbyPubStore);
+  protected readonly locationService = inject(LocationService);
+  protected readonly checkInStore = inject(CheckInStore);
 
   private readonly _enrolling = signal(false);
   private readonly _suggestedMissionIndex = signal(0);
+  private readonly _isAnimating = signal(false);
 
   protected readonly enrolling = this._enrolling.asReadonly();
-  protected readonly storeLoading = computed(() => 
+  protected readonly isAnimating = this._isAnimating.asReadonly();
+  protected readonly currentIndex = this._suggestedMissionIndex.asReadonly();
+  protected readonly storeLoading = computed(() =>
     this.missionStore.loading() || this.userMissionsStore.loading()
   );
-  protected readonly storeError = computed(() => 
+  protected readonly storeError = computed(() =>
     this.missionStore.error() || this.userMissionsStore.error()
   );
 
+  protected readonly suggestions = computed(() => {
+    return this.generateSuggestions();
+  });
+
   protected readonly suggestedMission = computed(() => {
-    const suggestions = this.generateSuggestions();
+    const suggestions = this.suggestions();
     const index = this._suggestedMissionIndex();
-    
+
     if (suggestions.length === 0) return null;
-    
+
     return suggestions[index % suggestions.length];
   });
 
@@ -370,15 +321,15 @@ export class SuggestedMissionWidgetComponent extends BaseWidgetComponent {
     const allMissions = this.missionStore.missions();
     const activeMissions = this.userMissionsStore.activeMissions();
     const completedMissions = this.userMissionsStore.completedMissions();
-    const availableMissions = this.userMissionsStore.availableMissions();
     const nearbyPubs = this.nearbyPubStore.nearbyPubs();
     const userLocation = this.locationService.location();
-    
+    const checkedInPubIds = this.checkInStore.checkedInPubIds();
+
     if (!user || allMissions.length === 0) return [];
 
     const activeMissionIds = activeMissions.map(m => m.mission.id);
     const completedMissionIds = completedMissions.map(m => m.mission.id);
-    const isNewUser = !user || (user.badgeCount || 0) === 0;
+    const nearbyPubIds = nearbyPubs.map(pub => pub.id);
 
     let suggestions: Array<{
       mission: Mission;
@@ -387,70 +338,74 @@ export class SuggestedMissionWidgetComponent extends BaseWidgetComponent {
       score: number;
     }> = [];
 
-    // 1. For new users, prioritize easy missions
-    if (isNewUser) {
-      const easyMissions = allMissions.filter(m => 
-        m.difficulty === 'easy' && 
-        !completedMissionIds.includes(m.id)
-      );
-      
-      suggestions.push(...easyMissions.map(mission => ({
+    // Filter out completed missions
+    const availableMissions = allMissions.filter(m => !completedMissionIds.includes(m.id));
+
+    for (const mission of availableMissions) {
+      const totalPubs = mission.pubIds.length;
+      const visitedPubsInMission = mission.pubIds.filter(pubId => checkedInPubIds.has(pubId)).length;
+      const nearbyPubsInMission = userLocation ? mission.pubIds.filter(pubId => nearbyPubIds.includes(pubId)).length : 0;
+
+      const completionPercentage = visitedPubsInMission / totalPubs;
+      const nearbyPercentage = userLocation ? nearbyPubsInMission / totalPubs : 0;
+
+      let score = 0;
+      let reason = '';
+
+      // Priority 1: Near-completion missions (60-90% done)
+      if (completionPercentage >= 0.6 && completionPercentage <= 0.9) {
+        score = 95 + (completionPercentage * 5); // 98-100 score
+        const remaining = totalPubs - visitedPubsInMission;
+        reason = remaining === 1 ? 'Just 1 more pub!' : `Only ${remaining} pubs left!`;
+      }
+      // Priority 2: Moderate progress missions (20-60% done)
+      else if (completionPercentage >= 0.2 && completionPercentage < 0.6) {
+        score = 70 + (completionPercentage * 25); // 75-85 score
+        reason = `${visitedPubsInMission} of ${totalPubs} pubs visited`;
+      }
+      // Priority 3: Geographically viable missions (high nearby pub count)
+      else if (nearbyPercentage >= 0.3) {
+        score = 60 + (nearbyPercentage * 20); // 66-80 score
+        reason = `${nearbyPubsInMission} nearby pubs`;
+      }
+      // Priority 4: Some progress missions (1-20% done)
+      else if (completionPercentage > 0 && completionPercentage < 0.2) {
+        score = 40 + (completionPercentage * 100); // 40-60 score
+        reason = `${visitedPubsInMission} of ${totalPubs} pubs visited`;
+      }
+      // Priority 5: Some nearby pubs but no progress
+      else if (nearbyPercentage > 0) {
+        score = 20 + (nearbyPercentage * 20); // 20-40 score
+        reason = `${nearbyPubsInMission} nearby pubs`;
+      }
+      // Priority 6: Fresh missions (no progress, no nearby pubs)
+      else {
+        score = 10;
+        reason = 'New adventure';
+      }
+
+      // Bonus for featured missions
+      if (mission.featured) {
+        score += 10;
+        reason = `Featured: ${reason}`;
+      }
+
+      const isCurrentUserEnrolled = activeMissionIds.includes(mission.id);
+
+      // Significantly boost non-enrolled missions for better suggestion ranking
+      if (!isCurrentUserEnrolled) {
+        score += 50; // Major boost for actionable missions
+      } else {
+        // Enrolled missions get lower priority but remain in suggestions
+        score = Math.max(score - 30, 5); // Reduce score but keep minimum
+      }
+
+      suggestions.push({
         mission,
-        isCurrentUserEnrolled: activeMissionIds.includes(mission.id),
-        reason: 'Perfect for beginners',
-        score: 100
-      })));
-    }
-
-    // 2. Location-based suggestions (missions with nearby pubs)
-    if (userLocation && nearbyPubs.length > 0) {
-      const nearbyPubIds = nearbyPubs.map(pub => pub.id);
-      const localMissions = allMissions.filter(mission => 
-        mission.pubIds.some(pubId => nearbyPubIds.includes(pubId)) &&
-        !completedMissionIds.includes(mission.id)
-      );
-
-      suggestions.push(...localMissions.map(mission => {
-        const localPubCount = mission.pubIds.filter(pubId => nearbyPubIds.includes(pubId)).length;
-        const score = (localPubCount / mission.pubIds.length) * 80;
-        
-        return {
-          mission,
-          isCurrentUserEnrolled: activeMissionIds.includes(mission.id),
-          reason: `${localPubCount} nearby pubs`,
-          score
-        };
-      }));
-    }
-
-    // 3. Featured missions
-    const featuredMissions = allMissions.filter(m => 
-      m.featured && !completedMissionIds.includes(m.id)
-    );
-    
-    suggestions.push(...featuredMissions.map(mission => ({
-      mission,
-      isCurrentUserEnrolled: activeMissionIds.includes(mission.id),
-      reason: 'Featured mission',
-      score: 60
-    })));
-
-    // 4. Regional missions (if we had region data)
-    // Note: User model doesn't currently have region/country fields
-    // This could be added in future if location-based targeting is needed
-
-    // 5. Fallback: random available missions
-    if (suggestions.length === 0) {
-      const randomMissions = allMissions.filter(m => 
-        !completedMissionIds.includes(m.id)
-      );
-      
-      suggestions.push(...randomMissions.map(mission => ({
-        mission,
-        isCurrentUserEnrolled: activeMissionIds.includes(mission.id),
-        reason: 'Popular choice',
-        score: 10
-      })));
+        isCurrentUserEnrolled,
+        reason,
+        score
+      });
     }
 
     // Remove duplicates and sort by score
@@ -476,6 +431,7 @@ export class SuggestedMissionWidgetComponent extends BaseWidgetComponent {
     return suggestion?.reason || 'Great mission to try';
   }
 
+
   getErrorMessage(): string {
     const error = this.storeError();
     if (typeof error === 'string') return error;
@@ -485,16 +441,71 @@ export class SuggestedMissionWidgetComponent extends BaseWidgetComponent {
     return 'Failed to load missions';
   }
 
-  formatDifficulty(difficulty: string): string {
-    return difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
-  }
 
   onCycleSuggestion(): void {
+    if (this._isAnimating()) return;
+
     const suggestions = this.generateSuggestions();
     if (suggestions.length <= 1) return;
-    
-    this._suggestedMissionIndex.update(index => index + 1);
+
+    this.animateToIndex(this._suggestedMissionIndex() + 1);
     console.log('[SuggestedMissionWidget] Cycling to next suggestion');
+  }
+
+  onDismissSuggestion(): void {
+    if (this._isAnimating()) return;
+
+    const suggestions = this.generateSuggestions();
+    if (suggestions.length <= 1) return;
+
+    this.animateToIndex(this._suggestedMissionIndex() + 1);
+    console.log('[SuggestedMissionWidget] Dismissed suggestion, showing next');
+  }
+
+  private animateToIndex(newIndex: number): void {
+    const suggestions = this.generateSuggestions();
+    if (suggestions.length === 0) return;
+
+    const targetIndex = newIndex % suggestions.length;
+
+    // Check if reduced motion is preferred
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    this._isAnimating.set(!prefersReducedMotion);
+    this._suggestedMissionIndex.set(targetIndex);
+
+    // Reset animation state after transition duration (or immediately if reduced motion)
+    const duration = prefersReducedMotion ? 0 : 300;
+    setTimeout(() => {
+      this._isAnimating.set(false);
+    }, duration);
+  }
+
+  private getNextNonEnrolledSuggestionIndex(): number | null {
+    const suggestions = this.generateSuggestions();
+    const currentIndex = this._suggestedMissionIndex();
+
+    if (suggestions.length === 0) return null;
+
+    // Look for next non-enrolled suggestion starting from current+1
+    for (let i = 1; i < suggestions.length; i++) {
+      const nextIndex = (currentIndex + i) % suggestions.length;
+      const suggestion = suggestions[nextIndex];
+      if (!suggestion.isCurrentUserEnrolled) {
+        return nextIndex;
+      }
+    }
+
+    // If no non-enrolled suggestions found, return null
+    return null;
+  }
+
+  private autoAdvanceToNextSuggestion(): void {
+    const nextIndex = this.getNextNonEnrolledSuggestionIndex();
+    if (nextIndex !== null) {
+      this.animateToIndex(nextIndex);
+      console.log('[SuggestedMissionWidget] Auto-advanced to next non-enrolled suggestion');
+    }
   }
 
   async onStartMission(): Promise<void> {
@@ -505,7 +516,15 @@ export class SuggestedMissionWidgetComponent extends BaseWidgetComponent {
     try {
       await this.userMissionsStore.enrollInMission(suggestion.mission.id);
       console.log('[SuggestedMissionWidget] Successfully enrolled in mission:', suggestion.mission.name);
-      this.showSuccess('Mission started! Check your progress in the missions tab.');
+
+      // Auto-advance to next non-enrolled suggestion
+      const nextIndex = this.getNextNonEnrolledSuggestionIndex();
+      if (nextIndex !== null) {
+        this.autoAdvanceToNextSuggestion();
+        this.showSuccess('Mission started! Here\'s your next suggestion:');
+      } else {
+        this.showSuccess('Mission started! Check your progress in the missions tab.');
+      }
     } catch (error: any) {
       console.error('[SuggestedMissionWidget] Failed to enroll in mission:', error);
       this.showError('Failed to start mission. Please try again.');

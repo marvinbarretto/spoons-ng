@@ -304,11 +304,11 @@ import { combineLatest } from 'rxjs';
 })
 export class LeaderboardContainerComponent extends BaseComponent {
   protected readonly leaderboardStore = inject(LeaderboardStore);
-  private readonly authStore = inject(AuthStore);
-  private readonly route = inject(ActivatedRoute);
+  protected readonly authStore = inject(AuthStore);
+  protected readonly route = inject(ActivatedRoute);
 
   // Route data and params subscription - initialized in field initializer for injection context
-  private readonly routeSubscription = combineLatest([
+  protected readonly routeSubscription = combineLatest([
     this.route.data,
     this.route.params
   ]).pipe(

@@ -59,7 +59,7 @@ describe('OnboardingComponent', () => {
       updateProfile: jest.fn().mockResolvedValue(undefined)
     };
 
-    const mockDataAggregator = {
+    const mockdataAggregatorService = {
       user: signal(mockUser)
     };
 

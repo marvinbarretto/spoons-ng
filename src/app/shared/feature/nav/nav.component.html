@@ -3,13 +3,42 @@
   @if (isMobile$$()) {
     <div class="movement-status">
       @if (loading()) {
-        <span class="status-indicator status-indicator--loading" title="Getting location...">📍</span>
+        <app-chip-status 
+          type="loading"
+          icon="📍"
+          [showIcon]="true"
+          [text]="''"
+          size="xs"
+          tooltip="Getting location..."
+          [animated]="true"
+        />
       } @else if (isMoving()) {
-        <span class="status-indicator status-indicator--moving" title="Moving detected! ({{ movementSpeed().toFixed(1) }} m/s)">🔴</span>
+        <app-chip-status 
+          type="warning"
+          icon="🔴"
+          [showIcon]="true"
+          [text]="''"
+          size="xs"
+          [tooltip]="'Moving detected! (' + movementSpeed().toFixed(1) + ' m/s)'"
+        />
       } @else if (isTracking()) {
-        <span class="status-indicator status-indicator--stationary" title="Stationary - tracking location">🟢</span>
+        <app-chip-status 
+          type="success"
+          icon="🟢"
+          [showIcon]="true"
+          [text]="''"
+          size="xs"
+          tooltip="Stationary - tracking location"
+        />
       } @else {
-        <span class="status-indicator status-indicator--inactive" title="Location tracking inactive">⚫</span>
+        <app-chip-status 
+          type="inactive"
+          icon="⚫"
+          [showIcon]="true"
+          [text]="''"
+          size="xs"
+          tooltip="Location tracking inactive"
+        />
       }
       
       <!-- Debug controls (temporary) -->

@@ -1,18 +1,18 @@
 // src/app/home/ui/user-profile-widget/user-profile-widget.component.ts
 import { Component, input, output, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { UserChipComponent, UserChipData } from '@shared/ui/chips/user-chip/user-chip.component';
+import { ChipUserComponent, UserChipData } from '@shared/ui/chips/chip-user/chip-user.component';
 import type { User } from '@users/utils/user.model';
 
 
 @Component({
   selector: 'app-user-profile-widget',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, UserChipComponent],
+  imports: [CommonModule, ChipUserComponent],
   template: `
     <div class="user-profile-widget">
       @if (userChipData()) {
-        <app-user-chip
+        <app-chip-user
           [user]="userChipData()!"
           size="md"
           variant="secondary"

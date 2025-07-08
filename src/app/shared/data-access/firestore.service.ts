@@ -23,7 +23,7 @@ import { FirebaseMetricsService } from './firebase-metrics.service';
 
 export abstract class FirestoreService {
   private injector = inject(Injector);
-  protected firestore = inject(Firestore);
+  protected readonly firestore = inject(Firestore);
   private metricsService = inject(FirebaseMetricsService);
 
   /**

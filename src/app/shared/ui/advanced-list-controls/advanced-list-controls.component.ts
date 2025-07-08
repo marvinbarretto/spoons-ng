@@ -318,7 +318,7 @@ export type ListControlsState = {
     .filter-chip.active {
       border-color: var(--primary);
       background: var(--primary);
-      color: var(--primary-contrast);
+      color: var(--on-primary);
     }
 
     .filter-count {
@@ -356,7 +356,7 @@ export type ListControlsState = {
 
     .view-btn.active {
       background: var(--primary);
-      color: var(--primary-contrast);
+      color: var(--on-primary);
     }
 
     /* Bulk Toggle */
@@ -380,7 +380,7 @@ export type ListControlsState = {
     .bulk-toggle.active {
       border-color: var(--primary);
       background: var(--primary);
-      color: var(--primary-contrast);
+      color: var(--on-primary);
     }
 
     /* Info Row */

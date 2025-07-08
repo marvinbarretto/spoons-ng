@@ -36,7 +36,7 @@ nav {
 
   // ✅ NEW: Use theme tokens instead of hardcoded colors
   background-color: var(--primary);
-  color: var(--primary-contrast);
+  color: var(--on-primary);
   line-height: 1.2;
 
   // ✅ NEW: Theme-aware styling
@@ -74,17 +74,17 @@ small {
 
   &--dev {
     background-color: var(--error);
-    color: var(--accent-contrast);
+    color: var(--on-accent);
   }
 
   &--prod {
     background-color: var(--success);
-    color: var(--accent-contrast);
+    color: var(--on-accent);
   }
 
   &--local {
     background-color: var(--info);
-    color: var(--accent-contrast);
+    color: var(--on-accent);
   }
 }
 
@@ -232,7 +232,7 @@ nav ul {
 // ✅ NEW: Enhanced selected state
 .selected {
   background-color: var(--primary);
-  color: var(--primary-contrast);
+  color: var(--on-primary);
 
   &:hover {
     background-color: var(--primary-hover);

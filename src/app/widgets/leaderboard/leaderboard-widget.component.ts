@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { BaseWidgetComponent } from '../base/base-widget.component';
 import { LeaderboardStore } from '../../leaderboard/data-access/leaderboard.store';
 import { AuthStore } from '../../auth/data-access/auth.store';
@@ -25,7 +26,7 @@ type LeaderboardContextEntry = LeaderboardEntry & {
       } @else if (leaderboardStore.error()) {
         <app-error-state [message]="leaderboardStore.error()!" />
       } @else if (!isUserRanked()) {
-        <app-empty-state 
+        <app-empty-state
           icon="🏆"
           title="Join the Competition!"
           subtitle="Start checking in to pubs to join the leaderboard"
@@ -112,7 +113,7 @@ type LeaderboardContextEntry = LeaderboardEntry & {
 
     .leaderboard-entry.current-user {
       background: var(--accent);
-      color: var(--accent-contrast);
+      color: var(--on-accent);
       border-color: var(--accent);
       box-shadow: 0 0 0 1px var(--accent);
     }
@@ -130,7 +131,7 @@ type LeaderboardContextEntry = LeaderboardEntry & {
     }
 
     .leaderboard-entry.current-user .rank {
-      color: var(--accent-contrast);
+      color: var(--on-accent);
     }
 
     .user-info {
@@ -151,7 +152,7 @@ type LeaderboardContextEntry = LeaderboardEntry & {
     }
 
     .leaderboard-entry.current-user .name {
-      color: var(--accent-contrast);
+      color: var(--on-accent);
     }
 
     .points {
@@ -161,7 +162,7 @@ type LeaderboardContextEntry = LeaderboardEntry & {
     }
 
     .leaderboard-entry.current-user .points {
-      color: var(--accent-contrast);
+      color: var(--on-accent);
       opacity: 0.9;
     }
 
@@ -185,7 +186,7 @@ type LeaderboardContextEntry = LeaderboardEntry & {
     }
 
     .leaderboard-entry.current-user .position-change {
-      background: var(--accent-contrast);
+      background: var(--on-accent);
       color: var(--accent);
     }
 
@@ -193,7 +194,7 @@ type LeaderboardContextEntry = LeaderboardEntry & {
       width: 100%;
       padding: 0.75rem;
       background: var(--secondary);
-      color: var(--secondary-contrast);
+      color: var(--on-secondary);
       border: 1px solid var(--secondary);
       border-radius: 0.375rem;
       font-weight: 500;

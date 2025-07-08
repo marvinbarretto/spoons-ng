@@ -584,7 +584,7 @@ type CarpetPubData = {
 
     .view-btn {
       background: var(--primary);
-      color: var(--primary-contrast);
+      color: var(--on-primary);
       border-color: var(--primary);
     }
 

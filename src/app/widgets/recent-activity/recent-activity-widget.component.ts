@@ -22,13 +22,13 @@ type RecentActivityEntry = {
   template: `
     <div class="recent-activity-widget">
       <h3 class="widget-title">Recent Activity</h3>
-      
+
       @if (checkinStore.loading()) {
         <app-loading-state text="Loading activity..." />
       } @else if (checkinStore.error()) {
         <app-error-state [message]="checkinStore.error()!" />
       } @else if (recentActivity().length === 0) {
-        <app-empty-state 
+        <app-empty-state
           icon="📱"
           title="No Recent Activity"
           subtitle="Start checking in to pubs to see your activity here"
@@ -44,7 +44,7 @@ type RecentActivityEntry = {
                   <span class="checkin-icon">🍺</span>
                 }
               </div>
-              
+
               <div class="activity-content">
                 <div class="activity-main">
                   <span class="pub-name">{{ activity.pub?.name || 'Unknown Pub' }}</span>
@@ -52,7 +52,7 @@ type RecentActivityEntry = {
                     <span class="points">+{{ activity.checkIn.pointsEarned }} pts</span>
                   }
                 </div>
-                
+
                 <div class="activity-meta">
                   <span class="time">{{ activity.timeAgo }}</span>
                   @if (activity.checkIn.carpetImageKey) {
@@ -66,10 +66,10 @@ type RecentActivityEntry = {
             </div>
           }
         </div>
-        
+
         @if (hasMoreActivity()) {
-          <button 
-            class="view-all-activity" 
+          <button
+            class="view-all-activity"
             (click)="navigateToFullActivity()"
             type="button"
           >
@@ -133,7 +133,7 @@ type RecentActivityEntry = {
       height: 32px;
       border-radius: 50%;
       background: var(--accent);
-      color: var(--accent-contrast);
+      color: var(--on-accent);
       font-size: 0.875rem;
       flex-shrink: 0;
     }
@@ -205,14 +205,14 @@ type RecentActivityEntry = {
 
     .today-badge {
       background: var(--accent);
-      color: var(--accent-contrast);
+      color: var(--on-accent);
     }
 
     .view-all-activity {
       width: 100%;
       padding: 0.75rem;
       background: var(--secondary);
-      color: var(--secondary-contrast);
+      color: var(--on-secondary);
       border: 1px solid var(--secondary);
       border-radius: 0.375rem;
       font-weight: 500;
@@ -266,7 +266,7 @@ type RecentActivityEntry = {
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RecentActivityWidgetComponent extends BaseWidgetComponent {
-  protected readonly dataAggregator = inject(DataAggregatorService);
+  protected readonly dataAggregatorService = inject(DataAggregatorService);
   protected readonly checkinStore = inject(CheckInStore);
   protected readonly pubStore = inject(PubStore);
   private readonly authStore = inject(AuthStore);
@@ -275,14 +275,14 @@ export class RecentActivityWidgetComponent extends BaseWidgetComponent {
     const user = this.authStore.user();
     if (!user?.uid) return [];
 
-    const recentCheckins = this.dataAggregator.getRecentCheckinsForUser(user.uid, 5);
+    const recentCheckins = this.dataAggregatorService.getRecentCheckinsForUser(user.uid, 5);
     const today = new Date().toISOString().split('T')[0];
 
     return recentCheckins.map(checkIn => {
       const pub = this.pubStore.get(checkIn.pubId) || null;
       const checkInDate = checkIn.timestamp.toDate();
       const checkInDateKey = checkInDate.toISOString().split('T')[0];
-      
+
       return {
         checkIn,
         pub,
@@ -295,7 +295,7 @@ export class RecentActivityWidgetComponent extends BaseWidgetComponent {
   protected readonly hasMoreActivity = computed(() => {
     const user = this.authStore.user();
     if (!user?.uid) return false;
-    
+
     const totalCheckins = this.checkinStore.checkins().filter(c => c.userId === user.uid).length;
     return totalCheckins > 5;
   });

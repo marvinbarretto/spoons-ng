@@ -112,12 +112,14 @@ import { ButtonSize } from '@shared/ui/button/button.params';
 export class WelcomeMessageStepComponent {
   // Inputs
   readonly loading = input<boolean>(false);
+  readonly realUser = input<boolean>(true);
 
   // Outputs
   readonly continue = output<void>();
+  readonly realUserChanged = output<boolean>();
 
-  // Real user state (default: true)
-  readonly isRealUser = signal(true);
+  // Real user state - initialize from input
+  readonly isRealUser = signal(this.realUser());
 
   // Expose ButtonSize for template
   readonly ButtonSize = ButtonSize;
@@ -125,6 +127,7 @@ export class WelcomeMessageStepComponent {
   toggleRealUser(event: Event): void {
     const target = event.target as HTMLInputElement;
     this.isRealUser.set(target.checked);
+    this.realUserChanged.emit(target.checked);
     console.log('[WelcomeStep] Real user toggled:', target.checked);
   }
 

@@ -49,7 +49,9 @@ type OnboardingStep =
           @case ('welcome-message') {
             <app-welcome-message-step
               [loading]="saving()"
+              [realUser]="realUser()"
               (continue)="proceedToDisplayName()"
+              (realUserChanged)="onRealUserChanged($event)"
             />
           }
 
@@ -193,7 +195,7 @@ type OnboardingStep =
 export class OnboardingComponent extends BaseComponent {
   private readonly authStore = inject(AuthStore);
   private readonly userStore = inject(UserStore);
-  private readonly dataAggregator = inject(DataAggregatorService);
+  protected readonly dataAggregatorService = inject(DataAggregatorService);
   private readonly avatarService = inject(AvatarService);
   private readonly notificationService = inject(NotificationService);
   private readonly themeStore = inject(ThemeStore);
@@ -218,9 +220,9 @@ export class OnboardingComponent extends BaseComponent {
   });
 
   // Reactive data - Use DataAggregator for complete user state
-  // CRITICAL: DataAggregator.user() includes onboardingCompleted from UserStore
+  // CRITICAL: dataAggregatorService.user() includes onboardingCompleted from UserStore
   // AuthStore.user() alone lacks this field, causing infinite redirect loops
-  readonly user = this.dataAggregator.user;
+  readonly user = this.dataAggregatorService.user;
 
   // Carpet backgrounds - cycling through different images per step
   private readonly carpetImages = [
@@ -473,6 +475,11 @@ export class OnboardingComponent extends BaseComponent {
     this.selectedHomePubId.set(pub?.id || null);
     this.selectedHomePub.set(pub);
     console.log('[Onboarding] Home pub selected:', pub?.name || 'none');
+  }
+
+  onRealUserChanged(isRealUser: boolean): void {
+    this.realUser.set(isRealUser);
+    console.log('[Onboarding] Real user status changed:', isRealUser);
   }
 
   // New methods for updated flow

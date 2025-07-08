@@ -67,8 +67,8 @@ import { SharingWidgetComponent } from '../../ui/sharing-widget/sharing-widget.c
   `
 })
 export class ProfileComponent extends BaseComponent {
-  private readonly authStore = inject(AuthStore);
-  private readonly userStore = inject(UserStore);
+  protected readonly authStore = inject(AuthStore);
+  protected readonly userStore = inject(UserStore);
 
   // Data signals
   readonly user = this.userStore.user;

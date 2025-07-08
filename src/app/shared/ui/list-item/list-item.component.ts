@@ -264,7 +264,7 @@ export type ListItemConfig = {
       font-size: 0.75rem;
       font-weight: 500;
       background: var(--primary);
-      color: var(--primary-contrast);
+      color: var(--on-primary);
       white-space: nowrap;
     }
 
@@ -331,7 +331,7 @@ export type ListItemConfig = {
     .list-item__action:hover:not(:disabled) {
       border-color: var(--primary);
       background: var(--primary);
-      color: var(--primary-contrast);
+      color: var(--on-primary);
     }
 
     .list-item__action:disabled {
@@ -395,7 +395,7 @@ export type ListItemConfig = {
   `
 })
 export class ListItemComponent {
-  private readonly themeStore = inject(ThemeStore);
+  protected readonly themeStore = inject(ThemeStore);
 
   // ✅ Inputs following your signal conventions
   readonly config = input.required<ListItemConfig>();

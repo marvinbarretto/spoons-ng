@@ -64,7 +64,7 @@ Displays 5-user context list with current user highlighted.
 Uses semantic CSS variables for consistent theming:
 
 - `--background-lighter`: Widget background (subtle differentiation from main app)
-- `--accent` / `--accent-contrast`: Current user highlighting
+- `--accent` / `--on-accent`: Current user highlighting
 - `--text` / `--text-secondary`: Text hierarchy
 - `--border` / `--border-lighter`: Borders and dividers
 

@@ -52,6 +52,18 @@ export class MockPanelStore {
     this._panelData.set(null);
   }
 
+  toggle(panelType: string): void {
+    if (this._isOpen() && this._panelType() === panelType) {
+      this.closePanel();
+    } else {
+      this.openPanel(panelType);
+    }
+  }
+
+  setOriginY(y: number): void {
+    // Mock implementation - just a no-op for testing
+  }
+
   reset(): void {
     this._isOpen.set(false);
     this._panelType.set(null);

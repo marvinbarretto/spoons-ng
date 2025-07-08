@@ -136,7 +136,7 @@ type StatData = {
               </a>
             </div>
           </div>
-          
+
           <div class="firebase-grid">
             <!-- Operations Summary -->
             <div class="firebase-card operations-summary">
@@ -419,7 +419,7 @@ export class AdminDashboardComponent {
   private readonly firebaseMetricsService = inject(FirebaseMetricsService);
   protected readonly leaderboardStore = inject(LeaderboardStore);
   protected readonly feedbackStore = inject(FeedbackStore);
-  private readonly dataAggregator = inject(DataAggregatorService);
+  protected readonly dataAggregatorService = inject(DataAggregatorService);
 
   // Firebase operations state
   readonly showFirebaseWidget = signal(true);
@@ -432,7 +432,7 @@ export class AdminDashboardComponent {
   readonly siteStats = this.leaderboardStore.siteStats;
   readonly globalDataStats = this.leaderboardStore.globalDataStats;
   readonly pendingFeedback = this.feedbackStore.pendingFeedback;
-  readonly scoreboardData = this.dataAggregator.scoreboardData;
+  readonly scoreboardData = this.dataAggregatorService.scoreboardData;
 
   readonly totalOperations = computed(() => {
     const value = this.performanceMetrics().totalOperations;
@@ -523,7 +523,7 @@ export class AdminDashboardComponent {
         value: scoreboardData.totalPubs || 0,
         label: 'Total Pubs',
         sourceType: (scoreboardData.totalPubs || 0) > 0 ? 'real' : 'placeholder',
-        sourceDetail: `DataAggregator.scoreboardData.totalPubs | Loading: ${scoreboardData.isLoading}, Pubs visited: ${scoreboardData.pubsVisited}`,
+        sourceDetail: `dataAggregatorService.scoreboardData.totalPubs | Loading: ${scoreboardData.isLoading}, Pubs visited: ${scoreboardData.pubsVisited}`,
         icon: (scoreboardData.totalPubs || 0) > 0 ? '✅' : '🔶'
       }
     ];
@@ -675,7 +675,7 @@ export class AdminDashboardComponent {
     const fbMetrics = this.firebaseMetricsService.getSessionSummary();
     const recent = this.firebaseMetricsService.getRecentOperations(10);
     const errors = this.firebaseMetricsService.getErrorAnalysis();
-    
+
     return {
       totalOperations: fbMetrics.totalCalls,
       operationsPerMinute: fbMetrics.callsPerMinute,
@@ -698,11 +698,11 @@ export class AdminDashboardComponent {
 
   formatTime(timestamp: number): string {
     const date = new Date(timestamp);
-    return date.toLocaleTimeString('en-US', { 
-      hour12: false, 
-      hour: '2-digit', 
-      minute: '2-digit', 
-      second: '2-digit' 
+    return date.toLocaleTimeString('en-US', {
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
     });
   }
 

@@ -2,7 +2,7 @@
 import { Component, input, computed, signal, inject } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { TableColumn } from './data-table.model';
-import { UserChipComponent, UserChipData } from '../chips/user-chip/user-chip.component';
+import { ChipUserComponent, UserChipData } from '../chips/chip-user/chip-user.component';
 import { ViewportService } from '../../data-access/viewport.service';
 
 export type SortDirection = 'asc' | 'desc' | null;
@@ -13,7 +13,7 @@ export type SortState = {
 
 @Component({
   selector: 'app-data-table',
-  imports: [CommonModule, UserChipComponent],
+  imports: [CommonModule, ChipUserComponent],
   template: `
     <div class="data-table">
       @if (loading()) {
@@ -52,7 +52,7 @@ export type SortState = {
                     @if (column.renderer) {
                       <!-- Custom renderer content -->
                       @if (column.key === 'displayName') {
-                        <app-user-chip
+                        <app-chip-user
                           [user]="getUserChipData(row)"
                           size="sm"
                           [clickable]="false"

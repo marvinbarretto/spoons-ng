@@ -209,17 +209,17 @@ import { FormsModule } from '@angular/forms';
     .feedback-type-option--selected {
       border-color: var(--primary);
       background: var(--primary);
-      color: var(--primary-contrast);
+      color: var(--on-primary);
       transform: scale(1.02);
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     }
 
     .feedback-type-option--selected .feedback-type-option__icon {
-      color: var(--primary-contrast);
+      color: var(--on-primary);
     }
 
     .feedback-type-option--selected .feedback-type-option__label {
-      color: var(--primary-contrast);
+      color: var(--on-primary);
       font-weight: 600;
     }
 
@@ -309,7 +309,7 @@ import { FormsModule } from '@angular/forms';
   `]
 })
 export class FeedbackModalComponent extends BaseComponent {
-  private readonly feedbackStore = inject(FeedbackStore);
+  protected readonly feedbackStore = inject(FeedbackStore);
 
   readonly result = output<boolean>();
 

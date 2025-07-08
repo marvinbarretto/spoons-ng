@@ -26,7 +26,7 @@ export class LeaderboardStore extends BaseStore<LeaderboardEntry> {
   private readonly pubGroupingService = inject(PubGroupingService);
   private readonly userStore = inject(UserStore);
   private readonly cacheCoherence = inject(CacheCoherenceService);
-  private readonly dataAggregator = inject(DataAggregatorService);
+  protected readonly dataAggregatorService = inject(DataAggregatorService);
 
   // Time range filter
   private readonly _timeRange = signal<LeaderboardTimeRange>('all-time');
@@ -51,10 +51,10 @@ export class LeaderboardStore extends BaseStore<LeaderboardEntry> {
     effect(() => {
       const allUsers = this.userService.allUsers();
       const allCheckIns = this.checkinService.allCheckIns();
-      
+
       // Create hash to detect actual changes
       const computationHash = `${allUsers.length}-${allCheckIns.length}-${allUsers.map(u => u.uid).join(',').slice(-10)}`;
-      
+
       if (computationHash !== this.lastComputationHash && allUsers.length > 0) {
         console.log('[LeaderboardStore] Global data changed, rebuilding leaderboard:', {
           users: allUsers.length,
@@ -70,12 +70,12 @@ export class LeaderboardStore extends BaseStore<LeaderboardEntry> {
     effect(() => {
       const currentUser = this.userStore.user();
       const userCheckIns = this.checkinStore.checkins();
-      
+
       const currentUserId = currentUser?.uid || '';
       const currentCheckinsCount = userCheckIns.length;
-      
+
       // Prevent unnecessary updates
-      if (currentUserId === this.lastCurrentUserUpdate.userId && 
+      if (currentUserId === this.lastCurrentUserUpdate.userId &&
           currentCheckinsCount === this.lastCurrentUserUpdate.checkinsCount) {
         return;
       }
@@ -99,7 +99,7 @@ export class LeaderboardStore extends BaseStore<LeaderboardEntry> {
         console.log('[LeaderboardStore] 🔄 Cache invalidated, refreshing leaderboard data');
         console.log('[LeaderboardStore] 🔄 Collection:', invalidation.collection);
         console.log('[LeaderboardStore] 🔄 Reason:', invalidation.reason);
-        
+
         // Force refresh of leaderboard data to ensure fresh display names
         this.handleCacheInvalidation(invalidation.collection, invalidation.reason);
       }
@@ -135,13 +135,13 @@ export class LeaderboardStore extends BaseStore<LeaderboardEntry> {
     console.log(`[LeaderboardStore] 🔄 === HANDLING CACHE INVALIDATION ===`);
     console.log(`[LeaderboardStore] 🔄 Collection: ${collection}`);
     console.log(`[LeaderboardStore] 🔄 Reason: ${reason || 'unspecified'}`);
-    
+
     try {
       // Force reload global data to get fresh user profiles with updated display names
       console.log(`[LeaderboardStore] 🔄 Refreshing global user and checkin data...`);
       await this.loadGlobalData();
       console.log(`[LeaderboardStore] ✅ Leaderboard data refreshed after cache invalidation`);
-      
+
     } catch (error) {
       console.error(`[LeaderboardStore] ❌ Failed to refresh leaderboard data after cache invalidation:`, error);
     }
@@ -157,7 +157,7 @@ export class LeaderboardStore extends BaseStore<LeaderboardEntry> {
 
     // First apply geographic filtering
     let geographicallyFilteredData = allData;
-    
+
     if (geoFilter.type !== 'none' && geoFilter.value) {
       const allowedUserIds = this.getAllowedUserIdsForGeographicFilter(geoFilter);
       geographicallyFilteredData = allData.filter(entry => allowedUserIds.includes(entry.userId));
@@ -274,23 +274,23 @@ export class LeaderboardStore extends BaseStore<LeaderboardEntry> {
    */
   private rebuildLeaderboardFromGlobalData(allUsers: User[], allCheckIns: CheckIn[]): void {
     console.log(`[LeaderboardStore] Rebuilding leaderboard from global data: ${allUsers.length} users, ${allCheckIns.length} check-ins`);
-    
+
     const entries: LeaderboardEntry[] = [];
-    
+
     for (const user of allUsers) {
       try {
         // Get all check-ins for this user from global data
         const userCheckIns = allCheckIns.filter(c => c.userId === user.uid);
         const uniquePubIds = new Set(userCheckIns.map(c => c.pubId));
-        
+
         const entry = this.createLeaderboardEntry(user, userCheckIns, uniquePubIds);
         entries.push(entry);
-        
+
       } catch (error) {
         console.error('[LeaderboardStore] Error creating entry for user', user.uid, error);
       }
     }
-    
+
     this._data.set(entries);
     console.log(`[LeaderboardStore] ✅ Rebuilt leaderboard with ${entries.length} entries`);
   }
@@ -301,10 +301,10 @@ export class LeaderboardStore extends BaseStore<LeaderboardEntry> {
   private updateCurrentUserInLeaderboard(currentUser: User, userCheckIns: CheckIn[]): void {
     const entries = this._data();
     const userIndex = entries.findIndex(e => e.userId === currentUser.uid);
-    
+
     const uniquePubIds = new Set(userCheckIns.map(c => c.pubId));
     const updatedEntry = this.createLeaderboardEntry(currentUser, userCheckIns, uniquePubIds);
-    
+
     if (userIndex >= 0) {
       // Update existing entry
       this._data.update(current => {
@@ -327,7 +327,7 @@ export class LeaderboardStore extends BaseStore<LeaderboardEntry> {
   private createLeaderboardEntry(user: User, userCheckins: CheckIn[], uniquePubIds: Set<string>): LeaderboardEntry {
     const userId = user.uid;
     const displayName = this.getDisplayName(userId, user);
-    
+
     // Calculate last active from check-ins
     const lastCheckin = userCheckins
       .sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis())[0];
@@ -413,7 +413,7 @@ private getDisplayName(userId: string, user: User): string {
   if (currentUser?.uid === userId) {
     // For current user, ALWAYS use DataAggregator's fresh display name + "(You)"
     // Anonymous users can have custom display names too!
-    const freshDisplayName = this.dataAggregator.displayName();
+    const freshDisplayName = this.dataAggregatorService.displayName();
     if (freshDisplayName) {
       return `${freshDisplayName} (You)`;
     }
@@ -597,15 +597,15 @@ private getDisplayName(userId: string, user: User): string {
     leaderboard: this.loading()
   }));
 
-  readonly isGlobalDataLoaded = computed(() => 
-    this.userService.allUsers().length > 0 && 
+  readonly isGlobalDataLoaded = computed(() =>
+    this.userService.allUsers().length > 0 &&
     this.checkinService.allCheckIns().length > 0
   );
 
   readonly globalDataStats = computed(() => {
     const allUsers = this.userService.allUsers();
     const allCheckIns = this.checkinService.allCheckIns();
-    
+
     return {
       totalUsers: allUsers.length,
       totalCheckIns: allCheckIns.length,
