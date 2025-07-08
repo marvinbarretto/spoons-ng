@@ -1,18 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MissionsSectionComponent } from './missions-widget.component';
 
-import { MissionsWidgetComponent } from './missions-widget.component';
-
-describe('MissionsWidgetComponent', () => {
-  let component: MissionsWidgetComponent;
-  let fixture: ComponentFixture<MissionsWidgetComponent>;
+describe('MissionsSectionComponent', () => {
+  let component: MissionsSectionComponent;
+  let fixture: ComponentFixture<MissionsSectionComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MissionsWidgetComponent]
+      imports: [MissionsSectionComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(MissionsWidgetComponent);
+    fixture = TestBed.createComponent(MissionsSectionComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

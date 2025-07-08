@@ -1,4 +1,3 @@
-// src/app/shared/base/base.component.ts
 import {
   ChangeDetectionStrategy,
   Component,
@@ -13,7 +12,6 @@ import { filter, map } from 'rxjs/operators';
 import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { SsrPlatformService } from '../utils/ssr/ssr-platform.service';
 import { ToastService } from '../data-access/toast.service';
-import { UserProgressionService } from '../data-access/user-progression.service';
 
 @Component({
   template: '',
@@ -24,11 +22,7 @@ export abstract class BaseComponent implements OnInit {
   protected readonly destroyRef = inject(DestroyRef);
   protected readonly platform = inject(SsrPlatformService);
   protected readonly toastService = inject(ToastService);
-  protected readonly userProgressionService = inject(UserProgressionService);
   protected readonly router = inject(Router);
-
-  // Commonly used signals available everywhere
-  protected readonly userExperienceLevel = this.userProgressionService.userExperienceLevel;
 
 
   // 📡 Universal component state - clean signal names

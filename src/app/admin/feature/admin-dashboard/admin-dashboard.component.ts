@@ -619,12 +619,13 @@ export class AdminDashboardComponent {
       status: 'coming-soon'
     },
     {
-      id: 'checkins',
-      title: 'Check-in Review',
-      description: 'Review and validate user check-ins and carpets',
-      route: '/admin/check-ins',
-      icon: '✅',
-      status: 'coming-soon'
+      id: 'carpets',
+      title: 'Carpet Management ✅',
+      description: 'Review and manage captured carpet photos',
+      route: '/admin/carpets',
+      icon: '📸',
+      status: 'active',
+      stats: 'Photo management system'
     },
     {
       id: 'content',
@@ -657,6 +658,15 @@ export class AdminDashboardComponent {
       route: '/admin/audit',
       icon: '🔍',
       status: 'coming-soon'
+    },
+    {
+      id: 'components',
+      title: 'Developer Tools ✅',
+      description: 'Component showcase and development utilities',
+      route: '/dev/components',
+      icon: '🛠️',
+      status: 'active',
+      stats: 'Design system components'
     }
   ];
 

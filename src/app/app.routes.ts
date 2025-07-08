@@ -123,6 +123,22 @@ export const appRoutes: Routes = [
     data: { shell: 'feature' }
   },
   {
+    path: 'admin/carpets',
+    title: 'Carpet Management',
+    loadComponent: () =>
+      import('./admin/feature/admin-carpet/admin-carpet.component')
+        .then(m => m.AdminCarpetComponent),
+    data: { shell: 'feature' }
+  },
+  {
+    path: 'dev/components',
+    title: 'Component Showcase',
+    loadComponent: () =>
+      import('./dev/component-showcase/component-showcase.component')
+        .then(m => m.ComponentShowcaseComponent),
+    data: { shell: 'feature' }
+  },
+  {
     path: 'profile',
     title: 'Profile',
     canActivate: [onboardingGuard],

@@ -116,7 +116,7 @@ describe('PubStore Sorting', () => {
       expect(sortedWatcher.getValues()).toHaveLength(3); // Initial + 2 updates
     });
 
-    it('should maintain alphabetical order for same distances', () => {
+    it('should maintain alphabetical order for same distances', async () => {
       // Arrange - Set all pubs to same location
       const samePubs: Pub[] = mockPubs.map(pub => ({
         ...pub,

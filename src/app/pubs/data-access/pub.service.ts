@@ -101,14 +101,21 @@ export class PubService extends CachedFirestoreService {
   /**
    * 🏷️ Update pub carpet status - Used by CarpetStrategyService
    */
-  async updatePubHasCarpet(pubId: string, hasCarpet: boolean): Promise<void> {
-    console.log('[PubService] 🏷️ Updating pub carpet status:', pubId, '→', hasCarpet);
+  async updatePubHasCarpet(pubId: string, hasCarpet: boolean, carpetUrl?: string): Promise<void> {
+    console.log('[PubService] 🏷️ Updating pub carpet status:', pubId, '→', hasCarpet, carpetUrl ? 'with URL' : 'no URL');
     
     try {
-      await this.updateDoc<Pub>(`${this.path}/${pubId}`, { 
+      const updateData: Partial<Pub> = { 
         hasCarpet,
         carpetUpdatedAt: serverTimestamp() as any
-      });
+      };
+      
+      // Only update carpetUrl if provided
+      if (carpetUrl) {
+        updateData.carpetUrl = carpetUrl;
+      }
+      
+      await this.updateDoc<Pub>(`${this.path}/${pubId}`, updateData);
       
       console.log('[PubService] ✅ Pub carpet status updated');
       

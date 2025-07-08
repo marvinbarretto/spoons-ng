@@ -3,6 +3,8 @@ import { Injectable, inject } from '@angular/core';
 import { CarpetStorageService } from './carpet-storage.service';
 import { PubService } from '@pubs/data-access/pub.service';
 import { LLMService } from '@shared/data-access/llm.service';
+import { Storage } from '@angular/fire/storage';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 type CarpetProcessResult = {
   localStored: boolean;
@@ -24,6 +26,7 @@ export class CarpetStrategyService {
   private readonly _carpetStorage = inject(CarpetStorageService);
   private readonly _pubService = inject(PubService);
   private readonly _llmService = inject(LLMService);
+  private readonly _storage = inject(Storage);
 
   /**
    * 🎯 Main carpet processing workflow
@@ -80,9 +83,9 @@ export class CarpetStrategyService {
         const firestoreUrl = await this.uploadToFirestore(versions.firestore, pubId);
         console.log('[CarpetStrategy] ☁️ Firestore upload complete:', firestoreUrl);
 
-        // 6. Update pub document
-        await this._pubService.updatePubHasCarpet(pubId, true);
-        console.log('[CarpetStrategy] ✅ Pub marked as having carpet');
+        // 6. Update pub document with carpet URL
+        await this._pubService.updatePubHasCarpet(pubId, true, firestoreUrl);
+        console.log('[CarpetStrategy] ✅ Pub marked as having carpet with URL:', firestoreUrl);
 
         return {
           localStored: true,
@@ -297,22 +300,29 @@ export class CarpetStrategyService {
   }
 
   /**
-   * ☁️ Upload blob to Firebase Storage (stub implementation)
-   * TODO: Replace with actual Firebase Storage upload
+   * ☁️ Upload blob to Firebase Storage
+   * Real implementation with proper error handling
    */
   private async uploadBlobToStorage(blob: Blob, filename: string): Promise<string> {
-    console.log('[CarpetStrategy] 📤 [STUB] Uploading blob:', filename, (blob.size / 1024).toFixed(1) + 'KB');
+    console.log('[CarpetStrategy] 📤 Uploading blob to Firebase Storage:', filename, (blob.size / 1024).toFixed(1) + 'KB');
     
-    // TODO: Implement actual Firebase Storage upload
-    // import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-    // const storage = getStorage();
-    // const storageRef = ref(storage, filename);
-    // const snapshot = await uploadBytes(storageRef, blob);
-    // return await getDownloadURL(snapshot.ref);
-    
-    // Return mock URL for now
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate upload delay
-    return `https://firebasestorage.googleapis.com/v0/b/spoons-development/o/${encodeURIComponent(filename)}?alt=media&token=mock-token`;
+    try {
+      // Create a reference to the file in Firebase Storage
+      const storageRef = ref(this._storage, filename);
+      
+      // Upload the blob to Firebase Storage
+      const snapshot = await uploadBytes(storageRef, blob);
+      console.log('[CarpetStrategy] ✅ Upload complete, getting download URL...');
+      
+      // Get the download URL
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      console.log('[CarpetStrategy] ✅ Download URL obtained:', downloadURL);
+      
+      return downloadURL;
+    } catch (error) {
+      console.error('[CarpetStrategy] ❌ Firebase Storage upload failed:', error);
+      throw new Error(`Failed to upload carpet image: ${error}`);
+    }
   }
 
   /**

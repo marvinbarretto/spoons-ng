@@ -1,12 +1,14 @@
 import { TestBed } from '@angular/core/testing';
-
 import { AuthService } from './auth.service';
+import { createBasicTestProviders } from '../../shared/testing/test-providers';
 
 describe('AuthService', () => {
   let service: AuthService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      providers: createBasicTestProviders()
+    });
     service = TestBed.inject(AuthService);
   });
 

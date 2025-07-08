@@ -1,7 +1,9 @@
 import { TestBed } from '@angular/core/testing';
+import { Firestore } from '@angular/fire/firestore';
 import { FeedbackService } from './feedback.service';
 import { FirestoreCrudService } from '../../shared/data-access/firestore-crud.service';
 import { Feedback, CreateFeedbackInput, FeedbackType } from '../utils/feedback.model';
+import { createFirestoreMock, createFirebaseMetricsMock } from '../../shared/testing/firebase.mocks';
 
 // Mock FirestoreCrudService
 const mockFirestoreCrudService = {
@@ -26,7 +28,8 @@ describe('FeedbackService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [
-        FeedbackService,
+        { provide: Firestore, useValue: createFirestoreMock() },
+        { provide: 'FirebaseMetricsService', useValue: createFirebaseMetricsMock() },
         { provide: FirestoreCrudService, useValue: mockFirestoreCrudService }
       ]
     });
