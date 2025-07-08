@@ -31,6 +31,36 @@ export class PubGroupingService {
     const checkins = this.checkinStore.checkins();
     const pubs = this.pubStore.pubs();
     
+    // Debug logging for geographic filtering diagnosis
+    console.log('[PubGroupingService] 🔍 DIAGNOSTIC INFO:');
+    console.log('[PubGroupingService] 📊 Total pubs:', pubs.length);
+    console.log('[PubGroupingService] 📊 Total check-ins:', checkins.length);
+    console.log('[PubGroupingService] 📊 Pubs with city data:', pubs.filter(p => p.city).length);
+    console.log('[PubGroupingService] 📊 Pubs with region data:', pubs.filter(p => p.region).length);
+    console.log('[PubGroupingService] 📊 Pubs with country data:', pubs.filter(p => p.country).length);
+    
+    if (pubs.length > 0) {
+      const samplePub = pubs[0];
+      console.log('[PubGroupingService] 📍 Sample pub:', { 
+        id: samplePub.id, 
+        name: samplePub.name, 
+        city: samplePub.city, 
+        region: samplePub.region, 
+        country: samplePub.country 
+      });
+    }
+    
+    if (checkins.length > 0) {
+      const sampleCheckin = checkins[0];
+      console.log('[PubGroupingService] ✅ Sample check-in:', { 
+        userId: sampleCheckin.userId, 
+        pubId: sampleCheckin.pubId,
+        timestamp: sampleCheckin.timestamp?.toDate?.()
+      });
+    } else {
+      console.log('[PubGroupingService] ⚠️ NO CHECK-INS FOUND - This explains why geographic filters are not showing!');
+    }
+    
     // Performance monitoring
     const startTime = performance.now();
     const checkinCount = checkins.length;
@@ -182,13 +212,17 @@ export class PubGroupingService {
   // Get all unique cities that have user activity
   readonly activeCities = computed(() => {
     const cityGroups = this.usersByCity();
-    return Object.keys(cityGroups).sort();
+    const cities = Object.keys(cityGroups).sort();
+    console.log('[PubGroupingService] 🏙️ Active cities:', cities.length, cities);
+    return cities;
   });
 
   // Get all unique regions that have user activity
   readonly activeRegions = computed(() => {
     const regionGroups = this.usersByRegion();
-    return Object.keys(regionGroups).sort();
+    const regions = Object.keys(regionGroups).sort();
+    console.log('[PubGroupingService] 🌍 Active regions:', regions.length, regions);
+    return regions;
   });
 
   // Get all unique countries that have user activity

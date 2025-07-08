@@ -80,6 +80,21 @@ import { combineLatest } from 'rxjs';
             </div>
           }
         </div>
+      } @else {
+        <!-- Debug info when no geographic filters are available -->
+        <div class="geographic-filters-debug">
+          <div class="debug-message">
+            <p>🗺️ Geographic filters will appear when users start checking into pubs with location data.</p>
+            <details class="debug-details">
+              <summary>Debug Information</summary>
+              <div class="debug-content">
+                <p><strong>Available cities:</strong> {{ availableCities().length }}</p>
+                <p><strong>Available regions:</strong> {{ availableRegions().length }}</p>
+                <p><strong>Need check-ins to enable geographic filtering</strong></p>
+              </div>
+            </details>
+          </div>
+        </div>
       }
 
 
@@ -237,6 +252,65 @@ import { combineLatest } from 'rxjs';
       opacity: 0.9;
     }
 
+    .geographic-filters-debug {
+      margin-bottom: 1rem;
+      background: var(--background-lighter);
+      padding: 0.75rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .debug-message {
+      color: var(--text-muted);
+    }
+
+    .debug-message p {
+      margin: 0 0 0.5rem 0;
+      font-size: 0.9rem;
+    }
+
+    .debug-details {
+      margin-top: 0.5rem;
+    }
+
+    .debug-details summary {
+      cursor: pointer;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      list-style: none;
+      padding: 0.25rem 0;
+    }
+
+    .debug-details summary:hover {
+      color: var(--text);
+    }
+
+    .debug-details summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .debug-details summary::before {
+      content: "▶ ";
+      margin-right: 0.25rem;
+      transition: transform 0.2s ease;
+    }
+
+    .debug-details[open] summary::before {
+      transform: rotate(90deg);
+    }
+
+    .debug-content {
+      padding: 0.5rem 0;
+      border-top: 1px solid var(--border);
+      margin-top: 0.5rem;
+    }
+
+    .debug-content p {
+      margin: 0.25rem 0;
+      font-size: 0.8rem;
+      font-family: monospace;
+    }
+
     .loading-state, .error-state {
       text-align: center;
       padding: 2rem;
@@ -354,7 +428,14 @@ export class LeaderboardContainerComponent extends BaseComponent {
     // Show filters if there are available cities or regions
     const cities = this.availableCities();
     const regions = this.availableRegions();
-    return cities.length > 0 || regions.length > 0;
+    const shouldShow = cities.length > 0 || regions.length > 0;
+    
+    console.log('[LeaderboardContainer] 🗺️ Geographic filter visibility check:');
+    console.log('[LeaderboardContainer] 🗺️ Available cities:', cities.length, cities);
+    console.log('[LeaderboardContainer] 🗺️ Available regions:', regions.length, regions);
+    console.log('[LeaderboardContainer] 🗺️ Should show filters:', shouldShow);
+    
+    return shouldShow;
   });
 
   readonly availableCities = computed(() =>
