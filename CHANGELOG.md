@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.95](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.94...v0.0.95) (2025-07-08)
+
+
+### Features
+
+* [Checkin] New improved checkin, wip ([218dc33](https://github.com/marvinbarretto/spoons-ng/commit/218dc3374630667d9efe73c24e7e8ea7badf0c20))
+* [Checkin] Resolve check in issues, should be reasonable now ([a1ab1b1](https://github.com/marvinbarretto/spoons-ng/commit/a1ab1b1a8b46c4b2035432808989eebccbfbc485))
+* Extract chips from the templates ([65e7014](https://github.com/marvinbarretto/spoons-ng/commit/65e70142e285665d596589e1f247700d9fd94218))
+
+
+### Bug Fixes
+
+* [Checkin] Ensure camera gets chance to reinit on retry ([cfacf60](https://github.com/marvinbarretto/spoons-ng/commit/cfacf6086f2458020eace61b127720b20cffc62f))
+
 ### [0.0.94](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.93...v0.0.94) (2025-07-08)
 
 
