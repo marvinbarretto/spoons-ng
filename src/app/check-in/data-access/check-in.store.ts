@@ -98,29 +98,27 @@ export class CheckInStore extends BaseStore<CheckIn> {
     // Auth-Reactive Pattern: Auto-load when user changes
     effect(() => {
       const user = this.authStore.user();
+      const currentUserSlice = user?.uid?.slice(0, 8) || 'none';
+      const lastUserSlice = this.lastLoadedUserId?.slice(0, 8) || 'none';
 
-      console.log('[CheckInStore] Auth state changed:', {
-        userId: user?.uid,
-        isAnonymous: user?.isAnonymous,
-        lastLoaded: this.lastLoadedUserId
-      });
+      console.log(`🔄 [CheckInStore] Auth state change: ${lastUserSlice} → ${currentUserSlice}`);
 
       // Handle logout
       if (!user) {
-        console.log('[CheckInStore] Clearing data (logout/anonymous)');
+        console.log('🔄 [CheckInStore] User logged out, clearing all cached check-ins');
         this.reset();
         this.lastLoadedUserId = null;
         return;
       }
 
-      // Deduplication: Don't reload same user
+      // 🔍 Cache check for existing user
       if (user.uid === this.lastLoadedUserId) {
-        console.log('[CheckInStore] Same user, skipping reload');
+        console.log(`✅ [CheckInStore] Cache HIT - Using cached check-ins (${this.totalCheckins()} items) for user: ${currentUserSlice}`);
         return;
       }
 
-      // Load: New authenticated user detected
-      console.log('[CheckInStore] Loading check-ins for new user:', user.uid);
+      // 📡 Cache miss: New authenticated user detected
+      console.log(`📡 [CheckInStore] Cache MISS - Fetching check-ins from Firebase for new user: ${currentUserSlice}`);
       this.lastLoadedUserId = user.uid;
       this.load();
     });
@@ -130,21 +128,13 @@ export class CheckInStore extends BaseStore<CheckIn> {
     const userId = this.authStore.uid();
     if (!userId) throw new Error('No authenticated user');
 
-    console.log('📡 [CheckInStore] === FETCHING CHECK-INS ===');
-    console.log('📡 [CheckInStore] User ID:', userId?.slice(0, 8));
-    console.log('📡 [CheckInStore] Timestamp:', new Date().toISOString());
+    console.log(`📡 [CheckInStore] Starting Firebase fetch for user check-ins: ${userId.slice(0, 8)}`);
 
     const checkins = await this.newCheckInService.loadUserCheckins(userId);
 
-    console.log('📡 [CheckInStore] === CHECK-INS LOADED ===');
-    console.log('📡 [CheckInStore] Total checkins received:', checkins.length);
-    console.log('📡 [CheckInStore] Unique pubs from checkins:', new Set(checkins.map(c => c.pubId)).size);
-    console.log('📡 [CheckInStore] Sample checkins:', checkins.slice(0, 3).map(c => ({
-      pubId: c.pubId,
-      timestamp: c.timestamp.toDate().toISOString(),
-      userId: c.userId?.slice(0, 8),
-      dateKey: c.dateKey
-    })));
+    console.log(`✅ [CheckInStore] Firebase data loaded successfully: ${checkins.length} check-ins cached`);
+    console.log(`├─ Unique pubs visited: ${new Set(checkins.map(c => c.pubId)).size}`);
+    console.log(`└─ Most recent check-in: ${checkins[0]?.timestamp?.toDate().toISOString() || 'none'}`);
 
     return checkins;
   }

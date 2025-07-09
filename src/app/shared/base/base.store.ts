@@ -33,7 +33,7 @@ export abstract class BaseStore<T> implements CollectionStore<T> {
 
       // ✅ Only act on actual user changes
       if (userId !== prevUserId) {
-        console.log(`[${this.constructor.name}] Auth changed: ${prevUserId} → ${userId}`);
+        console.log(`🔄 [${this.constructor.name}] Auth state change: ${prevUserId?.slice(0, 8) || 'none'} → ${userId?.slice(0, 8) || 'none'}`);
 
         // ✅ Update user ID first
         this._userId.set(userId);
@@ -41,15 +41,16 @@ export abstract class BaseStore<T> implements CollectionStore<T> {
         // ✅ Only reset if we're switching between different users
         // Don't reset on initial load (null → userId) or logout (userId → null)
         if (prevUserId !== null && userId !== null && prevUserId !== userId) {
-          console.log(`[${this.constructor.name}] User switched, resetting data`);
+          console.log(`🔄 [${this.constructor.name}] User switched, clearing cache and resetting data`);
           this.resetForUser(userId);
         } else if (prevUserId !== null && userId === null) {
-          console.log(`[${this.constructor.name}] User logged out, clearing data`);
+          console.log(`🔄 [${this.constructor.name}] User logged out, clearing all cached data`);
           this.reset();
         }
 
         // ✅ Load data for authenticated user
         if (userId) {
+          console.log(`🔍 [${this.constructor.name}] Authenticated user detected, checking cache...`);
           this.loadOnce();
         }
       }
@@ -66,17 +67,24 @@ export abstract class BaseStore<T> implements CollectionStore<T> {
    * Load data only if not already loaded (recommended default)
    */
   async loadOnce(): Promise<void> {
-    if (this.hasLoaded || !this._userId()) {
-      console.log(`[${this.constructor.name}] ⏭ Skipping loadOnce — already loaded or no user`);
+    const userId = this._userId();
+    
+    // 🔍 Cache check logging
+    console.log(`🔍 [${this.constructor.name}] Cache check for user: ${userId?.slice(0, 8) || 'none'}`);
+    
+    if (this.hasLoaded || !userId) {
+      const reason = !userId ? 'no authenticated user' : 'data already loaded';
+      console.log(`✅ [${this.constructor.name}] Cache HIT - Using cached data (${this.itemCount()} items) - Reason: ${reason}`);
       return;
     }
 
     // ✅ Return existing promise if load in progress
     if (this.loadPromise) {
-      console.log(`[${this.constructor.name}] ⏳ Load already in progress, waiting...`);
+      console.log(`⏳ [${this.constructor.name}] Load already in progress, waiting for completion...`);
       return this.loadPromise;
     }
 
+    console.log(`📡 [${this.constructor.name}] Cache MISS - Fetching from Firebase for user: ${userId.slice(0, 8)}`);
     return this.load();
   }
 
@@ -104,6 +112,9 @@ export abstract class BaseStore<T> implements CollectionStore<T> {
    * Internal load implementation
    */
   private async _performLoad(): Promise<void> {
+    const userId = this._userId();
+    console.log(`📡 [${this.constructor.name}] Starting Firebase fetch for user: ${userId?.slice(0, 8) || 'none'}`);
+    
     this._loading.set(true);
     this._error.set(null);
 
@@ -111,12 +122,12 @@ export abstract class BaseStore<T> implements CollectionStore<T> {
       const freshData = await this.fetchData();
       this._data.set(freshData);
       this.hasLoaded = true;
-      console.log(`[${this.constructor.name}] ✅ Loaded ${freshData.length} items`);
+      console.log(`✅ [${this.constructor.name}] Firebase data loaded successfully: ${freshData.length} items cached`);
     } catch (error: any) {
       const message = error?.message || 'Failed to load data';
       this._error.set(message);
       this.toastService.error(message);
-      console.error(`[${this.constructor.name}] ❌ Load failed:`, error);
+      console.error(`❌ [${this.constructor.name}] Firebase fetch failed:`, error);
     } finally {
       this._loading.set(false);
     }

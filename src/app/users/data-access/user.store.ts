@@ -90,21 +90,27 @@ export class UserStore {
     // ✅ Listen to auth changes and load user profile
     effect(() => {
       const authUser = this.authStore.user();
+      const currentUserSlice = authUser?.uid?.slice(0, 8) || 'none';
+      const lastUserSlice = this.lastLoadedUserId?.slice(0, 8) || 'none';
+
+      console.log(`🔄 [UserStore] Auth state change: ${lastUserSlice} → ${currentUserSlice}`);
 
       if (!authUser) {
-        console.log('[UserStore] 🚪 User logged out, clearing profile');
+        console.log('🔄 [UserStore] User logged out, clearing cached profile');
         this.reset();
         this.lastLoadedUserId = null;
         return;
       }
 
-      // Only reload if the AUTH USER ID changed (not profile data)
+      // 🔍 Cache check for existing user profile
       if (authUser.uid === this.lastLoadedUserId) {
-        console.log('[UserStore] ⏭ Auth user unchanged, skipping reload');
+        const currentUser = this.user();
+        console.log(`✅ [UserStore] Cache HIT - Using cached profile for user: ${currentUserSlice} (${currentUser?.displayName || 'Loading...'})`);
         return;
       }
 
-      console.log('[UserStore] 👤 Loading profile for user:', authUser.uid);
+      // 📡 Cache miss: New user profile needed
+      console.log(`📡 [UserStore] Cache MISS - Fetching user profile from Firebase for: ${currentUserSlice}`);
       this.lastLoadedUserId = authUser.uid;
       this.loadOrCreateUser(authUser.uid);
     });
@@ -283,10 +289,11 @@ export class UserStore {
    */
   private async loadOrCreateUser(uid: string): Promise<void> {
     if (this._loading()) {
-      console.log('[UserStore] Load already in progress, skipping');
+      console.log('⏳ [UserStore] Load already in progress, waiting for completion...');
       return;
     }
 
+    console.log(`📡 [UserStore] Starting Firebase fetch for user profile: ${uid.slice(0, 8)}`);
     this._loading.set(true);
     this._error.set(null);
 
@@ -331,11 +338,11 @@ export class UserStore {
       }
 
       this._user.set(userData);
-      console.log('[UserStore] ✅ User profile loaded');
+      console.log(`✅ [UserStore] Firebase data loaded successfully: User profile cached for ${userData.displayName || userData.email || 'user'}`);
 
     } catch (error: any) {
       this._error.set(error?.message || 'Failed to load user');
-      console.error('[UserStore] ❌ Load/create user failed:', error);
+      console.error('❌ [UserStore] Firebase fetch failed:', error);
     } finally {
       this._loading.set(false);
     }

@@ -535,30 +535,49 @@ export class ScoreboardHeroWidgetComponent extends BaseWidgetComponent implement
     effect(() => {
       const data = this.enhancedData();
 
-      this.debug.extreme('[ScoreboardHeroWidget] Enhanced data changed:', {
+      console.log('[Scoreboard] 🔄 Effect triggered - Enhanced data changed:', {
         totalPoints: data.totalPoints,
         todaysPoints: data.todaysPoints,
         pubsVisited: data.pubsVisited,
+        totalCheckins: data.totalCheckins,
         currentStreak: data.currentStreak,
         landlordCount: data.landlordCount,
         isLoading: data.isLoading,
         timestamp: Date.now()
       });
 
+      // ✅ Log current animated signal states BEFORE any changes
+      console.log('[Scoreboard] 📊 Current animated signal states:', {
+        animatedPoints: this.animatedPointsValue(),
+        animatedPubs: this.animatedPubsValue(),
+        animatedCheckins: this.animatedCheckinsValue(),
+        animatedTodaysPoints: this.animatedTodaysPointsValue(),
+        animatedStreak: this.animatedStreakValue(),
+        animatedLandlords: this.animatedLandlordsValue(),
+        activeAnimationsCount: this.activeAnimations.size,
+        activeAnimationKeys: Array.from(this.activeAnimations.keys())
+      });
+
       if (!data.isLoading) {
+        console.log('[Scoreboard] 🎬 Starting animation sequence - data loaded');
+        
         // ✅ Cancel all previous animations before starting new ones
         this.cancelAllAnimations();
 
         // ✅ Smart animation strategy for enhanced design
         // Primary metrics
+        console.log('[Scoreboard] 🎯 Starting primary metrics animations');
         this.smartAnimateValue('points', this.animatedPointsValue, data.totalPoints, 1200);
         setTimeout(() => this.smartAnimateValue('pubs', this.animatedPubsValue, data.pubsVisited, 800), 100);
         setTimeout(() => this.smartAnimateValue('checkins', this.animatedCheckinsValue, data.totalCheckins, 900), 200);
 
         // Enhanced metrics with staggered timing
+        console.log('[Scoreboard] ✨ Scheduling enhanced metrics animations');
         setTimeout(() => this.smartAnimateValue('todaysPoints', this.animatedTodaysPointsValue, data.todaysPoints, 600), 300);
         setTimeout(() => this.smartAnimateValue('streak', this.animatedStreakValue, data.currentStreak, 700), 400);
         setTimeout(() => this.smartAnimateValue('landlords', this.animatedLandlordsValue, data.landlordCount, 800), 500);
+      } else {
+        console.log('[Scoreboard] ⏳ Data still loading, skipping animations');
       }
     });
   }
@@ -570,10 +589,19 @@ export class ScoreboardHeroWidgetComponent extends BaseWidgetComponent implement
 
   // ✅ FIXED: Cancel all active animations
   private cancelAllAnimations(): void {
-    this.activeAnimations.forEach((animationId) => {
+    console.log('[Scoreboard] 🛑 Cancelling all animations:', {
+      activeCount: this.activeAnimations.size,
+      keys: Array.from(this.activeAnimations.keys()),
+      timestamp: Date.now()
+    });
+    
+    this.activeAnimations.forEach((animationId, key) => {
+      console.log(`[Scoreboard] 🚫 Cancelling animation: ${key} (ID: ${animationId})`);
       cancelAnimationFrame(animationId);
     });
     this.activeAnimations.clear();
+    
+    console.log('[Scoreboard] ✅ All animations cancelled');
   }
 
   /**
@@ -595,27 +623,44 @@ export class ScoreboardHeroWidgetComponent extends BaseWidgetComponent implement
   ): void {
     const currentValue = signalRef();
     const change = Math.abs(targetValue - currentValue);
+    const strategy = change <= 3 ? 'instant' : change <= 20 ? 'quick' : 'full';
 
-    this.debug.extreme(`[ScoreboardHeroWidget] Smart animate ${key}:`, {
+    console.log(`[Scoreboard] 🎯 Smart animate decision for ${key}:`, {
       from: currentValue,
       to: targetValue,
       change,
-      strategy: change <= 3 ? 'instant' : change <= 20 ? 'quick' : 'full'
+      strategy,
+      baseDuration,
+      timestamp: Date.now()
     });
+
+    // ✅ CRITICAL: Check for negative values before any animation
+    if (targetValue < 0) {
+      console.error(`[Scoreboard] ❌ NEGATIVE TARGET VALUE DETECTED!`, {
+        key,
+        targetValue,
+        currentValue,
+        change
+      });
+      return;
+    }
 
     // Strategy 1: Small changes (0→1, 1→2, etc.) - instant update feels more responsive
     if (change <= 3) {
+      console.log(`[Scoreboard] ⚡ ${key}: Instant update (${currentValue} → ${targetValue})`);
       signalRef.set(targetValue);
       return;
     }
 
     // Strategy 2: Medium changes - quick animation
     if (change <= 20) {
+      console.log(`[Scoreboard] 🏃 ${key}: Quick animation (${currentValue} → ${targetValue})`);
       this.animateValue(key, signalRef, targetValue, baseDuration * 0.3);
       return;
     }
 
     // Strategy 3: Large changes - full animation for excitement
+    console.log(`[Scoreboard] 🎬 ${key}: Full animation (${currentValue} → ${targetValue})`);
     this.animateValue(key, signalRef, targetValue, baseDuration);
   }
 
@@ -632,17 +677,43 @@ export class ScoreboardHeroWidgetComponent extends BaseWidgetComponent implement
     targetValue: number,
     duration: number = 1000
   ): void {
+    console.log(`[Scoreboard] 🎬 Starting animation for ${key}:`, {
+      targetValue,
+      duration,
+      currentSignalValue: signalRef(),
+      timestamp: Date.now()
+    });
+
     // ✅ Cancel any existing animation for this key
     if (this.activeAnimations.has(key)) {
-      cancelAnimationFrame(this.activeAnimations.get(key)!);
+      const existingId = this.activeAnimations.get(key)!;
+      console.log(`[Scoreboard] 🔄 Cancelling existing animation for ${key} (ID: ${existingId})`);
+      cancelAnimationFrame(existingId);
     }
 
     const startValue = signalRef();
     const startTime = performance.now();
 
+    console.log(`[Scoreboard] 📍 Animation setup for ${key}:`, {
+      startValue,
+      targetValue,
+      difference: targetValue - startValue,
+      startTime
+    });
+
     // If values are the same, no animation needed
     if (startValue === targetValue) {
+      console.log(`[Scoreboard] ⏭️ ${key}: No animation needed (values are equal: ${startValue})`);
       return;
+    }
+
+    // ✅ CRITICAL: Validate values before animation
+    if (startValue < 0 || targetValue < 0) {
+      console.error(`[Scoreboard] ❌ NEGATIVE VALUES IN ANIMATION!`, {
+        key,
+        startValue,
+        targetValue
+      });
     }
 
     const animate = (currentTime: number) => {
@@ -653,7 +724,22 @@ export class ScoreboardHeroWidgetComponent extends BaseWidgetComponent implement
       const easeOutQuart = 1 - Math.pow(1 - progress, 4);
       const currentValue = Math.round(startValue + (targetValue - startValue) * easeOutQuart);
 
-      signalRef.set(currentValue);
+      // ✅ CRITICAL: Prevent negative values from being displayed
+      const safeValue = Math.max(0, currentValue);
+      
+      if (currentValue !== safeValue) {
+        console.error(`[Scoreboard] ❌ NEGATIVE VALUE PREVENTED!`, {
+          key,
+          calculatedValue: currentValue,
+          safeValue,
+          startValue,
+          targetValue,
+          progress,
+          elapsed
+        });
+      }
+
+      signalRef.set(safeValue);
 
       if (progress < 1) {
         // ✅ Store animation ID for cleanup
@@ -661,6 +747,7 @@ export class ScoreboardHeroWidgetComponent extends BaseWidgetComponent implement
         this.activeAnimations.set(key, animationId);
       } else {
         // ✅ Animation complete - remove from tracking
+        console.log(`[Scoreboard] ✅ Animation complete for ${key}: ${startValue} → ${targetValue}`);
         this.activeAnimations.delete(key);
       }
     };
@@ -668,5 +755,6 @@ export class ScoreboardHeroWidgetComponent extends BaseWidgetComponent implement
     // ✅ Start animation and track it
     const animationId = requestAnimationFrame(animate);
     this.activeAnimations.set(key, animationId);
+    console.log(`[Scoreboard] 🚀 Animation started for ${key} (ID: ${animationId})`);
   }
 }
