@@ -84,13 +84,13 @@ import { combineLatest } from 'rxjs';
         <!-- Debug info when no geographic filters are available -->
         <div class="geographic-filters-debug">
           <div class="debug-message">
-            <p>🗺️ Geographic filters will appear when users start checking into pubs with location data.</p>
+            <p>🗺️ Geographic filters will appear when users have home pubs with location data.</p>
             <details class="debug-details">
               <summary>Debug Information</summary>
               <div class="debug-content">
                 <p><strong>Available cities:</strong> {{ availableCities().length }}</p>
                 <p><strong>Available regions:</strong> {{ availableRegions().length }}</p>
-                <p><strong>Need check-ins to enable geographic filtering</strong></p>
+                <p><strong>Filters based on users' home pub locations</strong></p>
               </div>
             </details>
           </div>

@@ -1,8 +1,10 @@
 import { Injectable, computed, inject } from '@angular/core';
 import { CheckInStore } from '../../check-in/data-access/check-in.store';
 import { PubStore } from '../../pubs/data-access/pub.store';
+import { UserService } from '../../users/data-access/user.service';
 import type { CheckIn } from '../../check-in/utils/check-in.models';
 import type { Pub } from '../../pubs/utils/pub.models';
+import type { User } from '../../users/utils/user.model';
 
 export type UserPubVisit = {
   userId: string;
@@ -13,6 +15,14 @@ export type UserPubVisit = {
   visitCount: number;
 };
 
+export type UserHomePubMapping = {
+  userId: string;
+  homePubId?: string;
+  city?: string;
+  region?: string;
+  country?: string;
+};
+
 export type GeographicGroup = {
   [key: string]: string[]; // Geographic location -> list of user IDs
 };
@@ -21,6 +31,7 @@ export type GeographicGroup = {
 export class PubGroupingService {
   private readonly checkinStore = inject(CheckInStore);
   private readonly pubStore = inject(PubStore);
+  private readonly userService = inject(UserService);
 
   // Performance safeguards
   private readonly MAX_CHECKINS_FOR_REALTIME = 10000;
@@ -31,24 +42,11 @@ export class PubGroupingService {
     const checkins = this.checkinStore.checkins();
     const pubs = this.pubStore.pubs();
     
-    // Debug logging for geographic filtering diagnosis
-    console.log('[PubGroupingService] 🔍 DIAGNOSTIC INFO:');
+    // Debug logging for geographic filtering diagnosis (legacy check-in based approach)
+    console.log('[PubGroupingService] 🔍 LEGACY CHECK-IN DIAGNOSTIC INFO:');
     console.log('[PubGroupingService] 📊 Total pubs:', pubs.length);
     console.log('[PubGroupingService] 📊 Total check-ins:', checkins.length);
-    console.log('[PubGroupingService] 📊 Pubs with city data:', pubs.filter(p => p.city).length);
-    console.log('[PubGroupingService] 📊 Pubs with region data:', pubs.filter(p => p.region).length);
-    console.log('[PubGroupingService] 📊 Pubs with country data:', pubs.filter(p => p.country).length);
-    
-    if (pubs.length > 0) {
-      const samplePub = pubs[0];
-      console.log('[PubGroupingService] 📍 Sample pub:', { 
-        id: samplePub.id, 
-        name: samplePub.name, 
-        city: samplePub.city, 
-        region: samplePub.region, 
-        country: samplePub.country 
-      });
-    }
+    console.log('[PubGroupingService] ⚠️ Note: Geographic filters now use HOME PUB data, not check-in data');
     
     if (checkins.length > 0) {
       const sampleCheckin = checkins[0];
@@ -58,7 +56,7 @@ export class PubGroupingService {
         timestamp: sampleCheckin.timestamp?.toDate?.()
       });
     } else {
-      console.log('[PubGroupingService] ⚠️ NO CHECK-INS FOUND - This explains why geographic filters are not showing!');
+      console.log('[PubGroupingService] ⚠️ NO CHECK-INS FOUND (but geographic filters use home pub data now)');
     }
     
     // Performance monitoring
@@ -102,60 +100,104 @@ export class PubGroupingService {
     return Array.from(visitMap.values());
   });
 
-  // Group users by cities they've visited
+  // Create reactive mapping of users to their home pub geographic data
+  readonly userHomePubMappings = computed(() => {
+    const users = this.userService.allUsers();
+    const pubs = this.pubStore.pubs();
+    
+    // Debug logging for home pub geographic filtering diagnosis
+    console.log('[PubGroupingService] 🏠 HOME PUB DIAGNOSTIC INFO:');
+    console.log('[PubGroupingService] 📊 Total users:', users.length);
+    console.log('[PubGroupingService] 📊 Total pubs:', pubs.length);
+    console.log('[PubGroupingService] 📊 Users with home pub:', users.filter(u => u.homePubId).length);
+    
+    const pubMap = new Map(pubs.map(pub => [pub.id, pub]));
+    const mappings: UserHomePubMapping[] = [];
+
+    users.forEach(user => {
+      const homePub = user.homePubId ? pubMap.get(user.homePubId) : null;
+      
+      mappings.push({
+        userId: user.uid,
+        homePubId: user.homePubId,
+        city: homePub?.city,
+        region: homePub?.region,
+        country: homePub?.country
+      });
+    });
+
+    // Log sample data
+    const usersWithHomePubs = mappings.filter(m => m.homePubId);
+    if (usersWithHomePubs.length > 0) {
+      const sample = usersWithHomePubs[0];
+      console.log('[PubGroupingService] 🏠 Sample user home pub:', { 
+        userId: sample.userId?.slice(0, 8), 
+        homePubId: sample.homePubId,
+        city: sample.city, 
+        region: sample.region, 
+        country: sample.country 
+      });
+    } else {
+      console.log('[PubGroupingService] ⚠️ NO USERS WITH HOME PUBS FOUND');
+    }
+
+    return mappings;
+  });
+
+  // Group users by their home pub cities
   readonly usersByCity = computed(() => {
-    const visits = this.userPubVisits();
+    const homePubMappings = this.userHomePubMappings();
     const groups: GeographicGroup = {};
 
-    visits.forEach(visit => {
-      if (!visit.city) return;
+    homePubMappings.forEach(mapping => {
+      if (!mapping.city || !mapping.homePubId) return; // Only include users with home pubs that have city data
       
-      if (!groups[visit.city]) {
-        groups[visit.city] = [];
+      if (!groups[mapping.city]) {
+        groups[mapping.city] = [];
       }
       
-      if (!groups[visit.city].includes(visit.userId)) {
-        groups[visit.city].push(visit.userId);
+      if (!groups[mapping.city].includes(mapping.userId)) {
+        groups[mapping.city].push(mapping.userId);
       }
     });
 
     return groups;
   });
 
-  // Group users by regions they've visited
+  // Group users by their home pub regions
   readonly usersByRegion = computed(() => {
-    const visits = this.userPubVisits();
+    const homePubMappings = this.userHomePubMappings();
     const groups: GeographicGroup = {};
 
-    visits.forEach(visit => {
-      if (!visit.region) return;
+    homePubMappings.forEach(mapping => {
+      if (!mapping.region || !mapping.homePubId) return; // Only include users with home pubs that have region data
       
-      if (!groups[visit.region]) {
-        groups[visit.region] = [];
+      if (!groups[mapping.region]) {
+        groups[mapping.region] = [];
       }
       
-      if (!groups[visit.region].includes(visit.userId)) {
-        groups[visit.region].push(visit.userId);
+      if (!groups[mapping.region].includes(mapping.userId)) {
+        groups[mapping.region].push(mapping.userId);
       }
     });
 
     return groups;
   });
 
-  // Group users by countries they've visited
+  // Group users by their home pub countries
   readonly usersByCountry = computed(() => {
-    const visits = this.userPubVisits();
+    const homePubMappings = this.userHomePubMappings();
     const groups: GeographicGroup = {};
 
-    visits.forEach(visit => {
-      if (!visit.country) return;
+    homePubMappings.forEach(mapping => {
+      if (!mapping.country || !mapping.homePubId) return; // Only include users with home pubs that have country data
       
-      if (!groups[visit.country]) {
-        groups[visit.country] = [];
+      if (!groups[mapping.country]) {
+        groups[mapping.country] = [];
       }
       
-      if (!groups[visit.country].includes(visit.userId)) {
-        groups[visit.country].push(visit.userId);
+      if (!groups[mapping.country].includes(mapping.userId)) {
+        groups[mapping.country].push(mapping.userId);
       }
     });
 
@@ -209,19 +251,19 @@ export class PubGroupingService {
     };
   });
 
-  // Get all unique cities that have user activity
+  // Get all unique cities where users have home pubs
   readonly activeCities = computed(() => {
     const cityGroups = this.usersByCity();
     const cities = Object.keys(cityGroups).sort();
-    console.log('[PubGroupingService] 🏙️ Active cities:', cities.length, cities);
+    console.log('[PubGroupingService] 🏙️ Cities with users (home pub based):', cities.length, cities);
     return cities;
   });
 
-  // Get all unique regions that have user activity
+  // Get all unique regions where users have home pubs
   readonly activeRegions = computed(() => {
     const regionGroups = this.usersByRegion();
     const regions = Object.keys(regionGroups).sort();
-    console.log('[PubGroupingService] 🌍 Active regions:', regions.length, regions);
+    console.log('[PubGroupingService] 🌍 Regions with users (home pub based):', regions.length, regions);
     return regions;
   });
 
