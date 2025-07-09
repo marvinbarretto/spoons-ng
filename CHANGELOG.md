@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.97](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.96...v0.0.97) (2025-07-09)
+
+
+### Features
+
+* [Admin] Improve Db logging - wip, its not that useful yet ([f38dc69](https://github.com/marvinbarretto/spoons-ng/commit/f38dc69809af138d009b08d24bd35517b70478f4))
+* [Leaderboard] debugging for grouping pills ([1178cbf](https://github.com/marvinbarretto/spoons-ng/commit/1178cbf7614576ec83bcf338376258c5a808ad04))
+* [Leaderboard] Improve groupings ([cb2dd6d](https://github.com/marvinbarretto/spoons-ng/commit/cb2dd6dc73eeaa31b9156857fe1399ebd190bfc3))
+* [Leaderboard] Show total pubs in the all time table ([da13416](https://github.com/marvinbarretto/spoons-ng/commit/da134162c8072d5c48e2366ac9311aac8b4c9248))
+
 ### [0.0.96](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.95...v0.0.96) (2025-07-08)
 
 
