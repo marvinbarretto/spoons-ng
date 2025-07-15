@@ -1,6 +1,5 @@
 import { Component, inject, computed, effect } from '@angular/core';
 import { Router, ActivatedRoute, NavigationEnd, RouterOutlet } from '@angular/router';
-import { PanelStore } from './shared/ui/panel/panel.store';
 import { filter } from 'rxjs';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { SsrPlatformService } from './shared/utils/ssr/ssr-platform.service';
@@ -45,7 +44,6 @@ export class AppComponent {
   protected readonly router = inject(Router);
   protected readonly activatedRoute = inject(ActivatedRoute);
 
-  protected readonly panelStore = inject(PanelStore);
   protected readonly platform = inject(SsrPlatformService);
   protected readonly titleService = inject(PageTitleService);
   protected readonly pubStore = inject(PubStore);
@@ -117,7 +115,6 @@ export class AppComponent {
         .subscribe((event) => {
           console.log('[AppComponent] 🧭 Navigation completed to:', event.url);
           console.log('[AppComponent] 🏠 Current shell after navigation:', this.currentShell());
-          this.panelStore.close();
         });
     });
 

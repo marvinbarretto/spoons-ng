@@ -15,7 +15,6 @@ import { filter, map } from 'rxjs/operators';
 import { toSignal } from '@angular/core/rxjs-interop';
 
 import { BaseComponent } from '../../base/base.component';
-import { PanelStore, PanelType } from '../../ui/panel/panel.store';
 import { ViewportService } from '../../data-access/viewport.service';
 import { NavComponent } from "../nav/nav.component";
 import { UserProfileWidgetComponent } from '../../../home/ui/user-profile-widget/user-profile-widget.component';
@@ -54,10 +53,9 @@ import { environment } from '../../../../environments/environment';
     // ProfileCustomisationModalComponent,
   ],
 })
-export class HeaderComponent extends BaseComponent implements AfterViewInit {
+export class HeaderComponent extends BaseComponent {
   // 🔧 Services
   protected readonly viewportService = inject(ViewportService);
-  protected readonly panelStore = inject(PanelStore);
   protected readonly authStore = inject(AuthStore);
   protected readonly overlayService = inject(OverlayService);
   protected readonly dataAggregatorService = inject(DataAggregatorService);
@@ -97,33 +95,6 @@ export class HeaderComponent extends BaseComponent implements AfterViewInit {
       console.log('[HeaderComponent] Is homepage:', this.isHomepage());
       console.log('[HeaderComponent] Display name:', this.displayName());
     });
-  }
-
-  ngAfterViewInit(): void {
-    this.onlyOnBrowser(() => this.updatePanelOrigin());
-  }
-
-  /**
-   * Handle panel toggle (theme, search, mobile nav)
-   * Used for mobile hamburger menu and utility buttons
-   */
-  onTogglePanel(panel: PanelType): void {
-    this.onlyOnBrowser(() => {
-      const button = this.panelTriggerRef?.nativeElement as HTMLElement;
-      if (button) {
-        const y = button.getBoundingClientRect().bottom + window.scrollY;
-        this.panelStore.setOriginY(y);
-      }
-      this.panelStore.toggle(panel);
-    });
-  }
-
-  private updatePanelOrigin(): void {
-    const rect = this.headerRef?.nativeElement?.getBoundingClientRect();
-    if (rect) {
-      const offsetY = rect.bottom + window.scrollY;
-      this.panelStore.setOriginY(offsetY);
-    }
   }
 
   @HostBinding('class.is-mobile')
