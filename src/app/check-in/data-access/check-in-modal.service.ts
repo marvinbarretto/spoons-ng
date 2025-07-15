@@ -4,7 +4,8 @@ import { Router } from '@angular/router';
 import { OverlayService } from '@shared/data-access/overlay.service';
 import { UserProgressionService } from '@shared/data-access/user-progression.service';
 import { CheckInStore } from '@check-in/data-access/check-in.store';
-import { ModalCheckinSuccessComponent } from '../ui/modal-checkin-success/modal-checkin-success.component';
+import { ModalCheckinCelebrationComponent } from '../ui/modal-checkin-celebration/modal-checkin-celebration.component';
+import { ModalCheckinPointsComponent } from '../ui/modal-checkin-success/modal-checkin-success.component';
 import { ModalCheckinLandlordComponent } from '../ui/modal-checkin-landlord/modal-checkin-landlord.component';
 import { CheckInResultData } from '../utils/check-in.models';
 import { environment } from '../../../environments/environment';
@@ -30,23 +31,23 @@ export class CheckInModalService {
     this.onModalFlowDismissed = onDismissed;
 
     if (!data.success) {
-      // Show error in first modal only
-      this.showCheckinSuccess(data);
+      // Show error in celebration modal
+      this.showCelebration(data);
       return;
     }
 
-    // Start success flow
-    this.showCheckinSuccess(data);
+    // Start celebration flow
+    this.showCelebration(data);
   }
 
   /**
-   * First Modal: Check-in Success/Failure
+   * First Modal: Check-in Celebration
    */
-  private showCheckinSuccess(data: CheckInResultData): void {
-    console.log('[CheckInModalService] Opening success modal');
+  private showCelebration(data: CheckInResultData): void {
+    console.log('[CheckInModalService] Opening celebration modal');
 
     const { componentRef, close, result } = this.overlayService.open(
-      ModalCheckinSuccessComponent,
+      ModalCheckinCelebrationComponent,
       {},
       {
         data,
@@ -67,28 +68,25 @@ export class CheckInModalService {
     };
 
     // Handle modal events
-    componentRef.instance.navigate.subscribe(() => {
-      console.log('[CheckInModalService] Navigate requested');
-      clearFallbackTimeout();
-      close();
-      this.navigateToPub(data.pub?.id);
-    });
-
-    componentRef.instance.dismiss.subscribe(() => {
-      console.log('[CheckInModalService] Success modal dismissed via OK button - navigating to homepage');
-      clearFallbackTimeout();
-      close();
-      this.forceNavigationToHomepage();
-    });
-
-    componentRef.instance.nextModal.subscribe(() => {
-      console.log('[CheckInModalService] Next modal requested');
+    componentRef.instance.continue.subscribe(() => {
+      console.log('[CheckInModalService] Continue to points modal requested');
       clearFallbackTimeout();
       close();
 
       // Brief delay for smooth transition
       this.safeSetTimeout(() => {
-        this.showLandlordStatus(data);
+        this.showPointsDetails(data);
+      }, 200);
+    });
+
+    componentRef.instance.skip.subscribe(() => {
+      console.log('[CheckInModalService] Celebration skipped - going to points modal');
+      clearFallbackTimeout();
+      close();
+
+      // Brief delay for smooth transition
+      this.safeSetTimeout(() => {
+        this.showPointsDetails(data);
       }, 200);
     });
 
@@ -110,7 +108,75 @@ export class CheckInModalService {
   }
 
   /**
-   * Second Modal: Landlord Status
+   * Second Modal: Points Details
+   */
+  private showPointsDetails(data: CheckInResultData): void {
+    console.log('[CheckInModalService] Opening points modal');
+
+    const { componentRef, close, result } = this.overlayService.open(
+      ModalCheckinPointsComponent,
+      {},
+      {
+        data,
+        UserExperienceLevel: this.userProgressionService.userExperienceLevel()
+      }
+    );
+
+    // Set up navigation fallback timeout
+    const navigationFallbackTimeout = this.safeSetTimeout(() => {
+      console.warn('[CheckInModalService] Points modal navigation fallback timeout triggered - forcing navigation to homepage');
+      this.forceNavigationToHomepage();
+    }, environment.MODAL_NAVIGATION_TIMEOUT || 10000);
+
+    // Clear timeout when modal closes properly
+    const clearFallbackTimeout = () => {
+      console.log('[CheckInModalService] Clearing points modal navigation fallback timeout');
+      this.clearTimeout(navigationFallbackTimeout);
+    };
+
+    // Handle modal events
+    componentRef.instance.continue.subscribe(() => {
+      console.log('[CheckInModalService] Continue from points modal');
+      clearFallbackTimeout();
+      close();
+
+      // TODO: Landlord modal temporarily disabled until feature is complete
+      // Continue to landlord modal if applicable, otherwise finish
+      // if (data.isNewLandlord || data.landlordMessage) {
+      //   this.safeSetTimeout(() => {
+      //     this.showLandlordStatus(data);
+      //   }, 200);
+      // } else {
+        this.forceNavigationToHomepage();
+      // }
+    });
+
+    componentRef.instance.dismiss.subscribe(() => {
+      console.log('[CheckInModalService] Points modal dismissed - navigating to homepage');
+      clearFallbackTimeout();
+      close();
+      this.forceNavigationToHomepage();
+    });
+
+    // Handle backdrop/escape dismissal via overlay result promise
+    result.then((value) => {
+      console.log('[CheckInModalService] Points modal result promise resolved with value:', value);
+      clearFallbackTimeout();
+
+      // If modal was dismissed without explicit value (backdrop/escape), navigate home
+      if (value === undefined) {
+        console.log('[CheckInModalService] Points modal dismissed via backdrop/escape - navigating to homepage');
+        this.forceNavigationToHomepage();
+      }
+    }).catch((error) => {
+      console.error('[CheckInModalService] Points modal result promise rejected:', error);
+      clearFallbackTimeout();
+      this.forceNavigationToHomepage();
+    });
+  }
+
+  /**
+   * Third Modal: Landlord Status
    */
   private showLandlordStatus(data: CheckInResultData): void {
     console.log('[CheckInModalService] Opening landlord modal');
@@ -162,7 +228,7 @@ export class CheckInModalService {
 
       // Brief delay for smooth transition
       this.safeSetTimeout(() => {
-        this.showCheckinSuccess(data);
+        this.showCelebration(data);
       }, 200);
     });
 

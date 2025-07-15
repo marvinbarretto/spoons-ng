@@ -85,11 +85,11 @@ public/assets/carpets
 src/app/carpets/docs.ts
 CLAUDE.md
 firebase-debug.log
-TASKS.md
+# TASKS.md
 .claude/settings.local.json
 BACKLOG.md
 PATTERNS.md
-upload-tasks.sh
+# upload-tasks.sh
 CLAUDE.local.md
 tools/seed/parsed-pubs.backup.ts
 REVIEW_CHECKLIST.md
@@ -102,3 +102,4 @@ DESIGN_SYSTEM_AUDIT.md
 CARPET_STRATEGY_IMPLEMENTATION.md
 store-injection-patterns-report.md
 AUDIT.md
+.vscode/settings.json

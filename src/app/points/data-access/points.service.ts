@@ -73,6 +73,13 @@ export class PointsService extends FirestoreCrudService<PointsTransaction> {
       reasons.push(`${POINTS_CONFIG.social.photo} photo bonus`);
     }
 
+    // Photo quality bonus (new enhanced system)
+    if (data.photoQuality && data.photoQuality.bonus > 0) {
+      bonus += data.photoQuality.bonus;
+      const tierName = this.getQualityTierDisplayName(data.photoQuality.tier);
+      reasons.push(`${data.photoQuality.bonus} ${tierName} photo quality bonus`);
+    }
+
     if (data.sharedSocial) {
       bonus += POINTS_CONFIG.social.share;
       reasons.push(`${POINTS_CONFIG.social.share} social share bonus`);
@@ -188,5 +195,17 @@ export class PointsService extends FirestoreCrudService<PointsTransaction> {
 
     const highestStreak = applicableStreaks[0].toString();
     return streakBonuses[highestStreak] || 0;
+  }
+
+  /**
+   * Get display name for quality tier
+   */
+  private getQualityTierDisplayName(tier: 'standard' | 'high' | 'exceptional' | 'perfect'): string {
+    switch (tier) {
+      case 'perfect': return 'perfect';
+      case 'exceptional': return 'exceptional';
+      case 'high': return 'high-quality';
+      default: return 'standard';
+    }
   }
 }

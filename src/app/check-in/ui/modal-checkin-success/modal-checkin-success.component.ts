@@ -2,12 +2,8 @@
 import { Component, inject, input, output, computed, signal, effect, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ButtonComponent } from '@shared/ui/button/button.component';
-import { BadgeIconComponent } from '@badges/ui/badge-icon/badge-icon.component';
 import { CheckInStore } from '../../../check-in/data-access/check-in.store';
 import { AuthStore } from '@auth/data-access/auth.store';
-import { PubStore } from '@pubs/data-access/pub.store';
-import { CarpetStorageService } from '@carpets/data-access/carpet-storage.service';
-import { BADGE_DEFINITIONS } from '@badges/utils/badge.config';
 import { ButtonSize } from '@shared/ui/button/button.params';
 import { environment } from '../../../../environments/environment';
 import { CheckInResultData } from '../../utils/check-in.models';
@@ -18,150 +14,54 @@ type PointsBreakdownItem = {
   description: string;
   icon: string;
   color: string;
-  animatedValue?: number; // For animated display
-  isVisible?: boolean;    // For staggered reveals
+  distanceAmount?: string; // For distance display
 };
 
 @Component({
-  selector: 'app-modal-checkin-success',
-  imports: [CommonModule, ButtonComponent, BadgeIconComponent],
+  selector: 'app-modal-checkin-points',
+  imports: [CommonModule, ButtonComponent],
   template: `
-    <div class="modal-container" [class.success]="data().success">
-      <div class="modal-header">
-        <h2>{{ title() }}</h2>
+    <div class="checkin-modal-container" [class.success]="data().success">
+      <div class="checkin-modal-header">
+        <h2>🏆 Points Breakdown</h2>
       </div>
 
-      <div class="modal-body">
+      <div class="checkin-modal-body">
         @if (data().success) {
-          <div class="success-content">
-            <!-- Main Success Icon -->
-            <!-- <div class="main-icon">✅</div> -->
+          <div class="points-content">
 
-            <!-- Basic Check-in Info -->
-            <div class="basic-info">
-              <p><strong>Checked into {{ data().pub?.name }}!</strong></p>
-              @if (data().checkin?.timestamp) {
-                <p class="timestamp">
-                  {{ formatTimestamp(data().checkin!.timestamp) }}
-                </p>
-              }
-            </div>
-
-            <!-- Personalized Stats Section -->
-            <div class="personalized-stats">
-              <div class="stats-grid">
-                <div class="stat-item featured-stat">
-                  <span class="stat-number">{{ totalPubsCount() }}</span>
-                  <span class="stat-label">Pubs Discovered</span>
-                  @if (isFirstTimeAtPub()) {
-                    <div class="stat-badge">+1 NEW!</div>
-                  }
-                </div>
-
-                <div class="stat-item">
-                  <span class="stat-number">{{ totalCheckinsCount() }}</span>
-                  <span class="stat-label">Total Check-ins</span>
-                </div>
-              </div>
-
-              <!-- Pub-specific info -->
-              <div class="pub-specific">
-                @if (isFirstTimeAtPub()) {
-                  <p class="milestone first-time">🎉 First visit to {{ data().pub?.name }}!</p>
-                } @else {
-                  <p class="milestone">
-                    {{ getCurrentPubCheckinsCount() }}{{ getOrdinalSuffix(getCurrentPubCheckinsCount()) }}
-                    visit to {{ data().pub?.name }}
-                  </p>
-                }
-              </div>
-
-              <!-- Consecutive days (if applicable) -->
-              @if (consecutiveDaysCount() > 1) {
-                <div class="consecutive-days">
-                  <p class="milestone">
-                    🔥 {{ consecutiveDaysCount() }} consecutive days checked in!
-                  </p>
-                </div>
-              }
-            </div>
-
-            <!-- Points Breakdown Section with Staggered Animation -->
+            <!-- Points Breakdown Section -->
             @if (pointsBreakdown().length > 0 || totalPointsEarned() > 0) {
-              
-              <!-- Calculating Phase -->
-              @if (animationPhase() === 'calculating') {
-                <div class="points-calculating">
-                  <div class="calculating-icon">🧮</div>
-                  <div class="calculating-text">
-                    Calculating points<span class="calculating-dots">
-                      <span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>
-                    </span>
-                  </div>
-                  <div class="calculating-bar">
-                    <div class="calculating-progress"></div>
-                  </div>
-                </div>
-              }
-              
-              <!-- Revealing/Complete Phase -->
-              @if (animationPhase() === 'revealing' || animationPhase() === 'complete') {
-                <div class="points-section">
-                  <h3>🏆 Points Earned</h3>
-                  <div class="points-table">
-                    @for (item of pointsBreakdown(); track item.type; let i = $index) {
-                      @if (isItemVisible(i)) {
-                        <div class="points-row animate slide-in" 
-                             [style.animation-delay]="getAnimationDelay(i)">
-                          <div class="points-icon" [style.color]="item.color">
-                            {{ item.icon }}
-                          </div>
-                          <div class="points-description">
-                            {{ item.description }}
-                          </div>
-                          <div class="points-value animated-value" [style.color]="item.color">
-                            +{{ item.points }}
-                          </div>
-                        </div>
-                      }
-                    }
-
-                    @if (animationPhase() === 'complete' && totalPointsEarned() > 0) {
-                      <div class="points-total animate">
-                        <div class="total-label">Total Points</div>
-                        <div class="total-value animated-total">{{ totalPointsEarned() }}</div>
+              <div class="points-section">
+                <h3>🏆 Points Earned</h3>
+                <div class="points-table">
+                  @for (item of pointsBreakdown(); track item.type; let i = $index) {
+                    <div class="points-row">
+                      <div class="points-icon" [style.color]="item.color">
+                        {{ item.icon }}
                       </div>
-                    }
-                  </div>
-                </div>
-              }
-            }
-
-            <!-- Badges Section -->
-            @if (hasNewBadges()) {
-              <div class="badges-section">
-                <h3>🏅 New Badges Earned!</h3>
-                <div class="badges-grid">
-                  @for (badgeData of displayBadges(); track badgeData.badgeId) {
-                    <div class="badge-award">
-                      <div class="badge-display">
-                        <app-badge-icon
-                          [badge]="getBadgeDefinition(badgeData.badgeId)"
-                        ></app-badge-icon>
-                      </div>
-                      <div class="badge-info">
-                        <span class="badge-name">{{ badgeData.name }}</span>
-                        @if (getBadgeDefinition(badgeData.badgeId)?.description) {
-                          <span class="badge-description">
-                            {{ getBadgeDefinition(badgeData.badgeId)?.description }}
-                          </span>
+                      <div class="points-description">
+                        <span class="description-main">{{ item.description }}</span>
+                        @if (item.distanceAmount) {
+                          <span class="distance-amount">{{ item.distanceAmount }}</span>
                         }
                       </div>
+                      <div class="points-value" [style.color]="item.color">
+                        +{{ item.points }}
+                      </div>
+                    </div>
+                  }
+
+                  @if (totalPointsEarned() > 0) {
+                    <div class="points-total">
+                      <div class="total-label">Total Points</div>
+                      <div class="total-value">{{ totalPointsEarned() }}</div>
                     </div>
                   }
                 </div>
               </div>
             }
+
 
           </div>
         } @else {
@@ -172,15 +72,15 @@ type PointsBreakdownItem = {
         }
       </div>
 
-      <div class="modal-footer">
+      <div class="checkin-modal-footer">
         <div class="button-group">
           <app-button
             variant="primary"
             [size]="ButtonSize.LARGE"
             [fullWidth]="true"
-            (onClick)="handleDismiss()"
+            (onClick)="handleContinue()"
           >
-            OK
+            Continue
           </app-button>
         </div>
       </div>
@@ -188,6 +88,7 @@ type PointsBreakdownItem = {
   `,
   styles: [`
     @use 'styles/index' as *;
+    @import 'styles/components/check-in-modals';
 
     // ===================================
     // ⏱️ POINTS ANIMATION TIMING CONFIG
@@ -215,37 +116,10 @@ type PointsBreakdownItem = {
     // Badge animations
     $badge-pulse-duration: 1.5s;       // Speed of badge pulsing
 
-    .modal-container {
-      background: var(--background);
-      border: 1px solid var(--background-darker);
-      border-radius: 8px;
-      max-width: 420px;
-      width: 100%;
-    }
-
-    .modal-container.success {
-      border-color: #28a745;
-    }
-
-    .modal-header, .modal-body, .modal-footer {
-      padding: 0.25rem;
-    }
-
-    .modal-header {
-      border-bottom: 1px solid var(--background-lighter);
-      text-align: center;
-      padding: 0.375rem;
-    }
-
-    .modal-header h2 {
+    .checkin-modal-header h2 {
       margin: 0;
       color: var(--textPrimary);
       font-size: 1.25rem;
-    }
-
-    .modal-footer {
-      border-top: 1px solid var(--background-lighter);
-      padding: 0.25rem;
     }
 
     .main-icon {
@@ -441,17 +315,6 @@ type PointsBreakdownItem = {
 
 
     @media (max-width: 480px) {
-      .modal-header, .modal-body, .modal-footer {
-        padding: 0.75rem;
-      }
-
-      .modal-header {
-        padding: 0.5rem 0.75rem;
-      }
-
-      .modal-footer {
-        padding: 0.5rem 0.75rem;
-      }
 
       .stats-grid {
         grid-template-columns: 1fr;
@@ -589,11 +452,6 @@ type PointsBreakdownItem = {
       background: var(--background-darkest);
       border-radius: 6px;
       border: 1px solid var(--border);
-
-      // Slide up animation for each row
-      &.animate {
-        @include slide-up($duration: $points-row-duration);
-      }
     }
 
     .points-icon {
@@ -605,6 +463,19 @@ type PointsBreakdownItem = {
       font-size: 0.875rem;
       color: var(--text);
       font-weight: 500;
+      display: flex;
+      flex-direction: column;
+      gap: 0.125rem;
+    }
+
+    .description-main {
+      font-weight: 500;
+    }
+
+    .distance-amount {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      font-weight: normal;
     }
 
     .points-value {
@@ -635,11 +506,6 @@ type PointsBreakdownItem = {
       color: var(--on-accent);
       border-radius: 6px;
       font-weight: bold;
-
-      // Pop in animation with delay
-      &.animate {
-        @include pop-in($duration: $points-total-duration, $delay: $points-total-delay);
-      }
     }
 
     .total-label {
@@ -655,76 +521,6 @@ type PointsBreakdownItem = {
       @include pulse($points-pulse-duration);
     }
 
-    // ===================================
-    // 🧮 CALCULATING POINTS ANIMATION
-    // ===================================
-
-    .points-calculating {
-      text-align: center;
-      padding: 2rem 1rem;
-      background: linear-gradient(135deg, var(--background-lighter) 0%, var(--background) 100%);
-      border-radius: 6px;
-      margin: 0.25rem 0;
-      border: 1px solid var(--border);
-
-      @include fade-in();
-    }
-
-    .calculating-icon {
-      font-size: 2rem;
-      margin-bottom: 0.5rem;
-      @include pulse(1.5s);
-    }
-
-    .calculating-text {
-      font-size: 1rem;
-      color: var(--text);
-      font-weight: 600;
-      margin-bottom: 1rem;
-    }
-
-    .calculating-dots {
-      display: inline-block;
-
-      .dot {
-        animation: calculating-dot-fade 1.5s infinite;
-
-        &:nth-child(1) { animation-delay: 0s; }
-        &:nth-child(2) { animation-delay: 0.3s; }
-        &:nth-child(3) { animation-delay: 0.6s; }
-      }
-    }
-
-    .calculating-bar {
-      width: 200px;
-      height: 4px;
-      background: var(--background-darker);
-      border-radius: 2px;
-      margin: 0 auto;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .calculating-progress {
-      height: 100%;
-      background: linear-gradient(90deg, var(--success), var(--accent));
-      border-radius: 2px;
-      animation: calculating-progress 1.2s ease-in-out infinite;
-      transform-origin: left;
-    }
-
-    // Calculating animations
-    @keyframes calculating-dot-fade {
-      0%, 60% { opacity: 0.3; }
-      30% { opacity: 1; }
-      100% { opacity: 0.3; }
-    }
-
-    @keyframes calculating-progress {
-      0% { transform: scaleX(0); }
-      50% { transform: scaleX(0.6); }
-      100% { transform: scaleX(1); }
-    }
 
     // ===================================
     // 🎬 ANIMATION MIXINS
@@ -794,7 +590,7 @@ type PointsBreakdownItem = {
     }
   `]
 })
-export class ModalCheckinSuccessComponent implements OnDestroy {
+export class ModalCheckinPointsComponent implements OnDestroy {
   readonly ButtonSize = ButtonSize;
 
   // Inputs
@@ -802,31 +598,14 @@ export class ModalCheckinSuccessComponent implements OnDestroy {
   readonly UserExperienceLevel = input<string>('');
 
   // Outputs
-  readonly navigate = output<void>();
+  readonly continue = output<void>();
   readonly dismiss = output<void>();
-  readonly nextModal = output<void>();
 
   // Store injections
   protected readonly checkinStore = inject(CheckInStore);
   protected readonly authStore = inject(AuthStore);
-  protected readonly pubStore = inject(PubStore);
-  private readonly carpetStorageService = inject(CarpetStorageService);
 
-  // Carpet image state
-  private readonly _carpetImageUrl = signal<string | null>(null);
-  readonly carpetImageUrl = this._carpetImageUrl.asReadonly();
 
-  // Simple animation state
-  private readonly _animationPhase = signal<'calculating' | 'revealing' | 'complete'>('calculating');
-  private readonly _visibleItemCount = signal(0);
-  private animationTimeouts: number[] = [];
-  
-  readonly animationPhase = this._animationPhase.asReadonly();
-  readonly visibleItemCount = this._visibleItemCount.asReadonly();
-
-  // Animation timing configuration
-  readonly POINTS_ROW_STAGGER = 500; // milliseconds between each row reveal
-  readonly POINTS_CALCULATION_DELAY = 750; // delay before starting reveals
 
   constructor() {
     // Debug effect to log when modal data changes
@@ -835,7 +614,7 @@ export class ModalCheckinSuccessComponent implements OnDestroy {
       const allCheckins = this.checkinStore.checkins();
       const storeLoading = this.checkinStore.loading();
 
-      console.log('[ModalCheckinSuccess] Modal data changed:', {
+      console.log('[ModalCheckinPoints] Modal data changed:', {
         success: data.success,
         pubId: data.pub?.id,
         pubName: data.pub?.name,
@@ -845,7 +624,7 @@ export class ModalCheckinSuccessComponent implements OnDestroy {
         timestamp: data.checkin?.timestamp
       });
 
-      console.log('[ModalCheckinSuccess] CheckInStore state:', {
+      console.log('[ModalCheckinPoints] CheckInStore state:', {
         allCheckinsCount: allCheckins.length,
         storeLoading,
         checkinIds: allCheckins.map(c => c.id),
@@ -853,23 +632,7 @@ export class ModalCheckinSuccessComponent implements OnDestroy {
       });
     });
 
-    // Load carpet image when data changes
-    effect(() => {
-      const carpetKey = this.data().checkin?.carpetImageKey;
-      if (carpetKey && this.data().carpetCaptured) {
-        console.log('[ModalCheckinSuccess] Loading carpet image for key:', carpetKey);
-        this.loadCarpetImage(carpetKey);
-      }
-    });
 
-    // Start points animation when data becomes available
-    effect(() => {
-      const breakdown = this.pointsBreakdown();
-      if (breakdown.length > 0) {
-        console.log('[ModalCheckinSuccess] 🎬 Starting simple staggered animation');
-        this.startSimpleAnimation();
-      }
-    });
   }
 
   // Computed properties for UI logic
@@ -890,7 +653,7 @@ export class ModalCheckinSuccessComponent implements OnDestroy {
   readonly pointsBreakdown = computed((): PointsBreakdownItem[] => {
     const checkin = this.data().checkin;
 
-    console.log('[ModalCheckinSuccess] 🔍 Points breakdown debug:', {
+    console.log('[ModalCheckinPoints] 🔍 Points breakdown debug:', {
       hasCheckin: !!checkin,
       pointsEarned: checkin?.pointsEarned,
       hasPointsBreakdown: !!checkin?.pointsBreakdown,
@@ -899,7 +662,7 @@ export class ModalCheckinSuccessComponent implements OnDestroy {
 
     // If we have points but no breakdown, create a simple one
     if (checkin?.pointsEarned && !checkin.pointsBreakdown) {
-      console.log('[ModalCheckinSuccess] 📝 Using simple breakdown for points:', checkin.pointsEarned);
+      console.log('[ModalCheckinPoints] 📝 Using simple breakdown for points:', checkin.pointsEarned);
       return [{
         type: 'total',
         points: checkin.pointsEarned,
@@ -910,14 +673,14 @@ export class ModalCheckinSuccessComponent implements OnDestroy {
     }
 
     if (!checkin?.pointsBreakdown) {
-      console.log('[ModalCheckinSuccess] ❌ No points breakdown available');
+      console.log('[ModalCheckinPoints] ❌ No points breakdown available');
       return [];
     }
 
     try {
       // Parse the points breakdown string
       const breakdown = JSON.parse(checkin.pointsBreakdown);
-      console.log('[ModalCheckinSuccess] 📊 Parsed breakdown:', breakdown);
+      console.log('[ModalCheckinPoints] 📊 Parsed breakdown:', breakdown);
       
       const items: PointsBreakdownItem[] = [];
 
@@ -934,15 +697,16 @@ export class ModalCheckinSuccessComponent implements OnDestroy {
 
       // Distance bonus
       if (breakdown.distance > 0) {
-        console.log('[ModalCheckinSuccess] ✅ Adding distance bonus:', breakdown.distance);
+        console.log('[ModalCheckinPoints] ✅ Adding distance bonus:', breakdown.distance);
         
         // Extract distance from reason string if available
         let distanceText = 'Distance bonus';
+        let distanceAmount = '';
         if (breakdown.reason) {
           const distanceMatch = breakdown.reason.match(/(\d+(?:\.\d+)?)\s*km/);
           if (distanceMatch) {
-            const distance = distanceMatch[1];
-            distanceText = `Distance bonus (${distance}km)`;
+            distanceAmount = `${distanceMatch[1]}km`;
+            distanceText = 'Distance bonus';
           }
         }
         
@@ -950,11 +714,12 @@ export class ModalCheckinSuccessComponent implements OnDestroy {
           type: 'distance',
           points: breakdown.distance,
           description: distanceText,
+          distanceAmount: distanceAmount,
           icon: '📍',
           color: '#007bff'
         });
       } else {
-        console.log('[ModalCheckinSuccess] ❌ No distance bonus found:', {
+        console.log('[ModalCheckinPoints] ❌ No distance bonus found:', {
           hasDistanceProperty: 'distance' in breakdown,
           distanceValue: breakdown.distance
         });
@@ -975,7 +740,7 @@ export class ModalCheckinSuccessComponent implements OnDestroy {
           });
         }
 
-        if (reason.includes('photo')) {
+        if (reason.includes('photo bonus') && !reason.includes('quality')) {
           items.push({
             type: 'photo',
             points: 3,
@@ -983,6 +748,45 @@ export class ModalCheckinSuccessComponent implements OnDestroy {
             icon: '📷',
             color: '#6f42c1'
           });
+        }
+
+        // Enhanced photo quality bonuses
+        if (reason.includes('photo quality bonus')) {
+          const qualityMatch = reason.match(/(\d+)\s+([\w-]+)\s+photo quality bonus/i);
+          if (qualityMatch) {
+            const points = parseInt(qualityMatch[1]);
+            const tier = qualityMatch[2];
+            
+            let icon = '📸';
+            let color = '#28a745';
+            let description = 'Photo quality bonus';
+            
+            switch (tier.toLowerCase()) {
+              case 'perfect':
+                icon = '🌟';
+                color = '#ffd700';
+                description = 'Perfect photo quality!';
+                break;
+              case 'exceptional':
+                icon = '✨';
+                color = '#ff6b6b';
+                description = 'Exceptional photo quality!';
+                break;
+              case 'high-quality':
+                icon = '💎';
+                color = '#4ecdc4';
+                description = 'High-quality photo!';
+                break;
+            }
+            
+            items.push({
+              type: 'photo-quality',
+              points: points,
+              description: description,
+              icon: icon,
+              color: color
+            });
+          }
         }
 
         if (reason.includes('streak')) {
@@ -1009,13 +813,23 @@ export class ModalCheckinSuccessComponent implements OnDestroy {
             color: '#20c997'
           });
         }
+
+        if (reason.includes('home pub')) {
+          items.push({
+            type: 'home-pub',
+            points: 3,
+            description: 'Home pub bonus',
+            icon: '🏠',
+            color: '#fd7e14'
+          });
+        }
       }
 
-      console.log('[ModalCheckinSuccess] 🎯 Final breakdown items:', items);
+      console.log('[ModalCheckinPoints] 🎯 Final breakdown items:', items);
       return items;
     } catch (error) {
-      console.warn('[ModalCheckinSuccess] ❌ Failed to parse points breakdown:', error);
-      console.warn('[ModalCheckinSuccess] 📋 Raw breakdown data:', checkin?.pointsBreakdown);
+      console.warn('[ModalCheckinPoints] ❌ Failed to parse points breakdown:', error);
+      console.warn('[ModalCheckinPoints] 📋 Raw breakdown data:', checkin?.pointsBreakdown);
       // Fallback to simple points display
       if (checkin?.pointsEarned) {
         return [{
@@ -1035,236 +849,23 @@ export class ModalCheckinSuccessComponent implements OnDestroy {
     return checkin?.pointsEarned || this.pointsBreakdown().reduce((sum, item) => sum + item.points, 0);
   });
 
-  // Personalized stats computations - now using CheckInStore's computed signals
-  readonly totalCheckinsCount = computed(() => {
-    const userId = this.authStore.uid();
-    if (!userId) return 0;
-
-    const allCheckins = this.checkinStore.checkins();
-    const userCheckins = allCheckins.filter(c => c.userId === userId);
-
-    console.log('[ModalCheckinSuccess] totalCheckinsCount computed:', {
-      allCheckinsCount: allCheckins.length,
-      userId,
-      userCheckinsCount: userCheckins.length,
-      userCheckins: userCheckins.map(c => ({ id: c.id, pubId: c.pubId, timestamp: c.timestamp }))
-    });
-
-    return userCheckins.length;
-  });
-
-  readonly totalPubsCount = computed(() => {
-    const userId = this.authStore.uid();
-    if (!userId) return 0;
-
-    const allCheckins = this.checkinStore.checkins();
-    const userCheckins = allCheckins.filter(c => c.userId === userId);
-    const uniquePubIds = new Set(userCheckins.map(c => c.pubId));
-
-    console.log('[ModalCheckinSuccess] totalPubsCount computed:', {
-      allCheckinsCount: allCheckins.length,
-      userId,
-      userCheckinsCount: userCheckins.length,
-      uniquePubIds: Array.from(uniquePubIds),
-      uniquePubsCount: uniquePubIds.size
-    });
-
-    return uniquePubIds.size;
-  });
-
-  readonly isFirstTimeAtPub = computed(() => {
-    const currentPubId = this.data().pub?.id;
-    const allCheckins = this.checkinStore.checkins();
-    const userId = this.authStore.uid();
-
-    if (!currentPubId || !userId) {
-      console.log('[ModalCheckinSuccess] isFirstTimeAtPub: No current pub ID or user ID');
-      return false;
-    }
-
-    const userCheckins = allCheckins.filter(
-      c => c.userId === userId && c.pubId === currentPubId
-    );
-
-    const isFirst = userCheckins.length === 1;
-
-    console.log('[ModalCheckinSuccess] isFirstTimeAtPub computed:', {
-      currentPubId,
-      userId,
-      allCheckinsCount: allCheckins.length,
-      userCheckinsForThisPub: userCheckins.length,
-      isFirstTime: isFirst,
-      userCheckinsForThisPubData: userCheckins.map(c => ({ id: c.id, timestamp: c.timestamp }))
-    });
-
-    return isFirst;
-  });
-
-  readonly getCurrentPubCheckinsCount = computed(() => {
-    const currentPubId = this.data().pub?.id;
-    const userId = this.authStore.uid();
-    if (!currentPubId || !userId) return 0;
-
-    const userCheckins = this.checkinStore.checkins().filter(
-      c => c.userId === userId && c.pubId === currentPubId
-    );
-    return userCheckins.length;
-  });
-
-  readonly consecutiveDaysCount = computed(() => {
-    const userId = this.authStore.uid();
-    if (!userId) return 0;
-
-    const userCheckins = this.checkinStore.checkins()
-      .filter(c => c.userId === userId)
-      .sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis());
-
-    if (userCheckins.length === 0) return 0;
-
-    let consecutiveDays = 1;
-    const today = new Date().toISOString().split('T')[0];
-    let currentDate = today;
-
-    for (let i = 1; i < userCheckins.length; i++) {
-      const prevDate = new Date(currentDate);
-      prevDate.setDate(prevDate.getDate() - 1);
-      const expectedPrevDate = prevDate.toISOString().split('T')[0];
-
-      const checkInDate = userCheckins[i].dateKey;
-
-      if (checkInDate === expectedPrevDate) {
-        consecutiveDays++;
-        currentDate = checkInDate;
-      } else {
-        break;
-      }
-    }
-
-    return consecutiveDays;
-  });
 
   // Event handlers
+  handleContinue(): void {
+    console.log('[ModalCheckinPoints] Continue to next modal');
+    this.continue.emit();
+  }
+
   handleDismiss(): void {
-    console.log('[ModalCheckinSuccess] Dismiss requested');
+    console.log('[ModalCheckinPoints] Dismiss requested');
     this.dismiss.emit();
   }
 
-  // Carpet image methods
-  private async loadCarpetImage(carpetKey: string): Promise<void> {
-    try {
-      console.log('[ModalCheckinSuccess] Loading carpet image:', carpetKey);
-      const imageUrl = await this.carpetStorageService.getPhotoUrl(carpetKey);
-      if (imageUrl) {
-        this._carpetImageUrl.set(imageUrl);
-        console.log('[ModalCheckinSuccess] Carpet image loaded successfully');
-      }
-    } catch (error) {
-      console.error('[ModalCheckinSuccess] Failed to load carpet image:', error);
-      this._carpetImageUrl.set(null);
-    }
-  }
-
-  onCarpetImageError(): void {
-    console.log('[ModalCheckinSuccess] Carpet image failed to load, showing placeholder');
-    this._carpetImageUrl.set(null);
-  }
 
   // Utility methods
-  formatTimestamp(timestamp: any): string {
-    if (!timestamp) return '';
-
-    try {
-      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-      return date.toLocaleTimeString();
-    } catch {
-      return 'Just now';
-    }
-  }
-
-  getOrdinalSuffix(num: number): string {
-    const lastDigit = num % 10;
-    const lastTwoDigits = num % 100;
-
-    if (lastTwoDigits >= 11 && lastTwoDigits <= 13) {
-      return 'th';
-    }
-
-    switch (lastDigit) {
-      case 1: return 'st';
-      case 2: return 'nd';
-      case 3: return 'rd';
-      default: return 'th';
-    }
-  }
-
-  getBadgeDefinition(badgeId: string) {
-    return BADGE_DEFINITIONS.find(b => b.id === badgeId);
-  }
-
-  // Animation helper
-  getAnimationDelay(index: number): string {
-    return `${index * (this.POINTS_ROW_STAGGER / 1000)}s`;
-  }
 
   ngOnDestroy(): void {
-    // Clear all timeouts when component is destroyed
-    this.clearAllTimeouts();
-  }
-
-  /**
-   * Check if an item should be visible based on animation progress
-   */
-  isItemVisible(index: number): boolean {
-    return index < this.visibleItemCount();
-  }
-
-  /**
-   * Start simple staggered animation without complex value animation
-   */
-  private startSimpleAnimation(): void {
-    const breakdown = this.pointsBreakdown();
-    if (breakdown.length === 0) return;
-
-    console.log('[ModalCheckinSuccess] 🎬 Starting simple animation sequence');
-    
-    // Clear any existing timeouts
-    this.clearAllTimeouts();
-    
-    // Phase 1: Calculating
-    this._animationPhase.set('calculating');
-    this._visibleItemCount.set(0);
-    
-    // Phase 2: Move to revealing after calculation delay
-    const calculationTimeout = setTimeout(() => {
-      this._animationPhase.set('revealing');
-      
-      // Phase 3: Reveal items sequentially
-      breakdown.forEach((item, index) => {
-        const revealTimeout = setTimeout(() => {
-          console.log(`[ModalCheckinSuccess] 🎯 Revealing item ${index + 1}:`, item.description);
-          this._visibleItemCount.set(index + 1);
-          
-          // If this is the last item, complete the animation
-          if (index === breakdown.length - 1) {
-            const completeTimeout = setTimeout(() => {
-              this._animationPhase.set('complete');
-              console.log('[ModalCheckinSuccess] ✅ Animation sequence complete');
-            }, 800); // Give time for the last item to slide in
-            this.animationTimeouts.push(completeTimeout as any);
-          }
-        }, index * this.POINTS_ROW_STAGGER);
-        this.animationTimeouts.push(revealTimeout as any);
-      });
-    }, this.POINTS_CALCULATION_DELAY);
-    this.animationTimeouts.push(calculationTimeout as any);
-  }
-
-  /**
-   * Clear all animation timeouts
-   */
-  private clearAllTimeouts(): void {
-    this.animationTimeouts.forEach(timeout => clearTimeout(timeout));
-    this.animationTimeouts = [];
+    // Component cleanup
   }
 
 }

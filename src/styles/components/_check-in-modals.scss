@@ -1,0 +1,65 @@
+// Shared styles for all check-in modals (celebration, points, landlord)
+// Ensures consistent sizing and spacing across the entire check-in flow
+
+.checkin-modal-container {
+  background: var(--background);
+  border: 1px solid var(--background-darker);
+  border-radius: 8px;
+  max-width: 450px;
+  min-height: 500px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.checkin-modal-header {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.checkin-modal-body {
+  padding: 1rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.checkin-modal-footer {
+  padding: 1rem;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+// Success modal specific styling
+.checkin-modal-container.celebration {
+  border-color: var(--success);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.checkin-modal-container.success {
+  border-color: #28a745;
+}
+
+.checkin-modal-container.new-landlord {
+  border-color: #ffd700;
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4a 100%);
+  color: #000;
+}
+
+// Mobile responsive
+@media (max-width: 480px) {
+  .checkin-modal-header {
+    padding: 0.75rem;
+  }
+  
+  .checkin-modal-body {
+    padding: 1rem;
+  }
+  
+  .checkin-modal-footer {
+    padding: 0.75rem;
+  }
+}

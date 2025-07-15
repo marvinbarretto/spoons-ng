@@ -29,11 +29,13 @@ import { AuthStore } from '../../auth/data-access/auth.store';
 import { PointsService } from './points.service';
 import type { PointsTransaction, PointsBreakdown, CheckInPointsData } from '../utils/points.models';
 import { UserStore } from '../../users/data-access/user.store';
+import { CacheCoherenceService } from '../../shared/data-access/cache-coherence.service';
 @Injectable({ providedIn: 'root' })
 export class PointsStore {
   private readonly authStore = inject(AuthStore);
   private readonly pointsService = inject(PointsService);
   private readonly userStore = inject(UserStore);
+  private readonly cacheCoherence = inject(CacheCoherenceService);
 
   // ✅ Private signals (following conventions)
   private readonly _totalPoints = signal(0);
@@ -299,6 +301,11 @@ export class PointsStore {
       // 6. Add transaction to local array
       this._recentTransactions.update(current => [transaction, ...current].slice(0, 20));
 
+      // 7. ✅ CRITICAL: Invalidate cache to trigger leaderboard refresh
+      console.log(`[PointsStore] 🔄 Triggering cache invalidation for points award (${callId})`);
+      this.cacheCoherence.invalidate('points', 'check-in-points-awarded');
+      console.log(`[PointsStore] 🔄 Cache invalidation triggered - leaderboard should refresh`);
+
       console.log(`[PointsStore] ✅ Award check-in points COMPLETED (${callId}):`, {
         pointsAwarded: breakdown.total,
         newTotal: newTotal
@@ -347,6 +354,11 @@ export class PointsStore {
       this._totalPoints.set(newTotal);
       this.userStore.patchUser({ totalPoints: newTotal }); // ✅ Real-time scoreboard update
       await this.pointsService.updateUserTotalPoints(user.uid, newTotal);
+
+      // ✅ CRITICAL: Invalidate cache to trigger leaderboard refresh
+      console.log('[PointsStore] 🔄 Triggering cache invalidation for social points award');
+      this.cacheCoherence.invalidate('points', 'social-points-awarded');
+      console.log('[PointsStore] 🔄 Cache invalidation triggered - leaderboard should refresh');
 
       console.log('[PointsStore] ✅ Social points awarded:', breakdown.total);
       return breakdown;

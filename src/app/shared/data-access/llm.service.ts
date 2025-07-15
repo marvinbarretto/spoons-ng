@@ -1,7 +1,8 @@
 import { Injectable, signal } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { LLMResponse, CarpetDetectionResult, LLMRequest, LLMStreamResponse, LLMStreamChunk } from '../utils/llm-types';
+import { LLMResponse, CarpetDetectionResult, LLMRequest, LLMStreamResponse, LLMStreamChunk, PhotoAnalysisResult, AnalysisTheme, PhotoQualityMetrics, ANALYSIS_THEMES } from '../utils/llm-types';
+import { LLMPromptFactory } from '../utils/llm-prompt-factory';
 
 @Injectable({
   providedIn: 'root'
@@ -148,29 +149,138 @@ export class LLMService {
   }
 
   /**
-   * 🎯 Carpet analysis for CarpetStrategyService
+   * 🎯 New themed analysis system - supports any analysis theme with quality assessment
+   */
+  async analyzePhotoWithTheme(imageData: string, theme: AnalysisTheme): Promise<LLMResponse<PhotoAnalysisResult>> {
+    console.log(`[LLMService] 🎯 Analyzing photo with theme: ${theme.name}`);
+
+    // Validate theme first
+    const validation = LLMPromptFactory.validateTheme(theme);
+    if (!validation.valid) {
+      console.error('[LLMService] ❌ Invalid theme configuration:', validation.errors);
+      return {
+        success: false,
+        data: this.createFailedAnalysisResult(theme, validation.errors.join(', ')),
+        error: `Invalid theme: ${validation.errors.join(', ')}`,
+        cached: false
+      };
+    }
+
+    // Optimize image first
+    const optimizedImage = await this.optimizeImageForAnalysis(imageData);
+    console.log('[LLMService] Image optimized for themed analysis');
+
+    this._isProcessing.set(true);
+
+    try {
+      const prompt = LLMPromptFactory.buildAnalysisPrompt(theme);
+      const imagePart = this.prepareImagePart(optimizedImage);
+
+      const result = await this._model.generateContent([prompt, imagePart]);
+      const responseText = result.response.text();
+
+      console.log('[LLMService] Raw themed analysis response:', responseText);
+
+      // Parse the enhanced response
+      const analysisResult = this.parseThemedAnalysisResponse(responseText, theme);
+      
+      this._requestCount.update(count => count + 1);
+
+      console.log('[LLMService] ✅ Themed analysis complete:', analysisResult);
+
+      return {
+        success: true,
+        data: analysisResult,
+        cached: false
+      };
+
+    } catch (error: any) {
+      console.error('[LLMService] ❌ Themed analysis failed:', error);
+
+      return {
+        success: false,
+        data: this.createFailedAnalysisResult(theme, error?.message || 'Analysis failed'),
+        error: error?.message || 'Themed analysis failed',
+        cached: false
+      };
+    } finally {
+      this._isProcessing.set(false);
+    }
+  }
+
+  /**
+   * 🎯 Carpet analysis for CarpetStrategyService - now uses themed system
    * Returns simplified result format optimized for the carpet workflow
    */
   async analyzeCarpet(imageData: string): Promise<{ isCarpet: boolean; confidence: number }> {
-    console.log('[LLMService] 🎯 Analyzing carpet for strategy workflow...');
+    console.log('[LLMService] 🎯 Analyzing carpet using themed system...');
 
     try {
-      const result = await this.detectCarpet(imageData);
+      const result = await this.analyzePhotoWithTheme(imageData, ANALYSIS_THEMES.CARPET);
       
       if (result.success) {
-        console.log(`[LLMService] ✅ Strategy analysis complete - isCarpet: ${result.data.isCarpet}, confidence: ${result.data.confidence}%`);
+        console.log(`[LLMService] ✅ Carpet analysis complete - detected: ${result.data.detected}, confidence: ${result.data.confidence}%`);
         return {
-          isCarpet: result.data.isCarpet,
+          isCarpet: result.data.detected,
           confidence: result.data.confidence
         };
       } else {
-        console.error('[LLMService] ❌ Strategy analysis failed:', result.error);
+        console.error('[LLMService] ❌ Carpet analysis failed:', result.error);
         return { isCarpet: false, confidence: 0 };
       }
       
     } catch (error) {
-      console.error('[LLMService] ❌ Strategy analysis error:', error);
+      console.error('[LLMService] ❌ Carpet analysis error:', error);
       return { isCarpet: false, confidence: 0 };
+    }
+  }
+
+  /**
+   * 📸 Assess photo quality only (no theme detection)
+   */
+  async assessPhotoQuality(imageData: string): Promise<LLMResponse<PhotoQualityMetrics>> {
+    console.log('[LLMService] 📸 Assessing photo quality...');
+
+    const optimizedImage = await this.optimizeImageForAnalysis(imageData);
+    this._isProcessing.set(true);
+
+    try {
+      const prompt = LLMPromptFactory.buildQualityAssessmentPrompt();
+      const imagePart = this.prepareImagePart(optimizedImage);
+
+      const result = await this._model.generateContent([prompt, imagePart]);
+      const responseText = result.response.text();
+
+      console.log('[LLMService] Raw quality assessment response:', responseText);
+
+      const qualityMetrics = this.parseQualityResponse(responseText);
+      this._requestCount.update(count => count + 1);
+
+      console.log('[LLMService] ✅ Photo quality assessment complete:', qualityMetrics);
+
+      return {
+        success: true,
+        data: qualityMetrics,
+        cached: false
+      };
+
+    } catch (error: any) {
+      console.error('[LLMService] ❌ Quality assessment failed:', error);
+
+      return {
+        success: false,
+        data: {
+          overall: 50,
+          focus: 50,
+          lighting: 50,
+          composition: 50,
+          factors: ['Assessment failed']
+        },
+        error: error?.message || 'Quality assessment failed',
+        cached: false
+      };
+    } finally {
+      this._isProcessing.set(false);
     }
   }
 
@@ -389,15 +499,8 @@ export class LLMService {
   }
 
   private buildCarpetPrompt(): string {
-    return `
-      Analyze this image to determine if it shows a carpet or floor covering.
-
-      Respond with valid JSON only:
-      {
-        "isCarpet": true/false,
-        "confidence": 0-100
-      }
-    `;
+    // Legacy method - now uses prompt factory
+    return LLMPromptFactory.buildCarpetPrompt();
   }
 
   private prepareImagePart(imageData: string): any {
@@ -409,6 +512,150 @@ export class LLMService {
         mimeType: 'image/jpeg',
         data: base64Data
       }
+    };
+  }
+
+  /**
+   * Parse themed analysis response with photo quality and theme data
+   */
+  private parseThemedAnalysisResponse(text: string, theme: AnalysisTheme): PhotoAnalysisResult {
+    console.log('[LLMService] Parsing themed analysis response:', text);
+
+    try {
+      // Try to parse as JSON first
+      const jsonMatch = text.match(/\{[\s\S]*\}/s);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        
+        const photoQuality: PhotoQualityMetrics = parsed.photoQuality || {
+          overall: 75,
+          focus: 75,
+          lighting: 75,
+          composition: 75,
+          factors: ['Standard quality']
+        };
+        
+        const qualityBonus = LLMPromptFactory.calculateQualityBonus(photoQuality, theme);
+        
+        return {
+          detected: parsed.detected || false,
+          confidence: parsed.confidence || 50,
+          reasoning: parsed.reasoning || 'Analysis complete',
+          photoQuality,
+          qualityBonus,
+          themeId: theme.id,
+          themeElements: parsed.themeElements || {
+            found: [],
+            missing: theme.targetElements,
+            bonus: []
+          },
+          visualElements: parsed.visualElements || [],
+          story: parsed.story || [],
+          // Legacy compatibility
+          isCarpet: theme.id === 'carpet' ? parsed.detected : undefined
+        };
+      }
+
+      // Fallback parsing for non-JSON responses
+      return this.createFallbackAnalysisResult(text, theme);
+
+    } catch (error) {
+      console.warn('[LLMService] Failed to parse themed response, using fallback');
+      return this.createFallbackAnalysisResult(text, theme);
+    }
+  }
+
+  /**
+   * Parse photo quality assessment response
+   */
+  private parseQualityResponse(text: string): PhotoQualityMetrics {
+    console.log('[LLMService] Parsing quality response:', text);
+
+    try {
+      const jsonMatch = text.match(/\{[\s\S]*\}/s);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        return {
+          overall: parsed.overall || 75,
+          focus: parsed.focus || 75,
+          lighting: parsed.lighting || 75,
+          composition: parsed.composition || 75,
+          factors: parsed.factors || ['Standard quality']
+        };
+      }
+    } catch (error) {
+      console.warn('[LLMService] Failed to parse quality response');
+    }
+
+    // Fallback
+    return {
+      overall: 75,
+      focus: 75,
+      lighting: 75,
+      composition: 75,
+      factors: ['Analysis complete']
+    };
+  }
+
+  /**
+   * Create fallback analysis result when parsing fails
+   */
+  private createFallbackAnalysisResult(text: string, theme: AnalysisTheme): PhotoAnalysisResult {
+    const detected = theme.targetElements.some(element => 
+      new RegExp(element, 'i').test(text)
+    );
+    
+    const photoQuality: PhotoQualityMetrics = {
+      overall: 75,
+      focus: 75,
+      lighting: 75,
+      composition: 75,
+      factors: ['Standard quality (fallback)']
+    };
+    
+    return {
+      detected,
+      confidence: detected ? 60 : 40,
+      reasoning: 'Fallback analysis',
+      photoQuality,
+      qualityBonus: LLMPromptFactory.calculateQualityBonus(photoQuality, theme),
+      themeId: theme.id,
+      themeElements: {
+        found: detected ? [theme.targetElements[0]] : [],
+        missing: detected ? [] : theme.targetElements,
+        bonus: []
+      },
+      visualElements: [],
+      story: [],
+      isCarpet: theme.id === 'carpet' ? detected : undefined
+    };
+  }
+
+  /**
+   * Create failed analysis result for errors
+   */
+  private createFailedAnalysisResult(theme: AnalysisTheme, errorMessage: string): PhotoAnalysisResult {
+    return {
+      detected: false,
+      confidence: 0,
+      reasoning: `Analysis failed: ${errorMessage}`,
+      photoQuality: {
+        overall: 0,
+        focus: 0,
+        lighting: 0,
+        composition: 0,
+        factors: ['Analysis failed']
+      },
+      qualityBonus: 0,
+      themeId: theme.id,
+      themeElements: {
+        found: [],
+        missing: theme.targetElements,
+        bonus: []
+      },
+      visualElements: [],
+      story: [],
+      isCarpet: theme.id === 'carpet' ? false : undefined
     };
   }
 

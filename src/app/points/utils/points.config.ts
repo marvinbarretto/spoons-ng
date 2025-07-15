@@ -17,6 +17,12 @@ export const POINTS_CONFIG = {
     photo: 3,
   },
 
+  photoQuality: {
+    highQuality: 10,    // 80-89% overall quality score
+    exceptional: 15,    // 90%+ overall quality score
+    perfect: 20,        // 95%+ with all factors > 85%
+  },
+
   streaks: {
     daily: {
       "3": 10,

@@ -17,6 +17,7 @@ import { CarpetStrategyService } from '../../carpets/data-access/carpet-strategy
 import { BaseStore } from '../../shared/base/base.store';
 import { CameraService } from '../../shared/data-access/camera.service';
 import { TelegramNotificationService } from '../../shared/data-access/telegram-notification.service';
+import { CacheCoherenceService } from '../../shared/data-access/cache-coherence.service';
 import type { CheckIn } from '../utils/check-in.models';
 import type { User } from '../../users/utils/user.model';
 import type { Pub } from '../../pubs/utils/pub.models';
@@ -39,6 +40,7 @@ export class CheckInStore extends BaseStore<CheckIn> {
   // Modal service removed to break circular dependency - use event-based approach
   private readonly cameraService = inject(CameraService);
   private readonly telegramNotificationService = inject(TelegramNotificationService);
+  private readonly cacheCoherence = inject(CacheCoherenceService);
 
   // Check-in process state
   private readonly _isProcessing = signal(false);
@@ -203,6 +205,11 @@ export class CheckInStore extends BaseStore<CheckIn> {
     console.log('[CheckInStore] 💾 Starting check-in creation...');
     const newCheckinId = await this.newCheckInService.createCheckin(pubId);
     console.log('[CheckInStore] ✅ Check-in creation completed successfully');
+
+    // ✅ CRITICAL: Invalidate cache to trigger leaderboard refresh
+    console.log('[CheckInStore] 🔄 Triggering cache invalidation for new check-in');
+    this.cacheCoherence.invalidate('checkins', 'new-check-in-created');
+    console.log('[CheckInStore] 🔄 Cache invalidation triggered - leaderboard should refresh');
 
     // Add to local store immediately
     const userId = this.authStore.uid();

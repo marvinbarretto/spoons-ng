@@ -22,12 +22,12 @@ type LandlordModalData = {
   selector: 'app-modal-checkin-landlord',
   imports: [CommonModule, ButtonComponent],
   template: `
-    <div class="modal-container" [class.new-landlord]="isNewLandlordToday()">
-      <div class="modal-header">
+    <div class="checkin-modal-container" [class.new-landlord]="isNewLandlordToday()">
+      <div class="checkin-modal-header">
         <h2>{{ title() }}</h2>
       </div>
 
-      <div class="modal-body">
+      <div class="checkin-modal-body">
         <!-- New User Explanation Section -->
         @if (shouldExplainLandlordSystem()) {
           <div class="explanation-section">
@@ -140,7 +140,7 @@ type LandlordModalData = {
         }
       </div>
 
-      <div class="modal-footer">
+      <div class="checkin-modal-footer">
         <div class="button-group">
           <app-button
             variant="secondary"
@@ -160,50 +160,21 @@ type LandlordModalData = {
     </div>
   `,
   styles: [`
-    .modal-container {
-      background: var(--background);
-      border: 1px solid var(--background-darker);
-      border-radius: 8px;
-      max-width: 420px;
-      width: 100%;
-    }
-
-    .modal-container.new-landlord {
-      border-color: #ffd700;
-      background: linear-gradient(135deg, #ffd700 0%, #ffed4a 100%);
-      color: #000;
-    }
-
-    .modal-header, .modal-body, .modal-footer {
-      padding: 1rem;
-    }
-
-    .modal-header {
-      border-bottom: 1px solid var(--background-lighter);
-      text-align: center;
-      padding: 0.75rem 1rem;
-    }
-
-    .modal-container.new-landlord .modal-header {
+    .checkin-modal-container.new-landlord .checkin-modal-header {
       border-bottom-color: rgba(0, 0, 0, 0.2);
     }
 
-    .modal-header h2 {
+    .checkin-modal-header h2 {
       margin: 0;
       color: var(--textPrimary);
       font-size: 1.25rem;
     }
 
-    .modal-container.new-landlord .modal-header h2 {
+    .checkin-modal-container.new-landlord .checkin-modal-header h2 {
       color: #000;
     }
 
-    .modal-footer {
-      border-top: 1px solid var(--background-lighter);
-      padding: 0.75rem 1rem;
-    }
-
-    .modal-container.new-landlord .modal-footer {
+    .checkin-modal-container.new-landlord .checkin-modal-footer {
       border-top-color: rgba(0, 0, 0, 0.2);
     }
 
@@ -459,17 +430,6 @@ type LandlordModalData = {
     }
 
     @media (max-width: 480px) {
-      .modal-header, .modal-body, .modal-footer {
-        padding: 0.75rem;
-      }
-
-      .modal-header {
-        padding: 0.5rem 0.75rem;
-      }
-
-      .modal-footer {
-        padding: 0.5rem 0.75rem;
-      }
 
       .button-group {
         flex-direction: column;

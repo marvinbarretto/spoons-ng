@@ -116,6 +116,18 @@ export class AppComponent {
           console.log('[AppComponent] 🧭 Navigation completed to:', event.url);
           console.log('[AppComponent] 🏠 Current shell after navigation:', this.currentShell());
         });
+
+      // Simple bundle size smoke test
+      if (!window.location.hostname.includes('spoons')) {
+        window.addEventListener('load', () => {
+          const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
+          const jsResources = resources.filter(r => r.name.includes('.js') && !r.name.includes('node_modules'));
+          const totalTransferSize = jsResources.reduce((sum, r) => sum + (r.transferSize || 0), 0);
+          const totalSize = jsResources.reduce((sum, r) => sum + (r.decodedBodySize || 0), 0);
+          
+          console.log(`📦 Bundle: ${jsResources.length} JS files, ${(totalTransferSize/1024).toFixed(0)}KB transferred, ${(totalSize/1024).toFixed(0)}KB uncompressed`);
+        });
+      }
     });
 
     console.timeEnd('[SSR] AppComponent init');

@@ -340,6 +340,24 @@ export class LeaderboardStore extends BaseStore<LeaderboardEntry> {
     const manualPubIds = user.manuallyAddedPubIds || [];
     const totalUniquePubs = uniquePubIds.size + manualPubIds.length;
 
+    // ✅ TEMPORARY: Validate data consistency and log issues
+    const totalPoints = user.totalPoints || 0;
+    const totalCheckins = userCheckins.length;
+    const hasInconsistentData = totalPoints > 0 && totalCheckins === 0 && totalUniquePubs === 0;
+    
+    if (hasInconsistentData) {
+      console.warn(`[LeaderboardStore] 🚨 DATA INCONSISTENCY DETECTED:`, {
+        userId,
+        displayName,
+        totalPoints,
+        totalCheckins,
+        totalUniquePubs,
+        manualPubIds: manualPubIds.length,
+        issue: 'User has points but no check-ins or pub visits',
+        timestamp: new Date().toISOString()
+      });
+    }
+
     return {
       userId,
       displayName,
