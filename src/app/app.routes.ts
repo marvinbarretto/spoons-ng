@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
-import { onboardingGuard } from './shared/guards/onboarding.guard';
-import { reverseOnboardingGuard } from './shared/guards/reverse-onboarding.guard';
+import { authRedirectGuard } from './shared/guards/auth-redirect.guard';
 import {
   UrlSegment,
   Route,
@@ -12,27 +11,46 @@ import {
 export const appRoutes: Routes = [
   {
     path: '',
-    redirectTo: '/home',
+    redirectTo: '/splash',
     pathMatch: 'full'
   },
   {
-    path: 'onboarding',
+    path: 'splash',
     title: 'Welcome to Spoonscount',
-    canActivate: [reverseOnboardingGuard],
-    loadComponent: () => import('./onboarding/feature/onboarding/onboarding.component').then(m => m.OnboardingComponent),
+    canActivate: [authRedirectGuard],
+    loadComponent: () => import('./auth/feature/splash/splash.component').then(m => m.SplashComponent),
     data: { shell: 'fullscreen' }
   },
   {
+    path: 'login',
+    title: 'Login',
+    canActivate: [authRedirectGuard],
+    loadComponent: () => import('./auth/feature/login/login.component').then(m => m.LoginComponent),
+    data: { shell: 'fullscreen' }
+  },
+  {
+    path: 'register',
+    title: 'Register',
+    canActivate: [authRedirectGuard],
+    loadComponent: () => import('./auth/feature/register/register.component').then(m => m.RegisterComponent),
+    data: { shell: 'fullscreen' }
+  },
+  // Onboarding temporarily disabled
+  // {
+  //   path: 'onboarding',
+  //   title: 'Welcome to Spoonscount',
+  //   canActivate: [reverseOnboardingGuard],
+  //   loadComponent: () => import('./onboarding/feature/onboarding/onboarding.component').then(m => m.OnboardingComponent),
+  //   data: { shell: 'fullscreen' }
+  // },
+  {
     path: 'home',
-    canLoad: [onboardingGuard],
-    canActivate: [onboardingGuard],
     loadComponent: () => import('./home/feature/home/home.component').then(m => m.HomeComponent),
     data: { shell: 'dashboard', preload: true }
   },
   {
     path: 'pubs',
     title: 'Pubs',
-    canActivate: [onboardingGuard],
     loadChildren: () =>
       import('./pubs/data-access/pub.routes').then((m) => m.PUBS_ROUTES),
     data: { shell: 'feature' }
@@ -40,7 +58,6 @@ export const appRoutes: Routes = [
   {
     path: 'check-in/:pubId',
     title: 'Check In',
-    canActivate: [onboardingGuard],
     loadComponent: () =>
       import('./check-in/feature/checkin/checkin.component').then(m => m.CheckinComponent),
     data: { shell: 'fullscreen' }
@@ -48,7 +65,6 @@ export const appRoutes: Routes = [
   {
     path: 'simplified-checkin',
     title: 'Check In',
-    canActivate: [onboardingGuard],
     loadComponent: () =>
       import('./check-in/feature/checkin/checkin.component').then(m => m.CheckinComponent),
     data: { shell: 'fullscreen' }
@@ -56,14 +72,12 @@ export const appRoutes: Routes = [
   {
     path: 'old-check-in/:pubId',
     title: 'Legacy Check In',
-    canActivate: [onboardingGuard],
     loadComponent: () =>
       import('./check-in/feature/check-in-page/check-in-page.component').then(m => m.CheckInPageComponent),
     data: { shell: 'fullscreen' }
   },
   {
     path: 'carpets',
-    canActivate: [onboardingGuard],
     loadChildren: () =>
       import('./carpets/data-access/carpet.routes').then((m) => m.CARPETS_ROUTES),
     data: { shell: 'feature' }
@@ -72,7 +86,6 @@ export const appRoutes: Routes = [
   {
     path: 'missions',
     title: 'Missions',
-    canActivate: [onboardingGuard],
     loadChildren: () =>
       import('./missions/data-access/mission.routes').then((m) => m.MISSIONS_ROUTES),
     data: { shell: 'feature' }
@@ -80,7 +93,6 @@ export const appRoutes: Routes = [
   {
     path: 'leaderboard',
     title: 'Leaderboard',
-    canActivate: [onboardingGuard],
     loadChildren: () =>
       import('./leaderboard/data-access/leaderboard.routes').then((m) => m.LEADERBOARD_ROUTES),
     data: { shell: 'feature' }
@@ -157,7 +169,6 @@ export const appRoutes: Routes = [
   {
     path: 'profile',
     title: 'Profile',
-    canActivate: [onboardingGuard],
     loadComponent: () =>
       import('./profile/feature/profile/profile.component')
         .then(m => m.ProfileComponent),

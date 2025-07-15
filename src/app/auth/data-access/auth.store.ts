@@ -174,6 +174,10 @@ export class AuthStore {
     this.authService.loginWithEmail(email, password);
   }
 
+  registerWithEmail(email: string, password: string, displayName?: string): void {
+    this.authService.registerWithEmail(email, password, displayName);
+  }
+
   openAvatarSelector(): void {
     this.platform.onlyOnBrowser(async () => {
       const { AvatarSelectorComponent } = await import('../../shared/ui/avatar-selector/avatar-selector.component');

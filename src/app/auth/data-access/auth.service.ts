@@ -3,6 +3,7 @@ import { Injectable, inject, signal, computed } from '@angular/core';
 import {
   Auth,
   signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   signOut,
   GoogleAuthProvider,
   signInWithPopup,
@@ -10,6 +11,7 @@ import {
   onAuthStateChanged,
   Unsubscribe,
   signInAnonymously,
+  updateProfile,
 } from '@angular/fire/auth';
 import {
   Firestore,
@@ -165,6 +167,37 @@ export class AuthService {
       return cred.user;
     } catch (error) {
       this.loading.set(false);
+      throw error;
+    }
+  }
+
+  async registerWithEmail(email: string, password: string, displayName?: string): Promise<User> {
+    try {
+      this.loading.set(true);
+      
+      console.log('[AuthService] Starting email registration for:', email);
+      const cred = await createUserWithEmailAndPassword(this.auth, email, password);
+      
+      // Update the user's display name if provided
+      if (displayName && displayName.trim()) {
+        try {
+          await updateProfile(cred.user, { displayName: displayName.trim() });
+          console.log('[AuthService] Updated display name:', displayName);
+        } catch (profileError) {
+          console.warn('[AuthService] Failed to update display name:', profileError);
+          // Don't throw here, registration was successful
+        }
+      }
+
+      console.log('[AuthService] ✅ Email registration successful:', cred.user.uid);
+
+      // Ensure user document exists for registered users
+      await this.ensureRegisteredUserDocument(cred.user);
+
+      return cred.user;
+    } catch (error) {
+      this.loading.set(false);
+      console.error('[AuthService] Registration failed:', error);
       throw error;
     }
   }
