@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.98](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.97...v0.0.98) (2025-07-15)
+
+
+### Features
+
+* [Checkin] Display error modal if no location on ([92b263f](https://github.com/marvinbarretto/spoons-ng/commit/92b263f5a7b6e4352ef1cf2b58aef5cb042282fb))
+* [Checkin] Redo checkin AGAIN, simplify the gates drastically ([1d1ca13](https://github.com/marvinbarretto/spoons-ng/commit/1d1ca13aaf60d24c67cb68fdeadec1e9059dceb6))
+* [Checkin] Show points bonuses ([bb23a02](https://github.com/marvinbarretto/spoons-ng/commit/bb23a02b083634454b1b13de819655211d3cc5da))
+* [Home] defer widgets not on view ([363ac1a](https://github.com/marvinbarretto/spoons-ng/commit/363ac1a684935cc1f2c4653ae3fef781a406a52d))
+
+
+### Bug Fixes
+
+* [Scoreboard] Resolve negative number issues ([cabc67e](https://github.com/marvinbarretto/spoons-ng/commit/cabc67e5ce0317cb7cfc138604ebfacb0946ef6f))
+* Ensure onboarding fits on iPhone screen, resolves [#2](https://github.com/marvinbarretto/spoons-ng/issues/2) ([5435c94](https://github.com/marvinbarretto/spoons-ng/commit/5435c9428a25e32e61b0c25f6e7b826db77a96e2))
+
 ### [0.0.97](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.96...v0.0.97) (2025-07-09)
 
 

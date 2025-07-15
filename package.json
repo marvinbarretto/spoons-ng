@@ -1,7 +1,7 @@
 {
   "name": "spoons",
   "description": "The unofficial Wetherspoons passport app",
-  "version": "0.0.97",
+  "version": "0.0.98",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -16,6 +16,11 @@
     "serve:ssr": "DEBUG=api:* VERBOSE_ENV=true node dist/spoons/server/server.mjs",
     "release": "standard-version",
     "analyze": "source-map-explorer dist/spoons/browser/*.js",
+    "analyze:webpack": "webpack-bundle-analyzer dist/spoons/browser/stats.json",
+    "analyze:both": "npm run analyze && npm run analyze:webpack",
+    "build:stats": "ng build --stats-json",
+    "bundle-report": "node tools/performance/bundle-analysis.js",
+    "dev:metrics": "npm run build && npm run bundle-report",
     "build:firebase": "ng build --configuration production",
     "deploy": "npm run build:firebase && firebase deploy"
   },
@@ -78,7 +83,8 @@
     "supertest": "7.1.1",
     "ts-jest": "29.3.4",
     "ts-node": "10.9.2",
-    "typescript": "5.7.3"
+    "typescript": "5.7.3",
+    "webpack-bundle-analyzer": "4.10.2"
   },
   "engines": {
     "node": "20.x"
