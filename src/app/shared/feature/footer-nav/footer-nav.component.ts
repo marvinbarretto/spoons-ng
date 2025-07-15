@@ -10,6 +10,9 @@ import { NearbyPubStore } from '@pubs/data-access/nearby-pub.store';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { CheckInStore } from '@/app/check-in/data-access/check-in.store';
 import { IconComponent } from '@shared/ui/icon/icon.component';
+import { OverlayService } from '@shared/data-access/overlay.service';
+import { LocationService } from '@shared/data-access/location.service';
+import { ModalCheckinAttemptComponent, CheckinErrorDetails, CheckinError } from '@shared/ui/modals/modal-checkin-attempt.component';
 
 type NavItem = {
   label: string;
@@ -35,7 +38,6 @@ type NavItem = {
             <button
               class="nav-item nav-item--check-in"
               [class.nav-item--pulse]="canCheckIn()"
-              [disabled]="!canCheckIn() || isCheckingIn()"
               (click)="handleCheckIn()"
               type="button"
             >
@@ -272,6 +274,8 @@ export class FooterNavComponent extends BaseComponent {
   protected readonly nearbyPubStore = inject(NearbyPubStore);
   protected readonly authStore = inject(AuthStore);
   protected readonly checkinStore = inject(CheckInStore);
+  private readonly overlayService = inject(OverlayService);
+  private readonly locationService = inject(LocationService);
 
   // ✅ Local state for check-in process
   private readonly _isCheckingIn = signal(false);
@@ -344,23 +348,116 @@ export class FooterNavComponent extends BaseComponent {
     this.router.navigate(['/debug-carpet-camera']);
   }
 
-  // ✅ Handle check-in button click (uses simplified check-in)
+  // ✅ Handle check-in button click with error checking
   handleCheckIn(): void {
-    if (!this.canCheckIn() || this.isCheckingIn()) {
-      console.log('[FooterNav] Check-in not available');
+    // Always allow button click, but check for issues first
+    if (this.isCheckingIn()) {
+      console.log('[FooterNav] Already checking in');
       return;
     }
 
+    // Check for authentication
+    if (!this.user()) {
+      this.showCheckinError({
+        type: 'not-authenticated',
+        message: 'You need to be signed in to check in to pubs.'
+      });
+      return;
+    }
+
+    // Check for location availability
+    const location = this.nearbyPubStore.location();
+    if (!location) {
+      this.showCheckinError({
+        type: 'no-location',
+        message: 'We need your location to check you in. Please enable location services and try again.'
+      });
+      return;
+    }
+
+    // Check for location accuracy - commented out as location type doesn't include accuracy
+    const locationError = this.locationService.error();
+    // if (locationError && location.accuracy > 100) {
+    //   this.showCheckinError({
+    //     type: 'poor-accuracy',
+    //     message: 'GPS accuracy is too low for check-in. Try moving to a window or outside briefly.',
+    //     accuracy: location.accuracy
+    //   });
+    //   return;
+    // }
+
+    // Check for nearby pubs
+    const nearbyPubs = this.nearbyPubStore.nearbyPubs();
+    if (nearbyPubs.length === 0) {
+      this.showCheckinError({
+        type: 'no-nearby-pubs',
+        message: 'No pubs found nearby. Make sure you\'re within 50km of a Wetherspoons.'
+      });
+      return;
+    }
+
+    // Check for closest pub and range
     const pub = this.closestPub();
     if (!pub) {
-      console.warn('[FooterNav] No pub available for check-in');
+      this.showCheckinError({
+        type: 'no-nearby-pubs',
+        message: 'No pubs found nearby. Make sure you\'re within 50km of a Wetherspoons.'
+      });
       return;
     }
 
-    console.log('[FooterNav] Navigating to simplified check-in for:', pub.name);
+    // Check if within check-in range
+    if (!this.nearbyPubStore.isWithinCheckInRange(pub.id)) {
+      this.showCheckinError({
+        type: 'out-of-range',
+        message: `You're too far from ${pub.name}. Get within 200 meters to check in.`,
+        pubName: pub.name,
+        distance: pub.distance
+      });
+      return;
+    }
 
-    // Navigate to simplified check-in page
+    // All checks passed - proceed with check-in
+    console.log('[FooterNav] All checks passed, navigating to simplified check-in for:', pub.name);
     this.router.navigate(['/simplified-checkin']);
+  }
+
+  private showCheckinError(errorDetails: CheckinErrorDetails): void {
+    console.log('[FooterNav] Showing check-in error:', errorDetails);
+    
+    const overlayResult = this.overlayService.open(
+      ModalCheckinAttemptComponent,
+      {
+        width: 'auto',
+        maxWidth: '400px'
+      },
+      { errorDetails }
+    );
+
+    overlayResult.result.then((action) => {
+      if (action === 'retry') {
+        console.log('[FooterNav] User requested retry');
+        
+        // Handle different retry actions based on error type
+        switch (errorDetails.type) {
+          case 'no-location':
+          case 'poor-accuracy':
+            this.locationService.refreshLocation();
+            break;
+          case 'no-nearby-pubs':
+            this.locationService.refreshLocation();
+            break;
+          case 'out-of-range':
+            // Just refresh location to check again
+            this.locationService.refreshLocation();
+            break;
+          case 'not-authenticated':
+            // Navigate to auth page (implement as needed)
+            this.router.navigate(['/auth']);
+            break;
+        }
+      }
+    });
   }
 
 }
