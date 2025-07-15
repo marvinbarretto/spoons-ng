@@ -21,7 +21,7 @@
  * @architecture Widget component - extends BaseWidgetComponent, self-contained data loading
  */
 
-import { Component, computed, effect, signal, ChangeDetectionStrategy, OnDestroy, WritableSignal, inject } from '@angular/core';
+import { Component, computed, effect, signal, ChangeDetectionStrategy, OnDestroy, inject, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BaseWidgetComponent } from '../base/base-widget.component';
 import { DataAggregatorService } from '../../shared/data-access/data-aggregator.service';
@@ -200,7 +200,7 @@ export type EnhancedScoreboardData = ScoreboardData & {
       margin-bottom: 0.5rem;
       color: var(--text);
       font-variant-numeric: tabular-nums;
-      transition: all 0.3s ease;
+      transition: all 0.3s ease, transform 0.8s ease-out;
     }
 
     .points-label {
@@ -237,7 +237,7 @@ export type EnhancedScoreboardData = ScoreboardData & {
       font-weight: 700;
       color: var(--text);
       font-variant-numeric: tabular-nums;
-      transition: all 0.3s ease;
+      transition: all 0.3s ease, transform 0.8s ease-out;
     }
 
     .stat-divider {
@@ -308,6 +308,7 @@ export type EnhancedScoreboardData = ScoreboardData & {
       font-weight: 700;
       color: var(--text);
       line-height: 1;
+      transition: all 0.3s ease, transform 0.6s ease-out;
     }
 
     .metric-card:hover .metric-value {
@@ -510,251 +511,157 @@ export class ScoreboardHeroWidgetComponent extends BaseWidgetComponent implement
     return enhanced;
   });
 
-  // ✅ Count-up animation signals - simplified for new design
-  private readonly animatedPointsValue = signal(0);
-  private readonly animatedPubsValue = signal(0);
-  private readonly animatedCheckinsValue = signal(0);
-  private readonly animatedTodaysPointsValue = signal(0);
-  private readonly animatedStreakValue = signal(0);
-  private readonly animatedLandlordsValue = signal(0);
+  // ✅ Animation tracking for cleanup
+  private animationTimeouts: Map<string, number> = new Map();
+  
+  // ✅ Display values using signals
+  private readonly displayPointsValue = signal(0);
+  private readonly displayPubsValue = signal(0);
+  private readonly displayCheckinsValue = signal(0);
+  private readonly displayTodaysPointsValue = signal(0);
+  private readonly displayStreakValue = signal(0);
+  private readonly displayLandlordsValue = signal(0);
 
-  readonly animatedPoints = this.animatedPointsValue.asReadonly();
-  readonly animatedPubs = this.animatedPubsValue.asReadonly();
-  readonly animatedCheckins = this.animatedCheckinsValue.asReadonly();
-  readonly animatedTodaysPoints = this.animatedTodaysPointsValue.asReadonly();
-  readonly animatedStreak = this.animatedStreakValue.asReadonly();
-  readonly animatedLandlords = this.animatedLandlordsValue.asReadonly();
-
-  // ✅ Animation tracking - CRITICAL for preventing overlaps
-  private activeAnimations = new Map<string, number>();
+  readonly animatedPoints = this.displayPointsValue.asReadonly();
+  readonly animatedPubs = this.displayPubsValue.asReadonly();
+  readonly animatedCheckins = this.displayCheckinsValue.asReadonly();
+  readonly animatedTodaysPoints = this.displayTodaysPointsValue.asReadonly();
+  readonly animatedStreak = this.displayStreakValue.asReadonly();
+  readonly animatedLandlords = this.displayLandlordsValue.asReadonly();
 
   constructor() {
     super();
 
-    // ✅ Set up smart animations when data changes
+    // ✅ Set up animations when data changes
     effect(() => {
       const data = this.enhancedData();
 
-      console.log('[Scoreboard] 🔄 Effect triggered - Enhanced data changed:', {
-        totalPoints: data.totalPoints,
-        todaysPoints: data.todaysPoints,
-        pubsVisited: data.pubsVisited,
-        totalCheckins: data.totalCheckins,
-        currentStreak: data.currentStreak,
-        landlordCount: data.landlordCount,
-        isLoading: data.isLoading,
-        timestamp: Date.now()
-      });
-
-      // ✅ Log current animated signal states BEFORE any changes
-      console.log('[Scoreboard] 📊 Current animated signal states:', {
-        animatedPoints: this.animatedPointsValue(),
-        animatedPubs: this.animatedPubsValue(),
-        animatedCheckins: this.animatedCheckinsValue(),
-        animatedTodaysPoints: this.animatedTodaysPointsValue(),
-        animatedStreak: this.animatedStreakValue(),
-        animatedLandlords: this.animatedLandlordsValue(),
-        activeAnimationsCount: this.activeAnimations.size,
-        activeAnimationKeys: Array.from(this.activeAnimations.keys())
-      });
-
+      // ✅ Reduced logging for better performance
       if (!data.isLoading) {
-        console.log('[Scoreboard] 🎬 Starting animation sequence - data loaded');
-        
-        // ✅ Cancel all previous animations before starting new ones
-        this.cancelAllAnimations();
-
-        // ✅ Smart animation strategy for enhanced design
-        // Primary metrics
-        console.log('[Scoreboard] 🎯 Starting primary metrics animations');
-        this.smartAnimateValue('points', this.animatedPointsValue, data.totalPoints, 1200);
-        setTimeout(() => this.smartAnimateValue('pubs', this.animatedPubsValue, data.pubsVisited, 800), 100);
-        setTimeout(() => this.smartAnimateValue('checkins', this.animatedCheckinsValue, data.totalCheckins, 900), 200);
-
-        // Enhanced metrics with staggered timing
-        console.log('[Scoreboard] ✨ Scheduling enhanced metrics animations');
-        setTimeout(() => this.smartAnimateValue('todaysPoints', this.animatedTodaysPointsValue, data.todaysPoints, 600), 300);
-        setTimeout(() => this.smartAnimateValue('streak', this.animatedStreakValue, data.currentStreak, 700), 400);
-        setTimeout(() => this.smartAnimateValue('landlords', this.animatedLandlordsValue, data.landlordCount, 800), 500);
-      } else {
-        console.log('[Scoreboard] ⏳ Data still loading, skipping animations');
+        // ✅ Optimized animations with staggered timing
+        this.animateValue('points', data.totalPoints, 1200, 0);
+        this.animateValue('pubs', data.pubsVisited, 800, 100);
+        this.animateValue('checkins', data.totalCheckins, 900, 200);
+        this.animateValue('todaysPoints', data.todaysPoints, 600, 300);
+        this.animateValue('streak', data.currentStreak, 700, 400);
+        this.animateValue('landlords', data.landlordCount, 800, 500);
       }
     });
   }
 
   ngOnDestroy() {
-    // ✅ Clean up any remaining animations
-    this.cancelAllAnimations();
-  }
-
-  // ✅ FIXED: Cancel all active animations
-  private cancelAllAnimations(): void {
-    console.log('[Scoreboard] 🛑 Cancelling all animations:', {
-      activeCount: this.activeAnimations.size,
-      keys: Array.from(this.activeAnimations.keys()),
-      timestamp: Date.now()
+    // ✅ Clean up all active animations
+    this.animationTimeouts.forEach((timeoutId) => {
+      clearTimeout(timeoutId);
     });
-    
-    this.activeAnimations.forEach((animationId, key) => {
-      console.log(`[Scoreboard] 🚫 Cancelling animation: ${key} (ID: ${animationId})`);
-      cancelAnimationFrame(animationId);
-    });
-    this.activeAnimations.clear();
-    
-    console.log('[Scoreboard] ✅ All animations cancelled');
+    this.animationTimeouts.clear();
   }
 
   /**
-   * Smart animation that chooses strategy based on change size
+   * Animate a value using CSS transitions with stepped updates
    * @param key - Animation key for tracking
-   * @param signalRef - Signal to animate
    * @param targetValue - Target number to animate to
-   * @param baseDuration - Base duration for large changes
-   * @description Decides animation strategy:
-   * - Small changes (0-3): Instant update with fade-in
-   * - Medium changes (4-20): Quick count-up
-   * - Large changes (20+): Full count-up animation
+   * @param duration - Animation duration in milliseconds
+   * @param delay - Delay before starting animation
    */
-  private smartAnimateValue(
+  private animateValue(
     key: string,
-    signalRef: WritableSignal<number>,
     targetValue: number,
-    baseDuration: number = 1000
+    duration: number = 1000,
+    delay: number = 0
   ): void {
+    // Get the appropriate signal for this key
+    const signalRef = this.getSignalForKey(key);
+    if (!signalRef) {
+      console.error(`[Scoreboard] ❌ Unknown animation key: ${key}`);
+      return;
+    }
+
     const currentValue = signalRef();
     const change = Math.abs(targetValue - currentValue);
-    const strategy = change <= 3 ? 'instant' : change <= 20 ? 'quick' : 'full';
 
-    console.log(`[Scoreboard] 🎯 Smart animate decision for ${key}:`, {
-      from: currentValue,
-      to: targetValue,
-      change,
-      strategy,
-      baseDuration,
-      timestamp: Date.now()
-    });
-
-    // ✅ CRITICAL: Check for negative values before any animation
+    // ✅ Validate target value
     if (targetValue < 0) {
       console.error(`[Scoreboard] ❌ NEGATIVE TARGET VALUE DETECTED!`, {
         key,
         targetValue,
-        currentValue,
-        change
+        currentValue
       });
       return;
     }
 
-    // Strategy 1: Small changes (0→1, 1→2, etc.) - instant update feels more responsive
-    if (change <= 3) {
-      console.log(`[Scoreboard] ⚡ ${key}: Instant update (${currentValue} → ${targetValue})`);
-      signalRef.set(targetValue);
-      return;
-    }
+    // ✅ Smart animation strategy
+    const shouldAnimate = change > 3; // Only animate significant changes
+    const finalDuration = shouldAnimate ? (change <= 20 ? duration * 0.3 : duration) : 0;
 
-    // Strategy 2: Medium changes - quick animation
-    if (change <= 20) {
-      console.log(`[Scoreboard] 🏃 ${key}: Quick animation (${currentValue} → ${targetValue})`);
-      this.animateValue(key, signalRef, targetValue, baseDuration * 0.3);
-      return;
-    }
+    const animateWithDelay = () => {
+      if (!shouldAnimate) {
+        signalRef.set(targetValue);
+        return;
+      }
 
-    // Strategy 3: Large changes - full animation for excitement
-    console.log(`[Scoreboard] 🎬 ${key}: Full animation (${currentValue} → ${targetValue})`);
-    this.animateValue(key, signalRef, targetValue, baseDuration);
+      // ✅ Cancel any existing animation for this key
+      if (this.animationTimeouts.has(key)) {
+        const existingId = this.animationTimeouts.get(key)!;
+        clearTimeout(existingId);
+        this.animationTimeouts.delete(key);
+      }
+
+      // ✅ CSS transition approach: stepped updates
+      const startValue = currentValue;
+      const valueDifference = targetValue - startValue;
+      const steps = Math.max(8, Math.min(20, Math.abs(valueDifference) / 10)); // Dynamic step count
+      const stepDuration = finalDuration / steps;
+      
+      let currentStep = 0;
+      
+      const stepUpdate = () => {
+        currentStep++;
+        const progress = currentStep / steps;
+        
+        // ✅ Ease-out cubic for natural feel
+        const easedProgress = 1 - Math.pow(1 - progress, 3);
+        const currentStepValue = Math.round(startValue + (valueDifference * easedProgress));
+        
+        // ✅ Ensure value is never negative
+        const safeValue = Math.max(0, currentStepValue);
+        signalRef.set(safeValue);
+        
+        if (currentStep < steps) {
+          const timeoutId = setTimeout(stepUpdate, stepDuration) as any;
+          this.animationTimeouts.set(key, timeoutId);
+        } else {
+          // ✅ Animation complete
+          signalRef.set(targetValue);
+          this.animationTimeouts.delete(key);
+        }
+      };
+
+      // ✅ Start animation
+      const initialTimeoutId = setTimeout(stepUpdate, stepDuration / 2) as any;
+      this.animationTimeouts.set(key, initialTimeoutId);
+    };
+
+    if (delay > 0) {
+      const delayTimeoutId = setTimeout(animateWithDelay, delay) as any;
+      this.animationTimeouts.set(`${key}_delay`, delayTimeoutId);
+    } else {
+      animateWithDelay();
+    }
   }
 
   /**
-   * Traditional count-up animation with easing
-   * @param key - Animation key for tracking/cleanup
-   * @param signalRef - Signal to animate
-   * @param targetValue - Target number to animate to
-   * @param duration - Animation duration in milliseconds
+   * Get the appropriate signal for a given key
    */
-  private animateValue(
-    key: string,
-    signalRef: WritableSignal<number>,
-    targetValue: number,
-    duration: number = 1000
-  ): void {
-    console.log(`[Scoreboard] 🎬 Starting animation for ${key}:`, {
-      targetValue,
-      duration,
-      currentSignalValue: signalRef(),
-      timestamp: Date.now()
-    });
-
-    // ✅ Cancel any existing animation for this key
-    if (this.activeAnimations.has(key)) {
-      const existingId = this.activeAnimations.get(key)!;
-      console.log(`[Scoreboard] 🔄 Cancelling existing animation for ${key} (ID: ${existingId})`);
-      cancelAnimationFrame(existingId);
+  private getSignalForKey(key: string): any {
+    switch (key) {
+      case 'points': return this.displayPointsValue;
+      case 'pubs': return this.displayPubsValue;
+      case 'checkins': return this.displayCheckinsValue;
+      case 'todaysPoints': return this.displayTodaysPointsValue;
+      case 'streak': return this.displayStreakValue;
+      case 'landlords': return this.displayLandlordsValue;
+      default: return null;
     }
-
-    const startValue = signalRef();
-    const startTime = performance.now();
-
-    console.log(`[Scoreboard] 📍 Animation setup for ${key}:`, {
-      startValue,
-      targetValue,
-      difference: targetValue - startValue,
-      startTime
-    });
-
-    // If values are the same, no animation needed
-    if (startValue === targetValue) {
-      console.log(`[Scoreboard] ⏭️ ${key}: No animation needed (values are equal: ${startValue})`);
-      return;
-    }
-
-    // ✅ CRITICAL: Validate values before animation
-    if (startValue < 0 || targetValue < 0) {
-      console.error(`[Scoreboard] ❌ NEGATIVE VALUES IN ANIMATION!`, {
-        key,
-        startValue,
-        targetValue
-      });
-    }
-
-    const animate = (currentTime: number) => {
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-
-      // Easing function for smooth animation (ease-out-quart)
-      const easeOutQuart = 1 - Math.pow(1 - progress, 4);
-      const currentValue = Math.round(startValue + (targetValue - startValue) * easeOutQuart);
-
-      // ✅ CRITICAL: Prevent negative values from being displayed
-      const safeValue = Math.max(0, currentValue);
-      
-      if (currentValue !== safeValue) {
-        console.error(`[Scoreboard] ❌ NEGATIVE VALUE PREVENTED!`, {
-          key,
-          calculatedValue: currentValue,
-          safeValue,
-          startValue,
-          targetValue,
-          progress,
-          elapsed
-        });
-      }
-
-      signalRef.set(safeValue);
-
-      if (progress < 1) {
-        // ✅ Store animation ID for cleanup
-        const animationId = requestAnimationFrame(animate);
-        this.activeAnimations.set(key, animationId);
-      } else {
-        // ✅ Animation complete - remove from tracking
-        console.log(`[Scoreboard] ✅ Animation complete for ${key}: ${startValue} → ${targetValue}`);
-        this.activeAnimations.delete(key);
-      }
-    };
-
-    // ✅ Start animation and track it
-    const animationId = requestAnimationFrame(animate);
-    this.activeAnimations.set(key, animationId);
-    console.log(`[Scoreboard] 🚀 Animation started for ${key} (ID: ${animationId})`);
   }
 }
