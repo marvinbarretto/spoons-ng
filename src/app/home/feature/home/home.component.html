@@ -20,38 +20,72 @@
 
   <!-- ✅ PRIORITY 1: Critical above-fold widgets (load immediately) -->
   <app-scoreboard-hero-widget></app-scoreboard-hero-widget>
-  <app-nearest-pub></app-nearest-pub>
+
+
+
 
   <!-- ✅ PRIORITY 2: Secondary widgets (defer until viewport or after short delay) -->
+
+  @defer (on viewport) {
+    <app-nearest-pub></app-nearest-pub>
+  } @placeholder (minimum 500ms) {
+    <div class="widget-placeholder">
+      <div class="placeholder-content">📍 Loading nearest pubs...</div>
+    </div>
+  } @loading (minimum 100ms) {
+    <div class="widget-placeholder">
+      <div class="placeholder-content">🔄 Finding nearby pubs...</div>
+    </div>
+  }
+
   @defer (on viewport) {
     <!-- ✅ Suggested Mission Widget (for new users) -->
     @if (isNewUser()) {
       <app-suggested-mission-widget></app-suggested-mission-widget>
     }
-    
-    <!-- ✅ Missions Widget -->
+   } @placeholder (minimum 200ms) {
+    <div class="widget-placeholder">
+      <div class="placeholder-content">🎯 Loading mission suggestions...</div>
+    </div>
+  } @loading (minimum 100ms) {
+    <div class="widget-placeholder">
+      <div class="placeholder-content">🔄 Preparing missions...</div>
+    </div>
+  }
+
+  @defer (on viewport) {
     <app-missions-widget></app-missions-widget>
-  } @placeholder {
+  } @placeholder (minimum 200ms) {
     <div class="widget-placeholder">
-      <div class="placeholder-content">Loading missions...</div>
+      <div class="placeholder-content">🎯 Loading missions...</div>
+    </div>
+  } @loading (minimum 100ms) {
+    <div class="widget-placeholder">
+      <div class="placeholder-content">🔄 Loading your missions...</div>
     </div>
   }
 
   @defer (on viewport) {
-    <!-- ✅ Leaderboard Widget -->
     <app-leaderboard-widget></app-leaderboard-widget>
-  } @placeholder {
+  } @placeholder (minimum 200ms) {
     <div class="widget-placeholder">
-      <div class="placeholder-content">Loading leaderboard...</div>
+      <div class="placeholder-content">🏆 Loading leaderboard...</div>
+    </div>
+  } @loading (minimum 100ms) {
+    <div class="widget-placeholder">
+      <div class="placeholder-content">🔄 Fetching rankings...</div>
     </div>
   }
 
   @defer (on viewport) {
-    <!-- ✅ Local Leaderboard Widget -->
     <app-local-leaderboard-widget></app-local-leaderboard-widget>
-  } @placeholder {
+  } @placeholder (minimum 200ms) {
     <div class="widget-placeholder">
-      <div class="placeholder-content">Loading local rankings...</div>
+      <div class="placeholder-content">📍 Loading local leaderboard...</div>
+    </div>
+  } @loading (minimum 100ms) {
+    <div class="widget-placeholder">
+      <div class="placeholder-content">🔄 Loading local rankings...</div>
     </div>
   }
 
@@ -59,27 +93,39 @@
   @defer (on viewport) {
     <!-- ✅ Recent Activity Widget -->
     <app-recent-activity-widget></app-recent-activity-widget>
-  } @placeholder {
+  } @placeholder (minimum 200ms) {
     <div class="widget-placeholder">
-      <div class="placeholder-content">Loading recent activity...</div>
+      <div class="placeholder-content">📰 Loading recent activity...</div>
+    </div>
+  } @loading (minimum 100ms) {
+    <div class="widget-placeholder">
+      <div class="placeholder-content">🔄 Fetching updates...</div>
     </div>
   }
 
   @defer (on viewport) {
     <!-- ✅ Carpet Widget -->
     <app-carpet-widget></app-carpet-widget>
-  } @placeholder {
+  } @placeholder (minimum 200ms) {
     <div class="widget-placeholder">
-      <div class="placeholder-content">Loading carpet collection...</div>
+      <div class="placeholder-content">🔸 Loading carpet collection...</div>
+    </div>
+  } @loading (minimum 100ms) {
+    <div class="widget-placeholder">
+      <div class="placeholder-content">🔄 Loading carpets...</div>
     </div>
   }
 
   @defer (on viewport) {
     <!-- ✅ Badges Widget -->
     <app-badges-widget></app-badges-widget>
-  } @placeholder {
+  } @placeholder (minimum 200ms) {
     <div class="widget-placeholder">
-      <div class="placeholder-content">Loading badges...</div>
+      <div class="placeholder-content">🏅 Loading badges...</div>
+    </div>
+  } @loading (minimum 100ms) {
+    <div class="widget-placeholder">
+      <div class="placeholder-content">🔄 Loading achievements...</div>
     </div>
   }
 

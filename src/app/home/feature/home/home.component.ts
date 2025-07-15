@@ -15,34 +15,44 @@ import { DataAggregatorService } from '../../../shared/data-access/data-aggregat
 import { PubStore } from '../../../pubs/data-access/pub.store';
 import { LocationService } from '../../../shared/data-access/location.service';
 
-import { BadgesWidgetComponent } from '../../../widgets/badges/badges-widget.component';
-import { MissionsWidgetComponent } from '../../../widgets/missions/missions-widget.component';
+// ✅ Critical components loaded immediately
+import { ScoreboardHeroWidgetComponent } from '@app/widgets/scoreboard-hero/scoreboard-hero-widget.component';
+
+// ✅ Components for modal overlays (not deferred)
 import { ProfileCustomisationModalComponent } from '@home/ui/profile-customisation-modal/profile-customisation-modal.component';
-import { CarpetWidgetComponent } from '../../../widgets/carpet/carpet-widget.component';
-// import { LLMTestComponent } from '../../../shared/ui/llm-test/llm-test.component';
-import { UserAvatarComponent } from "../../../shared/ui/user-avatar/user-avatar.component";
-import { NearestPubComponent } from '../../../widgets/nearest-pub/nearest-pub.component';
-import { LeaderboardWidgetComponent } from '../../../widgets/leaderboard/leaderboard-widget.component';
-import { LocalLeaderboardWidgetComponent } from '../../../widgets/local-leaderboard/local-leaderboard-widget.component';
-import { RecentActivityWidgetComponent } from '../../../widgets/recent-activity/recent-activity-widget.component';
-import { ScoreboardHeroWidgetComponent } from '../../../widgets/scoreboard-hero/scoreboard-hero-widget.component';
-import { SuggestedMissionWidgetComponent } from '../../../widgets/suggested-mission/suggested-mission-widget.component';
+import { UserAvatarComponent } from "@shared/ui/user-avatar/user-avatar.component";
+
+// ✅ Deferred components - imported for TypeScript but NOT in @Component.imports
+// This allows Angular's @defer to handle lazy loading automatically
+import { BadgesWidgetComponent } from '@app/widgets/badges/badges-widget.component';
+import { MissionsWidgetComponent } from '@app/widgets/missions/missions-widget.component';
+import { CarpetWidgetComponent } from '@app/widgets/carpet/carpet-widget.component';
+import { NearestPubComponent } from '@app/widgets/nearest-pub/nearest-pub.component';
+import { LeaderboardWidgetComponent } from '@app/widgets/leaderboard/leaderboard-widget.component';
+import { LocalLeaderboardWidgetComponent } from '@app/widgets/local-leaderboard/local-leaderboard-widget.component';
+import { RecentActivityWidgetComponent } from '@app/widgets/recent-activity/recent-activity-widget.component';
+import { SuggestedMissionWidgetComponent } from '@app/widgets/suggested-mission/suggested-mission-widget.component';
 
 
 @Component({
   selector: 'app-home',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    // ✅ Critical components (load immediately)
     ScoreboardHeroWidgetComponent,
+    
+    // ✅ Essential Angular modules
+    RouterModule,
+    
+    // ✅ Deferred components - included for template compilation, Angular handles lazy loading
     BadgesWidgetComponent,
     MissionsWidgetComponent,
-    SuggestedMissionWidgetComponent,
     CarpetWidgetComponent,
-    RouterModule,
     NearestPubComponent,
     LeaderboardWidgetComponent,
     LocalLeaderboardWidgetComponent,
     RecentActivityWidgetComponent,
+    SuggestedMissionWidgetComponent,
 ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
