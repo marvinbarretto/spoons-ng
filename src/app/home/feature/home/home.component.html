@@ -18,37 +18,70 @@
   <!-- Original scoreboard-hero component -->
   <!-- <app-scoreboard-hero [data]="scoreboardData()" /> -->
 
-  <!-- New widget version for comparison -->
+  <!-- ✅ PRIORITY 1: Critical above-fold widgets (load immediately) -->
   <app-scoreboard-hero-widget></app-scoreboard-hero-widget>
-
-  <!-- <app-llm-test></app-llm-test> -->
-
-  <!-- ✅ Nearest Pub Widget -->
   <app-nearest-pub></app-nearest-pub>
 
-  <!-- ✅ Suggested Mission Widget (for new users) -->
-  @if (isNewUser()) {
-    <app-suggested-mission-widget></app-suggested-mission-widget>
+  <!-- ✅ PRIORITY 2: Secondary widgets (defer until viewport or after short delay) -->
+  @defer (on viewport) {
+    <!-- ✅ Suggested Mission Widget (for new users) -->
+    @if (isNewUser()) {
+      <app-suggested-mission-widget></app-suggested-mission-widget>
+    }
+    
+    <!-- ✅ Missions Widget -->
+    <app-missions-widget></app-missions-widget>
+  } @placeholder {
+    <div class="widget-placeholder">
+      <div class="placeholder-content">Loading missions...</div>
+    </div>
   }
 
-  <!-- ✅ Missions Widget -->
-  <app-missions-widget></app-missions-widget>
+  @defer (on viewport) {
+    <!-- ✅ Leaderboard Widget -->
+    <app-leaderboard-widget></app-leaderboard-widget>
+  } @placeholder {
+    <div class="widget-placeholder">
+      <div class="placeholder-content">Loading leaderboard...</div>
+    </div>
+  }
 
-  <!-- ✅ Leaderboard Widget -->
-  <app-leaderboard-widget></app-leaderboard-widget>
+  @defer (on viewport) {
+    <!-- ✅ Local Leaderboard Widget -->
+    <app-local-leaderboard-widget></app-local-leaderboard-widget>
+  } @placeholder {
+    <div class="widget-placeholder">
+      <div class="placeholder-content">Loading local rankings...</div>
+    </div>
+  }
 
-  <!-- ✅ Local Leaderboard Widget -->
-  <app-local-leaderboard-widget></app-local-leaderboard-widget>
+  <!-- ✅ PRIORITY 3: Tertiary widgets (defer with longer delays) -->
+  @defer (on viewport) {
+    <!-- ✅ Recent Activity Widget -->
+    <app-recent-activity-widget></app-recent-activity-widget>
+  } @placeholder {
+    <div class="widget-placeholder">
+      <div class="placeholder-content">Loading recent activity...</div>
+    </div>
+  }
 
-  <!-- ✅ Recent Activity Widget -->
-  <app-recent-activity-widget></app-recent-activity-widget>
+  @defer (on viewport) {
+    <!-- ✅ Carpet Widget -->
+    <app-carpet-widget></app-carpet-widget>
+  } @placeholder {
+    <div class="widget-placeholder">
+      <div class="placeholder-content">Loading carpet collection...</div>
+    </div>
+  }
 
-  <!-- ✅ Carpet Widget -->
-  <app-carpet-widget></app-carpet-widget>
-
-
-  <!-- ✅ Badges Widget -->
-  <app-badges-widget></app-badges-widget>
+  @defer (on viewport) {
+    <!-- ✅ Badges Widget -->
+    <app-badges-widget></app-badges-widget>
+  } @placeholder {
+    <div class="widget-placeholder">
+      <div class="placeholder-content">Loading badges...</div>
+    </div>
+  }
 
 
   <!-- ✅ Action Cards -->

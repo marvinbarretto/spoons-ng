@@ -80,6 +80,32 @@
   margin: 0;
 }
 
+/* ✅ Placeholder Styles for Deferred Widgets */
+.widget-placeholder {
+  background: var(--background-lighter);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 2rem;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: placeholder-pulse 2s ease-in-out infinite;
+}
+
+.placeholder-content {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: center;
+  opacity: 0.7;
+}
+
+@keyframes placeholder-pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
 /* ✅ Responsive Design */
 @media (max-width: 768px) {
   .home-container {
@@ -88,5 +114,10 @@
 
   .debug-grid {
     grid-template-columns: 1fr;
+  }
+  
+  .widget-placeholder {
+    padding: 1.5rem;
+    min-height: 100px;
   }
 }
