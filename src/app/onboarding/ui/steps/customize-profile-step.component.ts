@@ -12,9 +12,9 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
     <div class="step customize-profile-step">
       <!-- Large Selected Avatar Display -->
       <div class="selected-avatar-display">
-        <img 
+        <img
           class="selected-avatar-large"
-          [src]="selectedAvatarUrl()" 
+          [src]="selectedAvatarUrl()"
           [alt]="displayName() + ' avatar'"
         />
       </div>
@@ -52,13 +52,13 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
         <div class="step-actions">
           <app-button
             variant="secondary"
-            [size]="ButtonSize.MEDIUM"
+            [size]="ButtonSize.LARGE"
             (onClick)="onBack()"
             [disabled]="loading()"
           >
             Back
           </app-button>
-          
+
           <app-button
             variant="primary"
             [size]="ButtonSize.LARGE"
@@ -84,7 +84,6 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
 
     .hero-section {
       text-align: center;
-      margin-bottom: 1rem;
     }
 
     .hero-section h1 {
@@ -92,20 +91,19 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
       line-height: 1.2;
       margin-bottom: 1rem;
       font-weight: 700;
-      color: var(--text-primary, white);
+      color: white;
     }
 
     .hero-section .subtitle {
       font-size: 1.125rem;
       line-height: 1.6;
-      color: var(--text-primary, white);
+      color: white;
       margin: 0;
     }
 
     .selected-avatar-display {
       display: flex;
       justify-content: center;
-      margin-bottom: 2rem;
     }
 
     .selected-avatar-large {
@@ -126,7 +124,7 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
       gap: 0.75rem;
-      margin: 2rem 0;
+      margin: 1rem 0;
       max-width: 400px;
       margin-left: auto;
       margin-right: auto;
@@ -225,7 +223,6 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
     /* Action Buttons */
     .cta-section {
       text-align: center;
-      margin-top: 2rem;
     }
 
     .step-actions {
@@ -235,13 +232,13 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
       margin: 0;
     }
 
-    .step-actions app-button {
-      min-width: 120px;
-    }
+    // .step-actions app-button {
+    //   min-width: 120px;
+    // }
 
     @media (max-width: 768px) {
       .customize-profile-step {
-        gap: 1.5rem;
+        gap: 1rem;
       }
 
       .selected-avatar-large {
@@ -268,22 +265,22 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
       }
 
       .step-actions {
-        flex-direction: column;
-        width: 100%;
-        max-width: 300px;
-        margin: 0 auto;
+        // flex-direction: column;
+        // width: 100%;
+        // max-width: 300px;
+        // margin: 0 auto;
       }
 
-      .step-actions app-button {
-        width: 100%;
-      }
+      // .step-actions app-button {
+      //   width: 100%;
+      // }
     }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CustomizeProfileStepComponent {
   private readonly avatarService = inject(AvatarService);
-  
+
   // Inputs
   readonly user = input<User | null>(null);
   readonly selectedAvatarId = input<string>('');
@@ -306,7 +303,7 @@ export class CustomizeProfileStepComponent {
   readonly selectedAvatarUrl = computed(() => {
     const avatarId = this.selectedAvatarId();
     const user = this.user();
-    
+
     if (!avatarId || !user) {
       return '/assets/avatars/npc.webp';
     }

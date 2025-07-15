@@ -47,7 +47,7 @@ import { LocationService } from '../../../shared/data-access/location.service';
               @if (displayName()) { {{ displayName() }}!}
             </span>
           </h1>
-          <p class="subtitle">Pick your regular spot for bonus points!</p>
+          <!-- <p class="subtitle">Pick your regular spot for bonus points!</p> -->
 
           <!-- Selected Pub Display -->
           @if (selectedPub()) {
@@ -225,7 +225,6 @@ import { LocationService } from '../../../shared/data-access/location.service';
     .subtitle {
       font-size: 1.125rem;
       margin: 0;
-      color: var(--text);
       text-align: center;
     }
 
@@ -237,7 +236,6 @@ import { LocationService } from '../../../shared/data-access/location.service';
     .search-label {
       display: block;
       font-weight: 500;
-      color: var(--text);
       font-size: 0.875rem;
       margin-bottom: 0.5rem;
     }
@@ -543,18 +541,18 @@ export class ChooseLocalStepComponent {
   protected readonly nearbyPubs = computed(() => this.nearbyPubStore.nearbyPubs());
   protected readonly hasSearchTerm = computed(() => this.searchTerm().trim().length > 0);
   protected readonly userCheckins = computed(() => this.checkInStore.userCheckins());
-  
+
   // Location-related signals
   protected readonly locationServiceLocation = computed(() => this.locationService.location());
   protected readonly locationServiceLoading = computed(() => this.locationService.loading());
   protected readonly locationServiceError = computed(() => this.locationService.error());
-  
+
   // Convert nearby pubs to format expected by our clickable list
   protected readonly nearbyPubsForList = computed(() => {
     const pubs = this.nearbyPubs();
     const location = this.locationServiceLocation();
     console.log('[ChooseLocalStep] nearbyPubsForList computed - pubs:', pubs.length, 'location:', location);
-    
+
     return pubs.map(pub => ({
       id: pub.id,
       name: pub.name,
@@ -623,10 +621,10 @@ export class ChooseLocalStepComponent {
       id: nearbyPub.id,
       name: nearbyPub.name,
       address: nearbyPub.address || '',
-      city: '', 
-      region: '', 
-      location: { lat: 0, lng: 0 }, 
-      carpetUrl: '', 
+      city: '',
+      region: '',
+      location: { lat: 0, lng: 0 },
+      carpetUrl: '',
       hasCarpet: false
     } as Pub;
   }
@@ -639,11 +637,11 @@ export class ChooseLocalStepComponent {
 
   requestLocation(): void {
     console.log('[ChooseLocalStep] Location permission requested');
-    
+
     // Call LocationService to update app-wide location signals
     this.locationService.getCurrentLocation();
     console.log('[ChooseLocalStep] LocationService.getCurrentLocation() called');
-    
+
     // Also emit to parent for existing onboarding flow
     this.locationRequested.emit();
   }
