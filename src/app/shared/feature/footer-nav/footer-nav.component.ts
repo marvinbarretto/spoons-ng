@@ -128,9 +128,27 @@ type NavItem = {
 
     .nav-item--active {
       color: var(--primary);
+      background-color: var(--background-lightest);
+      border-radius: 12px;
+      position: relative;
+
+      /* ✅ Enhanced active state with accent indicator */
+      &::before {
+        content: '';
+        position: absolute;
+        top: 2px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 4px;
+        height: 4px;
+        background: var(--accent);
+        border-radius: 50%;
+        box-shadow: 0 0 8px var(--accent);
+      }
 
       .nav-item__icon {
-        transform: scale(1.1);
+        transform: scale(1.2);
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
       }
     }
 
@@ -224,7 +242,7 @@ type NavItem = {
 
       .nav-item__label {
         color: var(--primary);
-        font-weight: 600;
+        font-weight: 700;
       }
     }
 
