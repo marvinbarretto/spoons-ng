@@ -7,7 +7,7 @@ export const POINTS_CONFIG = {
   },
 
   distance: {
-    pointsPerKm: 2,
+    pointsPerKm: 0.5,
     maxDistanceBonus: 50,
     minDistance: 0.1,
   },
