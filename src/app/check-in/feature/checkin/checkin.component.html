@@ -1,129 +1,93 @@
+<!-- src/app/check-in/feature/checkin/checkin.component.html -->
+
 <div class="checkin-container">
 
-  <!-- Camera View -->
-  @if (currentPhase() === 'CAMERA_STARTING' || currentPhase() === 'WAITING_FOR_GATES') {
-    <video #videoElement
-           class="camera-view"
-           playsinline
-           muted
-           autoplay>
-    </video>
-  }
+  <!-- Live Camera Video Stream -->
+  <video #cameraVideo
+         class="camera-video"
+         [class.visible]="orchestrator.showCameraPreview()"
+         autoplay
+         playsinline
+         muted>
+  </video>
 
-  <!-- Blurred Background (after photo captured) -->
-  @if (capturedPhotoUrl()) {
-    <div class="blurred-background"
-         [style.background-image]="'url(' + capturedPhotoUrl() + ')'">
+  <!-- Camera Framing Guides -->
+  @if (orchestrator.showCameraPreview()) {
+    <div class="camera-frame">
+      <div class="frame-corner frame-corner--top-left"></div>
+      <div class="frame-corner frame-corner--top-right"></div>
+      <div class="frame-corner frame-corner--bottom-left"></div>
+      <div class="frame-corner frame-corner--bottom-right"></div>
     </div>
   }
 
-  <!-- Status Overlay -->
-  <div class="status-overlay">
-    <div class="status-content">
+  <!-- Camera Overlay UI -->
+  @if (orchestrator.showCameraPreview()) {
+    <div class="camera-overlay">
+      <div class="camera-header">
+        <h2>Capture carpet to check in</h2>
+      </div>
 
-      <!-- Phase-specific content -->
-      @switch (currentPhase()) {
-
-        @case ('CAMERA_STARTING') {
-          <div class="status-message">Starting camera...</div>
-        }
-
-        @case ('WAITING_FOR_GATES') {
-          <div class="status-message">Point at the carpet</div>
-          <div class="gates-status">
-
-            <!-- Core Device Requirements -->
-            <div class="gate-group">
-              <h4>Device Position</h4>
-              <div class="gate" [class.passed]="gatesPassed().deviceOriented">
-                📱 Point Down: {{ gatesPassed().deviceOriented ? 'YES' : 'NO' }}
-                <br><small>Beta: {{ deviceOrientation().beta }}°</small>
-              </div>
-              <div class="gate" [class.passed]="gatesPassed().motionStable">
-                🎥 Hold Steady: {{ gatesPassed().motionStable }}
-                @if (metrics()) {
-                  <br><small>Motion: {{ metrics()!.motionLevel }}/100, Stable: {{ metrics()!.isStable }}</small>
-                }
-              </div>
-            </div>
-
-            @if (metrics()) {
-              <!-- Image Quality Requirements -->
-              <div class="gate-group">
-                <h4>Image Quality</h4>
-                <div class="gate" [class.passed]="gatesPassed().goodSharpness">
-                  🔍 Sharpness: {{ metrics()!.sharpness }}/10{{ gatesPassed().goodSharpness ? ' ✓' : ' (need > 10)' }}
-                </div>
-                <div class="gate" [class.passed]="gatesPassed().goodContrast">
-                  ⚡ Contrast: {{ metrics()!.contrast }}/20{{ gatesPassed().goodContrast ? ' ✓' : ' (need > 20)' }}
-                </div>
-              </div>
-
-              <!-- Carpet Pattern Detection -->
-              <div class="gate-group">
-                <h4>Carpet Detection</h4>
-                <div class="gate" [class.passed]="gatesPassed().hasTexture">
-                  🧵 Texture: {{ metrics()!.textureComplexity }}/10{{ gatesPassed().hasTexture ? ' ✓' : ' (need > 10)' }}
-                </div>
-                <div class="gate" [class.passed]="gatesPassed().hasEdges">
-                  📐 Pattern: {{ metrics()!.edgeDensity }}/15{{ gatesPassed().hasEdges ? ' ✓' : ' (need > 15)' }}
-                </div>
-              </div>
+      @if (orchestrator.showCaptureButton()) {
+        <div class="camera-controls">
+          <button class="capture-btn"
+                  (click)="onCaptureClick()"
+                  [disabled]="orchestrator.isCapturingPhoto()">
+            @if (orchestrator.isCapturingPhoto()) {
+              <div class="capturing-icon">⏳</div>
+              <span>Capturing...</span>
+            } @else {
+              <div class="camera-icon">📸</div>
+              <span>Capture</span>
             }
-          </div>
-          @if (allGatesPassed()) {
-            <button class="capture-btn" (click)="capturePhoto()">
-              All conditions met - Take Photo
-            </button>
-          }
-        }
-
-        @case ('PHOTO_CAPTURED') {
-          <div class="status-message">Photo captured! Processing...</div>
-        }
-
-        @case ('LLM_THINKING') {
-          <div class="status-message">{{ currentAnalysisMessage() }}</div>
-          <div class="thinking-spinner">🤖</div>
-        }
-
-        @case ('NOT_CARPET_DETECTED') {
-          <div class="status-message not-carpet">That doesn't look like a carpet</div>
-        }
-
-        @case ('CHECK_IN_PROCESSING') {
-          <div class="status-message">{{ pubName() }}</div>
-        }
-
-        @case ('SUCCESS_MODAL') {
-          <div class="success-modal">
-            <h2>Check-in Successful!</h2>
-            <p>Welcome to {{ pubName() }}</p>
-            <div class="success-details">
-              <div>Points earned: {{ pointsEarned() }}</div>
-              <div>Badges earned: {{ badgesEarned().length }}</div>
-            </div>
-            <button class="exit-btn" (click)="exitToHomepage()">
-              Continue
-            </button>
-          </div>
-        }
+          </button>
+        </div>
       }
-
     </div>
-  </div>
+  }
 
-  <!-- Debug Info -->
-  <div class="debug-info">
-    <div>Phase: {{ currentPhase() }}</div>
-    @if (ACTIVE_DEVELOPMENT_MODE) {
-      <div>🚨 DEV MODE ON</div>
-    }
-  </div>
+  <!-- Photo Preview with Static Background -->
+  @if (orchestrator.showPhotoPreview()) {
+    <div class="photo-preview">
+      <img [src]="orchestrator.photoDataUrl()!" alt="Captured image" class="static-photo">
 
-  <!-- Exit Button (always available) -->
-  <button class="exit-button" (click)="exitToHomepage()">
-    Exit
+      <div class="photo-overlay">
+        @if (orchestrator.stage() === 'LLM_CHECKING') {
+          <div class="analyzing-container">
+            <div class="analyzing-icon">🔍</div>
+            <h3>Analyzing image..</h3>
+            <p>This may take a moment</p>
+            <div class="loading-spinner"></div>
+          </div>
+        } @else if (orchestrator.showRetakeButton()) {
+          <div class="photo-actions">
+            <button class="retake-btn" (click)="onRetakePhotoClick()">
+              Retake Photo
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (orchestrator.error()) {
+    <div class="error-state">
+      <div class="error-container">
+        <div class="error-icon">❌</div>
+        <h2>Check-in Failed</h2>
+        <p>{{ orchestrator.error() }}</p>
+
+        <button class="retry-btn" (click)="onRetryClick()">
+          Try Again
+        </button>
+      </div>
+    </div>
+  }
+
+  <!-- Exit button (always available) -->
+  <button class="exit-btn" (click)="onExitClick()">
+    ✕
   </button>
 
 </div>

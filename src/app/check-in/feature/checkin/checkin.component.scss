@@ -1,31 +1,218 @@
+// src/app/check-in/feature/checkin/checkin.component.scss
+@use 'styles/index' as *;
+
 .checkin-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: #000; // var(--background-darkest);
-  color: var(--text);
-}
-
-.camera-view {
+  position: relative;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: 100vh;
+  background: var(--background-darkest);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
-.blurred-background {
+// ===================================
+// 📹 LIVE CAMERA VIDEO
+// ===================================
+
+.camera-video {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-size: cover;
-  background-position: center;
-  filter: blur(10px);
+  object-fit: cover;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  
+  &.visible {
+    opacity: 1;
+    animation: camera-pulse 3s ease-in-out infinite;
+  }
 }
 
-.status-overlay {
+// ===================================
+// 📐 CAMERA FRAMING GUIDES
+// ===================================
+
+.camera-frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.frame-corner {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.8);
+  animation: frame-pulse 2s ease-in-out infinite alternate;
+  
+  &--top-left {
+    top: 20%;
+    left: 20%;
+    border-right: none;
+    border-bottom: none;
+    border-top-left-radius: 8px;
+  }
+  
+  &--top-right {
+    top: 20%;
+    right: 20%;
+    border-left: none;
+    border-bottom: none;
+    border-top-right-radius: 8px;
+  }
+  
+  &--bottom-left {
+    bottom: 20%;
+    left: 20%;
+    border-right: none;
+    border-top: none;
+    border-bottom-left-radius: 8px;
+  }
+  
+  &--bottom-right {
+    bottom: 20%;
+    right: 20%;
+    border-left: none;
+    border-top: none;
+    border-bottom-right-radius: 8px;
+  }
+}
+
+.camera-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2rem;
+  z-index: 2;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.5) 0%, transparent 30%, transparent 70%, rgba(0, 0, 0, 0.5) 100%);
+}
+
+.camera-header {
+  text-align: center;
+  padding: 1rem 0;
+  
+  h2 {
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  }
+  
+  p {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1rem;
+    margin: 0;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  }
+}
+
+.camera-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding-bottom: 2rem;
+}
+
+.capture-btn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  border: 3px solid white;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 120px;
+  height: 120px;
+  backdrop-filter: blur(10px);
+  animation: capture-ready 2s ease-in-out infinite;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    right: -8px;
+    bottom: -8px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    animation: capture-ripple 2s ease-out infinite;
+  }
+  
+  &:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+    border-color: var(--primary);
+    animation: capture-hover 1s ease-in-out infinite;
+    
+    &::before {
+      border-color: var(--primary);
+      animation: capture-ripple-fast 1s ease-out infinite;
+    }
+  }
+  
+  &:active:not(:disabled) {
+    transform: scale(0.95);
+    animation: none;
+  }
+  
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    border-color: rgba(255, 255, 255, 0.5);
+    animation: capture-processing 1.5s ease-in-out infinite;
+    
+    &::before {
+      border-color: rgba(255, 255, 255, 0.5);
+      animation: capture-ripple-disabled 1.5s ease-out infinite;
+    }
+  }
+  
+  .camera-icon, .capturing-icon {
+    font-size: 2rem;
+    transition: all 0.3s ease;
+  }
+  
+  .capturing-icon {
+    animation: capture-icon-spin 1s linear infinite;
+  }
+  
+  span {
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    transition: all 0.3s ease;
+  }
+}
+
+// ===================================
+// 📷 PHOTO PREVIEW STATE
+// ===================================
+
+.photo-preview {
   position: absolute;
   top: 0;
   left: 0;
@@ -34,175 +221,403 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.7);
-  color: white;
 }
 
-.status-content {
+.static-photo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 1;
+}
+
+.photo-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+// ===================================
+// 🔍 ANALYZING STATE
+// ===================================
+
+.analyzing-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   padding: 2rem;
-  color: white;
-}
-
-.status-message {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
-  color: white;
-  font-weight: 500;
-}
-
-.gates-status {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-  margin: 1rem 0;
-}
-
-.gate-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-
-  h4 {
-    margin: 0 0 0.5rem 0;
-    font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.8);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-    padding-bottom: 0.25rem;
-  }
-}
-
-.gate {
-  padding: 0.5rem;
-  background: rgba(220, 53, 69, 0.4);
-  border-radius: 4px;
-  color: white;
-  font-weight: 500;
-
-  &.passed {
-    background: rgba(40, 167, 69, 0.4);
-  }
-
-  small {
-    opacity: 0.8;
-    font-size: 0.75rem;
-    font-weight: normal;
-  }
-
-
-  &.experimental {
-    background: rgba(var(--warning-rgb, 255, 193, 7), 0.2);
-    border-left: 3px solid var(--warning);
-    font-size: 0.9rem;
-  }
-
-  &.original {
-    background: rgba(var(--info-rgb, 23, 162, 184), 0.2);
-    border-left: 3px solid var(--info);
-  }
-
-  &.winner {
-    background: rgba(var(--warning-rgb, 255, 193, 7), 0.3) !important;
-    border-left: 3px solid var(--warning) !important;
-    font-weight: bold;
-  }
-
-  &.broken {
-    background: rgba(var(--text-muted-rgb, 108, 117, 125), 0.2) !important;
-    border-left: 3px solid var(--text-muted) !important;
-    opacity: 0.6;
-  }
-
-  &.enhanced {
-    background: rgba(var(--accent-rgb, 13, 110, 253), 0.2);
-    border-left: 3px solid var(--accent);
-    font-size: 0.9rem;
-
-    &.passed {
-      background: rgba(var(--accent-rgb, 13, 110, 253), 0.4);
-    }
-  }
-
-  &.simple {
-    background: rgba(var(--success-rgb, 40, 167, 69), 0.2);
-    border-left: 3px solid var(--success);
-    font-size: 0.9rem;
-
-    &.passed {
-      background: rgba(var(--success-rgb, 40, 167, 69), 0.4);
-    }
-  }
-
-  &.carpet-no {
-    background: rgba(var(--error-rgb, 220, 53, 69), 0.4) !important;
-    border-left: 3px solid var(--error) !important;
-    font-weight: bold;
-  }
-
-  &.carpet-possible {
-    background: rgba(var(--success-rgb, 40, 167, 69), 0.4) !important;
-    border-left: 3px solid var(--success) !important;
-    font-weight: bold;
-  }
-}
-
-.capture-btn, .exit-btn {
-  background: var(--accent);
-  color: var(--on-accent);
-  border: none;
-  padding: 1rem 2rem;
-  border-radius: 8px;
-  font-size: 1.1rem;
-  cursor: pointer;
-  margin: 0.5rem;
-}
-
-.success-modal {
-  background: var(--background-darker);
-  padding: 2rem;
+  background: rgba(var(--background-rgb), 0.9);
   border-radius: 12px;
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  
+  .analyzing-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    @include pulse(2s);
+  }
+  
+  h3 {
+    color: var(--text);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  
+  p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border);
+  border-top: 3px solid var(--primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+// ===================================
+// 🎯 PHOTO ACTIONS
+// ===================================
+
+.photo-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.retake-btn {
+  padding: 0.75rem 2rem;
+  background: var(--background-lighter);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: var(--background-lightest);
+    transform: translateY(-1px);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+// ===================================
+// 🚨 ERROR STATE
+// ===================================
+
+.error-state {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--background-darkest);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+}
+
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+  background: var(--background-lighter);
+  border-radius: 12px;
+  border: 1px solid var(--border);
   max-width: 400px;
+  width: 100%;
+  margin: 1rem;
+  
+  .error-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+  
+  h2 {
+    color: var(--text);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  
+  p {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
 }
 
-.success-details {
-  margin: 1rem 0;
+.retry-btn {
+  padding: 0.75rem 2rem;
+  background: var(--primary);
+  color: var(--background);
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
 }
 
-.thinking-spinner {
-  font-size: 3rem;
-  animation: spin 2s linear infinite;
+// ===================================
+// 🚪 EXIT BUTTON
+// ===================================
+
+.exit-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 48px;
+  height: 48px;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+  backdrop-filter: blur(10px);
+  
+  &:hover {
+    background: rgba(0, 0, 0, 0.8);
+    border-color: rgba(255, 255, 255, 0.8);
+    transform: scale(1.1);
+  }
+  
+  &:active {
+    transform: scale(0.9);
+  }
 }
+
+// ===================================
+// 🔄 ANIMATIONS
+// ===================================
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+  0% { opacity: 0.6; }
+  100% { opacity: 1; }
 }
 
-.debug-info {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  background: var(--overlay);
-  padding: 0.5rem;
-  border-radius: 4px;
-  font-size: 0.8rem;
+// Camera and framing animations
+@keyframes camera-pulse {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.05); }
 }
 
-.exit-button {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: var(--error);
-  color: var(--on-accent);
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  cursor: pointer;
+@keyframes frame-pulse {
+  0% { 
+    opacity: 0.6;
+    border-color: rgba(255, 255, 255, 0.6);
+  }
+  100% { 
+    opacity: 1;
+    border-color: rgba(255, 255, 255, 0.9);
+  }
+}
+
+// Capture button animations
+@keyframes capture-ready {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  }
+  50% { 
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.5);
+  }
+}
+
+@keyframes capture-hover {
+  0%, 100% { 
+    box-shadow: 0 0 25px var(--primary);
+  }
+  50% { 
+    box-shadow: 0 0 40px var(--primary);
+  }
+}
+
+@keyframes capture-processing {
+  0%, 100% { 
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+  }
+  50% { 
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.6);
+  }
+}
+
+@keyframes capture-ripple {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.2);
+    opacity: 0;
+  }
+}
+
+@keyframes capture-ripple-fast {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.15);
+    opacity: 0;
+  }
+}
+
+@keyframes capture-ripple-disabled {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1.1);
+    opacity: 0;
+  }
+}
+
+@keyframes capture-icon-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// ===================================
+// 📱 RESPONSIVE DESIGN
+// ===================================
+
+@media (max-width: 480px) {
+  .camera-overlay {
+    padding: 1rem;
+  }
+  
+  .camera-header {
+    padding: 0.5rem 0;
+    
+    h2 {
+      font-size: 1.25rem;
+    }
+    
+    p {
+      font-size: 0.9rem;
+    }
+  }
+  
+  .frame-corner {
+    width: 30px;
+    height: 30px;
+    border-width: 2px;
+    
+    &--top-left {
+      top: 15%;
+      left: 15%;
+    }
+    
+    &--top-right {
+      top: 15%;
+      right: 15%;
+    }
+    
+    &--bottom-left {
+      bottom: 15%;
+      left: 15%;
+    }
+    
+    &--bottom-right {
+      bottom: 15%;
+      right: 15%;
+    }
+  }
+  
+  .capture-btn {
+    width: 100px;
+    height: 100px;
+    padding: 1rem;
+    
+    &::before {
+      top: -6px;
+      left: -6px;
+      right: -6px;
+      bottom: -6px;
+    }
+    
+    .camera-icon, .capturing-icon {
+      font-size: 1.5rem;
+    }
+    
+    span {
+      font-size: 0.8rem;
+    }
+  }
+  
+  .analyzing-container {
+    padding: 1.5rem;
+    margin: 1rem;
+    
+    .analyzing-icon {
+      font-size: 2.5rem;
+    }
+    
+    h3 {
+      font-size: 1.1rem;
+    }
+  }
+  
+  .exit-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 1.25rem;
+  }
+  
+  .error-container {
+    padding: 1.5rem;
+    
+    .error-icon {
+      font-size: 2.5rem;
+    }
+    
+    h2 {
+      font-size: 1.1rem;
+    }
+  }
 }

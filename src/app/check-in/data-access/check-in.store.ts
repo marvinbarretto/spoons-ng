@@ -23,6 +23,7 @@ import type { Pub } from '../../pubs/utils/pub.models';
 import type { EarnedBadgeWithDetails } from '../../badges/utils/badge.model';
 import { Timestamp } from 'firebase/firestore';
 import { environment } from '../../../environments/environment';
+import { getDistanceKm } from '../../shared/utils/location.utils';
 
 
 @Injectable({ providedIn: 'root' })
@@ -604,8 +605,8 @@ export class CheckInStore extends BaseStore<CheckIn> {
         this.newCheckInService.getUserTotalCheckinCount(userId)
       ]);
 
-      // TODO: Calculate real distance from home pub
-      const distanceFromHome = 0;
+      // Calculate distance from home pub
+      const distanceFromHome = await this.calculateDistanceFromHome(pubId, userId);
 
       // Build PointsStore data structure
       const pointsData = {
@@ -616,8 +617,8 @@ export class CheckInStore extends BaseStore<CheckIn> {
         currentStreak: 0, // TODO: Calculate streak
         hasPhoto: false,
         sharedSocial: false,
-        // TODO: Determine if this is user's home pub
-        isHomePub: false
+        // Determine if this is user's home pub
+        isHomePub: await this.isHomePub(pubId, userId)
       };
 
       console.log('[CheckInStore] 🎯 Points context data prepared:', pointsData);
@@ -637,6 +638,71 @@ export class CheckInStore extends BaseStore<CheckIn> {
     }
   }
 
+
+  /**
+   * Check if the pub is the user's home pub
+   */
+  private async isHomePub(pubId: string, userId: string): Promise<boolean> {
+    try {
+      const user = this.userStore.user();
+      return user?.homePubId === pubId;
+    } catch (error) {
+      console.error('[CheckInStore] ❌ Error checking if home pub:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Calculate distance from current pub to user's home pub
+   */
+  private async calculateDistanceFromHome(pubId: string, userId: string): Promise<number> {
+    try {
+      // Get user's data to find home pub
+      const user = this.userStore.user();
+      if (!user?.homePubId) {
+        console.log('[CheckInStore] 📍 User has no home pub set, distance = 0');
+        return 0;
+      }
+
+      // If this is the user's home pub, distance is 0
+      if (user.homePubId === pubId) {
+        console.log('[CheckInStore] 📍 Checking into home pub, distance = 0');
+        return 0;
+      }
+
+      // Ensure pub store is loaded
+      await this.pubStore.loadOnce();
+      
+      // Get location data for both pubs
+      const currentPub = this.pubStore.get(pubId);
+      const homePub = this.pubStore.get(user.homePubId);
+
+      // Check if both pubs have location data
+      if (!currentPub?.location || !homePub?.location) {
+        console.log('[CheckInStore] 📍 Missing location data for distance calculation:', {
+          currentPubHasLocation: !!currentPub?.location,
+          homePubHasLocation: !!homePub?.location
+        });
+        return 0;
+      }
+
+      // Calculate distance in kilometers
+      const distance = getDistanceKm(homePub.location, currentPub.location);
+      
+      console.log('[CheckInStore] 📍 Distance calculated:', {
+        homePubId: user.homePubId,
+        currentPubId: pubId,
+        homePubLocation: homePub.location,
+        currentPubLocation: currentPub.location,
+        distanceKm: distance
+      });
+
+      return distance;
+    } catch (error) {
+      console.error('[CheckInStore] ❌ Error calculating distance from home:', error);
+      return 0;
+    }
+  }
 
   private async checkForNewBadges(userId: string, pubId: string): Promise<any> {
     // try {

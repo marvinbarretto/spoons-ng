@@ -1,9 +1,9 @@
-// src/app/check-in/data-access/simplified-checkin-orchestrator.service.spec.ts
+// src/app/check-in/data-access/checkin-orchestrator.service.spec.ts
 
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { signal } from '@angular/core';
-import { SimplifiedCheckinOrchestrator } from './simplified-checkin-orchestrator.service';
+import { CheckinOrchestrator } from './checkin-orchestrator.service';
 import { CheckInStore } from './check-in.store';
 import { LLMService } from '@shared/data-access/llm.service';
 import { CarpetStorageService } from '../../carpets/data-access/carpet-storage.service';
@@ -48,8 +48,8 @@ interface MockCanvasRenderingContext2D {
   drawImage: jest.Mock;
 }
 
-describe('SimplifiedCheckinOrchestrator', () => {
-  let service: SimplifiedCheckinOrchestrator;
+describe('CheckinOrchestrator', () => {
+  let service: CheckinOrchestrator;
   let mockRouter: any;
   let mockCheckinStore: any;
   let mockLLMService: any;
@@ -93,7 +93,7 @@ describe('SimplifiedCheckinOrchestrator', () => {
 
     await TestBed.configureTestingModule({
       providers: [
-        SimplifiedCheckinOrchestrator,
+        CheckinOrchestrator,
         { provide: Router, useValue: mockRouter },
         { provide: CheckInStore, useValue: mockCheckinStore },
         { provide: LLMService, useValue: mockLLMService },
@@ -101,9 +101,9 @@ describe('SimplifiedCheckinOrchestrator', () => {
       ]
     }).compileComponents();
 
-    service = TestBed.inject(SimplifiedCheckinOrchestrator);
+    service = TestBed.inject(CheckinOrchestrator);
   });
-  
+
   function verifyTimerSetup(): void {
     if (!jest.isMockFunction(setTimeout)) {
       throw new Error('setTimeout is not mocked - jest.useFakeTimers() may not have been called');
@@ -116,13 +116,13 @@ describe('SimplifiedCheckinOrchestrator', () => {
   afterEach(() => {
     // Clean up any running operations
     service?.cleanup();
-    
+
     // Restore environment
     Object.assign(environment, originalEnvironment);
-    
+
     // Clear all mocks
     jest.clearAllMocks();
-    
+
     // Clear any intervals/timeouts and restore real timers
     jest.clearAllTimers();
     jest.useRealTimers();
@@ -180,7 +180,7 @@ describe('SimplifiedCheckinOrchestrator', () => {
 
     // Store original createElement before mocking
     const originalCreateElement = document.createElement.bind(document);
-    
+
     // Mock document.createElement for canvas
     jest.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
       if (tagName === 'canvas') {
@@ -434,9 +434,9 @@ describe('SimplifiedCheckinOrchestrator', () => {
         delete (window as any).DeviceOrientationEvent;
 
         // Create new service instance
-        const newService = TestBed.inject(SimplifiedCheckinOrchestrator);
+        const newService = TestBed.inject(CheckinOrchestrator);
         await newService.startCheckin('test-pub-123');
-        
+
         // Should use mock orientation for desktop
         expect(newService.orientation().beta).toBe(90); // Mock value for desktop
 
@@ -452,7 +452,7 @@ describe('SimplifiedCheckinOrchestrator', () => {
       it('should calculate stability based on motion', () => {
         // Start with initial orientation
         triggerDeviceOrientation(20, 0);
-        
+
         // Fast forward to allow stability calculation
         jest.advanceTimersByTime(200);
 
@@ -479,16 +479,16 @@ describe('SimplifiedCheckinOrchestrator', () => {
 
       it('should update stability continuously', () => {
         const initialStability = service.stability();
-        
+
         // Trigger multiple orientation changes
         triggerDeviceOrientation(20, 0);
         jest.advanceTimersByTime(200);
-        
+
         triggerDeviceOrientation(22, 1);
         jest.advanceTimersByTime(200);
-        
+
         const finalStability = service.stability();
-        
+
         // Stability should have been calculated
         expect(finalStability).toBeDefined();
         expect(typeof finalStability.motionLevel).toBe('number');
@@ -500,7 +500,7 @@ describe('SimplifiedCheckinOrchestrator', () => {
         // Set stable pointing down orientation
         triggerDeviceOrientation(20, 0);
         jest.advanceTimersByTime(200);
-        
+
         // Small movement to trigger stability
         triggerDeviceOrientation(21, 1);
         jest.advanceTimersByTime(200);
@@ -519,7 +519,7 @@ describe('SimplifiedCheckinOrchestrator', () => {
         // Pointing down but unstable
         triggerDeviceOrientation(20, 0);
         jest.advanceTimersByTime(200);
-        
+
         triggerDeviceOrientation(35, 10); // Large movement
         jest.advanceTimersByTime(200);
 
@@ -586,7 +586,7 @@ describe('SimplifiedCheckinOrchestrator', () => {
 
       // Try to trigger another capture (should be ignored)
       const initialPhotoDataUrl = service.photoDataUrl();
-      
+
       triggerDeviceOrientation(22, 1);
       jest.advanceTimersByTime(200);
       jest.advanceTimersByTime(500);
@@ -604,7 +604,7 @@ describe('SimplifiedCheckinOrchestrator', () => {
     beforeEach(async () => {
       await service.startCheckin('test-pub-123');
       await service.setVideoElement(mockVideoElement as any);
-      
+
       // Set up environment for processing
       environment.LLM_CHECK = false; // Skip LLM by default
     });
@@ -868,7 +868,7 @@ describe('SimplifiedCheckinOrchestrator', () => {
 
     it('should remove event listeners on cleanup', async () => {
       await service.startCheckin('test-pub-123');
-      
+
       service.cleanup();
 
       expect(window.removeEventListener).toHaveBeenCalled();
@@ -896,7 +896,7 @@ describe('SimplifiedCheckinOrchestrator', () => {
     });
 
     it('should handle cleanup when no resources are active', () => {
-      const cleanService = TestBed.inject(SimplifiedCheckinOrchestrator);
+      const cleanService = TestBed.inject(CheckinOrchestrator);
 
       expect(() => cleanService.cleanup()).not.toThrow();
     });
@@ -921,7 +921,7 @@ describe('SimplifiedCheckinOrchestrator', () => {
         expect(service.showCamera()).toBe(false); // INITIALIZING
 
         await service.startCheckin('test-pub-123');
-        
+
         // Should show during SCANNING
         expect(service.showCamera()).toBe(true);
       });
@@ -929,7 +929,7 @@ describe('SimplifiedCheckinOrchestrator', () => {
       it('should not show camera during inactive stages', () => {
         // Test various inactive stages by simulating them
         expect(service.showCamera()).toBe(false); // INITIALIZING
-        
+
         // SUCCESS and FAILED stages don't show camera
         // (These would be set through the orchestration flow)
       });
@@ -941,7 +941,7 @@ describe('SimplifiedCheckinOrchestrator', () => {
           { stage: 'INITIALIZING', expected: 'Initializing...' },
           { stage: 'CAMERA_STARTING', expected: 'Starting camera...' },
           { stage: 'CAPTURING', expected: 'Capturing photo...' },
-          { stage: 'LLM_CHECKING', expected: 'Analyzing carpet...' },
+          { stage: 'LLM_CHECKING', expected: 'Analyzing image...' },
           { stage: 'PROCESSING', expected: 'Processing check-in...' },
           { stage: 'SUCCESS', expected: 'Success!' }
         ];
@@ -996,7 +996,7 @@ describe('SimplifiedCheckinOrchestrator', () => {
         // Start check-in
         await service.startCheckin('test-pub-123');
         await service.setVideoElement(mockVideoElement as any);
-        
+
         expect(service.stage()).toBe('SCANNING');
 
         // Simulate user meeting conditions
@@ -1062,7 +1062,7 @@ describe('SimplifiedCheckinOrchestrator', () => {
 
       it('should handle component destruction during operation', async () => {
         await service.startCheckin('test-pub-123');
-        
+
         // Simulate conditions met
         triggerDeviceOrientation(20, 0);
         jest.advanceTimersByTime(200);
@@ -1118,7 +1118,7 @@ describe('SimplifiedCheckinOrchestrator', () => {
         jest.advanceTimersByTime(500);
 
         await jest.runOnlyPendingTimers();
-        
+
         // Allow additional async operations (storage, check-in processing) to complete
         jest.advanceTimersByTime(100);
         await jest.runOnlyPendingTimers();

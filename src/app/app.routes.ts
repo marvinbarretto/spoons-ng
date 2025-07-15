@@ -42,7 +42,7 @@ export const appRoutes: Routes = [
     title: 'Check In',
     canActivate: [onboardingGuard],
     loadComponent: () =>
-      import('./check-in/feature/simplified-checkin/simplified-checkin.component').then(m => m.SimplifiedCheckinComponent),
+      import('./check-in/feature/checkin/checkin.component').then(m => m.CheckinComponent),
     data: { shell: 'fullscreen' }
   },
   {
@@ -50,7 +50,7 @@ export const appRoutes: Routes = [
     title: 'Check In',
     canActivate: [onboardingGuard],
     loadComponent: () =>
-      import('./check-in/feature/simplified-checkin/simplified-checkin.component').then(m => m.SimplifiedCheckinComponent),
+      import('./check-in/feature/checkin/checkin.component').then(m => m.CheckinComponent),
     data: { shell: 'fullscreen' }
   },
   {
