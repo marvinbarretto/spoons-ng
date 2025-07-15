@@ -11,9 +11,7 @@ import { environment } from '../../../../environments/environment';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <footer class="footer">
-      @if (!isProduction) {
         <app-dev-debug />
-      }
       <div class="footer-content">
         <p>&copy; {{ currentYear }} Spoonscount {{ version }}</p>
       </div>
@@ -60,5 +58,4 @@ import { environment } from '../../../../environments/environment';
 export class FooterComponent {
   currentYear = new Date().getFullYear();
   readonly version = APP_VERSION;
-  readonly isProduction = environment.production;
 }
