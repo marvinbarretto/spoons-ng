@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.99](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.98...v0.0.99) (2025-07-15)
+
+
+### Features
+
+* [Auth] Stub auth flow, login, register, splash ([a2a45c6](https://github.com/marvinbarretto/spoons-ng/commit/a2a45c63fb880a9ee9a6225e1bfa8b04499795f5))
+* [Leaderboard] Update check in and leaderboard flows ([0229dd5](https://github.com/marvinbarretto/spoons-ng/commit/0229dd52c9c18195b7e6c7d61da9371ddf611c87))
+
 ### [0.0.98](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.97...v0.0.98) (2025-07-15)
 
 
