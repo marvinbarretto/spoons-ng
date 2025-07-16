@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { authRedirectGuard } from './shared/guards/auth-redirect.guard';
 import { authGuard } from './auth/data-access/auth.guard';
 import { onboardingGuard } from './shared/guards/onboarding.guard';
 import {
@@ -19,21 +18,18 @@ export const appRoutes: Routes = [
   {
     path: 'splash',
     title: 'Welcome to Spoonscount',
-    canActivate: [authRedirectGuard],
     loadComponent: () => import('./auth/feature/splash/splash.component').then(m => m.SplashComponent),
     data: { shell: 'fullscreen' }
   },
   {
     path: 'login',
     title: 'Login',
-    canActivate: [authRedirectGuard],
     loadComponent: () => import('./auth/feature/login/login.component').then(m => m.LoginComponent),
     data: { shell: 'fullscreen' }
   },
   {
     path: 'register',
     title: 'Register',
-    canActivate: [authRedirectGuard],
     loadComponent: () => import('./auth/feature/register/register.component').then(m => m.RegisterComponent),
     data: { shell: 'fullscreen' }
   },
