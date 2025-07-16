@@ -1,0 +1,30 @@
+# Compiled JavaScript files
+lib/
+
+# Node modules
+node_modules/
+
+# npm debug log
+npm-debug.log
+
+# Local environment variables
+.env
+.env.local
+
+# Runtime data
+*.pid
+*.seed
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# Logs
+*.log
+
+# Editor directories and files
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+Thumbs.db
