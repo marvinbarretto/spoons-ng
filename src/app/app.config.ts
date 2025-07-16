@@ -11,15 +11,19 @@ import { environment } from '../environments/environment';
 import { TemplatePageTitleStrategy } from './TemplatePageTitleStrategy';
 import { firebaseProviders } from '../../firebase.config';
 import { provideServiceWorker } from '@angular/service-worker';
+import { provideCacheableAnimationLoader, provideLottieOptions } from 'ngx-lottie';
+import player from 'lottie-web';
 
 
 export const appConfig: ApplicationConfig = {
   providers: [
     ...firebaseProviders,
     { provide: USER_THEME_TOKEN, useValue: 'light' },
+    provideLottieOptions({ player: () => player }),
+    provideCacheableAnimationLoader(),
     provideAppInitializer(() => {
       inject(ThemeStore);
-      
+
       // Setup development cache busting tools
       if (isDevMode() || !environment.production) {
         inject(DevCacheBuster).setupDevConsoleShortcuts();
