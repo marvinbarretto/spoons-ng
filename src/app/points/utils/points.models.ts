@@ -16,6 +16,8 @@ export type PointsBreakdown = {
   multiplier: number;
   total: number;
   reason: string;
+  // Raw photo quality value from carpet detection (0-100) for simplified access
+  photoQuality?: number;
 };
 
 export type CheckInPointsData = {

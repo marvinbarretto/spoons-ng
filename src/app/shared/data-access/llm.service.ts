@@ -671,7 +671,8 @@ export class LLMService {
           isCarpet: parsed.isCarpet,
           confidence: parsed.confidence || 75,
           reasoning: parsed.isCarpet ? 'Carpet detected' : 'No carpet found',
-          visualElements: []
+          visualElements: [],
+          photoQuality: parsed.photoQuality || 75 // Default to 75 if not provided
         };
       }
 
@@ -683,7 +684,8 @@ export class LLMService {
         isCarpet,
         confidence,
         reasoning: isCarpet ? 'Carpet detected' : 'No carpet found',
-        visualElements: []
+        visualElements: [],
+        photoQuality: 75 // Default fallback value
       };
 
     } catch (error) {
@@ -693,7 +695,8 @@ export class LLMService {
         isCarpet: /carpet|rug|floor/i.test(text),
         confidence: 50,
         reasoning: 'Analysis complete',
-        visualElements: []
+        visualElements: [],
+        photoQuality: 50 // Lower default for failed parsing
       };
     }
   }

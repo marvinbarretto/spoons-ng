@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { CachedFirestoreService } from '../../shared/data-access/cached-firestore.service';
+import { FirestoreService } from '../../shared/data-access/firestore.service';
 import { Observable, firstValueFrom } from 'rxjs';
 import type { Pub } from '../utils/pub.models';
 import type { CheckIn } from '@check-in/utils/check-in.models';
@@ -9,16 +9,10 @@ import { earliest, latest } from '../../shared/utils/date-utils';
 @Injectable({
   providedIn: 'root'
 })
-export class PubService extends CachedFirestoreService {
+export class PubService extends FirestoreService {
   protected path = 'pubs';
   
-  // Configure caching for pubs collection to use STATIC tier
-  protected override cacheConfig = {
-    'pubs': {
-      ttl: 7 * 24 * 60 * 60 * 1000, // 7 days (STATIC tier)
-      strategy: 'cache-first' as const
-    }
-  };
+  // Firebase handles caching automatically with offline persistence
 
   loadPubs(): Observable<Pub[]> {
     return this.collection$<Pub>('pubs');
@@ -142,8 +136,7 @@ export class PubService extends CachedFirestoreService {
       
       console.log('[PubService] ✅ Pub carpet status updated');
       
-      // Invalidate cache to force refresh on next read
-      await this.invalidateCache(`${this.path}/${pubId}`);
+      // Firebase automatically handles cache invalidation on writes
       
     } catch (error) {
       console.error('[PubService] ❌ Failed to update pub carpet status:', error);

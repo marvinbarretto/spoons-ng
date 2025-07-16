@@ -59,8 +59,9 @@ export class AuthService {
           this.userInternal.set(firebaseUser);
           this.loading.set(false);
         } else {
-          console.warn('[AuthService] No user session found. Attempting anonymous login...');
-          await this.signInAnon();
+          console.log('[AuthService] No user session found. User needs to login or continue as guest.');
+          this.userInternal.set(null);
+          this.loading.set(false);
         }
       } catch (error) {
         console.error('[AuthService] Error in auth state handler:', error);
@@ -69,7 +70,7 @@ export class AuthService {
     });
   }
 
-  async signInAnon(): Promise<void> {
+  async continueAsGuest(): Promise<void> {
     try {
       this.loading.set(true);
       this.settingUpAnonymousUser = true;
@@ -121,6 +122,7 @@ export class AuthService {
           verifiedPubCount: 0,
           unverifiedPubCount: 0,
           totalPubCount: 0,
+          onboardingCompleted: false, // ✅ Anonymous users need onboarding
         };
 
         await setDoc(userRef, newUser);
@@ -232,6 +234,7 @@ export class AuthService {
           verifiedPubCount: 0,
           unverifiedPubCount: 0,
           totalPubCount: 0,
+          onboardingCompleted: false, // ✅ New registered users need onboarding too
         };
 
         await setDoc(userRef, newUser);

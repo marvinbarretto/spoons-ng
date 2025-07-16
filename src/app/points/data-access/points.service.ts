@@ -100,7 +100,9 @@ export class PointsService extends FirestoreCrudService<PointsTransaction> {
       bonus,
       multiplier,
       total,
-      reason: reasons.join(' + ')
+      reason: reasons.join(' + '),
+      // Include raw photo quality value if available for simplified access
+      photoQuality: data.photoQuality?.overall
     };
   }
 

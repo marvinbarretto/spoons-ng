@@ -234,10 +234,10 @@ export class CheckInStore extends BaseStore<CheckIn> {
       this._checkinSuccess.set(newCheckin);
       console.log('[CheckInStore] ✅ Added new check-in to local store:', newCheckin);
 
-      // ✅ No need to update UserStore with checkedInPubIds anymore!
-      // UserStore.pubsVisited now computes from CheckInStore.checkins() data
-      // This eliminates redundant UserStore updates and reduces Firebase writes
-      console.log('[CheckInStore] ✅ Pub count will update automatically via UserStore computed signal');
+      // ✅ UPDATE USER PROFILE with new pub counts
+      console.log('[CheckInStore] 🔄 Updating user profile with new pub counts...');
+      await this.updateUserPubCounts(userId);
+      console.log('[CheckInStore] ✅ User profile updated with new pub counts');
     } else {
       console.warn('[CheckInStore] ❌ Cannot add to local store - missing userId or newCheckinId');
     }
@@ -846,6 +846,51 @@ export class CheckInStore extends BaseStore<CheckIn> {
     } catch (error) {
       // Don't throw - we don't want Telegram errors to affect check-in flow
       console.error('[CheckInStore] Failed to send Telegram check-in notification:', error);
+    }
+  }
+
+  /**
+   * Update user's pub count fields in Firestore after successful check-in
+   */
+  private async updateUserPubCounts(userId: string): Promise<void> {
+    try {
+      console.log('[CheckInStore] 📊 Calculating verified pub count for user:', userId);
+      
+      // Get all check-ins for this user to calculate verified pub count
+      const userCheckins = await this.newCheckInService.loadUserCheckins(userId);
+      const uniquePubIds = new Set(userCheckins.map(c => c.pubId));
+      const verifiedPubCount = uniquePubIds.size;
+      
+      console.log('[CheckInStore] 📊 User check-in stats:', {
+        totalCheckins: userCheckins.length,
+        uniquePubs: verifiedPubCount,
+        userId: userId.slice(0, 8)
+      });
+      
+      // Get current user data to preserve unverified count
+      const currentUser = this.userStore.user();
+      const unverifiedPubCount = currentUser?.unverifiedPubCount || 0;
+      const totalPubCount = verifiedPubCount + unverifiedPubCount;
+      
+      // Update user document in Firestore with new pub counts
+      const updates = {
+        verifiedPubCount,
+        totalPubCount,
+        // Update timestamp for tracking when stats were last calculated
+        lastStatsUpdate: new Date().toISOString()
+      };
+      
+      console.log('[CheckInStore] 🔄 Updating user Firestore document with:', updates);
+      await this.userStore.updateProfile(updates);
+      
+      // Trigger cache invalidation to refresh leaderboards and other data
+      this.cacheCoherence.invalidate('users', 'pub-count-update-after-checkin');
+      
+      console.log('[CheckInStore] ✅ User pub counts updated successfully');
+      
+    } catch (error) {
+      console.error('[CheckInStore] ❌ Failed to update user pub counts:', error);
+      // Don't throw - we don't want this to break the check-in flow
     }
   }
 }

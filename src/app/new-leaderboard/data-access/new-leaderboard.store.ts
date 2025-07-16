@@ -4,7 +4,7 @@ import { DataAggregatorService } from '../../shared/data-access/data-aggregator.
 import { CacheCoherenceService } from '../../shared/data-access/cache-coherence.service';
 import { UserService } from '../../users/data-access/user.service';
 import { CheckInService } from '../../check-in/data-access/check-in.service';
-import { NewLeaderboardEntry, NewLeaderboardSortBy, NewLeaderboardFilters } from '../utils/new-leaderboard.models';
+import { NewLeaderboardEntry, NewLeaderboardSortBy, NewLeaderboardFilters, LeaderboardPeriod } from '../utils/new-leaderboard.models';
 
 @Injectable({
   providedIn: 'root'
@@ -20,12 +20,14 @@ export class NewLeaderboardStore {
   private readonly _loading = signal(false);
   private readonly _error = signal<string | null>(null);
   private readonly _sortBy = signal<NewLeaderboardSortBy>('points');
+  private readonly _period = signal<LeaderboardPeriod>('all-time');
   private readonly _showRealUsersOnly = signal(true);
 
   // Public readonly signals
   readonly loading = this._loading.asReadonly();
   readonly error = this._error.asReadonly();
   readonly sortBy = this._sortBy.asReadonly();
+  readonly period = this._period.asReadonly();
   readonly showRealUsersOnly = this._showRealUsersOnly.asReadonly();
 
   constructor() {
@@ -83,6 +85,9 @@ export class NewLeaderboardStore {
         const manualPubs = user.manuallyAddedPubIds?.length || 0;
         const totalUniquePubs = uniquePubs + manualPubs;
 
+        // Calculate monthly stats (current month)
+        const monthlyStats = this.calculateMonthlyStats(userCheckIns, user);
+
         // Get last activity
         const lastCheckin = userCheckIns
           .sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis())[0];
@@ -94,9 +99,15 @@ export class NewLeaderboardStore {
         const entry: NewLeaderboardEntry = {
           userId: user.uid,
           displayName: this.getUserDisplayName(user),
+          // All-time stats
           totalPoints: user.totalPoints || 0,
           uniquePubs: totalUniquePubs,
           totalCheckins: userCheckIns.length,
+          // Monthly stats
+          monthlyPoints: monthlyStats.points,
+          monthlyPubs: monthlyStats.pubs,
+          monthlyCheckins: monthlyStats.checkins,
+          // Display properties
           rank: 0, // Will be set after sorting
           photoURL: user.photoURL,
           isCurrentUser: currentUser?.uid === user.uid,
@@ -166,6 +177,11 @@ export class NewLeaderboardStore {
     this._sortBy.set(sortBy);
   }
 
+  setPeriod(period: LeaderboardPeriod): void {
+    console.log('[NewLeaderboard] Setting period:', period);
+    this._period.set(period);
+  }
+
   setShowRealUsersOnly(show: boolean): void {
     console.log('[NewLeaderboard] Setting show real users only:', show);
     this._showRealUsersOnly.set(show);
@@ -198,26 +214,31 @@ export class NewLeaderboardStore {
 
   private sortEntries(entries: NewLeaderboardEntry[]): NewLeaderboardEntry[] {
     const sortBy = this.sortBy();
+    const period = this.period();
     
     return [...entries].sort((a, b) => {
+      // Get the appropriate stats based on period
+      const aStats = this.getStatsForPeriod(a, period);
+      const bStats = this.getStatsForPeriod(b, period);
+      
       switch (sortBy) {
         case 'points':
           // Primary: Points, Secondary: Pubs, Tertiary: Checkins
-          if (b.totalPoints !== a.totalPoints) return b.totalPoints - a.totalPoints;
-          if (b.uniquePubs !== a.uniquePubs) return b.uniquePubs - a.uniquePubs;
-          return b.totalCheckins - a.totalCheckins;
+          if (bStats.points !== aStats.points) return bStats.points - aStats.points;
+          if (bStats.pubs !== aStats.pubs) return bStats.pubs - aStats.pubs;
+          return bStats.checkins - aStats.checkins;
         
         case 'pubs':
           // Primary: Pubs, Secondary: Points, Tertiary: Checkins
-          if (b.uniquePubs !== a.uniquePubs) return b.uniquePubs - a.uniquePubs;
-          if (b.totalPoints !== a.totalPoints) return b.totalPoints - a.totalPoints;
-          return b.totalCheckins - a.totalCheckins;
+          if (bStats.pubs !== aStats.pubs) return bStats.pubs - aStats.pubs;
+          if (bStats.points !== aStats.points) return bStats.points - aStats.points;
+          return bStats.checkins - aStats.checkins;
         
         case 'checkins':
           // Primary: Checkins, Secondary: Points, Tertiary: Pubs
-          if (b.totalCheckins !== a.totalCheckins) return b.totalCheckins - a.totalCheckins;
-          if (b.totalPoints !== a.totalPoints) return b.totalPoints - a.totalPoints;
-          return b.uniquePubs - a.uniquePubs;
+          if (bStats.checkins !== aStats.checkins) return bStats.checkins - aStats.checkins;
+          if (bStats.points !== aStats.points) return bStats.points - aStats.points;
+          return bStats.pubs - aStats.pubs;
         
         default:
           return 0;
@@ -274,5 +295,51 @@ export class NewLeaderboardStore {
     }
 
     return streak;
+  }
+
+  private calculateMonthlyStats(userCheckins: any[], user: any): { points: number; pubs: number; checkins: number } {
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    
+    // Filter check-ins for current month
+    const monthlyCheckins = userCheckins.filter(c => 
+      c.timestamp.toDate() >= monthStart
+    );
+    
+    // Calculate monthly unique pubs
+    const monthlyUniquePubs = new Set(monthlyCheckins.map(c => c.pubId)).size;
+    
+    // For monthly points, we'll use a simplified calculation
+    // In a real app, you might want to recalculate based on monthly check-ins
+    // For now, we'll estimate based on proportion of monthly vs total check-ins
+    const totalCheckins = userCheckins.length;
+    const monthlyCheckinsCount = monthlyCheckins.length;
+    const totalPoints = user.totalPoints || 0;
+    
+    const estimatedMonthlyPoints = totalCheckins > 0 
+      ? Math.round((monthlyCheckinsCount / totalCheckins) * totalPoints)
+      : 0;
+    
+    return {
+      points: estimatedMonthlyPoints,
+      pubs: monthlyUniquePubs,
+      checkins: monthlyCheckinsCount
+    };
+  }
+
+  private getStatsForPeriod(entry: NewLeaderboardEntry, period: LeaderboardPeriod): { points: number; pubs: number; checkins: number } {
+    if (period === 'monthly') {
+      return {
+        points: entry.monthlyPoints,
+        pubs: entry.monthlyPubs,
+        checkins: entry.monthlyCheckins
+      };
+    } else {
+      return {
+        points: entry.totalPoints,
+        pubs: entry.uniquePubs,
+        checkins: entry.totalCheckins
+      };
+    }
   }
 }

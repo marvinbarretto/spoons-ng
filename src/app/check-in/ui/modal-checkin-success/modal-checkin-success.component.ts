@@ -825,6 +825,53 @@ export class ModalCheckinPointsComponent implements OnDestroy {
         }
       }
 
+      // ✅ NEW: Simple photoQuality property access (instead of complex string parsing)
+      if (breakdown.photoQuality && typeof breakdown.photoQuality === 'number') {
+        // Calculate points based on photo quality score (0-100)
+        let points = 0;
+        let tier = 'standard';
+        let icon = '📸';
+        let color = '#28a745';
+        let description = 'Photo quality bonus';
+
+        // Calculate bonus points and tier based on quality score
+        if (breakdown.photoQuality >= 95) {
+          points = 20;
+          tier = 'perfect';
+          icon = '🌟';
+          color = '#ffd700';
+          description = 'Perfect photo quality!';
+        } else if (breakdown.photoQuality >= 90) {
+          points = 15;
+          tier = 'exceptional';
+          icon = '✨';
+          color = '#ff6b6b';
+          description = 'Exceptional photo quality!';
+        } else if (breakdown.photoQuality >= 80) {
+          points = 10;
+          tier = 'high';
+          icon = '💎';
+          color = '#4ecdc4';
+          description = 'High-quality photo!';
+        } else if (breakdown.photoQuality >= 70) {
+          points = 5;
+          tier = 'good';
+          icon = '📸';
+          color = '#28a745';
+          description = 'Good photo quality';
+        }
+
+        if (points > 0) {
+          items.push({
+            type: 'photo-quality',
+            points: points,
+            description: description,
+            icon: icon,
+            color: color
+          });
+        }
+      }
+
       console.log('[ModalCheckinPoints] 🎯 Final breakdown items:', items);
       return items;
     } catch (error) {

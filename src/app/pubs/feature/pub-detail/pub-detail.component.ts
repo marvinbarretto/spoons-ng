@@ -18,7 +18,7 @@ import type { CheckIn } from '@app/check-in/utils/check-in.models';
 
 @Component({
   selector: 'app-pub-detail',
-  imports: [CommonModule, ButtonComponent, JsonPipe],
+  imports: [CommonModule, ButtonComponent], // JsonPipe removed - not used
   template: `
     <section class="pub-detail-page" [class.has-carpet]="pub()?.carpetUrl">
       @if (pub()?.carpetUrl) {

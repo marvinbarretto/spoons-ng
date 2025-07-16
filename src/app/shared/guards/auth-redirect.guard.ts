@@ -37,10 +37,30 @@ export const authRedirectGuard: CanActivateFn = (route, state) => {
         return true;
       }
 
-      // If user exists, redirect to home
-      console.log('[AuthRedirectGuard] 🏠 User is authenticated, redirecting to home');
-      router.navigate(['/home']);
-      return false;
+      // If user is authenticated (not anonymous), redirect to home
+      if (!user.isAnonymous) {
+        console.log('[AuthRedirectGuard] 🏠 Real user is authenticated, redirecting to home');
+        router.navigate(['/home']);
+        return false;
+      }
+
+      // If user is anonymous but NOT an explicit guest, allow access to auth pages
+      // (This covers cases where anonymous users were created automatically)
+      if (user.isAnonymous && !authStore.isExplicitGuest()) {
+        console.log('[AuthRedirectGuard] ✅ Anonymous user (not explicit guest), allowing access to auth pages');
+        return true;
+      }
+
+      // If user is an explicit guest, redirect to home (they chose to use the app as guest)
+      if (user.isAnonymous && authStore.isExplicitGuest()) {
+        console.log('[AuthRedirectGuard] 🏠 Explicit guest user, redirecting to home');
+        router.navigate(['/home']);
+        return false;
+      }
+
+      // Fallback: allow access
+      console.log('[AuthRedirectGuard] ✅ Fallback: allowing access to auth pages');
+      return true;
     }),
     // Handle timeout or errors
     catchError(error => {

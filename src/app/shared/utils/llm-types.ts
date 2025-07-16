@@ -19,6 +19,7 @@ export type CarpetDetectionResult = {
   reasoning: string;
   visualElements: string[];
   story?: string[]; // Array of engaging observations about the carpet
+  photoQuality?: number; // 0-100 overall photo quality score for clarity/focus/lighting
 };
 
 export type PhotoQualityMetrics = {

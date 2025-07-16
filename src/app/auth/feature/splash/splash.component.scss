@@ -1,0 +1,140 @@
+.splash-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+
+  /* Carpet background with dark overlay for readability */
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)),
+    url('/assets/carpets/moon-under-water-watford.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+
+  color: var(--text-on-dark, white);
+}
+
+.hero-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem 1.5rem;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.logo-container {
+  margin-bottom: 2rem;
+}
+
+.app-logo {
+  width: 120px;
+  height: 120px;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+}
+
+.hero-title {
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  font-weight: 700;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, #ffffff, #e5e7eb);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.hero-subtitle {
+  font-size: 1.125rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 0;
+  max-width: 400px;
+}
+
+.action-section {
+  padding: 2rem 1.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.auth-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.legal-links {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.legal-text {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+}
+
+.legal-link {
+  color: var(--primary, #10b981);
+  text-decoration: underline;
+  text-decoration-color: rgba(16, 185, 129, 0.5);
+  transition: color 0.2s ease;
+}
+
+.legal-link:hover {
+  color: var(--primary-hover, #059669);
+  text-decoration-color: var(--primary-hover, #059669);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .splash-container {
+    background-attachment: scroll;
+  }
+
+  .hero-section {
+    padding: 1.5rem 1rem;
+  }
+
+  .app-logo {
+    width: 100px;
+    height: 100px;
+  }
+
+  .action-section {
+    padding: 1.5rem 1rem;
+  }
+
+  .auth-buttons {
+    gap: 0.75rem;
+  }
+}
+
+/* Animation for smooth entrance */
+.hero-section {
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.action-section {
+  animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

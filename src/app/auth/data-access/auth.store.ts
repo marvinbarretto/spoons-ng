@@ -37,12 +37,14 @@ export class AuthStore {
   private readonly _token = signal<string | null>(null);
   private readonly _ready = signal(false);
   private readonly _userChangeCounter = signal(0);
+  private readonly _isExplicitGuest = signal(false);
 
   // ✅ Public auth signals
   readonly user = this._user.asReadonly();
   readonly token = this._token.asReadonly();
   readonly ready = this._ready.asReadonly();
   readonly userChangeSignal = this._userChangeCounter.asReadonly();
+  readonly isExplicitGuest = this._isExplicitGuest.asReadonly();
 
   // ✅ ONLY auth-derived computeds
   readonly isAuthenticated = computed(() => !!this.token());
@@ -51,6 +53,10 @@ export class AuthStore {
 
   constructor() {
     this.platform.onlyOnBrowser(() => {
+      // Restore explicit guest state from localStorage
+      const storedIsExplicitGuest = localStorage.getItem('isExplicitGuest') === 'true';
+      this._isExplicitGuest.set(storedIsExplicitGuest);
+
       this.authService.onAuthChange(async (firebaseUser) => {
         if (firebaseUser) {
           await this.handleUserSignIn(firebaseUser);
@@ -100,6 +106,7 @@ export class AuthStore {
         verifiedPubCount: 0,
         unverifiedPubCount: 0,
         totalPubCount: 0,
+        onboardingCompleted: false, // ✅ New users need onboarding
       };
 
       // ✅ Update auth state only
@@ -126,10 +133,12 @@ export class AuthStore {
     this._user.set(null);
     this._token.set(null);
     this._userChangeCounter.update(c => c + 1);
+    this._isExplicitGuest.set(false);
 
     this.platform.onlyOnBrowser(() => {
       localStorage.removeItem('user');
       localStorage.removeItem('token');
+      localStorage.removeItem('isExplicitGuest');
     });
   }
 
@@ -176,6 +185,17 @@ export class AuthStore {
 
   registerWithEmail(email: string, password: string, displayName?: string): void {
     this.authService.registerWithEmail(email, password, displayName);
+  }
+
+  async continueAsGuest(): Promise<void> {
+    // Mark that this is an explicit guest choice
+    this._isExplicitGuest.set(true);
+    this.platform.onlyOnBrowser(() => {
+      localStorage.setItem('isExplicitGuest', 'true');
+    });
+    
+    // Now create the anonymous user
+    await this.authService.continueAsGuest();
   }
 
   openAvatarSelector(): void {

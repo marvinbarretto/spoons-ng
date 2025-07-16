@@ -53,11 +53,15 @@ export class LLMPromptFactory {
   static buildCarpetPrompt(): string {
     return `
       Analyze this image to determine if it shows a carpet or floor covering.
+      
+      Also assess the photo quality based on clarity, focus, and lighting.
+      Photo quality should reflect how clean and clear the photograph is - fewer distractions, not blurry, well-lit, etc.
 
       Respond with valid JSON only:
       {
         "isCarpet": true/false,
-        "confidence": 0-100
+        "confidence": 0-100,
+        "photoQuality": 0-100
       }
     `;
   }

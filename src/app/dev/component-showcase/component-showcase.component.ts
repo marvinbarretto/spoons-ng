@@ -59,7 +59,7 @@ interface ExampleConfig {
     ChipFilterComponent,
     ChipProgressComponent,
     ChipIconComponent,
-    ChipBadgeComponent,
+    // ChipBadgeComponent, // Removed - not used in template
     ChipUserComponent
   ],
   template: `

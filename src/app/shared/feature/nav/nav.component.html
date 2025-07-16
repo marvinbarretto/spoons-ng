@@ -55,6 +55,17 @@
     [class.mobile]="isMobile$$()"
     [class.desktop]="!isMobile$$()"
   >
+    <!-- Auth Links - Show only when no user exists (before guest/login choice) -->
+    @if (!user()) {
+      <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <a routerLink="/login">Login</a>
+      </li>
+      <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <a routerLink="/register">Register</a>
+      </li>
+    }
+
+    <!-- Main Navigation - Show for all users -->
     <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
       <a routerLink="/">Home</a>
     </li>
@@ -77,6 +88,10 @@
 
     <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
       <a routerLink="/leaderboard">Leaderboard</a>
+    </li>
+
+    <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+      <a routerLink="/new-leaderboard">New Leaderboard</a>
     </li>
 
     <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">

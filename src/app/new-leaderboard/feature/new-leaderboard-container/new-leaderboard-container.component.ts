@@ -6,7 +6,7 @@ import { LoadingStateComponent } from '../../../shared/ui/loading-state/loading-
 import { ErrorStateComponent } from '../../../shared/ui/error-state/error-state.component';
 import { EmptyStateComponent } from '../../../shared/ui/empty-state/empty-state.component';
 import { ChipUserComponent } from '../../../shared/ui/chips/chip-user/chip-user.component';
-import { NewLeaderboardSortBy } from '../../utils/new-leaderboard.models';
+import { NewLeaderboardSortBy, LeaderboardPeriod } from '../../utils/new-leaderboard.models';
 
 @Component({
   selector: 'app-new-leaderboard-container',
@@ -49,6 +49,26 @@ import { NewLeaderboardSortBy } from '../../utils/new-leaderboard.models';
               class="sort-btn"
             >
               Check-ins
+            </button>
+          </div>
+        </div>
+
+        <div class="period-controls">
+          <span class="control-label">Period:</span>
+          <div class="period-buttons">
+            <button
+              [class.active]="store.period() === 'all-time'"
+              (click)="setPeriod('all-time')"
+              class="period-btn"
+            >
+              All Time
+            </button>
+            <button
+              [class.active]="store.period() === 'monthly'"
+              (click)="setPeriod('monthly')"
+              class="period-btn"
+            >
+              This Month
             </button>
           </div>
         </div>
@@ -97,8 +117,9 @@ import { NewLeaderboardSortBy } from '../../utils/new-leaderboard.models';
           <div class="table-header">
             <span class="col-rank">Rank</span>
             <span class="col-user">User</span>
-            <span class="col-points">{{ getSortLabel() }}</span>
-            <span class="col-stats">Stats</span>
+            <span class="col-points">Points</span>
+            <span class="col-pubs">Pubs</span>
+            <span class="col-details">Details</span>
           </div>
 
           @for (entry of topEntries(); track entry.userId) {
@@ -124,22 +145,18 @@ import { NewLeaderboardSortBy } from '../../utils/new-leaderboard.models';
               </span>
               
               <span class="col-points">
-                <span class="primary-stat">{{ getPrimaryStatValue(entry) }}</span>
+                <span class="metric-value">{{ getPoints(entry) }}</span>
               </span>
               
-              <span class="col-stats">
-                <div class="stat-group">
-                  @if (store.sortBy() !== 'points') {
-                    <span class="stat">{{ entry.totalPoints.toLocaleString() }} pts</span>
-                  }
-                  @if (store.sortBy() !== 'pubs') {
-                    <span class="stat">{{ entry.uniquePubs }} pubs</span>
-                  }
-                  @if (store.sortBy() !== 'checkins') {
-                    <span class="stat">{{ entry.totalCheckins }} check-ins</span>
-                  }
+              <span class="col-pubs">
+                <span class="metric-value">{{ getPubs(entry) }}</span>
+              </span>
+              
+              <span class="col-details">
+                <div class="detail-group">
+                  <span class="detail">{{ getCheckins(entry) }} check-ins</span>
                   @if (entry.currentStreak && entry.currentStreak > 1) {
-                    <span class="stat streak">🔥 {{ entry.currentStreak }} day streak</span>
+                    <span class="detail streak">🔥 {{ entry.currentStreak }} day streak</span>
                   }
                 </div>
               </span>
@@ -195,7 +212,8 @@ import { NewLeaderboardSortBy } from '../../utils/new-leaderboard.models';
       font-weight: 500;
     }
 
-    .sort-buttons {
+    .sort-buttons,
+    .period-buttons {
       display: flex;
       gap: 0.25rem;
       background: var(--background);
@@ -204,7 +222,8 @@ import { NewLeaderboardSortBy } from '../../utils/new-leaderboard.models';
       border: 1px solid var(--border);
     }
 
-    .sort-btn {
+    .sort-btn,
+    .period-btn {
       padding: 0.5rem 1rem;
       border: none;
       background: transparent;
@@ -216,14 +235,22 @@ import { NewLeaderboardSortBy } from '../../utils/new-leaderboard.models';
       font-weight: 500;
     }
 
-    .sort-btn:hover {
+    .sort-btn:hover,
+    .period-btn:hover {
       background: var(--background-lighter);
       color: var(--text);
     }
 
-    .sort-btn.active {
+    .sort-btn.active,
+    .period-btn.active {
       background: var(--primary);
       color: var(--primary-contrast);
+    }
+
+    .period-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
     }
 
     .filter-controls {
@@ -266,7 +293,7 @@ import { NewLeaderboardSortBy } from '../../utils/new-leaderboard.models';
 
     .table-header {
       display: grid;
-      grid-template-columns: 80px 1fr 120px 200px;
+      grid-template-columns: 80px 1fr 120px 100px 180px;
       gap: 1rem;
       padding: 1rem;
       background: var(--background-darker);
@@ -279,7 +306,7 @@ import { NewLeaderboardSortBy } from '../../utils/new-leaderboard.models';
 
     .table-row {
       display: grid;
-      grid-template-columns: 80px 1fr 120px 200px;
+      grid-template-columns: 80px 1fr 120px 100px 180px;
       gap: 1rem;
       padding: 1rem;
       border-bottom: 1px solid var(--border);
@@ -321,23 +348,24 @@ import { NewLeaderboardSortBy } from '../../utils/new-leaderboard.models';
       text-transform: uppercase;
     }
 
-    .primary-stat {
+    .metric-value {
       font-weight: 600;
       font-size: 1.1rem;
+      color: var(--text);
     }
 
-    .stat-group {
+    .detail-group {
       display: flex;
       flex-direction: column;
       gap: 0.25rem;
     }
 
-    .stat {
+    .detail {
       font-size: 0.8rem;
       color: var(--text-muted);
     }
 
-    .stat.streak {
+    .detail.streak {
       color: var(--warning);
       font-weight: 500;
     }
@@ -351,6 +379,7 @@ import { NewLeaderboardSortBy } from '../../utils/new-leaderboard.models';
       .leaderboard-controls {
         flex-direction: column;
         align-items: stretch;
+        gap: 1rem;
       }
 
       .filter-controls {
@@ -359,27 +388,44 @@ import { NewLeaderboardSortBy } from '../../utils/new-leaderboard.models';
 
       .table-header,
       .table-row {
-        grid-template-columns: 60px 1fr 80px;
+        grid-template-columns: 60px 1fr 80px 60px;
         gap: 0.5rem;
       }
 
-      .col-stats {
+      .col-details {
         display: none;
       }
 
-      .col-points {
+      .col-points,
+      .col-pubs {
         text-align: right;
+      }
+
+      .metric-value {
+        font-size: 1rem;
       }
     }
 
     @media (max-width: 480px) {
-      .sort-buttons {
+      .sort-buttons,
+      .period-buttons {
         flex-direction: column;
         width: 100%;
       }
 
-      .sort-btn {
+      .sort-btn,
+      .period-btn {
         text-align: center;
+      }
+
+      .table-header,
+      .table-row {
+        grid-template-columns: 50px 1fr 60px;
+        gap: 0.25rem;
+      }
+
+      .col-pubs {
+        display: none;
       }
     }
   `
@@ -395,27 +441,31 @@ export class NewLeaderboardContainerComponent extends BaseComponent {
     this.store.setSortBy(sortBy);
   }
 
+  setPeriod(period: LeaderboardPeriod): void {
+    this.store.setPeriod(period);
+  }
+
   toggleRealUsersOnly(event: Event): void {
     const checkbox = event.target as HTMLInputElement;
     this.store.setShowRealUsersOnly(checkbox.checked);
   }
 
-  getSortLabel(): string {
-    switch (this.store.sortBy()) {
-      case 'points': return 'Points';
-      case 'pubs': return 'Pubs';
-      case 'checkins': return 'Check-ins';
-      default: return 'Score';
-    }
+  getPoints(entry: any): string {
+    const period = this.store.period();
+    const points = period === 'monthly' ? entry.monthlyPoints : entry.totalPoints;
+    return points.toLocaleString();
   }
 
-  getPrimaryStatValue(entry: any): string {
-    switch (this.store.sortBy()) {
-      case 'points': return entry.totalPoints.toLocaleString();
-      case 'pubs': return entry.uniquePubs.toString();
-      case 'checkins': return entry.totalCheckins.toString();
-      default: return '0';
-    }
+  getPubs(entry: any): string {
+    const period = this.store.period();
+    const pubs = period === 'monthly' ? entry.monthlyPubs : entry.uniquePubs;
+    return pubs.toString();
+  }
+
+  getCheckins(entry: any): string {
+    const period = this.store.period();
+    const checkins = period === 'monthly' ? entry.monthlyCheckins : entry.totalCheckins;
+    return checkins.toString();
   }
 
   async handleRetry(): Promise<void> {
