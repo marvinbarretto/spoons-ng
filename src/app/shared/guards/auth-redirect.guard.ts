@@ -9,7 +9,7 @@ export const authRedirectGuard: CanActivateFn = (route, state) => {
   const authStore = inject(AuthStore);
   const router = inject(Router);
 
-  console.log('[AuthRedirectGuard] 🔍 Checking if authenticated user should be redirected...');
+  console.log('[Auth Flow] 🚪 AuthRedirectGuard checking if authenticated user should be redirected...');
 
   // Convert auth ready signal to observable
   const authReady$ = toObservable(authStore.ready);
@@ -24,22 +24,34 @@ export const authRedirectGuard: CanActivateFn = (route, state) => {
     map(() => {
       const user = authStore.user();
       
-      console.log('[AuthRedirectGuard] 🔍 Processing user for auth redirect:', {
+      console.log('[Auth Flow] 🚪 Processing user for auth redirect:', {
         hasUser: !!user,
         userId: user?.uid?.slice(0, 8),
         isAnonymous: user?.isAnonymous,
-        currentUrl: router.url
+        currentUrl: router.url,
+        hasSeenSplash: authStore.hasSeenSplash(),
+        isExplicitGuest: authStore.isExplicitGuest()
       });
 
-      // If no user, allow access to splash/login/register pages
+      // If no user, check if they've seen splash
       if (!user) {
-        console.log('[AuthRedirectGuard] ✅ No user, allowing access to auth pages');
+        if (!authStore.hasSeenSplash()) {
+          // If user hasn't seen splash and isn't on splash page, redirect to splash
+          if (state.url !== '/splash') {
+            console.log('[Auth Flow] 🚪 No user and hasn\'t seen splash, redirecting to splash');
+            router.navigate(['/splash']);
+            return false;
+          }
+          console.log('[Auth Flow] 🚪 No user and hasn\'t seen splash, allowing access to splash');
+          return true;
+        }
+        console.log('[Auth Flow] 🚪 No user but has seen splash, allowing access to auth pages');
         return true;
       }
 
       // If user is authenticated (not anonymous), redirect to home
       if (!user.isAnonymous) {
-        console.log('[AuthRedirectGuard] 🏠 Real user is authenticated, redirecting to home');
+        console.log('[Auth Flow] 🚪 Real user is authenticated, redirecting to home');
         router.navigate(['/home']);
         return false;
       }
@@ -47,25 +59,25 @@ export const authRedirectGuard: CanActivateFn = (route, state) => {
       // If user is anonymous but NOT an explicit guest, allow access to auth pages
       // (This covers cases where anonymous users were created automatically)
       if (user.isAnonymous && !authStore.isExplicitGuest()) {
-        console.log('[AuthRedirectGuard] ✅ Anonymous user (not explicit guest), allowing access to auth pages');
+        console.log('[Auth Flow] 🚪 Anonymous user (not explicit guest), allowing access to auth pages');
         return true;
       }
 
       // If user is an explicit guest, redirect to home (they chose to use the app as guest)
       if (user.isAnonymous && authStore.isExplicitGuest()) {
-        console.log('[AuthRedirectGuard] 🏠 Explicit guest user, redirecting to home');
+        console.log('[Auth Flow] 🚪 Explicit guest user, redirecting to home');
         router.navigate(['/home']);
         return false;
       }
 
       // Fallback: allow access
-      console.log('[AuthRedirectGuard] ✅ Fallback: allowing access to auth pages');
+      console.log('[Auth Flow] 🚪 Fallback: allowing access to auth pages');
       return true;
     }),
     // Handle timeout or errors
     catchError(error => {
-      console.warn('[AuthRedirectGuard] ⚠️ Timeout or error checking auth state:', error);
-      console.log('[AuthRedirectGuard] 🔄 Allowing access to auth pages (fallback)');
+      console.warn('[Auth Flow] 🚪 ⚠️ Timeout or error checking auth state:', error);
+      console.log('[Auth Flow] 🚪 🔄 Allowing access to auth pages (fallback)');
       return of(true);
     })
   );

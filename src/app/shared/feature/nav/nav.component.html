@@ -1,101 +1,73 @@
 <div class="nav-container">
-  <!-- Movement Status Indicator - Mobile Only -->
-  @if (isMobile$$()) {
-    <div class="movement-status">
-      @if (loading()) {
-        <app-chip-status 
-          type="loading"
-          icon="📍"
-          [showIcon]="true"
-          [text]="''"
-          size="xs"
-          tooltip="Getting location..."
-          [animated]="true"
-        />
-      } @else if (isMoving()) {
-        <app-chip-status 
-          type="warning"
-          icon="🔴"
-          [showIcon]="true"
-          [text]="''"
-          size="xs"
-          [tooltip]="'Moving detected! (' + movementSpeed().toFixed(1) + ' m/s)'"
-        />
-      } @else if (isTracking()) {
-        <app-chip-status 
-          type="success"
-          icon="🟢"
-          [showIcon]="true"
-          [text]="''"
-          size="xs"
-          tooltip="Stationary - tracking location"
-        />
-      } @else {
-        <app-chip-status 
-          type="inactive"
-          icon="⚫"
-          [showIcon]="true"
-          [text]="''"
-          size="xs"
-          tooltip="Location tracking inactive"
-        />
-      }
-      
-      <!-- Debug controls (temporary) -->
-      @if (!isTracking()) {
-        <button class="movement-btn" (click)="startMovementDetection()" title="Start movement detection">▶️</button>
-      } @else {
-        <button class="movement-btn" (click)="stopMovementDetection()" title="Stop movement detection">⏸️</button>
-      }
-    </div>
-  }
 
-  <ul
-    class="menu__list"
-    [class.mobile]="isMobile$$()"
-    [class.desktop]="!isMobile$$()"
-  >
-    <!-- Auth Links - Show only when no user exists (before guest/login choice) -->
-    @if (!user()) {
+  <!-- Main Navigation - Desktop only (mobile uses footer-nav) -->
+  <nav class="nav-menu">
+    <ul class="menu-list">
       <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        <a routerLink="/login">Login</a>
+        <a routerLink="/">Home</a>
       </li>
-      <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-        <a routerLink="/register">Register</a>
+      <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+        <a routerLink="/pubs">Pubs</a>
       </li>
+      <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+        <a routerLink="/missions">Missions</a>
+      </li>
+      <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+        <a routerLink="/admin">Admin</a>
+      </li>
+      <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+        <a routerLink="/new-leaderboard">New Leaderboard</a>
+      </li>
+      <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+        <a routerLink="/share">Share</a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- User & Status Section - Always visible -->
+  <div class="nav-header">
+    @if (userChipData()) {
+      <app-chip-user
+        [user]="userChipData()!"
+        [size]="isMobile() ? 'sm' : 'md'"
+        [showName]="true"
+        [clickable]="false"
+        variant="default"
+      />
+          <!-- <app-user-profile-widget
+      [user]="dataAggregatorService.user()"
+      (openProfile)="onOpenProfile()"
+      class="profile-widget" /> -->
+    } @else {
+      <div class="guest-user">
+        <span class="guest-label">Guest</span>
+        <app-button
+          [variant]="ButtonVariant.SECONDARY"
+          [size]="isMobile() ? ButtonSize.SMALL : ButtonSize.MEDIUM"
+          (onClick)="login()"
+        >
+          Login
+        </app-button>
+      </div>
     }
 
-    <!-- Main Navigation - Show for all users -->
-    <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-      <a routerLink="/">Home</a>
-    </li>
+    <!-- Location Status & Auth Actions -->
+    <div class="nav-actions">
+      <!-- Simple Location Status Indicator -->
+      <div class="location-status" [title]="hasLocation() ? 'Location available' : 'No location access'">
+        <span class="location-dot" [class.has-location]="hasLocation()"></span>
+      </div>
 
-    <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-      <a routerLink="/pubs">Pubs</a>
-    </li>
+      @if (isAuthenticated()) {
+        <app-button
+          [variant]="ButtonVariant.DANGER"
+          [size]="isMobile() ? ButtonSize.SMALL : ButtonSize.MEDIUM"
+          (onClick)="logout()"
+        >
+          Logout
+        </app-button>
+      }
+    </div>
+  </div>
 
-    <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-      <a routerLink="/missions">Missions</a>
-    </li>
-
-    <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-      <a routerLink="/admin/badges">Badges</a>
-    </li>
-
-    <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-      <a routerLink="/admin">Admin</a>
-    </li>
-
-    <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-      <a routerLink="/leaderboard">Leaderboard</a>
-    </li>
-
-    <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-      <a routerLink="/new-leaderboard">New Leaderboard</a>
-    </li>
-
-    <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-      <a routerLink="/share">Share</a>
-    </li>
-  </ul>
 </div>

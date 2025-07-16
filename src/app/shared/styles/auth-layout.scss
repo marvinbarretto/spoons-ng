@@ -1,0 +1,180 @@
+// ===== SHARED AUTH LAYOUT SYSTEM =====
+// Mixins for consistent mobile-first auth page layouts with safe areas
+
+// Main container mixin - handles viewport and safe areas
+@mixin auth-container {
+  min-height: 100vh;
+  min-height: 100dvh; // Dynamic viewport height for mobile browsers
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+
+  // Safe area handling for mobile devices
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+
+  // Carpet background pattern
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+
+  // Default text color for dark backgrounds
+  color: var(--text-on-dark, white);
+
+  // Mobile optimization
+  @media (max-width: 768px) {
+    background-attachment: scroll; // Better performance on mobile
+  }
+}
+
+// Content area mixin - scrollable, takes available space
+@mixin auth-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  min-height: 0; // Allow flex item to shrink
+}
+
+// Actions area mixin - anchored to bottom with safe spacing
+@mixin auth-actions {
+  flex-shrink: 0; // Never shrink
+  padding: 1.5rem;
+  
+  // Subtle gradient to separate from content
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.1) 100%
+  );
+  
+  // Ensure actions are thumb-friendly on mobile
+  @media (max-width: 768px) {
+    padding: 1rem 1rem 1.5rem;
+  }
+}
+
+// Header area mixin - for back buttons and titles
+@mixin auth-header {
+  flex-shrink: 0;
+  text-align: center;
+  padding: 2rem 1.5rem 1rem;
+  position: relative;
+
+  @media (max-width: 768px) {
+    padding: 1.5rem 1rem 1rem;
+  }
+}
+
+// Form section mixin - centered form content
+@mixin auth-form-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1rem 1.5rem;
+  max-width: 400px;
+  margin: 0 auto;
+  width: 100%;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
+}
+
+// Back button positioning - more prominent styling
+@mixin auth-back-button {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 10;
+  
+  // Prominent styling
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  // Remove default button styles
+  padding: 0;
+  outline: none;
+  
+  // Hover effect
+  &:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+  }
+  
+  // Active effect
+  &:active {
+    transform: scale(0.95);
+  }
+  
+  // Focus styling for accessibility
+  &:focus-visible {
+    outline: 2px solid var(--primary, #f59e0b);
+    outline-offset: 2px;
+  }
+}
+
+// Logo container styling
+@mixin auth-logo {
+  margin-bottom: 1.5rem;
+  
+  img {
+    width: 80px;
+    height: 80px;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+  }
+}
+
+// Form styling with backdrop blur
+@mixin auth-form {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+
+  @media (max-width: 768px) {
+    padding: 1.5rem;
+  }
+}
+
+// Smooth entrance animations
+@mixin auth-animations {
+  .auth-header {
+    animation: fadeInUp 0.6s ease-out;
+  }
+
+  .auth-content {
+    animation: fadeInUp 0.6s ease-out 0.2s both;
+  }
+
+  .auth-actions {
+    animation: fadeInUp 0.6s ease-out 0.4s both;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}

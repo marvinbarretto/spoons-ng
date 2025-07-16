@@ -1,42 +1,37 @@
-import { Component, inject, signal, ChangeDetectionStrategy, computed } from '@angular/core';
+import { Component, inject, signal, ChangeDetectionStrategy, computed, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { CommonModule, JsonPipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { BaseComponent } from '@shared/base/base.component';
 import { ButtonComponent } from '@shared/ui/button/button.component';
 import { FormInputComponent } from '@shared/ui/form-input/form-input.component';
+import { IconComponent } from '@shared/ui/icon/icon.component';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { FormValidators } from '@shared/utils/form-validators';
+import { ToastService } from '@shared/data-access/toast.service';
+import { ThemeStore } from '@shared/data-access/theme.store';
+import type { ThemeType } from '@shared/utils/theme.tokens';
 
 @Component({
   selector: 'app-login',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, ButtonComponent, FormInputComponent],
+  imports: [CommonModule, ReactiveFormsModule, ButtonComponent, FormInputComponent, IconComponent],
+  styleUrl: './login.component.scss',
   template: `
     <div class="login-container">
       <!-- Header -->
       <div class="login-header">
-        <app-button
-          variant="ghost"
-          size="sm"
-          iconLeft="arrow_back"
-          (onClick)="navigateBack()"
-          class="back-button"
-        >
-          Back
-        </app-button>
+        <button type="button" class="back-button" (click)="navigateBack()">
+          <app-icon name="arrow_back" size="lg" [interactive]="true"></app-icon>
+        </button>
 
-        <div class="logo-container">
-          <img src="/assets/logos/logo.svg" alt="Spoonscount" class="app-logo" />
-        </div>
-
-        <h1 class="login-title">Welcome Back</h1>
-        <p class="login-subtitle">Sign in to your Spoonscount account</p>
+        <h1 class="login-title">Login</h1>
       </div>
 
-      <!-- Login Form -->
-      <div class="login-form-section">
-        <form [formGroup]="loginForm" (ngSubmit)="handleSubmit()" class="login-form">
+      <!-- Content Area -->
+      <div class="login-content">
+        <div class="login-form-section">
+          <form [formGroup]="loginForm" (ngSubmit)="handleSubmit()" class="login-form">
           <!-- Email Field -->
           <app-form-input
             label="Email"
@@ -106,8 +101,11 @@ import { FormValidators } from '@shared/utils/form-validators';
             Continue with Google
           </app-button>
         </div>
+        </div>
+      </div>
 
-        <!-- Footer Links -->
+      <!-- Actions Area - Anchored to Bottom -->
+      <div class="login-actions">
         <div class="login-footer">
           <p class="footer-text">
             Don't have an account?
@@ -123,197 +121,16 @@ import { FormValidators } from '@shared/utils/form-validators';
       </div>
     </div>
   `,
-  styles: `
-    .login-container {
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      overflow: hidden;
-
-      /* Carpet background with dark overlay */
-      background-image:
-        linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.8)),
-        url('/assets/carpets/red-lion.jpg');
-      background-size: cover;
-      background-position: center;
-      background-attachment: fixed;
-
-      color: var(--text-on-dark, white);
-    }
-
-    .login-header {
-      text-align: center;
-      padding: 2rem 1.5rem 1rem;
-      position: relative;
-    }
-
-    .back-button {
-      position: absolute;
-      top: 1rem;
-      left: 1rem;
-      z-index: 10;
-    }
-
-    .logo-container {
-      margin-bottom: 1.5rem;
-    }
-
-    .app-logo {
-      width: 80px;
-      height: 80px;
-      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
-    }
-
-    .login-title {
-      font-size: 2rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-      background: linear-gradient(135deg, #ffffff, #e5e7eb);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .login-subtitle {
-      font-size: 1rem;
-      color: rgba(255, 255, 255, 0.8);
-      margin: 0;
-    }
-
-    .login-form-section {
-      flex: 1;
-      padding: 1rem 1.5rem 2rem;
-      max-width: 400px;
-      margin: 0 auto;
-      width: 100%;
-    }
-
-    .login-form {
-      background: rgba(0, 0, 0, 0.3);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 1rem;
-      padding: 2rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .form-error--global {
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      border-radius: 0.5rem;
-      padding: 0.75rem;
-      margin-bottom: 1rem;
-      text-align: center;
-      color: var(--error, #ef4444);
-      font-size: 0.875rem;
-    }
-
-    .submit-button {
-      margin-top: 0.5rem;
-    }
-
-    .alternative-login {
-      margin-bottom: 1.5rem;
-    }
-
-    .divider {
-      display: flex;
-      align-items: center;
-      margin: 1.5rem 0;
-    }
-
-    .divider::before,
-    .divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: rgba(255, 255, 255, 0.2);
-    }
-
-    .divider-text {
-      padding: 0 1rem;
-      font-size: 0.875rem;
-      color: rgba(255, 255, 255, 0.6);
-    }
-
-    .google-button {
-      margin-bottom: 0;
-    }
-
-    .login-footer {
-      text-align: center;
-    }
-
-    .footer-text {
-      font-size: 0.875rem;
-      color: rgba(255, 255, 255, 0.7);
-      margin-bottom: 1rem;
-    }
-
-    .link-button {
-      background: none;
-      border: none;
-      color: var(--primary, #10b981);
-      text-decoration: underline;
-      text-decoration-color: rgba(16, 185, 129, 0.5);
-      cursor: pointer;
-      font-size: inherit;
-      transition: color 0.2s ease;
-    }
-
-    .link-button:hover {
-      color: var(--primary-hover, #059669);
-      text-decoration-color: var(--primary-hover, #059669);
-    }
-
-    .forgot-password {
-      font-size: 0.875rem;
-    }
-
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-      .login-container {
-        background-attachment: scroll;
-      }
-
-      .login-header {
-        padding: 1.5rem 1rem 1rem;
-      }
-
-      .login-form-section {
-        padding: 1rem;
-      }
-
-      .login-form {
-        padding: 1.5rem;
-      }
-    }
-
-    /* Animation for smooth entrance */
-    .login-header {
-      animation: fadeInUp 0.6s ease-out;
-    }
-
-    .login-form-section {
-      animation: fadeInUp 0.6s ease-out 0.2s both;
-    }
-
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-  `
 })
-export class LoginComponent extends BaseComponent {
-  private readonly authStore = inject(AuthStore);
-  private readonly fb = inject(FormBuilder);
+export class LoginComponent extends BaseComponent implements OnInit, OnDestroy {
+  protected readonly authStore = inject(AuthStore);
+  protected readonly fb = inject(FormBuilder);
+  private readonly themeStore = inject(ThemeStore);
+
+  // Store original theme to restore on destroy
+  private originalTheme: ThemeType | null = null;
+
+
 
   // Reactive form
   readonly loginForm = this.fb.group({
@@ -323,6 +140,19 @@ export class LoginComponent extends BaseComponent {
 
   // UI state
   readonly googleLoading = signal(false);
+
+  override ngOnInit(): void {
+    // Store current theme and override with sunshine for better contrast on dark backgrounds
+    this.originalTheme = this.themeStore.themeType();
+    this.themeStore.setTheme('sunshine');
+  }
+
+  ngOnDestroy(): void {
+    // Restore original theme when leaving auth page
+    if (this.originalTheme) {
+      this.themeStore.setTheme(this.originalTheme);
+    }
+  }
 
   async handleSubmit(): Promise<void> {
     if (this.loading() || this.loginForm.invalid) return;
@@ -411,6 +241,11 @@ export class LoginComponent extends BaseComponent {
         case 'auth/popup-blocked':
           errorMessage = 'Popup was blocked by your browser. Please allow popups and try again.';
           break;
+        case 'auth/invalid-credential':
+          errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+          // For invalid credentials, only show toast and stay on page
+          this.toastService.error(errorMessage, 6000);
+          return; // Exit early - don't set component error or navigate
         default:
           if (error.message) {
             errorMessage = error.message;
@@ -418,6 +253,8 @@ export class LoginComponent extends BaseComponent {
       }
     }
 
+    // Show both error in component and toast notification
     this.error.set(errorMessage);
+    this.toastService.error(errorMessage, 8000); // 8 seconds for important errors
   }
 }

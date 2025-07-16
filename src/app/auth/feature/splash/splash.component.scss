@@ -1,23 +1,19 @@
-.splash-container {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  overflow: hidden;
+@use '../../../shared/styles/auth-layout' as auth;
 
-  /* Carpet background with dark overlay for readability */
+.splash-container {
+  @include auth.auth-container;
+
+  /* Splash-specific background */
   background-image:
     linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)),
     url('/assets/carpets/moon-under-water-watford.jpg');
-  background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
+}
 
-  color: var(--text-on-dark, white);
+.splash-content {
+  @include auth.auth-content;
 }
 
 .hero-section {
-  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -26,6 +22,8 @@
   padding: 2rem 1.5rem;
   max-width: 500px;
   margin: 0 auto;
+  height: 100%;
+  flex: 1;
 }
 
 .logo-container {
@@ -57,9 +55,15 @@
   max-width: 400px;
 }
 
-.action-section {
-  padding: 2rem 1.5rem;
-  background: rgba(0, 0, 0, 0.2);
+.splash-actions {
+  @include auth.auth-actions;
+
+  /* Enhanced styling for splash actions */
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.2) 100%
+  );
   backdrop-filter: blur(10px);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }

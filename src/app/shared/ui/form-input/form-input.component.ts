@@ -18,7 +18,7 @@ export type FormInputType = 'text' | 'email' | 'password' | 'tel' | 'url' | 'sea
   template: `
     <div class="form-input-container">
       @if (label()) {
-        <label [for]="inputId()" class="form-label">
+        <label [for]="inputId()" [class]="shouldHideLabel() ? 'form-label sr-only' : 'form-label'">
           {{ label() }}
           @if (required()) {
             <span class="required-indicator" aria-label="required">*</span>
@@ -84,6 +84,20 @@ export type FormInputType = 'text' | 'email' | 'password' | 'tel' | 'url' | 'sea
     .form-input-container {
       width: 100%;
       margin-bottom: 1rem;
+      font-family: var(--font-primary, 'Fredoka', system-ui, sans-serif);
+    }
+
+    /* Screen reader only - visually hidden but accessible */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
     }
 
     .form-label {
@@ -113,6 +127,8 @@ export type FormInputType = 'text' | 'email' | 'password' | 'tel' | 'url' | 'sea
       background: var(--background-lighter, rgba(255, 255, 255, 0.1));
       color: var(--text, white);
       font-size: 1rem;
+      font-family: inherit; /* Inherit brand font from container */
+      font-weight: 400;
       transition: all 0.2s ease;
       outline: none;
     }
@@ -255,6 +271,7 @@ export class FormInputComponent implements ControlValueAccessor {
   // Computed properties
   readonly hasError = computed(() => !!this.errorMessage());
   readonly isPasswordType = computed(() => this.type() === 'password');
+  readonly shouldHideLabel = computed(() => !!this.placeholder() && !!this.label());
   readonly currentType = computed(() => {
     if (this.type() === 'password') {
       return this.showPassword() ? 'text' : 'password';

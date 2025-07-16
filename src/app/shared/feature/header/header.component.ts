@@ -15,7 +15,6 @@ import { filter, map } from 'rxjs/operators';
 import { toSignal } from '@angular/core/rxjs-interop';
 
 import { BaseComponent } from '../../base/base.component';
-import { ViewportService } from '../../data-access/viewport.service';
 import { NavComponent } from "../nav/nav.component";
 import { UserProfileWidgetComponent } from '../../../home/ui/user-profile-widget/user-profile-widget.component';
 import { ProfileCustomisationModalComponent } from '../../../home/ui/profile-customisation-modal/profile-customisation-modal.component';
@@ -30,16 +29,13 @@ import { environment } from '../../../../environments/environment';
 
 
 /**
- * HeaderComponent - Main site header with responsive navigation
+ * HeaderComponent - Main site header
  *
  * 🚀 NAVIGATION STRATEGY:
- * - **Desktop (768px+)**: Shows horizontal NavComponent directly in header
- * - **Mobile (<768px)**: Shows hamburger menu that opens NavComponent in panel
- *   + FooterNavComponent provides bottom tab navigation for mobile
- *
- * This ensures optimal UX for each device type:
- * - Desktop: Traditional horizontal nav in header
- * - Mobile: Clean header + accessible bottom nav + panel for full menu
+ * - NavComponent handles its own responsive behavior
+ * - Desktop: Shows full nav menu inline
+ * - Mobile: Nav hides menu list, FooterNavComponent provides mobile navigation
+ * - Always shows user profile widget
  */
 @Component({
   selector: 'app-header',
@@ -55,13 +51,9 @@ import { environment } from '../../../../environments/environment';
 })
 export class HeaderComponent extends BaseComponent {
   // 🔧 Services
-  protected readonly viewportService = inject(ViewportService);
   protected readonly authStore = inject(AuthStore);
   protected readonly overlayService = inject(OverlayService);
   protected readonly dataAggregatorService = inject(DataAggregatorService);
-
-  // ✅ Reactive viewport detection
-  readonly isMobile = this.viewportService.isMobile;
 
   readonly version = APP_VERSION;
 
@@ -97,10 +89,6 @@ export class HeaderComponent extends BaseComponent {
     });
   }
 
-  @HostBinding('class.is-mobile')
-  get isMobileClass(): boolean {
-    return this.isMobile();
-  }
 
   @HostBinding('class.is-homepage')
   get isHomepageClass(): boolean {

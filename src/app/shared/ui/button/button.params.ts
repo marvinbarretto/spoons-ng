@@ -6,6 +6,7 @@ export const ButtonVariant = {
   WARNING: 'warning',
   GHOST: 'ghost',
   LINK: 'link',
+  OUTLINE: 'outline',
 } as const;
 
 export const ButtonSize = {

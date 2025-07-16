@@ -1,0 +1,165 @@
+@use '../../../shared/styles/auth-layout' as auth;
+
+.register-container {
+  @include auth.auth-container;
+  
+  /* Register-specific background */
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.8)),
+    url('/assets/carpets/bangor.jpg');
+}
+
+.register-header {
+  @include auth.auth-header;
+}
+
+.back-button {
+  @include auth.auth-back-button;
+}
+
+.logo-container {
+  @include auth.auth-logo;
+}
+
+.register-content {
+  @include auth.auth-content;
+}
+
+.register-actions {
+  @include auth.auth-actions;
+}
+
+.register-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, #ffffff, #e5e7eb);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.register-subtitle {
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0;
+}
+
+.auth-options-section {
+  @include auth.auth-form-section;
+}
+
+.auth-option {
+  margin-bottom: 1.5rem;
+}
+
+.guest-note {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+}
+
+.email-form-container {
+  @include auth.auth-form;
+  margin-top: 1rem;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.form-error--global {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  text-align: center;
+  color: var(--error, #ef4444);
+  font-size: 0.875rem;
+}
+
+.submit-button {
+  margin-top: 0.5rem;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  margin: 1.5rem 0;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.divider-text {
+  padding: 0 1rem;
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.email-registration-form {
+  @include auth.auth-form;
+}
+
+.register-footer {
+  text-align: center;
+}
+
+.footer-text {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 1rem;
+}
+
+.terms-text {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 0;
+  line-height: 1.4;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: var(--primary, #10b981);
+  text-decoration: underline;
+  text-decoration-color: rgba(16, 185, 129, 0.5);
+  cursor: pointer;
+  font-size: inherit;
+  transition: color 0.2s ease;
+}
+
+.link-button:hover {
+  color: var(--primary-hover, #059669);
+  text-decoration-color: var(--primary-hover, #059669);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .auth-options-section {
+    padding: 1rem;
+  }
+
+  .email-registration-form {
+    padding: 1.5rem;
+  }
+}
+
+/* Include animations */
+@include auth.auth-animations;

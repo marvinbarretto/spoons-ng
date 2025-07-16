@@ -9,24 +9,15 @@
     <h1 class="header__title">Spoonscount <small>{{version}} <span class="env-badge env-badge--{{environmentName().toLowerCase()}}">{{environmentName()}}</span></small></h1>
   </ng-template>
 
-  <!-- ✅ SIMPLIFIED NAVIGATION STRATEGY:
-       Desktop: Show horizontal nav in header
-       Mobile:  Only FooterNavComponent (no hamburger menu needed)
+  <!-- ✅ SIMPLIFIED NAVIGATION:
+       Nav component handles its own responsive behavior
+       Desktop: Shows full nav menu, Mobile: Shows only user/actions (footer-nav handles mobile navigation)
   -->
-  <!-- Desktop Navigation -->
-  <nav class="main-nav" *ngIf="!isMobile()">
+  <nav class="main-nav">
     <app-nav />
-    <app-user-profile-widget
+    <!-- <app-user-profile-widget
       [user]="dataAggregatorService.user()"
       (openProfile)="onOpenProfile()"
-      class="desktop-profile-widget" />
-  </nav>
-
-  <!-- Mobile Navigation - minimal header with user profile -->
-  <nav class="main-nav main-nav--mobile" *ngIf="isMobile()">
-    <app-user-profile-widget
-      [user]="dataAggregatorService.user()"
-      (openProfile)="onOpenProfile()"
-      class="mobile-profile-widget" />
+      class="profile-widget" /> -->
   </nav>
 </div>

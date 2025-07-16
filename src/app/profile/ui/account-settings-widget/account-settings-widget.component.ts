@@ -242,7 +242,7 @@ export class AccountSettingsWidgetComponent extends BaseComponent {
     }
 
     this.authStore.logout();
-    this.router.navigate(['/']);
+    this.router.navigate(['/splash']);
   }
 
   async handleDeleteAccount(): Promise<void> {
@@ -280,7 +280,7 @@ export class AccountSettingsWidgetComponent extends BaseComponent {
 
       // Logout and redirect
       this.authStore.logout();
-      this.router.navigate(['/']);
+      this.router.navigate(['/splash']);
 
     } catch (error) {
       console.error('[AccountSettingsWidget] Account deletion failed:', error);

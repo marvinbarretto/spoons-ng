@@ -38,6 +38,7 @@ export class AuthStore {
   private readonly _ready = signal(false);
   private readonly _userChangeCounter = signal(0);
   private readonly _isExplicitGuest = signal(false);
+  private readonly _hasSeenSplash = signal(false);
 
   // ✅ Public auth signals
   readonly user = this._user.asReadonly();
@@ -45,6 +46,7 @@ export class AuthStore {
   readonly ready = this._ready.asReadonly();
   readonly userChangeSignal = this._userChangeCounter.asReadonly();
   readonly isExplicitGuest = this._isExplicitGuest.asReadonly();
+  readonly hasSeenSplash = this._hasSeenSplash.asReadonly();
 
   // ✅ ONLY auth-derived computeds
   readonly isAuthenticated = computed(() => !!this.token());
@@ -56,8 +58,19 @@ export class AuthStore {
       // Restore explicit guest state from localStorage
       const storedIsExplicitGuest = localStorage.getItem('isExplicitGuest') === 'true';
       this._isExplicitGuest.set(storedIsExplicitGuest);
+      
+      // Restore splash seen state from localStorage
+      const storedHasSeenSplash = localStorage.getItem('hasSeenSplash') === 'true';
+      this._hasSeenSplash.set(storedHasSeenSplash);
 
       this.authService.onAuthChange(async (firebaseUser) => {
+        console.log('[AuthStore] Auth state change received:', {
+          hasUser: !!firebaseUser,
+          uid: firebaseUser?.uid?.slice(0, 8),
+          isAnonymous: firebaseUser?.isAnonymous,
+          isExplicitGuest: this._isExplicitGuest()
+        });
+        
         if (firebaseUser) {
           await this.handleUserSignIn(firebaseUser);
         } else {
@@ -74,7 +87,15 @@ export class AuthStore {
 
   private async handleUserSignIn(firebaseUser: FirebaseUser): Promise<void> {
     try {
+      console.log('[AuthStore] handleUserSignIn called:', {
+        uid: firebaseUser.uid.slice(0, 8),
+        isAnonymous: firebaseUser.isAnonymous,
+        hasDisplayName: !!firebaseUser.displayName
+      });
+      
       const token = await firebaseUser.getIdToken();
+      console.log('[AuthStore] Got token:', !!token);
+      
       let displayName = firebaseUser.displayName;
 
       // ✅ Only update Firebase Auth profile for anonymous users WITHOUT custom names
@@ -114,6 +135,13 @@ export class AuthStore {
       this._token.set(token);
       this._userChangeCounter.update(c => c + 1);
 
+      console.log('[AuthStore] User and token set:', {
+        uid: appUser.uid.slice(0, 8),
+        hasToken: !!token,
+        isAuthenticated: !!token,
+        displayName: appUser.displayName
+      });
+
       // ✅ Save to localStorage only
       this.platform.onlyOnBrowser(() => {
         localStorage.setItem('user', JSON.stringify(appUser));
@@ -134,11 +162,13 @@ export class AuthStore {
     this._token.set(null);
     this._userChangeCounter.update(c => c + 1);
     this._isExplicitGuest.set(false);
+    this._hasSeenSplash.set(false);
 
     this.platform.onlyOnBrowser(() => {
       localStorage.removeItem('user');
       localStorage.removeItem('token');
       localStorage.removeItem('isExplicitGuest');
+      localStorage.removeItem('hasSeenSplash');
     });
   }
 
@@ -183,8 +213,8 @@ export class AuthStore {
     this.authService.loginWithEmail(email, password);
   }
 
-  registerWithEmail(email: string, password: string, displayName?: string): void {
-    this.authService.registerWithEmail(email, password, displayName);
+  async registerWithEmail(email: string, password: string, displayName?: string): Promise<void> {
+    await this.authService.registerWithEmail(email, password, displayName);
   }
 
   async continueAsGuest(): Promise<void> {
@@ -194,8 +224,18 @@ export class AuthStore {
       localStorage.setItem('isExplicitGuest', 'true');
     });
     
+    // Mark splash as seen since user is taking action from splash
+    this.markSplashAsSeen();
+    
     // Now create the anonymous user
     await this.authService.continueAsGuest();
+  }
+
+  markSplashAsSeen(): void {
+    this._hasSeenSplash.set(true);
+    this.platform.onlyOnBrowser(() => {
+      localStorage.setItem('hasSeenSplash', 'true');
+    });
   }
 
   openAvatarSelector(): void {

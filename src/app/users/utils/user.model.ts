@@ -39,6 +39,7 @@ export type User = {
 
   // Onboarding flow
   onboardingCompleted?: boolean; // Flag to track if user has completed initial setup
+  hasSeenSplash?: boolean; // Flag to track if user has seen the splash screen
   realUser?: boolean; // Flag to protect alpha users from deletion during dev updates
 
 };

@@ -13,7 +13,7 @@ import {
 export const appRoutes: Routes = [
   {
     path: '',
-    redirectTo: '/splash',
+    redirectTo: '/home',
     pathMatch: 'full'
   },
   {
@@ -45,8 +45,15 @@ export const appRoutes: Routes = [
     data: { shell: 'fullscreen' }
   },
   {
+    path: 'onboarding-carousel',
+    title: 'Complete Your Profile',
+    canActivate: [authGuard],
+    loadComponent: () => import('./auth/feature/onboarding-carousel/onboarding-carousel.component').then(m => m.OnboardingCarouselComponent),
+    data: { shell: 'fullscreen' }
+  },
+  {
     path: 'home',
-    canActivate: [authGuard, onboardingGuard],
+    canActivate: [authGuard],
     loadComponent: () => import('./home/feature/home/home.component').then(m => m.HomeComponent),
     data: { shell: 'dashboard', preload: true }
   },
@@ -117,7 +124,7 @@ export const appRoutes: Routes = [
   // Admin Dashboard Hub
   {
     path: 'admin',
-    title: 'Admin Dashboard', 
+    title: 'Admin Dashboard',
     canActivate: [authGuard],
     loadComponent: () =>
       import('./admin/feature/admin-dashboard/admin-dashboard.component')
@@ -183,6 +190,22 @@ export const appRoutes: Routes = [
       import('./dev/component-showcase/component-showcase.component')
         .then(m => m.ComponentShowcaseComponent),
     data: { shell: 'feature' }
+  },
+  {
+    path: 'dev/experiments',
+    title: 'Experiments',
+    loadComponent: () =>
+      import('./dev/experiments/experiments.component')
+        .then(m => m.ExperimentsComponent),
+    data: { shell: 'feature' }
+  },
+  {
+    path: 'dev/background-carpet',
+    title: 'Background Carpet Demo',
+    loadComponent: () =>
+      import('./dev/background-carpet/background-carpet-page.component')
+        .then(m => m.BackgroundCarpetPageComponent),
+    data: { shell: 'fullscreen' }
   },
   {
     path: 'profile',

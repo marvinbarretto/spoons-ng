@@ -14,5 +14,5 @@ export const PANEL = {
 export const ASSETS = {
   NPC_AVATAR: '/assets/avatars/npc.webp',
   FALLBACK_AVATAR: '/assets/avatars/default-user.png',
-  LOGO: '/assets/brand/logo.svg',
+  LOGO: '/assets/logo.svg',
 } as const;

@@ -1,9 +1,11 @@
-import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, signal, ChangeDetectionStrategy, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { BaseComponent } from '@shared/base/base.component';
 import { ButtonComponent } from '@shared/ui/button/button.component';
 import { AuthStore } from '@auth/data-access/auth.store';
+import { ThemeStore } from '@shared/data-access/theme.store';
+import type { ThemeType } from '@shared/utils/theme.tokens';
 
 @Component({
   selector: 'app-splash',
@@ -12,20 +14,19 @@ import { AuthStore } from '@auth/data-access/auth.store';
   styleUrl: './splash.component.scss',
   template: `
     <div class="splash-container">
-      <!-- Hero Section -->
-      <div class="hero-section">
-        <div class="logo-container">
-          <img src="/assets/logos/logo.svg" alt="Spoonscount" class="app-logo" />
+      <!-- Content Area -->
+      <div class="splash-content">
+        <div class="hero-section">
+          <h1 class="hero-title">🍺<br>Think you love Spoons?<br>Prove it.</h1>
+          <p class="hero-subtitle">
+          Keep track of your pub count.<br>
+          Accumulate points with every visit.<br> Complete missions.<br>Become the Spoons champion you were born to be.
+          </p>
         </div>
-
-        <h1 class="hero-title">Welcome to Spoonscount</h1>
-        <p class="hero-subtitle">
-          The ultimate pub checker-in app. Photograph carpets, earn points, and climb the leaderboards!
-        </p>
       </div>
 
-      <!-- Action Buttons -->
-      <div class="action-section">
+      <!-- Actions Area - Anchored to Bottom -->
+      <div class="splash-actions">
         <div class="auth-buttons">
           <app-button
             variant="primary"
@@ -59,25 +60,45 @@ import { AuthStore } from '@auth/data-access/auth.store';
         </div>
 
         <!-- Terms and Privacy -->
-        <div class="legal-links">
+        <!-- TODO: Move these ? -->
+        <!--div class="legal-links">
           <p class="legal-text">
             By continuing, you agree to our
             <a href="/terms" class="legal-link">Terms of Service</a> and
             <a href="/privacy" class="legal-link">Privacy Policy</a>
           </p>
-        </div>
+        </div-->
       </div>
     </div>
   `
 })
-export class SplashComponent extends BaseComponent {
+export class SplashComponent extends BaseComponent implements OnInit, OnDestroy {
   private readonly authStore = inject(AuthStore);
+  private readonly themeStore = inject(ThemeStore);
+
+  // Store original theme to restore on destroy
+  private originalTheme: ThemeType | null = null;
 
   readonly guestLoading = signal(false);
+
+  override ngOnInit(): void {
+    // Store current theme and override with sunshine for better contrast on dark backgrounds
+    this.originalTheme = this.themeStore.themeType();
+    this.themeStore.setTheme('sunshine');
+  }
+
+  ngOnDestroy(): void {
+    // Restore original theme when leaving auth page
+    if (this.originalTheme) {
+      this.themeStore.setTheme(this.originalTheme);
+    }
+  }
 
   async navigateToLogin(): Promise<void> {
     this.loading.set(true);
     try {
+      // Mark splash as seen since user is taking action from splash
+      this.authStore.markSplashAsSeen();
       await this.router.navigate(['/login']);
     } finally {
       this.loading.set(false);
@@ -87,6 +108,8 @@ export class SplashComponent extends BaseComponent {
   async navigateToRegister(): Promise<void> {
     this.loading.set(true);
     try {
+      // Mark splash as seen since user is taking action from splash
+      this.authStore.markSplashAsSeen();
       await this.router.navigate(['/register']);
     } finally {
       this.loading.set(false);
@@ -96,9 +119,15 @@ export class SplashComponent extends BaseComponent {
   async continueAsGuest(): Promise<void> {
     this.guestLoading.set(true);
     try {
+      console.log('[Splash] Starting guest authentication...');
+
       // Create anonymous user when user chooses guest
       await this.authStore.continueAsGuest();
-      // Navigate directly to home after successful guest authentication
+
+      // Wait for user to be authenticated
+      await this.waitForUserAuthenticated();
+
+      console.log('[Splash] Guest authenticated, navigating to home...');
       await this.router.navigate(['/home']);
     } catch (error) {
       console.error('[Splash] Guest login failed:', error);
@@ -106,5 +135,27 @@ export class SplashComponent extends BaseComponent {
     } finally {
       this.guestLoading.set(false);
     }
+  }
+
+  private async waitForUserAuthenticated(): Promise<void> {
+    return new Promise((resolve) => {
+      const checkAuth = () => {
+        const user = this.authStore.user();
+        const isAuthenticated = this.authStore.isAuthenticated();
+
+        console.log('[Splash] Auth check:', {
+          hasUser: !!user,
+          isAuthenticated,
+          uid: user?.uid?.slice(0, 8)
+        });
+
+        if (user && isAuthenticated) {
+          resolve();
+        } else {
+          setTimeout(checkAuth, 100);
+        }
+      };
+      checkAuth();
+    });
   }
 }

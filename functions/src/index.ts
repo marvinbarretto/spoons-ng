@@ -16,9 +16,15 @@
 
 import { initializeApp } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
+import { setGlobalOptions } from 'firebase-functions/v2';
 
 // Initialize Firebase Admin
 initializeApp();
+
+// Set global region for all functions
+setGlobalOptions({
+  region: 'europe-west2'
+});
 
 // Export all cloud functions
 export { onCheckInCreate } from './triggers/onCheckInCreate';
