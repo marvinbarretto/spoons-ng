@@ -6,7 +6,7 @@ import { DatePipe, JsonPipe } from '@angular/common';
 import { BaseComponent } from '@shared/base/base.component';
 import { CleanupService, type CleanupResult, type UserDeletionSummary } from '@shared/utils/cleanup.service';
 import { CarpetStorageService } from '@carpets/data-access/carpet-storage.service';
-import { DatabaseMetricsService } from '@shared/data-access/database-metrics.service';
+// DatabaseMetricsService removed - was over-engineered
 import { FirebaseMetricsService } from '@shared/data-access/firebase-metrics.service';
 import { DataAggregatorService } from '@shared/data-access/data-aggregator.service';
 
@@ -46,7 +46,7 @@ export class DevDebugComponent extends BaseComponent {
 
   private readonly cleanupService = inject(CleanupService);
   private readonly carpetStorageService = inject(CarpetStorageService);
-  private readonly metricsService = inject(DatabaseMetricsService);
+  // Database metrics service removed - focus on core functionality
   private readonly firebaseMetricsService = inject(FirebaseMetricsService);
   protected readonly dataAggregatorService = inject(DataAggregatorService);
 
@@ -90,8 +90,8 @@ export class DevDebugComponent extends BaseComponent {
   readonly showFirebaseWidget = signal(true);
 
   // Computed stats from metrics service
-  readonly performanceMetrics = this.metricsService.performanceMetrics;
-  readonly costEstimate = this.metricsService.costEstimate;
+  // Performance metrics removed - using Firebase native metrics instead
+  // Cost estimates removed - premature optimization
 
   // Real business data from stores
   readonly siteStats = this.leaderboardStore.siteStats;
@@ -183,12 +183,12 @@ export class DevDebugComponent extends BaseComponent {
       errorRate: fbMetrics.errorRate,
       averageLatency: fbMetrics.averageLatency,
       recentOperations: recent,
-      topCollections: this.metricsService.getTopCollections(3),
+      topCollections: [], // Database metrics removed
       totalErrors: errors.totalErrors
     };
   });
 
-  readonly cacheEffectiveness = computed(() => this.metricsService.getCacheEffectiveness());
+  // Cache effectiveness metrics removed - Firebase handles this
 
   // ===================================
   // 🚀 INITIALIZATION

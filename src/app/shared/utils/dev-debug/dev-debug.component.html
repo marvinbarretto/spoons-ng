@@ -160,7 +160,7 @@
                   </div>
                   <div class="cache-detail">
                     <span class="cache-icon">🔄</span>
-                    <span>Speed: {{ cacheEffectiveness().speedImprovement.toFixed(1) }}x</span>
+                    <span>Firebase cache active</span>
                   </div>
                 </div>
               </div>
@@ -360,20 +360,11 @@
               <pre>{{ firebaseOperations() | json }}</pre>
             </details>
 
-            <details class="debug-details">
-              <summary>Performance Metrics</summary>
-              <pre>{{ performanceMetrics() | json }}</pre>
-            </details>
+            <!-- Performance metrics removed - using Firebase native metrics -->
 
-            <details class="debug-details">
-              <summary>Cost Estimates</summary>
-              <pre>{{ costEstimate() | json }}</pre>
-            </details>
+            <!-- Cost estimates removed - premature optimization -->
 
-            <details class="debug-details">
-              <summary>Cache Effectiveness</summary>
-              <pre>{{ cacheEffectiveness() | json }}</pre>
-            </details>
+            <!-- Cache effectiveness removed - Firebase handles this -->
 
             <details class="debug-details">
               <summary>Site Stats</summary>

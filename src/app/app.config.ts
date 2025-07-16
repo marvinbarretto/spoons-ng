@@ -5,6 +5,7 @@ import { OnboardingAwarePreloadingStrategy } from './shared/strategies/onboardin
 import { appRoutes } from './app.routes';
 import { USER_THEME_TOKEN } from '../libs/tokens/user-theme.token';
 import { ThemeStore } from './shared/data-access/theme.store';
+import { DevCacheBuster } from './shared/utils/dev-cache-buster';
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import { environment } from '../environments/environment';
 import { TemplatePageTitleStrategy } from './TemplatePageTitleStrategy';
@@ -18,6 +19,11 @@ export const appConfig: ApplicationConfig = {
     { provide: USER_THEME_TOKEN, useValue: 'light' },
     provideAppInitializer(() => {
       inject(ThemeStore);
+      
+      // Setup development cache busting tools
+      if (isDevMode() || !environment.production) {
+        inject(DevCacheBuster).setupDevConsoleShortcuts();
+      }
     }),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(appRoutes, withPreloading(OnboardingAwarePreloadingStrategy)),
