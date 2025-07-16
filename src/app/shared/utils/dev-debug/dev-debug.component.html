@@ -248,6 +248,18 @@
               🔄 Refresh Data
             </button>
           </div>
+
+          <div class="action-group">
+            <div class="group-label">⚠️ DANGER ZONE - Delete Real Users</div>
+
+            <button
+              class="btn danger nuclear"
+              (click)="clearAllUsersIncludingReal()"
+              [disabled]="cleanupLoading()"
+              title="DANGER: Delete ALL users including real users - cannot be undone">
+              ⚠️ Delete ALL Users (Including Real)
+            </button>
+          </div>
         </div>
       </div>
 
