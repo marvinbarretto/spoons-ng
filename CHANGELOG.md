@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.102](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.101...v0.0.102) (2025-07-16)
+
+
+### Bug Fixes
+
+* [Auth] Proper async coordindation ([60a3479](https://github.com/marvinbarretto/spoons-ng/commit/60a3479adc4dc28df7b1b53e62177b04849ec32a))
+
 ### [0.0.101](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.100...v0.0.101) (2025-07-16)
 
 
