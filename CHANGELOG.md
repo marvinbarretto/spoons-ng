@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.101](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.100...v0.0.101) (2025-07-16)
+
+
+### Features
+
+* [Auth Flow] Login / Register and Splash screens in place now ([99b9fe6](https://github.com/marvinbarretto/spoons-ng/commit/99b9fe61aa90ae9c0fc93ee02a9fd50f6eaf58f3))
+
 ### [0.0.100](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.99...v0.0.100) (2025-07-16)
 
 
