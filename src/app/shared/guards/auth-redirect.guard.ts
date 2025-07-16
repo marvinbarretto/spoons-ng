@@ -19,15 +19,17 @@ export const authRedirectGuard: CanActivateFn = (route, state) => {
     filter(ready => ready),
     take(1),
     // Add timeout to prevent infinite waiting
-    timeout(3000),
+    timeout(5000), // Increased timeout to 5 seconds for mobile
     // Handle the actual redirect check
     map(() => {
       const user = authStore.user();
+      const isAuthenticated = authStore.isAuthenticated();
       
       console.log('[Auth Flow] 🚪 Processing user for auth redirect:', {
         hasUser: !!user,
         userId: user?.uid?.slice(0, 8),
         isAnonymous: user?.isAnonymous,
+        isAuthenticated,
         currentUrl: router.url,
         hasSeenSplash: authStore.hasSeenSplash(),
         isExplicitGuest: authStore.isExplicitGuest()
@@ -50,7 +52,7 @@ export const authRedirectGuard: CanActivateFn = (route, state) => {
       }
 
       // If user is authenticated (not anonymous), redirect to home
-      if (!user.isAnonymous) {
+      if (!user.isAnonymous && isAuthenticated) {
         console.log('[Auth Flow] 🚪 Real user is authenticated, redirecting to home');
         router.navigate(['/home']);
         return false;
@@ -64,7 +66,7 @@ export const authRedirectGuard: CanActivateFn = (route, state) => {
       }
 
       // If user is an explicit guest, redirect to home (they chose to use the app as guest)
-      if (user.isAnonymous && authStore.isExplicitGuest()) {
+      if (user.isAnonymous && authStore.isExplicitGuest() && isAuthenticated) {
         console.log('[Auth Flow] 🚪 Explicit guest user, redirecting to home');
         router.navigate(['/home']);
         return false;
@@ -74,10 +76,37 @@ export const authRedirectGuard: CanActivateFn = (route, state) => {
       console.log('[Auth Flow] 🚪 Fallback: allowing access to auth pages');
       return true;
     }),
-    // Handle timeout or errors
+    // Handle timeout or errors with retry logic
     catchError(error => {
       console.warn('[Auth Flow] 🚪 ⚠️ Timeout or error checking auth state:', error);
-      console.log('[Auth Flow] 🚪 🔄 Allowing access to auth pages (fallback)');
+      
+      // For timeout errors, try one more time with a fallback strategy
+      if (error.name === 'TimeoutError') {
+        const user = authStore.user();
+        const isAuthenticated = authStore.isAuthenticated();
+        
+        console.log('[Auth Flow] 🚪 🔄 Timeout fallback - current auth state:', {
+          hasUser: !!user,
+          isAuthenticated,
+          userId: user?.uid?.slice(0, 8)
+        });
+        
+        // If we have a user and they're authenticated, redirect appropriately
+        if (user && isAuthenticated) {
+          if (!user.isAnonymous) {
+            console.log('[Auth Flow] 🚪 🔄 Timeout fallback: redirecting authenticated user to home');
+            router.navigate(['/home']);
+            return of(false);
+          }
+          if (user.isAnonymous && authStore.isExplicitGuest()) {
+            console.log('[Auth Flow] 🚪 🔄 Timeout fallback: redirecting explicit guest to home');
+            router.navigate(['/home']);
+            return of(false);
+          }
+        }
+      }
+      
+      console.log('[Auth Flow] 🚪 🔄 Allowing access to auth pages (error fallback)');
       return of(true);
     })
   );

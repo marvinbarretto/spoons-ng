@@ -205,8 +205,11 @@ export class AuthStore {
     });
   }
 
-  loginWithGoogle(): void {
-    this.authService.loginWithGoogle();
+  async loginWithGoogle(): Promise<void> {
+    await this.authService.loginWithGoogle();
+    
+    // Wait for auth state to be fully ready after Google login
+    await this.waitForAuthReady();
   }
 
   loginWithEmail(email: string, password: string): void {
@@ -235,6 +238,93 @@ export class AuthStore {
     this._hasSeenSplash.set(true);
     this.platform.onlyOnBrowser(() => {
       localStorage.setItem('hasSeenSplash', 'true');
+    });
+  }
+
+  /**
+   * Wait for auth state to be fully ready
+   * This ensures user, token, and all auth state is properly populated
+   */
+  async waitForAuthReady(): Promise<void> {
+    return new Promise((resolve) => {
+      const maxAttempts = 30; // 3 seconds max
+      let attempts = 0;
+      
+      const checkAuthState = () => {
+        attempts++;
+        const user = this.user();
+        const token = this.token();
+        const isReady = this.ready();
+        
+        console.log('[AuthStore] waitForAuthReady check:', {
+          attempt: attempts,
+          hasUser: !!user,
+          hasToken: !!token,
+          isReady,
+          uid: user?.uid?.slice(0, 8)
+        });
+        
+        // Auth is ready when we have a user, token, and ready flag is true
+        if (user && token && isReady) {
+          console.log('[AuthStore] ✅ Auth state fully ready');
+          resolve();
+          return;
+        }
+        
+        // Timeout after max attempts
+        if (attempts >= maxAttempts) {
+          console.warn('[AuthStore] ⚠️ Auth state readiness timeout');
+          resolve(); // Resolve anyway to prevent hanging
+          return;
+        }
+        
+        // Check again in 100ms
+        setTimeout(checkAuthState, 100);
+      };
+      
+      checkAuthState();
+    });
+  }
+
+  /**
+   * Wait for user authentication to complete
+   * This ensures the user is authenticated and has a valid token
+   */
+  async waitForUserAuthenticated(): Promise<void> {
+    return new Promise((resolve) => {
+      const maxAttempts = 30; // 3 seconds max
+      let attempts = 0;
+      
+      const checkAuth = () => {
+        attempts++;
+        const user = this.user();
+        const isAuthenticated = this.isAuthenticated();
+        
+        console.log('[AuthStore] waitForUserAuthenticated check:', {
+          attempt: attempts,
+          hasUser: !!user,
+          isAuthenticated,
+          uid: user?.uid?.slice(0, 8)
+        });
+        
+        if (user && isAuthenticated) {
+          console.log('[AuthStore] ✅ User authenticated');
+          resolve();
+          return;
+        }
+        
+        // Timeout after max attempts
+        if (attempts >= maxAttempts) {
+          console.warn('[AuthStore] ⚠️ User authentication timeout');
+          resolve(); // Resolve anyway to prevent hanging
+          return;
+        }
+        
+        // Check again in 100ms
+        setTimeout(checkAuth, 100);
+      };
+      
+      checkAuth();
     });
   }
 

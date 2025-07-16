@@ -234,8 +234,29 @@ export class RegisterComponent extends BaseComponent implements OnInit, OnDestro
     this.error.set(null);
 
     try {
+      console.log('[Register] Starting Google registration...');
+      
+      // Wait for Google authentication to complete
       await this.authStore.loginWithGoogle();
+      
+      // Wait for auth state to be fully ready
+      await this.authStore.waitForAuthReady();
+      
+      // Verify user is authenticated before navigation
+      const user = this.authStore.user();
+      const isAuthenticated = this.authStore.isAuthenticated();
+      
+      console.log('[Register] Google auth complete, verifying state:', {
+        hasUser: !!user,
+        isAuthenticated,
+        uid: user?.uid?.slice(0, 8)
+      });
+      
+      if (!user || !isAuthenticated) {
+        throw new Error('Authentication failed - user not properly authenticated');
+      }
 
+      console.log('[Register] ✅ Google registration successful, navigating to onboarding...');
       // Navigate to onboarding carousel after successful Google registration
       await this.router.navigate(['/onboarding-carousel']);
     } catch (error: any) {
@@ -253,8 +274,29 @@ export class RegisterComponent extends BaseComponent implements OnInit, OnDestro
     this.error.set(null);
 
     try {
+      console.log('[Register] Starting guest authentication...');
+      
+      // Wait for guest authentication to complete
       await this.authStore.continueAsGuest();
+      
+      // Wait for user to be authenticated
+      await this.authStore.waitForUserAuthenticated();
+      
+      // Verify user is authenticated before navigation
+      const user = this.authStore.user();
+      const isAuthenticated = this.authStore.isAuthenticated();
+      
+      console.log('[Register] Guest auth complete, verifying state:', {
+        hasUser: !!user,
+        isAuthenticated,
+        uid: user?.uid?.slice(0, 8)
+      });
+      
+      if (!user || !isAuthenticated) {
+        throw new Error('Guest authentication failed - user not properly authenticated');
+      }
 
+      console.log('[Register] ✅ Guest registration successful, navigating to home...');
       // Navigate directly to home for guest users (skip onboarding)
       await this.router.navigate(['/home']);
     } catch (error: any) {
@@ -298,6 +340,18 @@ export class RegisterComponent extends BaseComponent implements OnInit, OnDestro
           break;
         case 'auth/account-exists-with-different-credential':
           errorMessage = 'An account with this email exists with a different sign-in method.';
+          break;
+        case 'auth/network-request-failed':
+          errorMessage = 'Network error. Please check your connection and try again.';
+          break;
+        case 'auth/timeout':
+          errorMessage = 'Authentication timed out. Please try again.';
+          break;
+        case 'auth/user-cancelled':
+          errorMessage = 'Authentication was cancelled.';
+          break;
+        case 'auth/unauthorized-domain':
+          errorMessage = 'This domain is not authorized. Please contact support.';
           break;
         default:
           if (error.message) {

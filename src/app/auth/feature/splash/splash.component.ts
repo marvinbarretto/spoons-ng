@@ -125,7 +125,7 @@ export class SplashComponent extends BaseComponent implements OnInit, OnDestroy 
       await this.authStore.continueAsGuest();
 
       // Wait for user to be authenticated
-      await this.waitForUserAuthenticated();
+      await this.authStore.waitForUserAuthenticated();
 
       console.log('[Splash] Guest authenticated, navigating to home...');
       await this.router.navigate(['/home']);
@@ -135,27 +135,5 @@ export class SplashComponent extends BaseComponent implements OnInit, OnDestroy 
     } finally {
       this.guestLoading.set(false);
     }
-  }
-
-  private async waitForUserAuthenticated(): Promise<void> {
-    return new Promise((resolve) => {
-      const checkAuth = () => {
-        const user = this.authStore.user();
-        const isAuthenticated = this.authStore.isAuthenticated();
-
-        console.log('[Splash] Auth check:', {
-          hasUser: !!user,
-          isAuthenticated,
-          uid: user?.uid?.slice(0, 8)
-        });
-
-        if (user && isAuthenticated) {
-          resolve();
-        } else {
-          setTimeout(checkAuth, 100);
-        }
-      };
-      checkAuth();
-    });
   }
 }

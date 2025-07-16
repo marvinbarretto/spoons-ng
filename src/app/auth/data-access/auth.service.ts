@@ -160,15 +160,32 @@ export class AuthService {
     try {
       this.loading.set(true);
       const provider = new GoogleAuthProvider();
+      
+      console.log('[AuthService] Starting Google authentication popup...');
       const cred = await signInWithPopup(this.auth, provider);
       console.log('[AuthService] ✅ Google login successful:', cred.user.uid);
 
       // Ensure user document exists for registered users
       await this.ensureRegisteredUserDocument(cred.user);
 
+      // Wait for onAuthStateChanged to complete and auth state to be ready
+      await this.waitForAuthStateReady();
+
+      console.log('[AuthService] ✅ Google auth fully complete');
       return cred.user;
-    } catch (error) {
+    } catch (error: any) {
       this.loading.set(false);
+      console.error('[AuthService] Google authentication failed:', error);
+      
+      // Enhance error with context for better debugging
+      if (error?.code === 'auth/popup-closed-by-user') {
+        console.log('[AuthService] User cancelled Google authentication');
+      } else if (error?.code === 'auth/popup-blocked') {
+        console.warn('[AuthService] Popup blocked - user needs to allow popups');
+      } else if (error?.code === 'auth/network-request-failed') {
+        console.error('[AuthService] Network error during Google authentication');
+      }
+      
       throw error;
     }
   }
@@ -259,6 +276,55 @@ export class AuthService {
 
   onAuthChange(callback: (user: User | null) => void): () => void {
     return onAuthStateChanged(this.auth, callback);
+  }
+
+  /**
+   * Wait for auth state to be ready after authentication
+   * This ensures onAuthStateChanged has completed and user is fully set up
+   */
+  private async waitForAuthStateReady(): Promise<void> {
+    return new Promise((resolve) => {
+      const maxAttempts = 50; // 5 seconds max for mobile
+      let attempts = 0;
+      
+      const checkAuthState = () => {
+        attempts++;
+        const user = this.userInternal();
+        const isLoading = this.loading();
+        
+        console.log('[AuthService] waitForAuthStateReady check:', {
+          attempt: attempts,
+          hasUser: !!user,
+          isLoading,
+          uid: user?.uid?.slice(0, 8)
+        });
+        
+        // Auth state is ready when we have a user and are not loading
+        if (user && !isLoading) {
+          console.log('[AuthService] ✅ Auth state ready');
+          resolve();
+          return;
+        }
+        
+        // Timeout after max attempts
+        if (attempts >= maxAttempts) {
+          console.warn('[AuthService] ⚠️ Auth state readiness timeout after', attempts, 'attempts');
+          // Still resolve to prevent hanging, but log extensively
+          console.log('[AuthService] Final state:', {
+            hasUser: !!user,
+            isLoading,
+            uid: user?.uid?.slice(0, 8)
+          });
+          resolve(); // Resolve anyway to prevent hanging
+          return;
+        }
+        
+        // Check again in 100ms
+        setTimeout(checkAuthState, 100);
+      };
+      
+      checkAuthState();
+    });
   }
 
   getUid(): string | null {
