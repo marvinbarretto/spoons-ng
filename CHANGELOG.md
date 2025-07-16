@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.100](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.99...v0.0.100) (2025-07-16)
+
+
+### Features
+
+* [Auth] Stub new login / register / guest flows ([0fb975c](https://github.com/marvinbarretto/spoons-ng/commit/0fb975c34d364fac82fca9c7d014f05566656dc5))
+* [Cache] Use native Firebase offline cache ([1355f22](https://github.com/marvinbarretto/spoons-ng/commit/1355f22be29deb7c790bae35822449c3df435c78))
+* [Leaderboard] New leaderboard clean implementation ([17e8470](https://github.com/marvinbarretto/spoons-ng/commit/17e84701ce239fd6e1c75c6a6998de34fb826592))
+
 ### [0.0.99](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.98...v0.0.99) (2025-07-15)
 
 
