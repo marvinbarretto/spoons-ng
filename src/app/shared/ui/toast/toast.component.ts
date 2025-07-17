@@ -1,4 +1,4 @@
-import { Component, inject, effect } from '@angular/core';
+import { Component, inject, effect, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ToastService, Toast } from '../../data-access/toast.service';
 import { IconComponent } from '../icon/icon.component';
@@ -13,6 +13,15 @@ import { IconComponent } from '../icon/icon.component';
 export class ToastComponent {
   private readonly toastService = inject(ToastService);
   readonly toasts = this.toastService.toasts;
+
+  // Separate toasts by position
+  readonly cornerToasts = computed(() => 
+    this.toasts().filter(toast => toast.position === 'corner')
+  );
+  
+  readonly centerToasts = computed(() => 
+    this.toasts().filter(toast => toast.position === 'center')
+  );
 
   constructor() {
     console.log('[ToastComponent] Constructed');

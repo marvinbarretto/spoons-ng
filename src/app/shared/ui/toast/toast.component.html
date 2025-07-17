@@ -1,5 +1,6 @@
-<div class="toast-container">
-  @for (toast of toasts(); track toast.id) {
+<!-- Corner toasts (top-right) -->
+<div class="toast-container toast-container--corner">
+  @for (toast of cornerToasts(); track toast.id) {
     <div [ngClass]="toastClass(toast)" class="toast">
       <app-icon 
         [name]="getIconName(toast.type)"
@@ -16,3 +17,25 @@
         (click)="dismiss(toast.id)" />
     </div>
   }
+</div>
+
+<!-- Center toasts (viewport center) -->
+<div class="toast-container toast-container--center">
+  @for (toast of centerToasts(); track toast.id) {
+    <div [ngClass]="toastClass(toast)" class="toast toast--center">
+      <app-icon 
+        [name]="getIconName(toast.type)"
+        size="md"
+        [filled]="true"
+        weight="medium"
+        customClass="toast-icon" />
+      <div class="toast-message">{{ toast.message }}</div>
+      <app-icon 
+        name="close"
+        size="md"
+        [interactive]="true"
+        customClass="toast-dismiss-icon"
+        (click)="dismiss(toast.id)" />
+    </div>
+  }
+</div>
