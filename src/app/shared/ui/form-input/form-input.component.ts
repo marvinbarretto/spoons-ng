@@ -1,4 +1,4 @@
-import { Component, input, output, signal, computed, forwardRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, input, output, signal, computed, forwardRef, ChangeDetectionStrategy, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
@@ -25,22 +25,30 @@ export type FormInputType = 'text' | 'email' | 'password' | 'tel' | 'url' | 'sea
           }
         </label>
       }
-      
+
       <div class="input-wrapper" [class.has-error]="hasError()">
         @if (iconLeft()) {
           <span class="input-icon input-icon--left material-symbols-outlined">
             {{ iconLeft() }}
           </span>
         }
-        
+
         <input
           [id]="inputId()"
           [type]="currentType()"
           [placeholder]="placeholder()"
-          [disabled]="disabled()"
+          [disabled]="effectiveDisabled()"
           [readonly]="readonly()"
           [autocomplete]="autocomplete()"
           [value]="value()"
+          [attr.maxlength]="maxlength()"
+          [attr.minlength]="minlength()"
+          [attr.pattern]="pattern()"
+          [attr.min]="min()"
+          [attr.max]="max()"
+          [attr.required]="required() || null"
+          [attr.aria-describedby]="hasError() ? inputId() + '-error' : (hint() ? inputId() + '-hint' : null)"
+          [attr.aria-invalid]="hasError()"
           (input)="onInput($event)"
           (blur)="onBlur()"
           (focus)="onFocus($event)"
@@ -48,7 +56,7 @@ export type FormInputType = 'text' | 'email' | 'password' | 'tel' | 'url' | 'sea
           [class.has-icon-left]="!!iconLeft()"
           [class.has-icon-right]="!!iconRight() || isPasswordType()"
         />
-        
+
         @if (isPasswordType()) {
           <button
             type="button"
@@ -66,15 +74,15 @@ export type FormInputType = 'text' | 'email' | 'password' | 'tel' | 'url' | 'sea
           </span>
         }
       </div>
-      
-      @if (hasError() && errorMessage()) {
-        <div class="form-error" role="alert">
-          {{ errorMessage() }}
+
+      @if (hasError()) {
+        <div class="form-error" role="alert" [id]="inputId() + '-error'">
+          {{ getErrorMessage() }}
         </div>
       }
-      
+
       @if (hint()) {
-        <div class="form-hint">
+        <div class="form-hint" [id]="inputId() + '-hint'">
           {{ hint() }}
         </div>
       }
@@ -83,7 +91,6 @@ export type FormInputType = 'text' | 'email' | 'password' | 'tel' | 'url' | 'sea
   styles: `
     .form-input-container {
       width: 100%;
-      margin-bottom: 1rem;
       font-family: var(--font-primary, 'Fredoka', system-ui, sans-serif);
     }
 
@@ -105,7 +112,7 @@ export type FormInputType = 'text' | 'email' | 'password' | 'tel' | 'url' | 'sea
       font-size: 0.875rem;
       font-weight: 600;
       color: var(--text, rgba(255, 255, 255, 0.9));
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.375rem;
     }
 
     .required-indicator {
@@ -122,10 +129,13 @@ export type FormInputType = 'text' | 'email' | 'password' | 'tel' | 'url' | 'sea
     .form-input {
       width: 100%;
       padding: 0.75rem 1rem;
-      border: 1px solid var(--border, rgba(255, 255, 255, 0.2));
-      border-radius: 0.5rem;
-      background: var(--background-lighter, rgba(255, 255, 255, 0.1));
-      color: var(--text, white);
+      border: 2px solid var(--border);
+      border-radius: 0.75rem;
+      background: var(--background-lighter);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+      color: var(--text);
       font-size: 1rem;
       font-family: inherit; /* Inherit brand font from container */
       font-weight: 400;
@@ -142,9 +152,12 @@ export type FormInputType = 'text' | 'email' | 'password' | 'tel' | 'url' | 'sea
     }
 
     .form-input:focus {
-      border-color: var(--primary, #10b981);
-      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-      background: var(--background-lightest, rgba(255, 255, 255, 0.15));
+      border-color: var(--accent, #f59e0b);
+      box-shadow:
+        inset 0 1px 3px rgba(0, 0, 0, 0.1),
+        0 0 0 3px var(--accent-hover, rgba(245, 158, 11, 0.15));
+      background: var(--background-lightest, rgba(255, 255, 255, 0.25));
+      transform: translateY(-1px);
     }
 
     .form-input::placeholder {
@@ -164,7 +177,10 @@ export type FormInputType = 'text' | 'email' | 'password' | 'tel' | 'url' | 'sea
 
     .input-wrapper.has-error .form-input {
       border-color: var(--error, #ef4444);
-      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+      box-shadow:
+        inset 0 1px 3px rgba(0, 0, 0, 0.1),
+        0 0 0 3px rgba(239, 68, 68, 0.15);
+      background: rgba(239, 68, 68, 0.05);
     }
 
     .input-icon {
@@ -174,6 +190,7 @@ export type FormInputType = 'text' | 'email' | 'password' | 'tel' | 'url' | 'sea
       color: var(--text-muted, rgba(255, 255, 255, 0.6));
       pointer-events: none;
       font-size: 1.25rem;
+      display: flex;
     }
 
     .input-icon--left {
@@ -202,7 +219,7 @@ export type FormInputType = 'text' | 'email' | 'password' | 'tel' | 'url' | 'sea
     .form-error {
       color: var(--error, #ef4444);
       font-size: 0.875rem;
-      margin-top: 0.5rem;
+      margin-top: 0.375rem;
       display: flex;
       align-items: center;
       gap: 0.25rem;
@@ -211,8 +228,9 @@ export type FormInputType = 'text' | 'email' | 'password' | 'tel' | 'url' | 'sea
     .form-hint {
       color: var(--text-muted, rgba(255, 255, 255, 0.6));
       font-size: 0.875rem;
-      margin-top: 0.5rem;
+      margin-top: 0.375rem;
     }
+
 
     /* Light theme adjustments */
     @media (prefers-color-scheme: light) {
@@ -252,7 +270,15 @@ export class FormInputComponent implements ControlValueAccessor {
   readonly iconLeft = input<string>();
   readonly iconRight = input<string>();
   readonly hint = input<string>();
-  readonly errorMessage = input<string>();
+  readonly errorMessage = input<string>(); // Manual error message
+  readonly formControl = input<any>(); // FormControl for validation
+
+  // Common validation attributes
+  readonly maxlength = input<number>();
+  readonly minlength = input<number>();
+  readonly pattern = input<string>();
+  readonly min = input<number>();
+  readonly max = input<number>();
 
   // Output events
   readonly focus = output<FocusEvent>();
@@ -262,14 +288,40 @@ export class FormInputComponent implements ControlValueAccessor {
   private readonly _value = signal('');
   private readonly _showPassword = signal(false);
   private readonly _inputId = signal(`form-input-${Math.random().toString(36).substr(2, 9)}`);
+  private readonly _isDisabled = signal(false);
 
   // Public signals
   readonly value = this._value.asReadonly();
   readonly showPassword = this._showPassword.asReadonly();
   readonly inputId = this._inputId.asReadonly();
+  readonly isDisabled = this._isDisabled.asReadonly();
 
   // Computed properties
-  readonly hasError = computed(() => !!this.errorMessage());
+  // Effective disabled state (input disabled OR FormControl disabled)
+  readonly effectiveDisabled = computed(() => this.disabled() || this.isDisabled());
+
+  readonly hasError = computed(() => {
+    // Show error if manual error message is provided
+    if (this.errorMessage()) return true;
+
+    // Show validation errors from FormControl if field has been touched
+    const control = this.formControl?.();
+    // Always show errors after markAllAsTouched() is called (when form is submitted)
+    const hasErrorResult = control && control.invalid && (control.dirty || control.touched);
+
+    // Debug logging
+    if (control) {
+      console.log(`[FormInput ${this.label()}] hasError check:`, {
+        invalid: control.invalid,
+        dirty: control.dirty,
+        touched: control.touched,
+        errors: control.errors,
+        hasErrorResult
+      });
+    }
+
+    return hasErrorResult;
+  });
   readonly isPasswordType = computed(() => this.type() === 'password');
   readonly shouldHideLabel = computed(() => !!this.placeholder() && !!this.label());
   readonly currentType = computed(() => {
@@ -296,7 +348,8 @@ export class FormInputComponent implements ControlValueAccessor {
   }
 
   setDisabledState(isDisabled: boolean): void {
-    // Handled by the disabled input signal
+    // Sync FormControl disabled state with internal disabled state
+    this._isDisabled.set(isDisabled);
   }
 
   // Event handlers
@@ -318,5 +371,28 @@ export class FormInputComponent implements ControlValueAccessor {
 
   togglePasswordVisibility(): void {
     this._showPassword.update(show => !show);
+  }
+
+  getErrorMessage(): string {
+    // Return manual error message if provided
+    if (this.errorMessage()) {
+      return this.errorMessage()!;
+    }
+
+    // Get validation errors from FormControl
+    const control = this.formControl?.();
+    if (control && control.errors && (control.dirty || control.touched)) {
+      const errors = control.errors;
+
+      if (errors['required']) return `${this.label() || 'This field'} is required`;
+      if (errors['email']) return 'Please enter a valid email address';
+      if (errors['minlength']) return `Minimum ${errors['minlength'].requiredLength} characters required`;
+      if (errors['maxlength']) return `Maximum ${errors['maxlength'].requiredLength} characters allowed`;
+      if (errors['pattern']) return 'Please enter a valid format';
+      if (errors['min']) return `Minimum value is ${errors['min'].min}`;
+      if (errors['max']) return `Maximum value is ${errors['max'].max}`;
+    }
+
+    return '';
   }
 }

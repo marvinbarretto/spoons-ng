@@ -34,6 +34,12 @@ export const appRoutes: Routes = [
     data: { shell: 'fullscreen' }
   },
   {
+    path: 'register-new',
+    title: 'Join Spoonscount (New)',
+    loadComponent: () => import('./auth/feature/new-registration-flow/registration-flow.component').then(m => m.RegistrationFlowComponent),
+    data: { shell: 'fullscreen' }
+  },
+  {
     path: 'onboarding',
     title: 'Welcome to Spoonscount',
     canActivate: [authGuard],
