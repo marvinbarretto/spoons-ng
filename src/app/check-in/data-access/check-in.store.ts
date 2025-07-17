@@ -174,8 +174,9 @@ export class CheckInStore extends BaseStore<CheckIn> {
    * @param pubId - The pub to check into
    * @returns Promise<void>
    */
- async checkinToPub(pubId: string): Promise<void> {
+ async checkinToPub(pubId: string, carpetResult?: any): Promise<void> {
   console.log('[CheckInStore] 🚀 checkinToPub() called with pubId:', pubId);
+  console.log('[CheckInStore] 🚀 Carpet result passed:', carpetResult);
 
   if (this._isProcessing()) {
     console.log('[CheckInStore] ⚠️ Already processing a check-in, ignoring');
@@ -198,7 +199,7 @@ export class CheckInStore extends BaseStore<CheckIn> {
 
     // Calculate points before creation
     console.log('[CheckInStore] 🎯 Calculating points before check-in creation...');
-    const pointsData = await this.calculatePoints(pubId);
+    const pointsData = await this.calculatePoints(pubId, carpetResult);
     console.log('[CheckInStore] 🎯 Points calculated:', pointsData);
 
     // Creation phase with carpet data
@@ -596,8 +597,9 @@ export class CheckInStore extends BaseStore<CheckIn> {
   /**
    * Calculate points for check-in (with carpet bonus)
    */
-  private async calculatePoints(pubId: string): Promise<any> {
+  private async calculatePoints(pubId: string, carpetResult?: any): Promise<any> {
     console.log('[CheckInStore] 🎯 Calculating points for pub:', pubId);
+    console.log('[CheckInStore] 🎯 Carpet processing result:', carpetResult);
 
     const userId = this.authStore.uid();
     if (!userId) {
@@ -615,6 +617,11 @@ export class CheckInStore extends BaseStore<CheckIn> {
       // Calculate distance from home pub
       const distanceFromHome = await this.calculateDistanceFromHome(pubId, userId);
 
+      // Determine if a photo was actually captured and has quality data
+      const hasPhoto = !!(carpetResult?.llmConfirmed && carpetResult?.photoQuality);
+      console.log('[CheckInStore] 🎯 Photo capture detected:', hasPhoto);
+      console.log('[CheckInStore] 🎯 Photo quality data:', carpetResult?.photoQuality);
+
       // Build PointsStore data structure
       const pointsData = {
         pubId,
@@ -622,7 +629,8 @@ export class CheckInStore extends BaseStore<CheckIn> {
         isFirstVisit,
         isFirstEver: totalCheckins === 0,
         currentStreak: 0, // TODO: Calculate streak
-        hasPhoto: false,
+        hasPhoto,
+        photoQuality: carpetResult?.photoQuality,
         sharedSocial: false,
         // Determine if this is user's home pub
         isHomePub: await this.isHomePub(pubId, userId)

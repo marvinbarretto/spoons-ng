@@ -6,6 +6,7 @@ import { CheckInStore } from './check-in.store';
 import { CheckInModalService } from './check-in-modal.service';
 import { LLMService } from '@shared/data-access/llm.service';
 import { CarpetStorageService } from '../../carpets/data-access/carpet-storage.service';
+import { CarpetStrategyService } from '../../carpets/data-access/carpet-strategy.service';
 import { CameraService } from '@shared/data-access/camera.service';
 import { environment } from '../../../environments/environment';
 
@@ -26,6 +27,7 @@ export class CheckinOrchestrator {
   private readonly checkInModalService = inject(CheckInModalService);
   private readonly llmService = inject(LLMService);
   private readonly carpetStorageService = inject(CarpetStorageService);
+  private readonly carpetStrategy = inject(CarpetStrategyService);
   private readonly cameraService = inject(CameraService);
 
   // ===================================
@@ -281,12 +283,14 @@ export class CheckinOrchestrator {
       // Convert blob to canvas for storage
       const canvas = await this.blobToCanvas(blob);
       
-      // Store carpet image
-      console.log('[CheckinOrchestrator] 💾 Storing carpet image');
-      await this.carpetStorageService.saveCarpetImage(canvas, pubId, 'Carpet Image');
+      // Process carpet with quality analysis and storage
+      console.log('[CheckinOrchestrator] 💾 Processing carpet with quality analysis');
+      const pubName = 'Carpet Image'; // TODO: Get actual pub name
+      const carpetResult = await this.carpetStrategy.processCarpetCapture(canvas, pubId, pubName);
+      console.log('[CheckinOrchestrator] 🎯 Carpet processing complete:', carpetResult);
 
-      // Execute check-in
-      await this.checkinStore.checkinToPub(pubId);
+      // Execute check-in with carpet result
+      await this.checkinStore.checkinToPub(pubId, carpetResult);
       this._stage.set('RESULT');
       
       console.log('[CheckinOrchestrator] 🎉 Check-in successful!');

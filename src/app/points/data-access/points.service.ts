@@ -32,6 +32,9 @@ export class PointsService extends FirestoreCrudService<PointsTransaction> {
    * Calculate points for a check-in based on all factors
    */
   calculateCheckInPoints(data: CheckInPointsData): PointsBreakdown {
+    console.log('[PointsService] 🎯 === CALCULATING CHECK-IN POINTS ===');
+    console.log('[PointsService] 🎯 Input data:', data);
+    
     let base = POINTS_CONFIG.checkIn.base;
     let bonus = 0;
     let distance = 0;
@@ -94,7 +97,7 @@ export class PointsService extends FirestoreCrudService<PointsTransaction> {
 
     const total = (base + distance + bonus) * multiplier;
 
-    return {
+    const breakdown = {
       base,
       distance,
       bonus,
@@ -104,6 +107,11 @@ export class PointsService extends FirestoreCrudService<PointsTransaction> {
       // Include raw photo quality value if available for simplified access
       photoQuality: data.photoQuality?.overall
     };
+
+    console.log('[PointsService] 🎯 === POINTS CALCULATION COMPLETE ===');
+    console.log('[PointsService] 🎯 Final breakdown:', breakdown);
+    
+    return breakdown;
   }
 
   /**

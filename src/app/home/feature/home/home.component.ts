@@ -20,7 +20,6 @@ import { ScoreboardHeroWidgetComponent } from '@app/widgets/scoreboard-hero/scor
 
 // ✅ Components for modal overlays (not deferred)
 import { ProfileCustomisationModalComponent } from '@home/ui/profile-customisation-modal/profile-customisation-modal.component';
-import { UserAvatarComponent } from "@shared/ui/user-avatar/user-avatar.component";
 
 // ✅ Deferred components - imported for TypeScript but NOT in @Component.imports
 // This allows Angular's @defer to handle lazy loading automatically
@@ -40,10 +39,10 @@ import { SuggestedMissionWidgetComponent } from '@app/widgets/suggested-mission/
   imports: [
     // ✅ Critical components (load immediately)
     ScoreboardHeroWidgetComponent,
-    
+
     // ✅ Essential Angular modules
     RouterModule,
-    
+
     // ✅ Deferred components - included for template compilation, Angular handles lazy loading
     BadgesWidgetComponent,
     MissionsWidgetComponent,

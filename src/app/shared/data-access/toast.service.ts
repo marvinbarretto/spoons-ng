@@ -6,6 +6,7 @@ export type Toast = {
   id: string;
   message: string;
   type: 'success' | 'error' | 'warning' | 'info';
+  position: 'corner' | 'center';
   sticky: boolean;
   timeout?: number;
 };
@@ -21,6 +22,7 @@ export class ToastService {
   private push(
     message: string,
     type: Toast['type'],
+    position: Toast['position'] = 'corner',
     timeout?: number,
     sticky = false
   ): void {
@@ -28,6 +30,7 @@ export class ToastService {
       id: uuid(),
       message,
       type,
+      position,
       sticky,
       timeout,
     };
@@ -48,20 +51,38 @@ export class ToastService {
     }
   }
 
+  // Corner toasts (default, desktop-friendly)
   success(message: string, timeout = 3000, sticky = false): void {
-    this.push(message, 'success', timeout, sticky);
+    this.push(message, 'success', 'corner', timeout, sticky);
   }
 
   error(message: string, timeout = 5000, sticky = false): void {
-    this.push(message, 'error', timeout, sticky);
+    this.push(message, 'error', 'corner', timeout, sticky);
   }
 
   warning(message: string, timeout = 4000, sticky = false): void {
-    this.push(message, 'warning', timeout, sticky);
+    this.push(message, 'warning', 'corner', timeout, sticky);
   }
 
   info(message: string, timeout = 3000, sticky = false): void {
-    this.push(message, 'info', timeout, sticky);
+    this.push(message, 'info', 'corner', timeout, sticky);
+  }
+
+  // Center toasts (mobile-friendly)
+  centerSuccess(message: string, timeout = 3000, sticky = false): void {
+    this.push(message, 'success', 'center', timeout, sticky);
+  }
+
+  centerError(message: string, timeout = 5000, sticky = false): void {
+    this.push(message, 'error', 'center', timeout, sticky);
+  }
+
+  centerWarning(message: string, timeout = 4000, sticky = false): void {
+    this.push(message, 'warning', 'center', timeout, sticky);
+  }
+
+  centerInfo(message: string, timeout = 3000, sticky = false): void {
+    this.push(message, 'info', 'center', timeout, sticky);
   }
 
   dismiss(id: string): void {
