@@ -10,26 +10,22 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
   imports: [CommonModule],
   template: `
     <div class="avatar-selection-widget">
-      <h3 class="widget-title">🖼️ Profile Picture</h3>
-
-      <!-- ✅ Current avatar display -->
-      <div class="current-avatar">
-        <div class="avatar-container">
-          <img
-            class="avatar-large"
-            [src]="displayAvatarUrl()"
-            [alt]="currentUser()?.displayName + ' avatar'"
-          />
-          <!-- ✅ Status indicator -->
-          @if (saving()) {
-            <div class="status-circle saving">⏳</div>
-          }
+      <!-- ✅ Current avatar display (conditionally shown) -->
+      @if (showCurrentAvatar()) {
+        <div class="current-avatar">
+          <div class="avatar-container">
+            <img
+              class="avatar-large"
+              [src]="displayAvatarUrl()"
+              [alt]="currentUser()?.displayName + ' avatar'"
+            />
+            <!-- ✅ Status indicator -->
+            @if (saving()) {
+              <div class="status-circle saving">⏳</div>
+            }
+          </div>
         </div>
-        <div class="avatar-info">
-          <span class="avatar-name">{{ getDisplayAvatarName() }}</span>
-          <span class="avatar-type">{{ isAnonymous() ? 'Anonymous User' : 'Signed In' }}</span>
-        </div>
-      </div>
+      }
 
       <!-- ✅ Avatar grid -->
       <div class="avatar-grid">
@@ -55,28 +51,22 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
   `,
   styles: `
     .avatar-selection-widget {
-      padding: 1rem;
+      padding: 0.75rem;
       background: var(--background-darkest);
       border: 1px solid var(--border);
       border-radius: 8px;
     }
 
-    .widget-title {
-      margin: 0 0 1rem 0;
-      font-size: 1rem;
-      font-weight: 600;
-      color: var(--text);
-    }
 
     .current-avatar {
       display: flex;
       align-items: center;
-      gap: 1rem;
-      padding: 1rem;
+      justify-content: center;
+      padding: 0.75rem;
       background: var(--background-darkest);
       border: 1px solid var(--border);
       border-radius: 6px;
-      margin-bottom: 1rem;
+      margin-bottom: 0.75rem;
     }
 
     .avatar-container {
@@ -115,34 +105,19 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
       background: #10b981;
     }
 
-    .avatar-info {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-    }
-
-    .avatar-name {
-      font-weight: 600;
-      color: var(--text);
-      font-size: 0.875rem;
-    }
-
-    .avatar-type {
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-    }
 
     .avatar-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-      gap: 0.75rem;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.375rem;
       margin-bottom: 1rem;
     }
 
     .avatar-option {
       position: relative;
-      width: 60px;
-      height: 60px;
+      width: 100%;
+      aspect-ratio: 1;
+      max-width: 60px;
       border: 2px solid var(--border);
       border-radius: 50%;
       cursor: pointer;
@@ -150,6 +125,7 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
       background: none;
       padding: 0;
       overflow: hidden;
+      justify-self: center;
     }
 
     .avatar-option:disabled {
@@ -224,19 +200,12 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
     }
 
     @media (max-width: 640px) {
-      .avatar-grid {
-        grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
-      }
 
       .avatar-option {
         width: 50px;
         height: 50px;
       }
 
-      .current-avatar {
-        flex-direction: column;
-        text-align: center;
-      }
     }
   `
 })
@@ -245,6 +214,7 @@ export class AvatarSelectionWidgetComponent {
   private readonly _userStore = inject(UserStore); // ✅ Use UserStore
 
   readonly selectedAvatarId = input(''); // ✅ For backwards compatibility
+  readonly showCurrentAvatar = input(true); // ✅ Control current avatar display
   readonly avatarSelected = output<string>();
 
   // ✅ Local widget state
@@ -277,18 +247,6 @@ export class AvatarSelectionWidgetComponent {
   });
 
 
-  getDisplayAvatarName(): string {
-    const selectedId = this._selectedAvatarId();
-    let targetUrl = this.displayAvatarUrl();
-
-    if (selectedId) {
-      const selectedAvatar = this.availableAvatars().find(a => a.id === selectedId);
-      if (selectedAvatar) return selectedAvatar.name;
-    }
-
-    const current = this.availableAvatars().find(avatar => avatar.url === targetUrl);
-    return current?.name || 'Custom';
-  }
 
   isSelected(avatar: AvatarOption): boolean {
     return this._selectedAvatarId() === avatar.id;
