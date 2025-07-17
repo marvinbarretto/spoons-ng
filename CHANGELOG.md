@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.103](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.102...v0.0.103) (2025-07-17)
+
+
+### Features
+
+* [Register] choose local pub ([2fec177](https://github.com/marvinbarretto/spoons-ng/commit/2fec17753435a00e000858923b6f48ded2668ad3))
+* [Register] new reg flow, first two steps ([21c8b32](https://github.com/marvinbarretto/spoons-ng/commit/21c8b327b04e8b47acbef7550fd6b6273c267100))
+* [Register] new registration flow, initial ([16ab7fa](https://github.com/marvinbarretto/spoons-ng/commit/16ab7fa26356168a18f0e63cc0534885573cb677))
+* [Toast] Add center toasts ([d9ef4bb](https://github.com/marvinbarretto/spoons-ng/commit/d9ef4bbefdc87675366258eb89832385a0c8a0aa))
+
+
+### Bug Fixes
+
+* [Auth] remove duplicate guard ([becc031](https://github.com/marvinbarretto/spoons-ng/commit/becc03124d77e1e039ce66c00692ac168ec3b0ce))
+
 ### [0.0.102](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.101...v0.0.102) (2025-07-16)
 
 
