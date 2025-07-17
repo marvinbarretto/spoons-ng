@@ -8,6 +8,7 @@ import { ButtonComponent } from '@shared/ui/button/button.component';
 import { FormInputComponent } from '@shared/ui/form-input/form-input.component';
 import { ToastService } from '@shared/data-access/toast.service';
 import { AvatarSelectionWidgetComponent } from '@home/ui/profile-customisation-modal/widgets/avatar-selection-widget/avatar-selection-widget.component';
+import { PubSelectionWidgetComponent } from '../../../widgets/pub-selection/pub-selection-widget.component';
 import { RegistrationFlowService, RegistrationData, RegistrationStep } from './registration-flow.service';
 import { LocationService } from './location.service';
 import { AuthStore } from '@auth/data-access/auth.store';
@@ -19,7 +20,7 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
 @Component({
   selector: 'app-registration-flow',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, StepperComponent, ButtonComponent, FormInputComponent, AvatarSelectionWidgetComponent],
+  imports: [CommonModule, ReactiveFormsModule, StepperComponent, ButtonComponent, FormInputComponent, AvatarSelectionWidgetComponent, PubSelectionWidgetComponent],
   template: `
     <div class="registration-flow-container">
       <!-- Progress Indicator -->
@@ -265,20 +266,47 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
                   </div>
                 }
 
-                @if (nearestPub()) {
+                @if (nearestPub() && !showPubBrowser()) {
                   <div class="nearest-pub">
                     <div class="pub-icon">🍺</div>
                     <div class="pub-info">
                       <h3 class="pub-name">{{ nearestPub()?.name }}</h3>
-                      <p class="pub-description">This will be your home pub for bonus points</p>
                     </div>
+                    <div class="pub-actions">
+                      <button
+                        type="button"
+                        class="confirm-pub-button"
+                        (click)="confirmLocalPub()"
+                        [disabled]="loading()"
+                      >
+                        Confirm
+                      </button>
+                      <button
+                        type="button"
+                        class="browse-pubs-button"
+                        (click)="showPubBrowser.set(true)"
+                        [disabled]="loading()"
+                      >
+                        This isn't my local
+                      </button>
+                    </div>
+                  </div>
+                }
+
+                @if (showPubBrowser()) {
+                  <div class="pub-browser">
+                    <div class="browser-header">
+                      <h3>Choose Your Local Pub</h3>
+                      <p>Browse nearby pubs and select your local</p>
+                    </div>
+                    <app-pub-selection-widget (pubSelected)="onPubSelected($event)" />
                     <button
                       type="button"
-                      class="confirm-pub-button"
-                      (click)="confirmLocalPub()"
+                      class="back-to-suggestion-button"
+                      (click)="showPubBrowser.set(false)"
                       [disabled]="loading()"
                     >
-                      Confirm
+                      ← Back to suggestion
                     </button>
                   </div>
                 }
@@ -374,6 +402,7 @@ export class RegistrationFlowComponent extends BaseComponent implements OnInit, 
   private readonly fb = inject(FormBuilder);
 
   readonly nearestPub = signal<any>(null);
+  readonly showPubBrowser = signal(false);
 
   // Avatar selection state
   readonly selectedAvatarId = signal('npc'); // Pre-select NPC avatar
@@ -583,11 +612,15 @@ export class RegistrationFlowComponent extends BaseComponent implements OnInit, 
         this.nearestPub.set(nearest);
         this.toastService.centerSuccess(`Found your local pub: ${nearest.name}`);
       } else {
-        this.toastService.centerWarning('No nearby pubs found. You can still continue and choose a pub later.');
+        // No nearest pub found - show browser immediately
+        this.showPubBrowser.set(true);
+        this.toastService.centerInfo('Browse nearby pubs to choose your local');
       }
     } catch (error: any) {
       console.error('[RegistrationFlow] Location request failed:', error);
-      this.toastService.centerError('Unable to access location. You can continue without setting a home pub.');
+      // Show pub browser as fallback when location fails
+      this.showPubBrowser.set(true);
+      this.toastService.centerInfo('Browse pubs to choose your local, or skip this step');
     } finally {
       this.loading.set(false);
     }
@@ -610,6 +643,16 @@ export class RegistrationFlowComponent extends BaseComponent implements OnInit, 
       localPubId: 'skip', // Special value to indicate user skipped
     });
     this.flowService.nextStep();
+  }
+
+  onPubSelected(pub: any): void {
+    this.nearestPub.set(pub);
+    this.flowService.updateData({
+      localPubId: pub.id,
+      homePubId: pub.id
+    });
+    this.showPubBrowser.set(false);
+    console.log('[RegistrationFlow] Pub selected from widget:', pub.name);
   }
 
   // Navigation helpers

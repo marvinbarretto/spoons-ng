@@ -20,7 +20,7 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
           <h1 class="hero-title">🍺<br>Think you love Spoons?<br>Prove it.</h1>
           <p class="hero-subtitle">
           Keep track of your pub count.<br>
-          Accumulate points with every visit.<br> Complete missions.<br>Become the Spoons champion you were born to be.
+          Accumulate points with every visit.<br> Complete missions.
           </p>
         </div>
       </div>

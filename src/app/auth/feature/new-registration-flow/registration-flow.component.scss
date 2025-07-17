@@ -392,6 +392,66 @@ label {
   font-size: 0.9rem;
 }
 
+.pub-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.browse-pubs-button,
+.back-to-suggestion-button {
+  padding: 0.75rem 1.5rem;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background: var(--background-lightest);
+    border-color: var(--text-secondary);
+    color: var(--text);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.pub-browser {
+  padding: 1.5rem;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: var(--background-lighter);
+}
+
+.browser-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+
+  h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+  }
+}
+
+.back-to-suggestion-button {
+  margin-top: 1rem;
+  font-size: 0.875rem;
+}
+
 // Completion Content
 .completion-content {
   text-align: center;

@@ -18,7 +18,8 @@
       "@badges/*": ["app/badges/*"],
       "@users/*": ["app/users/*"],
       "@landlord/*": ["app/landlord/*"],
-      "@feedback/*": ["app/feedback/*"]
+      "@feedback/*": ["app/feedback/*"],
+      "@widgets/*": ["app/widgets/*"]
     },
     "outDir": "./dist/out-tsc",
     "strict": true,
