@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.104](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.103...v0.0.104) (2025-07-18)
+
+
+### Bug Fixes
+
+* [Auth] Ensure login / register flow is as expected ([7c0ee81](https://github.com/marvinbarretto/spoons-ng/commit/7c0ee819929745e94a3664d7de793977e306175c))
+
 ### [0.0.103](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.102...v0.0.103) (2025-07-17)
 
 
