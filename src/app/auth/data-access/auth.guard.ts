@@ -6,8 +6,8 @@ export const authGuard: CanActivateFn = (route, state) => {
   const authStore = inject(AuthStore);
   const router = inject(Router);
 
-  console.log('[Auth Flow] 🔒 AuthGuard checking access to:', state.url);
-  console.log('[Auth Flow] 🔒 User state:', {
+  console.log('[AuthGuard] 🔒 AuthGuard checking access to:', state.url);
+  console.log('[AuthGuard] 🔒 User state:', {
     hasSeenSplash: authStore.hasSeenSplash(),
     isAuthenticated: authStore.isAuthenticated(),
     isExplicitGuest: authStore.isExplicitGuest(),
@@ -17,7 +17,7 @@ export const authGuard: CanActivateFn = (route, state) => {
 
   // Check if user has seen splash - if not, show splash first
   if (!authStore.hasSeenSplash()) {
-    console.log('[Auth Flow] 🔒 User has not seen splash, redirecting to /splash');
+    console.log('[AuthGuard] 🔒 User has not seen splash, redirecting to /splash');
     router.navigate(['/splash']);
     return false;
   }
@@ -28,26 +28,26 @@ export const authGuard: CanActivateFn = (route, state) => {
     
     // Real users (not anonymous) - always allow
     if (user && !user.isAnonymous) {
-      console.log('[Auth Flow] 🔒 Registered user authenticated, allowing access');
+      console.log('[AuthGuard] 🔒 Registered user authenticated, allowing access to:', state.url);
       return true;
     }
     
     // Anonymous users who explicitly chose to be guests - allow
     if (user && user.isAnonymous && authStore.isExplicitGuest()) {
-      console.log('[Auth Flow] 🔒 Explicit guest user, allowing access');
+      console.log('[AuthGuard] 🔒 Explicit guest user, allowing access to:', state.url);
       return true;
     }
     
     // Anonymous users who didn't explicitly choose guest - redirect to splash
     if (user && user.isAnonymous && !authStore.isExplicitGuest()) {
-      console.log('[Auth Flow] 🔒 Anonymous user (not explicit guest), redirecting to /splash');
+      console.log('[AuthGuard] 🔒 Anonymous user (not explicit guest), redirecting to /splash');
       router.navigate(['/splash']);
       return false;
     }
   }
 
   // Not authenticated at all - redirect to splash (they've seen it but need to choose auth method)
-  console.log('[Auth Flow] 🔒 User not authenticated, redirecting to /splash');
+  console.log('[AuthGuard] 🔒 User not authenticated, redirecting to /splash');
   router.navigate(['/splash']);
   return false;
 };

@@ -112,7 +112,8 @@ export class UserStore {
       // 📡 Cache miss: New user profile needed
       console.log(`📡 [UserStore] Cache MISS - Fetching user profile from Firebase for: ${currentUserSlice}`);
       this.lastLoadedUserId = authUser.uid;
-      this.loadOrCreateUser(authUser.uid);
+      // Only load user profile, don't create document during onboarding
+      this.loadUserProfile(authUser.uid);
     });
     
     // ✅ Listen to cache invalidation signals
@@ -138,6 +139,41 @@ export class UserStore {
   async loadUser(userId: string): Promise<void> {
     console.log('[UserStore] 🔄 Public loadUser called for:', userId);
     await this.loadOrCreateUser(userId);
+  }
+
+  /**
+   * Load existing user profile without creating new document
+   * Used during onboarding to avoid premature document creation
+   */
+  private async loadUserProfile(uid: string): Promise<void> {
+    if (this._loading()) {
+      console.log('⏳ [UserStore] Load already in progress, waiting for completion...');
+      return;
+    }
+
+    console.log(`📡 [UserStore] Loading existing user profile: ${uid.slice(0, 8)}`);
+    this._loading.set(true);
+    this._error.set(null);
+
+    try {
+      // ✅ Try to load existing user document only
+      const userData = await firstValueFrom(this.userService.getUser(uid));
+
+      if (userData) {
+        console.log(`✅ [UserStore] Existing user profile loaded: ${userData.displayName}`);
+        this._user.set(userData);
+      } else {
+        console.log(`📝 [UserStore] No existing user profile found - will be created after onboarding`);
+        // Don't create document - let onboarding completion handle it
+        this._user.set(null);
+      }
+    } catch (error: any) {
+      console.error(`❌ [UserStore] Failed to load user profile:`, error);
+      this._error.set(error?.message || 'Failed to load user profile');
+      this._user.set(null);
+    } finally {
+      this._loading.set(false);
+    }
   }
 
   /**
@@ -250,6 +286,29 @@ export class UserStore {
    */
   async updateDisplayName(displayName: string): Promise<void> {
     await this.updateProfile({ displayName });
+  }
+
+  /**
+   * Create a complete user document with all onboarding data
+   * Used by registration flow to create user document with all collected data
+   */
+  async createCompleteUserDocument(uid: string, userData: User): Promise<void> {
+    console.log('[UserStore] 📝 Creating complete user document for:', uid);
+    
+    try {
+      // Create the document in Firestore
+      await this.userService.createUser(uid, userData);
+      
+      // Update local state
+      this._user.set(userData);
+      this._error.set(null);
+      
+      console.log('[UserStore] ✅ Complete user document created');
+    } catch (error: any) {
+      console.error('[UserStore] ❌ Failed to create complete user document:', error);
+      this._error.set(error?.message || 'Failed to create user document');
+      throw error;
+    }
   }
 
   // ===================================

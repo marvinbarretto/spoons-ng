@@ -16,6 +16,7 @@ import { UserStore } from '@users/data-access/user.store';
 import { ThemeStore } from '@shared/data-access/theme.store';
 import { AvatarService } from '@shared/data-access/avatar.service';
 import type { ThemeType } from '@shared/utils/theme.tokens';
+import { SsrPlatformService } from '@shared/utils/ssr/ssr-platform.service';
 
 @Component({
   selector: 'app-registration-flow',
@@ -176,7 +177,6 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
                       type="text"
                       placeholder="Enter your display name"
                       [formControl]="profileForm.controls.displayName"
-                      [disabled]="loading() || flowService.isValidatingUsername()"
                       [maxlength]="30"
                       [errorMessage]="flowService.usernameValidationError() || undefined"
                       class="username-input"
@@ -273,41 +273,29 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
                       <h3 class="pub-name">{{ nearestPub()?.name }}</h3>
                     </div>
                     <div class="pub-actions">
-                      <button
-                        type="button"
-                        class="confirm-pub-button"
-                        (click)="confirmLocalPub()"
+                      <app-button
+                        variant="primary"
+                        size="md"
+                        (onClick)="confirmLocalPub()"
                         [disabled]="loading()"
                       >
                         Confirm
-                      </button>
-                      <button
-                        type="button"
-                        class="browse-pubs-button"
-                        (click)="showPubBrowser.set(true)"
+                      </app-button>
+                      <app-button
+                        variant="secondary"
+                        size="md"
+                        (onClick)="showPubBrowser.set(true)"
                         [disabled]="loading()"
                       >
                         This isn't my local
-                      </button>
+                      </app-button>
                     </div>
                   </div>
                 }
 
                 @if (showPubBrowser()) {
                   <div class="pub-browser">
-                    <div class="browser-header">
-                      <h3>Choose Your Local Pub</h3>
-                      <p>Browse nearby pubs and select your local</p>
-                    </div>
                     <app-pub-selection-widget (pubSelected)="onPubSelected($event)" />
-                    <button
-                      type="button"
-                      class="back-to-suggestion-button"
-                      (click)="showPubBrowser.set(false)"
-                      [disabled]="loading()"
-                    >
-                      ← Back to suggestion
-                    </button>
                   </div>
                 }
               </div>
@@ -401,6 +389,27 @@ export class RegistrationFlowComponent extends BaseComponent implements OnInit, 
   readonly avatarService = inject(AvatarService);
   private readonly fb = inject(FormBuilder);
 
+  constructor() {
+    super();
+    console.log('[RegistrationFlow] 🏗️ Component constructor called');
+
+    // Track any navigation events safely
+    this.platform.onlyOnBrowser(() => {
+      const originalPushState = history.pushState;
+      const originalReplaceState = history.replaceState;
+
+      history.pushState = function(...args) {
+        console.log('[RegistrationFlow] 🌐 History pushState detected:', args[2]);
+        return originalPushState.apply(history, args);
+      };
+
+      history.replaceState = function(...args) {
+        console.log('[RegistrationFlow] 🌐 History replaceState detected:', args[2]);
+        return originalReplaceState.apply(history, args);
+      };
+    });
+  }
+
   readonly nearestPub = signal<any>(null);
   readonly showPubBrowser = signal(false);
 
@@ -438,9 +447,12 @@ export class RegistrationFlowComponent extends BaseComponent implements OnInit, 
   ];
 
   override ngOnInit(): void {
+    console.log('[RegistrationFlow] 🚀 ngOnInit called');
+
     // Store current theme and override with forest for better contrast on dark backgrounds
     this.originalTheme = this.themeStore.themeType();
     this.themeStore.setTheme('forest');
+    console.log('[RegistrationFlow] 🎨 Theme set to forest');
 
     // Initialize form with existing data
     const registrationData = this.flowService.registrationData();
@@ -459,35 +471,54 @@ export class RegistrationFlowComponent extends BaseComponent implements OnInit, 
   }
 
   ngOnDestroy(): void {
+    console.log('[RegistrationFlow] 🏁 ngOnDestroy called');
+
     if (this.usernameValidationTimeout) {
       clearTimeout(this.usernameValidationTimeout);
     }
     // Restore original theme when leaving registration flow
     if (this.originalTheme) {
+      console.log('[RegistrationFlow] 🎨 Restoring original theme:', this.originalTheme);
       this.themeStore.setTheme(this.originalTheme);
     }
   }
 
   // Auth method handlers
   async handleGoogleAuth(): Promise<void> {
+    console.log('[RegistrationFlow] 🚀 handleGoogleAuth STARTED');
     this.googleLoading.set(true);
 
     try {
+      console.log('[RegistrationFlow] 📝 Updating data with authMethod: google');
       this.flowService.updateData({ authMethod: 'google' });
+
+      console.log('[RegistrationFlow] 🔐 Calling authStore.loginWithGoogle()...');
       await this.authStore.loginWithGoogle();
+      console.log('[RegistrationFlow] ✅ authStore.loginWithGoogle() completed');
 
       // Pre-populate display name from Google account
       const user = this.authStore.user();
+      console.log('[RegistrationFlow] 👤 Got user after Google auth:', {
+        hasUser: !!user,
+        displayName: user?.displayName,
+        uid: user?.uid?.slice(0, 8)
+      });
+
       if (user?.displayName) {
+        console.log('[RegistrationFlow] 📝 Updating data with displayName:', user.displayName);
         this.flowService.updateData({ displayName: user.displayName });
       }
 
-      this.toastService.centerSuccess('Google sign-in successful!');
+      console.log('[RegistrationFlow] ➡️ Calling flowService.nextStep()...');
+      console.log('[RegistrationFlow] Current step before nextStep:', this.flowService.currentStep());
       this.flowService.nextStep();
+      console.log('[RegistrationFlow] Current step after nextStep:', this.flowService.currentStep());
+      console.log('[RegistrationFlow] ✅ handleGoogleAuth COMPLETED');
     } catch (error: any) {
-      console.error('[RegistrationFlow] Google auth failed:', error);
+      console.error('[RegistrationFlow] ❌ Google auth failed:', error);
       this.toastService.centerError(error.message || 'Google sign-in failed');
     } finally {
+      console.log('[RegistrationFlow] 🏁 Setting googleLoading to false');
       this.googleLoading.set(false);
     }
   }
@@ -546,7 +577,6 @@ export class RegistrationFlowComponent extends BaseComponent implements OnInit, 
       console.log('[RegistrationFlow] canGoNext:', this.flowService.canGoNext());
       this.flowService.nextStep();
       console.log('[RegistrationFlow] Current step after:', this.flowService.currentStep());
-      this.toastService.centerSuccess('Account created successfully!');
     } catch (error: any) {
       console.error('[RegistrationFlow] Email registration failed:', error);
       this.toastService.centerError(error.message || 'Email registration failed');
@@ -559,6 +589,12 @@ export class RegistrationFlowComponent extends BaseComponent implements OnInit, 
 
   // Profile step handlers
   handleUsernameChange(username: string): void {
+    // Handle form disabling state
+    if (this.loading() || this.flowService.isValidatingUsername()) {
+      this.profileForm.controls.displayName.disable();
+    } else {
+      this.profileForm.controls.displayName.enable();
+    }
 
     this.flowService.updateData({ displayName: username });
 
@@ -577,7 +613,9 @@ export class RegistrationFlowComponent extends BaseComponent implements OnInit, 
 
   generateRandomUsername(): void {
     const randomName = this.flowService.generateRandomUsername();
-    this.profileForm.patchValue({ displayName: randomName });
+    
+    // Update form without triggering valueChanges
+    this.profileForm.patchValue({ displayName: randomName }, { emitEvent: false });
     this.flowService.updateData({ displayName: randomName });
 
     // Validate the random name
@@ -610,7 +648,6 @@ export class RegistrationFlowComponent extends BaseComponent implements OnInit, 
       const nearest = await this.locationService.findNearestPub(position);
       if (nearest) {
         this.nearestPub.set(nearest);
-        this.toastService.centerSuccess(`Found your local pub: ${nearest.name}`);
       } else {
         // No nearest pub found - show browser immediately
         this.showPubBrowser.set(true);
@@ -688,20 +725,43 @@ export class RegistrationFlowComponent extends BaseComponent implements OnInit, 
       const registrationData = this.flowService.registrationData();
       const user = this.authStore.user();
 
+      if (!user) {
+        throw new Error('No authenticated user found');
+      }
+
       // Get avatar URL from selected avatar
-      const avatars = this.avatarService.generateAvatarOptions(user?.uid || 'default');
+      const avatars = this.avatarService.generateAvatarOptions(user.uid);
       const selectedAvatar = avatars.find(a => a.id === this.selectedAvatarId());
       const avatarUrl = selectedAvatar?.url || this.avatarService.generateSingleAvatar('npc');
 
-      // Update user profile with registration data
-      if (registrationData.displayName) {
-        await this.userStore.updateProfile({
-          displayName: registrationData.displayName,
-          photoURL: avatarUrl,
-          homePubId: registrationData.homePubId === 'skip' ? undefined : registrationData.homePubId,
-          onboardingCompleted: true
-        });
-      }
+      // Create complete user document with all registration data
+      const completeUserData = {
+        uid: user.uid,
+        email: user.email,
+        photoURL: avatarUrl,
+        emailVerified: user.emailVerified,
+        isAnonymous: user.isAnonymous,
+        streaks: {},
+        displayName: registrationData.displayName || user.displayName || (user.email?.split('@')[0]) || 'User',
+        joinedAt: new Date().toISOString(),
+        badgeCount: 0,
+        badgeIds: [],
+        landlordCount: 0,
+        landlordPubIds: [],
+        joinedMissionIds: [],
+        manuallyAddedPubIds: [],
+        verifiedPubCount: 0,
+        unverifiedPubCount: 0,
+        totalPubCount: 0,
+        homePubId: registrationData.homePubId === 'skip' ? undefined : registrationData.homePubId,
+        onboardingCompleted: true
+      };
+
+      // Create user document using userService (which extends FirestoreService)
+      await this.userStore.createCompleteUserDocument(user.uid, completeUserData);
+
+      // Mark splash as seen so user can access protected routes
+      this.authStore.markSplashAsSeen();
 
       this.toastService.centerSuccess('Welcome to Spoonscount! 🎉');
 

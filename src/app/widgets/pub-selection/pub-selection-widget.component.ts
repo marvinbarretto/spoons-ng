@@ -38,7 +38,7 @@ import { LocationService } from '../../shared/data-access/location.service';
       <!-- Search Input -->
       @if (!selectedPub()) {
         <div class="search-section">
-          <label class="search-label">Search for your local pub</label>
+          <label class="search-label visually-hidden">Search for your local pub</label>
           <div class="search-container">
             <input
               type="text"
@@ -138,6 +138,18 @@ import { LocationService } from '../../shared/data-access/location.service';
       color: var(--text);
     }
 
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
     .search-container {
       position: relative;
     }
@@ -148,6 +160,7 @@ import { LocationService } from '../../shared/data-access/location.service';
       border: 2px solid var(--border);
       border-radius: 0.75rem;
       font-size: 0.875rem;
+      font-family: 'Fredoka', 'Atkinson Hyperlegible', sans-serif;
       transition: border-color 0.2s ease, box-shadow 0.2s ease;
       background: var(--background-lighter);
       backdrop-filter: blur(8px);

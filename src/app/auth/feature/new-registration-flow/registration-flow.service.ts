@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject, signal, runInInjectionContext, Injector } from '@angular/core';
 import { Firestore, collection, query, where, getDocs } from '@angular/fire/firestore';
 
 export type RegistrationStep = 'auth' | 'profile' | 'location' | 'complete';
@@ -20,6 +20,7 @@ export type RegistrationData = {
 @Injectable({ providedIn: 'root' })
 export class RegistrationFlowService {
   private readonly firestore = inject(Firestore);
+  private readonly injector = inject(Injector);
 
   // Registration flow state
   readonly currentStep = signal<RegistrationStep>('auth');
@@ -57,11 +58,24 @@ export class RegistrationFlowService {
   }
 
   nextStep(): void {
+    console.log('[RegistrationFlowService] 🚀 nextStep() called');
+    console.log('[RegistrationFlowService] Current step:', this.currentStep());
+    console.log('[RegistrationFlowService] Can go next:', this.canGoNext());
+    
     if (this.canGoNext()) {
       const nextIndex = this.currentStepIndex() + 1;
+      console.log('[RegistrationFlowService] Next index:', nextIndex, 'Total steps:', this.steps.length);
+      
       if (nextIndex < this.steps.length) {
-        this.currentStep.set(this.steps[nextIndex]);
+        const nextStep = this.steps[nextIndex];
+        console.log('[RegistrationFlowService] Setting next step to:', nextStep);
+        this.currentStep.set(nextStep);
+        console.log('[RegistrationFlowService] ✅ Step changed to:', this.currentStep());
+      } else {
+        console.log('[RegistrationFlowService] ⚠️ Already at last step');
       }
+    } else {
+      console.log('[RegistrationFlowService] ⚠️ Cannot go to next step');
     }
   }
 
@@ -114,12 +128,15 @@ export class RegistrationFlowService {
       this.isValidatingUsername.set(true);
       this.usernameValidationError.set(null);
 
-      // Check if username exists in Firestore
-      const usersRef = collection(this.firestore, 'users');
-      const q = query(usersRef, where('displayName', '==', username.trim()));
-      const querySnapshot = await getDocs(q);
+      // Check if username exists in Firestore - run in injection context
+      const isAvailable = await runInInjectionContext(this.injector, async () => {
+        const usersRef = collection(this.firestore, 'users');
+        const q = query(usersRef, where('displayName', '==', username.trim()));
+        const querySnapshot = await getDocs(q);
+        return querySnapshot.empty;
+      });
 
-      if (!querySnapshot.empty) {
+      if (!isAvailable) {
         this.usernameValidationError.set('This username is already taken');
         return false;
       }

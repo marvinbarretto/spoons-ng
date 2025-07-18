@@ -206,14 +206,19 @@ export class AuthStore {
   }
 
   async loginWithGoogle(): Promise<void> {
+    console.log('[AuthStore] 🚀 loginWithGoogle() STARTED');
     await this.authService.loginWithGoogle();
+    console.log('[AuthStore] ✅ authService.loginWithGoogle() completed');
     
     // Wait for auth state to be fully ready after Google login
+    console.log('[AuthStore] ⏳ Waiting for auth ready...');
     await this.waitForAuthReady();
+    console.log('[AuthStore] ✅ Auth ready completed');
+    console.log('[AuthStore] 🏁 loginWithGoogle() FINISHED');
   }
 
-  loginWithEmail(email: string, password: string): void {
-    this.authService.loginWithEmail(email, password);
+  async loginWithEmail(email: string, password: string): Promise<void> {
+    await this.authService.loginWithEmail(email, password);
   }
 
   async registerWithEmail(email: string, password: string, displayName?: string): Promise<void> {

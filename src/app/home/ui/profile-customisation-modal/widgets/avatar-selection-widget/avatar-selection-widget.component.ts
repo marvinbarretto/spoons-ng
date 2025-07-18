@@ -2,6 +2,7 @@ import { Component, input, output, computed, signal, inject, ChangeDetectionStra
 import { CommonModule } from '@angular/common';
 import { AvatarService } from '@shared/data-access/avatar.service';
 import { UserStore } from '@users/data-access/user.store';
+import { AuthStore } from '@auth/data-access/auth.store';
 import type { AvatarOption } from '@shared/data-access/avatar.service';
 
 @Component({
@@ -212,6 +213,7 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
 export class AvatarSelectionWidgetComponent {
   private readonly _avatarService = inject(AvatarService);
   private readonly _userStore = inject(UserStore); // ✅ Use UserStore
+  private readonly _authStore = inject(AuthStore); // ✅ For fallback UID during onboarding
 
   readonly selectedAvatarId = input(''); // ✅ For backwards compatibility
   readonly showCurrentAvatar = input(true); // ✅ Control current avatar display
@@ -228,8 +230,10 @@ export class AvatarSelectionWidgetComponent {
 
   readonly availableAvatars = computed((): AvatarOption[] => {
     const user = this.currentUser();
-    if (!user) return [];
-    return this._avatarService.generateAvatarOptions(user.uid);
+    // For onboarding, we need to get the UID from AuthStore since UserStore might not have loaded yet
+    const uid = user?.uid || this.getAuthUid();
+    if (!uid) return [];
+    return this._avatarService.generateAvatarOptions(uid);
   });
 
   readonly currentAvatarUrl = computed(() => {
@@ -264,6 +268,10 @@ export class AvatarSelectionWidgetComponent {
     this.avatarSelected.emit(avatarId);
 
     console.log('[AvatarSelectionWidget] Avatar selected:', avatar.name);
+  }
+
+  private getAuthUid(): string | null {
+    return this._authStore.user()?.uid || null;
   }
 
 }

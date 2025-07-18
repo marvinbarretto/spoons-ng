@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './auth/data-access/auth.guard';
-import { onboardingGuard } from './shared/guards/onboarding.guard';
 import {
   UrlSegment,
   Route,
@@ -29,13 +28,7 @@ export const appRoutes: Routes = [
   },
   {
     path: 'register',
-    title: 'Register',
-    loadComponent: () => import('./auth/feature/register/register.component').then(m => m.RegisterComponent),
-    data: { shell: 'fullscreen' }
-  },
-  {
-    path: 'register-new',
-    title: 'Join Spoonscount (New)',
+    title: 'Join Spoonscount',
     loadComponent: () => import('./auth/feature/new-registration-flow/registration-flow.component').then(m => m.RegistrationFlowComponent),
     data: { shell: 'fullscreen' }
   },

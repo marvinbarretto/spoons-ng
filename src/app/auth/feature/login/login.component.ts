@@ -72,7 +72,6 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
             size="lg"
             [fullWidth]="true"
             [loading]="loading()"
-            [disabled]="loginForm.invalid"
             class="submit-button"
           >
             @if (loading()) {
@@ -243,9 +242,7 @@ export class LoginComponent extends BaseComponent implements OnInit, OnDestroy {
           break;
         case 'auth/invalid-credential':
           errorMessage = 'Invalid email or password. Please check your credentials and try again.';
-          // For invalid credentials, only show toast and stay on page
-          this.toastService.error(errorMessage, 6000);
-          return; // Exit early - don't set component error or navigate
+          break;
         default:
           if (error.message) {
             errorMessage = error.message;
@@ -253,8 +250,8 @@ export class LoginComponent extends BaseComponent implements OnInit, OnDestroy {
       }
     }
 
-    // Show both error in component and toast notification
+    // Show error like registration flow
     this.error.set(errorMessage);
-    this.toastService.error(errorMessage, 8000); // 8 seconds for important errors
+    this.toastService.centerError(errorMessage);
   }
 }

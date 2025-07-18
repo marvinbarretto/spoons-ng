@@ -13,19 +13,10 @@ import {
   signInAnonymously,
   updateProfile,
 } from '@angular/fire/auth';
-import {
-  Firestore,
-  doc,
-  getDoc,
-  setDoc,
-} from '@angular/fire/firestore';
-import { generateRandomName } from '../../shared/utils/anonymous-names';
-import type { User as SpoonsUser } from '../../users/utils/user.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly auth = inject(Auth);
-  private readonly firestore = inject(Firestore);
 
   private readonly userInternal = signal<User | null>(null);
   private readonly loading = signal<boolean>(true);
@@ -49,10 +40,9 @@ export class AuthService {
         if (firebaseUser) {
           console.log('[AuthService] Auth state changed:', firebaseUser.uid, firebaseUser.isAnonymous ? '(anonymous)' : '(registered)');
 
-          // ✅ For anonymous users, ensure user document exists BEFORE setting user
+          // ✅ For anonymous users, skip document creation until onboarding completion
           if (firebaseUser.isAnonymous && !this.settingUpAnonymousUser) {
-            console.log('[AuthService] Setting up anonymous user document...');
-            await this.ensureAnonymousUserDocument(firebaseUser);
+            console.log('[AuthService] Anonymous user logged in, skipping document creation until onboarding');
           }
 
           // Now it's safe to set the user - document is guaranteed to exist
@@ -90,53 +80,6 @@ export class AuthService {
     }
   }
 
-  /**
-   * ✅ Ensures anonymous user document exists in Firestore
-   * Called by onAuthStateChanged before setting the user
-   */
-  private async ensureAnonymousUserDocument(firebaseUser: User): Promise<void> {
-    const userRef = doc(this.firestore, `users/${firebaseUser.uid}`);
-
-    try {
-      const userSnap = await getDoc(userRef);
-
-      if (!userSnap.exists()) {
-        console.log('[AuthService] Creating anonymous user document...');
-
-        const displayName = generateRandomName(firebaseUser.uid);
-        const newUser: SpoonsUser = {
-          uid: firebaseUser.uid,
-          email: null,
-          photoURL: null,
-          emailVerified: firebaseUser.emailVerified,
-          isAnonymous: true,
-          streaks: {},
-          displayName,
-          joinedAt: new Date().toISOString(),
-          badgeCount: 0,
-          badgeIds: [],
-          landlordCount: 0,
-          landlordPubIds: [],
-          joinedMissionIds: [],
-          manuallyAddedPubIds: [],
-          verifiedPubCount: 0,
-          unverifiedPubCount: 0,
-          totalPubCount: 0,
-          onboardingCompleted: false, // ✅ Anonymous users need onboarding
-        };
-
-        await setDoc(userRef, newUser);
-        console.log('[AuthService] ✅ Anonymous user document created');
-      } else {
-        console.log('[AuthService] Anonymous user document already exists');
-      }
-    } catch (error) {
-      console.error('[AuthService] Failed to ensure user document:', error);
-      throw error; // Re-throw to prevent user from being set without document
-    } finally {
-      this.settingUpAnonymousUser = false;
-    }
-  }
 
   async loginWithEmail(email: string, password: string): Promise<User> {
     try {
@@ -144,9 +87,9 @@ export class AuthService {
       const cred = await signInWithEmailAndPassword(this.auth, email, password);
       console.log('[AuthService] ✅ Email login successful:', cred.user.uid);
 
-      // For registered users, we might want to ensure user document exists too
+      // For registered users, document creation is deferred until onboarding
       if (!cred.user.isAnonymous) {
-        await this.ensureRegisteredUserDocument(cred.user);
+        console.log('[AuthService] Registered user login, document creation deferred until onboarding');
       }
 
       return cred.user;
@@ -165,8 +108,8 @@ export class AuthService {
       const cred = await signInWithPopup(this.auth, provider);
       console.log('[AuthService] ✅ Google login successful:', cred.user.uid);
 
-      // Ensure user document exists for registered users
-      await this.ensureRegisteredUserDocument(cred.user);
+      // User document will be created after onboarding completion
+      console.log('[AuthService] Google user created, skipping document creation until onboarding');
 
       // Wait for onAuthStateChanged to complete and auth state to be ready
       await this.waitForAuthStateReady();
@@ -210,8 +153,8 @@ export class AuthService {
 
       console.log('[AuthService] ✅ Email registration successful:', cred.user.uid);
 
-      // Ensure user document exists for registered users
-      await this.ensureRegisteredUserDocument(cred.user);
+      // User document will be created after onboarding completion
+      console.log('[AuthService] Registered user created, skipping document creation until onboarding');
 
       return cred.user;
     } catch (error) {
@@ -221,47 +164,6 @@ export class AuthService {
     }
   }
 
-  /**
-   * ✅ Ensures registered user document exists in Firestore
-   */
-  private async ensureRegisteredUserDocument(firebaseUser: User): Promise<void> {
-    const userRef = doc(this.firestore, `users/${firebaseUser.uid}`);
-
-    try {
-      const userSnap = await getDoc(userRef);
-
-      if (!userSnap.exists()) {
-        console.log('[AuthService] Creating registered user document...');
-
-        const newUser: SpoonsUser = {
-          uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          photoURL: firebaseUser.photoURL,
-          emailVerified: firebaseUser.emailVerified,
-          isAnonymous: false,
-          streaks: {},
-          displayName: firebaseUser.displayName || firebaseUser.email?.split('@')[0] || 'User',
-          joinedAt: new Date().toISOString(),
-          badgeCount: 0,
-          badgeIds: [],
-          landlordCount: 0,
-          landlordPubIds: [],
-          joinedMissionIds: [],
-          manuallyAddedPubIds: [],
-          verifiedPubCount: 0,
-          unverifiedPubCount: 0,
-          totalPubCount: 0,
-          onboardingCompleted: false, // ✅ New registered users need onboarding too
-        };
-
-        await setDoc(userRef, newUser);
-        console.log('[AuthService] ✅ Registered user document created');
-      }
-    } catch (error) {
-      console.error('[AuthService] Failed to ensure registered user document:', error);
-      // Don't throw here - registered users might work without Firestore document
-    }
-  }
 
   async logout(): Promise<void> {
     try {
