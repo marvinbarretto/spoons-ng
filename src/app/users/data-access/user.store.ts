@@ -1,14 +1,15 @@
 /**
- * @fileoverview UserStore - Single source of truth for user display data
+ * @fileoverview UserStore - Single source of truth for ALL user data
  * 
  * RESPONSIBILITIES:
- * - User profile state management (auth-reactive pattern)
+ * - User collection state management (extends BaseStore<User>)
+ * - Current user profile (auth-reactive pattern)
  * - Display data for scoreboard (totalPoints, pubsVisited, badges, landlord status)
  * - User document CRUD operations in Firestore
  * - Sync with Firebase Auth profile updates
  * 
  * DATA FLOW IN:
- * - AuthStore.user() changes → triggers loadOrCreateUser()
+ * - AuthStore.user() changes → triggers loadOrCreateUser() + loads all users
  * - PointsStore.awardPoints() → updates totalPoints via patchUser()
  * - CheckInStore data → computed via DataAggregatorService (no direct update needed)
  * - BadgeStore awards → updates badgeCount/badgeIds via updateBadgeSummary()
@@ -16,6 +17,7 @@
  * 
  * DATA FLOW OUT:
  * - HomeComponent.scoreboardData → reads totalPoints, pubsVisited from here
+ * - AdminComponents → reads data() for all users collection
  * - All UI components → read user profile data from here
  * - Other stores → read user context for operations
  * 
@@ -23,33 +25,35 @@
  * to ensure scoreboard and UI accuracy. Any operation that changes user
  * stats must update this store immediately.
  * 
- * @architecture Auth-Reactive Pattern - automatically loads/clears based on auth state
+ * @architecture Auth-Reactive + Collection Pattern - automatically loads/clears based on auth state
  */
 import { Injectable, signal, computed, inject, effect } from '@angular/core';
 import { getAuth, updateProfile } from 'firebase/auth';
 import { firstValueFrom } from 'rxjs';
+import { BaseStore } from '../../shared/base/base.store';
 import { UserService } from './user.service';
 import { AuthStore } from '../../auth/data-access/auth.store';
 import { CacheCoherenceService } from '../../shared/data-access/cache-coherence.service';
 import type { User, UserBadgeSummary, UserLandlordSummary } from '../utils/user.model';
 
 @Injectable({ providedIn: 'root' })
-export class UserStore {
+export class UserStore extends BaseStore<User> {
   // 🔧 Dependencies
   private readonly userService = inject(UserService);
-  private readonly authStore = inject(AuthStore);
   private readonly cacheCoherence = inject(CacheCoherenceService);
 
-  // ✅ User profile state
-  private readonly _user = signal<User | null>(null);
-  private readonly _loading = signal(false);
-  private readonly _error = signal<string | null>(null);
+  // 📡 Current user computed from collection using Firebase Auth uid
+  readonly currentUser = computed(() => {
+    const users = this.data();
+    const authUid = this.authStore.uid();
+    return authUid ? users.find(u => u.uid === authUid) || null : null;
+  });
 
-  // 📡 Public signals
-  readonly user = this._user.asReadonly();
-  readonly loading = this._loading.asReadonly();
-  readonly error = this._error.asReadonly();
-  readonly isLoaded = computed(() => !this._loading() && !!this._user());
+  // 📡 Legacy compatibility (redirect to currentUser and collection loading)
+  readonly user = this.currentUser;
+  readonly userLoading = this.loading; // Use collection loading state
+  readonly userError = this.error;     // Use collection error state
+  readonly isLoaded = computed(() => !this.loading() && !!this.currentUser());
 
   // ✅ User profile computeds
   readonly displayName = computed(() => {
@@ -87,41 +91,25 @@ export class UserStore {
   private lastLoadedUserId: string | null = null;
 
   constructor() {
-    // ✅ Listen to auth changes and load user profile
-    effect(() => {
-      const authUser = this.authStore.user();
-      const currentUserSlice = authUser?.uid?.slice(0, 8) || 'none';
-      const lastUserSlice = this.lastLoadedUserId?.slice(0, 8) || 'none';
+    super(); // Call BaseStore constructor - this sets up auth-reactive collection loading
 
-      console.log(`🔄 [UserStore] Auth state change: ${lastUserSlice} → ${currentUserSlice}`);
-
-      if (!authUser) {
-        console.log('🔄 [UserStore] User logged out, clearing cached profile');
-        this.reset();
-        this.lastLoadedUserId = null;
-        return;
-      }
-
-      // 🔍 Cache check for existing user profile
-      if (authUser.uid === this.lastLoadedUserId) {
-        const currentUser = this.user();
-        console.log(`✅ [UserStore] Cache HIT - Using cached profile for user: ${currentUserSlice} (${currentUser?.displayName || 'Loading...'})`);
-        return;
-      }
-
-      // 📡 Cache miss: New user profile needed
-      console.log(`📡 [UserStore] Cache MISS - Fetching user profile from Firebase for: ${currentUserSlice}`);
-      this.lastLoadedUserId = authUser.uid;
-      // Only load user profile, don't create document during onboarding
-      this.loadUserProfile(authUser.uid);
-    });
-    
-    // ✅ Listen to cache invalidation signals
+    // ✅ Cache invalidation effect
     effect(() => {
       const invalidation = this.cacheCoherence.invalidations();
-      if (invalidation?.collection === 'users' && this.authStore.user()) {
-        console.log('[UserStore] 🔄 Cache invalidated, reloading user data');
-        this.handleCacheInvalidation(invalidation.reason);
+      if (invalidation && invalidation.collection === 'users') {
+        console.log('[UserStore] 🔄 Cache invalidated, refreshing users collection');
+        this.refresh();
+      }
+    });
+
+    // ✅ When auth changes and current user not in collection, ensure they're loaded
+    effect(() => {
+      const authUid = this.authStore.uid();
+      const currentUser = this.currentUser();
+      
+      if (authUid && !currentUser && !this.loading()) {
+        console.log(`[UserStore] Current user ${authUid.slice(0, 8)} not in collection, creating if needed`);
+        this.ensureCurrentUserExists(authUid);
       }
     });
   }
@@ -129,6 +117,55 @@ export class UserStore {
   // ===================================
   // PUBLIC LOADING METHODS
   // ===================================
+
+  /**
+   * Ensure current user exists in collection and Firestore
+   */
+  async ensureCurrentUserExists(uid: string): Promise<void> {
+    try {
+      // First check if user document exists in Firestore
+      let userData = await firstValueFrom(this.userService.getUser(uid));
+      
+      // If user document doesn't exist, create it using auth data
+      if (!userData) {
+        const authUser = this.authStore.user();
+        if (authUser) {
+          console.log('[UserStore] 📝 Creating new user document for:', uid.slice(0, 8));
+
+          const newUserData: User = {
+            uid: authUser.uid,
+            email: authUser.email,
+            photoURL: authUser.photoURL,
+            displayName: authUser.displayName,
+            isAnonymous: authUser.isAnonymous,
+            emailVerified: authUser.emailVerified,
+            streaks: {},
+            joinedAt: new Date().toISOString(),
+            badgeCount: 0,
+            badgeIds: [],
+            landlordCount: 0,
+            landlordPubIds: [],
+            joinedMissionIds: [],
+            manuallyAddedPubIds: [],
+            verifiedPubCount: 0,
+            unverifiedPubCount: 0,
+            totalPubCount: 0,
+          };
+
+          await this.userService.createUser(uid, newUserData);
+          userData = newUserData;
+        }
+      }
+
+      // Add to collection if not already there
+      if (userData) {
+        this.addUserToCollection(userData);
+      }
+    } catch (error: any) {
+      console.error('[UserStore] ❌ Failed to ensure current user exists:', error);
+      this._error.set(error?.message || 'Failed to load current user');
+    }
+  }
 
   /**
    * Load user data for a specific user ID
@@ -146,7 +183,7 @@ export class UserStore {
    * Used during onboarding to avoid premature document creation
    */
   private async loadUserProfile(uid: string): Promise<void> {
-    if (this._loading()) {
+    if (this.loading()) {
       console.log('⏳ [UserStore] Load already in progress, waiting for completion...');
       return;
     }
@@ -161,16 +198,16 @@ export class UserStore {
 
       if (userData) {
         console.log(`✅ [UserStore] Existing user profile loaded: ${userData.displayName}`);
-        this._user.set(userData);
+        this.addUserToCollection(userData);
       } else {
         console.log(`📝 [UserStore] No existing user profile found - will be created after onboarding`);
         // Don't create document - let onboarding completion handle it
-        this._user.set(null);
+        // User not found - will be created later if needed
       }
     } catch (error: any) {
       console.error(`❌ [UserStore] Failed to load user profile:`, error);
       this._error.set(error?.message || 'Failed to load user profile');
-      this._user.set(null);
+      // User not found - skip setting
     } finally {
       this._loading.set(false);
     }
@@ -199,7 +236,7 @@ export class UserStore {
    * @throws Error if update fails (after rollback)
    */
   async updateProfile(updates: Partial<User>): Promise<void> {
-    const current = this._user();
+    const current = this.currentUser();
     const authUser = this.authStore.user();
 
     console.log('[UserStore] 🚀 updateProfile called with:', updates);
@@ -223,7 +260,7 @@ export class UserStore {
       onboardingCompleted: updatedUser.onboardingCompleted,
       displayName: updatedUser.displayName
     });
-    this._user.set(updatedUser);
+    this.updateUserInCollection(current.uid, updates);
 
     try {
       // ✅ Update Firestore user document
@@ -251,7 +288,7 @@ export class UserStore {
       console.log('[UserStore] ✅ Profile update completed successfully');
       
       // Verify the signal was updated
-      const finalUser = this._user();
+      const finalUser = this.currentUser();
       console.log('[UserStore] 🔍 Final user state:', {
         uid: finalUser?.uid?.slice(0, 8),
         onboardingCompleted: finalUser?.onboardingCompleted,
@@ -265,7 +302,7 @@ export class UserStore {
     } catch (error: any) {
       // ❌ Rollback optimistic update
       console.log('[UserStore] ❌ Rolling back optimistic update due to error');
-      this._user.set(current);
+      // User will be updated in collection via updateProfile
       this._error.set(error?.message || 'Failed to update profile');
       console.error('[UserStore] ❌ Profile update failed:', error);
       throw error;
@@ -300,7 +337,7 @@ export class UserStore {
       await this.userService.createUser(uid, userData);
       
       // Update local state
-      this._user.set(userData);
+      this.addUserToCollection(userData);
       this._error.set(null);
       
       console.log('[UserStore] ✅ Complete user document created');
@@ -347,7 +384,7 @@ export class UserStore {
    * ✅ FIXED: Load user from Firestore, create if doesn't exist
    */
   private async loadOrCreateUser(uid: string): Promise<void> {
-    if (this._loading()) {
+    if (this.loading()) {
       console.log('⏳ [UserStore] Load already in progress, waiting for completion...');
       return;
     }
@@ -396,7 +433,7 @@ export class UserStore {
         }
       }
 
-      this._user.set(userData);
+      this.addUserToCollection(userData);
       console.log(`✅ [UserStore] Firebase data loaded successfully: User profile cached for ${userData.displayName || userData.email || 'user'}`);
 
     } catch (error: any) {
@@ -431,7 +468,7 @@ export class UserStore {
    * Add a pub to user's visited list (for manual "I've been here" associations)
    */
   async addVisitedPub(pubId: string): Promise<void> {
-    const current = this._user();
+    const current = this.currentUser();
     if (!current) {
       throw new Error('No user found');
     }
@@ -458,7 +495,7 @@ export class UserStore {
    * Remove a pub from user's visited list
    */
   async removeVisitedPub(pubId: string): Promise<void> {
-    const current = this._user();
+    const current = this.currentUser();
     if (!current) {
       throw new Error('No user found');
     }
@@ -480,7 +517,7 @@ export class UserStore {
    * Check if user has marked a pub as visited
    */
   hasVisitedPub(pubId: string): boolean {
-    const user = this._user();
+    const user = this.currentUser();
     return user?.manuallyAddedPubIds?.includes(pubId) || false;
   }
 
@@ -497,22 +534,24 @@ export class UserStore {
    * // pubsVisited count now computed by DataAggregatorService
    */
   patchUser(updates: Partial<User>): void {
-    const current = this._user();
+    const current = this.currentUser();
     if (!current) {
       console.warn('[UserStore] ⚠️ Cannot patch user - no current user');
       return;
     }
 
     console.log('[UserStore] 🔧 Patching user with:', updates);
-    this._user.set({ ...current, ...updates });
+    this.updateUserInCollection(current.uid, updates);
   }
 
   /**
-   * Set user directly (used by other systems)
+   * Set user directly (used by other systems) - updates collection
    */
   setUser(user: User | null): void {
     console.log('[UserStore] 📝 Setting user:', user?.uid || 'null');
-    this._user.set(user);
+    if (user) {
+      this.updateUserInCollection(user.uid, user);
+    }
   }
 
   // ===================================
@@ -523,35 +562,110 @@ export class UserStore {
    * Check user condition
    */
   has(predicate: (user: User) => boolean): boolean {
-    const user = this._user();
+    const user = this.currentUser();
     return user ? predicate(user) : false;
   }
 
   /**
    * Get debug information
    */
-  getDebugInfo(): object {
+  override getDebugInfo(): { name: string; itemCount: number; hasLoaded: boolean; loading: boolean; error: string | null; hasData: boolean; isEmpty: boolean; userId: string | null; sampleData: User[]; } {
     return {
-      hasUser: !!this._user(),
-      loading: this._loading(),
-      error: this._error(),
-      lastLoadedUserId: this.lastLoadedUserId,
-      userUid: this._user()?.uid || null,
-      badgeCount: this.badgeCount(),
-      landlordCount: this.landlordCount()
+      name: this.constructor.name,
+      itemCount: this.itemCount(),
+      hasLoaded: !this.loading() && this.hasData(),
+      loading: this.loading(),
+      error: this.error(),
+      hasData: this.hasData(),
+      isEmpty: this.isEmpty(),
+      userId: this.userId(),
+      sampleData: this.data().slice(0, 3)
     };
   }
 
   /**
    * Clear error state
    */
-  clearError(): void {
+  override clearError(): void {
     this._error.set(null);
   }
 
-  reset(): void {
-    this._user.set(null);
+  override reset(): void {
+    // Reset collection data when needed
+    this._data.set([]);
     this._loading.set(false);
     this._error.set(null);
   }
+
+  // ===================================
+  // BaseStore Required Methods
+  // ===================================
+
+  /**
+   * Fetch users data (required by BaseStore abstract method)
+   */
+  protected async fetchData(): Promise<User[]> {
+    console.log('[UserStore] 📡 Fetching all users from Firestore...');
+    return await this.userService.getAllUsers();
+  }
+
+  /**
+   * Load all users for collection (required by BaseStore)
+   */
+  async loadData(): Promise<void> {
+    console.log('[UserStore] 📡 Loading all users collection...');
+    this._loading.set(true);
+    this._error.set(null);
+
+    try {
+      const users = await this.fetchData();
+      console.log(`[UserStore] ✅ Loaded ${users.length} users`);
+      this._data.set(users);
+    } catch (error: any) {
+      console.error('[UserStore] ❌ Failed to load users collection:', error);
+      this._error.set(error?.message || 'Failed to load users');
+      throw error;
+    } finally {
+      this._loading.set(false);
+    }
+  }
+
+  /**
+   * Refresh all users collection
+   */
+  async refresh(): Promise<void> {
+    console.log('[UserStore] 🔄 Refreshing users collection...');
+    await this.loadData();
+  }
+
+  // ===================================
+  // Collection Management Methods (moved from UserService)
+  // ===================================
+
+  /**
+   * Add a user to the collection (for immediate reactivity)
+   */
+  addUserToCollection(user: User): void {
+    this._data.update(users => {
+      const exists = users.some(u => u.uid === user.uid);
+      if (!exists) {
+        console.log(`[UserStore] Adding user ${user.uid} to collection`);
+        return [...users, user];
+      }
+      return users;
+    });
+  }
+
+  /**
+   * Update a user in the collection
+   */
+  updateUserInCollection(uid: string, updates: Partial<User>): void {
+    this._data.update(users => 
+      users.map(user => 
+        user.uid === uid ? { ...user, ...updates } : user
+      )
+    );
+    console.log(`[UserStore] Updated user ${uid} in collection`);
+  }
+
 }
