@@ -43,14 +43,14 @@
 @mixin auth-actions {
   flex-shrink: 0; // Never shrink
   padding: 1.5rem;
-  
+
   // Subtle gradient to separate from content
   background: linear-gradient(
     to bottom,
     transparent 0%,
     rgba(0, 0, 0, 0.1) 100%
   );
-  
+
   // Ensure actions are thumb-friendly on mobile
   @media (max-width: 768px) {
     padding: 1rem 1rem 1.5rem;
@@ -91,7 +91,7 @@
   top: 1rem;
   left: 1rem;
   z-index: 10;
-  
+
   // Prominent styling
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(10px);
@@ -104,23 +104,23 @@
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  
+
   // Remove default button styles
   padding: 0;
   outline: none;
-  
+
   // Hover effect
   &:hover {
     background: rgba(255, 255, 255, 0.25);
     border-color: rgba(255, 255, 255, 0.3);
     transform: scale(1.05);
   }
-  
+
   // Active effect
   &:active {
     transform: scale(0.95);
   }
-  
+
   // Focus styling for accessibility
   &:focus-visible {
     outline: 2px solid var(--primary, #f59e0b);
@@ -131,7 +131,7 @@
 // Logo container styling
 @mixin auth-logo {
   margin-bottom: 1.5rem;
-  
+
   img {
     width: 80px;
     height: 80px;
@@ -147,6 +147,9 @@
   border-radius: 1rem;
   padding: 1.25rem;
   margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 
   @media (max-width: 768px) {
     padding: 1rem;

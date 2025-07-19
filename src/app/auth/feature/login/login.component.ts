@@ -40,7 +40,6 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
             iconLeft="email"
             autocomplete="email"
             [required]="true"
-            [disabled]="loading()"
             [errorMessage]="getFieldError('email')"
             formControlName="email"
           />
@@ -53,7 +52,6 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
             iconLeft="lock"
             autocomplete="current-password"
             [required]="true"
-            [disabled]="loading()"
             [errorMessage]="getFieldError('password')"
             formControlName="password"
           />
@@ -158,6 +156,9 @@ export class LoginComponent extends BaseComponent implements OnInit, OnDestroy {
 
     this.loading.set(true);
     this.error.set(null);
+    
+    // Disable form controls during processing
+    this.loginForm.disable();
 
     const { email, password } = this.loginForm.value;
 
@@ -171,6 +172,8 @@ export class LoginComponent extends BaseComponent implements OnInit, OnDestroy {
       this.handleLoginError(error);
     } finally {
       this.loading.set(false);
+      // Re-enable form controls
+      this.loginForm.enable();
     }
   }
 
@@ -179,6 +182,9 @@ export class LoginComponent extends BaseComponent implements OnInit, OnDestroy {
 
     this.googleLoading.set(true);
     this.error.set(null);
+    
+    // Disable form controls during Google login processing
+    this.loginForm.disable();
 
     try {
       await this.authStore.loginWithGoogle();
@@ -190,6 +196,8 @@ export class LoginComponent extends BaseComponent implements OnInit, OnDestroy {
       this.handleLoginError(error);
     } finally {
       this.googleLoading.set(false);
+      // Re-enable form controls
+      this.loginForm.enable();
     }
   }
 

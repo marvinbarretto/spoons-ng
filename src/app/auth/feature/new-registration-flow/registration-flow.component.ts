@@ -589,19 +589,15 @@ export class RegistrationFlowComponent extends BaseComponent implements OnInit, 
 
   // Profile step handlers
   handleUsernameChange(username: string): void {
-    // Handle form disabling state
-    if (this.loading() || this.flowService.isValidatingUsername()) {
-      this.profileForm.controls.displayName.disable();
-    } else {
-      this.profileForm.controls.displayName.enable();
-    }
-
     this.flowService.updateData({ displayName: username });
 
     // Clear previous timeout
     if (this.usernameValidationTimeout) {
       clearTimeout(this.usernameValidationTimeout);
     }
+
+    // Clear any existing validation error when user starts typing
+    this.flowService.usernameValidationError.set(null);
 
     // Validate after user stops typing (500ms delay)
     if (username.trim()) {
