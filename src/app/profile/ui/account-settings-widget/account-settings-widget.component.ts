@@ -241,7 +241,9 @@ export class AccountSettingsWidgetComponent extends BaseComponent {
       return;
     }
 
+    console.log('[AccountSettingsWidget] 🚪 Logging out user after logout confirmation');
     this.authStore.logout();
+    console.log('[AccountSettingsWidget] 🚪 Navigating to /splash after logout');
     this.router.navigate(['/splash']);
   }
 
@@ -279,7 +281,9 @@ export class AccountSettingsWidgetComponent extends BaseComponent {
       this.showSuccess('Account deleted successfully');
 
       // Logout and redirect
+      console.log('[AccountSettingsWidget] 🗑️ Logging out user after account deletion');
       this.authStore.logout();
+      console.log('[AccountSettingsWidget] 🗑️ Navigating to /splash after account deletion');
       this.router.navigate(['/splash']);
 
     } catch (error) {
