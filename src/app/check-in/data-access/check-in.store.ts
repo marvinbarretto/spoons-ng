@@ -225,8 +225,24 @@ export class CheckInStore extends BaseStore<CheckIn> {
         dateKey: new Date().toISOString().split('T')[0],
         // Add points data to the checkin object
         pointsEarned: pointsData?.total || 0,
-        pointsBreakdown: pointsData ? JSON.stringify(pointsData) : undefined
+        pointsBreakdown: pointsData || undefined
       };
+
+      console.log('[CheckInStore] 🎯 === CHECKIN POINTS STORAGE DEBUG ===');
+      console.log('[CheckInStore] 🎯 Points data received:', pointsData);
+      console.log('[CheckInStore] 🎯 Checkin being stored:', {
+        id: newCheckin.id,
+        pointsEarned: newCheckin.pointsEarned,
+        hasPointsBreakdown: !!newCheckin.pointsBreakdown,
+        pointsBreakdownStructure: newCheckin.pointsBreakdown ? {
+          base: newCheckin.pointsBreakdown.base,
+          distance: newCheckin.pointsBreakdown.distance,
+          bonus: newCheckin.pointsBreakdown.bonus,
+          total: newCheckin.pointsBreakdown.total,
+          reason: newCheckin.pointsBreakdown.reason
+        } : null
+      });
+      console.log('[CheckInStore] 🎯 === END CHECKIN POINTS STORAGE DEBUG ===');
 
       console.log('[CheckInStore] 🔄 Before addItem - current data count:', this.data().length);
       this.addItem(newCheckin);
@@ -556,6 +572,16 @@ export class CheckInStore extends BaseStore<CheckIn> {
       }
 
       // Emit check-in results via signal instead of calling modal service directly
+      console.log('[CheckInStore] 🎯 === CHECKIN RESULTS POINTS DEBUG ===');
+      console.log('[CheckInStore] 🎯 Points from results:', data.points);
+      console.log('[CheckInStore] 🎯 Points structure:', data.points ? {
+        base: data.points.base,
+        distance: data.points.distance,
+        bonus: data.points.bonus,
+        total: data.points.total,
+        reason: data.points.reason
+      } : null);
+      
       const resultsData = {
         success: true,
         checkin: {
@@ -566,7 +592,7 @@ export class CheckInStore extends BaseStore<CheckIn> {
           dateKey: data.checkin.dateKey,
           carpetImageKey: data.checkin.carpetImageKey,
           pointsEarned: data.points?.total || 0,
-          pointsBreakdown: data.points ? JSON.stringify(data.points) : undefined
+          pointsBreakdown: data.points || undefined
         },
         pub: {
           id: data.checkin.pubId,
@@ -581,6 +607,14 @@ export class CheckInStore extends BaseStore<CheckIn> {
         landlordMessage: data.landlordMessage,
         carpetCaptured: data.carpetCaptured
       };
+
+      console.log('[CheckInStore] 🎯 Final results data being set:', {
+        checkinId: resultsData.checkin?.id,
+        pointsEarned: resultsData.checkin?.pointsEarned,
+        hasBreakdown: !!resultsData.checkin?.pointsBreakdown,
+        breakdownTotal: resultsData.checkin?.pointsBreakdown?.total
+      });
+      console.log('[CheckInStore] 🎯 === END CHECKIN RESULTS POINTS DEBUG ===');
 
       this._checkinResults.set(resultsData);
 

@@ -522,18 +522,18 @@ export class UserStore extends BaseStore<User> {
   }
 
   /**
-   * Patch user data (optimistic local update only)
+   * Patch user data (immediate local update + Firestore persistence)
    * @param updates - Partial user data to merge with current user
    * @description CRITICAL for scoreboard accuracy. Used by other stores
    * to immediately update user stats (points, badges, check-ins).
-   * Only updates local state - does not persist to Firestore.
+   * Updates both local state AND persists to Firestore for leaderboard accuracy.
    * @example 
    * // PointsStore awards points
    * userStore.patchUser({ totalPoints: newTotal });
    * 
    * // pubsVisited count now computed by DataAggregatorService
    */
-  patchUser(updates: Partial<User>): void {
+  async patchUser(updates: Partial<User>): Promise<void> {
     const current = this.currentUser();
     if (!current) {
       console.warn('[UserStore] ⚠️ Cannot patch user - no current user');
@@ -541,7 +541,21 @@ export class UserStore extends BaseStore<User> {
     }
 
     console.log('[UserStore] 🔧 Patching user with:', updates);
+    
+    // ✅ Immediate local update for responsive UI
     this.updateUserInCollection(current.uid, updates);
+    
+    // ✅ Persist to Firestore for leaderboard accuracy
+    try {
+      await this.userService.updateUser(current.uid, updates);
+      console.log('[UserStore] ✅ User patch persisted to Firestore:', updates);
+      
+      // ✅ Trigger cache invalidation to ensure UI consistency
+      this.cacheCoherence.invalidate('users', 'user-patch-update');
+    } catch (error: any) {
+      console.error('[UserStore] ❌ Failed to persist user patch to Firestore:', error);
+      // Keep the local update - Cloud Functions might repair this later
+    }
   }
 
   /**

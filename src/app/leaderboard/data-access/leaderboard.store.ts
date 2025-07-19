@@ -171,6 +171,76 @@ export class LeaderboardStore {
     };
   });
 
+  // Admin Dashboard specific stats - site overview data
+  readonly siteStats = computed(() => {
+    const entries = this.leaderboardEntries();
+    const allUsers = this.userService.allUsers();
+    const allCheckIns = this.checkinService.allCheckIns();
+    
+    // Calculate monthly stats (current month)
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    
+    // Monthly check-ins
+    const monthlyCheckIns = allCheckIns.filter(c => 
+      c.timestamp.toDate() >= monthStart
+    );
+    
+    // Monthly unique users who checked in
+    const monthlyActiveUserIds = new Set(monthlyCheckIns.map(c => c.userId));
+    
+    // Monthly new users (joined this month)
+    const monthlyNewUsers = allUsers.filter(u => 
+      u.joinedAt && new Date(u.joinedAt) >= monthStart
+    );
+    
+    // Total unique pubs visited across all users
+    const allPubIds = new Set(allCheckIns.map(c => c.pubId));
+    
+    // Get total pubs in system from pub store if available
+    // This will be populated by the DataAggregatorService
+    const totalPubsInSystem = 0; // TODO: Connect to PubStore when admin needs it
+    
+    const siteStats = {
+      allTime: {
+        users: allUsers.length,
+        checkins: allCheckIns.length,
+        pubsConquered: allPubIds.size,
+        totalPubsInSystem
+      },
+      thisMonth: {
+        activeUsers: monthlyActiveUserIds.size,
+        newUsers: monthlyNewUsers.length,
+        checkins: monthlyCheckIns.length
+      }
+    };
+    
+    console.log('[Leaderboard] 📊 Site stats computed:', siteStats);
+    return siteStats;
+  });
+
+  // Admin Dashboard specific stats - global data summary
+  readonly globalDataStats = computed(() => {
+    const allUsers = this.userService.allUsers();
+    const allCheckIns = this.checkinService.allCheckIns();
+    
+    // Calculate active users (users with check-ins in last 30 days)
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const recentCheckIns = allCheckIns.filter(c => 
+      c.timestamp.toDate() >= thirtyDaysAgo
+    );
+    const activeUserIds = new Set(recentCheckIns.map(c => c.userId));
+    
+    const globalStats = {
+      totalUsers: allUsers.length,
+      totalCheckIns: allCheckIns.length,
+      activeUsers: activeUserIds.size
+    };
+    
+    console.log('[Leaderboard] 🌍 Global data stats computed:', globalStats);
+    return globalStats;
+  });
+
   // Public methods
   setSortBy(sortBy: LeaderboardSortBy): void {
     console.log('[Leaderboard] Setting sort by:', sortBy);

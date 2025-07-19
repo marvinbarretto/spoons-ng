@@ -2,6 +2,16 @@
 
 import { Timestamp } from "firebase/firestore";
 
+export type PointsBreakdown = {
+  base: number;
+  distance: number;
+  bonus: number;
+  multiplier: number;
+  total: number;
+  reason: string;
+  photoQuality?: number;
+};
+
 export type CheckIn = {
   id: string;
   userId: string;
@@ -13,7 +23,7 @@ export type CheckIn = {
   missionUpdated?: boolean;
 
   pointsEarned?: number;
-  pointsBreakdown?: string;
+  pointsBreakdown?: PointsBreakdown;
 
   carpetImageKey?: string;
 };

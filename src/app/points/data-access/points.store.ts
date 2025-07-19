@@ -293,7 +293,11 @@ export class PointsStore {
 
       // 4. ✅ CRITICAL: Update UserStore immediately for real-time scoreboard
       console.log(`[PointsStore] 🎯 Updating UserStore with new total (${callId}): ${newTotal}`);
-      this.userStore.patchUser({ totalPoints: newTotal });
+      try {
+        await this.userStore.patchUser({ totalPoints: newTotal });
+      } catch (error) {
+        console.log('[PointsStore] ⚠️ UserStore patch failed, but Firebase update will still occur');
+      }
 
       console.log(`[PointsStore] 📈 Points updated everywhere (${callId}):`, {
         from: currentTotal,
@@ -366,7 +370,11 @@ export class PointsStore {
       // Update local state and UserStore immediately
       const newTotal = this.totalPoints() + breakdown.total;
       this._totalPoints.set(newTotal);
-      this.userStore.patchUser({ totalPoints: newTotal }); // ✅ Real-time scoreboard update
+      try {
+        await this.userStore.patchUser({ totalPoints: newTotal }); // ✅ Real-time scoreboard update
+      } catch (error) {
+        console.log('[PointsStore] ⚠️ UserStore patch failed for social points, but Firebase update will still occur');
+      }
       await this.pointsService.updateUserTotalPoints(user.uid, newTotal);
 
       // ✅ CRITICAL: Invalidate cache to trigger leaderboard refresh
@@ -523,13 +531,14 @@ export class PointsStore {
     this._loading.set(false);
     this._error.set(null);
 
-    // Update UserStore to clear points
-    try {
-      this.userStore.patchUser({ totalPoints: 0 });
-      console.log('[PointsStore] ✅ UserStore updated during reset');
-    } catch (error) {
-      console.log('[PointsStore] ⚠️ Could not update UserStore during reset (normal during logout)');
-    }
+    // Update UserStore to clear points (fire and forget)
+    this.userStore.patchUser({ totalPoints: 0 })
+      .then(() => {
+        console.log('[PointsStore] ✅ UserStore updated during reset');
+      })
+      .catch(() => {
+        console.log('[PointsStore] ⚠️ Could not update UserStore during reset (normal during logout)');
+      });
   }
 
   /**

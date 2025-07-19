@@ -659,9 +659,7 @@ export class ModalCheckinPointsComponent implements OnDestroy {
       checkinId: checkin?.id,
       pointsEarned: checkin?.pointsEarned,
       hasPointsBreakdown: !!checkin?.pointsBreakdown,
-      pointsBreakdownRaw: checkin?.pointsBreakdown,
-      pointsBreakdownType: typeof checkin?.pointsBreakdown,
-      pointsBreakdownLength: checkin?.pointsBreakdown?.length
+      pointsBreakdownRaw: checkin?.pointsBreakdown
     });
 
     // If we have points but no breakdown, create a simple one
@@ -681,39 +679,37 @@ export class ModalCheckinPointsComponent implements OnDestroy {
       return [];
     }
 
-    try {
-      // Parse the points breakdown string
-      console.log('[ModalCheckinPoints] 🔍 Attempting to parse breakdown string...');
-      const breakdown = JSON.parse(checkin.pointsBreakdown);
-      console.log('[ModalCheckinPoints] 📊 Successfully parsed breakdown:', breakdown);
-      console.log('[ModalCheckinPoints] 📊 Breakdown properties:', {
-        base: breakdown.base,
-        distance: breakdown.distance,
-        bonus: breakdown.bonus,
-        total: breakdown.total,
-        reason: breakdown.reason,
-        hasReason: !!breakdown.reason
+    // Use structured breakdown data directly
+    const breakdown = checkin.pointsBreakdown;
+    console.log('[ModalCheckinPoints] 📊 Using structured breakdown:', breakdown);
+    console.log('[ModalCheckinPoints] 📊 Breakdown properties:', {
+      base: breakdown.base,
+      distance: breakdown.distance,
+      bonus: breakdown.bonus,
+      total: breakdown.total,
+      reason: breakdown.reason,
+      hasReason: !!breakdown.reason
+    });
+    
+    const items: PointsBreakdownItem[] = [];
+
+    // Base points
+    if (breakdown.base > 0) {
+      console.log('[ModalCheckinPoints] 🍺 Adding base points:', breakdown.base);
+      items.push({
+        type: 'base',
+        points: breakdown.base,
+        description: 'Base check-in',
+        icon: '🍺',
+        color: '#28a745'
       });
-      
-      const items: PointsBreakdownItem[] = [];
+    } else {
+      console.log('[ModalCheckinPoints] ⚠️ No base points found:', breakdown.base);
+    }
 
-      // Base points
-      if (breakdown.base > 0) {
-        console.log('[ModalCheckinPoints] 🍺 Adding base points:', breakdown.base);
-        items.push({
-          type: 'base',
-          points: breakdown.base,
-          description: 'Base check-in',
-          icon: '🍺',
-          color: '#28a745'
-        });
-      } else {
-        console.log('[ModalCheckinPoints] ⚠️ No base points found:', breakdown.base);
-      }
-
-      // Distance bonus
-      if (breakdown.distance > 0) {
-        console.log('[ModalCheckinPoints] ✅ Adding distance bonus:', breakdown.distance);
+    // Distance bonus
+    if (breakdown.distance > 0) {
+      console.log('[ModalCheckinPoints] ✅ Adding distance bonus:', breakdown.distance);
         
         // Extract distance from reason string if available
         let distanceText = 'Distance bonus';
@@ -903,36 +899,21 @@ export class ModalCheckinPointsComponent implements OnDestroy {
         });
       }
       
-      return items;
-    } catch (error) {
-      console.error('[ModalCheckinPoints] ❌ === BREAKDOWN PARSING FAILED ===');
-      console.error('[ModalCheckinPoints] ❌ Parse error:', error);
-      console.error('[ModalCheckinPoints] ❌ Error stack:', error instanceof Error ? error.stack : 'No stack trace');
-      console.error('[ModalCheckinPoints] 📋 Raw breakdown data:', checkin?.pointsBreakdown);
-      console.error('[ModalCheckinPoints] 📋 Data type:', typeof checkin?.pointsBreakdown);
-      
-      // Enhanced fallback logic
-      if (checkin?.pointsEarned && checkin.pointsEarned > 0) {
-        console.log('[ModalCheckinPoints] 🔧 Using fallback with pointsEarned:', checkin.pointsEarned);
-        return [{
-          type: 'total',
-          points: checkin.pointsEarned,
-          description: 'Check-in points',
-          icon: '🍺',
-          color: '#28a745'
-        }];
-      }
-      
-      // Last resort - show minimum base points
-      console.log('[ModalCheckinPoints] 🔧 Last resort: showing minimum base points (5)');
-      return [{
-        type: 'base',
-        points: 5,
-        description: 'Base check-in points',
+    // If we got no items but total > 0, add fallback
+    if (items.length === 0 && breakdown.total > 0) {
+      console.log('[ModalCheckinPoints] ⚠️ No items but total > 0, adding fallback item');
+      items.push({
+        type: 'total',
+        points: breakdown.total,
+        description: 'Check-in points',
         icon: '🍺',
         color: '#28a745'
-      }];
+      });
     }
+    
+    console.log('[ModalCheckinPoints] 🎯 Final breakdown items count:', items.length);
+    console.log('[ModalCheckinPoints] 🎯 Final breakdown items:', items);
+    return items;
   });
 
   readonly totalPointsEarned = computed(() => {
