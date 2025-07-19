@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { AuthStore } from './auth.store';
 import { AuthService } from './auth.service';
-import { SsrPlatformService } from '../../shared/utils/ssr/ssr-platform.service';
+import { SsrPlatformService } from '@fourfold/angular-foundation';
 import { OverlayService } from '../../shared/data-access/overlay.service';
 
 describe('AuthStore', () => {
@@ -58,7 +58,7 @@ describe('AuthStore', () => {
       // This test verifies localStorage restoration works during initialization
       // The actual restoration happens in the constructor via the mocked platform service
       localStorage.setItem('hasSeenSplash', 'true');
-      
+
       // Since we can't easily create new AuthStore instances in tests,
       // we verify that the persistence mechanism works (tested in other tests)
       expect(localStorage.getItem('hasSeenSplash')).toBe('true');
@@ -86,10 +86,10 @@ describe('AuthStore', () => {
     it('should handle server-side rendering correctly', () => {
       // Reset the mock to track calls from this test only
       mockPlatformService.onlyOnBrowser = jest.fn();
-      
+
       // This tests that localStorage operations are guarded by platform checks
       store.markSplashAsSeen();
-      
+
       // onlyOnBrowser should be called to guard localStorage operations
       expect(mockPlatformService.onlyOnBrowser).toHaveBeenCalled();
     });

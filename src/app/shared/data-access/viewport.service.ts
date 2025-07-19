@@ -1,5 +1,5 @@
 import { inject, Injectable, signal } from '@angular/core';
-import { SsrPlatformService } from '../utils/ssr/ssr-platform.service';
+import { SsrPlatformService } from '@fourfold/angular-foundation';
 import { BREAKPOINTS } from '../utils/constants';
 
 @Injectable({ providedIn: 'root' })

@@ -2,7 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { ShareService } from '../../data-access/share.service';
 import { SocialMediaService, type SocialMediaPlatform } from '../../data-access/social-media.service';
 import { getShareMessage } from '../../data-access/share-messages';
-import { SsrPlatformService } from '../../../shared/utils/ssr/ssr-platform.service';
+import { SsrPlatformService } from '@fourfold/angular-foundation';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { QrCodeComponent } from '../../../shared/ui/qr-code/qr-code.component';
 import { BaseComponent } from '../../../shared/base/base.component';
@@ -36,21 +36,21 @@ import { BaseComponent } from '../../../shared/base/base.component';
             size="sm">
             Twitter/X
           </app-button>
-          
+
           <app-button
             (click)="shareToSocial('facebook')"
             variant="secondary"
             size="sm">
             Facebook
           </app-button>
-          
+
           <app-button
             (click)="shareToSocial('whatsapp')"
             variant="secondary"
             size="sm">
             WhatsApp
           </app-button>
-          
+
           <app-button
             (click)="shareToSocial('telegram')"
             variant="secondary"
@@ -69,23 +69,23 @@ import { BaseComponent } from '../../../shared/base/base.component';
       flex-direction: column;
       gap: 1.5rem;
     }
-    
+
     .share-actions {
       display: flex;
       gap: 1rem;
       flex-wrap: wrap;
     }
-    
+
     .social-buttons {
       margin-top: 1rem;
     }
-    
+
     .social-buttons h3 {
       margin-bottom: 0.75rem;
       font-size: 1.1rem;
       font-weight: 600;
     }
-    
+
     .social-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));

@@ -21,7 +21,7 @@
 import { signal, computed, inject, Injectable } from '@angular/core';
 import { getAuth, updateProfile, User as FirebaseUser } from 'firebase/auth';
 import { AuthService } from './auth.service';
-import { SsrPlatformService } from '../../shared/utils/ssr/ssr-platform.service';
+import { SsrPlatformService } from '@fourfold/angular-foundation';
 import { OverlayService } from '../../shared/data-access/overlay.service';
 import { generateRandomName } from '../../shared/utils/anonymous-names';
 import type { User } from '@users/utils/user.model';
@@ -60,14 +60,14 @@ export class AuthStore {
           currentUid: this._user()?.uid?.slice(0, 8),
           isReady: this._ready()
         };
-        
+
         console.log('[AuthStore] 🔄 Auth state change received at', timestamp, ':', {
           hasUser: !!firebaseUser,
           uid: firebaseUser?.uid?.slice(0, 8),
           isAnonymous: firebaseUser?.isAnonymous,
           previousState: currentState
         });
-        
+
         if (firebaseUser) {
           console.log('[AuthStore] 👤 Processing user sign-in...');
           await this.handleUserSignIn(firebaseUser);
@@ -75,7 +75,7 @@ export class AuthStore {
           console.log('[AuthStore] 🚪 Processing user sign-out (no Firebase user)...');
           this.handleUserSignOut();
         }
-        
+
         console.log('[AuthStore] 🏁 Setting auth ready to true');
         this._ready.set(true);
       });
@@ -93,10 +93,10 @@ export class AuthStore {
         isAnonymous: firebaseUser.isAnonymous,
         hasDisplayName: !!firebaseUser.displayName
       });
-      
+
       const token = await firebaseUser.getIdToken();
       console.log('[AuthStore] Got token:', !!token);
-      
+
       let displayName = firebaseUser.displayName;
 
       // ✅ Only update Firebase Auth profile for anonymous users WITHOUT custom names
@@ -169,9 +169,9 @@ export class AuthStore {
       hasToken: !!this._token(),
       uid: this._user()?.uid?.slice(0, 8),
     };
-    
+
     console.log('[AuthStore] 🚪 handleUserSignOut - State before logout:', previousState);
-    
+
     this._user.set(null);
     this._token.set(null);
     this._userChangeCounter.update(c => c + 1);
@@ -182,7 +182,7 @@ export class AuthStore {
       localStorage.removeItem('token');
       console.log('[AuthStore] ✅ localStorage cleared');
     });
-    
+
     console.log('[AuthStore] 🚪 handleUserSignOut completed - all auth state cleared');
   }
 
@@ -224,7 +224,7 @@ export class AuthStore {
     console.log('[AuthStore] 🚀 loginWithGoogle() STARTED');
     await this.authService.loginWithGoogle();
     console.log('[AuthStore] ✅ authService.loginWithGoogle() completed');
-    
+
     // Wait for auth state to be fully ready after Google login
     console.log('[AuthStore] ⏳ Waiting for auth ready...');
     await this.waitForAuthReady();
@@ -253,13 +253,13 @@ export class AuthStore {
     return new Promise((resolve) => {
       const maxAttempts = 30; // 3 seconds max
       let attempts = 0;
-      
+
       const checkAuthState = () => {
         attempts++;
         const user = this.user();
         const token = this.token();
         const isReady = this.ready();
-        
+
         console.log('[AuthStore] waitForAuthReady check:', {
           attempt: attempts,
           hasUser: !!user,
@@ -267,25 +267,25 @@ export class AuthStore {
           isReady,
           uid: user?.uid?.slice(0, 8)
         });
-        
+
         // Auth is ready when we have a user, token, and ready flag is true
         if (user && token && isReady) {
           console.log('[AuthStore] ✅ Auth state fully ready');
           resolve();
           return;
         }
-        
+
         // Timeout after max attempts
         if (attempts >= maxAttempts) {
           console.warn('[AuthStore] ⚠️ Auth state readiness timeout');
           resolve(); // Resolve anyway to prevent hanging
           return;
         }
-        
+
         // Check again in 100ms
         setTimeout(checkAuthState, 100);
       };
-      
+
       checkAuthState();
     });
   }
@@ -298,36 +298,36 @@ export class AuthStore {
     return new Promise((resolve) => {
       const maxAttempts = 30; // 3 seconds max
       let attempts = 0;
-      
+
       const checkAuth = () => {
         attempts++;
         const user = this.user();
         const isAuthenticated = this.isAuthenticated();
-        
+
         console.log('[AuthStore] waitForUserAuthenticated check:', {
           attempt: attempts,
           hasUser: !!user,
           isAuthenticated,
           uid: user?.uid?.slice(0, 8)
         });
-        
+
         if (user && isAuthenticated) {
           console.log('[AuthStore] ✅ User authenticated');
           resolve();
           return;
         }
-        
+
         // Timeout after max attempts
         if (attempts >= maxAttempts) {
           console.warn('[AuthStore] ⚠️ User authentication timeout');
           resolve(); // Resolve anyway to prevent hanging
           return;
         }
-        
+
         // Check again in 100ms
         setTimeout(checkAuth, 100);
       };
-      
+
       checkAuth();
     });
   }

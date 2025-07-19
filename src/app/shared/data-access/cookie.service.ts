@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { SsrPlatformService } from '../utils/ssr/ssr-platform.service';
+import { SsrPlatformService } from '@fourfold/angular-foundation';
 
 @Injectable({ providedIn: 'root' })
 export class CookieService {

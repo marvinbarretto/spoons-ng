@@ -1,6 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { v4 as uuid } from 'uuid';
-import { SsrPlatformService } from '../utils/ssr/ssr-platform.service';
+import { SsrPlatformService } from '@fourfold/angular-foundation';
 
 export type Toast = {
   id: string;

@@ -1,5 +1,5 @@
 import { Component, ElementRef, Input, OnInit, ViewChild, inject } from '@angular/core';
-import { SsrPlatformService } from '../../utils/ssr/ssr-platform.service';
+import { SsrPlatformService } from '@fourfold/angular-foundation';
 
 @Component({
   selector: 'app-qr-code',
@@ -18,7 +18,7 @@ import { SsrPlatformService } from '../../utils/ssr/ssr-platform.service';
       border-radius: 8px;
       margin-top: 1rem;
     }
-    
+
     canvas {
       max-width: 100%;
       height: auto;
@@ -28,9 +28,9 @@ import { SsrPlatformService } from '../../utils/ssr/ssr-platform.service';
 export class QrCodeComponent implements OnInit {
   @Input({ required: true }) url!: string;
   @Input() size: number = 200;
-  
+
   @ViewChild('canvas', { static: false }) canvas!: ElementRef<HTMLCanvasElement>;
-  
+
   private readonly _platform = inject(SsrPlatformService);
 
   ngOnInit(): void {
@@ -44,10 +44,10 @@ export class QrCodeComponent implements OnInit {
       setTimeout(() => this.generateQRCode(), 100);
       return;
     }
-    
+
     try {
       const QRCode = await import('qrcode');
-      
+
       QRCode.default.toCanvas(this.canvas.nativeElement, this.url, {
         width: this.size,
         margin: 2,

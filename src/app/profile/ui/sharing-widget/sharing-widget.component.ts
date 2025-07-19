@@ -3,7 +3,7 @@ import { Component, computed, inject, signal, ChangeDetectionStrategy } from '@a
 import { ShareService } from '../../../share/data-access/share.service';
 import { SocialMediaService, type SocialMediaPlatform } from '../../../share/data-access/social-media.service';
 import { getShareMessage } from '../../../share/data-access/share-messages';
-import { SsrPlatformService } from '@shared/utils/ssr/ssr-platform.service';
+import { SsrPlatformService } from '@fourfold/angular-foundation';
 import { QrCodeComponent } from '@shared/ui/qr-code/qr-code.component';
 import { BaseComponent } from '@shared/base/base.component';
 import { IconComponent } from '@shared/ui/icon/icon.component';

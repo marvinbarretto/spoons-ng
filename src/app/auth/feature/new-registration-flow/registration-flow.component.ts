@@ -16,7 +16,6 @@ import { UserStore } from '@users/data-access/user.store';
 import { ThemeStore } from '@shared/data-access/theme.store';
 import { AvatarService } from '@shared/data-access/avatar.service';
 import type { ThemeType } from '@shared/utils/theme.tokens';
-import { SsrPlatformService } from '@shared/utils/ssr/ssr-platform.service';
 
 @Component({
   selector: 'app-registration-flow',

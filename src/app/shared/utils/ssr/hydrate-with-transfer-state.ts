@@ -1,6 +1,6 @@
 import { TransferState, StateKey } from '@angular/core';
 import { WritableSignal } from '@angular/core';
-import { SsrPlatformService } from './ssr-platform.service';
+import { SsrPlatformService } from '@fourfold/angular-foundation';
 
 /**
  * Reusable helper to fetch and hydrate data via Angular TransferState.

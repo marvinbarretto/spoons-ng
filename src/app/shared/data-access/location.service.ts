@@ -1,6 +1,6 @@
 // location.service.ts
 import { Injectable, signal, inject } from '@angular/core';
-import { SsrPlatformService } from '../utils/ssr/ssr-platform.service';
+import { SsrPlatformService } from '@fourfold/angular-foundation';
 
 // Location polling configuration
 const LOCATION_TIMEOUT_MS = 10000;           // How long to wait for GPS
@@ -9,7 +9,7 @@ const MIN_ACCURACY_METERS = 100;             // Reject readings worse than this
 
 // Adaptive polling intervals (milliseconds)
 const POLL_INTERVAL_FAR = 30000;             // >2km: every 30s
-const POLL_INTERVAL_APPROACHING = 15000;     // 500m-2km: every 15s  
+const POLL_INTERVAL_APPROACHING = 15000;     // 500m-2km: every 15s
 const POLL_INTERVAL_CLOSE = 10000;           // 100m-500m: every 10s
 const POLL_INTERVAL_VERY_CLOSE = 5000;       // <100m: every 5s
 const POLL_INTERVAL_STATIONARY = 60000;      // Not moving: every 60s
@@ -38,7 +38,7 @@ export class LocationService {
   readonly error = signal<string | null>(null);
   readonly loading = signal(false);
 
-  // Adaptive tracking signals  
+  // Adaptive tracking signals
   readonly isTracking = signal(false);
   readonly proximity = signal<'far' | 'approaching' | 'close' | 'very-close'>('far');
   readonly lastMovement = signal<number | null>(null);
@@ -243,58 +243,58 @@ export class LocationService {
     }
 
     console.log('[LocationService] 🔍 Starting two-check movement detection...');
-    
+
     try {
       // First reading
       const reading1 = await this.getSingleLocationReading();
       console.log(`[LocationService] 📍 Reading 1: ${reading1.lat.toFixed(6)}, ${reading1.lng.toFixed(6)} (±${reading1.accuracy}m)`);
-      
+
       // Wait 2 seconds
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Second reading  
+
+      // Second reading
       const reading2 = await this.getSingleLocationReading();
       console.log(`[LocationService] 📍 Reading 2: ${reading2.lat.toFixed(6)}, ${reading2.lng.toFixed(6)} (±${reading2.accuracy}m)`);
-      
+
       // Calculate distance between readings
       const deltaLat = reading2.lat - reading1.lat;
       const deltaLng = reading2.lng - reading1.lng;
       const distanceMoved = Math.sqrt(deltaLat * deltaLat + deltaLng * deltaLng) * 111000; // Convert to meters
-      
+
       // Calculate time difference (should be ~2 seconds)
       const timeDiff = (reading2.timestamp - reading1.timestamp) / 1000; // Convert to seconds
       const speed = distanceMoved / timeDiff; // meters per second
-      
+
       this.lastMovementCheck.set(Date.now());
       this.movementSpeed.set(speed);
-      
+
       if (distanceMoved > MOVEMENT_THRESHOLD_METERS) {
         // MOVEMENT DETECTED!
         this.isMoving.set(true);
         this.lastMovement.set(Date.now());
         console.log(`[LocationService] 🚶 MOVEMENT DETECTED: ${Math.round(distanceMoved)}m in ${timeDiff.toFixed(1)}s (${speed.toFixed(1)} m/s)!`);
-        
+
         // Update location to the latest reading
         this.location.set(reading2);
-        
+
         // Schedule next check in 3 seconds (frequent polling)
         setTimeout(() => this.performMovementCheck(), 3000);
       } else {
         // STATIONARY
         this.isMoving.set(false);
         console.log(`[LocationService] 🟢 Stationary: ${Math.round(distanceMoved)}m movement (threshold: ${MOVEMENT_THRESHOLD_METERS}m)`);
-        
+
         // Update location to the latest reading
         this.location.set(reading2);
-        
+
         // Schedule next check in 30 seconds (battery efficient)
         setTimeout(() => this.performMovementCheck(), 30000);
       }
-      
+
     } catch (error) {
       console.error('[LocationService] ❌ Movement check failed:', error);
       this.error.set('Movement detection failed');
-      
+
       // Retry in 10 seconds
       setTimeout(() => this.performMovementCheck(), 10000);
     }
@@ -311,7 +311,7 @@ export class LocationService {
             reject(new Error(`Poor GPS accuracy: ${position.coords.accuracy}m`));
             return;
           }
-          
+
           resolve({
             lat: position.coords.latitude,
             lng: position.coords.longitude,
@@ -337,7 +337,7 @@ export class LocationService {
       console.log('[LocationService] ⚠️ Movement detection already running');
       return;
     }
-    
+
     this.isTracking.set(true);
     console.log('[LocationService] 🚀 Starting smart movement detection system...');
     this.performMovementCheck();

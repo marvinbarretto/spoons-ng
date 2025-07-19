@@ -1,6 +1,6 @@
 import { signal, computed, effect, Injectable, inject, Inject } from '@angular/core';
 import { CookieService } from './cookie.service';
-import { SsrPlatformService } from '../utils/ssr/ssr-platform.service';
+import { SsrPlatformService } from '@fourfold/angular-foundation';
 import { themes, defaultTheme, type ThemeType, type Theme } from '../utils/theme.tokens';
 import { USER_THEME_TOKEN } from '../../../libs/tokens/user-theme.token';
 

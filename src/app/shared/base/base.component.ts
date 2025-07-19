@@ -10,7 +10,7 @@ import {
 import { Router, NavigationEnd } from '@angular/router';
 import { filter, map } from 'rxjs/operators';
 import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { SsrPlatformService } from '../utils/ssr/ssr-platform.service';
+import { SsrPlatformService } from '@fourfold/angular-foundation';
 import { ToastService } from '../data-access/toast.service';
 
 @Component({

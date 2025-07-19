@@ -1,7 +1,7 @@
 // import { inject } from '@angular/core';
 // import { provideAppInitializer } from '@angular/core';
 // import { AuthStore } from './auth.store';
-// import { SsrPlatformService } from '../../shared/utils/ssr/ssr-platform.service';
+// import { SsrPlatformService } from '@fourfold/angular-foundation';
 
 // export const provideAuthInitializer = () =>
 //   provideAppInitializer(() => {

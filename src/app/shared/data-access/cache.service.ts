@@ -1,6 +1,6 @@
 // src/app/shared/data-access/cache.service.ts
 import { inject, Injectable } from '@angular/core';
-import { SsrPlatformService } from '../utils/ssr/ssr-platform.service';
+import { SsrPlatformService } from '@fourfold/angular-foundation';
 
 export type CacheOptions<T> = {
   key: string;

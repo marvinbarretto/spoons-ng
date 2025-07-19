@@ -2,7 +2,7 @@ import { Component, inject, computed, effect } from '@angular/core';
 import { Router, ActivatedRoute, NavigationEnd, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { SsrPlatformService } from './shared/utils/ssr/ssr-platform.service';
+import { SsrPlatformService } from '@fourfold/angular-foundation';
 import { PageTitleService } from './shared/data-access/page-title.service';
 import { PubStore } from './pubs/data-access/pub.store';
 import { LandlordStore } from './landlord/data-access/landlord.store';
@@ -124,7 +124,7 @@ export class AppComponent {
           const jsResources = resources.filter(r => r.name.includes('.js') && !r.name.includes('node_modules'));
           const totalTransferSize = jsResources.reduce((sum, r) => sum + (r.transferSize || 0), 0);
           const totalSize = jsResources.reduce((sum, r) => sum + (r.decodedBodySize || 0), 0);
-          
+
           console.log(`📦 Bundle: ${jsResources.length} JS files, ${(totalTransferSize/1024).toFixed(0)}KB transferred, ${(totalSize/1024).toFixed(0)}KB uncompressed`);
         });
       }
