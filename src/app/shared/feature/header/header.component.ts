@@ -16,6 +16,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 
 import { BaseComponent } from '../../base/base.component';
 import { NavComponent } from "../nav/nav.component";
+import { AdminNavComponent } from '../../../admin/ui/admin-nav/admin-nav.component';
 import { UserProfileWidgetComponent } from '../../../home/ui/user-profile-widget/user-profile-widget.component';
 import { ProfileCustomisationModalComponent } from '../../../home/ui/profile-customisation-modal/profile-customisation-modal.component';
 import { LandlordStore } from '../../../landlord/data-access/landlord.store';
@@ -45,6 +46,7 @@ import { environment } from '../../../../environments/environment';
     RouterModule,
     CommonModule,
     NavComponent,
+    AdminNavComponent,
     // UserProfileWidgetComponent, // Not used in template
     // ProfileCustomisationModalComponent,
   ],
