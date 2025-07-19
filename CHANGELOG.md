@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.108](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.107...v0.0.108) (2025-07-19)
+
+
+### Features
+
+* [Admin] Display checkins in admin ([03c4258](https://github.com/marvinbarretto/spoons-ng/commit/03c42583b65afbd1b78bffc89192f4e4c2d1de9e))
+* [Login] Add remember me ([710778a](https://github.com/marvinbarretto/spoons-ng/commit/710778a99b20fbadeafaa25f4d772274540d8df7))
+
+
+### Bug Fixes
+
+* [Auth] reduce complexity of auth rules ([c3c24d3](https://github.com/marvinbarretto/spoons-ng/commit/c3c24d38ac68e9c20949aa327b698084c300a8f7))
+
 ### [0.0.107](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.106...v0.0.107) (2025-07-19)
 
 ### [0.0.106](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.105...v0.0.106) (2025-07-19)
