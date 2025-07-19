@@ -33,20 +33,6 @@ export const appRoutes: Routes = [
     data: { shell: 'fullscreen' }
   },
   {
-    path: 'onboarding',
-    title: 'Welcome to Spoonscount',
-    canActivate: [authGuard],
-    loadComponent: () => import('./onboarding/feature/onboarding/onboarding.component').then(m => m.OnboardingComponent),
-    data: { shell: 'fullscreen' }
-  },
-  {
-    path: 'onboarding-carousel',
-    title: 'Complete Your Profile',
-    canActivate: [authGuard],
-    loadComponent: () => import('./auth/feature/onboarding-carousel/onboarding-carousel.component').then(m => m.OnboardingCarouselComponent),
-    data: { shell: 'fullscreen' }
-  },
-  {
     path: 'home',
     canActivate: [authGuard],
     loadComponent: () => import('./home/feature/home/home.component').then(m => m.HomeComponent),
