@@ -82,55 +82,108 @@ export class SplashComponent extends BaseComponent implements OnInit, OnDestroy 
   readonly guestLoading = signal(false);
 
   override ngOnInit(): void {
+    console.log('[SplashComponent] 🎬 Component initializing...');
+    console.log('[SplashComponent] 🎬 Current auth state:', {
+      hasSeenSplash: this.authStore.hasSeenSplash(),
+      isAuthenticated: this.authStore.isAuthenticated(),
+      isExplicitGuest: this.authStore.isExplicitGuest(),
+      userId: this.authStore.user()?.uid?.slice(0, 8),
+      isAnonymous: this.authStore.user()?.isAnonymous
+    });
+    
     // Store current theme and override with sunshine for better contrast on dark backgrounds
     this.originalTheme = this.themeStore.themeType();
+    console.log('[SplashComponent] 🎨 Switching theme from', this.originalTheme, 'to sunshine');
     this.themeStore.setTheme('sunshine');
   }
 
   ngOnDestroy(): void {
+    console.log('[SplashComponent] 🎬 Component destroying...');
     // Restore original theme when leaving auth page
     if (this.originalTheme) {
+      console.log('[SplashComponent] 🎨 Restoring theme to:', this.originalTheme);
       this.themeStore.setTheme(this.originalTheme);
     }
   }
 
   async navigateToLogin(): Promise<void> {
+    console.log('[SplashComponent] 🔐 navigateToLogin() called');
     this.loading.set(true);
     try {
       // Mark splash as seen since user is taking action from splash
+      console.log('[SplashComponent] 🔐 Marking splash as seen and navigating to /login');
       this.authStore.markSplashAsSeen();
-      await this.router.navigate(['/login']);
+      const success = await this.router.navigate(['/login']);
+      console.log('[SplashComponent] 🔐 Navigation to /login result:', success);
+    } catch (error) {
+      console.error('[SplashComponent] ❌ Navigation to /login failed:', error);
     } finally {
       this.loading.set(false);
     }
   }
 
   async navigateToRegister(): Promise<void> {
+    console.log('[SplashComponent] 📝 navigateToRegister() called');
     this.loading.set(true);
     try {
       // Mark splash as seen since user is taking action from splash
+      console.log('[SplashComponent] 📝 Marking splash as seen and navigating to /register');
       this.authStore.markSplashAsSeen();
-      await this.router.navigate(['/register']);
+      const success = await this.router.navigate(['/register']);
+      console.log('[SplashComponent] 📝 Navigation to /register result:', success);
+    } catch (error) {
+      console.error('[SplashComponent] ❌ Navigation to /register failed:', error);
     } finally {
       this.loading.set(false);
     }
   }
 
   async continueAsGuest(): Promise<void> {
+    console.log('[SplashComponent] 👻 continueAsGuest() called');
+    const startTime = Date.now();
     this.guestLoading.set(true);
+    
     try {
-      console.log('[Splash] Starting guest authentication...');
+      console.log('[SplashComponent] 👻 Starting guest authentication flow...');
+      console.log('[SplashComponent] 👻 Auth state before guest creation:', {
+        hasUser: !!this.authStore.user(),
+        isAuthenticated: this.authStore.isAuthenticated(),
+        isExplicitGuest: this.authStore.isExplicitGuest()
+      });
 
       // Create anonymous user when user chooses guest
+      console.log('[SplashComponent] 👻 Calling authStore.continueAsGuest()...');
       await this.authStore.continueAsGuest();
+      console.log('[SplashComponent] 👻 authStore.continueAsGuest() completed');
 
       // Wait for user to be authenticated
+      console.log('[SplashComponent] 👻 Waiting for user authentication...');
       await this.authStore.waitForUserAuthenticated();
+      console.log('[SplashComponent] 👻 User authentication completed');
+      
+      const authTime = Date.now() - startTime;
+      console.log('[SplashComponent] 👻 Guest auth took', authTime, 'ms');
+      
+      console.log('[SplashComponent] 👻 Final auth state:', {
+        hasUser: !!this.authStore.user(),
+        userId: this.authStore.user()?.uid?.slice(0, 8),
+        isAuthenticated: this.authStore.isAuthenticated(),
+        isExplicitGuest: this.authStore.isExplicitGuest(),
+        isAnonymous: this.authStore.user()?.isAnonymous
+      });
 
-      console.log('[Splash] Guest authenticated, navigating to home...');
-      await this.router.navigate(['/home']);
+      console.log('[SplashComponent] 👻 Navigating to /home...');
+      const success = await this.router.navigate(['/home']);
+      console.log('[SplashComponent] 👻 Navigation to /home result:', success);
+      
+      const totalTime = Date.now() - startTime;
+      console.log('[SplashComponent] ✅ Complete guest flow took', totalTime, 'ms');
     } catch (error) {
-      console.error('[Splash] Guest login failed:', error);
+      console.error('[SplashComponent] ❌ Guest login failed:', {
+        error: error,
+        message: error instanceof Error ? error.message : 'Unknown error',
+        timeTaken: Date.now() - startTime + 'ms'
+      });
       this.showError('Failed to continue as guest. Please try again.');
     } finally {
       this.guestLoading.set(false);

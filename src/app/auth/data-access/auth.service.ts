@@ -33,50 +33,80 @@ export class AuthService {
   }
 
   private initAuthListener() {
-    console.log('[AuthService] Initializing auth state listener...');
+    console.log('[AuthService] 🔊 Initializing auth state listener...');
 
     const unsubscribe: Unsubscribe = onAuthStateChanged(this.auth, async (firebaseUser) => {
+      const timestamp = new Date().toISOString();
+      console.log('[AuthService] 🔄 onAuthStateChanged triggered at', timestamp);
+      
       try {
         if (firebaseUser) {
-          console.log('[AuthService] Auth state changed:', firebaseUser.uid, firebaseUser.isAnonymous ? '(anonymous)' : '(registered)');
+          console.log('[AuthService] 👤 Firebase user detected:', {
+            uid: firebaseUser.uid.slice(0, 8),
+            isAnonymous: firebaseUser.isAnonymous,
+            email: firebaseUser.email || 'none',
+            displayName: firebaseUser.displayName || 'none',
+            emailVerified: firebaseUser.emailVerified,
+            settingUpAnonymousUser: this.settingUpAnonymousUser
+          });
 
           // ✅ For anonymous users, skip document creation until onboarding completion
           if (firebaseUser.isAnonymous && !this.settingUpAnonymousUser) {
-            console.log('[AuthService] Anonymous user logged in, skipping document creation until onboarding');
+            console.log('[AuthService] 👻 Anonymous user detected, skipping document creation until onboarding');
           }
 
           // Now it's safe to set the user - document is guaranteed to exist
+          console.log('[AuthService] 💾 Setting user in internal signal');
           this.userInternal.set(firebaseUser);
           this.loading.set(false);
+          console.log('[AuthService] ✅ User set successfully, loading=false');
         } else {
-          console.log('[AuthService] No user session found. User needs to login or continue as guest.');
+          console.log('[AuthService] 🚫 No Firebase user found - user signed out or never signed in');
           this.userInternal.set(null);
           this.loading.set(false);
+          console.log('[AuthService] 🗑️ Internal user cleared, loading=false');
         }
       } catch (error) {
-        console.error('[AuthService] Error in auth state handler:', error);
+        console.error('[AuthService] ❌ Error in auth state handler:', {
+          error: error,
+          message: error instanceof Error ? error.message : 'Unknown error',
+          timestamp
+        });
         this.loading.set(false);
       }
     });
+    
+    console.log('[AuthService] ✅ Auth state listener initialized');
   }
 
   async continueAsGuest(): Promise<void> {
+    console.log('[AuthService] 👻 continueAsGuest() called');
+    
     try {
+      console.log('[AuthService] 👻 Setting loading=true and settingUpAnonymousUser=true');
       this.loading.set(true);
       this.settingUpAnonymousUser = true;
 
-      console.log('[AuthService] Starting anonymous sign-in...');
+      console.log('[AuthService] 👻 Calling Firebase signInAnonymously()...');
       const result = await signInAnonymously(this.auth);
 
-      console.log('[AuthService] ✅ Anonymous authentication successful:', result.user.uid);
+      console.log('[AuthService] ✅ Anonymous authentication successful:', {
+        uid: result.user.uid.slice(0, 8),
+        isAnonymous: result.user.isAnonymous,
+        providerId: result.providerId || 'none'
+      });
 
       // Note: onAuthStateChanged will handle user document creation and setting the user
-      // We don't need to do anything else here
+      console.log('[AuthService] 🔄 Waiting for onAuthStateChanged to process new anonymous user...');
 
     } catch (error) {
-      console.error('[AuthService] Anonymous login failed:', error);
+      console.error('[AuthService] ❌ Anonymous login failed:', {
+        error: error,
+        message: error instanceof Error ? error.message : 'Unknown error'
+      });
       this.loading.set(false);
       this.settingUpAnonymousUser = false;
+      throw error;
     }
   }
 
@@ -100,33 +130,50 @@ export class AuthService {
   }
 
   async loginWithGoogle(): Promise<User> {
+    console.log('[AuthService] 🔄 loginWithGoogle() called');
+    
     try {
+      console.log('[AuthService] 🔄 Setting loading=true');
       this.loading.set(true);
       const provider = new GoogleAuthProvider();
       
-      console.log('[AuthService] Starting Google authentication popup...');
+      console.log('[AuthService] 🔄 Opening Google authentication popup...');
       const cred = await signInWithPopup(this.auth, provider);
-      console.log('[AuthService] ✅ Google login successful:', cred.user.uid);
+      console.log('[AuthService] ✅ Google popup authentication successful:', {
+        uid: cred.user.uid.slice(0, 8),
+        email: cred.user.email || 'none',
+        displayName: cred.user.displayName || 'none',
+        isAnonymous: cred.user.isAnonymous
+      });
 
       // User document will be created after onboarding completion
-      console.log('[AuthService] Google user created, skipping document creation until onboarding');
+      console.log('[AuthService] 🔄 Google user authenticated, skipping document creation until onboarding');
 
       // Wait for onAuthStateChanged to complete and auth state to be ready
+      console.log('[AuthService] ⏳ Waiting for auth state to be ready...');
       await this.waitForAuthStateReady();
 
-      console.log('[AuthService] ✅ Google auth fully complete');
+      console.log('[AuthService] ✅ Google authentication fully complete');
       return cred.user;
     } catch (error: any) {
+      console.log('[AuthService] ❌ Setting loading=false due to error');
       this.loading.set(false);
-      console.error('[AuthService] Google authentication failed:', error);
       
       // Enhance error with context for better debugging
+      const errorInfo = {
+        code: error?.code || 'unknown',
+        message: error?.message || 'Unknown error',
+        timestamp: new Date().toISOString()
+      };
+      
       if (error?.code === 'auth/popup-closed-by-user') {
-        console.log('[AuthService] User cancelled Google authentication');
+        console.log('[AuthService] 💭 User cancelled Google authentication');
       } else if (error?.code === 'auth/popup-blocked') {
-        console.warn('[AuthService] Popup blocked - user needs to allow popups');
+        console.warn('[AuthService] 🚫 Popup blocked - user needs to allow popups');
       } else if (error?.code === 'auth/network-request-failed') {
-        console.error('[AuthService] Network error during Google authentication');
+        console.error('[AuthService] 🌐 Network error during Google authentication');
+      } else {
+        console.error('[AuthService] ❌ Unexpected Google authentication error:', errorInfo);
       }
       
       throw error;
@@ -166,18 +213,44 @@ export class AuthService {
 
 
   async logout(): Promise<void> {
+    const currentUser = this.userInternal();
+    console.log('[AuthService] 🚪 logout() called for user:', {
+      hasUser: !!currentUser,
+      uid: currentUser?.uid?.slice(0, 8),
+      isAnonymous: currentUser?.isAnonymous
+    });
+    
     try {
+      console.log('[AuthService] 🚪 Calling Firebase signOut()...');
       await signOut(this.auth);
-      console.log('[AuthService] ✅ User signed out');
+      console.log('[AuthService] ✅ Firebase signOut() completed');
+      
+      console.log('[AuthService] 🗑️ Clearing internal user state');
       this.userInternal.set(null);
+      console.log('[AuthService] ✅ User signed out successfully');
     } catch (error) {
-      console.error('[AuthService] Logout failed:', error);
+      console.error('[AuthService] ❌ Logout failed:', {
+        error: error,
+        message: error instanceof Error ? error.message : 'Unknown error',
+        currentUser: {
+          hasUser: !!currentUser,
+          uid: currentUser?.uid?.slice(0, 8)
+        }
+      });
       throw error;
     }
   }
 
   onAuthChange(callback: (user: User | null) => void): () => void {
-    return onAuthStateChanged(this.auth, callback);
+    console.log('[AuthService] 🔄 External onAuthChange listener registered');
+    return onAuthStateChanged(this.auth, (user) => {
+      console.log('[AuthService] 🔄 External auth change callback triggered:', {
+        hasUser: !!user,
+        uid: user?.uid?.slice(0, 8),
+        isAnonymous: user?.isAnonymous
+      });
+      callback(user);
+    });
   }
 
   /**
