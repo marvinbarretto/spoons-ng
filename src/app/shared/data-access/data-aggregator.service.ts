@@ -37,7 +37,6 @@ import { PubStore } from '../../pubs/data-access/pub.store';
 import { DebugService } from '../utils/debug.service';
 import { UserService } from '../../users/data-access/user.service';
 import { generateRandomName } from '../utils/anonymous-names';
-import type { LeaderboardEntry, LeaderboardTimeRange, LeaderboardGeographicFilter } from '../../leaderboard/utils/leaderboard.models';
 import type { User } from '../../users/utils/user.model';
 import type { CheckIn } from '../../check-in/utils/check-in.models';
 
@@ -52,13 +51,7 @@ export class DataAggregatorService {
   private readonly debug = inject(DebugService);
   private readonly userService = inject(UserService);
 
-  // 🎯 Leaderboard filter state
-  private readonly _leaderboardTimeRange = signal<LeaderboardTimeRange>('all-time');
-  private readonly _leaderboardGeographicFilter = signal<LeaderboardGeographicFilter>({ type: 'none' });
-
-  readonly leaderboardTimeRange = this._leaderboardTimeRange.asReadonly();
-  readonly leaderboardGeographicFilter = this._leaderboardGeographicFilter.asReadonly();
-
+  // TODO: Handle Leaderboard soon
   constructor() {
     this.debug.standard('[DataAggregator] Service initialized - providing reactive cross-store data aggregation');
   }

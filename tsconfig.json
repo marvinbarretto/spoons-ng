@@ -19,7 +19,8 @@
       "@users/*": ["app/users/*"],
       "@landlord/*": ["app/landlord/*"],
       "@feedback/*": ["app/feedback/*"],
-      "@widgets/*": ["app/widgets/*"]
+      "@widgets/*": ["app/widgets/*"],
+      "@leaderboard/*": ["app/leaderboard/*"]
     },
     "outDir": "./dist/out-tsc",
     "strict": true,

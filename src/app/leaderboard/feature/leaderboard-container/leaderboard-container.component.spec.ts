@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { LeaderboardContainerComponent } from './leaderboard-container.component';
 
 describe('LeaderboardContainerComponent', () => {
@@ -9,8 +8,7 @@ describe('LeaderboardContainerComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [LeaderboardContainerComponent]
-    })
-    .compileComponents();
+    }).compileComponents();
 
     fixture = TestBed.createComponent(LeaderboardContainerComponent);
     component = fixture.componentInstance;

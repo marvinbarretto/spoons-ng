@@ -94,14 +94,6 @@ export const appRoutes: Routes = [
       import('./leaderboard/data-access/leaderboard.routes').then((m) => m.LEADERBOARD_ROUTES),
     data: { shell: 'feature' }
   },
-  {
-    path: 'new-leaderboard',
-    title: 'New Leaderboard',
-    canActivate: [authGuard],
-    loadChildren: () =>
-      import('./new-leaderboard/data-access/new-leaderboard.routes').then((m) => m.NEW_LEADERBOARD_ROUTES),
-    data: { shell: 'feature' }
-  },
   // Admin Dashboard Hub
   {
     path: 'admin',

@@ -1,33 +1,29 @@
+export type LeaderboardPeriod = 'monthly' | 'all-time';
+
 export type LeaderboardEntry = {
   userId: string;
   displayName: string;
-  totalVisits: number;
-  uniquePubs: number;
-  joinedDate: string;
-  rank: number;
-  photoURL?: string;
-  email?: string;
-  realDisplayName?: string;
-  isAnonymous?: boolean;
+  // All-time stats
   totalPoints: number;
+  uniquePubs: number;
   totalCheckins: number;
+  // Monthly stats (for current month)
+  monthlyPoints: number;
+  monthlyPubs: number;
+  monthlyCheckins: number;
+  // Display properties
+  rank: number;
+  photoURL?: string | null;
+  isCurrentUser?: boolean;
+  joinedDate: string;
   lastActive?: string;
   currentStreak?: number;
-  positionChange?: number; // +5 means moved up 5 spots, -3 means down 3
 };
 
-export type LeaderboardType = 'visits' | 'unique-pubs' | 'points';
+export type LeaderboardSortBy = 'points' | 'pubs' | 'checkins';
 
-export type LeaderboardTimeRange = 'all-time' | 'this-month';
-
-export type LeaderboardGeographicFilter = {
-  type: 'none' | 'city' | 'region' | 'country' | 'pub';
-  value?: string;
-};
-
-export type UserStats = {
-  userId: string;
-  totalVisits: number;
-  uniquePubIds: Set<string>;  // Keep as Set during calculation
-  firstCheckinDate: string;
+export type LeaderboardFilters = {
+  sortBy: LeaderboardSortBy;
+  period: LeaderboardPeriod;
+  showRealUsersOnly: boolean;
 };

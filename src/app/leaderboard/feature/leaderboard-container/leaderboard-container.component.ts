@@ -1,156 +1,173 @@
-// src/app/leaderboard/feature/leaderboard-container/leaderboard-container.component.ts
-import { CommonModule } from "@angular/common";
-import { Component, computed, inject, signal } from "@angular/core";
-import { ActivatedRoute, Router, RouterModule } from "@angular/router";
-import { takeUntilDestroyed } from "@angular/core/rxjs-interop";
-import { BaseComponent } from "../../../shared/base/base.component";
-import { LeaderboardStore } from "../../data-access/leaderboard.store";
-import { DataTableComponent } from "../../../shared/ui/data-table/data-table.component";
-import { TableColumn } from "../../../shared/ui/data-table/data-table.model";
-import { LeaderboardTimeRange, LeaderboardEntry, LeaderboardGeographicFilter } from "../../utils/leaderboard.models";
-import { AuthStore } from "../../../auth/data-access/auth.store";
-import { map } from 'rxjs/operators';
-import { combineLatest } from 'rxjs';
+import { Component, computed, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { BaseComponent } from '../../../shared/base/base.component';
+import { LeaderboardStore } from '../../data-access/leaderboard.store';
+import { LoadingStateComponent } from '../../../shared/ui/loading-state/loading-state.component';
+import { ErrorStateComponent } from '../../../shared/ui/error-state/error-state.component';
+import { EmptyStateComponent } from '../../../shared/ui/empty-state/empty-state.component';
+import { ChipUserComponent } from '../../../shared/ui/chips/chip-user/chip-user.component';
+import { LeaderboardSortBy, LeaderboardPeriod } from '../../utils/leaderboard.models';
 
 @Component({
   selector: 'app-leaderboard-container',
-  imports: [CommonModule, DataTableComponent, RouterModule],
+  imports: [
+    CommonModule,
+    LoadingStateComponent,
+    ErrorStateComponent,
+    EmptyStateComponent,
+    ChipUserComponent
+  ],
   template: `
-    <div class="leaderboard-page">
+    <div class="leaderboard">
       <header class="leaderboard-header">
-        <h1>🏆 Leaderboard</h1>
-        <!-- TODO: Cycle through different motivational messages -->
+        <h1>🏆 Real User Leaderboard</h1>
+        <p>See how you rank against real users (including anonymous accounts)</p>
       </header>
 
-      <!-- Compact Geographic Filter Section -->
-      @if (showGeographicFilters()) {
-        <div class="geographic-filters compact">
-          <div class="filter-chips">
-            <!-- Global chip -->
+      <!-- Controls -->
+      <div class="leaderboard-controls">
+        <div class="sort-controls">
+          <span class="control-label">Sort by:</span>
+          <div class="sort-buttons">
             <button
-              [class.active]="!hasActiveGeographicFilter()"
-              (click)="clearAllFilters()"
-              class="filter-chip"
+              [class.active]="store.sortBy() === 'points'"
+              (click)="setSortBy('points')"
+              class="sort-btn"
             >
-              🌍 Global
+              Points
             </button>
-
-            <!-- Popular Cities -->
-            @for (city of getPopularCities(); track city) {
-              <button
-                [class.active]="selectedCity() === city"
-                (click)="onCityChange(city)"
-                class="filter-chip"
-              >
-                {{ city }}
-              </button>
-            }
-
-            <!-- Regions -->
-            @for (region of availableRegions(); track region) {
-              <button
-                [class.active]="selectedRegion() === region"
-                (click)="onRegionChange(region)"
-                class="filter-chip"
-              >
-                {{ region }}
-              </button>
-            }
-
-            <!-- More cities if there are many -->
-            @if (availableCities().length > 8) {
-              <button class="filter-chip more-btn" (click)="showAllCities = !showAllCities">
-                {{ showAllCities ? 'Less' : 'More...' }}
-              </button>
-            }
+            <button
+              [class.active]="store.sortBy() === 'pubs'"
+              (click)="setSortBy('pubs')"
+              class="sort-btn"
+            >
+              Pubs
+            </button>
+            <button
+              [class.active]="store.sortBy() === 'checkins'"
+              (click)="setSortBy('checkins')"
+              class="sort-btn"
+            >
+              Check-ins
+            </button>
           </div>
-
-          <!-- Additional cities row when expanded -->
-          @if (showAllCities && availableCities().length > 8) {
-            <div class="filter-chips additional-chips">
-              @for (city of getAdditionalCities(); track city) {
-                <button
-                  [class.active]="selectedCity() === city"
-                  (click)="onCityChange(city)"
-                  class="filter-chip"
-                >
-                  {{ city }}
-                </button>
-              }
-            </div>
-          }
         </div>
-      } @else {
-        <!-- Debug info when no geographic filters are available -->
-        <div class="geographic-filters-debug">
-          <div class="debug-message">
-            <p>🗺️ Geographic filters will appear when users have home pubs with location data.</p>
-            <details class="debug-details">
-              <summary>Debug Information</summary>
-              <div class="debug-content">
-                <p><strong>Available cities:</strong> {{ availableCities().length }}</p>
-                <p><strong>Available regions:</strong> {{ availableRegions().length }}</p>
-                <p><strong>Filters based on users' home pub locations</strong></p>
-              </div>
-            </details>
+
+        <div class="period-controls">
+          <span class="control-label">Period:</span>
+          <div class="period-buttons">
+            <button
+              [class.active]="store.period() === 'all-time'"
+              (click)="setPeriod('all-time')"
+              class="period-btn"
+            >
+              All Time
+            </button>
+            <button
+              [class.active]="store.period() === 'monthly'"
+              (click)="setPeriod('monthly')"
+              class="period-btn"
+            >
+              This Month
+            </button>
           </div>
+        </div>
+
+        <div class="filter-controls">
+          <label class="filter-toggle">
+            <input
+              type="checkbox"
+              [checked]="store.showRealUsersOnly()"
+              (change)="toggleRealUsersOnly($event)"
+            />
+            <span>Real users only</span>
+          </label>
+        </div>
+      </div>
+
+
+      <!-- Current User Position -->
+      @if (currentUserPosition() && currentUserPosition()! > 100) {
+        <div class="user-position-banner">
+          <p>Your position: <strong>#{{ currentUserPosition() }}</strong></p>
         </div>
       }
 
-
-      <!-- Time Period Tabs -->
-      <nav class="time-period-tabs">
-        <a
-          [routerLink]="getTimePeriodLink('this-month')"
-          routerLinkActive="active"
-          [routerLinkActiveOptions]="{ exact: true }"
-          class="tab-link"
-        >
-          This Month
-        </a>
-        <a
-          [routerLink]="getTimePeriodLink('all-time')"
-          routerLinkActive="active"
-          [routerLinkActiveOptions]="{ exact: true }"
-          class="tab-link"
-        >
-          All Time
-        </a>
-      </nav>
-
-      @if (loading() || leaderboardStore.loading()) {
-        <div class="loading-state">
-          <p>🔄 Loading leaderboard...</p>
-        </div>
-      } @else if (error() || leaderboardStore.error()) {
-        <div class="error-state">
-          <p>❌ Error: {{ error() || leaderboardStore.error() }}</p>
-          <button (click)="retry()">Try Again</button>
-        </div>
+      <!-- Loading State -->
+      @if (store.loading()) {
+        <app-loading-state text="Loading leaderboard..." />
+      } @else if (store.error()) {
+        <!-- Error State -->
+        <app-error-state
+          [message]="store.error()!"
+          [showRetry]="true"
+          retryText="Try Again"
+          (retry)="handleRetry()"
+        />
+      } @else if (topEntries().length === 0) {
+        <!-- Empty State -->
+        <app-empty-state
+          icon="🏆"
+          title="No users found"
+          subtitle="Try adjusting your filters"
+        />
       } @else {
-        <div class="leaderboard-content">
-          <!-- User Position (if not visible in table) -->
-          @if (userPosition() && userPosition()! > 100) {
-            <div class="user-position-indicator">
-              <p>Your position: <strong>#{{ userPosition() }}</strong> of {{ leaderboardStore.filteredData().length }} crawlers</p>
+        <!-- Leaderboard Table -->
+        <div class="leaderboard-table">
+          <div class="table-header">
+            <span class="col-rank">Rank</span>
+            <span class="col-user">User</span>
+            <span class="col-points">Points</span>
+            <span class="col-pubs">Pubs</span>
+            <span class="col-details">Details</span>
+          </div>
+
+          @for (entry of topEntries(); track entry.userId) {
+            <div
+              class="table-row"
+              [class.current-user]="entry.isCurrentUser"
+            >
+              <span class="col-rank">
+                <span class="rank-number">#{{ entry.rank }}</span>
+              </span>
+
+              <span class="col-user">
+                <app-chip-user
+                  [user]="{
+                    displayName: entry.displayName,
+                    photoURL: entry.photoURL || undefined
+                  }"
+                  [clickable]="false"
+                />
+                @if (entry.isCurrentUser) {
+                  <span class="current-user-badge">You</span>
+                }
+              </span>
+
+              <span class="col-points">
+                <span class="metric-value">{{ getPoints(entry) }}</span>
+              </span>
+
+              <span class="col-pubs">
+                <span class="metric-value">{{ getPubs(entry) }}</span>
+              </span>
+
+              <span class="col-details">
+                <div class="detail-group">
+                  <span class="detail">{{ getCheckins(entry) }} check-ins</span>
+                  @if (entry.currentStreak && entry.currentStreak > 1) {
+                    <span class="detail streak">🔥 {{ entry.currentStreak }} day streak</span>
+                  }
+                </div>
+              </span>
             </div>
           }
-
-          <!-- Leaderboard Table -->
-          <app-data-table
-            [data]="topEntries()"
-            [columns]="columns()"
-            [loading]="leaderboardStore.loading()"
-            [highlightRow]="isCurrentUser"
-            [trackBy]="'userId'"
-            [onRowClick]="handleRowClick"
-          />
         </div>
       }
     </div>
   `,
   styles: `
-    .leaderboard-page {
+    .leaderboard {
       max-width: 1200px;
       margin: 0 auto;
       padding: 1rem;
@@ -158,7 +175,7 @@ import { combineLatest } from 'rxjs';
 
     .leaderboard-header {
       text-align: center;
-      margin-bottom: 1.5rem;
+      margin-bottom: 2rem;
     }
 
     .leaderboard-header h1 {
@@ -169,451 +186,295 @@ import { combineLatest } from 'rxjs';
 
     .leaderboard-header p {
       margin: 0;
-      opacity: 0.8;
-      color: var(--text);
+      color: var(--text-secondary);
+      font-size: 1rem;
     }
 
-    .time-period-tabs {
-      display: flex;
-      justify-content: center;
-      gap: 0.5rem;
-      margin-bottom: 2rem;
-      border-bottom: 2px solid var(--background-lighter);
-    }
-
-    .tab-link {
-      padding: 0.75rem 1.5rem;
-      text-decoration: none;
-      color: var(--text);
-      border-bottom: 3px solid transparent;
-      transition: all 0.2s ease;
-      font-weight: 500;
-    }
-
-    .tab-link:hover {
-      background: var(--background-lighter);
-      border-radius: 8px 8px 0 0;
-    }
-
-    .tab-link.active {
-      color: var(--color-buttonPrimaryBase);
-      border-bottom-color: var(--color-buttonPrimaryBase);
-      font-weight: 600;
-    }
-
-    .geographic-filters {
-      margin-bottom: 1rem;
-    }
-
-    .geographic-filters.compact {
-      background: var(--background-lighter);
-      padding: 0.75rem;
-      border-radius: 8px;
-    }
-
-    .filter-chips {
+    .leaderboard-controls {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.5rem;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+      padding: 1rem;
+      background: var(--background-lighter);
+      border-radius: 8px;
+      align-items: center;
     }
 
-    .filter-chip {
-      background: var(--background);
-      border: 1px solid var(--color-buttonSecondaryBorder);
-      border-radius: 20px;
-      padding: 0.375rem 0.875rem;
-      color: var(--text);
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-size: 0.85rem;
-      white-space: nowrap;
+    .sort-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
     }
 
-    .filter-chip:hover {
-      background: var(--color-buttonSecondaryHover);
-      border-color: var(--color-buttonPrimaryBase);
-    }
-
-    .filter-chip.active {
-      background: var(--color-buttonPrimaryBase);
-      color: var(--color-buttonPrimaryText);
-      border-color: var(--color-buttonPrimaryBase);
+    .control-label {
+      color: var(--text-secondary);
       font-weight: 500;
     }
 
-    .filter-chip.more-btn {
-      background: var(--color-buttonSecondaryBackground);
-      color: var(--color-buttonSecondaryText);
-      font-style: italic;
-    }
-
-    .additional-chips {
-      margin-top: 0.5rem;
-      opacity: 0.9;
-    }
-
-    .geographic-filters-debug {
-      margin-bottom: 1rem;
-      background: var(--background-lighter);
-      padding: 0.75rem;
-      border-radius: 8px;
+    .sort-buttons,
+    .period-buttons {
+      display: flex;
+      gap: 0.25rem;
+      background: var(--background);
+      padding: 0.25rem;
+      border-radius: 6px;
       border: 1px solid var(--border);
     }
 
-    .debug-message {
-      color: var(--text-muted);
-    }
-
-    .debug-message p {
-      margin: 0 0 0.5rem 0;
-      font-size: 0.9rem;
-    }
-
-    .debug-details {
-      margin-top: 0.5rem;
-    }
-
-    .debug-details summary {
-      cursor: pointer;
-      font-size: 0.8rem;
+    .sort-btn,
+    .period-btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      background: transparent;
       color: var(--text-secondary);
-      list-style: none;
-      padding: 0.25rem 0;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 0.9rem;
+      font-weight: 500;
     }
 
-    .debug-details summary:hover {
+    .sort-btn:hover,
+    .period-btn:hover {
+      background: var(--background-lighter);
       color: var(--text);
     }
 
-    .debug-details summary::-webkit-details-marker {
-      display: none;
+    .sort-btn.active,
+    .period-btn.active {
+      background: var(--primary);
+      color: var(--primary-contrast);
     }
 
-    .debug-details summary::before {
-      content: "▶ ";
-      margin-right: 0.25rem;
-      transition: transform 0.2s ease;
+    .period-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
     }
 
-    .debug-details[open] summary::before {
-      transform: rotate(90deg);
+    .filter-controls {
+      margin-left: auto;
     }
 
-    .debug-content {
-      padding: 0.5rem 0;
-      border-top: 1px solid var(--border);
-      margin-top: 0.5rem;
-    }
-
-    .debug-content p {
-      margin: 0.25rem 0;
-      font-size: 0.8rem;
-      font-family: monospace;
-    }
-
-    .loading-state, .error-state {
-      text-align: center;
-      padding: 2rem;
-    }
-
-    .error-state button {
-      margin-top: 1rem;
-      padding: 0.5rem 1rem;
-      background: var(--color-buttonPrimaryBase);
-      color: var(--color-buttonPrimaryText);
-      border: none;
-      border-radius: 4px;
+    .filter-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
       cursor: pointer;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .filter-toggle input[type="checkbox"] {
+      margin: 0;
     }
 
 
-    .user-position-indicator {
-      background: var(--background-lighter);
+    .user-position-banner {
+      margin-bottom: 1.5rem;
       padding: 1rem;
+      background: var(--background-lighter);
       border-radius: 8px;
       text-align: center;
-      margin-bottom: 1rem;
+      border: 2px solid var(--primary);
     }
 
-    .user-position-indicator p {
+    .user-position-banner p {
       margin: 0;
       color: var(--text);
     }
 
-    .leaderboard-content {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
+    .leaderboard-table {
+      background: var(--background-lighter);
+      border-radius: 8px;
+      overflow: hidden;
     }
 
+    .table-header {
+      display: grid;
+      grid-template-columns: 80px 1fr 120px 100px 180px;
+      gap: 1rem;
+      padding: 1rem;
+      background: var(--background-darker);
+      font-weight: 600;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
 
+    .table-row {
+      display: grid;
+      grid-template-columns: 80px 1fr 120px 100px 180px;
+      gap: 1rem;
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+      align-items: center;
+      transition: background-color 0.2s ease;
+    }
+
+    .table-row:hover {
+      background: var(--background);
+    }
+
+    .table-row.current-user {
+      background: var(--primary);
+      color: var(--primary-contrast);
+    }
+
+    .table-row.current-user:hover {
+      background: var(--primary-hover);
+    }
+
+    .rank-number {
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    .col-user {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .current-user-badge {
+      background: var(--accent);
+      color: var(--accent-contrast);
+      padding: 0.25rem 0.5rem;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .metric-value {
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: var(--text);
+    }
+
+    .detail-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .detail {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .detail.streak {
+      color: var(--warning);
+      font-weight: 500;
+    }
+
+    /* Mobile responsive */
     @media (max-width: 768px) {
-      .leaderboard-page {
+      .leaderboard {
         padding: 0.5rem;
       }
 
-      .time-period-tabs {
+      .leaderboard-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+      }
+
+      .filter-controls {
+        margin-left: 0;
+      }
+
+      .table-header,
+      .table-row {
+        grid-template-columns: 60px 1fr 80px 60px;
+        gap: 0.5rem;
+      }
+
+      .col-details {
+        display: none;
+      }
+
+      .col-points,
+      .col-pubs {
+        text-align: right;
+      }
+
+      .metric-value {
+        font-size: 1rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .sort-buttons,
+      .period-buttons {
+        flex-direction: column;
+        width: 100%;
+      }
+
+      .sort-btn,
+      .period-btn {
+        text-align: center;
+      }
+
+      .table-header,
+      .table-row {
+        grid-template-columns: 50px 1fr 60px;
         gap: 0.25rem;
       }
 
-      .tab-link {
-        padding: 0.5rem 1rem;
-        font-size: 0.9rem;
-      }
-
-      .geographic-filters.compact {
-        padding: 0.5rem;
-      }
-
-      .filter-chips {
-        gap: 0.375rem;
-      }
-
-      .filter-chip {
-        padding: 0.25rem 0.625rem;
-        font-size: 0.8rem;
+      .col-pubs {
+        display: none;
       }
     }
   `
 })
 export class LeaderboardContainerComponent extends BaseComponent {
-  protected readonly leaderboardStore = inject(LeaderboardStore);
-  protected readonly authStore = inject(AuthStore);
-  protected readonly route = inject(ActivatedRoute);
+  protected readonly store = inject(LeaderboardStore);
 
-  // Route data and params subscription - initialized in field initializer for injection context
-  protected readonly routeSubscription = combineLatest([
-    this.route.data,
-    this.route.params
-  ]).pipe(
-    takeUntilDestroyed()
-  ).subscribe(([data, params]) => {
-    const routeData = data as Record<string, unknown>;
-    const period = (routeData['period'] as LeaderboardTimeRange) || 'all-time';
-    const geographic = routeData['geographic'] as string;
+  // Computed properties for template
+  readonly topEntries = this.store.topEntries;
+  readonly currentUserPosition = this.store.currentUserPosition;
 
-    console.log('[LeaderboardContainer] Route changed:', { period, geographic, params });
-
-    // Set time range
-    this.leaderboardStore.setTimeRange(period);
-
-    // Set geographic filter based on route
-    if (geographic && geographic !== 'global') {
-      const filter: LeaderboardGeographicFilter = this.createGeographicFilter(geographic, params);
-      this.leaderboardStore.setGeographicFilter(filter);
-      console.log('[LeaderboardContainer] Setting geographic filter:', filter);
-    } else {
-      this.leaderboardStore.clearGeographicFilter();
-    }
-  });
-
-  // UI state for filters
-  showAllCities = false;
-
-  protected override onInit(): void {
-    this.leaderboardStore.loadOnce();
+  setSortBy(sortBy: LeaderboardSortBy): void {
+    this.store.setSortBy(sortBy);
   }
 
-  // Computed data for display
-  readonly topEntries = computed(() =>
-    this.leaderboardStore.topByPoints().slice(0, 100)
-  );
-
-  readonly userPosition = computed(() =>
-    this.leaderboardStore.userRankByPoints()
-  );
-
-  // Geographic filter controls
-  readonly showGeographicFilters = computed(() => {
-    // Show filters if there are available cities or regions
-    const cities = this.availableCities();
-    const regions = this.availableRegions();
-    const shouldShow = cities.length > 0 || regions.length > 0;
-    
-    console.log('[LeaderboardContainer] 🗺️ Geographic filter visibility check:');
-    console.log('[LeaderboardContainer] 🗺️ Available cities:', cities.length, cities);
-    console.log('[LeaderboardContainer] 🗺️ Available regions:', regions.length, regions);
-    console.log('[LeaderboardContainer] 🗺️ Should show filters:', shouldShow);
-    
-    return shouldShow;
-  });
-
-  readonly availableCities = computed(() =>
-    this.leaderboardStore.availableCities()
-  );
-
-  readonly availableRegions = computed(() =>
-    this.leaderboardStore.availableRegions()
-  );
-
-  readonly selectedCity = computed(() => {
-    const filter = this.leaderboardStore.geographicFilter();
-    return filter.type === 'city' ? filter.value || '' : '';
-  });
-
-  readonly selectedRegion = computed(() => {
-    const filter = this.leaderboardStore.geographicFilter();
-    return filter.type === 'region' ? filter.value || '' : '';
-  });
-
-  // Enhanced filter methods
-  readonly hasActiveGeographicFilter = computed(() => {
-    const filter = this.leaderboardStore.geographicFilter();
-    return filter.type !== 'none' && (filter.value || '').length > 0;
-  });
-
-  readonly getPopularCities = computed(() => {
-    // Return first 8 cities as "popular" - you could enhance this with actual popularity metrics
-    return this.availableCities().slice(0, 8);
-  });
-
-  readonly getAdditionalCities = computed(() => {
-    // Return cities beyond the first 8
-    return this.availableCities().slice(8);
-  });
-
-  // Current route context for maintaining geographic filters in time period tabs
-  readonly currentGeographic = computed(() => {
-    const filter = this.leaderboardStore.geographicFilter();
-    if (filter.type === 'city' && filter.value) {
-      return `city/${this.createUrlSlug(filter.value)}`;
-    } else if (filter.type === 'region' && filter.value) {
-      return `region/${this.createUrlSlug(filter.value)}`;
-    }
-    return 'global';
-  });
-
-  // Helper method to generate time period links that preserve geographic context
-  getTimePeriodLink(period: LeaderboardTimeRange): string {
-    const geographic = this.currentGeographic();
-    return `/leaderboard/${geographic}/${period}`;
+  setPeriod(period: LeaderboardPeriod): void {
+    this.store.setPeriod(period);
   }
 
-  // Table columns configuration
-  readonly columns = computed((): TableColumn[] => [
-    {
-      key: 'rank',
-      label: '',
-      className: 'rank',
-      width: '60px',
-      sortable: false,
-      formatter: (_, row, index) => {
-        const rank = (index ?? 0) + 1;
-        return `${rank}`;
-      }
-    },
-    {
-      key: 'displayName',
-      label: '',
-      className: 'user-cell',
-      sortable: false,
-      renderer: (_, row) => row // Enable custom rendering for user chips
-    },
-    {
-      key: 'totalPoints',
-      label: 'Points',
-      className: 'number points-primary',
-      width: '120px',
-      sortable: true,
-      formatter: (points) => points?.toLocaleString() || '0'
-    },
-    {
-      key: 'uniquePubs',
-      label: 'Pubs',
-      className: 'number',
-      width: '100px',
-      sortable: true
-    },
-    {
-      key: 'totalCheckins',
-      label: 'Check-ins',
-      className: 'number',
-      width: '120px',
-      sortable: true,
-      hideOnMobile: true
-    }
-  ]);
-
-  readonly isCurrentUser = (entry: LeaderboardEntry): boolean => {
-    return entry.userId === this.authStore.user()?.uid;
-  };
-
-  handleRowClick = (entry: any): void => {
-    console.log('User clicked:', entry.displayName);
-    // TODO: Navigate to user profile or show user details
-  };
-
-  onCityChange(city: string): void {
-    if (city && city !== this.selectedCity()) {
-      // Navigate to the city-specific route with URL-friendly slug
-      const currentPeriod = this.leaderboardStore.timeRange();
-      const citySlug = this.createUrlSlug(city);
-      this.router.navigate(['/leaderboard', 'city', citySlug, currentPeriod]);
-      this.showAllCities = false; // Collapse additional cities when one is selected
-    }
+  toggleRealUsersOnly(event: Event): void {
+    const checkbox = event.target as HTMLInputElement;
+    this.store.setShowRealUsersOnly(checkbox.checked);
   }
 
-  onRegionChange(region: string): void {
-    if (region && region !== this.selectedRegion()) {
-      // Navigate to the region-specific route with URL-friendly slug
-      const currentPeriod = this.leaderboardStore.timeRange();
-      const regionSlug = this.createUrlSlug(region);
-      this.router.navigate(['/leaderboard', 'region', regionSlug, currentPeriod]);
-    }
+  getPoints(entry: any): string {
+    const period = this.store.period();
+    const points = period === 'monthly' ? entry.monthlyPoints : entry.totalPoints;
+    return points.toLocaleString();
   }
 
-  clearAllFilters(): void {
-    // Navigate to global leaderboard
-    const currentPeriod = this.leaderboardStore.timeRange();
-    this.router.navigate(['/leaderboard', 'global', currentPeriod]);
-    this.showAllCities = false;
+  getPubs(entry: any): string {
+    const period = this.store.period();
+    const pubs = period === 'monthly' ? entry.monthlyPubs : entry.uniquePubs;
+    return pubs.toString();
   }
 
-  async retry(): Promise<void> {
+  getCheckins(entry: any): string {
+    const period = this.store.period();
+    const checkins = period === 'monthly' ? entry.monthlyCheckins : entry.totalCheckins;
+    return checkins.toString();
+  }
+
+  async handleRetry(): Promise<void> {
     await this.handleAsync(
-      () => this.leaderboardStore.load(),
+      () => this.store.refresh(),
       {
         successMessage: 'Leaderboard refreshed!',
-        errorMessage: 'Failed to load leaderboard'
+        errorMessage: 'Failed to refresh leaderboard'
       }
     );
-  }
-
-  // Helper method to create URL-friendly slugs
-  private createUrlSlug(text: string): string {
-    return text
-      .toLowerCase()
-      .trim()
-      .replace(/[^\w\s-]/g, '') // Remove special characters
-      .replace(/[\s_-]+/g, '-') // Replace spaces and underscores with hyphens
-      .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
-  }
-
-  // Helper method to find original name from slug
-  private findOriginalNameFromSlug(slug: string, availableNames: string[]): string | undefined {
-    return availableNames.find(name => this.createUrlSlug(name) === slug);
-  }
-
-  private createGeographicFilter(type: string, params: any): LeaderboardGeographicFilter {
-    switch (type) {
-      case 'city':
-        // Find the original case-sensitive city name from available cities
-        const citySlug = params['cityName'];
-        const originalCity = this.findOriginalNameFromSlug(citySlug, this.leaderboardStore.availableCities());
-        return { type: 'city', value: originalCity || params['cityName'] };
-      case 'region':
-        // Find the original case-sensitive region name from available regions
-        const regionSlug = params['regionName'];
-        const originalRegion = this.findOriginalNameFromSlug(regionSlug, this.leaderboardStore.availableRegions());
-        return { type: 'region', value: originalRegion || params['regionName'] };
-      case 'country':
-        return { type: 'country', value: params['countryId'] };
-      case 'pub':
-        return { type: 'pub', value: params['pubId'] };
-      case 'global':
-        return { type: 'none' };
-      default:
-        return { type: 'none' };
-    }
   }
 }

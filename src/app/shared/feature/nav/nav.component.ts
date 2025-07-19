@@ -14,7 +14,7 @@ import { UserProfileWidgetComponent } from "@/app/home/ui/user-profile-widget/us
 
 @Component({
   selector: 'app-nav',
-  imports: [CommonModule, RouterModule, ChipUserComponent, ButtonComponent, UserProfileWidgetComponent],
+  imports: [CommonModule, RouterModule, ChipUserComponent, ButtonComponent], // UserProfileWidgetComponent not used in template
   templateUrl: './nav.component.html',
   styleUrl: './nav.component.scss',
 })

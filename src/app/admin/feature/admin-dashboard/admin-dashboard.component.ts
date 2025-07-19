@@ -4,7 +4,8 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 // DatabaseMetricsService removed - was over-engineered premature optimization
 import { FirebaseMetricsService } from '../../../shared/data-access/firebase-metrics.service';
-import { LeaderboardStore } from '../../../leaderboard/data-access/leaderboard.store';
+// TODO: Re-enable LeaderboardStore when available
+// import { LeaderboardStore } from '../../../leaderboard/data-access/leaderboard.store';
 import { FeedbackStore } from '../../../feedback/data-access/feedback.store';
 import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
 
@@ -87,7 +88,8 @@ type StatData = {
 export class AdminDashboardComponent {
   // Database metrics service removed - focus on core functionality first
   private readonly firebaseMetricsService = inject(FirebaseMetricsService);
-  protected readonly leaderboardStore = inject(LeaderboardStore);
+  // TODO: Re-enable LeaderboardStore when available
+  // protected readonly leaderboardStore = inject(LeaderboardStore);
   protected readonly feedbackStore = inject(FeedbackStore);
   protected readonly dataAggregatorService = inject(DataAggregatorService);
 
@@ -96,9 +98,19 @@ export class AdminDashboardComponent {
 
   // Database metrics removed - focus on core business metrics instead
 
+  // TODO: Re-enable when LeaderboardStore is available
   // Real business data from stores
-  readonly siteStats = this.leaderboardStore.siteStats;
-  readonly globalDataStats = this.leaderboardStore.globalDataStats;
+  // readonly siteStats = this.leaderboardStore.siteStats;
+  // readonly globalDataStats = this.leaderboardStore.globalDataStats;
+  
+  // Temporary placeholder data
+  readonly siteStats = signal({
+    allTime: { users: 0, checkins: 0, pubsConquered: 0, totalPubsInSystem: 0 },
+    thisMonth: { activeUsers: 0, newUsers: 0, checkins: 0 }
+  });
+  readonly globalDataStats = signal({
+    totalUsers: 0, totalCheckIns: 0, activeUsers: 0
+  });
   readonly pendingFeedback = this.feedbackStore.pendingFeedback;
   readonly scoreboardData = this.dataAggregatorService.scoreboardData;
 
@@ -184,10 +196,11 @@ export class AdminDashboardComponent {
         error: this.feedbackStore.error(),
         data: allFeedback
       },
-      leaderboardStore: {
-        loading: this.leaderboardStore.loading(),
-        error: this.leaderboardStore.error()
-      },
+      // TODO: Re-enable when LeaderboardStore is available
+      // leaderboardStore: {
+      //   loading: this.leaderboardStore.loading(),
+      //   error: this.leaderboardStore.error()
+      // },
       stats
     });
     return stats;
@@ -242,7 +255,7 @@ export class AdminDashboardComponent {
       route: '/admin/users',
       icon: '👥',
       status: 'coming-soon',
-      stats: `${this.siteStats().allTime.users} users (UserStore ready)`
+      stats: `${this.siteStats().allTime.users} users (UserStore ready - TODO: reconnect LeaderboardStore)`
     },
     {
       id: 'analytics',
@@ -334,7 +347,7 @@ export class AdminDashboardComponent {
   });
 
   // Complex cache analytics removed - Firebase handles caching automatically
-  
+
   // Placeholder computed properties for removed analytics (to prevent template errors)
   readonly realTimeCacheAnalytics = computed(() => ({
     liveHitRatio: 0,

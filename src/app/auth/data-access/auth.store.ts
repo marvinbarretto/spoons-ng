@@ -149,6 +149,7 @@ export class AuthStore {
       this._user.set(appUser);
       this._token.set(token);
       this._userChangeCounter.update(c => c + 1);
+      this._isExplicitGuest.set(false); // Clear explicit guest flag on successful sign-in
 
       console.log('[AuthStore] User and token set:', {
         uid: appUser.uid.slice(0, 8),
@@ -162,6 +163,7 @@ export class AuthStore {
         try {
           localStorage.setItem('user', JSON.stringify(appUser));
           localStorage.setItem('token', token);
+          localStorage.removeItem('isExplicitGuest'); // Clear explicit guest flag from localStorage
           console.log('[AuthStore] 💾 Saved auth data to localStorage successfully');
         } catch (error) {
           console.error('[AuthStore] ❌ Failed to save auth data to localStorage:', error);

@@ -94,8 +94,6 @@ export class DevDebugComponent extends BaseComponent {
   // Cost estimates removed - premature optimization
 
   // Real business data from stores
-  readonly siteStats = this.leaderboardStore.siteStats;
-  readonly globalDataStats = this.leaderboardStore.globalDataStats;
   readonly pendingFeedback = this.feedbackStore.pendingFeedback;
   readonly scoreboardData = this.dataAggregatorService.scoreboardData;
 

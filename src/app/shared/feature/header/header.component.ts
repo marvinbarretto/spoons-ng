@@ -45,7 +45,7 @@ import { environment } from '../../../../environments/environment';
     RouterModule,
     CommonModule,
     NavComponent,
-    UserProfileWidgetComponent,
+    // UserProfileWidgetComponent, // Not used in template
     // ProfileCustomisationModalComponent,
   ],
 })

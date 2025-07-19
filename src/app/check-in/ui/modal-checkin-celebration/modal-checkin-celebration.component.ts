@@ -6,7 +6,8 @@ import { BadgeIconComponent } from '@badges/ui/badge-icon/badge-icon.component';
 import { CheckInStore } from '../../../check-in/data-access/check-in.store';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { DataAggregatorService } from '@shared/data-access/data-aggregator.service';
-import { LeaderboardStore } from '../../../leaderboard/data-access/leaderboard.store';
+// TODO: Re-enable LeaderboardStore when available
+// import { LeaderboardStore } from '../../../leaderboard/data-access/leaderboard.store';
 import { BADGE_DEFINITIONS } from '@badges/utils/badge.config';
 import { ButtonSize } from '@shared/ui/button/button.params';
 import { CheckInResultData } from '../../utils/check-in.models';
@@ -445,7 +446,8 @@ export class ModalCheckinCelebrationComponent implements OnDestroy {
   protected readonly checkinStore = inject(CheckInStore);
   protected readonly authStore = inject(AuthStore);
   protected readonly dataAggregatorService = inject(DataAggregatorService);
-  protected readonly leaderboardStore = inject(LeaderboardStore);
+  // TODO: Re-enable LeaderboardStore when available
+  // protected readonly leaderboardStore = inject(LeaderboardStore);
 
   // Auto-advance timer state
   private readonly _countdown = signal(8); // 8 second default
@@ -463,8 +465,11 @@ export class ModalCheckinCelebrationComponent implements OnDestroy {
   // Optimized celebration data using existing reactive stores
   readonly celebrationData = computed(() => {
     const scoreboard = this.dataAggregatorService.scoreboardData();
-    const userRank = this.leaderboardStore.userRankByPoints() || null;
-    const leaderboardData = this.leaderboardStore.data() || [];
+    // TODO: Re-enable when LeaderboardStore is available
+    // const userRank = this.leaderboardStore.userRankByPoints() || null;
+    // const leaderboardData = this.leaderboardStore.data() || [];
+    const userRank = null; // Placeholder until LeaderboardStore is available
+    const leaderboardData: any[] = []; // Placeholder until LeaderboardStore is available
     
     return {
       pubsVisited: scoreboard.pubsVisited,

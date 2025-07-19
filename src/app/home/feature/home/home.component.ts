@@ -27,8 +27,6 @@ import { BadgesWidgetComponent } from '@app/widgets/badges/badges-widget.compone
 import { MissionsWidgetComponent } from '@app/widgets/missions/missions-widget.component';
 import { CarpetWidgetComponent } from '@app/widgets/carpet/carpet-widget.component';
 import { NearestPubComponent } from '@app/widgets/nearest-pub/nearest-pub.component';
-import { LeaderboardWidgetComponent } from '@app/widgets/leaderboard/leaderboard-widget.component';
-import { LocalLeaderboardWidgetComponent } from '@app/widgets/local-leaderboard/local-leaderboard-widget.component';
 import { RecentActivityWidgetComponent } from '@app/widgets/recent-activity/recent-activity-widget.component';
 import { SuggestedMissionWidgetComponent } from '@app/widgets/suggested-mission/suggested-mission-widget.component';
 
@@ -48,8 +46,6 @@ import { SuggestedMissionWidgetComponent } from '@app/widgets/suggested-mission/
     MissionsWidgetComponent,
     CarpetWidgetComponent,
     NearestPubComponent,
-    LeaderboardWidgetComponent,
-    LocalLeaderboardWidgetComponent,
     RecentActivityWidgetComponent,
     SuggestedMissionWidgetComponent,
 ],

@@ -52,7 +52,7 @@ export type BadgeWithEarnedStatus = {
 export type EnhancedScoreboardData = ScoreboardData & {
   currentStreak: number;
   recentBadges: BadgeWithEarnedStatus[];
-  leaderboardPosition: number | null;
+  // leaderboardPosition: number | null;
 };
 
 @Component({
@@ -135,7 +135,7 @@ export type EnhancedScoreboardData = ScoreboardData & {
               </div>
             }
 
-            @if (enhancedData().leaderboardPosition) {
+            <!-- @if (enhancedData().leaderboardPosition) {
               <div class="metric-card rank">
                 <div class="metric-icon">📊</div>
                 <div class="metric-content">
@@ -143,7 +143,7 @@ export type EnhancedScoreboardData = ScoreboardData & {
                   <div class="metric-label">Rank</div>
                 </div>
               </div>
-            }
+            } -->
           </div>
         </div>
       </div>
@@ -495,13 +495,11 @@ export class ScoreboardHeroWidgetComponent extends BaseWidgetComponent implement
         isEarned: true
       }));
 
-    const leaderboardPosition = this.leaderboardStore.userRankByPoints?.() || null;
 
     const enhanced: EnhancedScoreboardData = {
       ...baseData,
       currentStreak,
-      recentBadges,
-      leaderboardPosition
+      recentBadges
     };
 
     this.debug.extreme('[ScoreboardHeroWidget] Enhanced data computed:', {
@@ -513,7 +511,7 @@ export class ScoreboardHeroWidgetComponent extends BaseWidgetComponent implement
 
   // ✅ Animation tracking for cleanup
   private animationTimeouts: Map<string, number> = new Map();
-  
+
   // ✅ Display values using signals
   private readonly displayPointsValue = signal(0);
   private readonly displayPubsValue = signal(0);
@@ -612,21 +610,21 @@ export class ScoreboardHeroWidgetComponent extends BaseWidgetComponent implement
       const valueDifference = targetValue - startValue;
       const steps = Math.max(8, Math.min(20, Math.abs(valueDifference) / 10)); // Dynamic step count
       const stepDuration = finalDuration / steps;
-      
+
       let currentStep = 0;
-      
+
       const stepUpdate = () => {
         currentStep++;
         const progress = currentStep / steps;
-        
+
         // ✅ Ease-out cubic for natural feel
         const easedProgress = 1 - Math.pow(1 - progress, 3);
         const currentStepValue = Math.round(startValue + (valueDifference * easedProgress));
-        
+
         // ✅ Ensure value is never negative
         const safeValue = Math.max(0, currentStepValue);
         signalRef.set(safeValue);
-        
+
         if (currentStep < steps) {
           const timeoutId = setTimeout(stepUpdate, stepDuration) as any;
           this.animationTimeouts.set(key, timeoutId);

@@ -24,6 +24,7 @@ module.exports = {
     '^@landlord/(.*)$': '<rootDir>/src/app/landlord/$1',
     '^@feedback/(.*)$': '<rootDir>/src/app/feedback/$1',
     '^@widgets/(.*)$': '<rootDir>/src/app/widgets/$1',
+    '^@leaderboard/(.*)$': '<rootDir>/src/app/leaderboard/$1'
 
   }
 };
