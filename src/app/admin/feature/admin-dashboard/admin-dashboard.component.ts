@@ -4,8 +4,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 // DatabaseMetricsService removed - was over-engineered premature optimization
 import { FirebaseMetricsService } from '../../../shared/data-access/firebase-metrics.service';
-// TODO: Re-enable LeaderboardStore when available
-// import { LeaderboardStore } from '../../../leaderboard/data-access/leaderboard.store';
+import { LeaderboardStore } from '../../../leaderboard/data-access/leaderboard.store';
 import { FeedbackStore } from '../../../feedback/data-access/feedback.store';
 import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
 
@@ -55,31 +54,41 @@ type StatData = {
         </div>
       </section>
 
-      <!-- Admin Sections -->
+      <!-- Current Admin Tools -->
       <section class="admin-sections">
-        <h2>Admin Tools</h2>
+        <h2>Active Admin Tools</h2>
+        <p class="section-subtitle">These tools are currently available with real data</p>
         <div class="sections-grid">
-          @for (section of adminSections; track section.id) {
-            <div class="admin-card" [class.active]="section.status === 'active'">
-              @if (section.status === 'active') {
-                <a [routerLink]="section.route" class="card-link">
-                  <div class="card-icon">{{ section.icon }}</div>
-                  <h3>{{ section.title }}</h3>
-                  <p>{{ section.description }}</p>
-                  @if (section.stats) {
-                    <div class="card-stats">{{ section.stats }}</div>
-                  }
-                </a>
-              } @else {
-                <div class="card-content">
-                  <div class="card-icon">{{ section.icon }}</div>
-                  <h3>{{ section.title }}</h3>
-                  <p>{{ section.description }}</p>
-                  @if (section.stats) {
-                    <div class="card-stats">{{ section.stats }}</div>
-                  }
-                </div>
-              }
+          @for (section of activeSections; track section.id) {
+            <div class="admin-card active">
+              <a [routerLink]="section.route" class="card-link">
+                <div class="card-icon">{{ section.icon }}</div>
+                <h3>{{ section.title }}</h3>
+                <p>{{ section.description }}</p>
+                @if (section.stats) {
+                  <div class="card-stats">{{ section.stats }}</div>
+                }
+              </a>
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- Future Admin Tools -->
+      <section class="admin-sections future-sections">
+        <h2>Coming Soon</h2>
+        <p class="section-subtitle">These tools are planned for future releases</p>
+        <div class="sections-grid">
+          @for (section of futureSections; track section.id) {
+            <div class="admin-card coming-soon">
+              <div class="card-content">
+                <div class="card-icon">{{ section.icon }}</div>
+                <h3>{{ section.title }}</h3>
+                <p>{{ section.description }}</p>
+                @if (section.stats) {
+                  <div class="card-stats">{{ section.stats }}</div>
+                }
+              </div>
             </div>
           }
         </div>
@@ -105,8 +114,7 @@ type StatData = {
 export class AdminDashboardComponent {
   // Database metrics service removed - focus on core functionality first
   private readonly firebaseMetricsService = inject(FirebaseMetricsService);
-  // TODO: Re-enable LeaderboardStore when available
-  // protected readonly leaderboardStore = inject(LeaderboardStore);
+  protected readonly leaderboardStore = inject(LeaderboardStore);
   protected readonly feedbackStore = inject(FeedbackStore);
   protected readonly dataAggregatorService = inject(DataAggregatorService);
 
@@ -115,19 +123,9 @@ export class AdminDashboardComponent {
 
   // Database metrics removed - focus on core business metrics instead
 
-  // TODO: Re-enable when LeaderboardStore is available
   // Real business data from stores
-  // readonly siteStats = this.leaderboardStore.siteStats;
-  // readonly globalDataStats = this.leaderboardStore.globalDataStats;
-  
-  // Temporary placeholder data
-  readonly siteStats = signal({
-    allTime: { users: 0, checkins: 0, pubsConquered: 0, totalPubsInSystem: 0 },
-    thisMonth: { activeUsers: 0, newUsers: 0, checkins: 0 }
-  });
-  readonly globalDataStats = signal({
-    totalUsers: 0, totalCheckIns: 0, activeUsers: 0
-  });
+  readonly siteStats = this.leaderboardStore.siteStats;
+  readonly globalDataStats = this.leaderboardStore.globalDataStats;
   readonly pendingFeedback = this.feedbackStore.pendingFeedback;
   readonly scoreboardData = this.dataAggregatorService.scoreboardData;
 
@@ -146,21 +144,21 @@ export class AdminDashboardComponent {
         value: siteData.allTime.users,
         label: 'Total Users',
         sourceType: siteData.allTime.users > 0 ? 'real' : 'placeholder',
-        sourceDetail: `LeaderboardStore.siteStats.allTime.users | Raw siteData: ${JSON.stringify(siteData.allTime)}`,
+        sourceDetail: `✅ REAL DATA: LeaderboardStore.siteStats.allTime.users | Raw siteData: ${JSON.stringify(siteData.allTime)}`,
         icon: siteData.allTime.users > 0 ? '✅' : '🔶'
       },
       {
         value: siteData.allTime.checkins,
         label: 'Total Check-ins',
         sourceType: siteData.allTime.checkins > 0 ? 'real' : 'placeholder',
-        sourceDetail: `LeaderboardStore.siteStats.allTime.checkins | Monthly: ${siteData.thisMonth.checkins}`,
+        sourceDetail: `✅ REAL DATA: LeaderboardStore.siteStats.allTime.checkins | Monthly: ${siteData.thisMonth.checkins}`,
         icon: siteData.allTime.checkins > 0 ? '✅' : '🔶'
       },
       {
         value: siteData.allTime.pubsConquered,
         label: 'Pubs Visited',
         sourceType: siteData.allTime.pubsConquered > 0 ? 'real' : 'placeholder',
-        sourceDetail: `LeaderboardStore.siteStats.allTime.pubsConquered | Total pubs in system: ${siteData.allTime.totalPubsInSystem}`,
+        sourceDetail: `✅ REAL DATA: LeaderboardStore.siteStats.allTime.pubsConquered | Total pubs in system: ${siteData.allTime.totalPubsInSystem}`,
         icon: siteData.allTime.pubsConquered > 0 ? '✅' : '🔶'
       },
       {
@@ -175,14 +173,14 @@ export class AdminDashboardComponent {
         value: siteData.thisMonth.activeUsers,
         label: 'Active This Month',
         sourceType: siteData.thisMonth.activeUsers > 0 ? 'real' : 'placeholder',
-        sourceDetail: `LeaderboardStore.siteStats.thisMonth.activeUsers | New users: ${siteData.thisMonth.newUsers}`,
+        sourceDetail: `✅ REAL DATA: LeaderboardStore.siteStats.thisMonth.activeUsers | New users: ${siteData.thisMonth.newUsers}`,
         icon: siteData.thisMonth.activeUsers > 0 ? '✅' : '🔶'
       },
       {
         value: siteData.thisMonth.checkins,
         label: 'Check-ins This Month',
         sourceType: siteData.thisMonth.checkins > 0 ? 'real' : 'placeholder',
-        sourceDetail: `LeaderboardStore.siteStats.thisMonth.checkins | Raw monthly data: ${JSON.stringify(siteData.thisMonth)}`,
+        sourceDetail: `✅ REAL DATA: LeaderboardStore.siteStats.thisMonth.checkins | Raw monthly data: ${JSON.stringify(siteData.thisMonth)}`,
         icon: siteData.thisMonth.checkins > 0 ? '✅' : '🔶'
       },
       // Global Data Debug
@@ -190,7 +188,7 @@ export class AdminDashboardComponent {
         value: globalData.totalUsers,
         label: 'Global Users',
         sourceType: globalData.totalUsers > 0 ? 'real' : 'placeholder',
-        sourceDetail: `LeaderboardStore.globalDataStats.totalUsers | CheckIns: ${globalData.totalCheckIns}, Active: ${globalData.activeUsers}`,
+        sourceDetail: `✅ REAL DATA: LeaderboardStore.globalDataStats.totalUsers | CheckIns: ${globalData.totalCheckIns}, Active: ${globalData.activeUsers}`,
         icon: globalData.totalUsers > 0 ? '✅' : '🔶'
       },
       {
@@ -213,11 +211,10 @@ export class AdminDashboardComponent {
         error: this.feedbackStore.error(),
         data: allFeedback
       },
-      // TODO: Re-enable when LeaderboardStore is available
-      // leaderboardStore: {
-      //   loading: this.leaderboardStore.loading(),
-      //   error: this.leaderboardStore.error()
-      // },
+      leaderboardStore: {
+        loading: this.leaderboardStore.loading(),
+        error: this.leaderboardStore.error()
+      },
       stats
     });
     return stats;
@@ -225,11 +222,11 @@ export class AdminDashboardComponent {
 
   readonly isDevMode = isDevMode;
 
-  readonly adminSections: AdminSection[] = [
-    // Active sections
+  // Active admin tools with real data
+  readonly activeSections: AdminSection[] = [
     {
       id: 'missions',
-      title: 'Missions ✅',
+      title: 'Missions',
       description: 'Create and manage game missions and challenges',
       route: '/admin/missions',
       icon: '🎯',
@@ -238,7 +235,7 @@ export class AdminDashboardComponent {
     },
     {
       id: 'badges',
-      title: 'Badges ✅',
+      title: 'Badges',
       description: 'Manage achievement badges and rewards',
       route: '/admin/badges',
       icon: '🏆',
@@ -247,18 +244,16 @@ export class AdminDashboardComponent {
     },
     {
       id: 'metrics',
-      title: 'Database Metrics ✅',
+      title: 'Database Metrics',
       description: 'Monitor database performance and costs',
       route: '/admin/metrics',
       icon: '📊',
       status: 'active',
-      stats: `Real data: Firebase operations tracked`
+      stats: `Firebase operations tracked in real-time`
     },
-
-    // High Priority - Real Data Available
     {
       id: 'checkins',
-      title: 'Check-ins Management ✅',
+      title: 'Check-ins Management',
       description: 'View and manage all user check-ins',
       route: '/admin/checkins',
       icon: '🍺',
@@ -267,7 +262,7 @@ export class AdminDashboardComponent {
     },
     {
       id: 'feedback',
-      title: 'Feedback Review ✅',
+      title: 'Feedback Review',
       description: 'Review user feedback and support tickets',
       route: '/admin/feedback',
       icon: '💬',
@@ -275,36 +270,8 @@ export class AdminDashboardComponent {
       stats: `${this.pendingFeedback().length} pending reviews - Real CRUD available`
     },
     {
-      id: 'users',
-      title: 'User Management 🔶',
-      description: 'Manage user accounts, roles, and permissions',
-      route: '/admin/users',
-      icon: '👥',
-      status: 'coming-soon',
-      stats: `${this.siteStats().allTime.users} users (UserStore ready - TODO: reconnect LeaderboardStore)`
-    },
-    {
-      id: 'analytics',
-      title: 'Analytics Hub 🔶',
-      description: 'Business intelligence and user engagement metrics',
-      route: '/admin/analytics',
-      icon: '📈',
-      status: 'coming-soon',
-      stats: 'LeaderboardStore + DataAggregator ready'
-    },
-
-    // Future sections
-    {
-      id: 'pubs',
-      title: 'Pub Management',
-      description: 'Add, edit, and manage pub locations and details',
-      route: '/admin/pubs',
-      icon: '🍺',
-      status: 'coming-soon'
-    },
-    {
       id: 'carpets',
-      title: 'Carpet Management ✅',
+      title: 'Carpet Management',
       description: 'Review and manage captured carpet photos',
       route: '/admin/carpets',
       icon: '📸',
@@ -312,12 +279,53 @@ export class AdminDashboardComponent {
       stats: 'Photo management system'
     },
     {
+      id: 'components',
+      title: 'Developer Tools',
+      description: 'Component showcase and development utilities',
+      route: '/dev/components',
+      icon: '🛠️',
+      status: 'active',
+      stats: 'Design system components'
+    }
+  ];
+
+  // Future admin tools - planned features
+  readonly futureSections: AdminSection[] = [
+    {
+      id: 'users',
+      title: 'User Management',
+      description: 'Manage user accounts, roles, and permissions',
+      route: '/admin/users',
+      icon: '👥',
+      status: 'coming-soon',
+      stats: `${this.siteStats().allTime.users} users - Real data from LeaderboardStore`
+    },
+    {
+      id: 'analytics',
+      title: 'Analytics Hub',
+      description: 'Business intelligence and user engagement metrics',
+      route: '/admin/analytics',
+      icon: '📈',
+      status: 'coming-soon',
+      stats: `${this.globalDataStats().totalUsers} users, ${this.globalDataStats().totalCheckIns} check-ins - Real data ready`
+    },
+    {
+      id: 'pubs',
+      title: 'Pub Management',
+      description: 'Add, edit, and manage pub locations and details',
+      route: '/admin/pubs',
+      icon: '🍺',
+      status: 'coming-soon',
+      stats: 'PubStore integration needed'
+    },
+    {
       id: 'content',
       title: 'Content Moderation',
       description: 'Moderate user-generated content and photos',
       route: '/admin/content',
       icon: '🛡️',
-      status: 'coming-soon'
+      status: 'coming-soon',
+      stats: 'Automated moderation system'
     },
     {
       id: 'settings',
@@ -325,7 +333,8 @@ export class AdminDashboardComponent {
       description: 'Configure global app settings and feature flags',
       route: '/admin/settings',
       icon: '⚙️',
-      status: 'coming-soon'
+      status: 'coming-soon',
+      stats: 'Feature flag system'
     },
     {
       id: 'reports',
@@ -333,7 +342,8 @@ export class AdminDashboardComponent {
       description: 'Generate reports and export system data',
       route: '/admin/reports',
       icon: '📋',
-      status: 'coming-soon'
+      status: 'coming-soon',
+      stats: 'CSV/PDF export capabilities'
     },
     {
       id: 'audit',
@@ -341,16 +351,8 @@ export class AdminDashboardComponent {
       description: 'Track admin actions and system changes',
       route: '/admin/audit',
       icon: '🔍',
-      status: 'coming-soon'
-    },
-    {
-      id: 'components',
-      title: 'Developer Tools ✅',
-      description: 'Component showcase and development utilities',
-      route: '/dev/components',
-      icon: '🛠️',
-      status: 'active',
-      stats: 'Design system components'
+      status: 'coming-soon',
+      stats: 'Action tracking system'
     }
   ];
 
