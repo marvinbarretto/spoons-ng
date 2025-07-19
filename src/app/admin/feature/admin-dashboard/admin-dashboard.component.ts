@@ -225,6 +225,15 @@ export class AdminDashboardComponent {
   // Active admin tools with real data
   readonly activeSections: AdminSection[] = [
     {
+      id: 'users',
+      title: 'User Management',
+      description: 'View and manage all user accounts',
+      route: '/admin/users',
+      icon: '👥',
+      status: 'active',
+      stats: `${this.siteStats().allTime.users} users - Real data from UserStore`
+    },
+    {
       id: 'missions',
       title: 'Missions',
       description: 'Create and manage game missions and challenges',
@@ -241,15 +250,6 @@ export class AdminDashboardComponent {
       icon: '🏆',
       status: 'active',
       stats: 'Real CRUD via BadgeStore'
-    },
-    {
-      id: 'metrics',
-      title: 'Database Metrics',
-      description: 'Monitor database performance and costs',
-      route: '/admin/metrics',
-      icon: '📊',
-      status: 'active',
-      stats: `Firebase operations tracked in real-time`
     },
     {
       id: 'checkins',
@@ -291,15 +291,6 @@ export class AdminDashboardComponent {
 
   // Future admin tools - planned features
   readonly futureSections: AdminSection[] = [
-    {
-      id: 'users',
-      title: 'User Management',
-      description: 'Manage user accounts, roles, and permissions',
-      route: '/admin/users',
-      icon: '👥',
-      status: 'coming-soon',
-      stats: `${this.siteStats().allTime.users} users - Real data from LeaderboardStore`
-    },
     {
       id: 'analytics',
       title: 'Analytics Hub',

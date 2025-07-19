@@ -7,7 +7,7 @@ import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { ChipUserComponent } from '../../../shared/ui/chips/chip-user/chip-user.component';
 import { UserStore } from '../../../users/data-access/user.store';
 import { PubStore } from '../../../pubs/data-access/pub.store';
-import type { CheckIn } from '../../../check-in/utils/check-in.models';
+import type { CheckIn, PointsBreakdown } from '../../../check-in/utils/check-in.models';
 
 type CheckInWithDetails = CheckIn & {
   displayName?: string;
@@ -81,29 +81,87 @@ type CheckInWithDetails = CheckIn & {
               />
             </div>
 
-            <div class="form-group">
-              <label for="points">Points Earned</label>
-              <input
-                id="points"
-                type="number"
-                [value]="editableData().pointsEarned || 0"
-                (input)="updatePoints($event)"
-                class="form-input"
-                min="0"
-                step="1"
-              />
-            </div>
 
             <div class="form-group">
-              <label for="pointsBreakdown">Points Breakdown</label>
-              <textarea
-                id="pointsBreakdown"
-                [value]="editableData().pointsBreakdown || ''"
-                (input)="updatePointsBreakdown($event)"
-                class="form-input"
-                rows="3"
-                placeholder="Points calculation breakdown..."
-              ></textarea>
+              <label>Points Breakdown</label>
+              <div class="points-breakdown-editable">
+                <div class="breakdown-input-row">
+                  <label for="basePoints">Base Points:</label>
+                  <input
+                    id="basePoints"
+                    type="number"
+                    [value]="getCurrentBreakdownValue('base')"
+                    (input)="updateBreakdownValue('base', $event)"
+                    class="breakdown-input"
+                    min="0"
+                    step="1"
+                  />
+                </div>
+                <div class="breakdown-input-row">
+                  <label for="distanceBonus">Distance Bonus:</label>
+                  <input
+                    id="distanceBonus"
+                    type="number"
+                    [value]="getCurrentBreakdownValue('distance')"
+                    (input)="updateBreakdownValue('distance', $event)"
+                    class="breakdown-input"
+                    min="0"
+                    step="1"
+                  />
+                </div>
+                <div class="breakdown-input-row">
+                  <label for="otherBonus">Other Bonus:</label>
+                  <input
+                    id="otherBonus"
+                    type="number"
+                    [value]="getCurrentBreakdownValue('bonus')"
+                    (input)="updateBreakdownValue('bonus', $event)"
+                    class="breakdown-input"
+                    min="0"
+                    step="1"
+                  />
+                </div>
+                <div class="breakdown-input-row">
+                  <label for="multiplier">Multiplier:</label>
+                  <input
+                    id="multiplier"
+                    type="number"
+                    [value]="getCurrentBreakdownValue('multiplier')"
+                    (input)="updateBreakdownValue('multiplier', $event)"
+                    class="breakdown-input"
+                    min="1"
+                    step="0.1"
+                  />
+                </div>
+                <div class="breakdown-input-row">
+                  <label for="photoQuality">Photo Quality (%):</label>
+                  <input
+                    id="photoQuality"
+                    type="number"
+                    [value]="getCurrentBreakdownValue('photoQuality')"
+                    (input)="updateBreakdownValue('photoQuality', $event)"
+                    class="breakdown-input"
+                    min="0"
+                    max="100"
+                    step="1"
+                  />
+                </div>
+                <div class="breakdown-input-row">
+                  <label for="reason">Reason:</label>
+                  <input
+                    id="reason"
+                    type="text"
+                    [value]="getCurrentBreakdownValue('reason')"
+                    (input)="updateBreakdownValue('reason', $event)"
+                    class="breakdown-input reason-input"
+                    placeholder="Points calculation reason..."
+                  />
+                </div>
+                <div class="breakdown-total">
+                  <span class="total-label">Calculated Total:</span>
+                  <span class="total-value">{{ calculatedTotal() }}</span>
+                </div>
+              </div>
             </div>
 
             <div class="form-group">
@@ -352,6 +410,138 @@ type CheckInWithDetails = CheckIn & {
       font-family: monospace;
     }
 
+    .points-breakdown {
+      background: var(--background-lighter);
+      border-radius: 8px;
+      padding: 1rem;
+      border: 1px solid var(--border);
+    }
+
+    .breakdown-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+
+    .breakdown-item:last-child {
+      border-bottom: none;
+    }
+
+    .breakdown-item.total {
+      font-weight: 600;
+      border-top: 2px solid var(--border);
+      margin-top: 0.5rem;
+      padding-top: 1rem;
+      font-size: 1rem;
+    }
+
+    .breakdown-label {
+      color: var(--text-secondary);
+    }
+
+    .breakdown-value {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .breakdown-item.total .breakdown-value {
+      color: var(--primary);
+      font-weight: 700;
+    }
+
+    .breakdown-reason {
+      margin-top: 0.5rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
+
+    .breakdown-reason .breakdown-label {
+      font-weight: 500;
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+
+    .breakdown-reason .breakdown-value {
+      color: var(--text-secondary);
+      font-style: italic;
+    }
+
+    .no-breakdown {
+      padding: 1rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-style: italic;
+      background: var(--background-lighter);
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    .points-breakdown-editable {
+      background: var(--background-lighter);
+      border-radius: 8px;
+      padding: 1rem;
+      border: 1px solid var(--border);
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    .breakdown-input-row {
+      display: grid;
+      grid-template-columns: 1fr 120px;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .breakdown-input-row label {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .breakdown-input {
+      padding: 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--background);
+      color: var(--text);
+      font-size: 0.9rem;
+      transition: border-color 0.2s ease;
+    }
+
+    .breakdown-input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .reason-input {
+      grid-column: 1 / -1;
+      margin-top: 0.5rem;
+    }
+
+    .breakdown-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 0;
+      border-top: 2px solid var(--border);
+      margin-top: 0.5rem;
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .total-label {
+      color: var(--text);
+    }
+
+    .total-value {
+      color: var(--primary);
+      font-weight: 700;
+    }
+
     .modal-footer {
       padding: 1.5rem;
       border-top: 1px solid var(--border);
@@ -431,6 +621,48 @@ export class ModalCheckInDetailsComponent {
     return Object.keys(editableData).length > 0;
   });
 
+  // Auto-calculate total points from breakdown components
+  readonly calculatedTotal = computed(() => {
+    const breakdown = this.getCurrentBreakdown();
+    const baseCalc = (breakdown.base || 0) + (breakdown.distance || 0) + (breakdown.bonus || 0);
+    return Math.round(baseCalc * (breakdown.multiplier || 1));
+  });
+
+  // Get current breakdown (editable data or original data)
+  getCurrentBreakdown() {
+    const editableBreakdown = this.editableData().pointsBreakdown;
+    const originalBreakdown = this.checkIn().pointsBreakdown;
+    
+    // Merge original with any editable changes
+    return {
+      base: editableBreakdown?.base ?? originalBreakdown?.base ?? 0,
+      distance: editableBreakdown?.distance ?? originalBreakdown?.distance ?? 0,
+      bonus: editableBreakdown?.bonus ?? originalBreakdown?.bonus ?? 0,
+      multiplier: editableBreakdown?.multiplier ?? originalBreakdown?.multiplier ?? 1,
+      total: editableBreakdown?.total ?? originalBreakdown?.total ?? 0,
+      reason: editableBreakdown?.reason ?? originalBreakdown?.reason ?? '',
+      photoQuality: editableBreakdown?.photoQuality ?? originalBreakdown?.photoQuality
+    };
+  }
+
+  // Get current value for a specific breakdown field
+  getCurrentBreakdownValue(field: keyof PointsBreakdown): any {
+    const breakdown = this.getCurrentBreakdown();
+    const value = breakdown[field];
+    
+    // Provide sensible defaults
+    if (value === undefined || value === null) {
+      switch (field) {
+        case 'multiplier': return 1;
+        case 'reason': return '';
+        case 'photoQuality': return '';
+        default: return 0;
+      }
+    }
+    
+    return value;
+  }
+
   // Event handlers
   updateTimestamp(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -444,22 +676,44 @@ export class ModalCheckInDetailsComponent {
     }
   }
 
-  updatePoints(event: Event): void {
+  updateBreakdownValue(field: string, event: Event): void {
     const input = event.target as HTMLInputElement;
-    const points = parseInt(input.value, 10);
-    this._editableData.update(data => ({
-      ...data,
-      pointsEarned: isNaN(points) ? 0 : points
-    }));
+    let value: any = input.value;
+    
+    // Parse numeric fields
+    if (['base', 'distance', 'bonus', 'multiplier', 'photoQuality'].includes(field)) {
+      const parsed = field === 'multiplier' ? parseFloat(value) : parseInt(value, 10);
+      value = isNaN(parsed) ? (field === 'multiplier' ? 1 : 0) : parsed;
+    }
+    
+    // Update the breakdown in editable data
+    this._editableData.update(data => {
+      const currentBreakdown = data.pointsBreakdown || this.checkIn().pointsBreakdown || {
+        base: 0,
+        distance: 0,
+        bonus: 0,
+        multiplier: 1,
+        total: 0,
+        reason: ''
+      };
+      const updatedBreakdown: PointsBreakdown = {
+        ...currentBreakdown,
+        [field]: value
+      };
+      
+      // Auto-calculate total and update pointsEarned
+      const baseCalc = (updatedBreakdown.base || 0) + (updatedBreakdown.distance || 0) + (updatedBreakdown.bonus || 0);
+      const calculatedTotal = Math.round(baseCalc * (updatedBreakdown.multiplier || 1));
+      updatedBreakdown.total = calculatedTotal;
+      
+      return {
+        ...data,
+        pointsBreakdown: updatedBreakdown,
+        pointsEarned: calculatedTotal // Keep pointsEarned in sync
+      };
+    });
   }
 
-  updatePointsBreakdown(event: Event): void {
-    const input = event.target as HTMLTextAreaElement;
-    this._editableData.update(data => ({
-      ...data,
-      pointsBreakdown: input.value
-    }));
-  }
 
   updateLandlordStatus(event: Event): void {
     const input = event.target as HTMLInputElement;
