@@ -609,7 +609,7 @@ export class RegistrationFlowComponent extends BaseComponent implements OnInit, 
 
   generateRandomUsername(): void {
     const randomName = this.flowService.generateRandomUsername();
-    
+
     // Update form without triggering valueChanges
     this.profileForm.patchValue({ displayName: randomName }, { emitEvent: false });
     this.flowService.updateData({ displayName: randomName });
@@ -755,11 +755,6 @@ export class RegistrationFlowComponent extends BaseComponent implements OnInit, 
 
       // Create user document using userService (which extends FirestoreService)
       await this.userStore.createCompleteUserDocument(user.uid, completeUserData);
-
-      // Mark splash as seen so user can access protected routes
-      this.authStore.markSplashAsSeen();
-
-      this.toastService.centerSuccess('Welcome to Spoonscount! 🎉');
 
       // Navigate to home
       await this.router.navigate(['/home']);

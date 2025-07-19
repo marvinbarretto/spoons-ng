@@ -84,9 +84,7 @@ export class SplashComponent extends BaseComponent implements OnInit, OnDestroy 
   override ngOnInit(): void {
     console.log('[SplashComponent] 🎬 Component initializing...');
     console.log('[SplashComponent] 🎬 Current auth state:', {
-      hasSeenSplash: this.authStore.hasSeenSplash(),
       isAuthenticated: this.authStore.isAuthenticated(),
-      isExplicitGuest: this.authStore.isExplicitGuest(),
       userId: this.authStore.user()?.uid?.slice(0, 8),
       isAnonymous: this.authStore.user()?.isAnonymous
     });
@@ -110,9 +108,7 @@ export class SplashComponent extends BaseComponent implements OnInit, OnDestroy 
     console.log('[SplashComponent] 🔐 navigateToLogin() called');
     this.loading.set(true);
     try {
-      // Mark splash as seen since user is taking action from splash
-      console.log('[SplashComponent] 🔐 Marking splash as seen and navigating to /login');
-      this.authStore.markSplashAsSeen();
+      console.log('[SplashComponent] 🔐 Navigating to /login');
       const success = await this.router.navigate(['/login']);
       console.log('[SplashComponent] 🔐 Navigation to /login result:', success);
     } catch (error) {
@@ -126,9 +122,7 @@ export class SplashComponent extends BaseComponent implements OnInit, OnDestroy 
     console.log('[SplashComponent] 📝 navigateToRegister() called');
     this.loading.set(true);
     try {
-      // Mark splash as seen since user is taking action from splash
-      console.log('[SplashComponent] 📝 Marking splash as seen and navigating to /register');
-      this.authStore.markSplashAsSeen();
+      console.log('[SplashComponent] 📝 Navigating to /register');
       const success = await this.router.navigate(['/register']);
       console.log('[SplashComponent] 📝 Navigation to /register result:', success);
     } catch (error) {
@@ -147,8 +141,7 @@ export class SplashComponent extends BaseComponent implements OnInit, OnDestroy 
       console.log('[SplashComponent] 👻 Starting guest authentication flow...');
       console.log('[SplashComponent] 👻 Auth state before guest creation:', {
         hasUser: !!this.authStore.user(),
-        isAuthenticated: this.authStore.isAuthenticated(),
-        isExplicitGuest: this.authStore.isExplicitGuest()
+        isAuthenticated: this.authStore.isAuthenticated()
       });
 
       // Create anonymous user when user chooses guest
@@ -168,7 +161,6 @@ export class SplashComponent extends BaseComponent implements OnInit, OnDestroy 
         hasUser: !!this.authStore.user(),
         userId: this.authStore.user()?.uid?.slice(0, 8),
         isAuthenticated: this.authStore.isAuthenticated(),
-        isExplicitGuest: this.authStore.isExplicitGuest(),
         isAnonymous: this.authStore.user()?.isAnonymous
       });
 

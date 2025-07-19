@@ -64,18 +64,17 @@ export class NavComponent {
       hasUser: !!this.authStore.user(),
       userId: this.authStore.user()?.uid?.slice(0, 8),
       isAuthenticated: this.authStore.isAuthenticated(),
-      isExplicitGuest: this.authStore.isExplicitGuest()
     });
-    
+
     this.authStore.logout();
     console.log('[NavComponent] 🚪 AuthStore.logout() called');
     this.toastService.info('Successfully logged out');
     console.log('[NavComponent] 🔔 Toast notification sent');
-    
+
     // Wait for auth state to clear before navigating
     console.log('[NavComponent] ⏳ Waiting for auth state to clear...');
     await this.waitForAuthStateCleared();
-    
+
     console.log('[NavComponent] ✅ Auth state cleared, attempting navigation to /splash');
     try {
       const success = await this.router.navigate(['/splash']);

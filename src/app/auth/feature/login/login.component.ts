@@ -56,6 +56,18 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
             formControlName="password"
           />
 
+          <!-- Remember Me Checkbox -->
+          <div class="remember-me-container">
+            <label class="remember-me-label">
+              <input
+                type="checkbox"
+                class="remember-me-checkbox"
+                formControlName="rememberMe"
+              />
+              <span class="remember-me-text">Remember me</span>
+            </label>
+          </div>
+
           <!-- Error Message -->
           @if (error()) {
             <div class="form-error form-error--global">
@@ -132,7 +144,8 @@ export class LoginComponent extends BaseComponent implements OnInit, OnDestroy {
   // Reactive form
   readonly loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(6)]]
+    password: ['', [Validators.required, Validators.minLength(6)]],
+    rememberMe: [false]
   });
 
   // UI state
@@ -142,6 +155,12 @@ export class LoginComponent extends BaseComponent implements OnInit, OnDestroy {
     // Store current theme and override with sunshine for better contrast on dark backgrounds
     this.originalTheme = this.themeStore.themeType();
     this.themeStore.setTheme('sunshine');
+
+    // Load remember me preference if it exists
+    const rememberMePreference = this.authStore.getRememberMePreference();
+    if (rememberMePreference) {
+      this.loginForm.patchValue({ rememberMe: true });
+    }
   }
 
   ngOnDestroy(): void {
@@ -160,10 +179,10 @@ export class LoginComponent extends BaseComponent implements OnInit, OnDestroy {
     // Disable form controls during processing
     this.loginForm.disable();
 
-    const { email, password } = this.loginForm.value;
+    const { email, password, rememberMe } = this.loginForm.value;
 
     try {
-      await this.authStore.loginWithEmail(email!.trim(), password!);
+      await this.authStore.loginWithEmail(email!.trim(), password!, rememberMe!);
 
       // Navigate to home or onboarding based on user state
       await this.router.navigate(['/home']);

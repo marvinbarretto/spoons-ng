@@ -12,6 +12,9 @@ import {
   Unsubscribe,
   signInAnonymously,
   updateProfile,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence,
 } from '@angular/fire/auth';
 
 @Injectable({ providedIn: 'root' })
@@ -111,11 +114,23 @@ export class AuthService {
   }
 
 
-  async loginWithEmail(email: string, password: string): Promise<User> {
+  async loginWithEmail(email: string, password: string, rememberMe = false): Promise<User> {
     try {
       this.loading.set(true);
+      
+      // Set persistence based on rememberMe choice
+      const persistence = rememberMe ? browserLocalPersistence : browserSessionPersistence;
+      await setPersistence(this.auth, persistence);
+      console.log('[AuthService] ✅ Auth persistence set to:', rememberMe ? 'LOCAL' : 'SESSION');
+      
       const cred = await signInWithEmailAndPassword(this.auth, email, password);
       console.log('[AuthService] ✅ Email login successful:', cred.user.uid);
+
+      // Store remember me preference
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('rememberMe', rememberMe.toString());
+        console.log('[AuthService] 💾 Stored rememberMe preference:', rememberMe);
+      }
 
       // For registered users, document creation is deferred until onboarding
       if (!cred.user.isAnonymous) {
@@ -225,6 +240,9 @@ export class AuthService {
       await signOut(this.auth);
       console.log('[AuthService] ✅ Firebase signOut() completed');
       
+      // Clear remember me preference on logout
+      this.clearRememberMePreference();
+      
       console.log('[AuthService] 🗑️ Clearing internal user state');
       this.userInternal.set(null);
       console.log('[AuthService] ✅ User signed out successfully');
@@ -304,5 +322,25 @@ export class AuthService {
 
   getUid(): string | null {
     return this.userInternal()?.uid ?? null;
+  }
+
+  /**
+   * Check if user previously selected "Remember me"
+   */
+  getRememberMePreference(): boolean {
+    if (typeof localStorage === 'undefined') return false;
+    
+    const stored = localStorage.getItem('rememberMe');
+    return stored === 'true';
+  }
+
+  /**
+   * Clear remember me preference (used on logout)
+   */
+  clearRememberMePreference(): void {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem('rememberMe');
+      console.log('[AuthService] 🗑️ Cleared rememberMe preference');
+    }
   }
 }

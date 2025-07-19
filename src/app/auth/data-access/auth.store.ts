@@ -232,8 +232,8 @@ export class AuthStore {
     console.log('[AuthStore] 🏁 loginWithGoogle() FINISHED');
   }
 
-  async loginWithEmail(email: string, password: string): Promise<void> {
-    await this.authService.loginWithEmail(email, password);
+  async loginWithEmail(email: string, password: string, rememberMe = false): Promise<void> {
+    await this.authService.loginWithEmail(email, password, rememberMe);
   }
 
   async registerWithEmail(email: string, password: string, displayName?: string): Promise<void> {
@@ -330,6 +330,13 @@ export class AuthStore {
       
       checkAuth();
     });
+  }
+
+  /**
+   * Check if user previously selected "Remember me"
+   */
+  getRememberMePreference(): boolean {
+    return this.authService.getRememberMePreference();
   }
 
   openAvatarSelector(): void {
