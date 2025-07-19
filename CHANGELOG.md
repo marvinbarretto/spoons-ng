@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.107](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.106...v0.0.107) (2025-07-19)
+
 ### [0.0.106](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.105...v0.0.106) (2025-07-19)
 
 
