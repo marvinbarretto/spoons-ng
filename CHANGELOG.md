@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.106](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.105...v0.0.106) (2025-07-19)
+
+
+### Bug Fixes
+
+* [Checkin] remove photo quality tier stuff ([fe59da2](https://github.com/marvinbarretto/spoons-ng/commit/fe59da2f668f846bf0846d8bc39470ecf7bef8d8))
+
 ### [0.0.105](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.104...v0.0.105) (2025-07-19)
 
 
