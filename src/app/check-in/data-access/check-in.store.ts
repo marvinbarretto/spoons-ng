@@ -18,6 +18,7 @@ import { BaseStore } from '../../shared/base/base.store';
 import { CameraService } from '../../shared/data-access/camera.service';
 import { TelegramNotificationService } from '../../shared/data-access/telegram-notification.service';
 import { CacheCoherenceService } from '../../shared/data-access/cache-coherence.service';
+import { ErrorLoggingService } from '../../shared/data-access/error-logging.service';
 import type { CheckIn } from '../utils/check-in.models';
 import type { User } from '../../users/utils/user.model';
 import type { Pub } from '../../pubs/utils/pub.models';
@@ -41,6 +42,7 @@ export class CheckInStore extends BaseStore<CheckIn> {
   private readonly cameraService = inject(CameraService);
   private readonly telegramNotificationService = inject(TelegramNotificationService);
   private readonly cacheCoherence = inject(CacheCoherenceService);
+  private readonly errorLoggingService = inject(ErrorLoggingService);
 
   // Check-in process state
   private readonly _isProcessing = signal(false);
@@ -186,6 +188,12 @@ export class CheckInStore extends BaseStore<CheckIn> {
   this._isProcessing.set(true);
   console.log('[CheckInStore] 🔄 Set processing to true');
 
+  // Declare variables at function scope for error logging
+  let pointsData: any = null;
+  let carpetImageKey: string | undefined = undefined;
+  let awardedBadges: any[] = [];
+  let landlordResult: any = null;
+
   try {
     // Validation phase
     console.log('[CheckInStore] 🔍 Starting validation phase...');
@@ -199,41 +207,116 @@ export class CheckInStore extends BaseStore<CheckIn> {
 
     // Calculate points before creation
     console.log('[CheckInStore] 🎯 Calculating points before check-in creation...');
-    const pointsData = await this.calculatePoints(pubId, carpetResult);
+    pointsData = await this.calculatePoints(pubId, carpetResult);
     console.log('[CheckInStore] 🎯 Points calculated:', pointsData);
 
-    // Creation phase with carpet data
-    console.log('[CheckInStore] 💾 Starting check-in creation...');
-    const newCheckinId = await this.newCheckInService.createCheckin(pubId);
-    console.log('[CheckInStore] ✅ Check-in creation completed successfully');
+    // Calculate badges and landlord status BEFORE creating the document
+    console.log('[CheckInStore] 🏅 Pre-calculating badges and landlord status...');
+    const userId = this.authStore.uid();
+    if (!userId) {
+      throw new Error('User not authenticated');
+    }
+
+    // Create temporary checkin object for badge evaluation
+    const tempCheckin: CheckIn = {
+      id: 'temp', // Will be replaced with real ID
+      userId,
+      pubId,
+      timestamp: Timestamp.now(),
+      dateKey: new Date().toISOString().split('T')[0],
+      pointsEarned: pointsData?.total || 0,
+      pointsBreakdown: pointsData || undefined
+    };
+
+    // Get all user check-ins for badge evaluation
+    const allUserCheckIns = this.checkins().filter(c => c.userId === userId);
+
+    // Calculate badges
+    let badgeName: string | undefined;
+    try {
+      awardedBadges = await this.badgeAwardService.evaluateAndAwardBadges(
+        userId,
+        tempCheckin,
+        allUserCheckIns
+      );
+      console.log('[CheckInStore] 🏅 Badges pre-calculated, awarded:', awardedBadges);
+      // Get the first badge name if any awarded
+      badgeName = awardedBadges.length > 0 ? awardedBadges[0].badge.name : undefined;
+    } catch (error) {
+      console.error('[CheckInStore] Badge pre-calculation error:', error);
+      // Log the badge error for admin review
+      await this.errorLoggingService.logCheckInError(
+        'badge-pre-calculation',
+        error as Error,
+        {
+          pubId,
+          userId,
+          pointsData: pointsData,
+          severity: 'medium' // Badge failures shouldn't break check-ins
+        }
+      );
+      // Don't let badge errors break the check-in flow
+      awardedBadges = [];
+    }
+
+    // Calculate landlord status
+    console.log('[CheckInStore] 👑 Pre-calculating landlord status...');
+    landlordResult = await this.landlordStore.tryAwardLandlordForCheckin(pubId, userId, new Date());
+
+    // Check for mission updates
+    console.log('[CheckInStore] 🎯 Pre-calculating mission updates...');
+    // TODO: Add mission update logic here if needed
+    const missionUpdated = false; // Placeholder
+
+    // Prepare carpet image key
+    carpetImageKey = carpetResult?.llmConfirmed ? carpetResult.localKey : undefined;
+
+    // Prepare complete check-in data to save
+    const completeCheckinData: Partial<CheckIn> = {
+      pointsEarned: pointsData?.total || 0,
+      pointsBreakdown: pointsData || undefined,
+      ...(badgeName && { badgeName }),
+      madeUserLandlord: landlordResult.isNewLandlord,
+      missionUpdated,
+      ...(carpetImageKey && { carpetImageKey })
+    };
+
+    console.log('[CheckInStore] 📋 Complete check-in data prepared:', completeCheckinData);
+
+    // Creation phase with complete data
+    console.log('[CheckInStore] 💾 Starting check-in creation with complete data...');
+    const newCheckinId = await this.newCheckInService.createCheckin(pubId, carpetImageKey, completeCheckinData);
+    console.log('[CheckInStore] ✅ Check-in creation completed successfully with all data saved!');
 
     // ✅ CRITICAL: Invalidate cache to trigger leaderboard refresh
     console.log('[CheckInStore] 🔄 Triggering cache invalidation for new check-in');
     this.cacheCoherence.invalidate('checkins', 'new-check-in-created');
     console.log('[CheckInStore] 🔄 Cache invalidation triggered - leaderboard should refresh');
 
-    // Add to local store immediately
-    const userId = this.authStore.uid();
-    console.log('[CheckInStore] 🔄 Adding to local store:', { userId, newCheckinId, hasUserId: !!userId, hasId: !!newCheckinId });
+    // Add to local store immediately with complete data
+    console.log('[CheckInStore] 🔄 Adding to local store with complete data:', { userId, newCheckinId, hasUserId: !!userId, hasId: !!newCheckinId });
 
     if (userId && newCheckinId) {
+      // Create the complete CheckIn object with all the data that was saved to Firestore
       const newCheckin: CheckIn = {
         id: newCheckinId,
         userId,
         pubId,
         timestamp: Timestamp.now(),
         dateKey: new Date().toISOString().split('T')[0],
-        // Add points data to the checkin object
-        pointsEarned: pointsData?.total || 0,
-        pointsBreakdown: pointsData || undefined
+        // Include all the complete data
+        ...completeCheckinData
       };
 
-      console.log('[CheckInStore] 🎯 === CHECKIN POINTS STORAGE DEBUG ===');
-      console.log('[CheckInStore] 🎯 Points data received:', pointsData);
-      console.log('[CheckInStore] 🎯 Checkin being stored:', {
+      console.log('[CheckInStore] 🎯 === COMPLETE CHECKIN DATA STORAGE DEBUG ===');
+      console.log('[CheckInStore] 🎯 Complete check-in being stored:', {
         id: newCheckin.id,
         pointsEarned: newCheckin.pointsEarned,
         hasPointsBreakdown: !!newCheckin.pointsBreakdown,
+        badgeName: newCheckin.badgeName,
+        madeUserLandlord: newCheckin.madeUserLandlord,
+        missionUpdated: newCheckin.missionUpdated,
+        carpetImageKey: newCheckin.carpetImageKey,
         pointsBreakdownStructure: newCheckin.pointsBreakdown ? {
           base: newCheckin.pointsBreakdown.base,
           distance: newCheckin.pointsBreakdown.distance,
@@ -242,14 +325,14 @@ export class CheckInStore extends BaseStore<CheckIn> {
           reason: newCheckin.pointsBreakdown.reason
         } : null
       });
-      console.log('[CheckInStore] 🎯 === END CHECKIN POINTS STORAGE DEBUG ===');
+      console.log('[CheckInStore] 🎯 === END COMPLETE CHECKIN DATA STORAGE DEBUG ===');
 
       console.log('[CheckInStore] 🔄 Before addItem - current data count:', this.data().length);
       this.addItem(newCheckin);
       console.log('[CheckInStore] 🔄 After addItem - new data count:', this.data().length);
 
       this._checkinSuccess.set(newCheckin);
-      console.log('[CheckInStore] ✅ Added new check-in to local store:', newCheckin);
+      console.log('[CheckInStore] ✅ Added complete check-in to local store:', newCheckin);
 
       // ✅ UPDATE USER PROFILE with new pub counts
       console.log('[CheckInStore] 🔄 Updating user profile with new pub counts...');
@@ -260,16 +343,32 @@ export class CheckInStore extends BaseStore<CheckIn> {
     }
 
     // Success flow - gather data and show overlay
-    console.log('[CheckInStore] 🎉 Starting success flow...');
+    console.log('[CheckInStore] 🎉 Starting success flow with pre-calculated data...');
 
-    // Pass the carpet result to determine if photo was taken and if carpet was confirmed
-    const carpetImageKey = carpetResult?.llmConfirmed ? carpetResult.localKey : undefined;
+    // Pass all the pre-calculated data to the success flow
     const photoTaken = carpetResult?.localStored || false;
-    await this.handleSuccessFlow(pubId, carpetImageKey, pointsData, photoTaken);
+    await this.handleSuccessFlow(pubId, carpetImageKey, pointsData, photoTaken, awardedBadges, landlordResult);
 
   } catch (error: any) {
     console.error('[CheckInStore] ❌ Check-in process failed:', error);
     console.error('[CheckInStore] ❌ Error message:', error?.message);
+
+    // Log the check-in failure for admin review
+    try {
+      await this.errorLoggingService.logCheckInError(
+        'check-in-process-failure',
+        error,
+        {
+          pubId,
+          userId: this.authStore.uid() || undefined,
+          pointsData: pointsData || undefined,
+          carpetResult: carpetResult || undefined,
+          severity: 'critical' // Check-in failures are critical
+        }
+      );
+    } catch (loggingError) {
+      console.error('[CheckInStore] Failed to log check-in error:', loggingError);
+    }
 
     // Error flow - show error overlay
     console.log('[CheckInStore] 💥 Starting error flow...');
@@ -360,7 +459,14 @@ export class CheckInStore extends BaseStore<CheckIn> {
   /**
    * Handle successful check-in flow
    */
-  private async handleSuccessFlow(pubId: string, carpetImageKey?: string, pointsData?: any, photoTaken?: boolean): Promise<void> {
+  private async handleSuccessFlow(
+    pubId: string, 
+    carpetImageKey?: string, 
+    pointsData?: any, 
+    photoTaken?: boolean,
+    awardedBadges?: EarnedBadgeWithDetails[],
+    landlordResult?: any
+  ): Promise<void> {
     console.log('[CheckInStore] 🎉 Gathering success data for pub:', pubId);
 
     try {
@@ -391,41 +497,26 @@ export class CheckInStore extends BaseStore<CheckIn> {
         // TODO: Implement home pub selection logic
       }
 
-      // Points already calculated in main flow
+      // Use pre-calculated data from main flow
       console.log('[CheckInStore] 🎯 Using pre-calculated points data:', pointsData);
+      console.log('[CheckInStore] 🏅 Using pre-calculated badges:', awardedBadges);
+      console.log('[CheckInStore] 👑 Using pre-calculated landlord result:', landlordResult);
 
-      // Check for new badges
       // Get the newly created check-in from our success signal
       const newCheckin = this._checkinSuccess();
       if (!newCheckin) {
-        console.error('[CheckInStore] No check-in data available for badge evaluation');
+        console.error('[CheckInStore] No check-in data available for UI display');
         return;
       }
 
-      // Get all user check-ins including the new one
-      const allUserCheckIns = this.checkins().filter(c => c.userId === userId);
+      // Use the pre-calculated badge data
+      const finalAwardedBadges = awardedBadges || [];
 
-      // Evaluate and award badges using the same method as legacy flow
-      let awardedBadges: EarnedBadgeWithDetails[] = [];
-      try {
-        awardedBadges = await this.badgeAwardService.evaluateAndAwardBadges(
-          userId,
-          newCheckin,
-          allUserCheckIns
-        );
-        console.log('[CheckInStore] 🏅 Badges evaluated, awarded:', awardedBadges);
-      } catch (error) {
-        console.error('[CheckInStore] Badge evaluation error:', error);
-        // Don't let badge errors break the check-in flow
-        awardedBadges = [];
-      }
-
-      // ✅ STEP 6: Handle landlord logic via LandlordStore
-      console.log('[CheckInStore] 👑 Processing landlord logic...');
-      const landlordResult = await this.landlordStore.tryAwardLandlordForCheckin(pubId, userId, new Date());
+      // Use the pre-calculated landlord data
+      const finalLandlordResult = landlordResult || { isNewLandlord: false };
 
       // Set landlord message signal
-      const landlordMessage = landlordResult.isNewLandlord ? '👑 You\'re the landlord today!' : '✅ Check-in complete!';
+      const landlordMessage = finalLandlordResult.isNewLandlord ? '👑 You\'re the landlord today!' : '✅ Check-in complete!';
       this._landlordMessage.set(landlordMessage);
 
       // ✅ STEP 7: UserStore updates (DataAggregatorService computes pubsVisited from our data)
@@ -441,15 +532,15 @@ export class CheckInStore extends BaseStore<CheckIn> {
           pubId,
           timestamp: new Date().toISOString(),
           carpetImageKey,
-          madeUserLandlord: landlordResult.isNewLandlord
+          madeUserLandlord: finalLandlordResult.isNewLandlord
         },
         pub: {
           name: pub?.name || 'Unknown Pub',
           location: pub?.location
         },
         points: pointsData,
-        badges: awardedBadges,
-        isNewLandlord: landlordResult.isNewLandlord,
+        badges: finalAwardedBadges,
+        isNewLandlord: finalLandlordResult.isNewLandlord,
         landlordMessage: landlordMessage,
         isFirstEver,
         carpetCaptured: photoTaken || false, // Whether a photo was taken (regardless of carpet detection)
@@ -704,6 +795,23 @@ export class CheckInStore extends BaseStore<CheckIn> {
     } catch (error) {
       console.error(`[CheckInStore] ❌ Points calculation failed (${callId}):`, error);
       console.error(`[CheckInStore] ❌ Error stack (${callId}):`, error instanceof Error ? error.stack : 'No stack trace');
+      
+      // Log the points calculation failure for admin review
+      try {
+        await this.errorLoggingService.logCheckInError(
+          'points-calculation-failure',
+          error as Error,
+          {
+            pubId,
+            userId,
+            carpetResult,
+            severity: 'high' // Points failures are high severity
+          }
+        );
+      } catch (loggingError) {
+        console.error('[CheckInStore] Failed to log points calculation error:', loggingError);
+      }
+      
       return { total: 0, breakdown: [] };
     }
   }
@@ -955,5 +1063,48 @@ export class CheckInStore extends BaseStore<CheckIn> {
       console.error('[CheckInStore] ❌ Failed to update user pub counts:', error);
       // Don't throw - we don't want this to break the check-in flow
     }
+  }
+
+  /**
+   * Load current user's check-ins (explicit user-scoped method)
+   */
+  async loadUserCheckins(): Promise<void> {
+    const userId = this.authStore.uid();
+    if (!userId) throw new Error('No authenticated user');
+
+    console.log(`📡 [CheckInStore] Loading user check-ins: ${userId.slice(0, 8)}`);
+    
+    const checkins = await this.newCheckInService.loadUserCheckins(userId);
+    this._data.set(checkins);
+    
+    console.log(`✅ [CheckInStore] User check-ins loaded: ${checkins.length} total`);
+  }
+
+  /**
+   * Load ALL check-ins from all users (admin-only method)
+   * Includes built-in security check for admin permissions
+   */
+  async loadAllCheckins(): Promise<void> {
+    // Security check: Only allow authenticated users to access admin data
+    const userId = this.authStore.uid();
+    if (!userId) {
+      throw new Error('Authentication required for admin operations');
+    }
+
+    // Security check: Only allow admin users to access all check-ins
+    const currentUser = this.userStore.currentUser();
+    if (!currentUser?.isAdmin) {
+      throw new Error('Admin privileges required for this operation');
+    }
+
+    console.log(`📡 [CheckInStore] Loading ALL check-ins (admin operation) by admin user: ${userId.slice(0, 8)}`);
+    
+    const allCheckIns = await this.newCheckInService.getAllCheckIns();
+    this._data.set(allCheckIns);
+    
+    console.log(`✅ [CheckInStore] All check-ins loaded: ${allCheckIns.length} total`);
+    console.log(`├─ Unique users: ${new Set(allCheckIns.map(c => c.userId)).size}`);
+    console.log(`├─ Unique pubs: ${new Set(allCheckIns.map(c => c.pubId)).size}`);
+    console.log(`└─ Most recent: ${allCheckIns[0]?.timestamp?.toDate().toISOString() || 'none'}`);
   }
 }

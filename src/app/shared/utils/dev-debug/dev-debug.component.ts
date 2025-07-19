@@ -6,8 +6,7 @@ import { DatePipe, JsonPipe } from '@angular/common';
 import { BaseComponent } from '@shared/base/base.component';
 import { CleanupService, type CleanupResult, type UserDeletionSummary } from '@shared/utils/cleanup.service';
 import { CarpetStorageService } from '@carpets/data-access/carpet-storage.service';
-// DatabaseMetricsService removed - was over-engineered
-import { FirebaseMetricsService } from '@shared/data-access/firebase-metrics.service';
+
 import { DataAggregatorService } from '@shared/data-access/data-aggregator.service';
 
 // Stores
@@ -20,6 +19,7 @@ import { LandlordStore } from '@landlord/data-access/landlord.store';
 import { BadgeStore } from '@badges/data-access/badge.store';
 import { LeaderboardStore } from '../../../leaderboard/data-access/leaderboard.store';
 import { FeedbackStore } from '../../../feedback/data-access/feedback.store';
+import { FirebaseMetricsService } from '@fourfold/angular-foundation';
 
 @Component({
   selector: 'app-dev-debug',
@@ -171,18 +171,11 @@ export class DevDebugComponent extends BaseComponent {
   // Firebase-specific computed properties
   readonly firebaseOperations = computed(() => {
     const fbMetrics = this.firebaseMetricsService.getSessionSummary();
-    const recent = this.firebaseMetricsService.getRecentOperations(10);
-    const errors = this.firebaseMetricsService.getErrorAnalysis();
 
     return {
       totalOperations: fbMetrics.totalCalls,
       operationsPerMinute: fbMetrics.callsPerMinute,
-      cacheHitRatio: fbMetrics.cacheHitRatio,
-      errorRate: fbMetrics.errorRate,
-      averageLatency: fbMetrics.averageLatency,
-      recentOperations: recent,
-      topCollections: [], // Database metrics removed
-      totalErrors: errors.totalErrors
+      topCollections: [] // Database metrics removed
     };
   });
 

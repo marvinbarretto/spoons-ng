@@ -1,7 +1,7 @@
 // badges/data-access/earned-badge.service.ts
 import { Injectable } from '@angular/core';
 import { where } from 'firebase/firestore';
-import { FirestoreService } from '../../shared/data-access/firestore.service';
+import { FirestoreService } from '@fourfold/angular-foundation';
 import type { EarnedBadge } from '../utils/badge.model';
 
 @Injectable({ providedIn: 'root' })

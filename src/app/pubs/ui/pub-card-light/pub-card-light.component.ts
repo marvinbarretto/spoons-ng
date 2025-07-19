@@ -9,8 +9,8 @@ export type PubCardVariant = 'compact' | 'normal' | 'overlay';
   selector: 'app-pub-card-light',
   imports: [],
   template: `
-    <div 
-      class="pub-card-light" 
+    <div
+      class="pub-card-light"
       [class.pub-card-light--compact]="variant() === 'compact'"
       [class.pub-card-light--overlay]="variant() === 'overlay'"
       (click)="handleClick()"
@@ -20,7 +20,7 @@ export type PubCardVariant = 'compact' | 'normal' | 'overlay';
           <span class="pub-name">{{ pub().name }}</span>
           <div class="pub-indicators">
             @if (visitIndicator()) {
-              <span class="pub-visit-indicator" 
+              <span class="pub-visit-indicator"
                     [title]="visitIndicatorTitle()"
                     [class.indicator--target]="isNearestUnvisited()">
                 {{ visitIndicator() }}
@@ -37,7 +37,7 @@ export type PubCardVariant = 'compact' | 'normal' | 'overlay';
         @if (showAddress() && pub().address) {
           <div class="pub-address">{{ pub().address }}</div>
         }
-        
+
         @if (showLocation()) {
           <div class="pub-location">
             @if (variant() !== 'compact') {
@@ -164,11 +164,11 @@ export type PubCardVariant = 'compact' | 'normal' | 'overlay';
     }
 
     @keyframes pulse-indicator {
-      0%, 100% { 
+      0%, 100% {
         transform: scale(1);
         opacity: 1;
       }
-      50% { 
+      50% {
         transform: scale(1.1);
         opacity: 0.7;
       }
@@ -226,7 +226,7 @@ export type PubCardVariant = 'compact' | 'normal' | 'overlay';
       .pub-card-light--overlay {
         padding: 1.5rem 1rem 1rem;
       }
-      
+
       .pub-card-light--overlay .pub-name {
         font-size: 1.25rem;
       }
@@ -255,7 +255,7 @@ export class PubCardLightComponent {
 
   // Required inputs
   readonly pub = input.required<Pub>();
-  
+
   // Optional inputs with defaults
   readonly distance = input<number | null>(null);
   readonly variant = input<PubCardVariant>('normal');
@@ -266,7 +266,7 @@ export class PubCardLightComponent {
 
   // ✅ New visit status inputs
   readonly hasVerifiedVisit = input<boolean>(false);    // App check-in exists
-  readonly hasUnverifiedVisit = input<boolean>(false);  // Manual addition exists  
+  readonly hasUnverifiedVisit = input<boolean>(false);  // Manual addition exists
   readonly isNearestUnvisited = input<boolean>(false);  // Closest unvisited pub
 
   // Output events
@@ -282,10 +282,15 @@ export class PubCardLightComponent {
     return parts.length > 0 ? parts.join(', ') : '';
   });
 
+  // TODO: Move this logic out...
   readonly distanceText = computed(() => {
     const dist = this.distance();
+
     if (!dist) return '';
 
+    if (dist < 150) {
+      return `Here`
+    }
     if (dist < 1000) {
       return `${Math.round(dist)}m away`;
     }

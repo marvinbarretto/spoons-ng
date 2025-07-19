@@ -1,6 +1,6 @@
 // src/app/shared/data-access/firestore-crud.service.ts
 import { Injectable } from '@angular/core';
-import { FirestoreService } from './firestore.service';
+import { FirestoreService } from '@fourfold/angular-foundation';
 
 @Injectable({ providedIn: 'root' })
 export abstract class FirestoreCrudService<T extends { id: string }> extends FirestoreService {

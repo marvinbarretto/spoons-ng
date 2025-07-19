@@ -30,12 +30,14 @@ import { PointsService } from './points.service';
 import type { PointsTransaction, PointsBreakdown, CheckInPointsData } from '../utils/points.models';
 import { UserStore } from '../../users/data-access/user.store';
 import { CacheCoherenceService } from '../../shared/data-access/cache-coherence.service';
+import { ErrorLoggingService } from '../../shared/data-access/error-logging.service';
 @Injectable({ providedIn: 'root' })
 export class PointsStore {
   private readonly authStore = inject(AuthStore);
   private readonly pointsService = inject(PointsService);
   private readonly userStore = inject(UserStore);
   private readonly cacheCoherence = inject(CacheCoherenceService);
+  private readonly errorLoggingService = inject(ErrorLoggingService);
 
   // ✅ Private signals (following conventions)
   private readonly _totalPoints = signal(0);
@@ -333,6 +335,24 @@ export class PointsStore {
       console.error(`[PointsStore] ❌ === AWARD CHECK-IN POINTS FAILED (${callId}) ===`);
       console.error(`[PointsStore] ❌ Error (${callId}):`, error);
       console.error(`[PointsStore] ❌ Error stack (${callId}):`, error instanceof Error ? error.stack : 'No stack trace');
+      
+      // Log the points awarding failure for admin review
+      try {
+        await this.errorLoggingService.logPointsError(
+          'award-checkin-points-failure',
+          error,
+          {
+            userId: user.uid,
+            pubId: pointsData.pubId,
+            pointsData,
+            breakdown: pointsData,
+            severity: 'critical' // Points awarding failures are critical
+          }
+        );
+      } catch (loggingError) {
+        console.error('[PointsStore] Failed to log points awarding error:', loggingError);
+      }
+      
       throw error;
     } finally {
       console.log(`[PointsStore] 🎯 Setting loading to false (${callId})`);

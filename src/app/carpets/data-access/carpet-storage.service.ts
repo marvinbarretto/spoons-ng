@@ -474,11 +474,10 @@ async storeLocalVersion(blob: Blob, pubId: string, pubName: string): Promise<str
 }
 
 /**
- * ✅ Helper to revoke object URLs (prevent memory leaks)
+ * Helper to revoke object URLs (prevent memory leaks)
  */
 revokePhotoUrl(url: string): void {
   URL.revokeObjectURL(url);
-  console.log(`🧹 [CarpetStorage] Revoked object URL`);
 }
 
 

@@ -1,6 +1,6 @@
 // src/app/landlord/data-access/landlord.service.ts
 import { inject, Injectable } from '@angular/core';
-import { FirestoreService } from '../../shared/data-access/firestore.service';
+import { FirestoreService } from '@fourfold/angular-foundation';
 import { Landlord } from '../utils/landlord.model';
 import { AuthStore } from '../../auth/data-access/auth.store';
 import { Timestamp } from 'firebase/firestore';

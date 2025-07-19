@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './auth/data-access/auth.guard';
+import { adminGuard } from './auth/data-access/admin.guard';
 import {
   UrlSegment,
   Route,
@@ -98,7 +99,7 @@ export const appRoutes: Routes = [
   {
     path: 'admin',
     title: 'Admin Dashboard',
-    canActivate: [authGuard],
+    canActivate: [adminGuard],
     loadComponent: () =>
       import('./admin/feature/admin-dashboard/admin-dashboard.component')
         .then(m => m.AdminDashboardComponent),
@@ -107,14 +108,14 @@ export const appRoutes: Routes = [
   // Admin Sub-sections
   {
     path: 'admin/badges',
-    canActivate: [authGuard],
+    canActivate: [adminGuard],
     loadChildren: () =>
       import('./badges/data-access/badge.routes').then((m) => m.BADGE_ROUTES),
     data: { shell: 'feature' }
   },
   {
     path: 'admin/missions',
-    canActivate: [authGuard],
+    canActivate: [adminGuard],
     loadComponent: () =>
       import('./missions/feature/mission-admin/mission-admin.component')
         .then(m => m.MissionsAdminComponent),
@@ -122,7 +123,7 @@ export const appRoutes: Routes = [
   },
   {
     path: 'admin/missions/new',
-    canActivate: [authGuard],
+    canActivate: [adminGuard],
     loadComponent: () =>
       import('./missions/feature/mission-form/mission-form.component')
         .then(m => m.MissionFormComponent),
@@ -130,7 +131,7 @@ export const appRoutes: Routes = [
   },
   {
     path: 'admin/missions/:id/edit',
-    canActivate: [authGuard],
+    canActivate: [adminGuard],
     loadComponent: () =>
       import('./missions/feature/mission-form/mission-form.component')
         .then(m => m.MissionFormComponent),
@@ -140,7 +141,7 @@ export const appRoutes: Routes = [
   {
     path: 'admin/feedback',
     title: 'Feedback Management',
-    canActivate: [authGuard],
+    canActivate: [adminGuard],
     loadComponent: () =>
       import('./feedback/feature/feedback-admin/feedback-admin.component')
         .then(m => m.FeedbackAdminComponent),
@@ -149,7 +150,7 @@ export const appRoutes: Routes = [
   {
     path: 'admin/checkins',
     title: 'Check-ins Management',
-    canActivate: [authGuard],
+    canActivate: [adminGuard],
     loadComponent: () =>
       import('./admin/feature/admin-checkins/admin-checkins.component')
         .then(m => m.AdminCheckinsComponent),
@@ -158,7 +159,7 @@ export const appRoutes: Routes = [
   {
     path: 'admin/users',
     title: 'User Management',
-    canActivate: [authGuard],
+    canActivate: [adminGuard],
     loadComponent: () =>
       import('./admin/feature/users/users.component')
         .then(m => m.AdminUsersComponent),
@@ -167,10 +168,19 @@ export const appRoutes: Routes = [
   {
     path: 'admin/carpets',
     title: 'Carpet Management',
-    canActivate: [authGuard],
+    canActivate: [adminGuard],
     loadComponent: () =>
       import('./admin/feature/admin-carpet/admin-carpet.component')
         .then(m => m.AdminCarpetComponent),
+    data: { shell: 'feature' }
+  },
+  {
+    path: 'admin/errors',
+    title: 'System Error Logs',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./admin/feature/admin-errors/admin-errors.component')
+        .then(m => m.AdminErrorsComponent),
     data: { shell: 'feature' }
   },
   {

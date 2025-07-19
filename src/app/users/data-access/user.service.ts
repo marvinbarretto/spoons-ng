@@ -1,5 +1,5 @@
 import { Injectable, signal, inject, effect } from '@angular/core';
-import { FirestoreService } from '../../shared/data-access/firestore.service';
+import { FirestoreService } from '@fourfold/angular-foundation';
 import { CacheCoherenceService } from '../../shared/data-access/cache-coherence.service';
 import { User } from '../utils/user.model';
 
@@ -8,18 +8,18 @@ import { User } from '../utils/user.model';
 })
 export class UserService extends FirestoreService {
   private readonly cacheCoherence = inject(CacheCoherenceService);
-  
+
   // Global users signal for leaderboard reactivity
   private readonly _allUsers = signal<User[]>([]);
   readonly allUsers = this._allUsers.asReadonly();
-  
+
   // Loading state for global users
   private readonly _loadingAllUsers = signal(false);
   readonly loadingAllUsers = this._loadingAllUsers.asReadonly();
 
   constructor() {
     super();
-    
+
     // Listen for cache invalidation events
     effect(() => {
       const invalidation = this.cacheCoherence.invalidations();
@@ -44,7 +44,18 @@ export class UserService extends FirestoreService {
   }
 
   async getAllUsers(): Promise<User[]> {
-    return this.getDocsWhere<User>('users');
+    const users = await this.getDocsWhere<User>('users');
+    
+    // Debug logging for isAdmin field tracking
+    console.log('[UserService] 🔍 Raw Firestore users with isAdmin status:', users.map(u => ({
+      uid: u.uid.slice(0, 8), 
+      displayName: u.displayName, 
+      email: u.email,
+      isAdmin: u.isAdmin,
+      hasIsAdminField: 'isAdmin' in u
+    })));
+    
+    return users;
   }
 
   /**
@@ -91,8 +102,8 @@ export class UserService extends FirestoreService {
    * Update a user in the global users signal
    */
   updateUserInGlobalSignal(uid: string, updates: Partial<User>): void {
-    this._allUsers.update(users => 
-      users.map(user => 
+    this._allUsers.update(users =>
+      users.map(user =>
         user.uid === uid ? { ...user, ...updates } : user
       )
     );
@@ -108,13 +119,13 @@ export class UserService extends FirestoreService {
     console.log(`[UserService] 🔄 === HANDLING CACHE INVALIDATION ===`);
     console.log(`[UserService] 🔄 Collection: ${collection}`);
     console.log(`[UserService] 🔄 Reason: ${reason || 'unspecified'}`);
-    
+
     try {
       // Refresh all users data to get fresh user profiles with updated display names
       console.log(`[UserService] 🔄 Refreshing all users data...`);
       await this.refreshAllUsers();
       console.log(`[UserService] ✅ All users data refreshed after cache invalidation`);
-      
+
     } catch (error) {
       console.error(`[UserService] ❌ Failed to refresh users data after cache invalidation:`, error);
     }

@@ -578,19 +578,22 @@ export class AdminCheckinsComponent extends BaseComponent implements OnInit {
   };
 
   override async ngOnInit(): Promise<void> {
-    // Trigger data loading from stores if they haven't loaded yet
-    // The stores will handle their own loading logic and reactivity
-    console.log('[AdminCheckinsComponent] Initialized - using reactive store data');
+    console.log('[AdminCheckinsComponent] Initializing - loading all check-ins...');
+    
+    // Load ALL check-ins from all users (with built-in admin auth check)
+    await this.checkInStore.loadAllCheckins();
+    
+    console.log('[AdminCheckinsComponent] ✅ All check-ins loaded for admin view');
   }
 
   async refreshData(): Promise<void> {
     await this.handleAsync(
       async () => {
-        // Refresh all stores
+        // Refresh all stores with explicit methods
         await Promise.all([
-          (this.checkInStore as any).refresh?.() || Promise.resolve(),
+          this.checkInStore.loadAllCheckins(), // Explicit admin method
           this.userStore.refresh(),
-          (this.pubStore as any).refresh?.() || Promise.resolve()
+          this.pubStore.loadOnce() // Use loadOnce for global pub data
         ]);
       },
       {

@@ -3,6 +3,9 @@ import { ChangeDetectionStrategy, Component, computed, effect, inject, OnDestroy
 import { BaseWidgetComponent } from '../base/base-widget.component';
 import { CarpetStorageService } from '@carpets/data-access/carpet-storage.service';
 import { AuthStore } from '@auth/data-access/auth.store';
+import { LoadingStateComponent } from '@shared/ui/loading-state/loading-state.component';
+import { ErrorStateComponent } from '@shared/ui/error-state/error-state.component';
+import { EmptyStateComponent } from '@shared/ui/empty-state/empty-state.component';
 
 type CarpetDisplay = {
   key: string;
@@ -13,29 +16,20 @@ type CarpetDisplay = {
 
 @Component({
   selector: 'app-carpet-widget',
-  imports: [],
+  imports: [LoadingStateComponent, ErrorStateComponent, EmptyStateComponent],
   template: `
     <div class="carpet-widget">
       <h3 class="widget-title">Your Carpet Collection</h3>
 
       @if (loading()) {
-        <div class="widget-loading">
-          <span class="loading-spinner"></span>
-          <span>Loading carpets...</span>
-        </div>
+        <app-loading-state text="Loading carpets..." />
       } @else if (error()) {
-        <div class="widget-error">
-          <span class="error-icon">⚠️</span>
-          <span>{{ error() }}</span>
-        </div>
+        <app-error-state [message]="error()!" />
       } @else if (carpets().length === 0) {
-        <div class="widget-empty">
-          <span class="empty-icon">📸</span>
-          <div class="empty-content">
-            <p class="empty-title">No carpets collected yet</p>
-            <p class="empty-subtitle">Check in to pubs to capture their unique carpets</p>
-          </div>
-        </div>
+        <app-empty-state 
+          icon="📸"
+          title="No carpets collected yet"
+          subtitle="Check in to pubs to capture their unique carpets" />
       } @else {
         <div class="carpet-header">
           <span class="count">{{ carpets().length }} carpets collected</span>
@@ -76,58 +70,6 @@ type CarpetDisplay = {
       color: var(--text);
     }
 
-    .widget-loading,
-    .widget-error,
-    .widget-empty {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 2rem 1rem;
-      justify-content: center;
-      color: var(--text-secondary);
-    }
-
-    .loading-spinner {
-      width: 1rem;
-      height: 1rem;
-      border: 2px solid currentColor;
-      border-top-color: transparent;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .widget-empty {
-      flex-direction: column;
-      text-align: center;
-      gap: 0.5rem;
-    }
-
-    .empty-icon {
-      font-size: 2rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .empty-content {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-    }
-
-    .empty-title {
-      margin: 0;
-      font-weight: 600;
-      color: var(--text);
-    }
-
-    .empty-subtitle {
-      margin: 0;
-      font-size: 0.875rem;
-      color: var(--text-secondary);
-    }
 
     .carpet-header {
       display: flex;

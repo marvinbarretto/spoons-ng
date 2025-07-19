@@ -5,7 +5,7 @@
 // src/app/checkin/data-access/checkin.service.ts
 import { Injectable, inject, signal } from '@angular/core';
 import { Timestamp, where } from 'firebase/firestore';
-import { FirestoreService } from '../../shared/data-access/firestore.service';
+import { FirestoreService } from '@fourfold/angular-foundation';
 import { NearbyPubStore } from '../../pubs/data-access/nearby-pub.store';
 import { AuthStore } from '../../auth/data-access/auth.store';
 import type { CheckIn } from '../utils/check-in.models';
@@ -14,17 +14,17 @@ import { environment } from '../../../environments/environment';
 @Injectable({ providedIn: 'root' })
 export class CheckInService extends FirestoreService {
   protected path: string = 'checkins';
-  
+
   // Firebase handles caching automatically with offline persistence
-  
+
   // Global check-ins signal for leaderboard reactivity
   private readonly _allCheckIns = signal<CheckIn[]>([]);
   readonly allCheckIns = this._allCheckIns.asReadonly();
-  
+
   // Loading state for global check-ins
   private readonly _loadingAllCheckIns = signal(false);
   readonly loadingAllCheckIns = this._loadingAllCheckIns.asReadonly();
-  
+
   // Clean dependencies - no underscores for services
   private readonly authStore = inject(AuthStore);
   private readonly nearbyPubStore = inject(NearbyPubStore);
@@ -178,17 +178,28 @@ export class CheckInService extends FirestoreService {
   }
 
 /**
- * Create a new check-in with optional carpet image
+ * Create a new check-in with complete data including points, badges, landlord status
  *
  * @param pubId - The pub to check into
  * @param carpetImageKey - Optional key for captured carpet image
+ * @param checkinData - Optional complete check-in data to save (if not provided, creates minimal check-in)
  * @returns Promise<string> - The ID of the created check-in document
  */
-async createCheckin(pubId: string, carpetImageKey?: string): Promise<string> {
+async createCheckin(pubId: string, carpetImageKey?: string, checkinData?: Partial<CheckIn>): Promise<string> {
   console.log('[CheckInService] 💾 Creating REAL check-in for pub:', pubId);
 
   if (carpetImageKey) {
     console.log('[CheckInService] 🎨 Including carpet image key:', carpetImageKey);
+  }
+
+  if (checkinData) {
+    console.log('[CheckInService] 📋 Complete check-in data provided:', {
+      hasPointsEarned: 'pointsEarned' in checkinData,
+      hasPointsBreakdown: 'pointsBreakdown' in checkinData,
+      hasBadgeName: 'badgeName' in checkinData,
+      hasMadeUserLandlord: 'madeUserLandlord' in checkinData,
+      hasMissionUpdated: 'missionUpdated' in checkinData
+    });
   }
 
   const userId = this.authStore.uid();
@@ -201,39 +212,53 @@ async createCheckin(pubId: string, carpetImageKey?: string): Promise<string> {
   const timestamp = new Date();
   const dateKey = timestamp.toISOString().split('T')[0];
 
-  const checkinData: Omit<CheckIn, 'id'> = {
+  // Create complete check-in data including all calculated fields
+  const completeCheckinData: Omit<CheckIn, 'id'> = {
     userId,
     pubId,
     timestamp: Timestamp.fromDate(timestamp),
     dateKey,
-    // 🆕 Include carpet image key if provided
-    ...(carpetImageKey && { carpetImageKey })
+    // Include carpet image key if provided
+    ...(carpetImageKey && { carpetImageKey }),
+    // Include all additional check-in data (points, badges, landlord status, etc.)
+    ...checkinData
   };
 
-  console.log('[CheckInService] 💾 Check-in data prepared:', {
-    ...checkinData,
-    timestamp: timestamp.toISOString()
+  console.log('[CheckInService] 💾 Complete check-in data prepared:', {
+    userId: completeCheckinData.userId,
+    pubId: completeCheckinData.pubId,
+    timestamp: timestamp.toISOString(),
+    dateKey: completeCheckinData.dateKey,
+    pointsEarned: completeCheckinData.pointsEarned,
+    hasPointsBreakdown: !!completeCheckinData.pointsBreakdown,
+    badgeName: completeCheckinData.badgeName,
+    madeUserLandlord: completeCheckinData.madeUserLandlord,
+    missionUpdated: completeCheckinData.missionUpdated,
+    carpetImageKey: completeCheckinData.carpetImageKey
   });
 
   // Save to Firestore
-  console.log('[CheckInService] 💾 Saving to Firestore collection: checkins');
+  console.log('[CheckInService] 💾 Saving complete check-in data to Firestore collection: checkins');
 
-  const docRef = await this.addDocToCollection('checkins', checkinData);
+  const docRef = await this.addDocToCollection('checkins', completeCheckinData);
   const docId = docRef.id;
 
-  console.log('[CheckInService] ✅ Check-in created successfully!');
+  console.log('[CheckInService] ✅ Check-in created successfully with complete data!');
   console.log('[CheckInService] ✅ Firestore document ID:', docId);
   console.log('[CheckInService] ✅ Document path:', `checkins/${docId}`);
+  console.log('[CheckInService] ✅ Points saved:', completeCheckinData.pointsEarned);
+  console.log('[CheckInService] ✅ Badge awarded:', completeCheckinData.badgeName || 'none');
+  console.log('[CheckInService] ✅ Made landlord:', completeCheckinData.madeUserLandlord || false);
 
   if (carpetImageKey) {
     console.log('[CheckInService] 🎨 Carpet image linked to check-in:', carpetImageKey);
   }
 
   // Log the complete document for debugging
-  console.log('[CheckInService] 📄 Firestore document saved:', {
+  console.log('[CheckInService] 📄 Complete Firestore document saved:', {
     collection: 'checkins',
     documentId: docId,
-    data: checkinData
+    data: completeCheckinData
   });
 
   return docId;
@@ -449,9 +474,9 @@ async createCheckin(pubId: string, carpetImageKey?: string): Promise<string> {
    */
   addCheckInToGlobalSignal(checkIn: CheckIn): void {
     this._allCheckIns.update(checkIns => {
-      const exists = checkIns.some(c => 
-        c.userId === checkIn.userId && 
-        c.pubId === checkIn.pubId && 
+      const exists = checkIns.some(c =>
+        c.userId === checkIn.userId &&
+        c.pubId === checkIn.pubId &&
         c.timestamp.isEqual(checkIn.timestamp)
       );
       if (!exists) {

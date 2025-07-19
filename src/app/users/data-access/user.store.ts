@@ -46,7 +46,21 @@ export class UserStore extends BaseStore<User> {
   readonly currentUser = computed(() => {
     const users = this.data();
     const authUid = this.authStore.uid();
-    return authUid ? users.find(u => u.uid === authUid) || null : null;
+    const foundUser = authUid ? users.find(u => u.uid === authUid) || null : null;
+    
+    // Debug logging for current user identification and isAdmin field
+    console.log('[UserStore] 🔍 Current user computed - Auth UID:', authUid?.slice(0, 8));
+    console.log('[UserStore] 🔍 Users in collection:', users.length);
+    console.log('[UserStore] 🔍 Found current user:', {
+      found: !!foundUser,
+      uid: foundUser?.uid?.slice(0, 8),
+      displayName: foundUser?.displayName,
+      email: foundUser?.email,
+      isAdmin: foundUser?.isAdmin,
+      hasIsAdminField: foundUser ? 'isAdmin' in foundUser : false
+    });
+    
+    return foundUser;
   });
 
   // 📡 Legacy compatibility (redirect to currentUser and collection loading)
@@ -620,7 +634,18 @@ export class UserStore extends BaseStore<User> {
    */
   protected async fetchData(): Promise<User[]> {
     console.log('[UserStore] 📡 Fetching all users from Firestore...');
-    return await this.userService.getAllUsers();
+    const users = await this.userService.getAllUsers();
+    
+    // Debug logging for isAdmin field tracking
+    console.log('[UserStore] 🔍 Fetched users with isAdmin field processing:', users.map(u => ({
+      uid: u.uid.slice(0, 8),
+      displayName: u.displayName,
+      email: u.email,
+      isAdmin: u.isAdmin,
+      hasIsAdminField: 'isAdmin' in u
+    })));
+    
+    return users;
   }
 
   /**

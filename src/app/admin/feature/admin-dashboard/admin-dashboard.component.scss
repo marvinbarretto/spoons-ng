@@ -101,6 +101,34 @@
     border-left: 4px solid var(--color-error, #ef4444);
     background: var(--color-error-background, rgba(239, 68, 68, 0.05));
   }
+
+  // Error stats styling
+  &.error-stats {
+    border-left: 4px solid var(--warning, #f59e0b);
+    background: rgba(255, 170, 0, 0.1);
+    
+    .stat-value {
+      color: var(--warning, #f59e0b);
+    }
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(255, 170, 0, 0.2);
+    }
+    
+    &.critical {
+      border-left-color: var(--color-error, #ef4444);
+      background: rgba(239, 68, 68, 0.1);
+      
+      .stat-value {
+        color: var(--color-error, #ef4444);
+      }
+      
+      &:hover {
+        box-shadow: 0 8px 25px rgba(239, 68, 68, 0.2);
+      }
+    }
+  }
 }
 
 .stat-header {

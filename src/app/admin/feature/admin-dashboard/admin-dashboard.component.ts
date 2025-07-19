@@ -3,10 +3,11 @@ import { Component, inject, computed, isDevMode, signal } from '@angular/core';
 
 import { RouterModule } from '@angular/router';
 // DatabaseMetricsService removed - was over-engineered premature optimization
-import { FirebaseMetricsService } from '../../../shared/data-access/firebase-metrics.service';
+import { FirebaseMetricsService } from '@fourfold/angular-foundation';
 import { LeaderboardStore } from '../../../leaderboard/data-access/leaderboard.store';
 import { FeedbackStore } from '../../../feedback/data-access/feedback.store';
 import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
+import { ErrorLoggingService } from '../../../shared/data-access/error-logging.service';
 
 type AdminSection = {
   id: string;
@@ -51,6 +52,15 @@ type StatData = {
               <div class="stat-label">{{ stat.label }}</div>
             </div>
           }
+          <!-- Error Stats -->
+          <div class="stat-card error-stats">
+            <div class="stat-value">{{ errorStats().unresolvedErrors }}</div>
+            <div class="stat-label">Unresolved Errors</div>
+          </div>
+          <div class="stat-card error-stats critical">
+            <div class="stat-value">{{ errorStats().criticalErrors }}</div>
+            <div class="stat-label">Critical Errors</div>
+          </div>
         </div>
       </section>
 
@@ -117,6 +127,7 @@ export class AdminDashboardComponent {
   protected readonly leaderboardStore = inject(LeaderboardStore);
   protected readonly feedbackStore = inject(FeedbackStore);
   protected readonly dataAggregatorService = inject(DataAggregatorService);
+  private readonly errorLoggingService = inject(ErrorLoggingService);
 
   // Firebase operations state
   readonly showFirebaseWidget = signal(true);
@@ -128,6 +139,9 @@ export class AdminDashboardComponent {
   readonly globalDataStats = this.leaderboardStore.globalDataStats;
   readonly pendingFeedback = this.feedbackStore.pendingFeedback;
   readonly scoreboardData = this.dataAggregatorService.scoreboardData;
+
+  // Error stats for dashboard
+  readonly errorStats = computed(() => this.errorLoggingService.getErrorStats());
 
   // Database metrics computeds removed - focus on real business metrics instead
 
@@ -279,6 +293,15 @@ export class AdminDashboardComponent {
       stats: 'Photo management system'
     },
     {
+      id: 'errors',
+      title: 'Error Logs',
+      description: 'System error monitoring and resolution',
+      route: '/admin/errors',
+      icon: '🚨',
+      status: 'active',
+      stats: `${this.errorStats().unresolvedErrors} unresolved, ${this.errorStats().criticalErrors} critical`
+    },
+    {
       id: 'components',
       title: 'Developer Tools',
       description: 'Component showcase and development utilities',
@@ -346,24 +369,6 @@ export class AdminDashboardComponent {
       stats: 'Action tracking system'
     }
   ];
-
-  // Firebase-specific computed properties
-  readonly firebaseOperations = computed(() => {
-    const fbMetrics = this.firebaseMetricsService.getSessionSummary();
-    const recent = this.firebaseMetricsService.getRecentOperations(10);
-    const errors = this.firebaseMetricsService.getErrorAnalysis();
-
-    return {
-      totalOperations: fbMetrics.totalCalls,
-      operationsPerMinute: fbMetrics.callsPerMinute,
-      cacheHitRatio: fbMetrics.cacheHitRatio,
-      errorRate: fbMetrics.errorRate,
-      averageLatency: fbMetrics.averageLatency,
-      recentOperations: recent,
-      topCollections: [], // Database metrics removed
-      totalErrors: errors.totalErrors
-    };
-  });
 
   // Complex cache analytics removed - Firebase handles caching automatically
 

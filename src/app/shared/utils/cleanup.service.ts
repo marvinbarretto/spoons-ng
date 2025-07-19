@@ -1,6 +1,6 @@
 // src/app/shared/utils/cleanup.service.ts
 import { Injectable } from '@angular/core';
-import { FirestoreService } from '../data-access/firestore.service';
+import { FirestoreService } from '@fourfold/angular-foundation';
 import {
   collection,
   getDocs,
@@ -138,13 +138,13 @@ export class CleanupService extends FirestoreService {
    */
   async analyzeUsers(): Promise<UserDeletionSummary> {
     console.log('[CleanupService] 🔍 Analyzing users for real vs test classification...');
-    
+
     try {
       const users = await this.getDocsWhere<User>('users');
-      
+
       const realUsers = users.filter(user => user.realUser === true);
       const testUsers = users.filter(user => user.realUser !== true);
-      
+
       const summary: UserDeletionSummary = {
         totalUsers: users.length,
         realUsers: realUsers.length,
@@ -152,14 +152,14 @@ export class CleanupService extends FirestoreService {
         realUserIds: realUsers.map(u => u.uid),
         testUserIds: testUsers.map(u => u.uid)
       };
-      
+
       console.log('[CleanupService] 📊 User Analysis Results:', {
         total: summary.totalUsers,
         real: summary.realUsers,
         test: summary.testUsers,
         realUserDisplayNames: realUsers.map(u => ({ uid: u.uid.slice(0, 8), name: u.displayName }))
       });
-      
+
       return summary;
     } catch (error: any) {
       console.error('[CleanupService] ❌ Error analyzing users:', error);
@@ -172,19 +172,19 @@ export class CleanupService extends FirestoreService {
    */
   async getRealUsers(): Promise<User[]> {
     console.log('[CleanupService] 🔍 Fetching real users...');
-    
+
     try {
       const realUsers = await this.getDocsWhere<User>('users', where('realUser', '==', true));
-      
-      console.log('[CleanupService] 👥 Found real users:', 
-        realUsers.map(u => ({ 
+
+      console.log('[CleanupService] 👥 Found real users:',
+        realUsers.map(u => ({
           uid: u.uid.slice(0, 8),
           displayName: u.displayName,
           email: u.email,
-          joinedAt: u.joinedAt 
+          joinedAt: u.joinedAt
         }))
       );
-      
+
       return realUsers;
     } catch (error: any) {
       console.error('[CleanupService] ❌ Error fetching real users:', error);
@@ -209,17 +209,17 @@ export class CleanupService extends FirestoreService {
    */
   async clearTestUsersOnly(): Promise<CleanupResult> {
     console.log('[CleanupService] 👥 Clearing test users only (protecting real users)...');
-    
+
     try {
       // First analyze the users
       const summary = await this.analyzeUsers();
-      
+
       if (summary.realUsers > 0) {
-        console.log(`[CleanupService] 🛡️ PROTECTING ${summary.realUsers} real users:`, 
+        console.log(`[CleanupService] 🛡️ PROTECTING ${summary.realUsers} real users:`,
           summary.realUserIds.map(uid => uid.slice(0, 8))
         );
       }
-      
+
       if (summary.testUsers === 0) {
         console.log('[CleanupService] ✅ No test users to delete');
         return {
@@ -228,19 +228,19 @@ export class CleanupService extends FirestoreService {
           protectedCount: summary.realUsers
         };
       }
-      
-      console.log(`[CleanupService] 🗑️ Deleting ${summary.testUsers} test users:`, 
+
+      console.log(`[CleanupService] 🗑️ Deleting ${summary.testUsers} test users:`,
         summary.testUserIds.map(uid => uid.slice(0, 8))
       );
-      
+
       // Delete only test users (those without realUser: true)
       const result = await this.clearUsersWhere(where('realUser', '!=', true));
-      
+
       return {
         ...result,
         protectedCount: summary.realUsers
       };
-      
+
     } catch (error: any) {
       console.error('[CleanupService] ❌ Error clearing test users:', error);
       return {
@@ -257,12 +257,12 @@ export class CleanupService extends FirestoreService {
    */
   async clearAllUsersIncludingReal(): Promise<CleanupResult> {
     console.log('[CleanupService] ⚠️ DANGER: Clearing ALL users including real users...');
-    
+
     const summary = await this.analyzeUsers();
     if (summary.realUsers > 0) {
       console.warn(`[CleanupService] ⚠️ WARNING: This will delete ${summary.realUsers} REAL users!`);
     }
-    
+
     return this.clearCollection('users');
   }
 
@@ -278,7 +278,7 @@ export class CleanupService extends FirestoreService {
         // Get batch of documents with where condition
         const snapshot = await getDocs(
           query(
-            collection(this.firestore, 'users'), 
+            collection(this.firestore, 'users'),
             whereCondition,
             firestoreLimit(500)
           )
@@ -426,12 +426,12 @@ export class CleanupService extends FirestoreService {
   }> {
     console.log('🔥🔥🔥 [CleanupService] ☢️ NUCLEAR CLEANUP STARTED 🔥🔥🔥');
     console.log('[CleanupService] This will DELETE ALL DATA from ALL collections');
-    
+
     // Get current counts for before/after comparison
     console.log('[CleanupService] 📊 Getting current database state...');
     const beforeCounts = await this.getCollectionCounts();
     const totalBefore = Object.values(beforeCounts).reduce((sum, count) => sum + count, 0);
-    
+
     console.log('[CleanupService] 📊 BEFORE Nuclear Reset:');
     console.log(`[CleanupService]   Total Documents: ${totalBefore}`);
     Object.entries(beforeCounts).forEach(([collection, count]) => {
@@ -457,7 +457,7 @@ export class CleanupService extends FirestoreService {
     // Calculate total deleted
     const results = { users, checkIns, landlords, earnedBadges, badges, pubs, userMissionProgress, pointsTransactions, missions, feedback };
     const totalDeleted = Object.values(results).reduce((sum, result) => sum + result.deletedCount, 0);
-    
+
     // Log detailed results
     console.log('[CleanupService] 📊 NUCLEAR RESET RESULTS:');
     Object.entries(results).forEach(([collection, result]) => {
@@ -466,12 +466,12 @@ export class CleanupService extends FirestoreService {
     });
 
     console.log(`[CleanupService] 🔥 TOTAL DELETED: ${totalDeleted} documents`);
-    
+
     // Get after counts to verify
     console.log('[CleanupService] 📊 Verifying deletion...');
     const afterCounts = await this.getCollectionCounts();
     const totalAfter = Object.values(afterCounts).reduce((sum, count) => sum + count, 0);
-    
+
     console.log('[CleanupService] 📊 AFTER Nuclear Reset:');
     console.log(`[CleanupService]   Total Documents: ${totalAfter}`);
     if (totalAfter > 0) {

@@ -5,6 +5,7 @@ import { LocationService } from '../../data-access/location.service';
 import { ChipUserComponent } from '../../ui/chips/chip-user/chip-user.component';
 import { ButtonComponent } from '../../ui/button/button.component';
 import { AuthStore } from '../../../auth/data-access/auth.store';
+import { UserStore } from '../../../users/data-access/user.store';
 import { DataAggregatorService } from '../../data-access/data-aggregator.service';
 import { ViewportService } from '../../data-access/viewport.service';
 import { ToastService } from '../../data-access/toast.service';
@@ -21,7 +22,8 @@ import { UserProfileWidgetComponent } from "@/app/home/ui/user-profile-widget/us
 export class NavComponent {
   private readonly router = inject(Router);
   private readonly locationService = inject(LocationService);
-  private readonly authStore = inject(AuthStore);
+  protected readonly authStore = inject(AuthStore);
+  protected readonly userStore = inject(UserStore);
   private readonly dataAggregator = inject(DataAggregatorService);
   private readonly viewportService = inject(ViewportService);
   private readonly toastService = inject(ToastService);
@@ -37,6 +39,9 @@ export class NavComponent {
 
   // Simple location status indicator
   readonly hasLocation = computed(() => !!this.locationService.location());
+
+  // Admin check using UserStore (not AuthStore)
+  readonly isAdmin = computed(() => this.userStore.currentUser()?.isAdmin === true);
 
   // User chip data for display
   readonly userChipData = computed((): UserChipData | null => {

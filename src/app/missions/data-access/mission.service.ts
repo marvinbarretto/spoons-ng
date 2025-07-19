@@ -1,6 +1,6 @@
 // src/app/services/mission.service.ts
 import { Injectable } from '@angular/core';
-import { FirestoreService } from '../../shared/data-access/firestore.service';
+import { FirestoreService } from '@fourfold/angular-foundation';
 import { Mission } from '../utils/mission.model';
 import { firstValueFrom } from 'rxjs';
 

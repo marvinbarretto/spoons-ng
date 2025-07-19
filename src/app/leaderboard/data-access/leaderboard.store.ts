@@ -4,6 +4,7 @@ import { DataAggregatorService } from '../../shared/data-access/data-aggregator.
 import { CacheCoherenceService } from '../../shared/data-access/cache-coherence.service';
 import { UserService } from '../../users/data-access/user.service';
 import { CheckInService } from '../../check-in/data-access/check-in.service';
+import { ErrorLoggingService } from '../../shared/data-access/error-logging.service';
 import { LeaderboardEntry, LeaderboardSortBy, LeaderboardFilters, LeaderboardPeriod } from '../utils/leaderboard.models'
 
 @Injectable({
@@ -15,13 +16,14 @@ export class LeaderboardStore {
   private readonly cacheCoherence = inject(CacheCoherenceService);
   private readonly userService = inject(UserService);
   private readonly checkinService = inject(CheckInService);
+  private readonly errorLoggingService = inject(ErrorLoggingService);
 
   // State signals
   private readonly _loading = signal(false);
   private readonly _error = signal<string | null>(null);
   private readonly _sortBy = signal<LeaderboardSortBy>('points');
   private readonly _period = signal<LeaderboardPeriod>('all-time');
-  private readonly _showRealUsersOnly = signal(true);
+  private readonly _showRealUsersOnly = signal(false); // 🔧 Changed to false to include guest users by default
 
   // Public readonly signals
   readonly loading = this._loading.asReadonly();
@@ -64,7 +66,38 @@ export class LeaderboardStore {
     });
 
     if (allUsers.length === 0) {
+      console.log('[Leaderboard] ⚠️ No users loaded - returning empty array');
       return [];
+    }
+
+    // 🔍 DEBUGGING: Log user filtering details
+    const realUsers = allUsers.filter(u => u.realUser === true);
+    const guestUsers = allUsers.filter(u => u.realUser !== true);
+    const usersWithPoints = allUsers.filter(u => (u.totalPoints || 0) > 0);
+    
+    console.log('[Leaderboard] 🔍 User breakdown:', {
+      totalUsers: allUsers.length,
+      realUsers: realUsers.length,
+      guestUsers: guestUsers.length,
+      usersWithPoints: usersWithPoints.length,
+      showRealOnly,
+      willBeFiltered: showRealOnly ? guestUsers.length : 0
+    });
+
+    // Log users with points who might be filtered
+    if (showRealOnly && guestUsers.length > 0) {
+      const guestUsersWithPoints = guestUsers.filter(u => (u.totalPoints || 0) > 0);
+      if (guestUsersWithPoints.length > 0) {
+        console.warn('[Leaderboard] ⚠️ FILTERING OUT GUEST USERS WITH POINTS:', {
+          count: guestUsersWithPoints.length,
+          users: guestUsersWithPoints.map(u => ({
+            uid: u.uid?.slice(0, 8),
+            displayName: u.displayName,
+            totalPoints: u.totalPoints,
+            realUser: u.realUser
+          }))
+        });
+      }
     }
 
     // Filter and transform users into leaderboard entries
@@ -72,6 +105,15 @@ export class LeaderboardStore {
       .filter(user => {
         // Filter out non-real users if showRealUsersOnly is true
         if (showRealOnly && !user.realUser) {
+          // 🔍 DEBUGGING: Log each filtered user
+          if ((user.totalPoints || 0) > 0) {
+            console.log('[Leaderboard] 🚫 Filtering out guest user with points:', {
+              uid: user.uid?.slice(0, 8),
+              displayName: user.displayName,
+              totalPoints: user.totalPoints,
+              realUser: user.realUser
+            });
+          }
           return false;
         }
         return true;
@@ -96,11 +138,47 @@ export class LeaderboardStore {
         // Calculate current streak
         const currentStreak = this.calculateStreak(userCheckIns);
 
+        // 🔍 DEBUGGING: Log points data mismatch issues
+        const pointsFromCheckins = userCheckIns.reduce((sum, checkin) => sum + (checkin.pointsEarned || 0), 0);
+        const pointsFromUser = user.totalPoints || 0;
+        
+        if (pointsFromUser !== pointsFromCheckins && userCheckIns.length > 0) {
+          console.warn(`[Leaderboard] 🚨 POINTS MISMATCH for ${user.displayName || user.uid?.slice(0, 8)}:`, {
+            userDocPoints: pointsFromUser,
+            calculatedFromCheckins: pointsFromCheckins,
+            checkinsCount: userCheckIns.length,
+            checkinPoints: userCheckIns.map(c => ({ id: c.id, points: c.pointsEarned })),
+            userId: user.uid?.slice(0, 8)
+          });
+
+          // 🔍 Log this as an error for admin review
+          try {
+            this.errorLoggingService.logError(
+              'points',
+              'leaderboard-points-mismatch',
+              `Points mismatch: User doc shows ${pointsFromUser} but check-ins total ${pointsFromCheckins}`,
+              {
+                severity: 'medium',
+                operationContext: {
+                  userId: user.uid,
+                  userDisplayName: user.displayName,
+                  userDocPoints: pointsFromUser,
+                  calculatedFromCheckins: pointsFromCheckins,
+                  checkinsCount: userCheckIns.length,
+                  checkinPoints: userCheckIns.map(c => ({ id: c.id, points: c.pointsEarned }))
+                }
+              }
+            );
+          } catch (logError) {
+            console.error('[Leaderboard] Failed to log points mismatch error:', logError);
+          }
+        }
+
         const entry: LeaderboardEntry = {
           userId: user.uid,
           displayName: this.getUserDisplayName(user),
-          // All-time stats
-          totalPoints: user.totalPoints || 0,
+          // All-time stats  
+          totalPoints: user.totalPoints || 0, // 🔍 This comes from user document, not calculated!
           uniquePubs: totalUniquePubs,
           totalCheckins: userCheckIns.length,
           // Monthly stats
@@ -273,7 +351,78 @@ export class LeaderboardStore {
         this.userService.loadAllUsers(),
         this.checkinService.loadAllCheckIns()
       ]);
-      console.log('[Leaderboard] ✅ Global data loaded successfully');
+      
+      // 🔍 DEBUGGING: Log the actual data to see what we're working with
+      const users = this.userService.allUsers();
+      const checkins = this.checkinService.allCheckIns();
+      
+      console.log('[Leaderboard] ✅ Global data loaded successfully:', {
+        usersCount: users.length,
+        checkinsCount: checkins.length
+      });
+
+      // 🔍 DEBUGGING: Log user points data to identify sync issues
+      const usersWithPoints = users.filter(u => (u.totalPoints || 0) > 0);
+      if (usersWithPoints.length > 0) {
+        console.log('[Leaderboard] 📊 Users with points in database:', usersWithPoints.map(u => ({
+          uid: u.uid?.slice(0, 8),
+          displayName: u.displayName,
+          totalPoints: u.totalPoints,
+          realUser: u.realUser,
+          hasCheckins: checkins.some(c => c.userId === u.uid)
+        })));
+      }
+
+      // 🔍 DEBUGGING: Check for check-ins without corresponding user points
+      const userIdsWithCheckins = new Set(checkins.map(c => c.userId));
+      const usersWithCheckinsButNoPoints = users.filter(u => 
+        userIdsWithCheckins.has(u.uid) && (u.totalPoints || 0) === 0
+      );
+      
+      if (usersWithCheckinsButNoPoints.length > 0) {
+        console.warn('[Leaderboard] ⚠️ Users with check-ins but zero points:', 
+          usersWithCheckinsButNoPoints.map(u => ({
+            uid: u.uid?.slice(0, 8),
+            displayName: u.displayName,
+            totalPoints: u.totalPoints,
+            checkinsCount: checkins.filter(c => c.userId === u.uid).length,
+            checkinsWithPoints: checkins.filter(c => c.userId === u.uid && (c.pointsEarned || 0) > 0).length
+          }))
+        );
+
+        // 🔍 Log each user with check-ins but no points as an error
+        for (const user of usersWithCheckinsButNoPoints) {
+          const userCheckins = checkins.filter(c => c.userId === user.uid);
+          const checkinsWithPoints = userCheckins.filter(c => (c.pointsEarned || 0) > 0);
+          
+          try {
+            await this.errorLoggingService.logError(
+              'points',
+              'user-checkins-no-points',
+              `User has ${userCheckins.length} check-ins but 0 points in user document`,
+              {
+                severity: 'high',
+                operationContext: {
+                  userId: user.uid,
+                  userDisplayName: user.displayName,
+                  userDocPoints: user.totalPoints,
+                  checkinsCount: userCheckins.length,
+                  checkinsWithPoints: checkinsWithPoints.length,
+                  checkinData: userCheckins.map(c => ({
+                    id: c.id,
+                    pointsEarned: c.pointsEarned,
+                    pubId: c.pubId,
+                    timestamp: c.timestamp?.toDate?.()?.toISOString()
+                  }))
+                }
+              }
+            );
+          } catch (logError) {
+            console.error('[Leaderboard] Failed to log user-checkins-no-points error:', logError);
+          }
+        }
+      }
+      
     } catch (error) {
       console.error('[Leaderboard] ❌ Failed to load data:', error);
       this._error.set(error instanceof Error ? error.message : 'Failed to load leaderboard data');

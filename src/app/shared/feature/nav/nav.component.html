@@ -12,9 +12,11 @@
       <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
         <a routerLink="/missions">Missions</a>
       </li>
-      <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
-        <a routerLink="/admin">Admin</a>
-      </li>
+      @if (isAdmin()) {
+        <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
+          <a routerLink="/admin">Admin</a>
+        </li>
+      }
       <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: false }">
         <a routerLink="/leaderboard">Leaderboard</a>
       </li>

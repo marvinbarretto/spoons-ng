@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { FirestoreService } from '../../shared/data-access/firestore.service';
+import { FirestoreService } from '@fourfold/angular-foundation';
 import { UserMissionProgress } from '../utils/user-mission-progress.model';
 import { where } from 'firebase/firestore';
 
@@ -48,14 +48,14 @@ export class UserMissionProgressService extends FirestoreService {
    * Update progress when user checks into a pub.
    */
   async updateProgress(
-    userId: string, 
-    missionId: string, 
-    pubId: string, 
+    userId: string,
+    missionId: string,
+    pubId: string,
     totalPubsRequired: number
   ): Promise<void> {
     const id = `${userId}_${missionId}`;
     const existingProgress = await this.getUserMissionProgress(userId, missionId);
-    
+
     if (!existingProgress) {
       throw new Error('Mission progress not found. User must start mission first.');
     }

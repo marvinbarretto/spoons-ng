@@ -200,9 +200,38 @@ export class PointsService extends FirestoreCrudService<PointsTransaction> {
 
   /**
    * Update user's total points in their profile
+   * Creates document if it doesn't exist (for guest users)
    */
   async updateUserTotalPoints(userId: string, newTotal: number): Promise<void> {
-    await this.updateDoc(`users/${userId}`, { totalPoints: newTotal });
+    try {
+      // First try to update existing document
+      await this.updateDoc(`users/${userId}`, { totalPoints: newTotal });
+      console.log(`[PointsService] ✅ Updated existing user ${userId.slice(0, 8)} totalPoints to ${newTotal}`);
+    } catch (error: any) {
+      // If document doesn't exist, create it (for guest users)
+      if (error?.message?.includes('No document to update')) {
+        console.log(`[PointsService] 📝 Creating user document for ${userId.slice(0, 8)} with totalPoints: ${newTotal}`);
+        try {
+          await this.setDoc(`users/${userId}`, { 
+            totalPoints: newTotal,
+            uid: userId,
+            displayName: `User ${userId.slice(0, 8)}`,
+            email: null,
+            isAnonymous: true,
+            photoURL: null,
+            joinedAt: new Date().toISOString(),
+            realUser: false // Mark as guest user for leaderboard filtering
+          });
+          console.log(`[PointsService] ✅ Created user document for guest ${userId.slice(0, 8)} with ${newTotal} points`);
+        } catch (createError) {
+          console.error(`[PointsService] ❌ Failed to create user document for ${userId.slice(0, 8)}:`, createError);
+          throw createError;
+        }
+      } else {
+        console.error(`[PointsService] ❌ Failed to update totalPoints for user ${userId.slice(0, 8)}:`, error);
+        throw error;
+      }
+    }
   }
 
   /**
