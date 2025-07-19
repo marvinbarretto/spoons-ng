@@ -60,9 +60,26 @@ type StatData = {
         <h2>Admin Tools</h2>
         <div class="sections-grid">
           @for (section of adminSections; track section.id) {
-            <div class="admin-card">
-              <h3>{{ section.title }}</h3>
-              <p>{{ section.description }}</p>
+            <div class="admin-card" [class.active]="section.status === 'active'">
+              @if (section.status === 'active') {
+                <a [routerLink]="section.route" class="card-link">
+                  <div class="card-icon">{{ section.icon }}</div>
+                  <h3>{{ section.title }}</h3>
+                  <p>{{ section.description }}</p>
+                  @if (section.stats) {
+                    <div class="card-stats">{{ section.stats }}</div>
+                  }
+                </a>
+              } @else {
+                <div class="card-content">
+                  <div class="card-icon">{{ section.icon }}</div>
+                  <h3>{{ section.title }}</h3>
+                  <p>{{ section.description }}</p>
+                  @if (section.stats) {
+                    <div class="card-stats">{{ section.stats }}</div>
+                  }
+                </div>
+              }
             </div>
           }
         </div>
@@ -239,6 +256,15 @@ export class AdminDashboardComponent {
     },
 
     // High Priority - Real Data Available
+    {
+      id: 'checkins',
+      title: 'Check-ins Management ✅',
+      description: 'View and manage all user check-ins',
+      route: '/admin/checkins',
+      icon: '🍺',
+      status: 'active',
+      stats: 'Real CRUD via AdminCheckinService'
+    },
     {
       id: 'feedback',
       title: 'Feedback Review ✅',

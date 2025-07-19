@@ -147,6 +147,15 @@ export const appRoutes: Routes = [
     data: { shell: 'feature' }
   },
   {
+    path: 'admin/checkins',
+    title: 'Check-ins Management',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./admin/feature/admin-checkins/admin-checkins.component')
+        .then(m => m.AdminCheckinsComponent),
+    data: { shell: 'feature' }
+  },
+  {
     path: 'admin/carpets',
     title: 'Carpet Management',
     canActivate: [authGuard],

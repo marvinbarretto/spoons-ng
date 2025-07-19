@@ -196,16 +196,25 @@
 
 .card-link {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   padding: 24px;
   text-decoration: none;
   color: inherit;
   gap: 16px;
   min-height: 120px;
+  transition: all 0.2s ease;
 
   &:hover {
     color: inherit;
   }
+}
+
+.card-content {
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  gap: 16px;
+  min-height: 120px;
 }
 
 .card-disabled {
@@ -229,22 +238,20 @@
   flex-shrink: 0;
 }
 
-.card-content {
-  flex: 1;
+.card-link h3,
+.card-content h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text);
+}
 
-  h3 {
-    margin: 0 0 8px 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--text);
-  }
-
-  p {
-    margin: 0 0 12px 0;
-    font-size: 0.875rem;
-    color: var(--text-secondary);
-    line-height: 1.5;
-  }
+.card-link p,
+.card-content p {
+  margin: 0 0 12px 0;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
 }
 
 .card-stats {
