@@ -9,7 +9,7 @@ import {
   computed,
   effect
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { BaseComponent } from '../../base/base.component';
 import { CarpetImageService } from '../../../dev/experiments/shared/carpet-image.service';
 import { BackgroundCarpetService } from './background-carpet.service';
@@ -28,7 +28,7 @@ interface BackgroundTile {
 @Component({
   selector: 'app-background-carpet',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <canvas 
       #backgroundCanvas

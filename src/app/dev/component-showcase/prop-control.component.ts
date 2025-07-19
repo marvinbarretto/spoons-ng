@@ -1,12 +1,12 @@
 import { Component, input, output, signal, computed, effect } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { PropControl } from './component-metadata';
 import { IconComponent } from '../../shared/ui/icon/icon.component';
 
 @Component({
   selector: 'app-prop-control',
-  imports: [CommonModule, FormsModule, IconComponent],
+  imports: [FormsModule, IconComponent],
   template: `
     <div class="prop-control">
       <label class="prop-label">

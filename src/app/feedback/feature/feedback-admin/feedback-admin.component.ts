@@ -31,36 +31,38 @@ type FeedbackTypeFilter = 'all' | 'bug' | 'suggestion' | 'confusion';
           </span>
         </div>
       </header>
-
+    
       <!-- Filters -->
       <section class="filters-section">
         <div class="filter-group">
           <label>Status:</label>
-          <button 
-            *ngFor="let status of statusFilters"
-            class="filter-btn"
-            [class.active]="statusFilter() === status"
-            (click)="statusFilter.set(status)"
-          >
-            {{ status | titlecase }}
-            ({{ getCountForStatus(status) }})
-          </button>
+          @for (status of statusFilters; track status) {
+            <button
+              class="filter-btn"
+              [class.active]="statusFilter() === status"
+              (click)="statusFilter.set(status)"
+              >
+              {{ status | titlecase }}
+              ({{ getCountForStatus(status) }})
+            </button>
+          }
         </div>
-        
+    
         <div class="filter-group">
           <label>Type:</label>
-          <button 
-            *ngFor="let type of typeFilters"
-            class="filter-btn"
-            [class.active]="typeFilter() === type"
-            (click)="typeFilter.set(type)"
-          >
-            {{ type | titlecase }}
-            ({{ getCountForType(type) }})
-          </button>
+          @for (type of typeFilters; track type) {
+            <button
+              class="filter-btn"
+              [class.active]="typeFilter() === type"
+              (click)="typeFilter.set(type)"
+              >
+              {{ type | titlecase }}
+              ({{ getCountForType(type) }})
+            </button>
+          }
         </div>
       </section>
-
+    
       <!-- Feedback List -->
       <section class="feedback-list">
         @if (loading()) {
@@ -88,17 +90,17 @@ type FeedbackTypeFilter = 'all' | 'bug' | 'suggestion' | 'confusion';
                     {{ feedback.status | titlecase }}
                   </span>
                 </div>
-
+    
                 <div class="feedback-content">
                   <p class="feedback-message">{{ feedback.message }}</p>
-                  
+    
                   @if (feedback.context) {
                     <div class="feedback-metadata">
                       <strong>Context:</strong>
                       <pre>{{ formatMetadata(feedback.context) }}</pre>
                     </div>
                   }
-
+    
                   @if (feedback.adminNotes) {
                     <div class="admin-notes">
                       <strong>Admin Notes:</strong>
@@ -106,7 +108,7 @@ type FeedbackTypeFilter = 'all' | 'bug' | 'suggestion' | 'confusion';
                     </div>
                   }
                 </div>
-
+    
                 <div class="card-actions">
                   @if (feedback.status === 'pending') {
                     <div class="admin-controls">
@@ -117,28 +119,28 @@ type FeedbackTypeFilter = 'all' | 'bug' | 'suggestion' | 'confusion';
                         rows="2"
                       ></textarea>
                       <div class="action-buttons">
-                        <button 
+                        <button
                           class="btn btn-resolve"
                           (click)="resolveFeedback(feedback.id)"
                           [disabled]="isUpdating()"
-                        >
+                          >
                           Mark Resolved
                         </button>
-                        <button 
+                        <button
                           class="btn btn-dismiss"
                           (click)="dismissFeedback(feedback.id)"
                           [disabled]="isUpdating()"
-                        >
+                          >
                           Dismiss
                         </button>
                       </div>
                     </div>
                   } @else {
-                    <button 
+                    <button
                       class="btn btn-reopen"
                       (click)="reopenFeedback(feedback.id)"
                       [disabled]="isUpdating()"
-                    >
+                      >
                       Reopen
                     </button>
                   }
@@ -148,7 +150,7 @@ type FeedbackTypeFilter = 'all' | 'bug' | 'suggestion' | 'confusion';
           </div>
         }
       </section>
-
+    
       <!-- Debug Info -->
       @if (isDevMode()) {
         <section class="debug-section">
@@ -161,7 +163,7 @@ type FeedbackTypeFilter = 'all' | 'bug' | 'suggestion' | 'confusion';
         </section>
       }
     </div>
-  `,
+    `,
   styleUrl: './feedback-admin.component.scss'
 })
 export class FeedbackAdminComponent {

@@ -1,9 +1,9 @@
 import { Component, input, output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
   selector: 'app-empty-state',
-  imports: [CommonModule],
+  imports: [],
   template: `
     <div class="widget-empty">
       <span class="empty-icon" aria-hidden="true">{{ icon() }}</span>

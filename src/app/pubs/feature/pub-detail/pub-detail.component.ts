@@ -1,6 +1,6 @@
 // src/app/pubs/feature/pub-detail/pub-detail.component.ts
 import { Component, computed, inject, input } from '@angular/core';
-import { CommonModule, JsonPipe } from '@angular/common';
+import { JsonPipe } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { PubStore } from '../../data-access/pub.store';
 import { CheckInStore } from '@/app/check-in/data-access/check-in.store';
@@ -18,7 +18,7 @@ import type { CheckIn } from '@app/check-in/utils/check-in.models';
 
 @Component({
   selector: 'app-pub-detail',
-  imports: [CommonModule, ButtonComponent], // JsonPipe removed - not used
+  imports: [ButtonComponent], // JsonPipe removed - not used
   template: `
     <section class="pub-detail-page" [class.has-carpet]="pub()?.carpetUrl">
       @if (pub()?.carpetUrl) {

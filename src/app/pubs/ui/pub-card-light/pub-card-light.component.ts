@@ -1,5 +1,5 @@
 import { Component, input, output, computed, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import type { Pub } from '../../utils/pub.models';
 import { LocationService } from '../../../shared/data-access/location.service';
 
@@ -7,7 +7,7 @@ export type PubCardVariant = 'compact' | 'normal' | 'overlay';
 
 @Component({
   selector: 'app-pub-card-light',
-  imports: [CommonModule],
+  imports: [],
   template: `
     <div 
       class="pub-card-light" 

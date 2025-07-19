@@ -17,14 +17,14 @@
  */
 
 import { Component, input, computed, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import type { Badge } from '../../../badges/utils/badge.model';
 
 export type BadgeCrestSize = 'tiny' | 'small' | 'medium' | 'large';
 
 @Component({
   selector: 'app-badge-crest',
-  imports: [CommonModule],
+  imports: [],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div 

@@ -1,6 +1,6 @@
 // src/app/pubs/ui/pub-card/pub-card.component.ts
 import { Component, computed, input, output, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { environment } from '../../../../environments/environment';
 import type { Pub } from '../../utils/pub.models';
 import { LocationService } from '../../../shared/data-access/location.service';
@@ -8,7 +8,7 @@ import { ChipStatusComponent } from '../../../shared/ui/chips/chip-status/chip-s
 
 @Component({
   selector: 'app-pub-card',
-  imports: [CommonModule, ChipStatusComponent],
+  imports: [ChipStatusComponent],
   templateUrl: './pub-card.component.html',
   styles: `
     .pub-card {

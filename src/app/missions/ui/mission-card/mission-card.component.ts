@@ -1,6 +1,6 @@
 // src/app/missions/ui/mission-card/mission-card.component.ts
 import { Component, computed, input, output, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
 import { PubStore } from '../../../pubs/data-access/pub.store';
 import { PubChipComponent } from '../pub-chip/pub-chip.component';
@@ -9,7 +9,7 @@ import type { Pub } from '../../../pubs/utils/pub.models';
 
 @Component({
   selector: 'app-mission-card',
-  imports: [CommonModule, PubChipComponent],
+  imports: [PubChipComponent],
   template: `
     <article
       class="mission-card"

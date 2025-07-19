@@ -1,5 +1,5 @@
 import { Component, inject, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule, Router } from '@angular/router';
 import { BaseComponent } from '../../../shared/base/base.component';
 
@@ -12,7 +12,7 @@ type AdminNavItem = {
 @Component({
   selector: 'app-admin-nav',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [RouterModule],
   template: `
     @if (isAdminRoute()) {
       <nav class="admin-nav">

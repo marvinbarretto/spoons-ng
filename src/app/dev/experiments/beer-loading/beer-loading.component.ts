@@ -1,5 +1,5 @@
 import { Component, signal, computed, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { LottieComponent } from 'ngx-lottie';
 import { BaseComponent } from '@shared/base/base.component';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
@@ -8,7 +8,7 @@ import { AnimationItem } from 'lottie-web';
 @Component({
   selector: 'app-beer-loading',
   standalone: true,
-  imports: [CommonModule, LottieComponent, ButtonComponent],
+  imports: [LottieComponent, ButtonComponent],
   template: `
     <div class="beer-loading-container">
       <div class="controls">

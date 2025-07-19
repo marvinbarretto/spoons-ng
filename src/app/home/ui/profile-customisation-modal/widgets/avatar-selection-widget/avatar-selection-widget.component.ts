@@ -1,5 +1,5 @@
 import { Component, input, output, computed, signal, inject, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { AvatarService } from '@shared/data-access/avatar.service';
 import { UserStore } from '@users/data-access/user.store';
 import { AuthStore } from '@auth/data-access/auth.store';
@@ -8,7 +8,7 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
 @Component({
   selector: 'app-avatar-selection-widget',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <div class="avatar-selection-widget">
       <!-- ✅ Current avatar display (conditionally shown) -->

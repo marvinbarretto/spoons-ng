@@ -1,9 +1,9 @@
 import { Component, input, output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
   selector: 'app-error-state',
-  imports: [CommonModule],
+  imports: [],
   template: `
     <div class="widget-error" [attr.aria-live]="'assertive'">
       <span class="error-icon" aria-hidden="true">{{ icon() }}</span>

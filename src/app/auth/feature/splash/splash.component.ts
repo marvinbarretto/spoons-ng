@@ -1,6 +1,6 @@
 import { Component, inject, signal, ChangeDetectionStrategy, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+
 import { BaseComponent } from '@shared/base/base.component';
 import { ButtonComponent } from '@shared/ui/button/button.component';
 import { AuthStore } from '@auth/data-access/auth.store';
@@ -10,7 +10,7 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
 @Component({
   selector: 'app-splash',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ButtonComponent],
+  imports: [ButtonComponent],
   styleUrl: './splash.component.scss',
   template: `
     <div class="splash-container">

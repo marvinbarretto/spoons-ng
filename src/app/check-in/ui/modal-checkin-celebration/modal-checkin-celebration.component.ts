@@ -1,6 +1,6 @@
 // src/app/check-in/ui/modal-checkin-celebration/modal-checkin-celebration.component.ts
 import { Component, inject, input, output, computed, signal, effect, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ButtonComponent } from '@shared/ui/button/button.component';
 import { BadgeIconComponent } from '@badges/ui/badge-icon/badge-icon.component';
 import { CheckInStore } from '../../../check-in/data-access/check-in.store';
@@ -14,7 +14,7 @@ import { CheckInResultData } from '../../utils/check-in.models';
 
 @Component({
   selector: 'app-modal-checkin-celebration',
-  imports: [CommonModule, ButtonComponent, BadgeIconComponent],
+  imports: [ButtonComponent, BadgeIconComponent],
   template: `
     <div class="checkin-modal-container celebration">
       <div class="checkin-modal-header">

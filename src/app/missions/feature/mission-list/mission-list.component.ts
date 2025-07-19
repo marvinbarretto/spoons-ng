@@ -1,6 +1,6 @@
 // src/app/missions/feature/mission-list/mission-list.component.ts
 import { Component, computed, inject, signal, effect } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { MissionCardComponent } from '../../ui/mission-card/mission-card.component';
 import { UserMissionsStore } from '../../data-access/user-missions.store';
 import { AuthStore } from '@auth/data-access/auth.store';
@@ -15,7 +15,7 @@ import type { MissionDisplayData } from '../../utils/user-mission-progress.model
 
 @Component({
   selector: 'app-mission-list',
-  imports: [CommonModule, MissionCardComponent, ListFilterControlsComponent, ButtonComponent, LoadingStateComponent, ErrorStateComponent, EmptyStateComponent],
+  imports: [MissionCardComponent, ListFilterControlsComponent, ButtonComponent, LoadingStateComponent, ErrorStateComponent, EmptyStateComponent],
   providers: [ListFilterStore],
   template: `
     <section class="mission-list-page">

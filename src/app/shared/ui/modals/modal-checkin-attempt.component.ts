@@ -1,5 +1,5 @@
 import { Component, output, input, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { IconComponent } from '@shared/ui/icon/icon.component';
 import { ButtonComponent } from '@shared/ui/button/button.component';
 
@@ -21,7 +21,7 @@ export interface CheckinErrorDetails {
 @Component({
   selector: 'app-modal-checkin-attempt',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, IconComponent, ButtonComponent],
+  imports: [IconComponent, ButtonComponent],
   template: `
     <div class="modal-content">
       <!-- Header -->

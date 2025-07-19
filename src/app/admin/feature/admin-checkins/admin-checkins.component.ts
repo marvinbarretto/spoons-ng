@@ -1,6 +1,6 @@
 // src/app/admin/feature/admin-checkins/admin-checkins.component.ts
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { BaseComponent } from '../../../shared/base/base.component';
 import { LoadingStateComponent } from '../../../shared/ui/loading-state/loading-state.component';
@@ -29,7 +29,6 @@ type CheckInWithDetails = CheckIn & {
 @Component({
   selector: 'app-admin-checkins',
   imports: [
-    CommonModule,
     FormsModule,
     LoadingStateComponent,
     ErrorStateComponent,
@@ -38,7 +37,7 @@ type CheckInWithDetails = CheckIn & {
     ButtonComponent,
     UserSelectorComponent,
     PubSelectorComponent
-  ],
+],
   template: `
     <div class="admin-checkins">
       <header class="admin-header">

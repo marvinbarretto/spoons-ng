@@ -1,5 +1,5 @@
 import { Component, signal, inject, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Router } from '@angular/router';
 import { BaseWidgetComponent } from '../base/base-widget.component';
 import { UserMissionsStore } from '../../missions/data-access/user-missions.store';
@@ -10,7 +10,7 @@ import { LoadingStateComponent, ErrorStateComponent, EmptyStateComponent } from 
 
 @Component({
   selector: 'app-missions-widget',
-  imports: [CommonModule, MissionCardLightComponent, LoadingStateComponent, ErrorStateComponent, EmptyStateComponent],
+  imports: [MissionCardLightComponent, LoadingStateComponent, ErrorStateComponent, EmptyStateComponent],
   template: `
     <div class="missions-widget">
       <div class="widget-header">

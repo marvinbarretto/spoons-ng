@@ -10,7 +10,7 @@ import {
   effect,
 } from '@angular/core';
 import { Router, RouterModule, NavigationEnd } from '@angular/router';
-import { CommonModule } from '@angular/common';
+
 import { filter, map } from 'rxjs/operators';
 import { toSignal } from '@angular/core/rxjs-interop';
 
@@ -44,12 +44,9 @@ import { environment } from '../../../../environments/environment';
   styleUrl: './header.component.scss',
   imports: [
     RouterModule,
-    CommonModule,
     NavComponent,
-    AdminNavComponent,
-    // UserProfileWidgetComponent, // Not used in template
-    // ProfileCustomisationModalComponent,
-  ],
+    AdminNavComponent
+],
 })
 export class HeaderComponent extends BaseComponent {
   // 🔧 Services

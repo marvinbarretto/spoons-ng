@@ -1,6 +1,6 @@
 // src/app/admin/feature/admin-checkins/modal-check-in-details.component.ts
 import { Component, input, output, signal, computed, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { Timestamp } from 'firebase/firestore';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
@@ -18,11 +18,10 @@ type CheckInWithDetails = CheckIn & {
 @Component({
   selector: 'app-modal-check-in-details',
   imports: [
-    CommonModule,
     FormsModule,
     ButtonComponent,
     ChipUserComponent
-  ],
+],
   template: `
     <div class="modal-check-in-details">
       <header class="modal-header">

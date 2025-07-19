@@ -1,6 +1,6 @@
 import { Component, inject, signal, ChangeDetectionStrategy, computed, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { CommonModule, JsonPipe } from '@angular/common';
+import { JsonPipe } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { BaseComponent } from '@shared/base/base.component';
 import { ButtonComponent } from '@shared/ui/button/button.component';
@@ -15,7 +15,7 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
 @Component({
   selector: 'app-login',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, ButtonComponent, FormInputComponent, IconComponent],
+  imports: [ReactiveFormsModule, ButtonComponent, FormInputComponent, IconComponent],
   styleUrl: './login.component.scss',
   template: `
     <div class="login-container">

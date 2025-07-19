@@ -1,5 +1,5 @@
 import { Component, input, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { User } from '../../../users/utils/user.model';
 
 export type UserAvatarData = {
@@ -11,7 +11,7 @@ export type UserAvatarData = {
 
 @Component({
   selector: 'app-user-avatar',
-  imports: [CommonModule],
+  imports: [],
   template: `
     <div class="user-avatar">
       <img

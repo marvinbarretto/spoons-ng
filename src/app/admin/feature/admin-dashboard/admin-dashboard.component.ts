@@ -1,6 +1,6 @@
 // src/app/admin/feature/admin-dashboard/admin-dashboard.component.ts
 import { Component, inject, computed, isDevMode, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule } from '@angular/router';
 // DatabaseMetricsService removed - was over-engineered premature optimization
 import { FirebaseMetricsService } from '../../../shared/data-access/firebase-metrics.service';
@@ -31,7 +31,7 @@ type StatData = {
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [RouterModule],
   template: `
     <div class="admin-dashboard">
       <header class="dashboard-header">

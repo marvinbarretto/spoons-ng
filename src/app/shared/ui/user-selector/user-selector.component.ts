@@ -1,6 +1,6 @@
 // src/app/shared/ui/user-selector/user-selector.component.ts
 import { Component, computed, inject, input, output, signal, effect } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { UserStore } from '@users/data-access/user.store';
 import { ChipUserComponent, type UserChipData } from '../chips/chip-user/chip-user.component';
@@ -8,7 +8,7 @@ import type { User } from '@users/utils/user.model';
 
 @Component({
   selector: 'app-user-selector',
-  imports: [CommonModule, FormsModule, ChipUserComponent],
+  imports: [FormsModule, ChipUserComponent],
   template: `
     <div class="user-selector">
       <label class="selector-label">

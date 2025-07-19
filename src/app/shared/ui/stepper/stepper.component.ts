@@ -1,5 +1,5 @@
 import { Component, input, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 export interface StepConfig {
   id: string;
@@ -10,7 +10,7 @@ export interface StepConfig {
 @Component({
   selector: 'app-stepper',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <div class="stepper-container">
       <!-- Progress Dots -->

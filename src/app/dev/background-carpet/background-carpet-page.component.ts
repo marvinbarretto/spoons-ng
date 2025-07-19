@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { BaseComponent } from '../../shared/base/base.component';
 import { ButtonComponent } from '../../shared/ui/button/button.component';
 import { BackgroundCarpetComponent } from '../../shared/ui/background-carpet/background-carpet.component';
@@ -8,7 +8,7 @@ import { BackgroundCarpetService } from '../../shared/ui/background-carpet/backg
 @Component({
   selector: 'app-background-carpet-page',
   standalone: true,
-  imports: [CommonModule, ButtonComponent, BackgroundCarpetComponent],
+  imports: [ButtonComponent, BackgroundCarpetComponent],
   template: `
     <!-- Background component in action -->
     <app-background-carpet></app-background-carpet>

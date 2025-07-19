@@ -12,7 +12,7 @@
  */
 
 import { Component, computed, inject, ChangeDetectionStrategy, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { BaseWidgetComponent } from '../base/base-widget.component';
 import { BadgeStore } from '../../badges/data-access/badge.store';
 import { BadgeCrestComponent } from '../../shared/ui/badge-crest/badge-crest.component';
@@ -26,7 +26,7 @@ type BadgeWithStatus = {
 
 @Component({
   selector: 'app-badges-widget',
-  imports: [CommonModule, BadgeCrestComponent, LoadingStateComponent, ErrorStateComponent, EmptyStateComponent],
+  imports: [BadgeCrestComponent, LoadingStateComponent, ErrorStateComponent, EmptyStateComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="badges-widget">

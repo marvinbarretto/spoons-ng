@@ -1,5 +1,5 @@
 import { Component, signal, inject, computed, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { BaseWidgetComponent } from '../base/base-widget.component';
 import { UserMissionsStore } from '../../missions/data-access/user-missions.store';
 import { MissionStore } from '../../missions/data-access/mission.store';
@@ -15,7 +15,7 @@ import { MissionCardLightComponent } from '../../home/ui/mission-card-light/miss
 @Component({
   selector: 'app-suggested-mission-widget',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, LoadingStateComponent, ErrorStateComponent, EmptyStateComponent, MissionCardLightComponent],
+  imports: [LoadingStateComponent, ErrorStateComponent, EmptyStateComponent, MissionCardLightComponent],
   template: `
     <div class="suggested-mission-widget">
       <div class="widget-header">

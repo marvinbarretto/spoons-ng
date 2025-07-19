@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule } from '@angular/router';
 import { BeerLoadingComponent } from './beer-loading/beer-loading.component';
 import { WaveSquaresDomComponent } from './wave-squares-dom/wave-squares-dom.component';
@@ -9,7 +9,7 @@ import { BaseComponent } from '../../shared/base/base.component';
 @Component({
   selector: 'app-experiments',
   standalone: true,
-  imports: [CommonModule, RouterModule, BeerLoadingComponent, WaveSquaresDomComponent, WaveSquaresCanvasComponent],
+  imports: [RouterModule, BeerLoadingComponent, WaveSquaresDomComponent, WaveSquaresCanvasComponent],
   template: `
     <div class="experiments-container">
       <header class="experiments-header">

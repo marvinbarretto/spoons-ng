@@ -1,6 +1,6 @@
 // src/app/shared/ui/avatar-selector/avatar-selector.component.ts
 import { Component, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { AuthStore } from '../../../auth/data-access/auth.store';
 import { ButtonComponent } from '../button/button.component';
 import { UserStore } from '../../../users/data-access/user.store';
@@ -14,7 +14,7 @@ type AvatarOption = {
 
 @Component({
   selector: 'app-avatar-selector',
-  imports: [CommonModule, ButtonComponent],
+  imports: [ButtonComponent],
   template: `
     <div class="modal-container">
       <div class="modal-header">

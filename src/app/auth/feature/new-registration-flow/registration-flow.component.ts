@@ -1,6 +1,6 @@
 import { Component, inject, signal, ChangeDetectionStrategy, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
-import { CommonModule } from '@angular/common';
+
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { BaseComponent } from '@shared/base/base.component';
 import { StepperComponent, type StepConfig } from '@shared/ui/stepper/stepper.component';
@@ -21,7 +21,7 @@ import { SsrPlatformService } from '@shared/utils/ssr/ssr-platform.service';
 @Component({
   selector: 'app-registration-flow',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, ReactiveFormsModule, StepperComponent, ButtonComponent, FormInputComponent, AvatarSelectionWidgetComponent, PubSelectionWidgetComponent],
+  imports: [ReactiveFormsModule, StepperComponent, ButtonComponent, FormInputComponent, AvatarSelectionWidgetComponent, PubSelectionWidgetComponent],
   template: `
     <div class="registration-flow-container">
       <!-- Progress Indicator -->

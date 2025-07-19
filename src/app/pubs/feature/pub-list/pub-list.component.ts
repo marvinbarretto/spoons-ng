@@ -1,6 +1,6 @@
 // src/app/pubs/feature/pubs-list/pubs-list.component.ts
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule } from '@angular/router';
 import { BaseComponent } from '../../../shared/base/base.component';
 import { PubStore } from '../../data-access/pub.store';
@@ -17,7 +17,7 @@ type FilterOption = 'all' | 'visited' | 'unvisited' | 'nearby';
 
 @Component({
   selector: 'app-pub-list',
-  imports: [CommonModule, RouterModule, PubCardComponent, LoadingStateComponent, ErrorStateComponent, EmptyStateComponent],
+  imports: [RouterModule, PubCardComponent, LoadingStateComponent, ErrorStateComponent, EmptyStateComponent],
   templateUrl: './pub-list.component.html',
   styleUrl: './pub-list.component.scss'
 })

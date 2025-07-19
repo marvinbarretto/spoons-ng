@@ -1,10 +1,10 @@
 import { Component, input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import type { Pub } from '../../../pubs/utils/pub.models';
 
 @Component({
   selector: 'app-pub-chip',
-  imports: [CommonModule],
+  imports: [],
   template: `
     <div
       class="pub-chip"

@@ -1,6 +1,6 @@
 // src/app/check-in/ui/modal-checkin-success/modal-checkin-success.component.ts
 import { Component, inject, input, output, computed, signal, effect, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ButtonComponent } from '@shared/ui/button/button.component';
 import { CheckInStore } from '../../../check-in/data-access/check-in.store';
 import { AuthStore } from '@auth/data-access/auth.store';
@@ -19,7 +19,7 @@ type PointsBreakdownItem = {
 
 @Component({
   selector: 'app-modal-checkin-points',
-  imports: [CommonModule, ButtonComponent],
+  imports: [ButtonComponent],
   template: `
     <div class="checkin-modal-container" [class.success]="data().success">
       <div class="checkin-modal-header">

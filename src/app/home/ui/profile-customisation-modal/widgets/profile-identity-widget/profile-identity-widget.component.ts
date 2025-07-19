@@ -1,6 +1,6 @@
 // src/app/home/ui/profile-customisation-modal/widgets/profile-identity-widget/profile-identity-widget.component.ts
 import { Component, input, output, signal, computed, inject, ChangeDetectionStrategy, effect } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { TooltipComponent } from '@shared/ui/tooltip/tooltip.component';
 import { generateRandomName } from '../../../../../shared/utils/anonymous-names';
@@ -12,7 +12,7 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
 @Component({
   selector: 'app-profile-identity-widget',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, TooltipComponent],
+  imports: [FormsModule, TooltipComponent],
   template: `
     <div class="profile-identity-widget">
       <!-- ✅ Main Profile Section -->

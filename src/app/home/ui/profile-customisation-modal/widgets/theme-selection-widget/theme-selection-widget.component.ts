@@ -1,13 +1,13 @@
 // src/app/home/ui/profile-customization-modal/widgets/theme-selection-widget/theme-selection-widget.component.ts
 import { Component, inject, ChangeDetectionStrategy, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ThemeStore } from '@shared/data-access/theme.store';
 import type { ThemeType } from '@shared/utils/theme.tokens';
 
 @Component({
   selector: 'app-theme-selection-widget',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [],
   template: `
     <div class="theme-selection-widget">
       <h3 class="widget-title">🎨 App Theme</h3>

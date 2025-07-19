@@ -1,5 +1,5 @@
 import { Component, input, output, signal, computed, forwardRef, ChangeDetectionStrategy, effect } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 export type FormInputType = 'text' | 'email' | 'password' | 'tel' | 'url' | 'search';
@@ -7,7 +7,7 @@ export type FormInputType = 'text' | 'email' | 'password' | 'tel' | 'url' | 'sea
 @Component({
   selector: 'app-form-input',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,

@@ -1,6 +1,6 @@
 // src/app/admin/feature/admin-carpet/admin-carpet.component.ts
 import { Component, inject, computed, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { PubService } from '../../../pubs/data-access/pub.service';
 import type { Pub } from '../../../pubs/utils/pub.models';
 import { LoadingStateComponent } from '../../../shared/ui/loading-state/loading-state.component';
@@ -19,7 +19,7 @@ type CarpetPubData = {
 @Component({
   selector: 'app-admin-carpet',
   standalone: true,
-  imports: [CommonModule, LoadingStateComponent, ErrorStateComponent, EmptyStateComponent],
+  imports: [LoadingStateComponent, ErrorStateComponent, EmptyStateComponent],
   template: `
     <div class="admin-carpet">
       <header class="carpet-header">

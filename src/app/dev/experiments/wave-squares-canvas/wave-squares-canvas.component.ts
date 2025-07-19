@@ -1,5 +1,5 @@
 import { Component, signal, ElementRef, ViewChild, OnDestroy, AfterViewInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { BaseComponent } from '../../../shared/base/base.component';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { CarpetImageService } from '../shared/carpet-image.service';
@@ -31,7 +31,7 @@ interface ColorConfig {
 @Component({
   selector: 'app-wave-squares-canvas',
   standalone: true,
-  imports: [CommonModule, ButtonComponent],
+  imports: [ButtonComponent],
   template: `
     <div class="wave-squares-container">
       <div class="controls">

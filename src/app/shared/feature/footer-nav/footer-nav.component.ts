@@ -1,6 +1,6 @@
 // src/app/shared/feature/footer-nav/footer-nav.component.ts
 import { Component, computed, inject, ChangeDetectionStrategy, signal, effect, input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { filter, map } from 'rxjs/operators';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -26,7 +26,7 @@ type NavItem = {
 @Component({
   selector: 'app-footer-nav',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterModule, IconComponent],
+  imports: [RouterModule, IconComponent],
   template: `
     <!-- ✅ Only show on mobile/tablet devices -->
     @if (shouldShowMobileNav()) {

@@ -1,6 +1,6 @@
 import { Component, output, ChangeDetectionStrategy, signal, computed, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { CommonModule } from '@angular/common';
+
 import type { Pub } from '../../pubs/utils/pub.models';
 import { PubStore } from '../../pubs/data-access/pub.store';
 import { NearbyPubStore } from '../../pubs/data-access/nearby-pub.store';
@@ -10,7 +10,7 @@ import { LocationService } from '../../shared/data-access/location.service';
 
 @Component({
   selector: 'app-pub-selection-widget',
-  imports: [CommonModule, FormsModule, PubCardLightComponent],
+  imports: [FormsModule, PubCardLightComponent],
   template: `
     <div class="pub-selection-widget">
       <!-- Selected Pub Display -->

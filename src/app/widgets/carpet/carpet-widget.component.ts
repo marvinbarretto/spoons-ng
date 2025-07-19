@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, OnDestroy, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { BaseWidgetComponent } from '../base/base-widget.component';
 import { CarpetStorageService } from '@carpets/data-access/carpet-storage.service';
 import { AuthStore } from '@auth/data-access/auth.store';
@@ -13,7 +13,7 @@ type CarpetDisplay = {
 
 @Component({
   selector: 'app-carpet-widget',
-  imports: [CommonModule],
+  imports: [],
   template: `
     <div class="carpet-widget">
       <h3 class="widget-title">Your Carpet Collection</h3>

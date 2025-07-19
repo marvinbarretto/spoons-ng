@@ -1,6 +1,6 @@
 // src/app/home/ui/profile-customisation-modal/profile-customisation-modal.component.ts
 import { Component, inject, signal, computed, ChangeDetectionStrategy, OnInit, input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { UserStore } from '@users/data-access/user.store';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { AvatarService } from '@shared/data-access/avatar.service';
@@ -14,11 +14,10 @@ import { ProfileIdentityWidgetComponent } from './widgets/profile-identity-widge
   selector: 'app-profile-customisation-modal',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    CommonModule,
     ButtonComponent,
     ThemeSelectionWidgetComponent,
-    ProfileIdentityWidgetComponent,
-  ],
+    ProfileIdentityWidgetComponent
+],
   template: `
     <div class="modal-container">
 

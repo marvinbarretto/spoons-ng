@@ -22,7 +22,7 @@
  */
 
 import { Component, computed, effect, signal, ChangeDetectionStrategy, OnDestroy, inject, ElementRef, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { BaseWidgetComponent } from '../base/base-widget.component';
 import { DataAggregatorService } from '../../shared/data-access/data-aggregator.service';
 import { DebugService } from '../../shared/utils/debug.service';
@@ -57,7 +57,7 @@ export type EnhancedScoreboardData = ScoreboardData & {
 
 @Component({
   selector: 'app-scoreboard-hero-widget',
-  imports: [CommonModule, BadgeCrestComponent],
+  imports: [BadgeCrestComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="scoreboard-hero-widget">

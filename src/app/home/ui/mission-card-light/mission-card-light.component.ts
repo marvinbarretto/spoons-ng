@@ -1,5 +1,5 @@
 import { Component, input, output, computed, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import type { Mission } from '../../../missions/utils/mission.model';
 import { PubChipComponent } from '../../../missions/ui/pub-chip/pub-chip.component';
 import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
@@ -7,7 +7,7 @@ import { PubStore } from '../../../pubs/data-access/pub.store';
 
 @Component({
   selector: 'app-mission-card-light',
-  imports: [CommonModule, PubChipComponent],
+  imports: [PubChipComponent],
   template: `
     <div class="mission-card-light" (click)="onMissionClick()">
       <div class="mission-header">

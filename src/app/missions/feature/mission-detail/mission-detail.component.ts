@@ -1,5 +1,5 @@
 import { Component, computed, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '@shared/base/base.component';
 import { ButtonComponent } from '@shared/ui/button/button.component';
@@ -14,13 +14,12 @@ import { PubChipComponent } from '../../ui/pub-chip/pub-chip.component';
 @Component({
   selector: 'app-mission-detail',
   imports: [
-    CommonModule, 
-    ButtonComponent, 
-    LoadingStateComponent, 
-    ErrorStateComponent, 
+    ButtonComponent,
+    LoadingStateComponent,
+    ErrorStateComponent,
     EmptyStateComponent,
     PubChipComponent
-  ],
+],
   template: `
     <section class="mission-detail-page">
       @if (isDataLoading()) {

@@ -1,5 +1,5 @@
 import { Component, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterModule, Router } from '@angular/router';
 import { LocationService } from '../../data-access/location.service';
 import { ChipUserComponent } from '../../ui/chips/chip-user/chip-user.component';
@@ -14,7 +14,7 @@ import { UserProfileWidgetComponent } from "@/app/home/ui/user-profile-widget/us
 
 @Component({
   selector: 'app-nav',
-  imports: [CommonModule, RouterModule, ChipUserComponent, ButtonComponent], // UserProfileWidgetComponent not used in template
+  imports: [RouterModule, ChipUserComponent, ButtonComponent], // UserProfileWidgetComponent not used in template
   templateUrl: './nav.component.html',
   styleUrl: './nav.component.scss',
 })

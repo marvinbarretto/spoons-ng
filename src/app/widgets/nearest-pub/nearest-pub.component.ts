@@ -3,13 +3,13 @@ import { BaseWidgetComponent } from '../base/base-widget.component';
 import { NearbyPubStore } from '../../pubs/data-access/nearby-pub.store';
 import { DataAggregatorService } from '../../shared/data-access/data-aggregator.service';
 import { LocationService } from '../../shared/data-access/location.service';
-import { CommonModule } from '@angular/common';
+
 import { PubCardComponent } from '../../pubs/ui/pub-card/pub-card.component';
 import type { Pub } from '../../pubs/utils/pub.models';
 
 @Component({
   selector: 'app-nearest-pub',
-  imports: [CommonModule, PubCardComponent],
+  imports: [PubCardComponent],
   template: `
     <div class="widget-container">
       @if (loading()) {

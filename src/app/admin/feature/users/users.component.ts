@@ -1,6 +1,6 @@
 // src/app/admin/feature/users/users.component.ts
 import { Component, inject, computed, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { BaseComponent } from '../../../shared/base/base.component';
 import { LoadingStateComponent } from '../../../shared/ui/loading-state/loading-state.component';
 import { ErrorStateComponent } from '../../../shared/ui/error-state/error-state.component';
@@ -20,13 +20,12 @@ type UserWithDetails = User & {
 @Component({
   selector: 'app-admin-users',
   imports: [
-    CommonModule,
     LoadingStateComponent,
     ErrorStateComponent,
     EmptyStateComponent,
     DataTableComponent,
     ButtonComponent
-  ],
+],
   template: `
     <div class="admin-users">
       <header class="admin-header">

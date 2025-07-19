@@ -1,5 +1,5 @@
 import { Component, computed, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { BaseComponent } from '../../../shared/base/base.component';
 import { LeaderboardStore } from '../../data-access/leaderboard.store';
 import { LoadingStateComponent } from '../../../shared/ui/loading-state/loading-state.component';
@@ -11,12 +11,11 @@ import { LeaderboardSortBy, LeaderboardPeriod } from '../../utils/leaderboard.mo
 @Component({
   selector: 'app-leaderboard-container',
   imports: [
-    CommonModule,
     LoadingStateComponent,
     ErrorStateComponent,
     EmptyStateComponent,
     ChipUserComponent
-  ],
+],
   template: `
     <div class="leaderboard">
       <header class="leaderboard-header">

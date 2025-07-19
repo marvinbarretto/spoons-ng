@@ -1,5 +1,5 @@
 import { Component, ViewChild, ElementRef, AfterViewInit, OnDestroy, computed, inject, effect } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { BaseComponent } from '@shared/base/base.component';
 import { CheckinOrchestrator } from '../../data-access/checkin-orchestrator.service';
 import { PubStore } from '../../../pubs/data-access/pub.store';
@@ -9,7 +9,7 @@ import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-checkin',
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './checkin.component.html',
   styleUrl: './checkin.component.scss'
 })

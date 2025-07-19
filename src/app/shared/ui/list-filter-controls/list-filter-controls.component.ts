@@ -8,14 +8,14 @@ import {
   inject,
   signal
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { ListFilterStore, type SortOption } from '../../data-access/list-filter.store';
 
 @Component({
   selector: 'app-list-filter-controls',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   template: `
     <div class="filter-controls">
       <!-- Search Input -->

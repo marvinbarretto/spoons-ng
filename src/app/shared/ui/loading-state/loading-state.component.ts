@@ -1,9 +1,9 @@
 import { Component, input } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 
 @Component({
   selector: 'app-loading-state',
-  imports: [CommonModule],
+  imports: [],
   template: `
     <div class="widget-loading" [attr.aria-live]="'polite'">
       <span class="loading-spinner" aria-hidden="true"></span>

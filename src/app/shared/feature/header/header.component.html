@@ -1,26 +1,25 @@
 <!-- Updated HeaderComponent template -->
 <div class="site-header" #headerRef>
-  <ng-container *ngIf="!isHomepage(); else titleWithoutLink">
+  @if (!isHomepage()) {
     <a routerLink="/" class="header__title">
       <h1>Spoonscount <small>{{version}} <span class="env-badge env-badge--{{environmentName().toLowerCase()}}">{{environmentName()}}</span></small></h1>
     </a>
-  </ng-container>
-  <ng-template #titleWithoutLink>
+  } @else {
     <h1 class="header__title">Spoonscount <small>{{version}} <span class="env-badge env-badge--{{environmentName().toLowerCase()}}">{{environmentName()}}</span></small></h1>
-  </ng-template>
+  }
 
   <!-- ✅ SIMPLIFIED NAVIGATION:
-       Nav component handles its own responsive behavior
-       Desktop: Shows full nav menu, Mobile: Shows only user/actions (footer-nav handles mobile navigation)
+  Nav component handles its own responsive behavior
+  Desktop: Shows full nav menu, Mobile: Shows only user/actions (footer-nav handles mobile navigation)
   -->
   <nav class="main-nav">
     <app-nav />
     <!-- <app-user-profile-widget
-      [user]="dataAggregatorService.user()"
-      (openProfile)="onOpenProfile()"
-      class="profile-widget" /> -->
+    [user]="dataAggregatorService.user()"
+    (openProfile)="onOpenProfile()"
+    class="profile-widget" /> -->
   </nav>
-  
+
   <!-- Admin Sub-Navigation -->
   <app-admin-nav />
 </div>

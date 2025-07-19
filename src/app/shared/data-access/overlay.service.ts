@@ -86,7 +86,7 @@ export class OverlayService {
     document.body.style.overflow = 'hidden';
 
     // Create component
-    const portal = new ComponentPortal(component, null, this.injector, this.environmentInjector);
+    const portal = new ComponentPortal(component, null, this.injector);
     const componentRef = this.overlayRef.attach(portal);
 
     // Set inputs

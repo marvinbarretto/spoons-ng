@@ -4,7 +4,7 @@ import { DataAggregatorService } from '../../shared/data-access/data-aggregator.
 import { CheckInStore } from '../../check-in/data-access/check-in.store';
 import { PubStore } from '../../pubs/data-access/pub.store';
 import { AuthStore } from '../../auth/data-access/auth.store';
-import { CommonModule } from '@angular/common';
+
 import { LoadingStateComponent, ErrorStateComponent, EmptyStateComponent } from '../../shared/ui/state-components';
 import type { CheckIn } from '../../check-in/utils/check-in.models';
 import type { Pub } from '../../pubs/utils/pub.models';
@@ -18,7 +18,7 @@ type RecentActivityEntry = {
 
 @Component({
   selector: 'app-recent-activity-widget',
-  imports: [CommonModule, LoadingStateComponent, ErrorStateComponent, EmptyStateComponent],
+  imports: [LoadingStateComponent, ErrorStateComponent, EmptyStateComponent],
   template: `
     <div class="recent-activity-widget">
       <h3 class="widget-title">Recent Activity</h3>
