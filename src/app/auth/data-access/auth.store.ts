@@ -37,16 +37,12 @@ export class AuthStore {
   private readonly _token = signal<string | null>(null);
   private readonly _ready = signal(false);
   private readonly _userChangeCounter = signal(0);
-  private readonly _isExplicitGuest = signal(false);
-  private readonly _hasSeenSplash = signal(false);
 
   // ✅ Public auth signals
   readonly user = this._user.asReadonly();
   readonly token = this._token.asReadonly();
   readonly ready = this._ready.asReadonly();
   readonly userChangeSignal = this._userChangeCounter.asReadonly();
-  readonly isExplicitGuest = this._isExplicitGuest.asReadonly();
-  readonly hasSeenSplash = this._hasSeenSplash.asReadonly();
 
   // ✅ ONLY auth-derived computeds
   readonly isAuthenticated = computed(() => !!this.token());
@@ -55,15 +51,6 @@ export class AuthStore {
 
   constructor() {
     this.platform.onlyOnBrowser(() => {
-      // Restore explicit guest state from localStorage
-      const storedIsExplicitGuest = localStorage.getItem('isExplicitGuest') === 'true';
-      console.log('[AuthStore] 💾 Restoring isExplicitGuest from localStorage:', storedIsExplicitGuest);
-      this._isExplicitGuest.set(storedIsExplicitGuest);
-      
-      // Restore splash seen state from localStorage
-      const storedHasSeenSplash = localStorage.getItem('hasSeenSplash') === 'true';
-      console.log('[AuthStore] 💾 Restoring hasSeenSplash from localStorage:', storedHasSeenSplash);
-      this._hasSeenSplash.set(storedHasSeenSplash);
 
       this.authService.onAuthChange(async (firebaseUser) => {
         const timestamp = new Date().toISOString();
@@ -78,7 +65,6 @@ export class AuthStore {
           hasUser: !!firebaseUser,
           uid: firebaseUser?.uid?.slice(0, 8),
           isAnonymous: firebaseUser?.isAnonymous,
-          isExplicitGuest: this._isExplicitGuest(),
           previousState: currentState
         });
         
@@ -149,7 +135,6 @@ export class AuthStore {
       this._user.set(appUser);
       this._token.set(token);
       this._userChangeCounter.update(c => c + 1);
-      this._isExplicitGuest.set(false); // Clear explicit guest flag on successful sign-in
 
       console.log('[AuthStore] User and token set:', {
         uid: appUser.uid.slice(0, 8),
@@ -163,7 +148,6 @@ export class AuthStore {
         try {
           localStorage.setItem('user', JSON.stringify(appUser));
           localStorage.setItem('token', token);
-          localStorage.removeItem('isExplicitGuest'); // Clear explicit guest flag from localStorage
           console.log('[AuthStore] 💾 Saved auth data to localStorage successfully');
         } catch (error) {
           console.error('[AuthStore] ❌ Failed to save auth data to localStorage:', error);
@@ -184,8 +168,6 @@ export class AuthStore {
       hasUser: !!this._user(),
       hasToken: !!this._token(),
       uid: this._user()?.uid?.slice(0, 8),
-      isExplicitGuest: this._isExplicitGuest(),
-      hasSeenSplash: this._hasSeenSplash()
     };
     
     console.log('[AuthStore] 🚪 handleUserSignOut - State before logout:', previousState);
@@ -193,15 +175,11 @@ export class AuthStore {
     this._user.set(null);
     this._token.set(null);
     this._userChangeCounter.update(c => c + 1);
-    this._isExplicitGuest.set(false);
-    this._hasSeenSplash.set(false);
 
     this.platform.onlyOnBrowser(() => {
       console.log('[AuthStore] 🗑️ Clearing localStorage auth data');
       localStorage.removeItem('user');
       localStorage.removeItem('token');
-      localStorage.removeItem('isExplicitGuest');
-      localStorage.removeItem('hasSeenSplash');
       console.log('[AuthStore] ✅ localStorage cleared');
     });
     
@@ -263,33 +241,9 @@ export class AuthStore {
   }
 
   async continueAsGuest(): Promise<void> {
-    console.log('[AuthStore] 👻 continueAsGuest() called');
-    
-    // Mark that this is an explicit guest choice
-    console.log('[AuthStore] 👻 Setting isExplicitGuest=true');
-    this._isExplicitGuest.set(true);
-    this.platform.onlyOnBrowser(() => {
-      localStorage.setItem('isExplicitGuest', 'true');
-      console.log('[AuthStore] 💾 Saved isExplicitGuest=true to localStorage');
-    });
-    
-    // Mark splash as seen since user is taking action from splash
-    this.markSplashAsSeen();
-    
-    // Now create the anonymous user
-    console.log('[AuthStore] 👻 Delegating to AuthService.continueAsGuest()');
     await this.authService.continueAsGuest();
-    console.log('[AuthStore] ✅ continueAsGuest() completed');
   }
 
-  markSplashAsSeen(): void {
-    console.log('[AuthStore] 👀 markSplashAsSeen() called');
-    this._hasSeenSplash.set(true);
-    this.platform.onlyOnBrowser(() => {
-      localStorage.setItem('hasSeenSplash', 'true');
-      console.log('[AuthStore] 💾 Saved hasSeenSplash=true to localStorage');
-    });
-  }
 
   /**
    * Wait for auth state to be fully ready
