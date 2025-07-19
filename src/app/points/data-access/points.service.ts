@@ -98,16 +98,8 @@ export class PointsService extends FirestoreCrudService<PointsTransaction> {
       console.log(`[PointsService] 🎯 No photo bonus (${callId}): hasPhoto=${data.hasPhoto}`);
     }
 
-    // Photo quality bonus (new enhanced system)
-    if (data.photoQuality && data.photoQuality.bonus > 0) {
-      const qualityBonus = data.photoQuality.bonus;
-      bonus += qualityBonus;
-      const tierName = this.getQualityTierDisplayName(data.photoQuality.tier);
-      console.log(`[PointsService] 🎯 Adding photo quality bonus (${callId}): ${qualityBonus} (${tierName})`);
-      reasons.push(`${qualityBonus} ${tierName} photo quality bonus`);
-    } else {
-      console.log(`[PointsService] 🎯 No photo quality bonus (${callId}): photoQuality=${JSON.stringify(data.photoQuality)}`);
-    }
+    // Photo quality is tracked as a metric but doesn't award bonus points
+    console.log(`[PointsService] 🎯 Photo quality metric tracked (${callId}) - no bonus points awarded`);
 
     if (data.sharedSocial) {
       const shareBonus = POINTS_CONFIG.social.share;
@@ -139,9 +131,7 @@ export class PointsService extends FirestoreCrudService<PointsTransaction> {
       bonus,
       multiplier,
       total,
-      reason: reasons.join(' + '),
-      // Include raw photo quality value if available for simplified access
-      ...(data.photoQuality?.overall !== undefined && { photoQuality: data.photoQuality.overall })
+      reason: reasons.join(' + ')
     };
 
     console.log(`[PointsService] 🎯 === POINTS CALCULATION COMPLETE (${callId}) ===`);

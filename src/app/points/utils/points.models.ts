@@ -29,10 +29,4 @@ export type CheckInPointsData = {
   hasPhoto: boolean;
   sharedSocial: boolean;
   isHomePub: boolean; // Whether this is the user's designated home pub
-  // Enhanced photo quality data
-  photoQuality?: {
-    overall: number;
-    tier: 'standard' | 'high' | 'exceptional' | 'perfect';
-    bonus: number;
-  };
 };

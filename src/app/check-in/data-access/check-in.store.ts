@@ -640,22 +640,9 @@ export class CheckInStore extends BaseStore<CheckIn> {
       const isHomePub = await this.isHomePub(pubId, userId);
       console.log(`[CheckInStore] 🎯 Is home pub (${callId}):`, isHomePub);
 
-      // Build PointsStore data structure with transformed photo quality data
-      let photoQuality = undefined;
-      if (carpetResult?.qualityBonus !== undefined && carpetResult?.qualityTier) {
-        // Use the transformed photo quality data from carpet strategy
-        photoQuality = {
-          bonus: carpetResult.qualityBonus,
-          tier: carpetResult.qualityTier
-        };
-        console.log(`[CheckInStore] 🎯 Using transformed photo quality data (${callId}):`, photoQuality);
-      } else if (carpetResult?.photoQuality) {
-        // Fallback: include raw photo quality for simplified access in breakdown display
-        console.log(`[CheckInStore] 🎯 Using raw photo quality data for display (${callId}):`, carpetResult.photoQuality);
-        photoQuality = {
-          overall: carpetResult.photoQuality.overall // Include for modal display
-        };
-      }
+      // Photo quality is just a metric, not for points
+      const photoQualityScore = carpetResult?.photoQuality?.overall;
+      console.log(`[CheckInStore] 🎯 Photo quality metric (${callId}):`, photoQualityScore);
 
       const pointsData = {
         pubId,
@@ -664,7 +651,6 @@ export class CheckInStore extends BaseStore<CheckIn> {
         isFirstEver: totalCheckins === 0,
         currentStreak: 0, // TODO: Implement streak calculation - track consecutive daily check-ins
         hasPhoto,
-        photoQuality,
         sharedSocial: false, // TODO: Implement social sharing feature - track if user shared this check-in
         isHomePub
       };

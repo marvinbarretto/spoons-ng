@@ -6,7 +6,6 @@ import { LLMService } from '@shared/data-access/llm.service';
 import { Storage } from '@angular/fire/storage';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { ANALYSIS_THEMES, PhotoQualityMetrics } from '@shared/utils/llm-types';
-import { POINTS_CONFIG } from '@points/utils/points.config';
 
 type CarpetProcessResult = {
   localStored: boolean;
@@ -15,10 +14,8 @@ type CarpetProcessResult = {
   localKey?: string;
   firestoreUrl?: string;
   error?: string;
-  // Enhanced quality data
+  // Photo quality data for storage decisions
   photoQuality?: PhotoQualityMetrics;
-  qualityBonus?: number;
-  qualityTier?: 'standard' | 'high' | 'exceptional' | 'perfect';
 };
 
 type CarpetVersions = {
@@ -60,8 +57,7 @@ export class CarpetStrategyService {
       console.log('[CarpetStrategy] 🤖 Enhanced LLM analysis complete:', {
         detected: llmResult.isCarpet,
         confidence: llmResult.confidence,
-        qualityTier: llmResult.qualityTier,
-        qualityBonus: llmResult.qualityBonus
+        photoQuality: llmResult.photoQuality
       });
 
       if (!llmResult.isCarpet) {
@@ -88,10 +84,8 @@ export class CarpetStrategyService {
           llmConfirmed: true,
           firestoreUploaded: false,
           localKey,
-          // Include quality data for offline scenarios
-          photoQuality: llmResult.photoQuality,
-          qualityBonus: llmResult.qualityBonus,
-          qualityTier: llmResult.qualityTier
+          // Include photo quality metric for storage decisions
+          photoQuality: llmResult.photoQuality
         };
       }
 
@@ -110,10 +104,8 @@ export class CarpetStrategyService {
           firestoreUploaded: true,
           localKey,
           firestoreUrl,
-          // Include quality data for points calculation
-          photoQuality: llmResult.photoQuality,
-          qualityBonus: llmResult.qualityBonus,
-          qualityTier: llmResult.qualityTier
+          // Include photo quality metric for storage decisions
+          photoQuality: llmResult.photoQuality
         };
       } catch (firestoreError) {
         console.error('[CarpetStrategy] ⚠️ Firestore upload failed (continuing with local-only):', firestoreError);
@@ -125,10 +117,8 @@ export class CarpetStrategyService {
           firestoreUploaded: false,
           localKey,
           error: `Firestore upload failed: ${firestoreError}`,
-          // Include quality data even if upload fails
-          photoQuality: llmResult.photoQuality,
-          qualityBonus: llmResult.qualityBonus,
-          qualityTier: llmResult.qualityTier
+          // Include photo quality metric even if upload fails
+          photoQuality: llmResult.photoQuality
         };
       }
 
@@ -252,8 +242,6 @@ export class CarpetStrategyService {
     isCarpet: boolean; 
     confidence: number; 
     photoQuality?: PhotoQualityMetrics;
-    qualityBonus?: number;
-    qualityTier?: 'standard' | 'high' | 'exceptional' | 'perfect';
   }> {
     console.log('[CarpetStrategy] 🤖 Starting enhanced themed LLM analysis...');
     
@@ -267,9 +255,6 @@ export class CarpetStrategyService {
       if (themedResult.success) {
         const analysis = themedResult.data;
         
-        // Calculate quality tier
-        const qualityTier = this.calculateQualityTier(analysis.photoQuality);
-        
         // 📊 ENHANCED LOGGING - Full LLM result details
         console.log('[CarpetStrategy] ✨ ENHANCED LLM ANALYSIS RESULT ✨');
         console.log('='.repeat(60));
@@ -278,17 +263,12 @@ export class CarpetStrategyService {
         console.log(`  • Confidence: ${analysis.confidence}%`);
         console.log(`  • Reasoning: ${analysis.reasoning}`);
         
-        console.log('\n📸 Photo Quality Assessment:');
+        console.log('\n📸 Photo Quality Assessment (for storage decisions):');
         console.log(`  • Overall Score: ${analysis.photoQuality.overall}%`);
         console.log(`  • Focus/Sharpness: ${analysis.photoQuality.focus}%`);
         console.log(`  • Lighting: ${analysis.photoQuality.lighting}%`);
         console.log(`  • Composition: ${analysis.photoQuality.composition}%`);
         console.log(`  • Quality Factors: ${analysis.photoQuality.factors.join(', ')}`);
-        
-        console.log('\n🎆 Quality Bonus Calculation:');
-        console.log(`  • Quality Tier: ${qualityTier}`);
-        console.log(`  • LLM Quality Bonus: ${analysis.qualityBonus}`);
-        console.log(`  • Points Config Bonus: ${this.getQualityPointsBonus(qualityTier)}`);
         
         console.log('\n🔍 Theme Elements Analysis:');
         console.log(`  • Found Elements: ${analysis.themeElements.found.join(', ') || 'None'}`);
@@ -307,9 +287,7 @@ export class CarpetStrategyService {
         return {
           isCarpet: analysis.detected,
           confidence: analysis.confidence,
-          photoQuality: analysis.photoQuality,
-          qualityBonus: this.getQualityPointsBonus(qualityTier),
-          qualityTier
+          photoQuality: analysis.photoQuality
         };
       } else {
         console.error('[CarpetStrategy] ❌ Themed analysis failed:', themedResult.error);
@@ -321,8 +299,7 @@ export class CarpetStrategyService {
         console.log('[CarpetStrategy] 🔄 Simple analysis result:', simpleResult);
         return {
           isCarpet: simpleResult.isCarpet,
-          confidence: simpleResult.confidence,
-          qualityTier: 'standard'
+          confidence: simpleResult.confidence
         };
       }
       
@@ -330,47 +307,11 @@ export class CarpetStrategyService {
       console.error('[CarpetStrategy] ❌ LLM analysis error:', error);
       return { 
         isCarpet: false, 
-        confidence: 0,
-        qualityTier: 'standard'
+        confidence: 0
       };
     }
   }
   
-  /**
-   * Calculate quality tier based on photo metrics
-   */
-  private calculateQualityTier(quality: PhotoQualityMetrics): 'standard' | 'high' | 'exceptional' | 'perfect' {
-    const { overall, focus, lighting, composition } = quality;
-    
-    // Perfect: 95%+ overall AND all factors > 85%
-    if (overall >= 95 && focus > 85 && lighting > 85 && composition > 85) {
-      return 'perfect';
-    }
-    
-    // Exceptional: 90%+ overall
-    if (overall >= 90) {
-      return 'exceptional';
-    }
-    
-    // High quality: 80-89% overall
-    if (overall >= 80) {
-      return 'high';
-    }
-    
-    return 'standard';
-  }
-  
-  /**
-   * Get points bonus based on quality tier
-   */
-  private getQualityPointsBonus(tier: 'standard' | 'high' | 'exceptional' | 'perfect'): number {
-    switch (tier) {
-      case 'perfect': return POINTS_CONFIG.photoQuality.perfect;
-      case 'exceptional': return POINTS_CONFIG.photoQuality.exceptional;
-      case 'high': return POINTS_CONFIG.photoQuality.highQuality;
-      default: return 0;
-    }
-  }
 
   /**
    * 🔄 Convert blob to data URL for LLM analysis
