@@ -57,12 +57,10 @@ export class CarpetStorageService {
    */
   async initialize(): Promise<void> {
     if (this.initialized) {
-      console.log('[CarpetStorage] Already initialized');
       return;
     }
 
     if (this.initializing) {
-      console.log('[CarpetStorage] ⚠️ Initialization already in progress, waiting...');
       // Wait for initialization to complete
       while (this.initializing && !this.initialized) {
         await new Promise(resolve => setTimeout(resolve, 50));
@@ -71,10 +69,9 @@ export class CarpetStorageService {
     }
 
     this.initializing = true;
-    console.log('[CarpetStorage] Initializing IndexedDB for carpet storage...');
+    console.log('[CarpetStorage] Initializing IndexedDB...');
 
     try {
-      // ✅ Using environment configuration
       const dbConfig = this.getDatabaseConfig();
       
       await this.indexedDb.openDatabase({
@@ -83,7 +80,7 @@ export class CarpetStorageService {
         stores: [{
           name: dbConfig.stores.carpets,
           indexes: [
-            { name: 'userId', keyPath: 'userId' },     // ✅ Index by user
+            { name: 'userId', keyPath: 'userId' },
             { name: 'pubId', keyPath: 'pubId' },
             { name: 'dateKey', keyPath: 'dateKey' },
             { name: 'date', keyPath: 'date' }
@@ -91,20 +88,14 @@ export class CarpetStorageService {
         }]
       });
 
-      // Detect supported image formats
       await this.detectSupportedFormats();
-
-      // Load initial stats for current user
-      await this.updateStats();
-
       this.initialized = true;
-      this.initializing = false; // ✅ Clear initializing flag
-      console.log('[CarpetStorage] Initialization complete');
-
-      // ✅ Update stats after initialization is complete (safe to call getUserCarpets now)
+      this.initializing = false;
+      
       await this.updateStats();
+      console.log('[CarpetStorage] Initialization complete');
     } catch (error) {
-      this.initializing = false; // ✅ Clear flag on error
+      this.initializing = false;
       console.error('[CarpetStorage] Initialization failed:', error);
       throw error;
     }
@@ -531,9 +522,6 @@ async saveCarpetImage(
   pubId: string,
   pubName: string
 ): Promise<string> {
-  console.log('[CarpetStorage] Saving carpet image for pub:', pubName);
-
-  // ✅ Get current user ID
   const userId = this.authStore.uid();
   if (!userId) {
     throw new Error('[CarpetStorage] No authenticated user found');
@@ -546,64 +534,36 @@ async saveCarpetImage(
 
     // Create high-quality capture canvas with aspect ratio preservation
     const captureCanvas = document.createElement('canvas');
-    
-    // Option 1: Preserve aspect ratio at high resolution
     const maxDimension = 1200;
     const aspectRatio = canvas.width / canvas.height;
     
     if (aspectRatio > 1) {
-      // Landscape: width is larger
       captureCanvas.width = maxDimension;
       captureCanvas.height = Math.round(maxDimension / aspectRatio);
     } else {
-      // Portrait or square: height is larger or equal
       captureCanvas.height = maxDimension;
       captureCanvas.width = Math.round(maxDimension * aspectRatio);
     }
     
-    console.log('[CarpetStorage] 📐 Original canvas:', `${canvas.width}x${canvas.height}`);
-    console.log('[CarpetStorage] 📐 Target canvas:', `${captureCanvas.width}x${captureCanvas.height}`);
-    console.log('[CarpetStorage] 📐 Aspect ratio preserved:', aspectRatio.toFixed(2));
-    
     const ctx = captureCanvas.getContext('2d')!;
-    
-    // Enable high-quality scaling
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
 
     // Draw with full source image preserving aspect ratio
     ctx.drawImage(
       canvas,
-      0, 0, canvas.width, canvas.height,           // Full source
-      0, 0, captureCanvas.width, captureCanvas.height  // Scaled destination
+      0, 0, canvas.width, canvas.height,
+      0, 0, captureCanvas.width, captureCanvas.height
     );
 
     // Convert to blob with best supported format
     const { format, mimeType, quality } = this.getBestFormat();
-    console.log('[CarpetStorage] 🎨 === BLOB CREATION PROCESS ===');
-    console.log('[CarpetStorage] 📋 Target format:', format);
-    console.log('[CarpetStorage] 📋 Target MIME type:', mimeType);
-    console.log('[CarpetStorage] 📋 Target quality:', quality);
-
-    console.log('[CarpetStorage] 🔄 Calling canvas.toBlob()...');
     const blob = await new Promise<Blob>((resolve, reject) => {
       captureCanvas.toBlob(
         (blob) => {
           if (blob) {
-            console.log('[CarpetStorage] ✅ Blob created successfully');
-            console.log('[CarpetStorage] 📊 Actual blob details:', {
-              size: blob.size,
-              type: blob.type,
-              sizeKB: `${(blob.size / 1024).toFixed(1)}KB`
-            });
-            console.log('[CarpetStorage] 🔍 Format verification:', {
-              requested: mimeType,
-              actual: blob.type,
-              matches: blob.type === mimeType ? '✅ MATCH' : '❌ MISMATCH'
-            });
             resolve(blob);
           } else {
-            console.log('[CarpetStorage] ❌ Blob creation failed - no blob returned');
             reject(new Error('Failed to create blob'));
           }
         },
@@ -611,15 +571,13 @@ async saveCarpetImage(
         quality
       );
     });
-    console.log('[CarpetStorage] 🎨 === BLOB CREATION COMPLETE ===');
 
     // Generate key with user prefix for organization
     const dateKey = new Date().toISOString().split('T')[0];
     const key = `${userId}_${pubId}_${dateKey}`;
 
-    // ✅ Include userId in data
     const data: CarpetImageData = {
-      userId,                                      // ✅ User association
+      userId,
       pubId,
       pubName,
       date: new Date().toISOString(),
@@ -641,18 +599,15 @@ async saveCarpetImage(
       size: `${(blob.size / 1024).toFixed(1)}KB`
     });
 
-    // Update stats
     await this.updateStats();
 
     // Clean up the temporary capture canvas
     captureCanvas.width = 0;
     captureCanvas.height = 0;
-    console.log('[CarpetStorage] 🧹 Cleaned up capture canvas');
 
     // Check if pub needs Firebase Storage upload (async, don't block check-in)
-    console.log('[CarpetStorage] 🔍 Checking if Firebase Storage upload is needed for pub:', pubId);
     this.handleFirebaseUpload(blob, pubId).catch(error => {
-      console.error('[CarpetStorage] ❌ Firebase upload failed, but continuing with check-in:', error);
+      console.error('[CarpetStorage] Firebase upload failed, but continuing with check-in:', error);
     });
 
     return key;
@@ -790,7 +745,7 @@ async saveCarpetImage(
   }
 
   /**
-   * ✅ Update statistics for current user
+   * Update statistics for current user
    */
   private async updateStats(): Promise<void> {
     const userId = this.authStore.uid();
@@ -800,9 +755,7 @@ async saveCarpetImage(
       return;
     }
 
-    // ✅ Guard against calling getUserCarpets during initialization to prevent circular dependency
     if (!this.initialized) {
-      console.log('[CarpetStorage] Skipping stats update during initialization');
       this._carpetCount.set(0);
       this._totalSize.set(0);
       return;
@@ -814,12 +767,6 @@ async saveCarpetImage(
 
     this._carpetCount.set(count);
     this._totalSize.set(totalSize);
-
-    console.log('[CarpetStorage] User stats updated:', {
-      userId,
-      count,
-      totalSize: `${(totalSize / 1024 / 1024).toFixed(2)}MB`
-    });
   }
 
   /**
@@ -857,213 +804,90 @@ async saveCarpetImage(
    */
   private async uploadToFirebaseStorage(blob: Blob, pubId: string): Promise<string | null> {
     try {
-      console.log('[CarpetStorage] 🔄 Starting Firebase Storage upload...');
-      console.log('[CarpetStorage] 📋 Target pub:', pubId);
-      console.log('[CarpetStorage] 📋 File size:', `${(blob.size / 1024).toFixed(1)}KB`);
-      console.log('[CarpetStorage] 📋 File type:', blob.type);
-      
-      // Generate filename with timestamp
       const timestamp = Date.now();
       const extension = this.getBlobExtension(blob);
       const filename = `carpets/${pubId}_${timestamp}.${extension}`;
-      console.log('[CarpetStorage] 📋 Generated filename:', filename);
       
-      // Create a reference to the file in Firebase Storage
-      console.log('[CarpetStorage] 🔍 Creating Firebase Storage reference...');
       const storageRef = ref(this.storage, filename);
-      
-      // Upload the blob to Firebase Storage
-      console.log('[CarpetStorage] ⬆️ Uploading blob to Firebase Storage...');
       const snapshot = await uploadBytes(storageRef, blob);
-      console.log('[CarpetStorage] ✅ Upload complete! Snapshot details:', {
-        ref: snapshot.ref.fullPath,
-        size: snapshot.metadata.size,
-        contentType: snapshot.metadata.contentType
-      });
-      
-      // Get the download URL
-      console.log('[CarpetStorage] 🔗 Getting download URL...');
       const downloadURL = await getDownloadURL(snapshot.ref);
-      console.log('[CarpetStorage] ✅ Download URL obtained successfully');
-      console.log('[CarpetStorage] 🔗 URL:', downloadURL);
       
+      console.log('[CarpetStorage] Firebase upload successful:', downloadURL);
       return downloadURL;
     } catch (error) {
-      console.error('[CarpetStorage] ❌ Firebase Storage upload failed with error:', error);
-      console.log('[CarpetStorage] 📋 Error details:', {
-        errorType: error?.constructor?.name,
-        errorMessage: error instanceof Error ? error.message : String(error),
-        pubId,
-        blobSize: blob?.size
-      });
-      return null; // Return null instead of throwing to keep check-in flow working
+      console.error('[CarpetStorage] Firebase Storage upload failed:', error);
+      return null;
     }
   }
 
   /**
-   * Get file extension from blob type with proper PNG handling
+   * Get file extension from blob type
    */
   private getBlobExtension(blob: Blob): string {
-    console.log('[CarpetStorage] 🔍 Mapping blob type to extension:', blob.type);
-    
     switch (blob.type) {
-      case 'image/avif': 
-        console.log('[CarpetStorage] 📋 Extension: avif');
-        return 'avif';
-      case 'image/webp': 
-        console.log('[CarpetStorage] 📋 Extension: webp');
-        return 'webp';
-      case 'image/jpeg': 
-        console.log('[CarpetStorage] 📋 Extension: jpg');
-        return 'jpg';
-      case 'image/png': 
-        console.log('[CarpetStorage] 📋 Extension: png');
-        return 'png';
-      default: 
-        console.log('[CarpetStorage] ⚠️ Unknown blob type, defaulting to jpg');
-        return 'jpg';
+      case 'image/avif': return 'avif';
+      case 'image/webp': return 'webp';
+      case 'image/jpeg': return 'jpg';
+      case 'image/png': return 'png';
+      default: return 'jpg';
     }
   }
 
   /**
-   * Handle Firebase Storage upload with comprehensive logging and checks
+   * Handle Firebase Storage upload
    */
   private async handleFirebaseUpload(blob: Blob, pubId: string): Promise<void> {
-    console.log('[CarpetStorage] 🚀 === FIREBASE UPLOAD PROCESS STARTED ===');
-    console.log('[CarpetStorage] 📋 Pub ID:', pubId);
-    console.log('[CarpetStorage] 📋 Blob size:', `${(blob.size / 1024).toFixed(1)}KB`);
-    console.log('[CarpetStorage] 📋 Blob type:', blob.type);
-
     try {
-      // Step 1: Check if pub already has carpet
-      console.log('[CarpetStorage] 🔍 STEP 1: Checking if pub already has carpet...');
       const needsUpload = await this.pubNeedsCarpetUpload(pubId);
       
       if (!needsUpload) {
-        console.log('[CarpetStorage] ✋ DECISION: Pub already has carpet, politely declining upload');
-        console.log('[CarpetStorage] 🎯 Continuing with local storage only');
-        console.log('[CarpetStorage] 🚀 === FIREBASE UPLOAD PROCESS COMPLETED (SKIPPED) ===');
+        console.log('[CarpetStorage] Pub already has carpet, skipping upload');
         return;
       }
 
-      console.log('[CarpetStorage] ✅ DECISION: Pub needs carpet, proceeding with Firebase upload');
-      
-      // Step 2: Upload to Firebase Storage
-      console.log('[CarpetStorage] 🔍 STEP 2: Uploading to Firebase Storage...');
       const carpetUrl = await this.uploadToFirebaseStorage(blob, pubId);
       
       if (!carpetUrl) {
-        console.log('[CarpetStorage] ❌ RESULT: Firebase upload failed, but check-in continues');
-        console.log('[CarpetStorage] 🚀 === FIREBASE UPLOAD PROCESS COMPLETED (FAILED) ===');
+        console.log('[CarpetStorage] Firebase upload failed, but check-in continues');
         return;
       }
 
-      console.log('[CarpetStorage] ✅ RESULT: Firebase upload successful');
-      console.log('[CarpetStorage] 📋 Carpet URL:', carpetUrl);
-
-      // Step 3: Update pub document
-      console.log('[CarpetStorage] 🔍 STEP 3: Updating pub document with carpet URL...');
       await this.updatePubWithCarpetUrl(pubId, carpetUrl);
-      
-      console.log('[CarpetStorage] 🎉 SUCCESS: Complete Firebase upload workflow finished');
-      console.log('[CarpetStorage] 🚀 === FIREBASE UPLOAD PROCESS COMPLETED (SUCCESS) ===');
+      console.log('[CarpetStorage] Firebase upload workflow completed successfully');
 
     } catch (error) {
-      console.error('[CarpetStorage] ❌ ERROR: Firebase upload process failed:', error);
-      console.log('[CarpetStorage] 🔄 Check-in will continue with local storage only');
-      console.log('[CarpetStorage] 🚀 === FIREBASE UPLOAD PROCESS COMPLETED (ERROR) ===');
+      console.error('[CarpetStorage] Firebase upload process failed:', error);
     }
   }
 
   /**
-   * Check if pub already has a carpet URL using efficient in-memory lookup
-   * 
-   * 🚀 PERFORMANCE OPTIMIZATION:
-   * Now uses PubStore.pubs() for in-memory lookup instead of PubService.getPub()
-   * 
-   * ✅ BENEFITS:
-   * - No network requests needed (data already cached)
-   * - Instant lookup from in-memory signal
-   * - Eliminates unnecessary async Firebase calls
-   * - Maintains same functionality with better performance
-   * 
-   * 📊 FLOW COMPARISON:
-   * 
-   * OLD FLOW (inefficient):
-   * CarpetStorageService → PubService → Firebase network call → Response
-   * 
-   * NEW FLOW (optimized):
-   * CarpetStorageService → PubStore → In-memory signal lookup → Instant result
+   * Check if pub already has a carpet URL using in-memory lookup
    */
   private async pubNeedsCarpetUpload(pubId: string): Promise<boolean> {
     try {
-      console.log('[CarpetStorage] 🔍 Checking pub carpet status from in-memory cache...');
-      
-      // Use efficient in-memory lookup instead of network call
       const pub = this.pubStore.pubs().find(p => p.id === pubId);
       
       if (!pub) {
-        console.log('[CarpetStorage] ⚠️ Pub not found in cache, assuming upload needed');
         return true;
       }
 
       const hasCarpetUrl = pub?.carpetUrl && pub.carpetUrl.trim() !== '';
-      console.log('[CarpetStorage] 📋 Pub carpet status (from cache):', { 
-        pubId, 
-        hasCarpetUrl, 
-        carpetUrl: pub?.carpetUrl,
-        pubName: pub?.name 
-      });
-      
-      if (hasCarpetUrl) {
-        console.log('[CarpetStorage] 🎯 Pub already has carpet URL:', pub.carpetUrl);
-      } else {
-        console.log('[CarpetStorage] 🎯 Pub does not have carpet URL, upload needed');
-      }
-      
-      return !hasCarpetUrl; // Return true if pub needs carpet upload
+      return !hasCarpetUrl;
     } catch (error) {
-      console.error('[CarpetStorage] ❌ Error checking pub carpet status:', error);
-      console.log('[CarpetStorage] 🔄 Assuming upload needed due to error');
-      return true; // Assume it needs upload if we can't check
+      console.error('[CarpetStorage] Error checking pub carpet status:', error);
+      return true;
     }
   }
 
   /**
-   * Update pub document with carpet URL using optimized signal updates
-   * 
-   * 🚀 PERFORMANCE OPTIMIZATION:
-   * Now uses PubStore.updatePubCarpetUrl() instead of PubService.updatePubCarpetUrl()
-   * 
-   * ✅ BENEFITS:
-   * - Instant UI updates via signal reactivity 
-   * - No cache invalidation overhead
-   * - No unnecessary network requests to reload all pubs
-   * - Maintains cache efficiency for other pubs
-   * 
-   * 📊 FLOW COMPARISON:
-   * 
-   * OLD FLOW (inefficient):
-   * CarpetStorageService → PubService → Firebase → Cache invalidation → Full reload
-   * 
-   * NEW FLOW (optimized):
-   * CarpetStorageService → PubStore → Firebase + Signal update → Instant UI
-   * 
-   * 🎯 CACHE STRATEGY:
-   * The PubStore method updates both Firebase AND the in-memory signal,
-   * avoiding the need to invalidate and reload the entire pub cache.
+   * Update pub document with carpet URL
    */
   private async updatePubWithCarpetUrl(pubId: string, carpetUrl: string): Promise<void> {
     try {
-      console.log('[CarpetStorage] 🔄 Updating pub with carpet URL via PubStore:', { pubId, carpetUrl });
-      
-      // Use PubStore method instead of PubService for optimized signal updates
       await this.pubStore.updatePubCarpetUrl(pubId, carpetUrl);
-      
-      console.log('[CarpetStorage] ✅ Pub carpet URL updated successfully with instant UI reactivity');
+      console.log('[CarpetStorage] Pub carpet URL updated successfully');
     } catch (error) {
-      console.error('[CarpetStorage] ❌ Failed to update pub carpet URL:', error);
-      // Don't throw - this shouldn't break the check-in flow
+      console.error('[CarpetStorage] Failed to update pub carpet URL:', error);
     }
   }
 }

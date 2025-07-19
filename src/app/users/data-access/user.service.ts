@@ -59,17 +59,38 @@ export class UserService extends FirestoreService {
   }
 
   /**
+   * Get all users from server (bypasses cache) for real-time competitive data
+   * Use this for leaderboard aggregation to ensure fresh cross-user data
+   */
+  async getAllUsersFromServer(): Promise<User[]> {
+    console.log('[UserService] 🌐 Fetching ALL users from server (bypassing cache)...');
+    const users = await this.getDocsWhereFromServer<User>('users');
+    
+    console.log(`[UserService] ✅ Server fetch complete: ${users.length} users (fresh data)`);
+    console.log('[UserService] 🔍 Fresh server users with points:', users.map(u => ({
+      uid: u.uid.slice(0, 8), 
+      displayName: u.displayName, 
+      totalPoints: u.totalPoints,
+      isAdmin: u.isAdmin
+    })));
+    
+    return users;
+  }
+
+  /**
    * Load all users and update the signal for reactive leaderboard
+   * Uses fresh server data to ensure real-time competitive updates
    */
   async loadAllUsers(): Promise<void> {
     this._loadingAllUsers.set(true);
     try {
-      console.log('[UserService] Loading all users for global reactivity...');
-      const users = await this.getAllUsers();
-      console.log(`[UserService] Loaded ${users.length} users`);
+      console.log('[UserService] 🏆 Loading all users for leaderboard (fresh server data)...');
+      // 🔥 Use server-side fetch to bypass cache for real-time leaderboard data
+      const users = await this.getAllUsersFromServer();
+      console.log(`[UserService] ✅ Loaded ${users.length} fresh users for leaderboard`);
       this._allUsers.set(users);
     } catch (error) {
-      console.error('[UserService] Failed to load all users:', error);
+      console.error('[UserService] ❌ Failed to load all users from server:', error);
       throw error;
     } finally {
       this._loadingAllUsers.set(false);

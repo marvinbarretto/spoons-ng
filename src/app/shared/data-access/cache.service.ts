@@ -2,6 +2,33 @@
 import { inject, Injectable } from '@angular/core';
 import { SsrPlatformService } from '@fourfold/angular-foundation';
 
+/**
+ * Centralized TTL (Time To Live) constants for caching strategy
+ * 
+ * USAGE:
+ * - STATIC_* for data that rarely changes (pubs, badges, system config)
+ * - COMPETITIVE for real-time data that affects multiple users (leaderboards)
+ * - PERSONAL for user-scoped data (user's own check-ins, profile)
+ * - NO_CACHE to disable caching entirely
+ */
+export const CACHE_TTL = {
+  // Static data - changes very rarely
+  STATIC_VERY_LONG: 7 * 24 * 60 * 60 * 1000,  // 7 days (system config, app constants)
+  STATIC_LONG: 24 * 60 * 60 * 1000,           // 24 hours (badge definitions, game rules)
+  STATIC_MEDIUM: 60 * 60 * 1000,              // 1 hour (pubs, static reference data)
+  STATIC_SHORT: 15 * 60 * 1000,               // 15 minutes (badges, achievements)
+  
+  // Dynamic competitive data - needs to be fresh for real-time experience
+  COMPETITIVE: 30 * 1000,                     // 30 seconds (leaderboards, global stats)
+  
+  // User personal data - can cache longer since user controls changes
+  PERSONAL: 5 * 60 * 1000,                    // 5 minutes (user's own data)
+  
+  // Development/testing
+  DEVELOPMENT: 10 * 1000,                     // 10 seconds (for testing cache behavior)
+  NO_CACHE: 0                                 // Disable caching entirely
+} as const;
+
 export type CacheOptions<T> = {
   key: string;
   ttlMs: number;

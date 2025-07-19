@@ -21,9 +21,12 @@ import { LeaderboardStore } from '../../../leaderboard/data-access/leaderboard.s
 import { FeedbackStore } from '../../../feedback/data-access/feedback.store';
 import { FirebaseMetricsService } from '@fourfold/angular-foundation';
 
+// Import the carpet debug component
+import { CarpetDebugComponent } from './carpet-debug.component';
+
 @Component({
   selector: 'app-dev-debug',
-  imports: [JsonPipe, DatePipe],
+  imports: [JsonPipe, DatePipe, CarpetDebugComponent],
   templateUrl: './dev-debug.component.html',
   styleUrl: './dev-debug.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

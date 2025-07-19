@@ -446,15 +446,40 @@ async createCheckin(pubId: string, carpetImageKey?: string, checkinData?: Partia
   }
 
   /**
+   * Get all check-ins from server (bypasses cache) for real-time competitive data
+   * Use this for leaderboard aggregation to ensure fresh cross-user data
+   */
+  async getAllCheckInsFromServer(): Promise<CheckIn[]> {
+    try {
+      console.log('[CheckInService] 🌐 Fetching ALL check-ins from server (bypassing cache)...');
+      const checkIns = await this.getDocsWhereFromServer<CheckIn>('checkins');
+      console.log(`[CheckInService] ✅ Server fetch complete: ${checkIns.length} check-ins (fresh data)`);
+      console.log('[CheckInService] 🔍 Fresh server check-ins summary:', {
+        totalCheckIns: checkIns.length,
+        uniqueUsers: new Set(checkIns.map(c => c.userId)).size,
+        withPoints: checkIns.filter(c => (c.pointsEarned || 0) > 0).length
+      });
+      return checkIns;
+    } catch (error) {
+      console.error('[CheckInService] ❌ Failed to load all check-ins from server:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Load all check-ins and update the signal for reactive leaderboard
+   * Uses fresh server data to ensure real-time competitive updates
    */
   async loadAllCheckIns(): Promise<void> {
     this._loadingAllCheckIns.set(true);
     try {
-      const checkIns = await this.getAllCheckIns();
+      console.log('[CheckInService] 🏆 Loading all check-ins for leaderboard (fresh server data)...');
+      // 🔥 Use server-side fetch to bypass cache for real-time leaderboard data
+      const checkIns = await this.getAllCheckInsFromServer();
+      console.log(`[CheckInService] ✅ Loaded ${checkIns.length} fresh check-ins for leaderboard`);
       this._allCheckIns.set(checkIns);
     } catch (error) {
-      console.error('[CheckInService] Failed to load all check-ins:', error);
+      console.error('[CheckInService] ❌ Failed to load all check-ins from server:', error);
       throw error;
     } finally {
       this._loadingAllCheckIns.set(false);
