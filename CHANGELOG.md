@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.105](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.104...v0.0.105) (2025-07-19)
+
+
+### Bug Fixes
+
+* [Checkin] add photo to check in object ([f6b0207](https://github.com/marvinbarretto/spoons-ng/commit/f6b0207a323a88fe3fd8dcb76c49637c094527e2))
+* [Points] Allocate points properly on checkin ([4fe891f](https://github.com/marvinbarretto/spoons-ng/commit/4fe891f9c074496502cc591f13c37464b63c3a65))
+* [Register] display name inifinite loop ([00dbcfc](https://github.com/marvinbarretto/spoons-ng/commit/00dbcfc267ef2c5bb7736fef2ade2da1d90055ec))
+* Update preloading strategy route ([e28de8f](https://github.com/marvinbarretto/spoons-ng/commit/e28de8f988d9fd90048662f257c16fd61b32e1d4))
+
 ### [0.0.104](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.103...v0.0.104) (2025-07-18)
 
 
