@@ -18,11 +18,11 @@ export class OnboardingAwarePreloadingStrategy implements PreloadingStrategy {
 
     // Check if user is currently in onboarding flow
     const currentUrl = this.router.url;
-    const isInOnboarding = currentUrl.includes('/onboarding');
+    const isInOnboarding = currentUrl.includes('/register');
 
     if (isInOnboarding) {
       console.log('[PreloadingStrategy] 🚀 User in onboarding - starting background download of main app');
-      
+
       // Wait a moment to let onboarding settle, then start preloading
       return timer(2000).pipe(
         switchMap(() => {
@@ -42,6 +42,6 @@ export class OnboardingAwarePreloadingStrategy implements PreloadingStrategy {
    */
   private isInOnboardingFlow(): boolean {
     const currentUrl = this.router.url;
-    return currentUrl.includes('/onboarding');
+    return currentUrl.includes('/register');
   }
 }
