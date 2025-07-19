@@ -32,70 +32,106 @@ export class PointsService extends FirestoreCrudService<PointsTransaction> {
    * Calculate points for a check-in based on all factors
    */
   calculateCheckInPoints(data: CheckInPointsData): PointsBreakdown {
-    console.log('[PointsService] 🎯 === CALCULATING CHECK-IN POINTS ===');
-    console.log('[PointsService] 🎯 Input data:', data);
+    const callId = Date.now();
+    console.log(`[PointsService] 🎯 === CALCULATING CHECK-IN POINTS STARTED (${callId}) ===`);
+    console.log(`[PointsService] 🎯 Input data (${callId}):`, data);
     
     let base = POINTS_CONFIG.checkIn.base;
     let bonus = 0;
     let distance = 0;
     let multiplier = 1;
 
+    console.log(`[PointsService] 🎯 Initial values (${callId}):`, { base, bonus, distance, multiplier });
+
     const reasons: string[] = [];
 
     // Base points
+    console.log(`[PointsService] 🎯 Adding base points (${callId}): ${base}`);
     reasons.push(`${base} base points`);
 
     // First-time bonuses
     if (data.isFirstEver) {
-      bonus += POINTS_CONFIG.checkIn.firstEver;
-      reasons.push(`${POINTS_CONFIG.checkIn.firstEver} first check-in bonus`);
+      const firstEverBonus = POINTS_CONFIG.checkIn.firstEver;
+      bonus += firstEverBonus;
+      console.log(`[PointsService] 🎯 Adding first ever bonus (${callId}): ${firstEverBonus}`);
+      reasons.push(`${firstEverBonus} first check-in bonus`);
     } else if (data.isFirstVisit) {
-      bonus += POINTS_CONFIG.checkIn.firstTime;
-      reasons.push(`${POINTS_CONFIG.checkIn.firstTime} first visit to this pub`);
+      const firstTimeBonus = POINTS_CONFIG.checkIn.firstTime;
+      bonus += firstTimeBonus;
+      console.log(`[PointsService] 🎯 Adding first visit bonus (${callId}): ${firstTimeBonus}`);
+      reasons.push(`${firstTimeBonus} first visit to this pub`);
+    } else {
+      console.log(`[PointsService] 🎯 No first-time bonuses (${callId}): isFirstEver=${data.isFirstEver}, isFirstVisit=${data.isFirstVisit}`);
     }
 
     // Home pub bonus
     if (data.isHomePub) {
-      bonus += POINTS_CONFIG.checkIn.homePub;
-      reasons.push(`${POINTS_CONFIG.checkIn.homePub} home pub bonus`);
+      const homePubBonus = POINTS_CONFIG.checkIn.homePub;
+      bonus += homePubBonus;
+      console.log(`[PointsService] 🎯 Adding home pub bonus (${callId}): ${homePubBonus}`);
+      reasons.push(`${homePubBonus} home pub bonus`);
+    } else {
+      console.log(`[PointsService] 🎯 No home pub bonus (${callId}): isHomePub=${data.isHomePub}`);
     }
 
     // Distance bonus
+    console.log(`[PointsService] 🎯 Checking distance bonus (${callId}): distanceFromHome=${data.distanceFromHome}, minDistance=${POINTS_CONFIG.distance.minDistance}`);
     if (data.distanceFromHome >= POINTS_CONFIG.distance.minDistance) {
       const distanceBonus = Math.min(
         Math.floor(data.distanceFromHome * POINTS_CONFIG.distance.pointsPerKm),
         POINTS_CONFIG.distance.maxDistanceBonus
       );
       distance = distanceBonus;
+      console.log(`[PointsService] 🎯 Adding distance bonus (${callId}): ${distanceBonus} (${data.distanceFromHome.toFixed(1)}km from home)`);
       reasons.push(`${distanceBonus} distance bonus (${data.distanceFromHome.toFixed(1)}km from home)`);
+    } else {
+      console.log(`[PointsService] 🎯 No distance bonus (${callId}): distance too short`);
     }
 
     // Social bonuses
     if (data.hasPhoto) {
-      bonus += POINTS_CONFIG.social.photo;
-      reasons.push(`${POINTS_CONFIG.social.photo} photo bonus`);
+      const photoBonus = POINTS_CONFIG.social.photo;
+      bonus += photoBonus;
+      console.log(`[PointsService] 🎯 Adding photo bonus (${callId}): ${photoBonus}`);
+      reasons.push(`${photoBonus} photo bonus`);
+    } else {
+      console.log(`[PointsService] 🎯 No photo bonus (${callId}): hasPhoto=${data.hasPhoto}`);
     }
 
     // Photo quality bonus (new enhanced system)
     if (data.photoQuality && data.photoQuality.bonus > 0) {
-      bonus += data.photoQuality.bonus;
+      const qualityBonus = data.photoQuality.bonus;
+      bonus += qualityBonus;
       const tierName = this.getQualityTierDisplayName(data.photoQuality.tier);
-      reasons.push(`${data.photoQuality.bonus} ${tierName} photo quality bonus`);
+      console.log(`[PointsService] 🎯 Adding photo quality bonus (${callId}): ${qualityBonus} (${tierName})`);
+      reasons.push(`${qualityBonus} ${tierName} photo quality bonus`);
+    } else {
+      console.log(`[PointsService] 🎯 No photo quality bonus (${callId}): photoQuality=${JSON.stringify(data.photoQuality)}`);
     }
 
     if (data.sharedSocial) {
-      bonus += POINTS_CONFIG.social.share;
-      reasons.push(`${POINTS_CONFIG.social.share} social share bonus`);
+      const shareBonus = POINTS_CONFIG.social.share;
+      bonus += shareBonus;
+      console.log(`[PointsService] 🎯 Adding social share bonus (${callId}): ${shareBonus}`);
+      reasons.push(`${shareBonus} social share bonus`);
+    } else {
+      console.log(`[PointsService] 🎯 No social share bonus (${callId}): sharedSocial=${data.sharedSocial}`);
     }
 
     // Streak multiplier
     const streakBonus = this.getStreakBonus(data.currentStreak);
     if (streakBonus > 0) {
       bonus += streakBonus;
+      console.log(`[PointsService] 🎯 Adding streak bonus (${callId}): ${streakBonus} (${data.currentStreak}-day streak)`);
       reasons.push(`${streakBonus} ${data.currentStreak}-day streak bonus`);
+    } else {
+      console.log(`[PointsService] 🎯 No streak bonus (${callId}): currentStreak=${data.currentStreak}`);
     }
 
+    console.log(`[PointsService] 🎯 Pre-total calculation (${callId}):`, { base, distance, bonus, multiplier });
+    
     const total = (base + distance + bonus) * multiplier;
+    console.log(`[PointsService] 🎯 Total calculation (${callId}): (${base} + ${distance} + ${bonus}) * ${multiplier} = ${total}`);
 
     const breakdown = {
       base,
@@ -105,11 +141,12 @@ export class PointsService extends FirestoreCrudService<PointsTransaction> {
       total,
       reason: reasons.join(' + '),
       // Include raw photo quality value if available for simplified access
-      photoQuality: data.photoQuality?.overall
+      ...(data.photoQuality?.overall !== undefined && { photoQuality: data.photoQuality.overall })
     };
 
-    console.log('[PointsService] 🎯 === POINTS CALCULATION COMPLETE ===');
-    console.log('[PointsService] 🎯 Final breakdown:', breakdown);
+    console.log(`[PointsService] 🎯 === POINTS CALCULATION COMPLETE (${callId}) ===`);
+    console.log(`[PointsService] 🎯 Final breakdown (${callId}):`, breakdown);
+    console.log(`[PointsService] 🎯 Reason string (${callId}): "${breakdown.reason}"`);
     
     return breakdown;
   }

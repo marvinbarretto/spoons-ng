@@ -244,30 +244,35 @@ export class PointsStore {
    */
   async awardCheckInPoints(pointsData: CheckInPointsData): Promise<PointsBreakdown> {
     const callId = Date.now();
+    console.log(`[PointsStore] 🎯 === AWARD CHECK-IN POINTS STARTED (${callId}) ===`);
+    
     const user = this.authStore.user();
+    if (!user) {
+      console.error(`[PointsStore] ❌ User not authenticated (${callId})`);
+      throw new Error('User not authenticated');
+    }
 
-    if (!user) throw new Error('User not authenticated');
+    console.log(`[PointsStore] 🎯 User authenticated (${callId}):`, user.uid);
+    console.log(`[PointsStore] 🎯 Input points data (${callId}):`, pointsData);
+    console.log(`[PointsStore] 🎯 Current points before award (${callId}):`, this.totalPoints());
 
     // ✅ Prevent duplicate/concurrent calls
     if (this._loading()) {
-      console.warn('[PointsStore] ⚠️ Award points called while loading, rejecting');
+      console.warn(`[PointsStore] ⚠️ Award points called while loading, rejecting (${callId})`);
       throw new Error('Points award already in progress');
     }
 
-    console.log(`[PointsStore] 🎯 Award check-in points STARTED (${callId}):`, {
-      pointsData,
-      currentPoints: this.totalPoints(),
-      userId: user.uid
-    });
-
     try {
       this._loading.set(true);
+      console.log(`[PointsStore] 🎯 Loading state set to true (${callId})`);
 
       // 1. Calculate points using service
+      console.log(`[PointsStore] 🎯 Calling PointsService.calculateCheckInPoints (${callId})`);
       const breakdown = this.pointsService.calculateCheckInPoints(pointsData);
-      console.log(`[PointsStore] 📊 Points breakdown (${callId}):`, breakdown);
+      console.log(`[PointsStore] 📊 Points breakdown returned (${callId}):`, breakdown);
 
       // 2. Create transaction record
+      console.log(`[PointsStore] 🎯 Creating transaction record (${callId})`);
       const transaction = await this.pointsService.createTransaction({
         userId: user.uid,
         type: 'check-in',
@@ -283,9 +288,11 @@ export class PointsStore {
       // 3. Update local state optimistically
       const currentTotal = this.totalPoints();
       const newTotal = currentTotal + breakdown.total;
+      console.log(`[PointsStore] 🎯 Updating points (${callId}): ${currentTotal} + ${breakdown.total} = ${newTotal}`);
       this._totalPoints.set(newTotal);
 
       // 4. ✅ CRITICAL: Update UserStore immediately for real-time scoreboard
+      console.log(`[PointsStore] 🎯 Updating UserStore with new total (${callId}): ${newTotal}`);
       this.userStore.patchUser({ totalPoints: newTotal });
 
       console.log(`[PointsStore] 📈 Points updated everywhere (${callId}):`, {
@@ -296,9 +303,11 @@ export class PointsStore {
       });
 
       // 5. Update user's total in Firebase
+      console.log(`[PointsStore] 🎯 Updating Firebase user total (${callId})`);
       await this.pointsService.updateUserTotalPoints(user.uid, newTotal);
 
       // 6. Add transaction to local array
+      console.log(`[PointsStore] 🎯 Adding transaction to local array (${callId})`);
       this._recentTransactions.update(current => [transaction, ...current].slice(0, 20));
 
       // 7. ✅ CRITICAL: Invalidate cache to trigger leaderboard refresh
@@ -306,18 +315,23 @@ export class PointsStore {
       this.cacheCoherence.invalidate('points', 'check-in-points-awarded');
       console.log(`[PointsStore] 🔄 Cache invalidation triggered - leaderboard should refresh`);
 
-      console.log(`[PointsStore] ✅ Award check-in points COMPLETED (${callId}):`, {
+      console.log(`[PointsStore] ✅ === AWARD CHECK-IN POINTS COMPLETED (${callId}) ===`);
+      console.log(`[PointsStore] ✅ Final result (${callId}):`, {
         pointsAwarded: breakdown.total,
-        newTotal: newTotal
+        newTotal: newTotal,
+        breakdown
       });
 
       return breakdown;
 
     } catch (error: any) {
       this._error.set(error?.message || 'Failed to award points');
-      console.error(`[PointsStore] ❌ Award check-in points FAILED (${callId}):`, error);
+      console.error(`[PointsStore] ❌ === AWARD CHECK-IN POINTS FAILED (${callId}) ===`);
+      console.error(`[PointsStore] ❌ Error (${callId}):`, error);
+      console.error(`[PointsStore] ❌ Error stack (${callId}):`, error instanceof Error ? error.stack : 'No stack trace');
       throw error;
     } finally {
+      console.log(`[PointsStore] 🎯 Setting loading to false (${callId})`);
       this._loading.set(false);
     }
   }
