@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.109](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.108...v0.0.109) (2025-07-19)
+
+
+### Features
+
+* [Admin] [Checkin] enable manual checkins ([ddca58e](https://github.com/marvinbarretto/spoons-ng/commit/ddca58e079be655e92dd574f9d7f8a4c48108dde))
+* [Admin] Admin nav ([d148d43](https://github.com/marvinbarretto/spoons-ng/commit/d148d434e3ffb07b2f069a537911eeb6e33e2e53))
+* [User] new user selector dropdown ([f942d41](https://github.com/marvinbarretto/spoons-ng/commit/f942d41ebeaa0e17a125e2b857bf9c8772c404be))
+
+
+### Bug Fixes
+
+* [Admin] reactive values again ([b10b0e8](https://github.com/marvinbarretto/spoons-ng/commit/b10b0e813e5befe0624cb8cb6e1170e111163870))
+* [Points] fix points awarded for carpet ([fd48f54](https://github.com/marvinbarretto/spoons-ng/commit/fd48f542e0bc299f2c37ce669ed850c0bc63a008))
+
 ### [0.0.108](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.107...v0.0.108) (2025-07-19)
 
 
