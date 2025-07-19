@@ -66,11 +66,13 @@ export class CarpetStrategyService {
 
       if (!llmResult.isCarpet) {
         console.log('[CarpetStrategy] ❌ LLM rejected - not a carpet');
+        console.log('[CarpetStrategy] 📊 But preserving photo quality data:', llmResult.photoQuality);
         return {
           localStored: true,
           llmConfirmed: false,
           firestoreUploaded: false,
           localKey,
+          photoQuality: llmResult.photoQuality, // Preserve photo quality for points calculation
           error: 'LLM analysis: Not a carpet detected'
         };
       }

@@ -246,8 +246,10 @@ export class CheckInStore extends BaseStore<CheckIn> {
     // Success flow - gather data and show overlay
     console.log('[CheckInStore] 🎉 Starting success flow...');
 
-    // TODO: check this.... undefined?
-    await this.handleSuccessFlow(pubId, undefined, pointsData);
+    // Pass the carpet result to determine if photo was taken and if carpet was confirmed
+    const carpetImageKey = carpetResult?.llmConfirmed ? carpetResult.localKey : undefined;
+    const photoTaken = carpetResult?.localStored || false;
+    await this.handleSuccessFlow(pubId, carpetImageKey, pointsData, photoTaken);
 
   } catch (error: any) {
     console.error('[CheckInStore] ❌ Check-in process failed:', error);
@@ -342,7 +344,7 @@ export class CheckInStore extends BaseStore<CheckIn> {
   /**
    * Handle successful check-in flow
    */
-  private async handleSuccessFlow(pubId: string, carpetImageKey?: string, pointsData?: any): Promise<void> {
+  private async handleSuccessFlow(pubId: string, carpetImageKey?: string, pointsData?: any, photoTaken?: boolean): Promise<void> {
     console.log('[CheckInStore] 🎉 Gathering success data for pub:', pubId);
 
     try {
@@ -434,7 +436,8 @@ export class CheckInStore extends BaseStore<CheckIn> {
         isNewLandlord: landlordResult.isNewLandlord,
         landlordMessage: landlordMessage,
         isFirstEver,
-        carpetCaptured: !!carpetImageKey
+        carpetCaptured: photoTaken || false, // Whether a photo was taken (regardless of carpet detection)
+        carpetConfirmed: !!carpetImageKey // Whether the LLM confirmed it was a carpet
       };
 
       console.log('[CheckInStore] 🎉 Success data assembled:', successData);
@@ -598,57 +601,90 @@ export class CheckInStore extends BaseStore<CheckIn> {
    * Calculate points for check-in (with carpet bonus)
    */
   private async calculatePoints(pubId: string, carpetResult?: any): Promise<any> {
-    console.log('[CheckInStore] 🎯 Calculating points for pub:', pubId);
-    console.log('[CheckInStore] 🎯 Carpet processing result:', carpetResult);
+    const callId = Date.now();
+    console.log(`[CheckInStore] 🎯 === CALCULATE POINTS STARTED (${callId}) ===`);
+    console.log(`[CheckInStore] 🎯 Input (${callId}):`, { pubId, hasCarpetResult: !!carpetResult });
+    console.log(`[CheckInStore] 🎯 Carpet processing result (${callId}):`, carpetResult);
 
     const userId = this.authStore.uid();
     if (!userId) {
-      console.log('[CheckInStore] 🎯 No user ID - cannot calculate points');
+      console.error(`[CheckInStore] ❌ No user ID - cannot calculate points (${callId})`);
       return { total: 0, breakdown: [] };
     }
 
+    console.log(`[CheckInStore] 🎯 Authenticated user ID (${callId}):`, userId);
+
     try {
       // Get check-in context
+      console.log(`[CheckInStore] 🎯 Fetching check-in context (${callId})`);
       const [isFirstVisit, totalCheckins] = await Promise.all([
         this.newCheckInService.isFirstEverCheckIn(userId, pubId),
         this.newCheckInService.getUserTotalCheckinCount(userId)
       ]);
 
+      console.log(`[CheckInStore] 🎯 Check-in context (${callId}):`, { isFirstVisit, totalCheckins });
+
       // Calculate distance from home pub
+      console.log(`[CheckInStore] 🎯 Calculating distance from home (${callId})`);
       const distanceFromHome = await this.calculateDistanceFromHome(pubId, userId);
+      console.log(`[CheckInStore] 🎯 Distance from home pub (${callId}):`, distanceFromHome, 'km');
 
-      // Determine if a photo was actually captured and has quality data
-      const hasPhoto = !!(carpetResult?.llmConfirmed && carpetResult?.photoQuality);
-      console.log('[CheckInStore] 🎯 Photo capture detected:', hasPhoto);
-      console.log('[CheckInStore] 🎯 Photo quality data:', carpetResult?.photoQuality);
+      // Determine if a photo was actually taken (regardless of carpet detection result)
+      const hasPhoto = !!(carpetResult && carpetResult.localStored);
+      console.log(`[CheckInStore] 🎯 Photo capture detected (${callId}):`, hasPhoto);
+      console.log(`[CheckInStore] 🎯 Photo quality data (${callId}):`, carpetResult?.photoQuality);
+      console.log(`[CheckInStore] 🎯 Carpet confirmed by LLM (${callId}):`, carpetResult?.llmConfirmed);
 
-      // Build PointsStore data structure
+      // Determine if this is user's home pub
+      console.log(`[CheckInStore] 🎯 Checking if home pub (${callId})`);
+      const isHomePub = await this.isHomePub(pubId, userId);
+      console.log(`[CheckInStore] 🎯 Is home pub (${callId}):`, isHomePub);
+
+      // Build PointsStore data structure with transformed photo quality data
+      let photoQuality = undefined;
+      if (carpetResult?.qualityBonus !== undefined && carpetResult?.qualityTier) {
+        // Use the transformed photo quality data from carpet strategy
+        photoQuality = {
+          bonus: carpetResult.qualityBonus,
+          tier: carpetResult.qualityTier
+        };
+        console.log(`[CheckInStore] 🎯 Using transformed photo quality data (${callId}):`, photoQuality);
+      } else if (carpetResult?.photoQuality) {
+        // Fallback: include raw photo quality for simplified access in breakdown display
+        console.log(`[CheckInStore] 🎯 Using raw photo quality data for display (${callId}):`, carpetResult.photoQuality);
+        photoQuality = {
+          overall: carpetResult.photoQuality.overall // Include for modal display
+        };
+      }
+
       const pointsData = {
         pubId,
         distanceFromHome,
         isFirstVisit,
         isFirstEver: totalCheckins === 0,
-        currentStreak: 0, // TODO: Calculate streak
+        currentStreak: 0, // TODO: Implement streak calculation - track consecutive daily check-ins
         hasPhoto,
-        photoQuality: carpetResult?.photoQuality,
-        sharedSocial: false,
-        // Determine if this is user's home pub
-        isHomePub: await this.isHomePub(pubId, userId)
+        photoQuality,
+        sharedSocial: false, // TODO: Implement social sharing feature - track if user shared this check-in
+        isHomePub
       };
 
-      console.log('[CheckInStore] 🎯 Points context data prepared:', pointsData);
+      console.log(`[CheckInStore] 🎯 Points context data prepared (${callId}):`, pointsData);
 
       // Use PointsStore to calculate AND persist points
+      console.log(`[CheckInStore] 🎯 Calling PointsStore.awardCheckInPoints (${callId})`);
       const pointsBreakdown = await this.pointsStore.awardCheckInPoints(pointsData);
 
-      console.log('[CheckInStore] 🎯 PointsStore returned breakdown:', pointsBreakdown);
+      console.log(`[CheckInStore] 🎯 PointsStore returned breakdown (${callId}):`, pointsBreakdown);
 
       // Return the breakdown directly - it already has total and structured data
-      console.log('[CheckInStore] 🎯 Points calculated and awarded:', pointsBreakdown);
+      console.log(`[CheckInStore] 🎯 === CALCULATE POINTS COMPLETE (${callId}) ===`);
+      console.log(`[CheckInStore] 🎯 Final result (${callId}):`, pointsBreakdown);
       return pointsBreakdown;
 
     } catch (error) {
-      console.error('[CheckInStore] ❌ Points calculation failed:', error);
+      console.error(`[CheckInStore] ❌ Points calculation failed (${callId}):`, error);
+      console.error(`[CheckInStore] ❌ Error stack (${callId}):`, error instanceof Error ? error.stack : 'No stack trace');
       return { total: 0, breakdown: [] };
     }
   }
