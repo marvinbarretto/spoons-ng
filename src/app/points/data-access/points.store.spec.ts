@@ -33,7 +33,7 @@ describe('PointsStore - UserStore Synchronization', () => {
     isFirstVisit: true,
     isFirstEver: false,
     currentStreak: 1,
-    hasPhoto: true,
+    carpetConfirmed: true,
     sharedSocial: false
   };
 
@@ -43,7 +43,7 @@ describe('PointsStore - UserStore Synchronization', () => {
     bonus: 15,
     multiplier: 1,
     total: 30,
-    reason: 'First visit + photo bonus'
+    reason: 'First visit + carpet confirmed'
   };
 
   const mockTransaction: PointsTransaction = {
@@ -149,20 +149,20 @@ describe('PointsStore - UserStore Synchronization', () => {
         bonus: 0,
         multiplier: 1,
         total: 5,
-        reason: 'Photo shared'
+        reason: 'Share bonus'
       };
       mockPointsService.calculateSocialPoints.mockReturnValue(socialBreakdown);
       mockPointsService.createTransaction.mockResolvedValue({
         ...mockTransaction,
         type: 'social',
-        action: 'photo',
+        action: 'share',
         points: 5
       } as any);
       
       pointsStore['_totalPoints'].set(200);
 
       // Act
-      await pointsStore.awardSocialPoints('photo', 'test-pub');
+      await pointsStore.awardSocialPoints('share', 'test-pub');
 
       // Assert
       expect(mockUserStore.patchUser).toHaveBeenCalledWith({ totalPoints: 205 });

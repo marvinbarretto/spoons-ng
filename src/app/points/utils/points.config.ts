@@ -14,7 +14,10 @@ export const POINTS_CONFIG = {
 
   social: {
     share: 5,
-    photo: 3,
+  },
+
+  carpet: {
+    confirmed: 5, // Bonus for LLM-confirmed carpet photos
   },
 
   photoQuality: {

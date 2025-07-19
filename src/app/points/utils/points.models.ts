@@ -26,7 +26,7 @@ export type CheckInPointsData = {
   isFirstVisit: boolean;
   isFirstEver: boolean;
   currentStreak: number;
-  hasPhoto: boolean;
+  carpetConfirmed: boolean;
   sharedSocial: boolean;
   isHomePub: boolean; // Whether this is the user's designated home pub
 };

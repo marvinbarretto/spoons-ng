@@ -88,19 +88,17 @@ export class PointsService extends FirestoreCrudService<PointsTransaction> {
       console.log(`[PointsService] 🎯 No distance bonus (${callId}): distance too short`);
     }
 
-    // Social bonuses
-    if (data.hasPhoto) {
-      const photoBonus = POINTS_CONFIG.social.photo;
-      bonus += photoBonus;
-      console.log(`[PointsService] 🎯 Adding photo bonus (${callId}): ${photoBonus}`);
-      reasons.push(`${photoBonus} photo bonus`);
+    // Carpet confirmation bonus
+    if (data.carpetConfirmed) {
+      const carpetBonus = POINTS_CONFIG.carpet.confirmed;
+      bonus += carpetBonus;
+      console.log(`[PointsService] 🎯 Adding carpet confirmation bonus (${callId}): ${carpetBonus}`);
+      reasons.push(`${carpetBonus} carpet confirmed`);
     } else {
-      console.log(`[PointsService] 🎯 No photo bonus (${callId}): hasPhoto=${data.hasPhoto}`);
+      console.log(`[PointsService] 🎯 No carpet confirmation bonus (${callId}): carpetConfirmed=${data.carpetConfirmed}`);
     }
 
-    // Photo quality is tracked as a metric but doesn't award bonus points
-    console.log(`[PointsService] 🎯 Photo quality metric tracked (${callId}) - no bonus points awarded`);
-
+    // Social sharing bonus
     if (data.sharedSocial) {
       const shareBonus = POINTS_CONFIG.social.share;
       bonus += shareBonus;
@@ -144,7 +142,7 @@ export class PointsService extends FirestoreCrudService<PointsTransaction> {
   /**
    * Calculate points for social actions
    */
-  calculateSocialPoints(action: 'share' | 'photo'): PointsBreakdown {
+  calculateSocialPoints(action: 'share'): PointsBreakdown {
     const points = POINTS_CONFIG.social[action];
 
     return {

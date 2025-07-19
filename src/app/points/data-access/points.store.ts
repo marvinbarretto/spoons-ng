@@ -341,14 +341,14 @@ export class PointsStore {
   }
 
   /**
-   * Award points for social actions (sharing, photos)
-   * @param action - Type of social action ('share' | 'photo')
+   * Award points for social actions (sharing)
+   * @param action - Type of social action ('share')
    * @param pubId - Optional pub ID if action is pub-specific
    * @returns Promise<PointsBreakdown> - Points breakdown for the social action
    * @description Awards points for social engagement and updates UserStore immediately
    * @sideEffects Updates UserStore.totalPoints for real-time scoreboard updates
    */
-  async awardSocialPoints(action: 'share' | 'photo', pubId?: string): Promise<PointsBreakdown> {
+  async awardSocialPoints(action: 'share', pubId?: string): Promise<PointsBreakdown> {
     const user = this.authStore.user();
     if (!user) throw new Error('User not authenticated');
 

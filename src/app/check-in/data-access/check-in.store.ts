@@ -663,11 +663,10 @@ export class CheckInStore extends BaseStore<CheckIn> {
       const distanceFromHome = await this.calculateDistanceFromHome(pubId, userId);
       console.log(`[CheckInStore] 🎯 Distance from home pub (${callId}):`, distanceFromHome, 'km');
 
-      // Determine if a photo was actually taken (regardless of carpet detection result)
-      const hasPhoto = !!(carpetResult && carpetResult.localStored);
-      console.log(`[CheckInStore] 🎯 Photo capture detected (${callId}):`, hasPhoto);
+      // Determine if carpet was confirmed by LLM for bonus points
+      const carpetConfirmed = !!(carpetResult && carpetResult.llmConfirmed);
+      console.log(`[CheckInStore] 🎯 Carpet confirmed by LLM (${callId}):`, carpetConfirmed);
       console.log(`[CheckInStore] 🎯 Photo quality data (${callId}):`, carpetResult?.photoQuality);
-      console.log(`[CheckInStore] 🎯 Carpet confirmed by LLM (${callId}):`, carpetResult?.llmConfirmed);
 
       // Determine if this is user's home pub
       console.log(`[CheckInStore] 🎯 Checking if home pub (${callId})`);
@@ -684,7 +683,7 @@ export class CheckInStore extends BaseStore<CheckIn> {
         isFirstVisit,
         isFirstEver: totalCheckins === 0,
         currentStreak: 0, // TODO: Implement streak calculation - track consecutive daily check-ins
-        hasPhoto,
+        carpetConfirmed,
         sharedSocial: false, // TODO: Implement social sharing feature - track if user shared this check-in
         isHomePub
       };

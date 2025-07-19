@@ -752,12 +752,12 @@ export class ModalCheckinPointsComponent implements OnDestroy {
           });
         }
 
-        if (reason.includes('photo bonus') && !reason.includes('quality')) {
+        if (reason.includes('carpet confirmed')) {
           items.push({
-            type: 'photo',
-            points: 3,
-            description: 'Carpet photo bonus',
-            icon: '📷',
+            type: 'carpet',
+            points: 5,
+            description: 'Carpet confirmed bonus',
+            icon: '🏺',
             color: '#6f42c1'
           });
         }
