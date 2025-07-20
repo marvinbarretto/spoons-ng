@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.111](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.110...v0.0.111) (2025-07-20)
+
+
+### Features
+
+* [Checkin] Decoupling points allocation so can be done manually too ([812afa3](https://github.com/marvinbarretto/spoons-ng/commit/812afa303514ec259e9021c36fc0e4bb9ec672cc))
+
+
+### Bug Fixes
+
+* [Leaderboard] real time caching now across live data ([50e8889](https://github.com/marvinbarretto/spoons-ng/commit/50e8889f506f4dc759492e6e2ac45ae263b3c08d))
+
 ### [0.0.110](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.109...v0.0.110) (2025-07-19)
 
 ### [0.0.109](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.108...v0.0.109) (2025-07-19)
