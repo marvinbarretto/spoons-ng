@@ -1,5 +1,6 @@
 // src/app/admin/feature/users/users.component.ts
 import { Component, inject, computed, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 
 import { BaseComponent } from '../../../shared/base/base.component';
 import { LoadingStateComponent } from '../../../shared/ui/loading-state/loading-state.component';
@@ -93,6 +94,7 @@ type UserWithDetails = User & {
             [data]="enrichedUsers()"
             [columns]="tableColumns"
             [loading]="storeLoading()"
+            [onRowClick]="handleUserClick"
             trackBy="uid"
           />
         }
@@ -302,6 +304,12 @@ export class AdminUsersComponent extends BaseComponent implements OnInit {
   async handleRetry(): Promise<void> {
     await this.refreshData();
   }
+
+  readonly handleUserClick = (user: UserWithDetails): void => {
+    if (user.displayName) {
+      this.router.navigate(['/admin/users', user.displayName]);
+    }
+  };
 
   private formatDate(date: Date): string {
     return new Intl.DateTimeFormat('en-US', {

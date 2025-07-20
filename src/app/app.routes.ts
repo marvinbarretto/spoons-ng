@@ -166,6 +166,15 @@ export const appRoutes: Routes = [
     data: { shell: 'feature' }
   },
   {
+    path: 'admin/users/:username',
+    title: 'User Details',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./admin/feature/users/user-detail.component')
+        .then(m => m.AdminUserDetailComponent),
+    data: { shell: 'feature' }
+  },
+  {
     path: 'admin/carpets',
     title: 'Carpet Management',
     canActivate: [adminGuard],

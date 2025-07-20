@@ -2,8 +2,10 @@
 import { Injectable } from '@angular/core';
 import { POINTS_CONFIG } from '../utils/points.config';
 import type { PointsBreakdown, CheckInPointsData, PointsTransaction } from '../utils/points.models';
-import { FirestoreCrudService } from '../../shared/data-access/firestore-crud.service';
+import { FirestoreCrudService } from '@shared/data-access/firestore-crud.service';
 import { where } from 'firebase/firestore';
+import { calculateCheckInPoints, type CheckInPointsInput } from '@check-in/utils/points-calculation.utils';
+import type { Pub } from '@pubs/utils/pub.models';
 
 
 /**
@@ -30,113 +32,37 @@ export class PointsService extends FirestoreCrudService<PointsTransaction> {
 
   /**
    * Calculate points for a check-in based on all factors
+   * Now uses the shared utility function for consistent calculation
    */
-  calculateCheckInPoints(data: CheckInPointsData): PointsBreakdown {
+  calculateCheckInPoints(data: CheckInPointsData, checkInPub?: Pub, homePub?: Pub | null): PointsBreakdown {
     const callId = Date.now();
-    console.log(`[PointsService] 🎯 === CALCULATING CHECK-IN POINTS STARTED (${callId}) ===`);
-    console.log(`[PointsService] 🎯 Input data (${callId}):`, data);
+    console.log(`🔄 [PointsService] === REGULAR CHECK-IN POINTS CALCULATION (${callId}) ===`);
+    console.log(`🔄 [PointsService] Legacy data input (${callId}):`, data);
+    console.log(`🔄 [PointsService] Pub data (${callId}):`, {
+      checkInPub: checkInPub?.name || 'Missing',
+      homePub: homePub?.name || 'None set'
+    });
     
-    let base = POINTS_CONFIG.checkIn.base;
-    let bonus = 0;
-    let distance = 0;
-    let multiplier = 1;
-
-    console.log(`[PointsService] 🎯 Initial values (${callId}):`, { base, bonus, distance, multiplier });
-
-    const reasons: string[] = [];
-
-    // Base points
-    console.log(`[PointsService] 🎯 Adding base points (${callId}): ${base}`);
-    reasons.push(`${base} base points`);
-
-    // First-time bonuses
-    if (data.isFirstEver) {
-      const firstEverBonus = POINTS_CONFIG.checkIn.firstEver;
-      bonus += firstEverBonus;
-      console.log(`[PointsService] 🎯 Adding first ever bonus (${callId}): ${firstEverBonus}`);
-      reasons.push(`${firstEverBonus} first check-in bonus`);
-    } else if (data.isFirstVisit) {
-      const firstTimeBonus = POINTS_CONFIG.checkIn.firstTime;
-      bonus += firstTimeBonus;
-      console.log(`[PointsService] 🎯 Adding first visit bonus (${callId}): ${firstTimeBonus}`);
-      reasons.push(`${firstTimeBonus} first visit to this pub`);
-    } else {
-      console.log(`[PointsService] 🎯 No first-time bonuses (${callId}): isFirstEver=${data.isFirstEver}, isFirstVisit=${data.isFirstVisit}`);
-    }
-
-    // Home pub bonus
-    if (data.isHomePub) {
-      const homePubBonus = POINTS_CONFIG.checkIn.homePub;
-      bonus += homePubBonus;
-      console.log(`[PointsService] 🎯 Adding home pub bonus (${callId}): ${homePubBonus}`);
-      reasons.push(`${homePubBonus} home pub bonus`);
-    } else {
-      console.log(`[PointsService] 🎯 No home pub bonus (${callId}): isHomePub=${data.isHomePub}`);
-    }
-
-    // Distance bonus
-    console.log(`[PointsService] 🎯 Checking distance bonus (${callId}): distanceFromHome=${data.distanceFromHome}, minDistance=${POINTS_CONFIG.distance.minDistance}`);
-    if (data.distanceFromHome >= POINTS_CONFIG.distance.minDistance) {
-      const distanceBonus = Math.min(
-        Math.floor(data.distanceFromHome * POINTS_CONFIG.distance.pointsPerKm),
-        POINTS_CONFIG.distance.maxDistanceBonus
-      );
-      distance = distanceBonus;
-      console.log(`[PointsService] 🎯 Adding distance bonus (${callId}): ${distanceBonus} (${data.distanceFromHome.toFixed(1)}km from home)`);
-      reasons.push(`${distanceBonus} distance bonus (${data.distanceFromHome.toFixed(1)}km from home)`);
-    } else {
-      console.log(`[PointsService] 🎯 No distance bonus (${callId}): distance too short`);
-    }
-
-    // Carpet confirmation bonus
-    if (data.carpetConfirmed) {
-      const carpetBonus = POINTS_CONFIG.carpet.confirmed;
-      bonus += carpetBonus;
-      console.log(`[PointsService] 🎯 Adding carpet confirmation bonus (${callId}): ${carpetBonus}`);
-      reasons.push(`${carpetBonus} carpet confirmed`);
-    } else {
-      console.log(`[PointsService] 🎯 No carpet confirmation bonus (${callId}): carpetConfirmed=${data.carpetConfirmed}`);
-    }
-
-    // Social sharing bonus
-    if (data.sharedSocial) {
-      const shareBonus = POINTS_CONFIG.social.share;
-      bonus += shareBonus;
-      console.log(`[PointsService] 🎯 Adding social share bonus (${callId}): ${shareBonus}`);
-      reasons.push(`${shareBonus} social share bonus`);
-    } else {
-      console.log(`[PointsService] 🎯 No social share bonus (${callId}): sharedSocial=${data.sharedSocial}`);
-    }
-
-    // Streak multiplier
-    const streakBonus = this.getStreakBonus(data.currentStreak);
-    if (streakBonus > 0) {
-      bonus += streakBonus;
-      console.log(`[PointsService] 🎯 Adding streak bonus (${callId}): ${streakBonus} (${data.currentStreak}-day streak)`);
-      reasons.push(`${streakBonus} ${data.currentStreak}-day streak bonus`);
-    } else {
-      console.log(`[PointsService] 🎯 No streak bonus (${callId}): currentStreak=${data.currentStreak}`);
-    }
-
-    console.log(`[PointsService] 🎯 Pre-total calculation (${callId}):`, { base, distance, bonus, multiplier });
-    
-    const total = (base + distance + bonus) * multiplier;
-    console.log(`[PointsService] 🎯 Total calculation (${callId}): (${base} + ${distance} + ${bonus}) * ${multiplier} = ${total}`);
-
-    const breakdown = {
-      base,
-      distance,
-      bonus,
-      multiplier,
-      total,
-      reason: reasons.join(' + ')
+    console.log(`🔄 [PointsService] Mapping to new shared utility format...`);
+    // Map legacy CheckInPointsData to new CheckInPointsInput
+    const input: CheckInPointsInput = {
+      checkInPub: checkInPub!,
+      homePub: homePub,
+      isFirstEver: data.isFirstEver,
+      isFirstVisit: data.isFirstVisit,
+      isHomePub: data.isHomePub,
+      carpetConfirmed: data.carpetConfirmed,
+      sharedSocial: data.sharedSocial,
+      currentStreak: data.currentStreak
     };
-
-    console.log(`[PointsService] 🎯 === POINTS CALCULATION COMPLETE (${callId}) ===`);
-    console.log(`[PointsService] 🎯 Final breakdown (${callId}):`, breakdown);
-    console.log(`[PointsService] 🎯 Reason string (${callId}): "${breakdown.reason}"`);
     
-    return breakdown;
+    console.log(`🔄 [PointsService] Calling SHARED UTILITY (same as admin!)...`);
+    const result = calculateCheckInPoints(input);
+    
+    console.log(`🔄 [PointsService] === REGULAR CHECK-IN RESULT (${callId}) ===`);
+    console.log(`🔄 [PointsService] Points calculated by shared utility:`, result);
+    
+    return result;
   }
 
   /**
@@ -212,7 +138,7 @@ export class PointsService extends FirestoreCrudService<PointsTransaction> {
       if (error?.message?.includes('No document to update')) {
         console.log(`[PointsService] 📝 Creating user document for ${userId.slice(0, 8)} with totalPoints: ${newTotal}`);
         try {
-          await this.setDoc(`users/${userId}`, { 
+          await this.setDoc(`users/${userId}`, {
             totalPoints: newTotal,
             uid: userId,
             displayName: `User ${userId.slice(0, 8)}`,
@@ -246,20 +172,6 @@ export class PointsService extends FirestoreCrudService<PointsTransaction> {
   // 🔧 PRIVATE HELPERS
   // ===================================
 
-  private getStreakBonus(streak: number): number {
-    const streakBonuses = POINTS_CONFIG.streaks.daily;
-    const streakStr = streak.toString();
-
-    const applicableStreaks = Object.keys(streakBonuses)
-      .map(Number)
-      .filter(days => streak >= days)
-      .sort((a, b) => b - a);
-
-    if (applicableStreaks.length === 0) return 0;
-
-    const highestStreak = applicableStreaks[0].toString();
-    return streakBonuses[highestStreak] || 0;
-  }
 
   /**
    * Get display name for quality tier

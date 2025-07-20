@@ -27,6 +27,7 @@
 import { Injectable, signal, computed, inject, effect } from '@angular/core';
 import { AuthStore } from '../../auth/data-access/auth.store';
 import { PointsService } from './points.service';
+import { PubStore } from '@pubs/data-access/pub.store';
 import type { PointsTransaction, PointsBreakdown, CheckInPointsData } from '../utils/points.models';
 import { UserStore } from '../../users/data-access/user.store';
 import { CacheCoherenceService } from '../../shared/data-access/cache-coherence.service';
@@ -36,6 +37,7 @@ export class PointsStore {
   private readonly authStore = inject(AuthStore);
   private readonly pointsService = inject(PointsService);
   private readonly userStore = inject(UserStore);
+  private readonly pubStore = inject(PubStore);
   private readonly cacheCoherence = inject(CacheCoherenceService);
   private readonly errorLoggingService = inject(ErrorLoggingService);
 
@@ -268,9 +270,21 @@ export class PointsStore {
       this._loading.set(true);
       console.log(`[PointsStore] 🎯 Loading state set to true (${callId})`);
 
-      // 1. Calculate points using service
+      // 1. Get pub data from stores for points calculation
+      console.log(`[PointsStore] 🎯 Getting pub data from stores (${callId})`);
+      const checkInPub = this.pubStore.data().find(p => p.id === pointsData.pubId);
+      const currentUser = this.userStore.user();
+      const homePub = currentUser?.homePubId ? this.pubStore.data().find(p => p.id === currentUser.homePubId) : null;
+      
+      console.log(`[PointsStore] 🎯 Pub data retrieved (${callId}):`, {
+        checkInPub: checkInPub?.name || 'Not found',
+        homePub: homePub?.name || 'None set',
+        userHomePubId: currentUser?.homePubId || 'None'
+      });
+
+      // 2. Calculate points using service with pub objects
       console.log(`[PointsStore] 🎯 Calling PointsService.calculateCheckInPoints (${callId})`);
-      const breakdown = this.pointsService.calculateCheckInPoints(pointsData);
+      const breakdown = this.pointsService.calculateCheckInPoints(pointsData, checkInPub, homePub);
       console.log(`[PointsStore] 📊 Points breakdown returned (${callId}):`, breakdown);
 
       // 2. Create transaction record
