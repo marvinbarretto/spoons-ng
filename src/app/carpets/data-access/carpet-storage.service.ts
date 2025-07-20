@@ -317,8 +317,9 @@ async savePhotoFromCarpetData(photoData: CarpetPhotoData, pub: Pub): Promise<voi
       height: 400
     };
 
-    // Save resized image
-    const key = `${userId}_${carpetData.pubId}_${carpetData.dateKey}`;
+    // Save resized image with unique timestamp key
+    const timestamp = Date.now();
+    const key = `${userId}_${carpetData.pubId}_${timestamp}`;
     const dbConfig = this.getDatabaseConfig();
     await this.indexedDb.put(
       dbConfig.name,
@@ -439,6 +440,7 @@ async storeLocalVersion(blob: Blob, pubId: string, pubName: string): Promise<str
 
   await this.ensureInitialized();
 
+  const timestamp = Date.now();
   const dateKey = `${pubName.toLowerCase().replace(/\s+/g, '-')}_${new Date().toISOString().split('T')[0]}`;
   
   const carpetData: CarpetImageData = {
@@ -454,7 +456,7 @@ async storeLocalVersion(blob: Blob, pubId: string, pubName: string): Promise<str
     height: 600
   };
 
-  const key = `${userId}_${pubId}_${dateKey}`;
+  const key = `${userId}_${pubId}_${timestamp}`;
   const dbConfig = this.getDatabaseConfig();
   await this.indexedDb.put(dbConfig.name, dbConfig.stores.carpets, carpetData, key);
   
@@ -572,9 +574,10 @@ async saveCarpetImage(
       );
     });
 
-    // Generate key with user prefix for organization
-    const dateKey = new Date().toISOString().split('T')[0];
-    const key = `${userId}_${pubId}_${dateKey}`;
+    // Generate unique key with timestamp (never overwrites)
+    const timestamp = Date.now();
+    const dateKey = new Date().toISOString().split('T')[0]; // Keep for compatibility
+    const key = `${userId}_${pubId}_${timestamp}`;
 
     const data: CarpetImageData = {
       userId,
@@ -605,9 +608,9 @@ async saveCarpetImage(
     captureCanvas.width = 0;
     captureCanvas.height = 0;
 
-    // Check if pub needs Firebase Storage upload (async, don't block check-in)
+    // Fire-and-forget Firebase upload - don't await or block check-in
     this.handleFirebaseUpload(blob, pubId).catch(error => {
-      console.error('[CarpetStorage] Firebase upload failed, but continuing with check-in:', error);
+      console.warn('[CarpetStorage] Firebase upload failed, but check-in completed successfully:', error);
     });
 
     return key;
@@ -834,7 +837,7 @@ async saveCarpetImage(
   }
 
   /**
-   * Handle Firebase Storage upload
+   * Handle Firebase Storage upload (non-blocking)
    */
   private async handleFirebaseUpload(blob: Blob, pubId: string): Promise<void> {
     try {
@@ -857,6 +860,7 @@ async saveCarpetImage(
 
     } catch (error) {
       console.error('[CarpetStorage] Firebase upload process failed:', error);
+      throw error; // Let the caller handle it
     }
   }
 

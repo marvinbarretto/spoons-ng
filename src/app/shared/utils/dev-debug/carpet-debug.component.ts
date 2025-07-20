@@ -26,12 +26,14 @@ import { AuthStore } from '../../../auth/data-access/auth.store';
         <div class="carpet-list">
           <h4>Stored Carpets:</h4>
           @for (carpet of carpetList; track carpet.key) {
-            <div class="carpet-item">
+            <div class="carpet-item" [style.background-color]="carpet.isCurrentUser ? 'rgba(0,255,0,0.1)' : 'rgba(255,0,0,0.1)'">
               <p><strong>Key:</strong> {{ carpet.key }}</p>
               <p><strong>Pub:</strong> {{ carpet.pubName }}</p>
               <p><strong>Date:</strong> {{ carpet.date | date:'short' }}</p>
               <p><strong>Size:</strong> {{ (carpet.size / 1024).toFixed(1) }}KB</p>
               <p><strong>Type:</strong> {{ carpet.type }}</p>
+              <p><strong>User ID:</strong> {{ carpet.userId }}</p>
+              <p><strong>Is Current User:</strong> {{ carpet.isCurrentUser ? '✅ YES' : '❌ NO' }}</p>
             </div>
           }
         </div>
@@ -107,18 +109,41 @@ export class CarpetDebugComponent {
     try {
       this.debugMessage = 'Loading carpets...';
       await this.carpetStorage.initialize();
-      const carpets = await this.carpetStorage.getUserCarpets();
       
-      this.carpetList = carpets.map(carpet => ({
+      // Get ALL carpets to debug user ID issues
+      const allCarpets = await this.carpetStorage.getAllCarpets();
+      const userCarpets = await this.carpetStorage.getUserCarpets();
+      
+      this.carpetList = allCarpets.map(carpet => ({
         key: `${carpet.userId}_${carpet.pubId}_${carpet.dateKey}`,
         pubName: carpet.pubName,
         date: carpet.date,
         size: carpet.size,
-        type: carpet.type
+        type: carpet.type,
+        userId: carpet.userId, // Show user ID for debugging
+        isCurrentUser: carpet.userId === this.userId()
       }));
       
-      this.debugMessage = `Found ${carpets.length} carpets in IndexedDB`;
-      console.log('🔍 Carpet Debug - Found carpets:', carpets);
+      // Group carpets by pub for better overview
+      const pubGroups = userCarpets.reduce((acc, carpet) => {
+        const pubId = carpet.pubId;
+        if (!acc[pubId]) {
+          acc[pubId] = { pubName: carpet.pubName, count: 0, totalSize: 0 };
+        }
+        acc[pubId].count++;
+        acc[pubId].totalSize += carpet.size;
+        return acc;
+      }, {} as Record<string, { pubName: string; count: number; totalSize: number }>);
+
+      const pubSummary = Object.entries(pubGroups)
+        .map(([pubId, data]) => `${data.pubName}: ${data.count} carpets (${(data.totalSize / 1024).toFixed(1)}KB)`)
+        .join(', ');
+
+      this.debugMessage = `Found ${allCarpets.length} total carpets (${userCarpets.length} for current user from ${Object.keys(pubGroups).length} pubs). ${pubSummary}`;
+      console.log('🔍 Carpet Debug - All carpets:', allCarpets);
+      console.log('🔍 Carpet Debug - Current user ID:', this.userId());
+      console.log('🔍 Carpet Debug - User carpet filter result:', userCarpets);
+      console.log('🔍 Carpet Debug - Pub summary:', pubGroups);
     } catch (error) {
       this.debugMessage = `Error loading carpets: ${error}`;
       console.error('🔍 Carpet Debug - Error:', error);

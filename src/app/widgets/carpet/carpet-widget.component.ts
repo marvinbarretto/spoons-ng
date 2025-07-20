@@ -10,8 +10,17 @@ import { EmptyStateComponent } from '@shared/ui/empty-state/empty-state.componen
 type CarpetDisplay = {
   key: string;
   pubName: string;
+  pubId: string;
   date: string;
   imageUrl: string;
+};
+
+type PubCarpetGroup = {
+  pubName: string;
+  pubId: string;
+  carpets: CarpetDisplay[];
+  totalCount: number;
+  latestDate: string;
 };
 
 @Component({
@@ -32,20 +41,30 @@ type CarpetDisplay = {
           subtitle="Check in to pubs to capture their unique carpets" />
       } @else {
         <div class="carpet-header">
-          <span class="count">{{ carpets().length }} carpets collected</span>
+          <span class="count">{{ carpets().length }} carpets from {{ carpetGroups().length }} pubs</span>
         </div>
 
-        <div class="carpet-grid">
-          @for (carpet of carpets(); track carpet.key) {
-            <div class="carpet-item">
-              <img 
-                [src]="carpet.imageUrl" 
-                [alt]="'Carpet from ' + carpet.pubName"
-                loading="lazy"
-                (error)="onImageError($event)">
-              <div class="carpet-info">
-                <span class="pub-name">{{ carpet.pubName }}</span>
-                <span class="date">{{ formatDate(carpet.date) }}</span>
+        <div class="pub-groups">
+          @for (group of carpetGroups(); track group.pubId) {
+            <div class="pub-group">
+              <div class="pub-header">
+                <span class="pub-name">{{ group.pubName }}</span>
+                <span class="pub-count">{{ group.totalCount }} carpet{{ group.totalCount === 1 ? '' : 's' }}</span>
+              </div>
+              
+              <div class="carpet-grid">
+                @for (carpet of group.carpets; track carpet.key) {
+                  <div class="carpet-item">
+                    <img 
+                      [src]="carpet.imageUrl" 
+                      [alt]="'Carpet from ' + carpet.pubName"
+                      loading="lazy"
+                      (error)="onImageError($event)">
+                    <div class="carpet-info">
+                      <span class="date">{{ formatDate(carpet.date) }}</span>
+                    </div>
+                  </div>
+                }
               </div>
             </div>
           }
@@ -82,6 +101,42 @@ type CarpetDisplay = {
       font-size: 0.875rem;
       color: var(--text-secondary);
       font-weight: 500;
+    }
+
+    .pub-groups {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .pub-group {
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      padding: 1rem;
+      background: var(--background);
+    }
+
+    .pub-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .pub-header .pub-name {
+      font-weight: 600;
+      color: var(--text);
+      font-size: 1rem;
+    }
+
+    .pub-count {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      background: var(--background-lighter);
+      padding: 0.25rem 0.5rem;
+      border-radius: 1rem;
     }
 
     .carpet-grid {
@@ -163,6 +218,49 @@ export class CarpetWidgetComponent extends BaseWidgetComponent implements OnDest
   // Widget state
   private readonly _carpets = signal<CarpetDisplay[]>([]);
   protected readonly carpets = this._carpets.asReadonly();
+  
+  // Group carpets by pub for better display
+  protected readonly carpetGroups = computed(() => {
+    const carpets = this.carpets();
+    const groups = new Map<string, PubCarpetGroup>();
+    
+    carpets.forEach(carpet => {
+      const pubId = carpet.pubId;
+      
+      if (!groups.has(pubId)) {
+        groups.set(pubId, {
+          pubName: carpet.pubName,
+          pubId,
+          carpets: [],
+          totalCount: 0,
+          latestDate: carpet.date
+        });
+      }
+      
+      const group = groups.get(pubId)!;
+      group.carpets.push(carpet);
+      group.totalCount++;
+      
+      // Update latest date if this carpet is newer
+      if (new Date(carpet.date) > new Date(group.latestDate)) {
+        group.latestDate = carpet.date;
+      }
+    });
+    
+    // Sort groups by latest date, newest first
+    const sortedGroups = Array.from(groups.values()).sort((a, b) => 
+      new Date(b.latestDate).getTime() - new Date(a.latestDate).getTime()
+    );
+    
+    // Sort carpets within each group by date, newest first
+    sortedGroups.forEach(group => {
+      group.carpets.sort((a, b) => 
+        new Date(b.date).getTime() - new Date(a.date).getTime()
+      );
+    });
+    
+    return sortedGroups;
+  });
 
   private lastLoadedUserId: string | null = null;
   private objectUrls: string[] = [];
@@ -225,8 +323,9 @@ export class CarpetWidgetComponent extends BaseWidgetComponent implements OnDest
         this.objectUrls.push(imageUrl); // Track for cleanup
         
         return {
-          key: `${carpet.pubId}_${carpet.dateKey}`,
+          key: `${carpet.userId}_${carpet.pubId}_${Date.parse(carpet.date)}`, // Use original timestamp logic for display
           pubName: carpet.pubName || 'Unknown Pub',
+          pubId: carpet.pubId, // Add pubId to display data
           date: carpet.date,
           imageUrl
         };
