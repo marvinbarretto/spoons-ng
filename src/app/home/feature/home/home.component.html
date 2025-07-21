@@ -104,15 +104,15 @@
   }
 
   @defer (on viewport) {
-    <!-- ✅ Carpet Widget -->
-    <app-carpet-widget></app-carpet-widget>
+    <!-- ✅ Check-in Gallery Widget -->
+    <app-widget-check-in-gallery></app-widget-check-in-gallery>
   } @placeholder (minimum 200ms) {
     <div class="widget-placeholder">
-      <div class="placeholder-content">🔸 Loading carpet collection...</div>
+      <div class="placeholder-content">🔸 Loading check-in gallery...</div>
     </div>
   } @loading (minimum 100ms) {
     <div class="widget-placeholder">
-      <div class="placeholder-content">🔄 Loading carpets...</div>
+      <div class="placeholder-content">🔄 Loading gallery...</div>
     </div>
   }
 

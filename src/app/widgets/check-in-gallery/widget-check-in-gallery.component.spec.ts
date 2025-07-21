@@ -1,12 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
-import { CarpetWidgetComponent } from './carpet-widget.component';
+import { WidgetCheckInGalleryComponent } from './widget-check-in-gallery.component';
 import { CarpetStorageService } from '@carpets/data-access/carpet-storage.service';
 import { AuthStore } from '@auth/data-access/auth.store';
 
-describe('CarpetWidgetComponent', () => {
-  let component: CarpetWidgetComponent;
-  let fixture: ComponentFixture<CarpetWidgetComponent>;
+describe('WidgetCheckInGalleryComponent', () => {
+  let component: WidgetCheckInGalleryComponent;
+  let fixture: ComponentFixture<WidgetCheckInGalleryComponent>;
   let mockCarpetStorageService: jasmine.SpyObj<CarpetStorageService>;
   let mockAuthStore: jasmine.SpyObj<AuthStore>;
 
@@ -21,14 +21,14 @@ describe('CarpetWidgetComponent', () => {
     });
 
     await TestBed.configureTestingModule({
-      imports: [CarpetWidgetComponent],
+      imports: [WidgetCheckInGalleryComponent],
       providers: [
         { provide: CarpetStorageService, useValue: carpetStorageSpy },
         { provide: AuthStore, useValue: authStoreSpy }
       ]
     }).compileComponents();
 
-    fixture = TestBed.createComponent(CarpetWidgetComponent);
+    fixture = TestBed.createComponent(WidgetCheckInGalleryComponent);
     component = fixture.componentInstance;
     mockCarpetStorageService = TestBed.inject(CarpetStorageService) as jasmine.SpyObj<CarpetStorageService>;
     mockAuthStore = TestBed.inject(AuthStore) as jasmine.SpyObj<AuthStore>;
@@ -38,17 +38,17 @@ describe('CarpetWidgetComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should show empty state when no carpets', () => {
+  it('should show empty state when no images', () => {
     mockCarpetStorageService.getUserCarpets.and.returnValue(Promise.resolve([]));
     fixture.detectChanges();
     
     const emptyElement = fixture.nativeElement.querySelector('.widget-empty');
     expect(emptyElement).toBeTruthy();
-    expect(emptyElement.textContent).toContain('No carpets collected yet');
+    expect(emptyElement.textContent).toContain('No check-in images yet');
   });
 
-  it('should display carpet count when carpets exist', async () => {
-    const mockCarpets = [
+  it('should display image count when images exist', async () => {
+    const mockImages = [
       {
         userId: 'user1',
         pubId: 'pub1',
@@ -64,7 +64,7 @@ describe('CarpetWidgetComponent', () => {
     ];
 
     mockCarpetStorageService.initialize.and.returnValue(Promise.resolve());
-    mockCarpetStorageService.getUserCarpets.and.returnValue(Promise.resolve(mockCarpets));
+    mockCarpetStorageService.getUserCarpets.and.returnValue(Promise.resolve(mockImages));
     
     // Simulate user login
     const userSignal = signal({ uid: 'user1', isAnonymous: false });
@@ -74,7 +74,7 @@ describe('CarpetWidgetComponent', () => {
     await fixture.whenStable();
     
     const countElement = fixture.nativeElement.querySelector('.count');
-    expect(countElement?.textContent).toContain('1 carpets collected');
+    expect(countElement?.textContent).toContain('1 images from');
   });
 
   it('should handle image load errors gracefully', () => {

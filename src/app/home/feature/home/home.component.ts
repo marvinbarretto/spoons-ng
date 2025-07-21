@@ -25,7 +25,7 @@ import { ProfileCustomisationModalComponent } from '@home/ui/profile-customisati
 // This allows Angular's @defer to handle lazy loading automatically
 import { BadgesWidgetComponent } from '@app/widgets/badges/badges-widget.component';
 import { MissionsWidgetComponent } from '@app/widgets/missions/missions-widget.component';
-import { CarpetWidgetComponent } from '@app/widgets/carpet/carpet-widget.component';
+import { WidgetCheckInGalleryComponent } from '@app/widgets/check-in-gallery/widget-check-in-gallery.component';
 import { NearestPubComponent } from '@app/widgets/nearest-pub/nearest-pub.component';
 import { RecentActivityWidgetComponent } from '@app/widgets/recent-activity/recent-activity-widget.component';
 import { SuggestedMissionWidgetComponent } from '@app/widgets/suggested-mission/suggested-mission-widget.component';
@@ -44,7 +44,7 @@ import { SuggestedMissionWidgetComponent } from '@app/widgets/suggested-mission/
     // ✅ Deferred components - included for template compilation, Angular handles lazy loading
     BadgesWidgetComponent,
     MissionsWidgetComponent,
-    CarpetWidgetComponent,
+    WidgetCheckInGalleryComponent,
     NearestPubComponent,
     RecentActivityWidgetComponent,
     SuggestedMissionWidgetComponent,

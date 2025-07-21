@@ -7,7 +7,7 @@ import { LoadingStateComponent } from '@shared/ui/loading-state/loading-state.co
 import { ErrorStateComponent } from '@shared/ui/error-state/error-state.component';
 import { EmptyStateComponent } from '@shared/ui/empty-state/empty-state.component';
 
-type CarpetDisplay = {
+type CheckInImageDisplay = {
   key: string;
   pubName: string;
   pubId: string;
@@ -15,53 +15,53 @@ type CarpetDisplay = {
   imageUrl: string;
 };
 
-type PubCarpetGroup = {
+type PubImageGroup = {
   pubName: string;
   pubId: string;
-  carpets: CarpetDisplay[];
+  images: CheckInImageDisplay[];
   totalCount: number;
   latestDate: string;
 };
 
 @Component({
-  selector: 'app-carpet-widget',
+  selector: 'app-widget-check-in-gallery',
   imports: [LoadingStateComponent, ErrorStateComponent, EmptyStateComponent],
   template: `
-    <div class="carpet-widget">
-      <h3 class="widget-title">Your Carpet Collection</h3>
+    <div class="check-in-gallery-widget">
+      <h3 class="widget-title">Check-in Gallery</h3>
 
       @if (loading()) {
-        <app-loading-state text="Loading carpets..." />
+        <app-loading-state text="Loading images..." />
       } @else if (error()) {
         <app-error-state [message]="error()!" />
-      } @else if (carpets().length === 0) {
+      } @else if (images().length === 0) {
         <app-empty-state 
           icon="📸"
-          title="No carpets collected yet"
-          subtitle="Check in to pubs to capture their unique carpets" />
+          title="No check-in images yet"
+          subtitle="Check in to pubs to capture memorable moments" />
       } @else {
-        <div class="carpet-header">
-          <span class="count">{{ carpets().length }} carpets from {{ carpetGroups().length }} pubs</span>
+        <div class="gallery-header">
+          <span class="count">{{ images().length }} images from {{ imageGroups().length }} pubs</span>
         </div>
 
         <div class="pub-groups">
-          @for (group of carpetGroups(); track group.pubId) {
+          @for (group of imageGroups(); track group.pubId) {
             <div class="pub-group">
               <div class="pub-header">
                 <span class="pub-name">{{ group.pubName }}</span>
-                <span class="pub-count">{{ group.totalCount }} carpet{{ group.totalCount === 1 ? '' : 's' }}</span>
+                <span class="pub-count">{{ group.totalCount }} image{{ group.totalCount === 1 ? '' : 's' }}</span>
               </div>
               
-              <div class="carpet-grid">
-                @for (carpet of group.carpets; track carpet.key) {
-                  <div class="carpet-item">
+              <div class="image-grid">
+                @for (image of group.images; track image.key) {
+                  <div class="image-item">
                     <img 
-                      [src]="carpet.imageUrl" 
-                      [alt]="'Carpet from ' + carpet.pubName"
+                      [src]="image.imageUrl" 
+                      [alt]="'Photo from ' + image.pubName"
                       loading="lazy"
                       (error)="onImageError($event)">
-                    <div class="carpet-info">
-                      <span class="date">{{ formatDate(carpet.date) }}</span>
+                    <div class="image-info">
+                      <span class="date">{{ formatDate(image.date) }}</span>
                     </div>
                   </div>
                 }
@@ -73,7 +73,7 @@ type PubCarpetGroup = {
     </div>
   `,
   styles: [`
-    .carpet-widget {
+    .check-in-gallery-widget {
       padding: 1rem;
       background: var(--background-lighter);
       color: var(--text);
@@ -90,7 +90,7 @@ type PubCarpetGroup = {
     }
 
 
-    .carpet-header {
+    .gallery-header {
       display: flex;
       justify-content: flex-end;
       align-items: center;
@@ -139,13 +139,13 @@ type PubCarpetGroup = {
       border-radius: 1rem;
     }
 
-    .carpet-grid {
+    .image-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
       gap: 1rem;
     }
 
-    .carpet-item {
+    .image-item {
       position: relative;
       aspect-ratio: 1;
       overflow: hidden;
@@ -156,19 +156,19 @@ type PubCarpetGroup = {
       transition: all 0.2s ease;
     }
 
-    .carpet-item:hover {
+    .image-item:hover {
       transform: scale(1.02);
       border-color: var(--border);
       box-shadow: var(--shadow);
     }
 
-    .carpet-item img {
+    .image-item img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
 
-    .carpet-info {
+    .image-info {
       position: absolute;
       bottom: 0;
       left: 0;
@@ -195,11 +195,11 @@ type PubCarpetGroup = {
     }
 
     @media (max-width: 640px) {
-      .carpet-widget {
+      .check-in-gallery-widget {
         padding: 0.75rem;
       }
 
-      .carpet-grid {
+      .image-grid {
         grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
         gap: 0.5rem;
       }
@@ -211,39 +211,39 @@ type PubCarpetGroup = {
   `],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CarpetWidgetComponent extends BaseWidgetComponent implements OnDestroy {
+export class WidgetCheckInGalleryComponent extends BaseWidgetComponent implements OnDestroy {
   private readonly carpetStorageService = inject(CarpetStorageService);
   private readonly authStore = inject(AuthStore);
 
   // Widget state
-  private readonly _carpets = signal<CarpetDisplay[]>([]);
-  protected readonly carpets = this._carpets.asReadonly();
+  private readonly _images = signal<CheckInImageDisplay[]>([]);
+  protected readonly images = this._images.asReadonly();
   
-  // Group carpets by pub for better display
-  protected readonly carpetGroups = computed(() => {
-    const carpets = this.carpets();
-    const groups = new Map<string, PubCarpetGroup>();
+  // Group images by pub for better display
+  protected readonly imageGroups = computed(() => {
+    const images = this.images();
+    const groups = new Map<string, PubImageGroup>();
     
-    carpets.forEach(carpet => {
-      const pubId = carpet.pubId;
+    images.forEach(image => {
+      const pubId = image.pubId;
       
       if (!groups.has(pubId)) {
         groups.set(pubId, {
-          pubName: carpet.pubName,
+          pubName: image.pubName,
           pubId,
-          carpets: [],
+          images: [],
           totalCount: 0,
-          latestDate: carpet.date
+          latestDate: image.date
         });
       }
       
       const group = groups.get(pubId)!;
-      group.carpets.push(carpet);
+      group.images.push(image);
       group.totalCount++;
       
-      // Update latest date if this carpet is newer
-      if (new Date(carpet.date) > new Date(group.latestDate)) {
-        group.latestDate = carpet.date;
+      // Update latest date if this image is newer
+      if (new Date(image.date) > new Date(group.latestDate)) {
+        group.latestDate = image.date;
       }
     });
     
@@ -252,9 +252,9 @@ export class CarpetWidgetComponent extends BaseWidgetComponent implements OnDest
       new Date(b.latestDate).getTime() - new Date(a.latestDate).getTime()
     );
     
-    // Sort carpets within each group by date, newest first
+    // Sort images within each group by date, newest first
     sortedGroups.forEach(group => {
-      group.carpets.sort((a, b) => 
+      group.images.sort((a, b) => 
         new Date(b.date).getTime() - new Date(a.date).getTime()
       );
     });
@@ -268,21 +268,21 @@ export class CarpetWidgetComponent extends BaseWidgetComponent implements OnDest
   constructor() {
     super();
 
-    // Watch for auth changes and load carpets accordingly
+    // Watch for auth changes and load images accordingly
     effect(() => {
       const user = this.authStore.user();
       const userId = user?.uid;
 
       if (!user) {
-        this.clearCarpets();
+        this.clearImages();
         this.lastLoadedUserId = null;
         return;
       }
 
-      // Load carpets if user changed
+      // Load images if user changed
       if (userId !== this.lastLoadedUserId) {
         this.lastLoadedUserId = userId || null;
-        this.loadUserCarpets();
+        this.loadUserImages();
       }
     });
   }
@@ -304,7 +304,7 @@ export class CarpetWidgetComponent extends BaseWidgetComponent implements OnDest
     img.style.display = 'none';
   }
 
-  private async loadUserCarpets(): Promise<void> {
+  private async loadUserImages(): Promise<void> {
     if (this.loading()) return;
 
     this.loading.set(true);
@@ -314,19 +314,19 @@ export class CarpetWidgetComponent extends BaseWidgetComponent implements OnDest
       // Ensure carpet storage is initialized
       await this.carpetStorageService.initialize();
 
-      // Get carpet data from IndexedDB
-      const carpetData = await this.carpetStorageService.getUserCarpets();
+      // Get image data from IndexedDB
+      const imageData = await this.carpetStorageService.getUserCarpets();
 
       // Convert to display format with object URLs
-      const displayData: CarpetDisplay[] = carpetData.map(carpet => {
-        const imageUrl = URL.createObjectURL(carpet.blob);
+      const displayData: CheckInImageDisplay[] = imageData.map(image => {
+        const imageUrl = URL.createObjectURL(image.blob);
         this.objectUrls.push(imageUrl); // Track for cleanup
         
         return {
-          key: `${carpet.userId}_${carpet.pubId}_${Date.parse(carpet.date)}`, // Use original timestamp logic for display
-          pubName: carpet.pubName || 'Unknown Pub',
-          pubId: carpet.pubId, // Add pubId to display data
-          date: carpet.date,
+          key: `${image.userId}_${image.pubId}_${Date.parse(image.date)}`, // Use original timestamp logic for display
+          pubName: image.pubName || 'Unknown Pub',
+          pubId: image.pubId, // Add pubId to display data
+          date: image.date,
           imageUrl
         };
       });
@@ -336,19 +336,19 @@ export class CarpetWidgetComponent extends BaseWidgetComponent implements OnDest
         new Date(b.date).getTime() - new Date(a.date).getTime()
       );
 
-      this._carpets.set(displayData);
+      this._images.set(displayData);
 
     } catch (err: any) {
-      this.error.set(err?.message || 'Failed to load carpets');
-      console.error('[CarpetWidget] Error loading carpets:', err);
+      this.error.set(err?.message || 'Failed to load images');
+      console.error('[CheckInGalleryWidget] Error loading images:', err);
     } finally {
       this.loading.set(false);
     }
   }
 
-  private clearCarpets(): void {
+  private clearImages(): void {
     this.clearObjectUrls();
-    this._carpets.set([]);
+    this._images.set([]);
     this.error.set(null);
   }
 
