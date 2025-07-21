@@ -14,6 +14,7 @@ import { CheckInStore } from '../../../check-in/data-access/check-in.store';
 import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
 import { PubStore } from '../../../pubs/data-access/pub.store';
 import { LocationService } from '../../../shared/data-access/location.service';
+import { LeaderboardStore } from '../../../leaderboard/data-access/leaderboard.store';
 
 // ✅ Critical components loaded immediately
 import { ScoreboardHeroWidgetComponent } from '@app/widgets/scoreboard-hero/scoreboard-hero-widget.component';
@@ -102,6 +103,7 @@ export class HomeComponent extends BaseComponent {
   protected readonly dataAggregatorService = inject(DataAggregatorService);
   protected readonly pubStore = inject(PubStore);
   protected readonly locationService = inject(LocationService);
+  protected readonly leaderboardStore = inject(LeaderboardStore, { optional: true });
 
 
 
@@ -122,9 +124,58 @@ export class HomeComponent extends BaseComponent {
 
 
 
-  readonly isNewUser = computed(() => {
+  readonly userState = computed(() => {
     const user = this.user();
-    return !user || this.dataAggregatorService.pubsVisited() === 0;
+    const scoreboardData = this.dataAggregatorService.scoreboardData();
+    const checkInCount = scoreboardData.totalCheckins || 0;
+    const pubsVisited = scoreboardData.pubsVisited || 0;
+    
+    if (!user) return 'anonymous';
+    if (checkInCount === 0) return 'new';
+    if (checkInCount < 5 && pubsVisited < 3) return 'beginner';
+    return 'experienced';
+  });
+
+  readonly isNewUser = computed(() => this.userState() === 'new');
+  readonly isBeginner = computed(() => this.userState() === 'beginner');
+  readonly isExperienced = computed(() => this.userState() === 'experienced');
+
+  // Site stats for new user hero
+  readonly siteStats = computed(() => {
+    if (!this.leaderboardStore) {
+      return { allTime: { users: 1234, checkins: 0, pubsConquered: 0 }, thisMonth: { activeUsers: 0, checkins: 0 } };
+    }
+    
+    const stats = this.leaderboardStore.siteStats();
+    console.log('[Home] Site stats for hero:', stats);
+    
+    return stats || {
+      allTime: { users: 1234, checkins: 0, pubsConquered: 0 },
+      thisMonth: { activeUsers: 0, checkins: 0 }
+    };
+  });
+
+  // Dynamic distance bonus text based on user's home location setup
+  readonly distanceBonusText = computed(() => {
+    const user = this.user();
+    const hasHomeLocation = user?.homePubId; // Check if user has set a home pub
+    
+    if (hasHomeLocation) {
+      return 'Pilgrimage Points';
+    } else {
+      return 'Travel Bonus';
+    }
+  });
+
+  readonly distanceBonusPoints = computed(() => {
+    const user = this.user();
+    const hasHomeLocation = user?.homePubId;
+    
+    if (hasHomeLocation) {
+      return 'Up to +15pts'; // Dynamic based on distance from home
+    } else {
+      return '+5pts'; // Standard bonus without home location
+    }
   });
 
     // ✅ Placeholder for leaderboard position
@@ -159,6 +210,58 @@ export class HomeComponent extends BaseComponent {
   handleOpenGuide(): void {
     console.log('[Home] Opening how-to-play guide');
     this.showInfo('How to play guide coming soon!');
+  }
+
+  handleStartFirstCheckIn(): void {
+    console.log('[Home] Starting first check-in flow');
+    // TODO: Navigate to check-in flow or open check-in modal
+    this.showInfo('Your journey to Spoons legendary status begins! Spot those carpets for maximum respect.');
+  }
+
+  async handleAddHistoricalPubs(): Promise<void> {
+    console.log('[Home] Opening historical pub addition modal');
+
+    try {
+      // Import the modal component dynamically
+      const { HistoricalPubAdditionModalComponent } = await import('../../../shared/ui/historical-pub-addition-modal/historical-pub-addition-modal.component');
+
+      const { result } = this.overlayService.open(HistoricalPubAdditionModalComponent, {
+        maxWidth: '600px',
+        maxHeight: '90vh'
+      });
+
+      const selectedPubIds = await result;
+      
+      if (selectedPubIds && selectedPubIds.length > 0) {
+        console.log('[Home] User successfully added historic pubs:', selectedPubIds);
+        
+        this.showSuccess(`Successfully documented ${selectedPubIds.length} historic Wetherspoons visit${selectedPubIds.length === 1 ? '' : 's'}! Your legendary status grows.`);
+        
+        // Data is automatically updated via UserStore.patchUser and will reactively update the UI
+      } else {
+        console.log('[Home] User cancelled historic pub addition or no new pubs added');
+      }
+    } catch (error) {
+      console.error('[Home] Error opening historical pub modal:', error);
+      this.showError('Failed to open historic pub documentation. Please try again.');
+    }
+  }
+
+  getRecentActivityText(): string {
+    // TODO: Replace with real recent activity data from DataAggregatorService
+    const humorousActivities = [
+      'Sarah just earned legendary status at The Red Lion',
+      'Mike spotted a rare carpet pattern (+25pts dedication)',
+      'Emma completed her 100th Spoons pilgrimage',
+      'James traveled 47 miles for Tim Martin (+15pts respect)',
+      'Alex discovered an untouched carpet design',
+      'Jordan proved true dedication with a Tuesday morning visit',
+      'Sam photographed the mythical blue geometric pattern',
+      'Casey achieved "Breakfast Champion" status at 9am'
+    ];
+    
+    const randomActivity = humorousActivities[Math.floor(Math.random() * humorousActivities.length)];
+    return randomActivity;
   }
 
 

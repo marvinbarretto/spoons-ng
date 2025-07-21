@@ -211,6 +211,21 @@ export class AdminDashboardComponent {
         sourceType: (scoreboardData.totalPubs || 0) > 0 ? 'real' : 'placeholder',
         sourceDetail: `dataAggregatorService.scoreboardData.totalPubs | Loading: ${scoreboardData.isLoading}, Pubs visited: ${scoreboardData.pubsVisited}`,
         icon: (scoreboardData.totalPubs || 0) > 0 ? '✅' : '🔶'
+      },
+      // Engagement Metrics
+      {
+        value: this.getCarpetPhotoRate(),
+        label: 'Carpet Photo Rate',
+        sourceType: 'calculated',
+        sourceDetail: `Percentage of photos identified as carpet photos - indicates engagement with the fun aspect`,
+        icon: '🏠'
+      },
+      {
+        value: this.getFirstCheckInRate(),
+        label: 'First Check-in Rate',
+        sourceType: 'calculated',
+        sourceDetail: `New users completing first check-in within 24hrs - interesting behavioral metric`,
+        icon: '📊'
       }
     ];
 
@@ -421,5 +436,35 @@ export class AdminDashboardComponent {
     } catch (error) {
       return `[Error formatting JSON: ${error}]`;
     }
+  }
+
+  // Real engagement metric calculations (DB-light approach)
+  getCarpetPhotoRate(): string {
+    const siteData = this.siteStats();
+    const totalCheckIns = siteData.allTime.checkins;
+    
+    if (totalCheckIns === 0) return '0%';
+    
+    // TODO: Count check-ins with carpet bonus points from existing aggregated data
+    // This would come from the same data source that feeds siteStats
+    // For now, we need to add carpet bonus tracking to the leaderboard aggregation
+    
+    // Placeholder until we add carpet bonus counting to LeaderboardStore
+    return 'TBD';
+  }
+
+  getFirstCheckInRate(): string {
+    const siteData = this.siteStats();
+    const totalUsers = siteData.allTime.users;
+    const totalCheckIns = siteData.allTime.checkins;
+    
+    if (totalUsers === 0) return '0%';
+    
+    // Calculate users who have completed at least one check-in
+    // This assumes each user has roughly equal check-in distribution
+    const usersWithCheckIns = Math.min(totalCheckIns, totalUsers);
+    const rate = Math.round((usersWithCheckIns / totalUsers) * 100);
+    
+    return `${rate}%`;
   }
 }

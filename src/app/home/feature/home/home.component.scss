@@ -9,6 +9,182 @@
 
 }
 
+/* ✅ NEW USER CONVERSION HERO */
+.new-user-hero {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.new-user-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg"><circle cx="100" cy="100" r="3" fill="white" opacity="0.1"/><circle cx="300" cy="150" r="2" fill="white" opacity="0.15"/><circle cx="200" cy="300" r="4" fill="white" opacity="0.08"/></svg>');
+  pointer-events: none;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+.hero-title {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  font-weight: 700;
+  margin: 0 0 0.75rem 0;
+  line-height: 1.2;
+}
+
+.hero-subtitle {
+  font-size: clamp(1rem, 2.5vw, 1.125rem);
+  margin: 0 0 2rem 0;
+  opacity: 0.9;
+  line-height: 1.4;
+}
+
+.points-preview {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.points-item {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  min-width: 100px;
+}
+
+.points-item.bonus {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
+  position: relative;
+}
+
+.points-item.bonus::after {
+  content: '🔥';
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  font-size: 1.2rem;
+}
+
+.points-value {
+  display: block;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.points-label {
+  display: block;
+  font-size: 0.75rem;
+  opacity: 0.9;
+  line-height: 1.2;
+}
+
+.hero-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.cta-primary {
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--primary);
+  border: none;
+  border-radius: 16px;
+  padding: 1.25rem 2rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 280px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.cta-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  background: white;
+}
+
+.cta-icon {
+  font-size: 1.5rem;
+}
+
+.cta-subtitle {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--accent);
+}
+
+.cta-secondary {
+  background: transparent;
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 12px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cta-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.social-proof {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  opacity: 0.9;
+}
+
+.live-indicator {
+  width: 8px;
+  height: 8px;
+  background: #10b981;
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; transform: scale(1.2); }
+}
+
+.activity-text {
+  font-style: italic;
+}
+
 /* ✅ Onboarding Hint */
 .onboarding-hint {
   background: rgba(var(--warning-rgb, 255, 193, 7), 0.15);
@@ -119,5 +295,48 @@
   .widget-placeholder {
     padding: 1.5rem;
     min-height: 100px;
+  }
+
+  /* Mobile hero section */
+  .new-user-hero {
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .points-preview {
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .points-item {
+    padding: 0.5rem 0.75rem;
+    min-width: 85px;
+  }
+
+  .points-value {
+    font-size: 1.125rem;
+  }
+
+  .points-label {
+    font-size: 0.7rem;
+  }
+
+  .hero-actions {
+    margin-bottom: 1.5rem;
+  }
+
+  .cta-primary {
+    padding: 1rem 1.5rem;
+    min-width: 260px;
+    font-size: 1rem;
+  }
+
+  .cta-secondary {
+    padding: 0.6rem 1.25rem;
+    font-size: 0.9rem;
+  }
+
+  .social-proof {
+    font-size: 0.8rem;
   }
 }

@@ -10,7 +10,6 @@ import { DataTableComponent } from '../../../shared/ui/data-table/data-table.com
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { UserSelectorComponent } from '../../../shared/ui/user-selector/user-selector.component';
 import { PubSelectorComponent } from '../../../shared/ui/pub-selector/pub-selector.component';
-import { ChipUserComponent } from '../../../shared/ui/chips/chip-user/chip-user.component';
 import { OverlayService } from '../../../shared/data-access/overlay.service';
 import { AdminCheckinService } from './admin-checkin.service';
 import { CheckInStore } from '../../../check-in/data-access/check-in.store';
@@ -18,7 +17,6 @@ import { UserStore } from '../../../users/data-access/user.store';
 import { PubStore } from '../../../pubs/data-access/pub.store';
 import type { CheckIn } from '../../../check-in/utils/check-in.models';
 import type { TableColumn } from '../../../shared/ui/data-table/data-table.model';
-import type { UserChipData } from '../../../shared/ui/chips/chip-user/chip-user.component';
 
 type CheckInWithDetails = CheckIn & {
   displayName?: string;
@@ -40,8 +38,7 @@ type CheckInWithDetails = CheckIn & {
     DataTableComponent,
     ButtonComponent,
     UserSelectorComponent,
-    PubSelectorComponent,
-    ChipUserComponent
+    PubSelectorComponent
 ],
   template: `
     <div class="admin-checkins">

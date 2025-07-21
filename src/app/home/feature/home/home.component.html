@@ -1,25 +1,50 @@
 <div class="home-container">
 
-<!--
-  <app-user-profile-widget
-  [user]="user()"
-  (openProfile)="handleOpenProfile()" /> -->
+  <!-- ✅ NEW USER CONVERSION HERO -->
+  @if (isNewUser()) {
+    <section class="new-user-hero">
+      <div class="hero-content">
+        <h1 class="hero-title">Earn Legendary Status for Your Wetherspoons Dedication</h1>
+        <p class="hero-subtitle">Join {{ siteStats().allTime.users || '1,234' }} dedicated Spoons enthusiasts proving their loyalty to Tim Martin's empire</p>
+        
+        <div class="points-preview">
+          <div class="points-item">
+            <span class="points-value">10pts</span>
+            <span class="points-label">Basic Loyalty Points</span>
+          </div>
+          <div class="points-item bonus">
+            <span class="points-value">+10pts</span>
+            <span class="points-label">Dedication Bonus!</span>
+          </div>
+          <div class="points-item">
+            <span class="points-value">{{ distanceBonusPoints() }}</span>
+            <span class="points-label">{{ distanceBonusText() }}</span>
+          </div>
+        </div>
 
-    <!-- ✅ Onboarding Hint -->
-    <!-- @if (isNewUser()) {
-      <div class="onboarding-hint">
-        <span class="hint-icon">💡</span>
-        <span class="hint-text">
-          Onboarding message.
-        </span>
+        <div class="hero-actions">
+          <button class="cta-primary" (click)="handleStartFirstCheckIn()">
+            <span class="cta-icon">🍺</span>
+            Prove Your Spoons Dedication
+            <span class="cta-subtitle">Spot the carpet, earn respect!</span>
+          </button>
+          
+          <button class="cta-secondary" (click)="handleAddHistoricalPubs()">
+            <span class="cta-icon">📝</span>
+            Record Historic Visits
+          </button>
+        </div>
+
+        <div class="social-proof">
+          <span class="live-indicator"></span>
+          <span class="activity-text">{{ getRecentActivityText() }}</span>
+        </div>
       </div>
-    } -->
-
-  <!-- Original scoreboard-hero component -->
-  <!-- <app-scoreboard-hero [data]="scoreboardData()" /> -->
-
-  <!-- ✅ PRIORITY 1: Critical above-fold widgets (load immediately) -->
-  <app-scoreboard-hero-widget></app-scoreboard-hero-widget>
+    </section>
+  } @else {
+    <!-- ✅ EXISTING USER SCOREBOARD -->
+    <app-scoreboard-hero-widget></app-scoreboard-hero-widget>
+  }
 
 
 
