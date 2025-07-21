@@ -119,8 +119,13 @@ export class CheckinComponent extends BaseComponent implements AfterViewInit, On
     await this.orchestrator.capturePhoto();
   }
 
+  protected onConfirmPhotoClick(): void {
+    console.log('[CheckinComponent] ✅ User confirmed photo');
+    this.orchestrator.confirmPhoto();
+  }
+
   protected onRetakePhotoClick(): void {
-    console.log('[CheckinComponent] 🔄 Retake photo clicked');
+    console.log('[CheckinComponent] 🔄 User chose to retake photo');
     this.orchestrator.retakePhoto();
   }
 }

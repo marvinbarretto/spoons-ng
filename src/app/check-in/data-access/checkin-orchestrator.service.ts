@@ -16,6 +16,7 @@ type CheckinStage =
   | 'CAMERA_ACTIVE' 
   | 'CAPTURING_PHOTO'
   | 'PHOTO_TAKEN'
+  | 'PHOTO_REVIEW'
   | 'LLM_CHECKING'
   | 'RESULT';
 
@@ -69,12 +70,17 @@ export class CheckinOrchestrator {
 
   readonly showPhotoPreview = computed(() => {
     const stage = this.stage();
-    return stage === 'PHOTO_TAKEN' || stage === 'LLM_CHECKING';
+    return stage === 'PHOTO_TAKEN' || stage === 'PHOTO_REVIEW' || stage === 'LLM_CHECKING';
   });
 
   readonly showRetakeButton = computed(() => {
     const stage = this.stage();
-    return stage === 'PHOTO_TAKEN' || stage === 'LLM_CHECKING';
+    return stage === 'PHOTO_REVIEW';
+  });
+
+  readonly showConfirmButton = computed(() => {
+    const stage = this.stage();
+    return stage === 'PHOTO_REVIEW';
   });
 
   readonly isCapturingPhoto = computed(() => {
@@ -90,6 +96,7 @@ export class CheckinOrchestrator {
       case 'CAMERA_ACTIVE': return 'Ready to capture';
       case 'CAPTURING_PHOTO': return 'Capturing...';
       case 'PHOTO_TAKEN': return 'Photo captured';
+      case 'PHOTO_REVIEW': return 'Review your photo';
       case 'LLM_CHECKING': return 'Processing...';
       case 'RESULT': return 'Check-in complete!';
       default: return '';
@@ -217,14 +224,11 @@ export class CheckinOrchestrator {
       this._photoBlob.set(blob);
       
       this._stage.set('PHOTO_TAKEN');
+      console.log('[CheckinOrchestrator] ✅ Photo captured successfully');
       
-      // Start LLM check
-      if (environment.LLM_CHECK) {
-        await this.checkWithLLM(dataUrl);
-      } else {
-        console.log('[CheckinOrchestrator] 🧪 DEV MODE: Skipping LLM');
-        await this.processCheckin(blob);
-      }
+      // Move to review stage - wait for user confirmation
+      this._stage.set('PHOTO_REVIEW');
+      console.log('[CheckinOrchestrator] 📋 Photo ready for review - waiting for user decision');
       
     } catch (error: any) {
       console.error('[CheckinOrchestrator] ❌ Photo capture failed:', error);
@@ -236,14 +240,37 @@ export class CheckinOrchestrator {
   // 🔄 RETAKE FUNCTIONALITY
   // ===================================
 
+  confirmPhoto(): void {
+    console.log('[CheckinOrchestrator] ✅ User confirmed photo - proceeding with LLM check');
+    
+    const dataUrl = this._photoDataUrl();
+    const blob = this._photoBlob();
+    
+    if (!dataUrl || !blob) {
+      console.error('[CheckinOrchestrator] ❌ No photo data available for confirmation');
+      this.handleError('No photo data available');
+      return;
+    }
+
+    // Start LLM check or direct processing
+    if (environment.LLM_CHECK) {
+      console.log('[CheckinOrchestrator] 🤖 Starting LLM analysis after user confirmation');
+      this.checkWithLLM(dataUrl);
+    } else {
+      console.log('[CheckinOrchestrator] 🧪 DEV MODE: Skipping LLM, processing directly');
+      this.processCheckin(blob);
+    }
+  }
+
   retakePhoto(): void {
-    console.log('[CheckinOrchestrator] 🔄 Retaking photo');
+    console.log('[CheckinOrchestrator] 🔄 User chose to retake photo');
     
     // Reset to camera active state (camera is still running)
     this._photoBlob.set(null);
     this._photoDataUrl.set(null);
     this._error.set(null);
     this._stage.set('CAMERA_ACTIVE');
+    console.log('[CheckinOrchestrator] 📹 Camera reactivated for new capture');
   }
 
   // ===================================
@@ -251,24 +278,25 @@ export class CheckinOrchestrator {
   // ===================================
 
   private async checkWithLLM(photoDataUrl: string): Promise<void> {
-    console.log('[CheckinOrchestrator] 🤖 Checking with LLM');
+    console.log('[CheckinOrchestrator] 🤖 Starting LLM carpet detection analysis');
     this._stage.set('LLM_CHECKING');
 
     try {
       const result = await this.llmService.detectCarpet(photoDataUrl);
       
       // Always proceed to result stage regardless of LLM result
-      console.log('[CheckinOrchestrator] 📝 LLM result:', result);
+      console.log('[CheckinOrchestrator] 📝 LLM analysis complete:', result);
       
       const blob = this._photoBlob();
       if (blob) {
+        console.log('[CheckinOrchestrator] ⚡ Proceeding to process check-in with LLM result');
         await this.processCheckin(blob);
       } else {
         throw new Error('No photo blob available');
       }
 
     } catch (error: any) {
-      console.error('[CheckinOrchestrator] ❌ LLM failed:', error);
+      console.error('[CheckinOrchestrator] ❌ LLM analysis failed:', error);
       this.handleError('Failed to verify carpet');
     }
   }

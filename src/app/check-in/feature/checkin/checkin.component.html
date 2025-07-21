@@ -59,8 +59,11 @@
             <p>This may take a moment</p>
             <div class="loading-spinner"></div>
           </div>
-        } @else if (orchestrator.showRetakeButton()) {
+        } @else if (orchestrator.showConfirmButton()) {
           <div class="photo-actions">
+            <button class="confirm-btn" (click)="onConfirmPhotoClick()">
+              Use This Photo
+            </button>
             <button class="retake-btn" (click)="onRetakePhotoClick()">
               Retake Photo
             </button>
