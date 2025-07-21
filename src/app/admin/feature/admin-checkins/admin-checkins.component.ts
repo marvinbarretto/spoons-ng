@@ -10,6 +10,7 @@ import { DataTableComponent } from '../../../shared/ui/data-table/data-table.com
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { UserSelectorComponent } from '../../../shared/ui/user-selector/user-selector.component';
 import { PubSelectorComponent } from '../../../shared/ui/pub-selector/pub-selector.component';
+import { ChipUserComponent } from '../../../shared/ui/chips/chip-user/chip-user.component';
 import { OverlayService } from '../../../shared/data-access/overlay.service';
 import { AdminCheckinService } from './admin-checkin.service';
 import { CheckInStore } from '../../../check-in/data-access/check-in.store';
@@ -17,10 +18,13 @@ import { UserStore } from '../../../users/data-access/user.store';
 import { PubStore } from '../../../pubs/data-access/pub.store';
 import type { CheckIn } from '../../../check-in/utils/check-in.models';
 import type { TableColumn } from '../../../shared/ui/data-table/data-table.model';
+import type { UserChipData } from '../../../shared/ui/chips/chip-user/chip-user.component';
 
 type CheckInWithDetails = CheckIn & {
   displayName?: string;
   photoURL?: string;
+  email?: string;
+  realDisplayName?: string;
   pubName?: string;
   formattedDate?: string;
   pointsDisplay?: string;
@@ -36,7 +40,8 @@ type CheckInWithDetails = CheckIn & {
     DataTableComponent,
     ButtonComponent,
     UserSelectorComponent,
-    PubSelectorComponent
+    PubSelectorComponent,
+    ChipUserComponent
 ],
   template: `
     <div class="admin-checkins">
@@ -488,7 +493,7 @@ export class AdminCheckinsComponent extends BaseComponent implements OnInit {
     {
       key: 'displayName',
       label: 'User',
-      // renderer: 'user-chip', // TODO: Implement proper renderer function
+      renderer: () => null, // Triggers user chip rendering
       sortable: true,
       className: 'user-cell'
     },
@@ -555,6 +560,8 @@ export class AdminCheckinsComponent extends BaseComponent implements OnInit {
         ...checkIn,
         displayName: user?.displayName || 'Unknown User',
         photoURL: user?.photoURL || undefined,
+        email: user?.email || undefined,
+        realDisplayName: user?.displayName || undefined,
         pubName: pub?.name || 'Unknown Pub',
         formattedDate: this.formatDate(checkIn.timestamp.toDate()),
         pointsDisplay: finalPoints.toString()
@@ -569,7 +576,8 @@ export class AdminCheckinsComponent extends BaseComponent implements OnInit {
     })));
     console.log('[AdminCheckins] 🔍 === END ENRICHED CHECKINS DEBUG ===');
 
-    return enriched;
+    // Sort by timestamp descending (most recent first)
+    return enriched.sort((a, b) => b.timestamp.toDate().getTime() - a.timestamp.toDate().getTime());
   });
 
   // Row click handler
