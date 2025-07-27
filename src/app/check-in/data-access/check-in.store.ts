@@ -16,7 +16,7 @@ import { CarpetStrategyService } from '../../carpets/data-access/carpet-strategy
 // Remove CheckInModalService import to break circular dependency
 import { BaseStore } from '../../shared/base/base.store';
 import { CameraService } from '../../shared/data-access/camera.service';
-import { TelegramNotificationService } from '../../shared/data-access/telegram-notification.service';
+import { TelegramNotificationService } from '@fourfold/angular-foundation';
 import { CacheCoherenceService } from '../../shared/data-access/cache-coherence.service';
 import { ErrorLoggingService } from '../../shared/data-access/error-logging.service';
 import type { CheckIn } from '../utils/check-in.models';
@@ -981,9 +981,9 @@ export class CheckInStore extends BaseStore<CheckIn> {
     const userType = user.realUser ? 'Real User' : 'User';
     
     let message = `${emoji} *${userType} Check-In*\n\n`;
-    message += `👤 *User:* ${this.telegramNotificationService['escapeMarkdown'](user.displayName)}\n`;
-    message += `🏠 *Pub:* ${this.telegramNotificationService['escapeMarkdown'](pub.name)}\n`;
-    message += `📍 *Location:* ${this.telegramNotificationService['escapeMarkdown'](pub.address)}\n`;
+    message += `👤 *User:* ${this.telegramNotificationService.escapeMarkdown(user.displayName)}\n`;
+    message += `🏠 *Pub:* ${this.telegramNotificationService.escapeMarkdown(pub.name)}\n`;
+    message += `📍 *Location:* ${this.telegramNotificationService.escapeMarkdown(pub.address)}\n`;
     
     if (checkIn.madeUserLandlord) {
       message += `👑 *New Landlord!*\n`;
@@ -1012,7 +1012,7 @@ export class CheckInStore extends BaseStore<CheckIn> {
 
     try {
       const message = this.formatCheckinMessage(checkIn, user, pub);
-      await this.telegramNotificationService['sendMessage'](message);
+      await this.telegramNotificationService.sendMessage(message, { parseMode: 'Markdown' });
       console.log('[CheckInStore] Telegram check-in notification sent successfully');
     } catch (error) {
       // Don't throw - we don't want Telegram errors to affect check-in flow

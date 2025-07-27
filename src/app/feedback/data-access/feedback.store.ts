@@ -2,7 +2,7 @@ import { Injectable, inject, computed, runInInjectionContext, Injector } from '@
 import { BaseStore } from '../../shared/base/base.store';
 import { FeedbackService } from './feedback.service';
 import { Feedback, CreateFeedbackInput, FeedbackSubmissionResult } from '../utils/feedback.model';
-import { TelegramNotificationService } from '../../shared/data-access/telegram-notification.service';
+import { TelegramNotificationService, TelegramNotification } from '@fourfold/angular-foundation';
 
 @Injectable({
   providedIn: 'root'
@@ -79,7 +79,23 @@ export class FeedbackStore extends BaseStore<Feedback> {
       this.addItem(newFeedback);
 
       // Send Telegram notification (fire and forget - don't await)
-      this.telegramService.sendFeedbackNotification(newFeedback).catch(error => {
+      const telegramNotification: TelegramNotification = {
+        title: `New Feedback: ${newFeedback.type}`,
+        message: newFeedback.message,
+        type: newFeedback.type,
+        userId: newFeedback.userId,
+        userDisplayName: newFeedback.userDisplayName,
+        userEmail: newFeedback.userEmail,
+        timestamp: newFeedback.createdAt,
+        url: newFeedback.context?.currentUrl,
+        metadata: {
+          userAgent: newFeedback.context?.userAgent,
+          viewport: newFeedback.context?.viewport,
+          status: newFeedback.status
+        }
+      };
+      
+      this.telegramService.sendNotification(telegramNotification).catch(error => {
         console.error('[FeedbackStore] Failed to send Telegram notification:', error);
       });
 

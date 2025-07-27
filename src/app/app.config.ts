@@ -1,6 +1,7 @@
 import { ApplicationConfig, ErrorHandler, inject, provideAppInitializer, provideZoneChangeDetection, isDevMode } from '@angular/core';
 import { provideRouter, TitleStrategy, withPreloading } from '@angular/router';
 import { OnboardingAwarePreloadingStrategy } from './shared/strategies/onboarding-aware-preloading.strategy';
+import { TELEGRAM_CONFIG } from '@fourfold/angular-foundation';
 
 import { appRoutes } from './app.routes';
 import { USER_THEME_TOKEN } from '../libs/tokens/user-theme.token';
@@ -19,6 +20,13 @@ export const appConfig: ApplicationConfig = {
   providers: [
     ...firebaseProviders,
     { provide: USER_THEME_TOKEN, useValue: 'light' },
+    { 
+      provide: TELEGRAM_CONFIG, 
+      useValue: {
+        botToken: environment.telegram?.botToken,
+        chatId: environment.telegram?.chatId
+      }
+    },
     provideLottieOptions({ player: () => player }),
     provideCacheableAnimationLoader(),
     provideAppInitializer(() => {

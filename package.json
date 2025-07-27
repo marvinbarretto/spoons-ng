@@ -37,7 +37,7 @@
     "@angular/router": "^20.1.2",
     "@angular/service-worker": "^20.1.2",
     "@angular/ssr": "^20.1.1",
-    "@fourfold/angular-foundation": "0.1.5",
+    "@fourfold/angular-foundation": "0.1.10",
     "@google/generative-ai": "0.24.1",
     "@jest/globals": "29.7.0",
     "compression": "1.8.0",
