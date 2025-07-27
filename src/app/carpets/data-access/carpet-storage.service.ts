@@ -27,10 +27,10 @@ type ImageFormat = 'avif' | 'webp' | 'jpeg';
 
 @Injectable({ providedIn: 'root' })
 export class CarpetStorageService {
-  private readonly indexedDb = inject(IndexedDbService);
-  private readonly authStore = inject(AuthStore);
-  private readonly storage = inject(Storage);
-  private readonly pubStore = inject(PubStore);
+  protected readonly indexedDb = inject(IndexedDbService);
+  protected readonly authStore = inject(AuthStore);
+  protected readonly storage = inject(Storage);
+  protected readonly pubStore = inject(PubStore);
 
   // Signals for reactive state
   private readonly _carpetCount = signal(0);

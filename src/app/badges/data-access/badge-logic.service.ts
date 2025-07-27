@@ -10,7 +10,7 @@ import { BadgeStore } from './badge.store';
  */
 @Injectable({ providedIn: 'root' })
 export class BadgeLogicService {
-  private readonly _badgeStore = inject(BadgeStore);
+  protected readonly _badgeStore = inject(BadgeStore);
 
   /**
    * Check if user should earn the "First Time" badge

@@ -11,8 +11,8 @@ import type { BadgeTriggerContext, EarnedBadge, EarnedBadgeWithDetails } from '.
  */
 @Injectable({ providedIn: 'root' })
 export class BadgeAwardService {
-  private readonly _badgeLogic = inject(BadgeLogicService);
-  private readonly _badgeStore = inject(BadgeStore); // ✅ Use unified store
+  protected readonly _badgeLogic = inject(BadgeLogicService);
+  protected readonly _badgeStore = inject(BadgeStore); // ✅ Use unified store
 
 /**
  * Simplified badge checking for new check-in flow

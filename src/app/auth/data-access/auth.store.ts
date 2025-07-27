@@ -28,9 +28,9 @@ import type { User } from '@users/utils/user.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthStore {
-  private readonly authService = inject(AuthService);
-  private readonly overlayService = inject(OverlayService);
-  private readonly platform = inject(SsrPlatformService);
+  protected readonly authService = inject(AuthService);
+  protected readonly overlayService = inject(OverlayService);
+  protected readonly platform = inject(SsrPlatformService);
 
   // ✅ ONLY authentication state
   private readonly _user = signal<User | null>(null);

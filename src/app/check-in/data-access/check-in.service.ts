@@ -26,8 +26,8 @@ export class CheckInService extends FirestoreService {
   readonly loadingAllCheckIns = this._loadingAllCheckIns.asReadonly();
 
   // Clean dependencies - no underscores for services
-  private readonly authStore = inject(AuthStore);
-  private readonly nearbyPubStore = inject(NearbyPubStore);
+  protected readonly authStore = inject(AuthStore);
+  protected readonly nearbyPubStore = inject(NearbyPubStore);
 
   /**
    * Check if user can check in to this pub

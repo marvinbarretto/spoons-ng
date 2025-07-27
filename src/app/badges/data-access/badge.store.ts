@@ -9,9 +9,9 @@ import { AuthStore } from '@auth/data-access/auth.store';
 
 @Injectable({ providedIn: 'root' })
 export class BadgeStore extends BaseStore<EarnedBadge> {
-  private readonly _badgeService = inject(BadgeService);
-  private readonly _userStore = inject(UserStore);
-  private readonly cacheService = inject(CacheService);
+  protected readonly _badgeService = inject(BadgeService);
+  protected readonly _userStore = inject(UserStore);
+  protected readonly cacheService = inject(CacheService);
 
   // ===================================
   // 🏆 BADGE DEFINITIONS (Global Data)

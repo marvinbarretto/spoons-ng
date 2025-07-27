@@ -16,8 +16,8 @@ import { environment } from '../../../environments/environment';
  */
 @Injectable({ providedIn: 'root' })
 export class NearbyPubStore {
-  private readonly locationService = inject(LocationService);
-  private readonly pubStore = inject(PubStore);
+  protected readonly locationService = inject(LocationService);
+  protected readonly pubStore = inject(PubStore);
 
   // ✅ REACTIVE: Direct access to source signals with clean names
   readonly location: Signal<{ lat: number; lng: number } | null> =

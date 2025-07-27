@@ -24,14 +24,14 @@ type CheckinStage =
 
 @Injectable({ providedIn: 'root' })
 export class CheckinOrchestrator {
-  private readonly router = inject(Router);
-  private readonly checkinStore = inject(CheckInStore);
-  private readonly checkInModalService = inject(CheckInModalService);
-  private readonly llmService = inject(LLMService);
-  private readonly carpetStorageService = inject(CarpetStorageService);
-  private readonly carpetStrategy = inject(CarpetStrategyService);
-  private readonly cameraService = inject(CameraService);
-  private readonly dataAggregator = inject(DataAggregatorService);
+  protected readonly router = inject(Router);
+  protected readonly checkinStore = inject(CheckInStore);
+  protected readonly checkInModalService = inject(CheckInModalService);
+  protected readonly llmService = inject(LLMService);
+  protected readonly carpetStorageService = inject(CarpetStorageService);
+  protected readonly carpetStrategy = inject(CarpetStrategyService);
+  protected readonly cameraService = inject(CameraService);
+  protected readonly dataAggregator = inject(DataAggregatorService);
 
   // ===================================
   // 🏗️ STATE SIGNALS

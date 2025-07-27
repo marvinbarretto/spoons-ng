@@ -34,12 +34,12 @@ import { CacheCoherenceService } from '../../shared/data-access/cache-coherence.
 import { ErrorLoggingService } from '../../shared/data-access/error-logging.service';
 @Injectable({ providedIn: 'root' })
 export class PointsStore {
-  private readonly authStore = inject(AuthStore);
-  private readonly pointsService = inject(PointsService);
-  private readonly userStore = inject(UserStore);
-  private readonly pubStore = inject(PubStore);
+  protected readonly authStore = inject(AuthStore);
+  protected readonly pointsService = inject(PointsService);
+  protected readonly userStore = inject(UserStore);
+  protected readonly pubStore = inject(PubStore);
   private readonly cacheCoherence = inject(CacheCoherenceService);
-  private readonly errorLoggingService = inject(ErrorLoggingService);
+  protected readonly errorLoggingService = inject(ErrorLoggingService);
 
   // ✅ Private signals (following conventions)
   private readonly _totalPoints = signal(0);

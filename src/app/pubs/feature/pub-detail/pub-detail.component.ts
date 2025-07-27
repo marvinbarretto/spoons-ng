@@ -807,13 +807,13 @@ import type { CheckIn } from '@app/check-in/utils/check-in.models';
 })
 export class PubDetailComponent extends BaseComponent {
   // ✅ Store dependencies
-  private readonly pubStore = inject(PubStore);
-  private readonly checkinStore = inject(CheckInStore);
-  private readonly userStore = inject(UserStore);
-  private readonly authStore = inject(AuthStore);
-  private readonly locationService = inject(LocationService);
+  protected readonly pubStore = inject(PubStore);
+  protected readonly checkinStore = inject(CheckInStore);
+  protected readonly userStore = inject(UserStore);
+  protected readonly authStore = inject(AuthStore);
+  protected readonly locationService = inject(LocationService);
   protected override readonly router = inject(Router);
-  private readonly route = inject(ActivatedRoute);
+  protected readonly route = inject(ActivatedRoute);
 
   // ✅ Expose ButtonSize for template
   readonly ButtonSize = ButtonSize;

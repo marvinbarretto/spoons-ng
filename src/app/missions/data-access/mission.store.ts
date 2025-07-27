@@ -5,7 +5,7 @@ import { Mission } from "../utils/mission.model";
 
 @Injectable({ providedIn: 'root' })
 export class MissionStore {
-  private readonly missionService = inject(MissionService);
+  protected readonly missionService = inject(MissionService);
 
   // Signals
   readonly missions = signal<Mission[]>([]);

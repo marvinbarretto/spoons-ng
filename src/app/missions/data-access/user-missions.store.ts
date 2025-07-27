@@ -8,10 +8,10 @@ import { UserMissionProgress, MissionDisplayData } from '../utils/user-mission-p
 
 @Injectable({ providedIn: 'root' })
 export class UserMissionsStore {
-  private readonly authStore = inject(AuthStore);
-  private readonly missionStore = inject(MissionStore);
-  private readonly userMissionProgressService = inject(UserMissionProgressService);
-  private readonly checkinStore = inject(CheckInStore);
+  protected readonly authStore = inject(AuthStore);
+  protected readonly missionStore = inject(MissionStore);
+  protected readonly userMissionProgressService = inject(UserMissionProgressService);
+  protected readonly checkinStore = inject(CheckInStore);
 
   // Private signals
   private readonly _userProgress = signal<UserMissionProgress[]>([]);

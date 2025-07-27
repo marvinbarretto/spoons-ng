@@ -11,9 +11,9 @@ import { Timestamp } from 'firebase/firestore';
 
 @Injectable({ providedIn: 'root' })
 export class PubStore extends BaseStore<Pub> {
-  private readonly pubService = inject(PubService);
-  private readonly cacheService = inject(CacheService);
-  private readonly locationService = inject(LocationService);
+  protected readonly pubService = inject(PubService);
+  protected readonly cacheService = inject(CacheService);
+  protected readonly locationService = inject(LocationService);
 
   readonly pubs = this.data;
 

@@ -30,19 +30,19 @@ import { getDistanceKm } from '../../shared/utils/location.utils';
 
 @Injectable({ providedIn: 'root' })
 export class CheckInStore extends BaseStore<CheckIn> {
-  private readonly newCheckInService = inject(CheckInService);
-  private readonly overlayService = inject(OverlayService);
-  private readonly pubStore = inject(PubStore);
-  private readonly pointsStore = inject(PointsStore);
-  private readonly userStore = inject(UserStore);
-  private readonly badgeAwardService = inject(BadgeAwardService);
-  private readonly landlordStore = inject(LandlordStore);
-  private readonly carpetStrategy = inject(CarpetStrategyService);
+  protected readonly newCheckInService = inject(CheckInService);
+  protected readonly overlayService = inject(OverlayService);
+  protected readonly pubStore = inject(PubStore);
+  protected readonly pointsStore = inject(PointsStore);
+  protected readonly userStore = inject(UserStore);
+  protected readonly badgeAwardService = inject(BadgeAwardService);
+  protected readonly landlordStore = inject(LandlordStore);
+  protected readonly carpetStrategy = inject(CarpetStrategyService);
   // Modal service removed to break circular dependency - use event-based approach
-  private readonly cameraService = inject(CameraService);
-  private readonly telegramNotificationService = inject(TelegramNotificationService);
+  protected readonly cameraService = inject(CameraService);
+  protected readonly telegramNotificationService = inject(TelegramNotificationService);
   private readonly cacheCoherence = inject(CacheCoherenceService);
-  private readonly errorLoggingService = inject(ErrorLoggingService);
+  protected readonly errorLoggingService = inject(ErrorLoggingService);
 
   // Check-in process state
   private readonly _isProcessing = signal(false);

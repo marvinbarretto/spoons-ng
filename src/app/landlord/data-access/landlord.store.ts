@@ -13,7 +13,7 @@ export type TodayLandlordMap = Record<string, Landlord | null>;
 
 @Injectable({ providedIn: 'root' })
 export class LandlordStore {
-  private readonly landlordService = inject(LandlordService);
+  protected readonly landlordService = inject(LandlordService);
 
   // 🔒 Private signals
   private readonly _todayLandlord = signal<TodayLandlordMap>({});
