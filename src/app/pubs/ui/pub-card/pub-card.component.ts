@@ -5,11 +5,13 @@ import { environment } from '../../../../environments/environment';
 import type { Pub } from '../../utils/pub.models';
 import { LocationService } from '@shared/data-access/location.service';
 import { ChipStatusComponent } from '@shared/ui/chips/chip-status/chip-status.component';
-import { IconComponent } from '@shared/ui/icon/icon.component';
+import { IndicatorContainerComponent } from '@shared/ui/status-indicators/indicator-container.component';
+import { IndicatorVisitVerifiedComponent } from '@shared/ui/status-indicators/indicator-visit-verified.component';
+import { IndicatorVisitUnverifiedComponent } from '@shared/ui/status-indicators/indicator-visit-unverified.component';
 
 @Component({
   selector: 'app-pub-card',
-  imports: [ChipStatusComponent, IconComponent],
+  imports: [ChipStatusComponent, IndicatorContainerComponent, IndicatorVisitVerifiedComponent, IndicatorVisitUnverifiedComponent],
   templateUrl: './pub-card.component.html',
   styles: `
     /* ===== MOBILE-FIRST BASE STYLES ===== */
@@ -46,28 +48,11 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
       background: var(--background-darkest);
     }
 
-        /* Status area - consistent sizing for checkbox and icon */
-    .pub-card__status {
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      min-width: 40px;
-      min-height: 40px;
-    }
-
     .pub-card__checkbox {
       z-index: 10;
       display: flex;
       align-items: flex-start;
       justify-content: center;
-    }
-
-    .pub-card__status-icon {
-      margin-top: 4px;
-      flex-shrink: 0;
-      cursor: help;
-      color: var(--success);
-      filter: drop-shadow(0 2px 4px rgba(72, 187, 120, 0.3));
     }
 
     .pub-card-inner {

@@ -3,6 +3,8 @@ import { BaseWidgetComponent } from '../base/base-widget.component';
 import { NearbyPubStore } from '../../pubs/data-access/nearby-pub.store';
 import { DataAggregatorService } from '../../shared/data-access/data-aggregator.service';
 import { LocationService } from '../../shared/data-access/location.service';
+import { UserStore } from '../../users/data-access/user.store';
+import { CheckInStore } from '../../check-in/data-access/check-in.store';
 import { SsrPlatformService } from '@fourfold/angular-foundation';
 
 import { PubCardComponent } from '../../pubs/ui/pub-card/pub-card.component';
@@ -34,6 +36,8 @@ import type { Pub } from '../../pubs/utils/pub.models';
             <app-pub-card
               [pub]="pub"
               [hasCheckedIn]="pub.hasVisited"
+              [hasVerifiedVisit]="hasVerifiedCheckIn(pub.id)"
+              [hasUnverifiedVisit]="hasUnverifiedVisit(pub.id)"
               [checkinCount]="pub.visitCount"
               [showCheckinCount]="pub.hasVisited"
               [isLocalPub]="dataAggregatorService.isLocalPub(pub.id)"
@@ -74,6 +78,8 @@ export class NearestPubComponent extends BaseWidgetComponent {
   // Direct store access for widget-specific location data
   private readonly nearbyPubStore = inject(NearbyPubStore);
   private readonly locationService = inject(LocationService);
+  private readonly userStore = inject(UserStore);
+  private readonly checkinStore = inject(CheckInStore);
 
   // DataAggregator for universal cross-store data
   protected readonly dataAggregatorService = inject(DataAggregatorService);
@@ -129,5 +135,14 @@ export class NearestPubComponent extends BaseWidgetComponent {
     console.log('[NearestPubComponent] 📍 User clicked "Grant Location Access" - requesting location...');
     this.error.set(null);
     this.locationService.getCurrentLocation();
+  }
+
+  // Visit status helpers (same pattern as pub-list component)
+  protected hasVerifiedCheckIn(pubId: string): boolean {
+    return this.checkinStore.hasCheckedIn(pubId);
+  }
+
+  protected hasUnverifiedVisit(pubId: string): boolean {
+    return this.userStore.hasVisitedPub(pubId);
   }
 }

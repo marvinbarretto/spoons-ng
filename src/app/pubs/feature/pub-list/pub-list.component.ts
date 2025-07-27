@@ -233,13 +233,28 @@ export class PubListComponent extends BaseComponent implements OnInit {
 
   // ✅ Management mode methods
   toggleManagementMode(): void {
-    const newMode = !this._isManagementMode();
-    this._isManagementMode.set(newMode);
+    const enteringManagementMode = !this._isManagementMode();
+    this._isManagementMode.set(enteringManagementMode);
     
-    // Clear selections when toggling
-    this._selectedForAddition.set(new Set());
-    
-    console.log('[PubList] Management mode:', newMode ? 'enabled' : 'disabled');
+    if (enteringManagementMode) {
+      // Entering management mode: pre-select all visited pubs
+      const visitedPubIds = new Set<string>();
+      const allPubs = this.filteredPubs();
+      
+      // Check each pub and pre-select if visited
+      allPubs.forEach(pub => {
+        if (this.hasAnyVisit(pub.id)) {
+          visitedPubIds.add(pub.id);
+        }
+      });
+      
+      this._selectedForAddition.set(visitedPubIds);
+      console.log('[PubList] Management mode enabled - pre-selected', visitedPubIds.size, 'visited pubs');
+    } else {
+      // Exiting management mode: clear selections
+      this._selectedForAddition.set(new Set());
+      console.log('[PubList] Management mode disabled - selections cleared');
+    }
   }
 
   handleSelectionChange(event: { pub: Pub; selected: boolean }): void {

@@ -4,7 +4,7 @@
   [class.pub-card--selectable]="selectable()"
   (click)="handleClick($event)"
 >
-  <div class="pub-card__status">
+  <app-indicator-container>
     <!-- Single status indicator: checkbox in editing mode, visit icon in viewing mode -->
     @if (selectable()) {
       <div class="pub-card__checkbox">
@@ -19,17 +19,12 @@
         />
         <label [for]="checkboxId()" class="sr-only"> Select {{ pub().name }} </label>
       </div>
-    } @else if (hasAnyVisit()) {
-      <app-icon
-        [name]="visitStatusIcon()"
-        size="xl"
-        [filled]="hasVerifiedVisit()"
-        class="pub-card__status-icon"
-        [title]="visitStatusTitle()"
-        [attr.aria-label]="visitStatusTitle()"
-      />
+    } @else if (hasVerifiedVisit()) {
+      <app-indicator-visit-verified [title]="visitStatusTitle()" />
+    } @else if (hasUnverifiedVisit()) {
+      <app-indicator-visit-unverified [title]="visitStatusTitle()" />
     }
-  </div>
+  </app-indicator-container>
 
   <div class="pub-card-inner">
     <div class="pub-card__content">
