@@ -60,17 +60,23 @@ export class CheckinOrchestrator {
 
   readonly showCameraPreview = computed(() => {
     const stage = this.stage();
-    return stage === 'CAMERA_STARTING' || stage === 'CAMERA_ACTIVE';
+    const shouldShow = stage === 'CAMERA_STARTING' || stage === 'CAMERA_ACTIVE';
+    console.log('[CheckinOrchestrator] 📹 showCameraPreview computed:', { stage, shouldShow });
+    return shouldShow;
   });
 
   readonly showCaptureButton = computed(() => {
     const stage = this.stage();
-    return stage === 'CAMERA_ACTIVE';
+    const shouldShow = stage === 'CAMERA_ACTIVE';
+    console.log('[CheckinOrchestrator] 📸 showCaptureButton computed:', { stage, shouldShow });
+    return shouldShow;
   });
 
   readonly showPhotoPreview = computed(() => {
     const stage = this.stage();
-    return stage === 'PHOTO_TAKEN' || stage === 'PHOTO_REVIEW' || stage === 'LLM_CHECKING';
+    const shouldShow = stage === 'PHOTO_TAKEN' || stage === 'PHOTO_REVIEW' || stage === 'LLM_CHECKING';
+    console.log('[CheckinOrchestrator] 🖼️ showPhotoPreview computed:', { stage, shouldShow });
+    return shouldShow;
   });
 
   readonly showRetakeButton = computed(() => {
@@ -263,14 +269,29 @@ export class CheckinOrchestrator {
   }
 
   retakePhoto(): void {
-    console.log('[CheckinOrchestrator] 🔄 User chose to retake photo');
+    console.log('[CheckinOrchestrator] 🔄 User chose to retake photo - starting complete reset process');
     
-    // Reset to camera active state (camera is still running)
+    // Step 1: Clear all photo data immediately
+    console.log('[CheckinOrchestrator] 📸 Clearing saved photo data (blob & dataUrl)');
     this._photoBlob.set(null);
     this._photoDataUrl.set(null);
+    
+    // Step 2: Clear any error state
+    console.log('[CheckinOrchestrator] ❌ Clearing error state');
     this._error.set(null);
+    
+    // Step 3: Reset stage to remove photo preview and show camera again
+    console.log('[CheckinOrchestrator] 🎬 Changing stage from PHOTO_REVIEW to CAMERA_ACTIVE');
     this._stage.set('CAMERA_ACTIVE');
-    console.log('[CheckinOrchestrator] 📹 Camera reactivated for new capture');
+    
+    // Step 4: Verify camera is still running
+    if (this.videoElement && this.cameraService.isCameraReadyForCapture(this.videoElement)) {
+      console.log('[CheckinOrchestrator] ✅ Camera verified - ready for new capture');
+    } else {
+      console.warn('[CheckinOrchestrator] ⚠️ Camera may not be ready - video element:', !!this.videoElement);
+    }
+    
+    console.log('[CheckinOrchestrator] 🎯 Retake complete - user should now see live camera feed');
   }
 
   // ===================================

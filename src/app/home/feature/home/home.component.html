@@ -6,16 +6,9 @@
       <div class="hero-content">
         <h1 class="hero-title">Earn Legendary Status for Your Wetherspoons Dedication</h1>
         <p class="hero-subtitle">Join {{ siteStats().allTime.users || '1,234' }} dedicated Spoons enthusiasts proving their loyalty to Tim Martin's empire</p>
-        
+
         <div class="points-preview">
-          <div class="points-item">
-            <span class="points-value">10pts</span>
-            <span class="points-label">Basic Loyalty Points</span>
-          </div>
-          <div class="points-item bonus">
-            <span class="points-value">+10pts</span>
-            <span class="points-label">Dedication Bonus!</span>
-          </div>
+
           <div class="points-item">
             <span class="points-value">{{ distanceBonusPoints() }}</span>
             <span class="points-label">{{ distanceBonusText() }}</span>
@@ -28,7 +21,7 @@
             Prove Your Spoons Dedication
             <span class="cta-subtitle">Spot the carpet, earn respect!</span>
           </button>
-          
+
           <button class="cta-secondary" (click)="handleAddHistoricalPubs()">
             <span class="cta-icon">📝</span>
             Record Historic Visits

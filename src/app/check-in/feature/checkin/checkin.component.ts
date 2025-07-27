@@ -115,8 +115,16 @@ export class CheckinComponent extends BaseComponent implements AfterViewInit, On
 
 
   protected async onCaptureClick(): Promise<void> {
-    console.log('[CheckinComponent] 📸 Capture photo clicked');
-    await this.orchestrator.capturePhoto();
+    console.log('[CheckinComponent] 📸 User clicked capture button');
+    console.log('[CheckinComponent] 📊 Current stage before capture:', this.orchestrator.stage());
+    
+    try {
+      await this.orchestrator.capturePhoto();
+      console.log('[CheckinComponent] ✅ Photo capture completed successfully');
+      console.log('[CheckinComponent] 📊 Stage after capture:', this.orchestrator.stage());
+    } catch (error) {
+      console.error('[CheckinComponent] ❌ Photo capture failed:', error);
+    }
   }
 
   protected onConfirmPhotoClick(): void {
@@ -125,7 +133,24 @@ export class CheckinComponent extends BaseComponent implements AfterViewInit, On
   }
 
   protected onRetakePhotoClick(): void {
-    console.log('[CheckinComponent] 🔄 User chose to retake photo');
+    console.log('[CheckinComponent] 🔄 User clicked retake button - initiating photo reset');
+    console.log('[CheckinComponent] 📊 Current stage before retake:', this.orchestrator.stage());
+    console.log('[CheckinComponent] 📸 Current photo data before reset:', {
+      hasDataUrl: !!this.orchestrator.photoDataUrl(),
+      hasBlob: !!this.orchestrator.photoBlob()
+    });
+    
     this.orchestrator.retakePhoto();
+    
+    // Log state after retake call
+    setTimeout(() => {
+      console.log('[CheckinComponent] 📊 Stage after retake:', this.orchestrator.stage());
+      console.log('[CheckinComponent] 📸 Photo data after reset:', {
+        hasDataUrl: !!this.orchestrator.photoDataUrl(),
+        hasBlob: !!this.orchestrator.photoBlob(),
+        showCameraPreview: this.orchestrator.showCameraPreview(),
+        showPhotoPreview: this.orchestrator.showPhotoPreview()
+      });
+    }, 50);
   }
 }
