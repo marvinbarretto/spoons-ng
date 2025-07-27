@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.113](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.112...v0.0.113) (2025-07-27)
+
+
+### Features
+
+* [Checkin] Add pub name and which pub to the checkin gallery ([cf6c530](https://github.com/marvinbarretto/spoons-ng/commit/cf6c5304f1ab95e70bcedd1899118e7ee734a98f))
+
+
+### Bug Fixes
+
+* [Checkin] Retake photo flow ([faddd10](https://github.com/marvinbarretto/spoons-ng/commit/faddd10c63c0d4079aeb28452f6736d458d28bfd))
+* [Register] ensure existing user cant re-register ([0c61d4a](https://github.com/marvinbarretto/spoons-ng/commit/0c61d4a468358bda6d4473101208184fffb2c468))
+
 ### [0.0.112](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.111...v0.0.112) (2025-07-27)
 
 
