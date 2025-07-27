@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.112](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.111...v0.0.112) (2025-07-27)
+
+
+### Features
+
+* [Admin] Display user chip in table contents ([78a8555](https://github.com/marvinbarretto/spoons-ng/commit/78a8555fd7152e50ec090a36b9616251316b0774))
+* [Manual Pub addition] stub wip ([d9f7d7f](https://github.com/marvinbarretto/spoons-ng/commit/d9f7d7f97fc0995b1bb4392c9366ce0d01d3b706))
+
+
+### Bug Fixes
+
+* [Checkin] Give user a chance to fix photo ([8aa37ee](https://github.com/marvinbarretto/spoons-ng/commit/8aa37eefb2b26e1c64261e3ff81b3dcdb280d8e2))
+
 ### [0.0.111](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.110...v0.0.111) (2025-07-20)
 
 
