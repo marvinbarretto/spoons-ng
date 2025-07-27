@@ -1,36 +1,30 @@
 <div class="home-container">
 
-  <!-- ✅ NEW USER CONVERSION HERO -->
+  <!-- ✅ NEW USER QUICK START -->
   @if (isNewUser()) {
-    <section class="new-user-hero">
-      <div class="hero-content">
-        <h1 class="hero-title">Earn Legendary Status for Your Wetherspoons Dedication</h1>
-        <p class="hero-subtitle">Join {{ siteStats().allTime.users || '1,234' }} dedicated Spoons enthusiasts proving their loyalty to Tim Martin's empire</p>
-
-        <div class="points-preview">
-
-          <div class="points-item">
-            <span class="points-value">{{ distanceBonusPoints() }}</span>
-            <span class="points-label">{{ distanceBonusText() }}</span>
-          </div>
+    <section class="quick-start-widget">
+      <div class="quick-start-content">
+        <div class="welcome-section">
+          <h2 class="welcome-title">Ready to start tracking?</h2>
+          <p class="welcome-subtitle">Find a nearby Wetherspoons and check in to get started</p>
         </div>
 
-        <div class="hero-actions">
-          <button class="cta-primary" (click)="handleStartFirstCheckIn()">
-            <span class="cta-icon">🍺</span>
-            Prove Your Spoons Dedication
-            <span class="cta-subtitle">Spot the carpet, earn respect!</span>
+        <div class="quick-actions">
+          <button class="action-primary" (click)="handleStartFirstCheckIn()">
+            <span class="action-icon">🍺</span>
+            <span class="action-text">
+              <span class="action-title">Check in to your first pub</span>
+              <span class="action-subtitle">Start your pub journey</span>
+            </span>
           </button>
 
-          <button class="cta-secondary" (click)="handleAddHistoricalPubs()">
-            <span class="cta-icon">📝</span>
-            Record Historic Visits
+          <button class="action-secondary" (click)="handleAddHistoricalPubs()">
+            <span class="action-icon">📝</span>
+            <span class="action-text">
+              <span class="action-title">Add past visits</span>
+              <span class="action-subtitle">Record pubs you've already been to</span>
+            </span>
           </button>
-        </div>
-
-        <div class="social-proof">
-          <span class="live-indicator"></span>
-          <span class="activity-text">{{ getRecentActivityText() }}</span>
         </div>
       </div>
     </section>
@@ -42,11 +36,10 @@
 
 
 
-  <!-- ✅ PRIORITY 2: Secondary widgets (defer until viewport or after short delay) -->
-
+  <!-- ✅ NEAREST PUBS - HIGH PRIORITY FOR NEW USERS -->
   @defer (on viewport) {
     <app-nearest-pub></app-nearest-pub>
-  } @placeholder (minimum 500ms) {
+  } @placeholder (minimum 200ms) {
     <div class="widget-placeholder">
       <div class="placeholder-content">📍 Loading nearest pubs...</div>
     </div>
@@ -56,9 +49,35 @@
     </div>
   }
 
+  <!-- ✅ SIMPLE PROGRESS FOR NEW USERS -->
+  @if (isNewUser()) {
+    <section class="simple-progress-widget">
+      <div class="progress-content">
+        <div class="progress-header">
+          <h3 class="progress-title">Your Journey</h3>
+        </div>
+        <div class="progress-stats">
+          <div class="stat-item">
+            <span class="stat-value">{{ scoreboardData().pubsVisited || 0 }}</span>
+            <span class="stat-label">Pubs visited</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">{{ scoreboardData().totalCheckins || 0 }}</span>
+            <span class="stat-label">Check-ins</span>
+          </div>
+        </div>
+        @if ((scoreboardData().pubsVisited || 0) === 0) {
+          <p class="progress-encourage">Start your journey by checking in to a nearby pub!</p>
+        } @else {
+          <p class="progress-encourage">Great start! Keep exploring more pubs.</p>
+        }
+      </div>
+    </section>
+  }
+
   @defer (on viewport) {
-    <!-- ✅ Suggested Mission Widget (for new users) -->
-    @if (isNewUser()) {
+    <!-- ✅ Show missions only after users have started their journey -->
+    @if (isBeginner() || isExperienced()) {
       <app-suggested-mission-widget></app-suggested-mission-widget>
     }
    } @placeholder (minimum 200ms) {
@@ -72,7 +91,10 @@
   }
 
   @defer (on viewport) {
-    <app-missions-widget></app-missions-widget>
+    <!-- ✅ Show missions for users who have started their journey -->
+    @if (isBeginner() || isExperienced()) {
+      <app-missions-widget></app-missions-widget>
+    }
   } @placeholder (minimum 200ms) {
     <div class="widget-placeholder">
       <div class="placeholder-content">🎯 Loading missions...</div>
@@ -135,8 +157,10 @@
   }
 
   @defer (on viewport) {
-    <!-- ✅ Badges Widget -->
-    <app-badges-widget></app-badges-widget>
+    <!-- ✅ Show badges only for users who have made progress -->
+    @if (isBeginner() || isExperienced()) {
+      <app-badges-widget></app-badges-widget>
+    }
   } @placeholder (minimum 200ms) {
     <div class="widget-placeholder">
       <div class="placeholder-content">🏅 Loading badges...</div>

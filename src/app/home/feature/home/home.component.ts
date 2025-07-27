@@ -214,8 +214,8 @@ export class HomeComponent extends BaseComponent {
 
   handleStartFirstCheckIn(): void {
     console.log('[Home] Starting first check-in flow');
-    // TODO: Navigate to check-in flow or open check-in modal
-    this.showInfo('Your journey to Spoons legendary status begins! Spot those carpets for maximum respect.');
+    // Navigate to simplified check-in flow
+    this.router.navigate(['/simplified-checkin']);
   }
 
   async handleAddHistoricalPubs(): Promise<void> {
