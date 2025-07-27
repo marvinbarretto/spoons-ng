@@ -30,7 +30,7 @@ export const appRoutes: Routes = [
   {
     path: 'register',
     title: 'Join Spoonscount',
-    loadComponent: () => import('./auth/feature/new-registration-flow/registration-flow.component').then(m => m.RegistrationFlowComponent),
+    loadComponent: () => import('./auth/feature/register/registration-flow.component').then(m => m.RegistrationFlowComponent),
     data: { shell: 'fullscreen' }
   },
   {

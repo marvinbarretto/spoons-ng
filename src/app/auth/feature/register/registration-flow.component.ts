@@ -495,7 +495,7 @@ export class RegistrationFlowComponent extends BaseComponent implements OnInit, 
       await this.authStore.loginWithGoogle();
       console.log('[RegistrationFlow] ✅ authStore.loginWithGoogle() completed');
 
-      // Pre-populate display name from Google account
+      // Check if user already exists and has completed onboarding
       const user = this.authStore.user();
       console.log('[RegistrationFlow] 👤 Got user after Google auth:', {
         hasUser: !!user,
@@ -503,6 +503,32 @@ export class RegistrationFlowComponent extends BaseComponent implements OnInit, 
         uid: user?.uid?.slice(0, 8)
       });
 
+      if (user?.uid) {
+        console.log('[RegistrationFlow] 🔍 Checking if user already exists in Firestore...');
+        try {
+          // Check if user document exists in Firestore
+          const existingUserDoc = await this.userStore.checkUserExists(user.uid);
+          
+          if (existingUserDoc && existingUserDoc.onboardingCompleted) {
+            console.log('[RegistrationFlow] ✅ Existing user detected with completed onboarding');
+            this.toastService.centerInfo('Welcome back! Redirecting to your dashboard...');
+            
+            // Wait a moment for the message to be seen, then redirect
+            setTimeout(() => {
+              this.router.navigate(['/home']);
+            }, 1500);
+            return;
+          } else if (existingUserDoc && !existingUserDoc.onboardingCompleted) {
+            console.log('[RegistrationFlow] 📝 Existing user detected but onboarding incomplete, continuing flow');
+          } else {
+            console.log('[RegistrationFlow] 🆕 New user detected, proceeding with registration');
+          }
+        } catch (docError) {
+          console.log('[RegistrationFlow] 🆕 User document not found, proceeding with new user registration');
+        }
+      }
+
+      // Pre-populate display name from Google account
       if (user?.displayName) {
         console.log('[RegistrationFlow] 📝 Updating data with displayName:', user.displayName);
         this.flowService.updateData({ displayName: user.displayName });

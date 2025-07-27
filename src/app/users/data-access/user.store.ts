@@ -39,7 +39,7 @@ import type { User, UserBadgeSummary, UserLandlordSummary } from '../utils/user.
 @Injectable({ providedIn: 'root' })
 export class UserStore extends BaseStore<User> {
   // 🔧 Dependencies
-  private readonly userService = inject(UserService);
+  protected readonly userService = inject(UserService);
   private readonly cacheCoherence = inject(CacheCoherenceService);
 
   // 📡 Current user computed from collection using Firebase Auth uid
@@ -190,6 +190,20 @@ export class UserStore extends BaseStore<User> {
   async loadUser(userId: string): Promise<void> {
     console.log('[UserStore] 🔄 Public loadUser called for:', userId);
     await this.loadOrCreateUser(userId);
+  }
+
+  /**
+   * Check if a user document exists in Firestore without creating it
+   * Useful for registration flow to detect existing users
+   */
+  async checkUserExists(uid: string): Promise<any | null> {
+    try {
+      const userDoc = await this.userService.getDocByPath<any>(`users/${uid}`);
+      return userDoc || null;
+    } catch (error) {
+      console.log(`[UserStore] User document not found for uid: ${uid.slice(0, 8)}`);
+      return null;
+    }
   }
 
   /**
