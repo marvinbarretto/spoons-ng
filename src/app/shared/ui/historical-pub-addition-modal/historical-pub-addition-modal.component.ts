@@ -2,6 +2,7 @@ import { Component, computed, inject, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PubSelectorComponent } from '../pub-selector/pub-selector.component';
 import { ButtonComponent } from '../button/button.component';
+import { PubCardLightComponent } from '../../../pubs/ui/pub-card-light/pub-card-light.component';
 import { PubStore } from '../../../pubs/data-access/pub.store';
 import { DataAggregatorService } from '../../data-access/data-aggregator.service';
 import { UserStore } from '../../../users/data-access/user.store';
@@ -17,7 +18,7 @@ interface SmartSuggestion {
 
 @Component({
   selector: 'app-historical-pub-addition-modal',
-  imports: [CommonModule, PubSelectorComponent, ButtonComponent],
+  imports: [CommonModule, PubSelectorComponent, ButtonComponent, PubCardLightComponent],
   template: `
     <div class="historical-modal">
       <div class="modal-header">
@@ -25,24 +26,6 @@ interface SmartSuggestion {
         <p class="modal-subtitle">Document your past loyalty to boost your legendary status</p>
       </div>
 
-      <!-- User Profile Section -->
-      <div class="profile-section">
-        <div class="profile-card">
-          <div class="profile-info">
-            <div class="profile-name">{{ user()?.displayName || 'Anonymous User' }}</div>
-            <div class="profile-stats">
-              <span class="stat-item">
-                <span class="stat-value">{{ currentScoreboardData().pubsVisited || 0 }}</span>
-                <span class="stat-label">Pubs Visited</span>
-              </span>
-              <span class="stat-item">
-                <span class="stat-value">{{ currentScoreboardData().totalPoints || 0 }}</span>
-                <span class="stat-label">Total Points</span>
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <!-- Search Section - First Priority -->
       <div class="search-section">
@@ -61,18 +44,27 @@ interface SmartSuggestion {
         <div class="suggestions-section">
           <h3 class="section-title">🏠 Quick Add - Near You</h3>
           
-          <div class="suggestion-chips">
+          <div class="suggestion-list">
             @for (pub of localSuggestions(); track pub.id) {
-              <button 
-                class="suggestion-chip"
+              <div 
+                class="suggestion-item"
                 [class.selected]="isPubSelected(pub.id)"
                 (click)="toggleSuggestionPub(pub.id)"
-                type="button"
               >
-                {{ pub.name }}
-                <span class="chip-location">{{ pub.city }}</span>
-                <span class="chip-indicator">{{ isPubSelected(pub.id) ? '✓' : '+' }}</span>
-              </button>
+                <app-pub-card-light
+                  [pub]="pub"
+                  [showAddress]="false"
+                  [showDistance]="false"
+                  variant="compact"
+                />
+                <div class="selection-indicator">
+                  @if (isPubSelected(pub.id)) {
+                    <span class="selected-icon">✓</span>
+                  } @else {
+                    <span class="add-icon">+</span>
+                  }
+                </div>
+              </div>
             }
           </div>
         </div>
@@ -154,53 +146,6 @@ interface SmartSuggestion {
       font-style: italic;
     }
 
-    .profile-section {
-      margin-bottom: 2rem;
-    }
-
-    .profile-card {
-      padding: 1rem;
-      background: var(--background-lighter);
-      border-radius: 12px;
-      border: 1px solid var(--border);
-    }
-
-    .profile-info {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-
-    .profile-name {
-      font-weight: 600;
-      font-size: 1rem;
-      color: var(--text);
-    }
-
-    .profile-stats {
-      display: flex;
-      gap: 1.5rem;
-    }
-
-    .stat-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.25rem;
-    }
-
-    .stat-value {
-      font-weight: 700;
-      font-size: 1.25rem;
-      color: var(--accent);
-    }
-
-    .stat-label {
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
 
     .search-section {
       margin-bottom: 2rem;
@@ -220,49 +165,47 @@ interface SmartSuggestion {
       gap: 0.5rem;
     }
 
-    .suggestion-chips {
+    .suggestion-list {
       display: flex;
-      flex-wrap: wrap;
+      flex-direction: column;
       gap: 0.5rem;
     }
 
-    .suggestion-chip {
-      background: var(--background-lighter);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 0.5rem 1rem;
-      font-size: 0.875rem;
-      cursor: pointer;
-      transition: all 0.2s ease;
+    .suggestion-item {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      color: var(--text);
-      flex-direction: column;
-      text-align: center;
-      min-width: 140px;
+      justify-content: space-between;
+      padding: 0.75rem 1rem;
+      background: var(--background-lighter);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
     }
 
-    .chip-location {
-      font-size: 0.75rem;
-      color: var(--text-secondary);
-      margin-top: 0.25rem;
-    }
-
-    .suggestion-chip:hover {
+    .suggestion-item:hover {
       background: var(--background-darker);
       border-color: var(--accent);
     }
 
-    .suggestion-chip.selected {
-      background: var(--accent);
-      color: var(--accent-contrast);
+    .suggestion-item.selected {
+      background: var(--background-darker);
       border-color: var(--accent);
     }
 
-    .chip-indicator {
+    .selection-indicator {
+      flex-shrink: 0;
+      margin-left: 1rem;
+    }
+
+    .selected-icon {
+      color: var(--success);
       font-weight: bold;
-      font-size: 0.75rem;
+    }
+
+    .add-icon {
+      color: var(--accent);
+      font-size: 1.125rem;
     }
 
 
@@ -335,13 +278,12 @@ interface SmartSuggestion {
         border-radius: 12px;
       }
 
-      .suggestion-chips {
+      .suggestion-list {
         gap: 0.375rem;
       }
 
-      .suggestion-chip {
-        padding: 0.375rem 0.75rem;
-        font-size: 0.8rem;
+      .suggestion-item {
+        padding: 0.5rem 0.75rem;
       }
 
       .modal-actions {
@@ -354,9 +296,8 @@ interface SmartSuggestion {
         align-items: flex-start;
       }
 
-      .suggestion-chip {
-        min-width: 120px;
-        padding: 0.375rem 0.75rem;
+      .selection-indicator {
+        margin-left: 0.5rem;
       }
     }
   `

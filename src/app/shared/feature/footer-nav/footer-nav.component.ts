@@ -442,17 +442,19 @@ export class FooterNavComponent extends BaseComponent {
         switch (errorDetails.type) {
           case 'no-location':
           case 'poor-accuracy':
+            console.log('[FooterNav] 🔄 Retry clicked for location issue, calling refreshLocation()');
             this.locationService.refreshLocation();
             break;
           case 'no-nearby-pubs':
+            console.log('[FooterNav] 🔄 Retry clicked for no nearby pubs, refreshing location');
             this.locationService.refreshLocation();
             break;
           case 'out-of-range':
-            // Just refresh location to check again
+            console.log('[FooterNav] 🔄 Retry clicked for out of range, refreshing location');
             this.locationService.refreshLocation();
             break;
           case 'not-authenticated':
-            // Navigate to auth page (implement as needed)
+            console.log('[FooterNav] 🔄 Retry clicked for auth issue, navigating to auth');
             this.router.navigate(['/auth']);
             break;
         }

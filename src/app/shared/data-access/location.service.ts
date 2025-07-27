@@ -53,10 +53,23 @@ export class LocationService {
   }
 
   getCurrentLocation(): void {
-    if (!this.platform.isBrowser) {
-      console.log('[LocationService] ❌ Not running in browser — skipping location');
+    console.log('[LocationService] 🚀 getCurrentLocation() called');
+    
+    const win = this.platform.getWindow();
+    if (!win) {
+      console.log('[LocationService] ❌ Not running in browser environment');
+      this.error.set('Not running in browser environment');
       return;
     }
+
+    console.log('[LocationService] 🌐 Environment check:', {
+      isBrowser: this.platform.isBrowser,
+      hasGeolocation: 'geolocation' in navigator,
+      userAgent: navigator.userAgent,
+      protocol: win.location.protocol,
+      hostname: win.location.hostname,
+      href: win.location.href
+    });
 
     if (!('geolocation' in navigator)) {
       this.error.set('Geolocation not supported');
@@ -64,11 +77,27 @@ export class LocationService {
       return;
     }
 
+    // Check for localhost/HTTPS issues using platform service
+    if (win.location.protocol === 'http:' && win.location.hostname !== 'localhost' && win.location.hostname !== '127.0.0.1') {
+      console.warn('[LocationService] ⚠️ Geolocation requires HTTPS in production');
+      this.error.set('Geolocation requires HTTPS in production. Use localhost for development or deploy with HTTPS.');
+      return;
+    }
+
     this.loading.set(true);
+    this.error.set(null);
     console.log('[LocationService] 📍 Attempting to get current position...');
+    console.log('[LocationService] 🔒 Permission state check...');
+
+    console.log('[LocationService] 🎯 Calling navigator.geolocation.getCurrentPosition() with options:', {
+      enableHighAccuracy: true,
+      maximumAge: LOCATION_MAX_AGE_MS,
+      timeout: LOCATION_TIMEOUT_MS,
+    });
 
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        console.log('[LocationService] ✅ SUCCESS: Position acquired from browser');
         const coords: GeoLocation = {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
@@ -76,15 +105,33 @@ export class LocationService {
           timestamp: Date.now(),
         };
         this.location.set(coords);
-        console.log('[LocationService] ✅ Position acquired:', coords);
+        console.log('[LocationService] 📍 Coordinates set:', coords);
         this.loading.set(false);
       },
       (error) => {
-        this.error.set(error.message);
-        console.warn('[LocationService] ❌ Geolocation error', {
+        console.error('[LocationService] ❌ GEOLOCATION ERROR OCCURRED');
+        console.error('[LocationService] Error details:', {
           code: error.code,
-          message: error.message
+          message: error.message,
+          PERMISSION_DENIED: error.code === 1,
+          POSITION_UNAVAILABLE: error.code === 2,
+          TIMEOUT: error.code === 3
         });
+        
+        let errorMessage = error.message;
+        switch (error.code) {
+          case 1:
+            errorMessage = 'Location permission denied. Please enable location access for this site.';
+            break;
+          case 2:
+            errorMessage = 'Location unavailable. Please check your device location settings.';
+            break;
+          case 3:
+            errorMessage = 'Location request timed out. Please try again.';
+            break;
+        }
+        
+        this.error.set(errorMessage);
         this.loading.set(false);
       },
       {
@@ -93,6 +140,8 @@ export class LocationService {
         timeout: LOCATION_TIMEOUT_MS,
       }
     );
+
+    console.log('[LocationService] 🕐 Geolocation request initiated, waiting for browser response...');
   }
 
   /**
@@ -170,6 +219,7 @@ export class LocationService {
    * Force immediate location refresh
    */
   refreshLocation(): void {
+    console.log('[LocationService] 🔄 refreshLocation() called - delegating to getCurrentLocation()');
     this.getCurrentLocation();
   }
 

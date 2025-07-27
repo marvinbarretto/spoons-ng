@@ -128,13 +128,6 @@ import type { Pub } from '@pubs/utils/pub.models';
         <div class="error-text">{{ errorMessage() }}</div>
       }
 
-      <!-- Development debug info -->
-      @if (isDevelopment()) {
-        <details class="debug-info">
-          <summary>Pub Selector Debug</summary>
-          <pre>{{ debugInfo() | json }}</pre>
-        </details>
-      }
     </div>
   `,
   styles: `
@@ -403,22 +396,6 @@ import type { Pub } from '@pubs/utils/pub.models';
       color: var(--error);
     }
 
-    .debug-info {
-      margin-top: 1rem;
-      padding: 0.75rem;
-      background: var(--background-darker);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 0.75rem;
-    }
-
-    .debug-info pre {
-      background: var(--background-lighter);
-      padding: 0.5rem;
-      border-radius: 4px;
-      margin: 0.5rem 0 0;
-      overflow-x: auto;
-    }
 
     /* Responsive design */
     @media (max-width: 640px) {
@@ -502,18 +479,6 @@ export class PubSelectorComponent {
     return filtered.slice(0, this.maxDisplayResults());
   });
 
-  // ✅ Development helper
-  readonly isDevelopment = computed(() => true);
-
-  // ✅ Debug information
-  readonly debugInfo = computed(() => ({
-    searchTerm: this.searchTerm(),
-    isDropdownOpen: this.isDropdownOpen(),
-    selectedCount: this.selectedPubs().length,
-    filteredCount: this.filteredPubs().length,
-    totalPubs: this.allPubs().length,
-    selectedIds: this.selectedPubIds()
-  }));
 
   // ✅ Initialize pub data
   constructor() {
