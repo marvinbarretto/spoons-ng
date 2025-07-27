@@ -422,4 +422,24 @@ export class DataAggregatorService {
     return userCheckins;
   }
 
+  /**
+   * Get pub name by ID
+   * @param pubId - Pub ID to look up
+   * @returns Pub name or fallback if not found
+   */
+  getPubName(pubId: string): string {
+    this.debug.extreme('[DataAggregator] Getting pub name', { pubId });
+
+    const pub = this.pubStore.get(pubId);
+    const pubName = pub?.name || 'Unknown Pub';
+
+    this.debug.extreme('[DataAggregator] Pub name retrieved', {
+      pubId,
+      pubName,
+      found: !!pub
+    });
+
+    return pubName;
+  }
+
 }

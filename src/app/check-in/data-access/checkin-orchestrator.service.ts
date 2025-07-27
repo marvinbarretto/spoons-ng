@@ -8,6 +8,7 @@ import { LLMService } from '@shared/data-access/llm.service';
 import { CarpetStorageService } from '../../carpets/data-access/carpet-storage.service';
 import { CarpetStrategyService } from '../../carpets/data-access/carpet-strategy.service';
 import { CameraService } from '@shared/data-access/camera.service';
+import { DataAggregatorService } from '@shared/data-access/data-aggregator.service';
 import { environment } from '../../../environments/environment';
 
 type CheckinStage = 
@@ -30,6 +31,7 @@ export class CheckinOrchestrator {
   private readonly carpetStorageService = inject(CarpetStorageService);
   private readonly carpetStrategy = inject(CarpetStrategyService);
   private readonly cameraService = inject(CameraService);
+  private readonly dataAggregator = inject(DataAggregatorService);
 
   // ===================================
   // 🏗️ STATE SIGNALS
@@ -334,7 +336,8 @@ export class CheckinOrchestrator {
       
       // Process carpet with quality analysis and storage
       console.log('[CheckinOrchestrator] 💾 Processing carpet with quality analysis');
-      const pubName = 'Carpet Image'; // TODO: Get actual pub name
+      const pubName = this.dataAggregator.getPubName(pubId);
+      console.log('[CheckinOrchestrator] 🏛️ Retrieved pub name:', pubName, 'for pubId:', pubId);
       const carpetResult = await this.carpetStrategy.processCarpetCapture(canvas, pubId, pubName);
       console.log('[CheckinOrchestrator] 🎯 Carpet processing complete:', carpetResult);
 
