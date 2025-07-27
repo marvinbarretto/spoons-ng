@@ -17,10 +17,13 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
       <!-- Content Area -->
       <div class="splash-content">
         <div class="hero-section">
-          <h1 class="hero-title">🍺<br>Think you love Spoons?<br>Prove it.</h1>
+          <div class="logo-container">
+            <div class="beer-icon">🍺</div>
+          </div>
+          <h1 class="hero-title">Keep count of the pubs you've visited</h1>
           <p class="hero-subtitle">
-          Keep track of your pub count.<br>
-          Accumulate points with every visit.<br> Complete missions.
+            Simple pub tracking that's actually fun.<br>
+            Start counting today.
           </p>
         </div>
       </div>
@@ -32,31 +35,20 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
             variant="primary"
             size="lg"
             [fullWidth]="true"
-            [loading]="loading()"
-            (onClick)="navigateToLogin()"
-          >
-            Login
-          </app-button>
-
-          <app-button
-            variant="secondary"
-            size="lg"
-            [fullWidth]="true"
-            [loading]="loading()"
-            (onClick)="navigateToRegister()"
-          >
-            Create Account
-          </app-button>
-
-          <app-button
-            variant="ghost"
-            size="md"
-            [fullWidth]="true"
             [loading]="guestLoading()"
             (onClick)="continueAsGuest()"
           >
-            Continue as Guest
+            Start Counting
           </app-button>
+
+          <div class="sign-in-section">
+            <p class="sign-in-text">
+              Already tracking pubs?
+              <button type="button" class="sign-in-link" (click)="navigateToLogin()" [disabled]="loading()">
+                Sign in
+              </button>
+            </p>
+          </div>
         </div>
 
         <!-- Terms and Privacy -->
