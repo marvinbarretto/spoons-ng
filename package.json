@@ -21,7 +21,11 @@
     "bundle-report": "node tools/performance/bundle-analysis.js",
     "dev:metrics": "npm run build && npm run bundle-report",
     "build:firebase": "ng build --configuration production",
-    "deploy": "npm run build:firebase && firebase deploy"
+    "deploy": "npm run build:firebase && firebase deploy",
+    "format": "prettier --write \"src/**/*.{ts,js,html,scss,css,json}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,js,html,scss,css,json}\"",
+    "format:fix": "prettier --write \"src/**/*.{ts,js,html,scss,css,json}\" && npm run format:organize-imports",
+    "format:organize-imports": "npx organize-imports-cli \"src/**/*.ts\""
   },
   "private": true,
   "dependencies": {
@@ -80,6 +84,8 @@
     "jest": "29.7.0",
     "jest-environment-jsdom": "29.7.0",
     "jest-preset-angular": "14.6.0",
+    "prettier": "3.6.2",
+    "prettier-plugin-organize-imports": "4.2.0",
     "source-map-explorer": "2.5.3",
     "standard-version": "9.5.0",
     "supertest": "7.1.1",

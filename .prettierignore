@@ -1,0 +1,83 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# Build outputs
+dist/
+tmp/
+out-tsc/
+.angular/
+
+# Coverage reports
+coverage/
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Generated files
+*.d.ts.map
+*.js.map
+
+# Package lock files (formatting these can cause issues)
+package-lock.json
+yarn.lock
+
+# Assets and static files
+src/assets/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.ico
+*.woff
+*.woff2
+*.ttf
+*.eot
+
+# Generated documentation
+docs/
+
+# Test results
+test-results/
+
+# Temporary files
+.tmp/
+.temp/
+
+# Capacitor
+android/
+ios/
+capacitor.config.ts
+
+# Angular specific
+angular.json
