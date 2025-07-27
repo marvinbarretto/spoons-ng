@@ -40,10 +40,6 @@
   animation: gentle-bounce 2s ease-in-out infinite;
 }
 
-@keyframes gentle-bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-}
 
 .hero-title {
   font-size: clamp(2rem, 5vw, 2.75rem);
@@ -154,20 +150,10 @@
 
 /* Animation for smooth entrance */
 .hero-section {
-  animation: fadeInUp 0.8s ease-out;
+  animation: slideInUp 0.8s ease-out;
 }
 
 .splash-actions {
-  animation: fadeInUp 0.8s ease-out 0.2s both;
+  animation: slideInUp 0.8s ease-out 0.2s both;
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}

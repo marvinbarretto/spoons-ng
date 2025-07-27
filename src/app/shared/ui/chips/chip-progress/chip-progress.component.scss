@@ -73,11 +73,11 @@
   // Animated progress state
   &.animated {
     .chip-icon {
-      animation: rotate 2s linear infinite;
+      animation: spin 2s linear infinite;
     }
     
     .progress-spinner {
-      animation: spin 1s linear infinite;
+      animation: spin-with-translate 1s linear infinite;
     }
   }
 }
@@ -123,12 +123,7 @@
   opacity: 0.9;
 }
 
-@keyframes rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-@keyframes spin {
+@keyframes spin-with-translate {
   from { transform: translate(-50%, -50%) rotate(0deg); }
   to { transform: translate(-50%, -50%) rotate(360deg); }
 }

@@ -265,7 +265,7 @@
   .analyzing-icon {
     font-size: 3rem;
     margin-bottom: 1rem;
-    @include pulse(2s);
+    animation: pulse 2s ease-in-out infinite;
   }
 
   h3 {
@@ -288,7 +288,7 @@
   border: 3px solid var(--border);
   border-top: 3px solid var(--primary);
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  @include spin(1s);
 }
 
 // ===================================
@@ -428,16 +428,6 @@
 // ===================================
 // 🔄 ANIMATIONS
 // ===================================
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-@keyframes pulse {
-  0% { opacity: 0.6; }
-  100% { opacity: 1; }
-}
 
 // Camera and framing animations
 @keyframes camera-pulse {

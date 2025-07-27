@@ -224,6 +224,24 @@ $anim-delay-dramatic: 1s;           // Dramatic pause
   }
 }
 
+@keyframes gentle-bounce {
+  0%, 100% { 
+    transform: translateY(0); 
+  }
+  50% { 
+    transform: translateY(-8px); 
+  }
+}
+
+@keyframes placeholder-pulse {
+  0%, 100% { 
+    opacity: 0.7; 
+  }
+  50% { 
+    opacity: 1; 
+  }
+}
+
 // ===================================
 // 🎪 INTERACTION ANIMATIONS
 // ===================================
@@ -324,6 +342,14 @@ $anim-delay-dramatic: 1s;           // Dramatic pause
 
 .animate-shake {
   animation: shake 0.5s ease-in-out;
+}
+
+.animate-gentle-bounce {
+  animation: gentle-bounce 2s ease-in-out infinite;
+}
+
+.animate-placeholder-pulse {
+  animation: placeholder-pulse 2s ease-in-out infinite;
 }
 
 // Interaction States

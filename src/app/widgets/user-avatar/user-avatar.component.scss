@@ -97,11 +97,6 @@
   transition: opacity 0.2s ease;
 }
 
-// ✅ Fade in animation
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
 
 // ✅ Dark mode adjustments
 .dark .user-avatar {
