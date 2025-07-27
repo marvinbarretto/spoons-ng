@@ -17,7 +17,7 @@
       <h2>📝 Manage Your Pub History</h2>
       <p class="stats-summary">
         Total: <strong>{{ managementStats().total }}</strong> pubs
-        (<strong>{{ managementStats().verified }}</strong> ✅ verified, 
+        (<strong>{{ managementStats().verified }}</strong> ✅ verified,
          <strong>{{ managementStats().unverified }}</strong> 📝 manual)
       </p>
       <p class="help-text">
@@ -59,7 +59,7 @@
       </div>
 
       <!-- ✅ Management mode toggle -->
-      <button 
+      <button
         class="manage-toggle"
         [class.active]="isManagementMode()"
         (click)="toggleManagementMode()"
@@ -81,14 +81,14 @@
         {{ selectedCount() }} pub{{ selectedCount() !== 1 ? 's' : '' }} selected
       </span>
       <div class="bulk-actions">
-        <button 
+        <button
           class="action-btn action-btn--secondary"
           (click)="clearSelections()"
           type="button"
         >
           Clear
         </button>
-        <button 
+        <button
           class="action-btn action-btn--primary"
           (click)="addSelectedAsManual()"
           type="button"
@@ -104,14 +104,14 @@
     @if (pubStore.loading()) {
       <app-loading-state text="Loading pubs..." />
     } @else if (pubStore.error()) {
-      <app-error-state 
+      <app-error-state
         [message]="pubStore.error()!"
         [showRetry]="true"
         retryText="Try Again"
         (retry)="retryLoad()"
       />
     } @else if (filteredPubs().length === 0) {
-      <app-empty-state 
+      <app-empty-state
         icon="🍺"
         title="No pubs found"
         subtitle="Try adjusting your search or filters."
@@ -133,7 +133,7 @@
                 [checkinCount]="dataAggregatorService.getVisitCountForPub(pub.id)"
                 [showCheckinCount]="hasAnyVisit(pub.id)"
                 [isLocalPub]="dataAggregatorService.isLocalPub(pub.id)"
-                [selectable]="!hasAnyVisit(pub.id)"
+                [selectable]="true"
                 [isSelected]="selectedForAddition().has(pub.id)"
                 [checkInDistanceThreshold]="checkInDistanceThreshold"
                 (selectionChanged)="handleSelectionChange($event)"
@@ -142,11 +142,11 @@
             </div>
           } @else {
             <!-- Normal mode: navigation enabled -->
-            <a
+            <!-- <a
               [routerLink]="['/pubs', pub.id]"
               class="pub-card-link"
               [attr.aria-label]="'View details for ' + pub.name"
-            >
+            > -->
               <app-pub-card
                 [pub]="pub"
                 [hasCheckedIn]="hasAnyVisit(pub.id)"
@@ -157,7 +157,7 @@
                 [isLocalPub]="dataAggregatorService.isLocalPub(pub.id)"
                 [checkInDistanceThreshold]="checkInDistanceThreshold"
               />
-            </a>
+            <!-- </a> -->
           }
         }
       </div>

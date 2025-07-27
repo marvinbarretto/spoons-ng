@@ -3,32 +3,33 @@ import { Component, computed, input, output, inject } from '@angular/core';
 
 import { environment } from '../../../../environments/environment';
 import type { Pub } from '../../utils/pub.models';
-import { LocationService } from '../../../shared/data-access/location.service';
-import { ChipStatusComponent } from '../../../shared/ui/chips/chip-status/chip-status.component';
+import { LocationService } from '@shared/data-access/location.service';
+import { ChipStatusComponent } from '@shared/ui/chips/chip-status/chip-status.component';
+import { IconComponent } from '@shared/ui/icon/icon.component';
 
 @Component({
   selector: 'app-pub-card',
-  imports: [ChipStatusComponent],
+  imports: [ChipStatusComponent, IconComponent],
   templateUrl: './pub-card.component.html',
   styles: `
+    /* ===== MOBILE-FIRST BASE STYLES ===== */
+
+    /* Base card styles - optimized for mobile */
     .pub-card {
-      display: block;
+      display: flex;
+      gap: 1rem;
       padding: 1rem;
+
       background: var(--background-lighter);
       border: 1px solid var(--border);
       border-radius: 8px;
-      cursor: pointer;
+
       transition: all 0.2s ease;
       position: relative;
       box-shadow: var(--shadow);
       color: var(--text);
-    }
-
-    .pub-card:hover {
-      border-color: var(--accent);
-      box-shadow: var(--shadow);
-      transform: translateY(-1px);
-      background: var(--background-darkest);
+      /* Enhanced touch feedback for mobile */
+      -webkit-tap-highlight-color: var(--background-darkest);
     }
 
     .pub-card:active {
@@ -45,15 +46,98 @@ import { ChipStatusComponent } from '../../../shared/ui/chips/chip-status/chip-s
       background: var(--background-darkest);
     }
 
+        /* Status area - consistent sizing for checkbox and icon */
+    .pub-card__status {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      min-width: 40px;
+      min-height: 40px;
+    }
+
     .pub-card__checkbox {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
       z-index: 10;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
     }
+
+    .pub-card__status-icon {
+      margin-top: 4px;
+      flex-shrink: 0;
+      cursor: help;
+      color: var(--success);
+      filter: drop-shadow(0 2px 4px rgba(72, 187, 120, 0.3));
+    }
+
+    .pub-card-inner {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+
+
+    /* Status badges - horizontal for mobile */
+    .pub-card__status-badges {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 0.25rem;
+    }
+
+    .pub-card__title-container {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex: 1;
+    }
+
+
+    .pub-card__home-icon {
+      font-size: 1rem;
+      opacity: 0.8;
+    }
+
+
+    /* Content */
+    .pub-card__content {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .pub-card__address {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      margin: 0;
+      line-height: 1.4;
+    }
+
+    .pub-card__location {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      margin: 0;
+      font-style: italic;
+    }
+
+    .pub-card__distance {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .pub-card__checkins {
+      font-size: 0.75rem;
+      color: var(--success);
+      margin: 0;
+      font-weight: 500;
+    }
+
+
 
     .pub-checkbox {
       appearance: none;
@@ -68,13 +152,6 @@ import { ChipStatusComponent } from '../../../shared/ui/chips/chip-status/chip-s
       position: relative;
       margin: 0;
       flex-shrink: 0;
-    }
-
-    .pub-checkbox:hover {
-      border-color: var(--primary);
-      background: var(--background-lighter);
-      transform: scale(1.05);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 
     .pub-checkbox:focus {
@@ -100,54 +177,7 @@ import { ChipStatusComponent } from '../../../shared/ui/chips/chip-status/chip-s
       line-height: 1;
     }
 
-
-    .sr-only {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
-    }
-
-    .pub-card__header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 0.75rem;
-      margin-bottom: 0.75rem;
-    }
-
-    .pub-card__status-badges {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-      align-items: flex-end;
-    }
-
-    .pub-card__title-container {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      flex: 1;
-    }
-
-    .pub-card__title {
-      font-size: 1.125rem;
-      font-weight: 600;
-      color: var(--text);
-      margin: 0;
-      line-height: 1.3;
-    }
-
-    .pub-card__home-icon {
-      font-size: 1rem;
-      opacity: 0.8;
-    }
-
+    /* Badge styles */
     .pub-card__badge {
       padding: 0.25rem 0.5rem;
       border-radius: 12px;
@@ -192,53 +222,7 @@ import { ChipStatusComponent } from '../../../shared/ui/chips/chip-status/chip-s
       opacity: 0.7;
     }
 
-    @keyframes pulse-glow {
-      0%, 100% {
-        transform: scale(1);
-        box-shadow: 0 0 0 0 var(--warning);
-      }
-      50% {
-        transform: scale(1.02);
-        box-shadow: 0 0 0 4px rgba(var(--warning-rgb, 255, 165, 0), 0.2);
-      }
-    }
-
-    .pub-card__content {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .pub-card__address {
-      font-size: 0.875rem;
-      color: var(--text-secondary);
-      margin: 0;
-      line-height: 1.4;
-    }
-
-    .pub-card__location {
-      font-size: 0.875rem;
-      color: var(--text-secondary);
-      margin: 0;
-      font-style: italic;
-    }
-
-    .pub-card__distance {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      margin: 0;
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
-    }
-
-    .pub-card__checkins {
-      font-size: 0.75rem;
-      color: var(--success);
-      margin: 0;
-      font-weight: 500;
-    }
-
+    /* Debug styles */
     .pub-card__debug {
       margin-top: 0.75rem;
       padding: 0.5rem;
@@ -264,31 +248,94 @@ import { ChipStatusComponent } from '../../../shared/ui/chips/chip-status/chip-s
       line-height: 1.4;
     }
 
-    /* Mobile optimizations */
-    @media (max-width: 640px) {
-      .pub-card {
-        /* Enhanced touch feedback */
-        -webkit-tap-highlight-color: var(--background-darkest);
-      }
+    /* Utility styles */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
 
-      .pub-card__title {
-        font-size: 1rem;
-      }
+    /* ===== ANIMATIONS ===== */
 
-      .pub-card__header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
+    @keyframes visit-celebration {
+      0% {
+        transform: scale(0.8);
+        opacity: 0.8;
       }
-
-      .pub-card__status-badges {
-        flex-direction: row;
-        align-items: flex-start;
-        flex-wrap: wrap;
+      50% {
+        transform: scale(1.1);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
       }
     }
 
-    /* Theme-aware shadows already defined above */
+    @keyframes pulse-glow {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 var(--warning);
+      }
+      50% {
+        transform: scale(1.02);
+        box-shadow: 0 0 0 4px rgba(var(--warning-rgb, 255, 165, 0), 0.2);
+      }
+    }
+
+    /* ===== ACCESSIBILITY ===== */
+
+    @media (prefers-reduced-motion: reduce) {
+      .pub-card__badge--target {
+        animation: none;
+      }
+    }
+
+    /* ===== TABLET+ ENHANCEMENTS (641px+) ===== */
+
+    @media (min-width: 641px) {
+      /* Enhanced layout for larger screens */
+      .pub-card__header {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 0.75rem;
+      }
+
+      .pub-card__status-badges {
+        flex-direction: column;
+        align-items: flex-end;
+      }
+
+      .pub-card__title {
+        font-size: 1.125rem;
+      }
+    }
+
+    /* ===== DESKTOP ENHANCEMENTS (1024px+) ===== */
+
+    @media (min-width: 1024px) {
+      /* Hover effects for true hover devices */
+      .pub-card:hover {
+        border-color: var(--accent);
+        box-shadow: var(--shadow);
+        transform: translateY(-1px);
+        background: var(--background-darkest);
+      }
+
+      .pub-checkbox:hover {
+        border-color: var(--primary);
+        background: var(--background-lighter);
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      }
+    }
   `
 })
 export class PubCardComponent {
@@ -317,6 +364,9 @@ export class PubCardComponent {
   readonly hasVerifiedVisit = input<boolean>(false);    // App check-in exists
   readonly hasUnverifiedVisit = input<boolean>(false);  // Manual addition exists
   readonly isNearestUnvisited = input<boolean>(false);  // Closest unvisited pub
+
+  // ✅ Address display control
+  readonly displayFullAddress = input<boolean>(false);  // Show full address vs city/region only
 
   // ✅ Outputs for interactions
   readonly cardClicked = output<Pub>();
@@ -370,6 +420,35 @@ export class PubCardComponent {
     if (this.hasVerifiedVisit()) return 'pub-card__badge--ghost';
     if (this.hasUnverifiedVisit()) return 'pub-card__badge--ghost';
     return 'pub-card__badge--success'; // fallback
+  });
+
+  // ✅ Visit status icon for display in title area
+  readonly hasAnyVisit = computed(() =>
+    this.hasVerifiedVisit() || this.hasUnverifiedVisit() || this.hasCheckedIn()
+  );
+
+  readonly visitStatusIcon = computed(() => {
+    if (this.hasVerifiedVisit()) return 'verified'; // Verified visit (app check-in) - star badge
+    if (this.hasUnverifiedVisit()) return 'check_circle'; // Manual/unverified visit
+    if (this.hasCheckedIn()) return 'check_circle'; // Legacy check-in
+    return '';
+  });
+
+  readonly visitStatusTitle = computed(() => {
+    if (this.hasVerifiedVisit()) return 'Verified visit with photo';
+    if (this.hasUnverifiedVisit()) return 'Manually added visit';
+    if (this.hasCheckedIn()) return 'Visited';
+    return '';
+  });
+
+  // ✅ Address display logic
+  readonly displayAddress = computed(() => {
+    if (this.displayFullAddress()) {
+      return this.pub().address;
+    }
+    // Show city, region when not displaying full address
+    const parts = [this.pub().city, this.pub().region].filter(Boolean);
+    return parts.length > 0 ? parts.join(', ') : this.pub().address;
   });
 
   // ✅ Checkbox helpers for semantic HTML

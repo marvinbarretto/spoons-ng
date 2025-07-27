@@ -1,72 +1,81 @@
-<div class="pub-card"
-     [class.pub-card--selected]="isSelected()"
-     [class.pub-card--selectable]="selectable()"
-     (click)="handleClick($event)"
-   >
+<article
+  class="pub-card"
+  [class.pub-card--selected]="isSelected()"
+  [class.pub-card--selectable]="selectable()"
+  (click)="handleClick($event)"
+>
+  <div class="pub-card__status">
+    <!-- Single status indicator: checkbox in editing mode, visit icon in viewing mode -->
+    @if (selectable()) {
+      <div class="pub-card__checkbox">
+        <input
+          type="checkbox"
+          [id]="checkboxId()"
+          [checked]="isSelected()"
+          [attr.aria-label]="'Select ' + pub().name + ' to add to your history'"
+          (change)="handleCheckboxChange($event)"
+          (click)="$event.stopPropagation()"
+          class="pub-checkbox"
+        />
+        <label [for]="checkboxId()" class="sr-only"> Select {{ pub().name }} </label>
+      </div>
+    } @else if (hasAnyVisit()) {
+      <app-icon
+        [name]="visitStatusIcon()"
+        size="xl"
+        [filled]="hasVerifiedVisit()"
+        class="pub-card__status-icon"
+        [title]="visitStatusTitle()"
+        [attr.aria-label]="visitStatusTitle()"
+      />
+    }
+  </div>
 
-   <!-- ✅ Semantic checkbox when in selectable mode -->
-   @if (selectable()) {
-     <div class="pub-card__checkbox">
-       <input
-         type="checkbox"
-         [id]="checkboxId()"
-         [checked]="isSelected()"
-         [attr.aria-label]="'Select ' + pub().name + ' to add to your history'"
-         (change)="handleCheckboxChange($event)"
-         (click)="$event.stopPropagation()"
-         class="pub-checkbox"
-       />
-       <label [for]="checkboxId()" class="sr-only">
-         Select {{ pub().name }}
-       </label>
-     </div>
-   }
+  <div class="pub-card-inner">
+    <div class="pub-card__content">
+      <header>
+        <div class="pub-card__title-container">
+          <h3>{{ pub().name }}</h3>
+          @if (isLocalPub()) {
+            <span class="pub-card__home-icon">🏠</span>
+          }
+        </div>
 
-   <header class="pub-card__header">
-       <div class="pub-card__title-container">
-       @if (shouldShowVerificationBadge() || hasCheckedIn()) {
-         <app-chip-status 
-           [type]="hasVerifiedVisit() ? 'success' : 'info'"
-           [text]="visitBadgeText()"
-           size="xs"
-           [showIcon]="false"
-           customClass="pub-card__badge--ghost"
-         />
-       }
-         <h3 class="pub-card__title">{{ pub().name }}</h3>
-         @if (isLocalPub()) {
-           <span class="pub-card__home-icon">🏠</span>
-         }
-       </div>
+        <div class="pub-card__status-badges">
+          @if (isNearestUnvisited()) {
+            <app-chip-status
+              type="warning"
+              text="🎯 Next Target"
+              size="xs"
+              [showIcon]="false"
+              customClass="pub-card__badge--target"
+            />
+          }
+        </div>
+      </header>
 
-       <div class="pub-card__status-badges">
-         @if (isNearestUnvisited()) {
-           <app-chip-status 
-             type="warning"
-             text="🎯 Next Target"
-             size="xs"
-             [showIcon]="false"
-             customClass="pub-card__badge--target"
-           />
-         }
-       </div>
-     </header>
+    </div>
 
-     <div class="pub-card__content">
-       <p class="pub-card__address">{{ pub().address }}</p>
+    <div>
+      <span class="pub-card__address">
+        {{ displayAddress() }}
+      </span>
 
-       @if (locationText()) {
-         <p class="pub-card__location">{{ locationText() }}</p>
-       }
+      @if (displayFullAddress() && locationText()) {
+        <span class="pub-card__location">{{ locationText() }} </span>
+      }
 
-       @if (distanceText()) {
-         <p class="pub-card__distance" [class.distance-pulsing]="isMoving()">{{ distanceText() }}</p>
-       }
+      @if (distanceText()) {
+        <span class="pub-card__distance" [class.distance-pulsing]="isMoving()">{{
+          distanceText()
+        }}</span>
+      }
 
-       @if (showCheckinCount() && checkinCount() > 0) {
-         <p class="pub-card__checkins">
-           {{ checkinCount() }} check-in{{ checkinCount() !== 1 ? 's' : '' }}
-         </p>
-       }
-     </div>
-   </div>
+      @if (showCheckinCount() && checkinCount() > 0) {
+        <span class="pub-card__checkins">
+          {{ checkinCount() }} check-in{{ checkinCount() !== 1 ? 's' : '' }}
+        </span>
+      }
+    </div>
+  </div>
+</article>
