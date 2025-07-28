@@ -16,9 +16,112 @@
   z-index: 100;
   background: var(--background);
   border-bottom: 1px solid var(--border);
-  padding: 0.75rem 1rem;
+  padding: 1rem;
   backdrop-filter: blur(8px);
   box-shadow: 0 1px 3px var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* PRIMARY SEARCH BAR - Full Width and Prominent */
+.search-primary {
+  position: relative;
+  width: 100%;
+}
+
+.search-input-primary {
+  width: 100%;
+  padding: 1rem 3rem 1rem 3.5rem;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: var(--background-lighter);
+  color: var(--text);
+  font-size: 1rem;
+  line-height: 1.5;
+  transition: all var(--animation-duration-fast) var(--animation-easing-ease);
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 400;
+  
+  &::placeholder {
+    color: var(--text-muted);
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 400;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: var(--background);
+    box-shadow: 0 0 0 3px var(--primary-alpha-20);
+  }
+
+  /* Hide browser default search clear button */
+  &::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  &::-ms-clear {
+    display: none;
+  }
+
+  @media (max-width: 640px) {
+    font-size: 0.9rem;
+    padding: 0.875rem 2.5rem 0.875rem 3rem;
+  }
+}
+
+.search-primary .search-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.clear-search-btn-primary {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 50%;
+  background: var(--background-darker);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--animation-duration-fast) var(--animation-easing-ease);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background: var(--error);
+    color: var(--background);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  &:active {
+    transform: translateY(-50%) scale(0.95);
+  }
+}
+
+/* SECONDARY CONTROLS ROW */
+.controls-row-secondary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  
+  @media (max-width: 640px) {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch;
+  }
 }
 
 .controls-row {
@@ -180,37 +283,60 @@
   }
 }
 
-/* ✅ SUBTLE SELECTION INDICATOR */
-.selection-indicator {
+/* PROMINENT MANAGEMENT TOGGLE */
+.manage-toggle-primary {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  justify-content: center;
+  gap: 0.5rem;
   padding: 0.75rem 1rem;
-  background: var(--primary);
-  color: var(--primary-contrast);
+  border: 2px solid var(--border);
   border-radius: 12px;
-  // Use existing animation system
-  @include slide-down();
+  background: var(--background-lighter);
+  color: var(--text);
+  cursor: pointer;
+  transition: all var(--animation-duration-fast) var(--animation-easing-ease);
+  font-family: 'Fredoka', sans-serif;
+  font-weight: 500;
+  font-size: 0.9rem;
+  min-width: 140px;
+  @include hover-lift(-2px);
+
+  &:hover {
+    background: var(--background-darker);
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow);
+  }
+
+  &.active {
+    background: var(--success);
+    color: var(--background);
+    border-color: var(--success);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
+    
+    &:hover {
+      background: var(--primaryHover);
+      border-color: var(--primaryHover);
+      color: var(--onPrimary);
+    }
+  }
   
-  @media (max-width: 480px) {
-    flex-direction: column;
-    gap: 0.25rem;
-    text-align: center;
+  .manage-label {
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  
+  @media (max-width: 640px) {
+    width: 100%;
+    justify-content: center;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    min-width: unset;
   }
 }
 
-.selection-count {
-  font-weight: 600;
-  font-size: 0.875rem;
-}
-
-.selection-help {
-  font-size: 0.75rem;
-  opacity: 0.9;
-  font-weight: 400;
-}
 
 /* ✅ MAIN CONTENT AREA */
 .pub-list-container {
@@ -283,11 +409,6 @@
   }
 }
 
-.selection-count {
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--primary-text);
-}
 
 .bulk-actions {
   display: flex;

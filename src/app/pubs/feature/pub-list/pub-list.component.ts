@@ -99,6 +99,21 @@ export class PubListComponent extends BaseComponent implements OnInit {
     return queryParams['manage'] === 'true';
   });
 
+  protected readonly shouldShowFilterPills = computed(() => {
+    const visitedCount = this.dataAggregatorService.pubsVisited();
+    return visitedCount > 0;
+  });
+
+  protected readonly hasChangesToSave = computed(() => {
+    // Only show the manage button if user is in management mode and has made changes
+    if (!this.isManagementMode()) {
+      return false;
+    }
+    
+    // Check if any selections have been made (different from initial state)
+    return this.selectedCount() > 0;
+  });
+
   protected readonly searchFilteredPubs = computed(() => {
     const pubs = this.pubsWithDistance();
     const term = this.searchTerm().toLowerCase().trim();

@@ -1,70 +1,65 @@
 <section class="pub-list-page">
   <!-- ✅ Sticky condensed controls -->
   <section class="controls-section sticky-controls">
-    <div class="controls-row">
-      <!-- Condensed Search -->
-      <div class="search-compact">
-        <app-icon name="search" size="sm" class="search-icon" />
-        <input
-          type="search"
-          class="search-input"
-          placeholder="Search pubs..."
-          [value]="searchTerm()"
-          (input)="setSearchTerm($event)"
-          autocomplete="off"
-          aria-label="Search pubs"
-        />
-        @if (searchTerm()) {
-          <button
-            class="clear-search-btn"
-            (click)="clearSearch()"
-            type="button"
-            aria-label="Clear search"
-          >
-            <app-icon name="close" size="xs" />
-          </button>
-        }
-      </div>
+    <!-- Primary Search Bar - Full Width and Prominent -->
+    <div class="search-primary">
+      <app-icon name="search" size="md" class="search-icon" />
+      <input
+        type="search"
+        class="search-input-primary"
+        placeholder="Search pubs by name, location, or region..."
+        [value]="searchTerm()"
+        (input)="setSearchTerm($event)"
+        autocomplete="off"
+        aria-label="Search pubs"
+      />
+      @if (searchTerm()) {
+        <button
+          class="clear-search-btn-primary"
+          (click)="clearSearch()"
+          type="button"
+          aria-label="Clear search"
+        >
+          <app-icon name="close" size="sm" />
+        </button>
+      }
+    </div>
 
-      <!-- Condensed Filter Pills -->
-      <div class="filter-pills-compact">
-        @for (option of filterOptions; track option.value) {
-          <button
-            class="filter-pill-compact"
-            [class.active]="filterMode() === option.value"
-            (click)="setFilter(option.value)"
-            type="button"
-            [attr.aria-pressed]="filterMode() === option.value"
-          >
-            {{ option.label }} ({{ getFilterCount(option.value) }})
-          </button>
-        }
-      </div>
+    <!-- Secondary Controls Row -->
+    <div class="controls-row-secondary">
+      <!-- Conditional Filter Pills - Only show if user has visited pubs -->
+      @if (shouldShowFilterPills()) {
+        <div class="filter-pills-compact">
+          @for (option of filterOptions; track option.value) {
+            <button
+              class="filter-pill-compact"
+              [class.active]="filterMode() === option.value"
+              (click)="setFilter(option.value)"
+              type="button"
+              [attr.aria-pressed]="filterMode() === option.value"
+            >
+              {{ option.label }} ({{ getFilterCount(option.value) }})
+            </button>
+          }
+        </div>
+      }
 
-      <!-- Management Toggle -->
-      <button
-        class="manage-toggle-compact"
-        [class.active]="isManagementMode()"
-        (click)="toggleManagementMode()"
-        type="button"
-        [attr.aria-pressed]="isManagementMode()"
-      >
-        @if (isManagementMode()) {
-          <app-icon name="check" size="sm" />
-        } @else {
-          <app-icon name="edit" size="sm" />
-        }
-      </button>
+      <!-- Prominent Management Toggle - Only show when there are changes to save -->
+      @if (hasChangesToSave()) {
+        <button
+          class="manage-toggle-primary"
+          [class.active]="isManagementMode()"
+          (click)="toggleManagementMode()"
+          type="button"
+          [attr.aria-pressed]="isManagementMode()"
+        >
+          <app-icon name="check" size="md" />
+          <span class="manage-label">Save changes</span>
+        </button>
+      }
     </div>
   </section>
 
-  <!-- ✅ Subtle selection indicator (only when in management mode with selections) -->
-  @if (isManagementMode() && selectedCount() > 0) {
-    <div class="selection-indicator">
-      <span class="selection-count">{{ selectedCount() }} selected</span>
-      <span class="selection-help">Changes saved when you exit edit mode</span>
-    </div>
-  }
 
   <!-- ✅ Main content area with better space usage -->
   <section class="pub-list-container">
