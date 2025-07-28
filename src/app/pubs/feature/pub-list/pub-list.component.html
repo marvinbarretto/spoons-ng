@@ -44,22 +44,33 @@
         </div>
       }
 
-      <!-- Prominent Management Toggle - Only show when there are changes to save -->
-      @if (hasChangesToSave()) {
-        <button
-          class="manage-toggle-primary"
-          [class.active]="isManagementMode()"
-          (click)="toggleManagementMode()"
-          type="button"
-          [attr.aria-pressed]="isManagementMode()"
-        >
-          <app-icon name="check" size="md" />
-          <span class="manage-label">Save changes</span>
-        </button>
-      }
     </div>
   </section>
 
+  <!-- ✅ Management Mode Button Section -->
+  <section class="management-entry-section">
+    @if (!isManagementMode()) {
+      <!-- Entry Button -->
+      <app-button
+        variant="secondary"
+        size="md"
+        iconLeft="edit"
+        (onClick)="toggleManagementMode()"
+      >
+        Manage pub count
+      </app-button>
+    } @else if (hasChangesToSave()) {
+      <!-- Save Changes Button -->
+      <app-button
+        variant="success"
+        size="md"
+        iconLeft="check"
+        (onClick)="toggleManagementMode()"
+      >
+        Save changes
+      </app-button>
+    }
+  </section>
 
   <!-- ✅ Main content area with better space usage -->
   <section class="pub-list-container">

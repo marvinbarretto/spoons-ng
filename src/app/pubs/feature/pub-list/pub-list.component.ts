@@ -15,6 +15,7 @@ import { environment } from '../../../../environments/environment';
 import { CheckInStore } from '../../../check-in/data-access/check-in.store';
 import { BaseComponent } from '../../../shared/base/base.component';
 import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
+import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { IconComponent } from '../../../shared/ui/icon/icon.component';
 import { PubStore } from '../../data-access/pub.store';
 import { PubCardComponent } from '../../ui/pub-card/pub-card.component';
@@ -31,6 +32,7 @@ type FilterOption = 'all' | 'visited' | 'unvisited';
     ErrorStateComponent,
     EmptyStateComponent,
     IconComponent,
+    ButtonComponent,
   ],
   templateUrl: './pub-list.component.html',
   styleUrl: './pub-list.component.scss',

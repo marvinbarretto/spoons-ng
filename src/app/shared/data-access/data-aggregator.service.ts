@@ -90,21 +90,46 @@ export class DataAggregatorService {
   });
 
   /**
-   * Compute total pub count (verified + unverified)
-   * @description Primary pub count used throughout the app
+   * Compute total unique pub count (deduplicates verified + manual visits)
+   * @description Primary pub count used throughout the app - prevents double counting
    */
   readonly pubsVisited = computed(() => {
-    const verified = this.verifiedPubsCount();
-    const unverified = this.unverifiedPubsCount();
-    const total = verified + unverified;
+    const currentUser = this.authStore.user();
+    
+    if (!currentUser) {
+      return 0;
+    }
 
-    console.log('📊 [DataAggregator] Total pubs calculated:', {
-      verified,
-      unverified,
-      total
+    // Get unique pub IDs from check-ins (verified visits)
+    const checkins = this.checkinStore.checkins();
+    const userCheckins = checkins.filter(checkin => checkin.userId === currentUser.uid);
+    const verifiedPubIds = new Set(userCheckins.map(checkin => checkin.pubId));
+
+    // Get manual pub IDs from user profile
+    const user = this.userStore.user();
+    const manualPubIds = user?.manuallyAddedPubIds || [];
+
+    // Combine and deduplicate all pub IDs
+    const allUniquePubIds = new Set([...verifiedPubIds, ...manualPubIds]);
+    const totalUnique = allUniquePubIds.size;
+
+    // Calculate counts for debugging
+    const verifiedCount = verifiedPubIds.size;
+    const manualCount = manualPubIds.length;
+    const duplicatesCount = (verifiedCount + manualCount) - totalUnique;
+
+    console.log('📊 [DataAggregator] Total unique pubs calculated:', {
+      verifiedCount,
+      manualCount,
+      totalRaw: verifiedCount + manualCount,
+      duplicatesRemoved: duplicatesCount,
+      totalUnique,
+      verifiedPubIds: Array.from(verifiedPubIds),
+      manualPubIds,
+      allUniquePubIds: Array.from(allUniquePubIds)
     });
 
-    return total;
+    return totalUnique;
   });
 
   /**
