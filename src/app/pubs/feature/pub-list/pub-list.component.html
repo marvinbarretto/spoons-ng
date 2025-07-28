@@ -1,79 +1,71 @@
 <section class="pub-list-page">
-  <!-- ✅ Compact header using your existing signals -->
-  <header class="page-header">
-    <h1>Spoons ({{ pubStore.totalCount() }})</h1>
-    <p class="page-subtitle">
-      @if (hasLocationData()) {
-        📍 Sorted by proximity
-      } @else {
-        📄 Sorted alphabetically
-      }
-    </p>
-  </header>
 
-  <!-- ✅ Management stats header (when in management mode) -->
-  @if (isManagementMode()) {
-    <section class="management-stats">
-      <h2>📝 Manage Your Pub History</h2>
-      <p class="stats-summary">
-        Total: <strong>{{ managementStats().total }}</strong> pubs
-        (<strong>{{ managementStats().verified }}</strong> ✅ verified,
-         <strong>{{ managementStats().unverified }}</strong> 📝 manual)
-      </p>
-      <p class="help-text">
-        Select unvisited pubs you've been to before and add them to your history
-      </p>
-    </section>
-  }
+  <!-- ✅ Sticky condensed controls -->
+  <section class="controls-section sticky-controls">
+    <div class="controls-row">
+      <!-- Condensed Search -->
+      <div class="search-compact">
+        <app-icon name="search" size="sm" class="search-icon" />
+        <input
+          type="search"
+          class="search-input"
+          placeholder="Search pubs..."
+          [value]="searchTerm()"
+          (input)="setSearchTerm($event)"
+          autocomplete="off"
+          aria-label="Search pubs"
+        />
+        @if (searchTerm()) {
+          <button 
+            class="clear-search-btn" 
+            (click)="clearSearch()" 
+            type="button"
+            aria-label="Clear search"
+          >
+            <app-icon name="close" size="xs" />
+          </button>
+        }
+      </div>
 
-  <!-- ✅ Condensed controls using your exact signal structure -->
-  <section class="controls-section">
-    <div class="search-group">
-      <input
-        type="search"
-        class="search-input"
-        placeholder="Search pubs by name or location..."
-        [value]="searchTerm()"
-        (input)="setSearchTerm($event)"
-        autocomplete="off"
-      />
-      @if (searchTerm()) {
-        <button class="clear-search-btn" (click)="clearSearch()" type="button">
-          ✕
-        </button>
-      }
-    </div>
-
-    <div class="filter-group">
-      <div class="filter-pills">
+      <!-- Condensed Filter Pills -->
+      <div class="filter-pills-compact">
         @for (option of filterOptions; track option.value) {
           <button
-            class="filter-pill"
+            class="filter-pill-compact"
             [class.active]="filterMode() === option.value"
             (click)="setFilter(option.value)"
             type="button"
+            [attr.aria-pressed]="filterMode() === option.value"
           >
             {{ option.label }} ({{ getFilterCount(option.value) }})
           </button>
         }
       </div>
 
-      <!-- ✅ Management mode toggle -->
+      <!-- Management Toggle -->
       <button
-        class="manage-toggle"
+        class="manage-toggle-compact"
         [class.active]="isManagementMode()"
         (click)="toggleManagementMode()"
         type="button"
+        [attr.aria-pressed]="isManagementMode()"
       >
         @if (isManagementMode()) {
-          ✓ Done Managing
+          <app-icon name="check" size="sm" />
         } @else {
-          📝 Manage History
+          <app-icon name="edit" size="sm" />
         }
       </button>
     </div>
   </section>
 
+  <!-- ✅ Subtle selection indicator (only when in management mode with selections) -->
+  @if (isManagementMode() && selectedCount() > 0) {
+    <div class="selection-indicator">
+      <span class="selection-count">{{ selectedCount() }} selected</span>
+      <span class="selection-help">Changes saved when you exit edit mode</span>
+    </div>
+  }
 
   <!-- ✅ Main content area with better space usage -->
   <section class="pub-list-container">

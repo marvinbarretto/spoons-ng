@@ -29,13 +29,35 @@
   <!-- User & Status Section - Always visible -->
   <div class="nav-header">
     @if (userChipData()) {
-      <app-chip-user
-        [user]="userChipData()!"
-        [size]="isMobile() ? 'sm' : 'md'"
-        [showName]="true"
-        [clickable]="false"
-        variant="default"
-      />
+      <div class="user-section">
+        <app-chip-user
+          [user]="userChipData()!"
+          [size]="isMobile() ? 'sm' : 'md'"
+          [showName]="true"
+          [clickable]="false"
+          variant="default"
+        />
+        @if (scoreboardData().totalPoints > 0 && !scoreboardData().isLoading) {
+          <div class="points-badge">
+            @if (leaderboardStore.currentUserPosition()) {
+              <span class="rank-value">#{{ leaderboardStore.currentUserPosition() }}</span>
+              <span class="divider">•</span>
+            }
+            <span class="points-value">{{ scoreboardData().totalPoints }}</span>
+            <span class="points-label">pts</span>
+          </div>
+        }
+        @if (scoreboardData().pubsVisited > 0 && !scoreboardData().isLoading) {
+          <div class="pubs-badge">
+            @if (currentUserPubRank()) {
+              <span class="rank-value">#{{ currentUserPubRank() }}</span>
+              <span class="divider">•</span>
+            }
+            <span class="pubs-value">{{ scoreboardData().pubsVisited }}</span>
+            <span class="pubs-label">pubs</span>
+          </div>
+        }
+      </div>
           <!-- <app-user-profile-widget
       [user]="dataAggregatorService.user()"
       (openProfile)="onOpenProfile()"

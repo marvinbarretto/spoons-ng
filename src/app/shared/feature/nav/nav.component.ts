@@ -9,6 +9,7 @@ import { UserStore } from '../../../users/data-access/user.store';
 import { DataAggregatorService } from '../../data-access/data-aggregator.service';
 import { ViewportService } from '../../data-access/viewport.service';
 import { ToastService } from '../../data-access/toast.service';
+import { LeaderboardStore } from '../../../leaderboard/data-access/leaderboard.store';
 import type { UserChipData } from '../../ui/chips/chip-user/chip-user.component';
 import { ButtonVariant, ButtonSize } from '../../ui/button/button.params';
 import { UserProfileWidgetComponent } from "@/app/home/ui/user-profile-widget/user-profile-widget.component";
@@ -27,6 +28,7 @@ export class NavComponent {
   private readonly dataAggregator = inject(DataAggregatorService);
   private readonly viewportService = inject(ViewportService);
   private readonly toastService = inject(ToastService);
+  protected readonly leaderboardStore = inject(LeaderboardStore);
 
   // Use viewport service for responsive behavior
   readonly isMobile = this.viewportService.isMobile;
@@ -53,6 +55,27 @@ export class NavComponent {
       photoURL: user.photoURL || undefined,
       email: user.email || undefined
     };
+  });
+
+  // Points data for nav display
+  readonly scoreboardData = this.dataAggregator.scoreboardData;
+
+  // Pub ranking computed signal - get current user's rank when sorted by pubs
+  readonly currentUserPubRank = computed(() => {
+    const currentUser = this.authStore.user();
+    if (!currentUser) return null;
+
+    const entries = this.leaderboardStore.leaderboardEntries();
+    
+    // Sort by pubs manually to get the rank
+    const sortedByPubs = [...entries].sort((a, b) => {
+      if (b.uniquePubs !== a.uniquePubs) return b.uniquePubs - a.uniquePubs;
+      if (b.totalPoints !== a.totalPoints) return b.totalPoints - a.totalPoints;
+      return b.totalCheckins - a.totalCheckins;
+    });
+
+    const userEntry = sortedByPubs.find(e => e.userId === currentUser.uid);
+    return userEntry ? sortedByPubs.indexOf(userEntry) + 1 : null;
   });
 
   // Button variants for template

@@ -11,23 +11,17 @@ import { LocationService } from '../../../shared/data-access/location.service';
 import { FirestoreCrudService } from '@fourfold/angular-foundation';
 import { PubCardComponent } from '../../ui/pub-card/pub-card.component';
 import { LoadingStateComponent, ErrorStateComponent, EmptyStateComponent } from '../../../shared/ui/state-components';
+import { IconComponent } from '../../../shared/ui/icon/icon.component';
 import type { Pub } from '../../utils/pub.models';
 import type { CheckIn } from '@check-in/utils/check-in.models';
 import { environment } from '../../../../environments/environment';
 
-type FilterOption = 'all' | 'visited' | 'unvisited' | 'nearby';
+type FilterOption = 'all' | 'visited' | 'unvisited';
 
-type ManagementActionType = 'add' | 'remove';
-
-interface PendingManagementAction {
-  readonly pubId: string;
-  readonly action: ManagementActionType;
-  readonly pubName: string;
-}
 
 @Component({
   selector: 'app-pub-list',
-  imports: [RouterModule, PubCardComponent, LoadingStateComponent, ErrorStateComponent, EmptyStateComponent],
+  imports: [RouterModule, PubCardComponent, LoadingStateComponent, ErrorStateComponent, EmptyStateComponent, IconComponent],
   templateUrl: './pub-list.component.html',
   styleUrl: './pub-list.component.scss'
 })
@@ -45,9 +39,6 @@ export class PubListComponent extends BaseComponent implements OnInit {
   private readonly _filterMode = signal<FilterOption>('all');
   private readonly _isManagementMode = signal(false);
   private readonly _selectedForAddition = signal<Set<string>>(new Set());
-  
-  // ✅ Action tracking for batch processing
-  private readonly _pendingActions = signal<PendingManagementAction[]>([]);
 
   // ✅ Expose state for template
   protected readonly searchTerm = this._searchTerm.asReadonly();
@@ -59,8 +50,7 @@ export class PubListComponent extends BaseComponent implements OnInit {
   protected readonly filterOptions = [
     { value: 'all' as const, label: 'All' },
     { value: 'visited' as const, label: 'Visited' },
-    { value: 'unvisited' as const, label: 'Unvisited' },
-    { value: 'nearby' as const, label: 'Nearby' }
+    { value: 'unvisited' as const, label: 'Unvisited' }
   ];
 
   // ✅ Check-in distance threshold from environment
@@ -110,15 +100,12 @@ export class PubListComponent extends BaseComponent implements OnInit {
   protected readonly filterFilteredPubs = computed(() => {
     const pubs = this.searchFilteredPubs();
     const filter = this.filterMode();
-    const checkedInIds = this.userCheckedInPubIds();
 
     switch (filter) {
       case 'visited':
-        return pubs.filter(pub => checkedInIds.includes(pub.id));
+        return pubs.filter(pub => this.hasAnyVisit(pub.id));
       case 'unvisited':
-        return pubs.filter(pub => !checkedInIds.includes(pub.id));
-      case 'nearby':
-        return pubs.filter(pub => pub.distance !== Infinity && pub.distance <= 2000); // 2km
+        return pubs.filter(pub => !this.hasAnyVisit(pub.id));
       default:
         return pubs;
     }
@@ -143,18 +130,25 @@ export class PubListComponent extends BaseComponent implements OnInit {
     return sorted;
   });
 
-  // ✅ Filter counts for template
+  // ✅ Filter counts for template - using global counts as source of truth
   getFilterCount(filter: FilterOption): number {
     const pubs = this.searchFilteredPubs();
-    const checkedInIds = this.userCheckedInPubIds();
+    const hasSearchTerm = this.searchTerm().trim().length > 0;
 
     switch (filter) {
       case 'visited':
-        return pubs.filter(pub => checkedInIds.includes(pub.id)).length;
+        // For visited count, use DataAggregator's global count if we're showing all pubs
+        // Otherwise fall back to local filtering for search results
+        if (!hasSearchTerm) {
+          return this.dataAggregatorService.pubsVisited();
+        }
+        return pubs.filter(pub => this.hasAnyVisit(pub.id)).length;
       case 'unvisited':
-        return pubs.filter(pub => !checkedInIds.includes(pub.id)).length;
-      case 'nearby':
-        return pubs.filter(pub => pub.distance !== Infinity && pub.distance <= 2000).length;
+        // For unvisited, subtract visited from total available pubs
+        const visitedCount = hasSearchTerm ? 
+          pubs.filter(pub => this.hasAnyVisit(pub.id)).length :
+          this.dataAggregatorService.pubsVisited();
+        return pubs.length - visitedCount;
       default:
         return pubs.length;
     }
@@ -265,17 +259,15 @@ export class PubListComponent extends BaseComponent implements OnInit {
       this._selectedForAddition.set(visitedPubIds);
       console.log('[PubList] Management mode enabled - pre-selected', visitedPubIds.size, 'visited pubs');
     } else {
-      // Exiting management mode: process pending actions then clear
-      await this.processPendingActions();
+      // Exiting management mode: save final selected state
+      await this.saveFinalSelectedState();
       this._selectedForAddition.set(new Set());
-      this._pendingActions.set([]);
-      console.log('[PubList] Management mode disabled - selections and actions cleared');
+      console.log('[PubList] Management mode disabled - final state saved');
     }
   }
 
   handleSelectionChange(event: { pub: Pub; selected: boolean }): void {
     const current = new Set(this._selectedForAddition());
-    const wasInitiallyVisited = this.hasAnyVisit(event.pub.id);
     
     if (event.selected) {
       current.add(event.pub.id);
@@ -284,92 +276,56 @@ export class PubListComponent extends BaseComponent implements OnInit {
     }
     
     this._selectedForAddition.set(current);
-    
-    // Track the action for batch processing
-    const currentActions: PendingManagementAction[] = [...this._pendingActions()];
-    const action: ManagementActionType | null = this.determineAction(event.selected, wasInitiallyVisited);
-    
-    if (action) {
-      const newAction: PendingManagementAction = {
-        pubId: event.pub.id,
-        action: action,
-        pubName: event.pub.name
-      };
-      
-      // Remove any existing action for this pub, then add the new one
-      const filteredActions: PendingManagementAction[] = currentActions.filter(
-        (a: PendingManagementAction) => a.pubId !== event.pub.id
-      );
-      filteredActions.push(newAction);
-      
-      this._pendingActions.set(filteredActions);
-      
-      console.log('[PubList] Action tracked:', {
-        pub: event.pub.name,
-        wasInitiallyVisited,
-        selected: event.selected,
-        action: action,
-        totalPendingActions: filteredActions.length
-      });
-    }
   }
 
-  private determineAction(selected: boolean, wasInitiallyVisited: boolean): ManagementActionType | null {
-    if (wasInitiallyVisited && !selected) {
-      return 'remove'; // Was visited, now unchecked = remove from history
-    } else if (!wasInitiallyVisited && selected) {
-      return 'add'; // Was unvisited, now checked = add to history
-    }
-    return null; // No action needed (back to original state)
-  }
-
-  private async processPendingActions(): Promise<void> {
-    const actions: PendingManagementAction[] = this._pendingActions();
-    
-    if (actions.length === 0) {
-      console.log('[PubList] No pending actions to process');
-      return;
-    }
-
-    console.log('[PubList] Processing', actions.length, 'pending actions:', actions);
-
+  private async saveFinalSelectedState(): Promise<void> {
     const currentUser = this.user();
     if (!currentUser) {
-      console.error('[PubList] No current user for batch processing');
+      console.error('[PubList] No current user for saving state');
       return;
     }
 
+    const selectedPubIds = this._selectedForAddition();
+    
     try {
-      // Process adds and removes separately
-      const addActions: PendingManagementAction[] = actions.filter(
-        (action: PendingManagementAction) => action.action === 'add'
-      );
-      const removeActions: PendingManagementAction[] = actions.filter(
-        (action: PendingManagementAction) => action.action === 'remove'
-      );
-
-      // Process additions (add to manuallyAddedPubIds)
-      if (addActions.length > 0) {
-        for (const action of addActions) {
-          await this.userStore.addVisitedPub(action.pubId);
+      const pubsToAdd: string[] = [];
+      const pubsToRemove: string[] = [];
+      
+      // Get all possible pubs to check
+      const allPubs = this.pubsWithDistance();
+      
+      for (const pub of allPubs) {
+        const isSelected = selectedPubIds.has(pub.id);
+        const hasVerifiedVisit = this.hasVerifiedCheckIn(pub.id);
+        const hasUnverifiedVisit = this.hasUnverifiedVisit(pub.id);
+        
+        if (isSelected) {
+          // Selected: Add if not already saved as unverified visit (verified visits stay as-is)
+          if (!hasVerifiedVisit && !hasUnverifiedVisit) {
+            pubsToAdd.push(pub.id);
+          }
+        } else {
+          // Not selected: Remove if it's currently an unverified visit (verified visits stay as-is)
+          if (!hasVerifiedVisit && hasUnverifiedVisit) {
+            pubsToRemove.push(pub.id);
+          }
         }
-        const pubNamesToAdd: string[] = addActions.map((action: PendingManagementAction) => action.pubName);
-        console.log('[PubList] Added', addActions.length, 'manual visits:', pubNamesToAdd);
       }
-
-      // Process removals (remove from manuallyAddedPubIds and check-ins)
-      if (removeActions.length > 0) {
-        // TODO: Implement removal method in UserStore
-        console.log('[PubList] Removal not yet implemented - need to add removeVisitedPub method to UserStore');
-        const pubNamesToRemove: string[] = removeActions.map((action: PendingManagementAction) => action.pubName);
-        console.log('[PubList] Would remove', removeActions.length, 'visits:', pubNamesToRemove);
+      
+      // Add new manual visits
+      for (const pubId of pubsToAdd) {
+        await this.userStore.addVisitedPub(pubId);
       }
-
-      console.log('[PubList] Successfully processed all pending actions');
+      
+      // Remove manual visits
+      for (const pubId of pubsToRemove) {
+        await this.userStore.removeVisitedPub(pubId);
+      }
+      
+      console.log('[PubList] Saved', pubsToAdd.length, 'new manual visits, removed', pubsToRemove.length, 'manual visits');
       
     } catch (error: unknown) {
-      console.error('[PubList] Error processing pending actions:', error);
-      // TODO: Show user-friendly error message
+      console.error('[PubList] Error saving final state:', error);
     }
   }
 
