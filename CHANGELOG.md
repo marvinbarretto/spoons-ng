@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.115](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.114...v0.0.115) (2025-07-28)
+
+
+### Features
+
+* [Admin] More admin tools ([06ff290](https://github.com/marvinbarretto/spoons-ng/commit/06ff290371e2acdf7ecb74a0816f02f281645854))
+* [Leaderboard] Use new TabComponent ([52db085](https://github.com/marvinbarretto/spoons-ng/commit/52db085f0cfa6dd60236a48c96b8a86c6df00b55))
+* [PubList] Search and filter UI tweaks ([42386ea](https://github.com/marvinbarretto/spoons-ng/commit/42386eaea5625e630c5cad0531ded719ce8c0519))
+* [Shared] User Display pipes ([7c42f19](https://github.com/marvinbarretto/spoons-ng/commit/7c42f19fae311fcc8b980ba001d3482aea6f77cc))
+* [Tabs] Tab Component candidate for lib ([9a66103](https://github.com/marvinbarretto/spoons-ng/commit/9a66103b37850860d8f05e6536d41e948a91ca98))
+
+
+### Bug Fixes
+
+* [DataAggregator] stop duplicate pub count bug ([564afb5](https://github.com/marvinbarretto/spoons-ng/commit/564afb587e5fa6ce5573acc528e3dd991ed638c8))
+
 ### [0.0.114](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.113...v0.0.114) (2025-07-28)
 
 
