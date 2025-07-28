@@ -202,37 +202,9 @@ export class HomeComponent extends BaseComponent {
     this.router.navigate(['/simplified-checkin']);
   }
 
-  async handleAddHistoricalPubs(): Promise<void> {
-    console.log('[Home] Opening historical pub addition modal');
-
-    try {
-      // Import the modal component dynamically
-      const { HistoricalPubAdditionModalComponent } = await import(
-        '../../../shared/ui/historical-pub-addition-modal/historical-pub-addition-modal.component'
-      );
-
-      const { result } = this.overlayService.open(HistoricalPubAdditionModalComponent, {
-        maxWidth: '600px',
-        maxHeight: '90vh',
-      });
-
-      const selectedPubIds = await result;
-
-      if (selectedPubIds && selectedPubIds.length > 0) {
-        console.log('[Home] User successfully added historic pubs:', selectedPubIds);
-
-        this.showSuccess(
-          `Successfully documented ${selectedPubIds.length} historic Wetherspoons visit${selectedPubIds.length === 1 ? '' : 's'}! Your legendary status grows.`
-        );
-
-        // Data is automatically updated via UserStore.patchUser and will reactively update the UI
-      } else {
-        console.log('[Home] User cancelled historic pub addition or no new pubs added');
-      }
-    } catch (error) {
-      console.error('[Home] Error opening historical pub modal:', error);
-      this.showError('Failed to open historic pub documentation. Please try again.');
-    }
+  managePubCount(): void {
+    console.log('[Home] Navigating to pub list in management mode');
+    this.router.navigate(['/pubs'], { queryParams: { manage: 'true' } });
   }
 
   getRecentActivityText(): string {

@@ -1,7 +1,7 @@
 // src/app/pubs/feature/pubs-list/pubs-list.component.ts
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 
-import { RouterModule } from '@angular/router';
+import { ActivatedRoute, RouterModule } from '@angular/router';
 import type { CheckIn } from '@check-in/utils/check-in.models';
 import {
   EmptyStateComponent,
@@ -43,6 +43,7 @@ export class PubListComponent extends BaseComponent implements OnInit {
   protected readonly dataAggregatorService = inject(DataAggregatorService);
   private readonly locationService = inject(LocationService);
   private readonly firestoreCrudService = inject(FirestoreCrudService);
+  private readonly activatedRoute = inject(ActivatedRoute);
 
   // ✅ Local state
   private readonly _searchTerm = signal('');
@@ -92,6 +93,11 @@ export class PubListComponent extends BaseComponent implements OnInit {
   }));
 
   protected readonly selectedCount = computed(() => this.selectedForAddition().size);
+
+  protected readonly isFromHomeQuickStart = computed(() => {
+    const queryParams = this.activatedRoute.snapshot.queryParams;
+    return queryParams['manage'] === 'true';
+  });
 
   protected readonly searchFilteredPubs = computed(() => {
     const pubs = this.pubsWithDistance();
@@ -208,6 +214,14 @@ export class PubListComponent extends BaseComponent implements OnInit {
   // ✅ Data loading
   protected override onInit(): void {
     this.pubStore.loadOnce();
+
+    // ✅ Check for management mode query parameter (from home quick-start)
+    const queryParams = this.activatedRoute.snapshot.queryParams;
+    if (queryParams['manage'] === 'true') {
+      console.log('[PubList] Management mode requested via query param from home quick-start');
+      this._isManagementMode.set(true);
+      // Note: New users from quick-start will have zero visited pubs, so no pre-selection needed
+    }
 
     // ✅ Initialize location if not already set
     if (!this.locationService.location()) {
