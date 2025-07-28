@@ -40,7 +40,6 @@ type CheckinRecord = CollectionRecord & {
     EmptyStateComponent,
     ButtonComponent,
     DataTableComponent,
-    UserDisplayPipe,
   ],
   template: `
     <div class="checkins-data">

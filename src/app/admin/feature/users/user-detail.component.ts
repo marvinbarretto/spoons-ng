@@ -416,7 +416,7 @@ type CheckInWithDetails = CheckIn & {
                               <strong>Latest:</strong>
                               {{
                                 formatCollectionDate(
-                                  data.collections['pointsTransactions'][0]?.data?.createdAt
+                                  data.collections['pointsTransactions'][0].data?.createdAt
                                 )
                               }}
                             </p>
@@ -492,7 +492,7 @@ type CheckInWithDetails = CheckIn & {
                               <strong>Latest:</strong>
                               {{
                                 formatCollectionDate(
-                                  data.collections['earnedBadges'][0]?.data?.earnedAt
+                                  data.collections['earnedBadges'][0].data?.earnedAt
                                 )
                               }}
                             </p>

@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 
 import {
   EmptyStateComponent,
@@ -8,77 +8,24 @@ import {
 import { BaseComponent } from '../../../shared/base/base.component';
 import { ChipUserComponent } from '../../../shared/ui/chips/chip-user/chip-user.component';
 import { LeaderboardStore } from '../../data-access/leaderboard.store';
-import { LeaderboardPeriod, LeaderboardSortBy } from '../../utils/leaderboard.models';
 
 @Component({
   selector: 'app-leaderboard-container',
   imports: [LoadingStateComponent, ErrorStateComponent, EmptyStateComponent, ChipUserComponent],
   template: `
     <div class="leaderboard">
-      <header class="leaderboard-header">
-        <h1>🏆 Real User Leaderboard</h1>
-        <p>See how you rank against real users (including anonymous accounts)</p>
-      </header>
-
-      <!-- Controls -->
-      <div class="leaderboard-controls">
-        <div class="sort-controls">
-          <span class="control-label">Sort by:</span>
-          <div class="sort-buttons">
-            <button
-              [class.active]="store.sortBy() === 'points'"
-              (click)="setSortBy('points')"
-              class="sort-btn"
-            >
-              Points
-            </button>
-            <button
-              [class.active]="store.sortBy() === 'pubs'"
-              (click)="setSortBy('pubs')"
-              class="sort-btn"
-            >
-              Pubs
-            </button>
-            <button
-              [class.active]="store.sortBy() === 'checkins'"
-              (click)="setSortBy('checkins')"
-              class="sort-btn"
-            >
-              Check-ins
-            </button>
-          </div>
-        </div>
-
-        <div class="period-controls">
-          <span class="control-label">Period:</span>
-          <div class="period-buttons">
-            <button
-              [class.active]="store.period() === 'all-time'"
-              (click)="setPeriod('all-time')"
-              class="period-btn"
-            >
-              All Time
-            </button>
-            <button
-              [class.active]="store.period() === 'monthly'"
-              (click)="setPeriod('monthly')"
-              class="period-btn"
-            >
-              This Month
-            </button>
-          </div>
-        </div>
-
-        <div class="filter-controls">
-          <label class="filter-toggle">
-            <input
-              type="checkbox"
-              [checked]="store.showRealUsersOnly()"
-              (change)="toggleRealUsersOnly($event)"
-            />
-            <span>Real users only</span>
-          </label>
-        </div>
+      <!-- Tab Navigation -->
+      <div class="leaderboard-tabs">
+        <button class="tab" [class.active]="currentTab() === 'points'" (click)="setTab('points')">
+          🏆 Points League
+        </button>
+        <button
+          class="tab"
+          [class.active]="currentTab() === 'pub-count'"
+          (click)="setTab('pub-count')"
+        >
+          🎺 Pub Count League
+        </button>
       </div>
 
       <!-- Current User Position -->
@@ -107,50 +54,92 @@ import { LeaderboardPeriod, LeaderboardSortBy } from '../../utils/leaderboard.mo
       } @else {
         <!-- Leaderboard Table -->
         <div class="leaderboard-table">
-          <div class="table-header">
-            <span class="col-rank">Rank</span>
-            <span class="col-user">User</span>
-            <span class="col-points">Points</span>
-            <span class="col-pubs">Pubs</span>
-            <span class="col-details">Details</span>
-          </div>
-
-          @for (entry of topEntries(); track entry.userId) {
-            <div class="table-row" [class.current-user]="entry.isCurrentUser">
-              <span class="col-rank">
-                <span class="rank-number">#{{ entry.rank }}</span>
-              </span>
-
-              <span class="col-user">
-                <app-chip-user
-                  [user]="{
-                    displayName: entry.displayName,
-                    photoURL: entry.photoURL || undefined,
-                  }"
-                  [clickable]="false"
-                />
-                @if (entry.isCurrentUser) {
-                  <span class="current-user-badge">You</span>
-                }
-              </span>
-
-              <span class="col-points">
-                <span class="metric-value">{{ getPoints(entry) }}</span>
-              </span>
-
-              <span class="col-pubs">
-                <span class="metric-value">{{ getPubs(entry) }}</span>
-              </span>
-
-              <span class="col-details">
-                <div class="detail-group">
-                  <span class="detail">{{ getCheckins(entry) }} check-ins</span>
-                  @if (entry.currentStreak && entry.currentStreak > 1) {
-                    <span class="detail streak">🔥 {{ entry.currentStreak }} day streak</span>
-                  }
-                </div>
-              </span>
+          @if (currentTab() === 'points') {
+            <!-- Points League Table -->
+            <div class="table-header">
+              <span class="col-rank">Rank</span>
+              <span class="col-user">User</span>
+              <span class="col-metric">Points</span>
+              <span class="col-extra">Streak</span>
             </div>
+
+            @for (entry of topEntries(); track entry.userId) {
+              <div
+                class="table-row"
+                [class.current-user]="entry.isCurrentUser"
+                (click)="navigateToProfile(entry.userId)"
+              >
+                <span class="col-rank">
+                  <span class="rank-number">#{{ entry.rank }}</span>
+                </span>
+
+                <span class="col-user">
+                  <app-chip-user
+                    [user]="{
+                      displayName: entry.displayName,
+                      photoURL: entry.photoURL || undefined,
+                    }"
+                    [clickable]="false"
+                  />
+                  @if (entry.isCurrentUser) {
+                    <span class="current-user-badge">You</span>
+                  }
+                </span>
+
+                <span class="col-metric">
+                  <span class="metric-value">{{ getPoints(entry) }}</span>
+                </span>
+
+                <span class="col-extra">
+                  @if (entry.currentStreak && entry.currentStreak > 1) {
+                    <span class="streak-badge">🔥 {{ entry.currentStreak }} day streak</span>
+                  } @else {
+                    <span class="no-streak">-</span>
+                  }
+                </span>
+              </div>
+            }
+          } @else {
+            <!-- Pub Count League Table -->
+            <div class="table-header">
+              <span class="col-rank">Rank</span>
+              <span class="col-user">User</span>
+              <span class="col-metric">Pubs</span>
+              <span class="col-extra">Check-ins</span>
+            </div>
+
+            @for (entry of topEntries(); track entry.userId) {
+              <div
+                class="table-row"
+                [class.current-user]="entry.isCurrentUser"
+                (click)="navigateToProfile(entry.userId)"
+              >
+                <span class="col-rank">
+                  <span class="rank-number">#{{ entry.rank }}</span>
+                </span>
+
+                <span class="col-user">
+                  <app-chip-user
+                    [user]="{
+                      displayName: entry.displayName,
+                      photoURL: entry.photoURL || undefined,
+                    }"
+                    [clickable]="false"
+                  />
+                  @if (entry.isCurrentUser) {
+                    <span class="current-user-badge">You</span>
+                  }
+                </span>
+
+                <span class="col-metric">
+                  <span class="metric-value">{{ getPubs(entry) }}</span>
+                </span>
+
+                <span class="col-extra">
+                  <span class="checkins-count">{{ getCheckins(entry) }} check-ins</span>
+                </span>
+              </div>
+            }
           }
         </div>
       }
@@ -163,101 +152,34 @@ import { LeaderboardPeriod, LeaderboardSortBy } from '../../utils/leaderboard.mo
       padding: 1rem;
     }
 
-    .leaderboard-header {
-      text-align: center;
+    .leaderboard-tabs {
+      display: flex;
+      gap: 0.5rem;
       margin-bottom: 2rem;
+      border-bottom: 2px solid var(--border);
     }
 
-    .leaderboard-header h1 {
-      margin: 0 0 0.5rem;
-      color: var(--text);
-      font-size: clamp(1.5rem, 4vw, 2.5rem);
-    }
-
-    .leaderboard-header p {
-      margin: 0;
+    .tab {
+      padding: 1rem 1.5rem;
+      border: none;
+      background: none;
       color: var(--text-secondary);
+      font-weight: 500;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s ease;
+      cursor: pointer;
       font-size: 1rem;
     }
 
-    .leaderboard-controls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1.5rem;
-      margin-bottom: 2rem;
-      padding: 1rem;
-      background: var(--background-lighter);
-      border-radius: 8px;
-      align-items: center;
-    }
-
-    .sort-controls {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .control-label {
-      color: var(--text-secondary);
-      font-weight: 500;
-    }
-
-    .sort-buttons,
-    .period-buttons {
-      display: flex;
-      gap: 0.25rem;
-      background: var(--background);
-      padding: 0.25rem;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-    }
-
-    .sort-btn,
-    .period-btn {
-      padding: 0.5rem 1rem;
-      border: none;
-      background: transparent;
-      color: var(--text-secondary);
-      border-radius: 4px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-size: 0.9rem;
-      font-weight: 500;
-    }
-
-    .sort-btn:hover,
-    .period-btn:hover {
-      background: var(--background-lighter);
+    .tab:hover {
       color: var(--text);
+      background: var(--background-lighter);
     }
 
-    .sort-btn.active,
-    .period-btn.active {
-      background: var(--primary);
-      color: var(--primary-contrast);
-    }
-
-    .period-controls {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .filter-controls {
-      margin-left: auto;
-    }
-
-    .filter-toggle {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      cursor: pointer;
-      color: var(--text-secondary);
-      font-size: 0.9rem;
-    }
-
-    .filter-toggle input[type='checkbox'] {
-      margin: 0;
+    .tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+      background: var(--background-lighter);
     }
 
     .user-position-banner {
@@ -282,7 +204,7 @@ import { LeaderboardPeriod, LeaderboardSortBy } from '../../utils/leaderboard.mo
 
     .table-header {
       display: grid;
-      grid-template-columns: 80px 1fr 120px 100px 180px;
+      grid-template-columns: 80px 1fr 120px 150px;
       gap: 1rem;
       padding: 1rem;
       background: var(--background-darker);
@@ -295,16 +217,18 @@ import { LeaderboardPeriod, LeaderboardSortBy } from '../../utils/leaderboard.mo
 
     .table-row {
       display: grid;
-      grid-template-columns: 80px 1fr 120px 100px 180px;
+      grid-template-columns: 80px 1fr 120px 150px;
       gap: 1rem;
       padding: 1rem;
       border-bottom: 1px solid var(--border);
       align-items: center;
-      transition: background-color 0.2s ease;
+      transition: all 0.2s ease;
+      cursor: pointer;
     }
 
     .table-row:hover {
-      background: var(--background);
+      background: var(--background-lighter);
+      transform: scale(1.01);
     }
 
     .table-row.current-user {
@@ -354,9 +278,20 @@ import { LeaderboardPeriod, LeaderboardSortBy } from '../../utils/leaderboard.mo
       color: var(--text-muted);
     }
 
-    .detail.streak {
+    .streak-badge {
       color: var(--warning);
       font-weight: 500;
+      font-size: 0.85rem;
+    }
+
+    .no-streak {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .checkins-count {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
     }
 
     /* Mobile responsive */
@@ -365,28 +300,26 @@ import { LeaderboardPeriod, LeaderboardSortBy } from '../../utils/leaderboard.mo
         padding: 0.5rem;
       }
 
-      .leaderboard-controls {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 1rem;
+      .leaderboard-tabs {
+        margin-bottom: 1rem;
       }
 
-      .filter-controls {
-        margin-left: 0;
+      .tab {
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
       }
 
       .table-header,
       .table-row {
-        grid-template-columns: 60px 1fr 80px 60px;
+        grid-template-columns: 60px 1fr 80px;
         gap: 0.5rem;
       }
 
-      .col-details {
+      .col-extra {
         display: none;
       }
 
-      .col-points,
-      .col-pubs {
+      .col-metric {
         text-align: right;
       }
 
@@ -396,24 +329,13 @@ import { LeaderboardPeriod, LeaderboardSortBy } from '../../utils/leaderboard.mo
     }
 
     @media (max-width: 480px) {
-      .sort-buttons,
-      .period-buttons {
-        flex-direction: column;
-        width: 100%;
-      }
-
-      .sort-btn,
-      .period-btn {
-        text-align: center;
-      }
-
       .table-header,
       .table-row {
         grid-template-columns: 50px 1fr 60px;
         gap: 0.25rem;
       }
 
-      .col-pubs {
+      .col-extra {
         display: none;
       }
     }
@@ -422,21 +344,29 @@ import { LeaderboardPeriod, LeaderboardSortBy } from '../../utils/leaderboard.mo
 export class LeaderboardContainerComponent extends BaseComponent {
   protected readonly store = inject(LeaderboardStore);
 
+  // Simple local state for tabs
+  readonly currentTab = signal<'points' | 'pub-count'>('points');
+
   // Computed properties for template
   readonly topEntries = this.store.topEntries;
   readonly currentUserPosition = this.store.currentUserPosition;
 
-  setSortBy(sortBy: LeaderboardSortBy): void {
-    this.store.setSortBy(sortBy);
+  constructor() {
+    super();
+
+    // React to tab changes and update store sorting
+    effect(() => {
+      const tabType = this.currentTab();
+      if (tabType === 'points') {
+        this.store.setSortBy('points');
+      } else if (tabType === 'pub-count') {
+        this.store.setSortBy('pubs');
+      }
+    });
   }
 
-  setPeriod(period: LeaderboardPeriod): void {
-    this.store.setPeriod(period);
-  }
-
-  toggleRealUsersOnly(event: Event): void {
-    const checkbox = event.target as HTMLInputElement;
-    this.store.setShowRealUsersOnly(checkbox.checked);
+  setTab(tab: 'points' | 'pub-count'): void {
+    this.currentTab.set(tab);
   }
 
   getPoints(entry: any): string {
@@ -455,6 +385,11 @@ export class LeaderboardContainerComponent extends BaseComponent {
     const period = this.store.period();
     const checkins = period === 'monthly' ? entry.monthlyCheckins : entry.totalCheckins;
     return checkins.toString();
+  }
+
+  navigateToProfile(userId: string): void {
+    // Navigate to user profile - using query param to identify specific user
+    this.router.navigate(['/profile'], { queryParams: { user: userId } });
   }
 
   async handleRetry(): Promise<void> {
