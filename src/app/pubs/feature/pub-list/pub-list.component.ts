@@ -1,29 +1,39 @@
 // src/app/pubs/feature/pubs-list/pubs-list.component.ts
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 
 import { RouterModule } from '@angular/router';
-import { BaseComponent } from '../../../shared/base/base.component';
-import { PubStore } from '../../data-access/pub.store';
-import { CheckInStore } from '../../../check-in/data-access/check-in.store';
-import { UserStore } from '@users/data-access/user.store';
-import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
-import { LocationService } from '../../../shared/data-access/location.service';
-import { FirestoreCrudService } from '@fourfold/angular-foundation';
-import { PubCardComponent } from '../../ui/pub-card/pub-card.component';
-import { LoadingStateComponent, ErrorStateComponent, EmptyStateComponent } from '../../../shared/ui/state-components';
-import { IconComponent } from '../../../shared/ui/icon/icon.component';
-import type { Pub } from '../../utils/pub.models';
 import type { CheckIn } from '@check-in/utils/check-in.models';
+import {
+  EmptyStateComponent,
+  ErrorStateComponent,
+  FirestoreCrudService,
+  LoadingStateComponent,
+  LocationService,
+} from '@fourfold/angular-foundation';
+import { UserStore } from '@users/data-access/user.store';
 import { environment } from '../../../../environments/environment';
+import { CheckInStore } from '../../../check-in/data-access/check-in.store';
+import { BaseComponent } from '../../../shared/base/base.component';
+import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
+import { IconComponent } from '../../../shared/ui/icon/icon.component';
+import { PubStore } from '../../data-access/pub.store';
+import { PubCardComponent } from '../../ui/pub-card/pub-card.component';
+import type { Pub } from '../../utils/pub.models';
 
 type FilterOption = 'all' | 'visited' | 'unvisited';
 
-
 @Component({
   selector: 'app-pub-list',
-  imports: [RouterModule, PubCardComponent, LoadingStateComponent, ErrorStateComponent, EmptyStateComponent, IconComponent],
+  imports: [
+    RouterModule,
+    PubCardComponent,
+    LoadingStateComponent,
+    ErrorStateComponent,
+    EmptyStateComponent,
+    IconComponent,
+  ],
   templateUrl: './pub-list.component.html',
-  styleUrl: './pub-list.component.scss'
+  styleUrl: './pub-list.component.scss',
 })
 export class PubListComponent extends BaseComponent implements OnInit {
   // ✅ Store dependencies
@@ -50,7 +60,7 @@ export class PubListComponent extends BaseComponent implements OnInit {
   protected readonly filterOptions = [
     { value: 'all' as const, label: 'All' },
     { value: 'visited' as const, label: 'Visited' },
-    { value: 'unvisited' as const, label: 'Unvisited' }
+    { value: 'unvisited' as const, label: 'Unvisited' },
   ];
 
   // ✅ Check-in distance threshold from environment
@@ -78,7 +88,7 @@ export class PubListComponent extends BaseComponent implements OnInit {
   protected readonly managementStats = computed(() => ({
     verified: this.dataAggregatorService.verifiedPubsCount(),
     unverified: this.dataAggregatorService.unverifiedPubsCount(),
-    total: this.dataAggregatorService.pubsVisited()
+    total: this.dataAggregatorService.pubsVisited(),
   }));
 
   protected readonly selectedCount = computed(() => this.selectedForAddition().size);
@@ -89,11 +99,12 @@ export class PubListComponent extends BaseComponent implements OnInit {
 
     if (!term) return pubs;
 
-    return pubs.filter(pub =>
-      pub.name.toLowerCase().includes(term) ||
-      pub.address.toLowerCase().includes(term) ||
-      pub.city?.toLowerCase().includes(term) ||
-      pub.region?.toLowerCase().includes(term)
+    return pubs.filter(
+      pub =>
+        pub.name.toLowerCase().includes(term) ||
+        pub.address.toLowerCase().includes(term) ||
+        pub.city?.toLowerCase().includes(term) ||
+        pub.region?.toLowerCase().includes(term)
     );
   });
 
@@ -145,9 +156,9 @@ export class PubListComponent extends BaseComponent implements OnInit {
         return pubs.filter(pub => this.hasAnyVisit(pub.id)).length;
       case 'unvisited':
         // For unvisited, subtract visited from total available pubs
-        const visitedCount = hasSearchTerm ? 
-          pubs.filter(pub => this.hasAnyVisit(pub.id)).length :
-          this.dataAggregatorService.pubsVisited();
+        const visitedCount = hasSearchTerm
+          ? pubs.filter(pub => this.hasAnyVisit(pub.id)).length
+          : this.dataAggregatorService.pubsVisited();
         return pubs.length - visitedCount;
       default:
         return pubs.length;
@@ -183,7 +194,7 @@ export class PubListComponent extends BaseComponent implements OnInit {
     searchFiltered: this.searchFilteredPubs().length,
     finalFiltered: this.filteredPubs().length,
     userCheckedInCount: this.userCheckedInPubIds().length,
-    hasLocationData: this.hasLocationData()
+    hasLocationData: this.hasLocationData(),
   }));
 
   protected readonly debugPubStats = computed(() => ({
@@ -191,7 +202,7 @@ export class PubListComponent extends BaseComponent implements OnInit {
     loading: this.pubStore.loading(),
     error: this.pubStore.error(),
     hasLocation: this.pubsWithDistance().some(p => p.distance !== Infinity),
-    nearbyCount: this.pubsWithDistance().filter(p => p.distance <= 2000).length
+    nearbyCount: this.pubsWithDistance().filter(p => p.distance <= 2000).length,
   }));
 
   // ✅ Data loading
@@ -243,21 +254,25 @@ export class PubListComponent extends BaseComponent implements OnInit {
   async toggleManagementMode(): Promise<void> {
     const enteringManagementMode = !this._isManagementMode();
     this._isManagementMode.set(enteringManagementMode);
-    
+
     if (enteringManagementMode) {
       // Entering management mode: pre-select all visited pubs
       const visitedPubIds = new Set<string>();
       const allPubs = this.filteredPubs();
-      
+
       // Check each pub and pre-select if visited
       allPubs.forEach(pub => {
         if (this.hasAnyVisit(pub.id)) {
           visitedPubIds.add(pub.id);
         }
       });
-      
+
       this._selectedForAddition.set(visitedPubIds);
-      console.log('[PubList] Management mode enabled - pre-selected', visitedPubIds.size, 'visited pubs');
+      console.log(
+        '[PubList] Management mode enabled - pre-selected',
+        visitedPubIds.size,
+        'visited pubs'
+      );
     } else {
       // Exiting management mode: save final selected state
       await this.saveFinalSelectedState();
@@ -268,13 +283,13 @@ export class PubListComponent extends BaseComponent implements OnInit {
 
   handleSelectionChange(event: { pub: Pub; selected: boolean }): void {
     const current = new Set(this._selectedForAddition());
-    
+
     if (event.selected) {
       current.add(event.pub.id);
     } else {
       current.delete(event.pub.id);
     }
-    
+
     this._selectedForAddition.set(current);
   }
 
@@ -286,19 +301,19 @@ export class PubListComponent extends BaseComponent implements OnInit {
     }
 
     const selectedPubIds = this._selectedForAddition();
-    
+
     try {
       const pubsToAdd: string[] = [];
       const pubsToRemove: string[] = [];
-      
+
       // Get all possible pubs to check
       const allPubs = this.pubsWithDistance();
-      
+
       for (const pub of allPubs) {
         const isSelected = selectedPubIds.has(pub.id);
         const hasVerifiedVisit = this.hasVerifiedCheckIn(pub.id);
         const hasUnverifiedVisit = this.hasUnverifiedVisit(pub.id);
-        
+
         if (isSelected) {
           // Selected: Add if not already saved as unverified visit (verified visits stay as-is)
           if (!hasVerifiedVisit && !hasUnverifiedVisit) {
@@ -311,24 +326,28 @@ export class PubListComponent extends BaseComponent implements OnInit {
           }
         }
       }
-      
+
       // Add new manual visits
       for (const pubId of pubsToAdd) {
         await this.userStore.addVisitedPub(pubId);
       }
-      
+
       // Remove manual visits
       for (const pubId of pubsToRemove) {
         await this.userStore.removeVisitedPub(pubId);
       }
-      
-      console.log('[PubList] Saved', pubsToAdd.length, 'new manual visits, removed', pubsToRemove.length, 'manual visits');
-      
+
+      console.log(
+        '[PubList] Saved',
+        pubsToAdd.length,
+        'new manual visits, removed',
+        pubsToRemove.length,
+        'manual visits'
+      );
     } catch (error: unknown) {
       console.error('[PubList] Error saving final state:', error);
     }
   }
-
 
   // ✅ Navigation helper (for future use)
   handlePubClick(pub: Pub): void {
@@ -336,7 +355,7 @@ export class PubListComponent extends BaseComponent implements OnInit {
     if (this._isManagementMode()) {
       return;
     }
-    
+
     console.log('[PubList] Pub clicked:', pub.name);
     // Navigation is now handled by the router links in template
   }

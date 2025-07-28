@@ -1,22 +1,24 @@
 // src/app/admin/feature/admin-checkins/admin-checkins.component.ts
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
-import { BaseComponent } from '../../../shared/base/base.component';
-import { LoadingStateComponent } from '../../../shared/ui/loading-state/loading-state.component';
-import { ErrorStateComponent } from '../../../shared/ui/error-state/error-state.component';
-import { EmptyStateComponent } from '../../../shared/ui/empty-state/empty-state.component';
-import { DataTableComponent } from '../../../shared/ui/data-table/data-table.component';
-import { ButtonComponent } from '../../../shared/ui/button/button.component';
-import { UserSelectorComponent } from '../../../shared/ui/user-selector/user-selector.component';
-import { PubSelectorComponent } from '../../../shared/ui/pub-selector/pub-selector.component';
-import { OverlayService } from '../../../shared/data-access/overlay.service';
-import { AdminCheckinService } from './admin-checkin.service';
+import {
+  EmptyStateComponent,
+  ErrorStateComponent,
+  LoadingStateComponent,
+  OverlayService,
+} from '@fourfold/angular-foundation';
+import { BaseComponent } from '@shared/base/base.component';
+import { ButtonComponent } from '@shared/ui/button/button.component';
+import { DataTableComponent } from '@shared/ui/data-table/data-table.component';
+import type { TableColumn } from '@shared/ui/data-table/data-table.model';
+import { PubSelectorComponent } from '@shared/ui/pub-selector/pub-selector.component';
+import { UserSelectorComponent } from '@shared/ui/user-selector/user-selector.component';
+import { UserStore } from '@users/data-access/user.store';
 import { CheckInStore } from '../../../check-in/data-access/check-in.store';
-import { UserStore } from '../../../users/data-access/user.store';
-import { PubStore } from '../../../pubs/data-access/pub.store';
 import type { CheckIn } from '../../../check-in/utils/check-in.models';
-import type { TableColumn } from '../../../shared/ui/data-table/data-table.model';
+import { PubStore } from '../../../pubs/data-access/pub.store';
+import { AdminCheckinService } from './admin-checkin.service';
 
 type CheckInWithDetails = CheckIn & {
   displayName?: string;
@@ -38,8 +40,8 @@ type CheckInWithDetails = CheckIn & {
     DataTableComponent,
     ButtonComponent,
     UserSelectorComponent,
-    PubSelectorComponent
-],
+    PubSelectorComponent,
+  ],
   template: `
     <div class="admin-checkins">
       <header class="admin-header">
@@ -74,20 +76,11 @@ type CheckInWithDetails = CheckIn & {
       <!-- Controls -->
       <section class="controls">
         <div class="control-group">
-          <app-button
-            variant="secondary"
-            size="sm"
-            [loading]="loading()"
-            (onClick)="refreshData()"
-          >
+          <app-button variant="secondary" size="sm" [loading]="loading()" (onClick)="refreshData()">
             Refresh Data
           </app-button>
-          
-          <app-button
-            variant="primary"
-            size="sm"
-            (onClick)="toggleManualCheckinForm()"
-          >
+
+          <app-button variant="primary" size="sm" (onClick)="toggleManualCheckinForm()">
             {{ showManualForm() ? 'Cancel' : 'Add Manual Check-in' }}
           </app-button>
         </div>
@@ -100,7 +93,7 @@ type CheckInWithDetails = CheckIn & {
             <h3>📝 Add Manual Check-in</h3>
             <p>Create a check-in record for a user at a specific pub</p>
           </div>
-          
+
           <form class="checkin-form" (ngSubmit)="submitManualCheckin()">
             <div class="form-row">
               <div class="form-field">
@@ -114,7 +107,7 @@ type CheckInWithDetails = CheckIn & {
                   [errorMessage]="formErrors().userId"
                 />
               </div>
-              
+
               <div class="form-field">
                 <app-pub-selector
                   label="Pub"
@@ -128,7 +121,7 @@ type CheckInWithDetails = CheckIn & {
                 />
               </div>
             </div>
-            
+
             <div class="form-row">
               <div class="form-field">
                 <label for="checkin-datetime">Check-in Date & Time *</label>
@@ -145,7 +138,7 @@ type CheckInWithDetails = CheckIn & {
                   <div class="field-error">{{ formErrors().datetime }}</div>
                 }
               </div>
-              
+
               <div class="form-field">
                 <label for="points-earned">Points Earned</label>
                 <input
@@ -161,17 +154,12 @@ type CheckInWithDetails = CheckIn & {
                 <div class="field-helper">Leave empty to use default point calculation</div>
               </div>
             </div>
-            
+
             <div class="form-actions">
-              <app-button
-                type="button"
-                variant="secondary"
-                size="md"
-                (onClick)="resetManualForm()"
-              >
+              <app-button type="button" variant="secondary" size="md" (onClick)="resetManualForm()">
                 Reset Form
               </app-button>
-              
+
               <app-button
                 type="submit"
                 variant="primary"
@@ -189,16 +177,16 @@ type CheckInWithDetails = CheckIn & {
       <!-- Check-ins Table -->
       <section class="checkins-table">
         @if (loading()) {
-          <app-loading-state text="Loading check-ins..." />
+          <ff-loading-state text="Loading check-ins..." />
         } @else if (error()) {
-          <app-error-state
+          <ff-error-state
             [message]="error()!"
             [showRetry]="true"
             retryText="Try Again"
             (retry)="handleRetry()"
           />
         } @else if (enrichedCheckIns().length === 0) {
-          <app-empty-state
+          <ff-empty-state
             icon="🍺"
             title="No check-ins found"
             subtitle="Check-ins will appear here when users check into pubs"
@@ -342,7 +330,9 @@ type CheckInWithDetails = CheckIn & {
       font-size: 0.875rem;
       background: var(--background);
       color: var(--text);
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
     }
 
     .form-input:focus {
@@ -414,7 +404,7 @@ type CheckInWithDetails = CheckIn & {
         flex-direction: column;
       }
     }
-  `
+  `,
 })
 export class AdminCheckinsComponent extends BaseComponent implements OnInit {
   private readonly adminCheckinService = inject(AdminCheckinService);
@@ -425,11 +415,11 @@ export class AdminCheckinsComponent extends BaseComponent implements OnInit {
 
   // Use reactive data from stores instead of local signals
   readonly checkIns = this.checkInStore.checkins;
-  readonly storeLoading = computed(() =>
-    this.checkInStore.loading() || this.userStore.loading() || this.pubStore.loading()
+  readonly storeLoading = computed(
+    () => this.checkInStore.loading() || this.userStore.loading() || this.pubStore.loading()
   );
-  readonly storeError = computed(() =>
-    this.checkInStore.error() || this.userStore.error() || this.pubStore.error()
+  readonly storeError = computed(
+    () => this.checkInStore.error() || this.userStore.error() || this.pubStore.error()
   );
 
   // Manual checkin form state
@@ -439,7 +429,7 @@ export class AdminCheckinsComponent extends BaseComponent implements OnInit {
     userId: null as string | null,
     pubId: null as string | null,
     datetime: new Date().toISOString().slice(0, 16), // Default to current time
-    pointsEarned: null as number | null
+    pointsEarned: null as number | null,
   });
 
   readonly showManualForm = this._showManualForm.asReadonly();
@@ -452,7 +442,7 @@ export class AdminCheckinsComponent extends BaseComponent implements OnInit {
     return {
       userId: !form.userId ? 'Please select a user' : '',
       pubId: !form.pubId ? 'Please select a pub' : '',
-      datetime: !form.datetime ? 'Please select a date and time' : ''
+      datetime: !form.datetime ? 'Please select a date and time' : '',
     };
   });
 
@@ -481,7 +471,7 @@ export class AdminCheckinsComponent extends BaseComponent implements OnInit {
       totalCheckIns: allCheckIns.length,
       todayCheckIns: todayCheckIns.length,
       weeklyCheckIns: weeklyCheckIns.length,
-      uniqueUsers
+      uniqueUsers,
     };
   });
 
@@ -492,26 +482,26 @@ export class AdminCheckinsComponent extends BaseComponent implements OnInit {
       label: 'User',
       renderer: () => null, // Triggers user chip rendering
       sortable: true,
-      className: 'user-cell'
+      className: 'user-cell',
     },
     {
       key: 'pubName',
       label: 'Pub',
       sortable: true,
-      className: 'name'
+      className: 'name',
     },
     {
       key: 'formattedDate',
       label: 'Date',
       sortable: true,
-      className: 'date'
+      className: 'date',
     },
     {
       key: 'pointsDisplay',
       label: 'Points',
       sortable: true,
-      className: 'number points-primary'
-    }
+      className: 'number points-primary',
+    },
   ];
 
   // Computed enriched check-ins with user and pub data
@@ -533,7 +523,7 @@ export class AdminCheckinsComponent extends BaseComponent implements OnInit {
       const pointsEarned = checkIn.pointsEarned;
       const pointsFromBreakdown = checkIn.pointsBreakdown?.total;
       const finalPoints = pointsEarned ?? pointsFromBreakdown ?? 0;
-      
+
       // Debug logging for each checkin
       console.log(`[AdminCheckins] 🔍 Checkin ${index + 1}:`, {
         id: checkIn.id,
@@ -543,16 +533,18 @@ export class AdminCheckinsComponent extends BaseComponent implements OnInit {
         hasPointsBreakdown: !!checkIn.pointsBreakdown,
         pointsFromBreakdown: pointsFromBreakdown,
         finalPoints: finalPoints,
-        pointsBreakdownStructure: checkIn.pointsBreakdown ? {
-          base: checkIn.pointsBreakdown.base,
-          distance: checkIn.pointsBreakdown.distance,
-          bonus: checkIn.pointsBreakdown.bonus,
-          total: checkIn.pointsBreakdown.total
-        } : null,
+        pointsBreakdownStructure: checkIn.pointsBreakdown
+          ? {
+              base: checkIn.pointsBreakdown.base,
+              distance: checkIn.pointsBreakdown.distance,
+              bonus: checkIn.pointsBreakdown.bonus,
+              total: checkIn.pointsBreakdown.total,
+            }
+          : null,
         userName: user?.displayName,
-        pubName: pub?.name
+        pubName: pub?.name,
       });
-      
+
       return {
         ...checkIn,
         displayName: user?.displayName || 'Unknown User',
@@ -561,16 +553,19 @@ export class AdminCheckinsComponent extends BaseComponent implements OnInit {
         realDisplayName: user?.displayName || undefined,
         pubName: pub?.name || 'Unknown Pub',
         formattedDate: this.formatDate(checkIn.timestamp.toDate()),
-        pointsDisplay: finalPoints.toString()
+        pointsDisplay: finalPoints.toString(),
       };
     });
 
-    console.log('[AdminCheckins] 🔍 Enriched checkins result:', enriched.map(c => ({
-      id: c.id,
-      displayName: c.displayName,
-      pubName: c.pubName,
-      pointsDisplay: c.pointsDisplay
-    })));
+    console.log(
+      '[AdminCheckins] 🔍 Enriched checkins result:',
+      enriched.map(c => ({
+        id: c.id,
+        displayName: c.displayName,
+        pubName: c.pubName,
+        pointsDisplay: c.pointsDisplay,
+      }))
+    );
     console.log('[AdminCheckins] 🔍 === END ENRICHED CHECKINS DEBUG ===');
 
     // Sort by timestamp descending (most recent first)
@@ -584,10 +579,10 @@ export class AdminCheckinsComponent extends BaseComponent implements OnInit {
 
   override async ngOnInit(): Promise<void> {
     console.log('[AdminCheckinsComponent] Initializing - loading all check-ins...');
-    
+
     // Load ALL check-ins from all users (with built-in admin auth check)
     await this.checkInStore.loadAllCheckins();
-    
+
     console.log('[AdminCheckinsComponent] ✅ All check-ins loaded for admin view');
   }
 
@@ -598,12 +593,12 @@ export class AdminCheckinsComponent extends BaseComponent implements OnInit {
         await Promise.all([
           this.checkInStore.loadAllCheckins(), // Explicit admin method
           this.userStore.refresh(),
-          this.pubStore.loadOnce() // Use loadOnce for global pub data
+          this.pubStore.loadOnce(), // Use loadOnce for global pub data
         ]);
       },
       {
         successMessage: 'Data refreshed successfully',
-        errorMessage: 'Failed to refresh data'
+        errorMessage: 'Failed to refresh data',
       }
     );
   }
@@ -616,29 +611,30 @@ export class AdminCheckinsComponent extends BaseComponent implements OnInit {
     // Import the modal component dynamically to avoid circular dependencies
     const { ModalCheckInDetailsComponent } = await import('./modal-check-in-details.component');
 
-    const { result } = this.overlayService.open(ModalCheckInDetailsComponent, {}, {
-      checkIn,
-      onSave: async (updatedCheckIn: Partial<CheckIn>) => {
-        await this.handleAsync(
-          () => this.adminCheckinService.updateCheckIn(checkIn.id, updatedCheckIn),
-          {
-            successMessage: 'Check-in updated successfully',
-            errorMessage: 'Failed to update check-in'
-          }
-        );
-        // Data will automatically update via reactive stores
-      },
-      onDelete: async () => {
-        await this.handleAsync(
-          () => this.adminCheckinService.deleteCheckIn(checkIn.id),
-          {
+    const { result } = this.overlayService.open(
+      ModalCheckInDetailsComponent,
+      {},
+      {
+        checkIn,
+        onSave: async (updatedCheckIn: Partial<CheckIn>) => {
+          await this.handleAsync(
+            () => this.adminCheckinService.updateCheckIn(checkIn.id, updatedCheckIn),
+            {
+              successMessage: 'Check-in updated successfully',
+              errorMessage: 'Failed to update check-in',
+            }
+          );
+          // Data will automatically update via reactive stores
+        },
+        onDelete: async () => {
+          await this.handleAsync(() => this.adminCheckinService.deleteCheckIn(checkIn.id), {
             successMessage: 'Check-in deleted successfully',
-            errorMessage: 'Failed to delete check-in'
-          }
-        );
-        // Data will automatically update via reactive stores
+            errorMessage: 'Failed to delete check-in',
+          });
+          // Data will automatically update via reactive stores
+        },
       }
-    });
+    );
 
     try {
       await result;
@@ -660,14 +656,14 @@ export class AdminCheckinsComponent extends BaseComponent implements OnInit {
       userId: null,
       pubId: null,
       datetime: new Date().toISOString().slice(0, 16),
-      pointsEarned: null
+      pointsEarned: null,
     });
   }
 
   updateFormField(field: string, value: any): void {
     this._manualForm.update(form => ({
       ...form,
-      [field]: value
+      [field]: value,
     }));
   }
 
@@ -694,15 +690,16 @@ export class AdminCheckinsComponent extends BaseComponent implements OnInit {
       const datetime = new Date(form.datetime!);
 
       await this.handleAsync(
-        () => this.adminCheckinService.createManualCheckIn({
-          userId: form.userId!,
-          pubId: form.pubId!,
-          timestamp: datetime,
-          pointsEarned: form.pointsEarned
-        }),
+        () =>
+          this.adminCheckinService.createManualCheckIn({
+            userId: form.userId!,
+            pubId: form.pubId!,
+            timestamp: datetime,
+            pointsEarned: form.pointsEarned,
+          }),
         {
           successMessage: 'Manual check-in created successfully',
-          errorMessage: 'Failed to create manual check-in'
+          errorMessage: 'Failed to create manual check-in',
         }
       );
 
@@ -712,7 +709,6 @@ export class AdminCheckinsComponent extends BaseComponent implements OnInit {
 
       // Refresh data to show the new check-in
       await this.refreshData();
-
     } catch (error) {
       console.error('[AdminCheckinsComponent] Failed to create manual check-in:', error);
     } finally {
@@ -726,7 +722,7 @@ export class AdminCheckinsComponent extends BaseComponent implements OnInit {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     }).format(date);
   }
 }

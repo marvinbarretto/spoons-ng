@@ -1,21 +1,18 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 
+import {
+  EmptyStateComponent,
+  ErrorStateComponent,
+  LoadingStateComponent,
+} from '@fourfold/angular-foundation';
 import { BaseComponent } from '../../../shared/base/base.component';
-import { LeaderboardStore } from '../../data-access/leaderboard.store';
-import { LoadingStateComponent } from '../../../shared/ui/loading-state/loading-state.component';
-import { ErrorStateComponent } from '../../../shared/ui/error-state/error-state.component';
-import { EmptyStateComponent } from '../../../shared/ui/empty-state/empty-state.component';
 import { ChipUserComponent } from '../../../shared/ui/chips/chip-user/chip-user.component';
-import { LeaderboardSortBy, LeaderboardPeriod } from '../../utils/leaderboard.models';
+import { LeaderboardStore } from '../../data-access/leaderboard.store';
+import { LeaderboardPeriod, LeaderboardSortBy } from '../../utils/leaderboard.models';
 
 @Component({
   selector: 'app-leaderboard-container',
-  imports: [
-    LoadingStateComponent,
-    ErrorStateComponent,
-    EmptyStateComponent,
-    ChipUserComponent
-],
+  imports: [LoadingStateComponent, ErrorStateComponent, EmptyStateComponent, ChipUserComponent],
   template: `
     <div class="leaderboard">
       <header class="leaderboard-header">
@@ -84,20 +81,21 @@ import { LeaderboardSortBy, LeaderboardPeriod } from '../../utils/leaderboard.mo
         </div>
       </div>
 
-
       <!-- Current User Position -->
       @if (currentUserPosition() && currentUserPosition()! > 100) {
         <div class="user-position-banner">
-          <p>Your position: <strong>#{{ currentUserPosition() }}</strong></p>
+          <p>
+            Your position: <strong>#{{ currentUserPosition() }}</strong>
+          </p>
         </div>
       }
 
       <!-- Loading State -->
       @if (store.loading()) {
-        <app-loading-state text="Loading leaderboard..." />
+        <ff-loading-state text="Loading leaderboard..." />
       } @else if (store.error()) {
         <!-- Error State -->
-        <app-error-state
+        <ff-error-state
           [message]="store.error()!"
           [showRetry]="true"
           retryText="Try Again"
@@ -105,11 +103,7 @@ import { LeaderboardSortBy, LeaderboardPeriod } from '../../utils/leaderboard.mo
         />
       } @else if (topEntries().length === 0) {
         <!-- Empty State -->
-        <app-empty-state
-          icon="🏆"
-          title="No users found"
-          subtitle="Try adjusting your filters"
-        />
+        <ff-empty-state icon="🏆" title="No users found" subtitle="Try adjusting your filters" />
       } @else {
         <!-- Leaderboard Table -->
         <div class="leaderboard-table">
@@ -122,10 +116,7 @@ import { LeaderboardSortBy, LeaderboardPeriod } from '../../utils/leaderboard.mo
           </div>
 
           @for (entry of topEntries(); track entry.userId) {
-            <div
-              class="table-row"
-              [class.current-user]="entry.isCurrentUser"
-            >
+            <div class="table-row" [class.current-user]="entry.isCurrentUser">
               <span class="col-rank">
                 <span class="rank-number">#{{ entry.rank }}</span>
               </span>
@@ -134,7 +125,7 @@ import { LeaderboardSortBy, LeaderboardPeriod } from '../../utils/leaderboard.mo
                 <app-chip-user
                   [user]="{
                     displayName: entry.displayName,
-                    photoURL: entry.photoURL || undefined
+                    photoURL: entry.photoURL || undefined,
                   }"
                   [clickable]="false"
                 />
@@ -265,10 +256,9 @@ import { LeaderboardSortBy, LeaderboardPeriod } from '../../utils/leaderboard.mo
       font-size: 0.9rem;
     }
 
-    .filter-toggle input[type="checkbox"] {
+    .filter-toggle input[type='checkbox'] {
       margin: 0;
     }
-
 
     .user-position-banner {
       margin-bottom: 1.5rem;
@@ -427,7 +417,7 @@ import { LeaderboardSortBy, LeaderboardPeriod } from '../../utils/leaderboard.mo
         display: none;
       }
     }
-  `
+  `,
 })
 export class LeaderboardContainerComponent extends BaseComponent {
   protected readonly store = inject(LeaderboardStore);
@@ -468,12 +458,9 @@ export class LeaderboardContainerComponent extends BaseComponent {
   }
 
   async handleRetry(): Promise<void> {
-    await this.handleAsync(
-      () => this.store.refresh(),
-      {
-        successMessage: 'Leaderboard refreshed!',
-        errorMessage: 'Failed to refresh leaderboard'
-      }
-    );
+    await this.handleAsync(() => this.store.refresh(), {
+      successMessage: 'Leaderboard refreshed!',
+      errorMessage: 'Failed to refresh leaderboard',
+    });
   }
 }

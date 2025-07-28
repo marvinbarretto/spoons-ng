@@ -1,33 +1,25 @@
 // src/app/shared/feature/header/header.component.ts
 import {
   Component,
-  HostBinding,
-  AfterViewInit,
   computed,
-  ElementRef,
-  ViewChild,
-  inject,
   effect,
+  ElementRef,
+  HostBinding,
+  inject,
+  ViewChild,
 } from '@angular/core';
-import { Router, RouterModule, NavigationEnd } from '@angular/router';
+import { RouterModule } from '@angular/router';
 
-import { filter, map } from 'rxjs/operators';
-import { toSignal } from '@angular/core/rxjs-interop';
-
-import { BaseComponent } from '../../base/base.component';
-import { NavComponent } from "../nav/nav.component";
+import { OverlayService } from '@fourfold/angular-foundation';
 import { AdminNavComponent } from '../../../admin/ui/admin-nav/admin-nav.component';
-import { UserProfileWidgetComponent } from '../../../home/ui/user-profile-widget/user-profile-widget.component';
-import { ProfileCustomisationModalComponent } from '../../../home/ui/profile-customisation-modal/profile-customisation-modal.component';
-import { LandlordStore } from '../../../landlord/data-access/landlord.store';
 import { AuthStore } from '../../../auth/data-access/auth.store';
-import { OverlayService } from '../../data-access/overlay.service';
+import { ProfileCustomisationModalComponent } from '../../../home/ui/profile-customisation-modal/profile-customisation-modal.component';
+import { BaseComponent } from '../../base/base.component';
 import { DataAggregatorService } from '../../data-access/data-aggregator.service';
+import { NavComponent } from '../nav/nav.component';
 
-import { APP_VERSION } from '../../utils/version';
-import { UserStore } from '../../../users/data-access/user.store';
 import { environment } from '../../../../environments/environment';
-
+import { APP_VERSION } from '../../utils/version';
 
 /**
  * HeaderComponent - Main site header
@@ -42,11 +34,7 @@ import { environment } from '../../../../environments/environment';
   selector: 'app-header',
   templateUrl: './header.component.html',
   styleUrl: './header.component.scss',
-  imports: [
-    RouterModule,
-    NavComponent,
-    AdminNavComponent
-],
+  imports: [RouterModule, NavComponent, AdminNavComponent],
 })
 export class HeaderComponent extends BaseComponent {
   // 🔧 Services
@@ -88,7 +76,6 @@ export class HeaderComponent extends BaseComponent {
     });
   }
 
-
   @HostBinding('class.is-homepage')
   get isHomepageClass(): boolean {
     return this.isHomepage();
@@ -98,13 +85,10 @@ export class HeaderComponent extends BaseComponent {
   onOpenProfile(): void {
     console.log('[HeaderComponent] Opening profile customization modal');
 
-    const { componentRef, close } = this.overlayService.open(
-      ProfileCustomisationModalComponent,
-      {
-        maxWidth: '600px',
-        maxHeight: '90vh'
-      }
-    );
+    const { componentRef, close } = this.overlayService.open(ProfileCustomisationModalComponent, {
+      maxWidth: '600px',
+      maxHeight: '90vh',
+    });
 
     // Pass the close callback to the modal component
     componentRef.setInput('closeCallback', close);

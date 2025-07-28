@@ -1,26 +1,38 @@
-import { Component, inject, signal, ChangeDetectionStrategy, OnInit, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+  signal,
+} from '@angular/core';
 
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AuthStore } from '@auth/data-access/auth.store';
+import { AvatarSelectionWidgetComponent } from '@home/ui/profile-customisation-modal/widgets/avatar-selection-widget/avatar-selection-widget.component';
 import { BaseComponent } from '@shared/base/base.component';
-import { StepperComponent, type StepConfig } from '@shared/ui/stepper/stepper.component';
+import { AvatarService } from '@shared/data-access/avatar.service';
+import { ThemeStore } from '@shared/data-access/theme.store';
 import { ButtonComponent } from '@shared/ui/button/button.component';
 import { FormInputComponent } from '@shared/ui/form-input/form-input.component';
-import { ToastService } from '@shared/data-access/toast.service';
-import { AvatarSelectionWidgetComponent } from '@home/ui/profile-customisation-modal/widgets/avatar-selection-widget/avatar-selection-widget.component';
-import { PubSelectionWidgetComponent } from '../../../widgets/pub-selection/pub-selection-widget.component';
-import { RegistrationFlowService, RegistrationData, RegistrationStep } from './registration-flow.service';
-import { LocationService } from './location.service';
-import { AuthStore } from '@auth/data-access/auth.store';
-import { UserStore } from '@users/data-access/user.store';
-import { ThemeStore } from '@shared/data-access/theme.store';
-import { AvatarService } from '@shared/data-access/avatar.service';
+import { StepperComponent, type StepConfig } from '@shared/ui/stepper/stepper.component';
 import type { ThemeType } from '@shared/utils/theme.tokens';
+import { UserStore } from '@users/data-access/user.store';
+import { PubSelectionWidgetComponent } from '../../../widgets/pub-selection/pub-selection-widget.component';
+import { LocationService } from './location.service';
+import { RegistrationFlowService } from './registration-flow.service';
 
 @Component({
   selector: 'app-registration-flow',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, StepperComponent, ButtonComponent, FormInputComponent, AvatarSelectionWidgetComponent, PubSelectionWidgetComponent],
+  imports: [
+    ReactiveFormsModule,
+    StepperComponent,
+    ButtonComponent,
+    FormInputComponent,
+    AvatarSelectionWidgetComponent,
+    PubSelectionWidgetComponent,
+  ],
   template: `
     <div class="registration-flow-container">
       <!-- Progress Indicator -->
@@ -35,7 +47,9 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
       <!-- Step Content -->
       <div class="step-content-container">
         <!-- Debug: Current step -->
-        <div style="position: fixed; top: 100px; right: 10px; background: rgba(0,0,0,0.8); color: white; padding: 10px; border-radius: 5px; z-index: 1000;">
+        <div
+          style="position: fixed; top: 100px; right: 10px; background: rgba(0,0,0,0.8); color: white; padding: 10px; border-radius: 5px; z-index: 1000;"
+        >
           Current Step: {{ flowService.currentStep() }}
         </div>
 
@@ -98,9 +112,15 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
                         autocomplete="email"
                         formControlName="email"
                         class="form-input"
-                        [class.has-error]="emailForm.controls.email.invalid && (emailForm.controls.email.dirty || emailForm.controls.email.touched)"
+                        [class.has-error]="
+                          emailForm.controls.email.invalid &&
+                          (emailForm.controls.email.dirty || emailForm.controls.email.touched)
+                        "
                       />
-                      @if (emailForm.controls.email.invalid && (emailForm.controls.email.dirty || emailForm.controls.email.touched)) {
+                      @if (
+                        emailForm.controls.email.invalid &&
+                        (emailForm.controls.email.dirty || emailForm.controls.email.touched)
+                      ) {
                         <div class="form-error">
                           @if (emailForm.controls.email.errors?.['required']) {
                             Email Address is required
@@ -122,10 +142,16 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
                         formControlName="password"
                         minlength="6"
                         class="form-input"
-                        [class.has-error]="emailForm.controls.password.invalid && (emailForm.controls.password.dirty || emailForm.controls.password.touched)"
+                        [class.has-error]="
+                          emailForm.controls.password.invalid &&
+                          (emailForm.controls.password.dirty || emailForm.controls.password.touched)
+                        "
                       />
                       <div class="form-hint">Minimum 6 characters</div>
-                      @if (emailForm.controls.password.invalid && (emailForm.controls.password.dirty || emailForm.controls.password.touched)) {
+                      @if (
+                        emailForm.controls.password.invalid &&
+                        (emailForm.controls.password.dirty || emailForm.controls.password.touched)
+                      ) {
                         <div class="form-error">
                           @if (emailForm.controls.password.errors?.['required']) {
                             Password is required
@@ -193,13 +219,10 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
 
                   <div class="form-message-container">
                     @if (flowService.isValidatingUsername()) {
-                      <div class="form-message form-message--loading">
-                        Checking availability...
-                      </div>
+                      <div class="form-message form-message--loading">Checking availability...</div>
                     }
                   </div>
                 </div>
-
 
                 <!-- Avatar Selection -->
                 <div class="form-group">
@@ -245,7 +268,9 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
                 @if (locationService.locationError()) {
                   <div class="location-error">
                     <div class="error-icon">⚠️</div>
-                    <p class="error-message">{{ locationService.locationError()?.userFriendlyMessage }}</p>
+                    <p class="error-message">
+                      {{ locationService.locationError()?.userFriendlyMessage }}
+                    </p>
                     <button
                       type="button"
                       class="retry-button"
@@ -315,7 +340,9 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
                   <h3>Account Summary</h3>
                   <div class="summary-item">
                     <span class="summary-label">Display Name:</span>
-                    <span class="summary-value">{{ flowService.registrationData().displayName }}</span>
+                    <span class="summary-value">{{
+                      flowService.registrationData().displayName
+                    }}</span>
                   </div>
                   @if (flowService.registrationData().isTestUser) {
                     <div class="summary-item">
@@ -374,10 +401,9 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
           }
         </div>
       }
-
     </div>
   `,
-  styleUrl: './registration-flow.component.scss'
+  styleUrl: './registration-flow.component.scss',
 })
 export class RegistrationFlowComponent extends BaseComponent implements OnInit, OnDestroy {
   readonly flowService = inject(RegistrationFlowService);
@@ -397,12 +423,12 @@ export class RegistrationFlowComponent extends BaseComponent implements OnInit, 
       const originalPushState = history.pushState;
       const originalReplaceState = history.replaceState;
 
-      history.pushState = function(...args) {
+      history.pushState = function (...args) {
         console.log('[RegistrationFlow] 🌐 History pushState detected:', args[2]);
         return originalPushState.apply(history, args);
       };
 
-      history.replaceState = function(...args) {
+      history.replaceState = function (...args) {
         console.log('[RegistrationFlow] 🌐 History replaceState detected:', args[2]);
         return originalReplaceState.apply(history, args);
       };
@@ -429,12 +455,12 @@ export class RegistrationFlowComponent extends BaseComponent implements OnInit, 
 
   // Reactive forms
   readonly profileForm = this.fb.group({
-    displayName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(30)]]
+    displayName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(30)]],
   });
 
   readonly emailForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(6)]]
+    password: ['', [Validators.required, Validators.minLength(6)]],
   });
 
   // Stepper configuration
@@ -442,7 +468,7 @@ export class RegistrationFlowComponent extends BaseComponent implements OnInit, 
     { id: 'auth', label: 'Authentication' },
     { id: 'profile', label: 'Profile Setup' },
     { id: 'location', label: 'Local Pub' },
-    { id: 'complete', label: 'Complete' }
+    { id: 'complete', label: 'Complete' },
   ];
 
   override ngOnInit(): void {
@@ -457,7 +483,7 @@ export class RegistrationFlowComponent extends BaseComponent implements OnInit, 
     const registrationData = this.flowService.registrationData();
     if (registrationData.displayName) {
       this.profileForm.patchValue({
-        displayName: registrationData.displayName
+        displayName: registrationData.displayName,
       });
     }
 
@@ -500,7 +526,7 @@ export class RegistrationFlowComponent extends BaseComponent implements OnInit, 
       console.log('[RegistrationFlow] 👤 Got user after Google auth:', {
         hasUser: !!user,
         displayName: user?.displayName,
-        uid: user?.uid?.slice(0, 8)
+        uid: user?.uid?.slice(0, 8),
       });
 
       if (user?.uid) {
@@ -508,23 +534,27 @@ export class RegistrationFlowComponent extends BaseComponent implements OnInit, 
         try {
           // Check if user document exists in Firestore
           const existingUserDoc = await this.userStore.checkUserExists(user.uid);
-          
+
           if (existingUserDoc && existingUserDoc.onboardingCompleted) {
             console.log('[RegistrationFlow] ✅ Existing user detected with completed onboarding');
             this.toastService.centerInfo('Welcome back! Redirecting to your dashboard...');
-            
+
             // Wait a moment for the message to be seen, then redirect
             setTimeout(() => {
               this.router.navigate(['/home']);
             }, 1500);
             return;
           } else if (existingUserDoc && !existingUserDoc.onboardingCompleted) {
-            console.log('[RegistrationFlow] 📝 Existing user detected but onboarding incomplete, continuing flow');
+            console.log(
+              '[RegistrationFlow] 📝 Existing user detected but onboarding incomplete, continuing flow'
+            );
           } else {
             console.log('[RegistrationFlow] 🆕 New user detected, proceeding with registration');
           }
         } catch (docError) {
-          console.log('[RegistrationFlow] 🆕 User document not found, proceeding with new user registration');
+          console.log(
+            '[RegistrationFlow] 🆕 User document not found, proceeding with new user registration'
+          );
         }
       }
 
@@ -535,9 +565,15 @@ export class RegistrationFlowComponent extends BaseComponent implements OnInit, 
       }
 
       console.log('[RegistrationFlow] ➡️ Calling flowService.nextStep()...');
-      console.log('[RegistrationFlow] Current step before nextStep:', this.flowService.currentStep());
+      console.log(
+        '[RegistrationFlow] Current step before nextStep:',
+        this.flowService.currentStep()
+      );
       this.flowService.nextStep();
-      console.log('[RegistrationFlow] Current step after nextStep:', this.flowService.currentStep());
+      console.log(
+        '[RegistrationFlow] Current step after nextStep:',
+        this.flowService.currentStep()
+      );
       console.log('[RegistrationFlow] ✅ handleGoogleAuth COMPLETED');
     } catch (error: any) {
       console.error('[RegistrationFlow] ❌ Google auth failed:', error);
@@ -578,7 +614,10 @@ export class RegistrationFlowComponent extends BaseComponent implements OnInit, 
     if (this.emailForm.invalid) {
       console.log('[RegistrationFlow] Form is invalid, stopping submission');
       console.log('[RegistrationFlow] Email control errors:', this.emailForm.controls.email.errors);
-      console.log('[RegistrationFlow] Password control errors:', this.emailForm.controls.password.errors);
+      console.log(
+        '[RegistrationFlow] Password control errors:',
+        this.emailForm.controls.password.errors
+      );
       this.emailSubmitLoading.set(false);
       this.emailForm.enable(); // Re-enable form on validation failure
       return;
@@ -610,7 +649,6 @@ export class RegistrationFlowComponent extends BaseComponent implements OnInit, 
       this.emailForm.enable(); // Always re-enable form
     }
   }
-
 
   // Profile step handlers
   handleUsernameChange(username: string): void {
@@ -689,7 +727,7 @@ export class RegistrationFlowComponent extends BaseComponent implements OnInit, 
     if (pub) {
       this.flowService.updateData({
         localPubId: pub.id,
-        homePubId: pub.id
+        homePubId: pub.id,
       });
       this.flowService.nextStep();
     }
@@ -707,7 +745,7 @@ export class RegistrationFlowComponent extends BaseComponent implements OnInit, 
     this.nearestPub.set(pub);
     this.flowService.updateData({
       localPubId: pub.id,
-      homePubId: pub.id
+      homePubId: pub.id,
     });
     this.showPubBrowser.set(false);
     console.log('[RegistrationFlow] Pub selected from widget:', pub.name);
@@ -763,7 +801,8 @@ export class RegistrationFlowComponent extends BaseComponent implements OnInit, 
         emailVerified: user.emailVerified,
         isAnonymous: user.isAnonymous,
         streaks: {},
-        displayName: registrationData.displayName || user.displayName || (user.email?.split('@')[0]) || 'User',
+        displayName:
+          registrationData.displayName || user.displayName || user.email?.split('@')[0] || 'User',
         joinedAt: new Date().toISOString(),
         badgeCount: 0,
         badgeIds: [],
@@ -775,7 +814,7 @@ export class RegistrationFlowComponent extends BaseComponent implements OnInit, 
         unverifiedPubCount: 0,
         totalPubCount: 0,
         homePubId: registrationData.homePubId === 'skip' ? undefined : registrationData.homePubId,
-        onboardingCompleted: true
+        onboardingCompleted: true,
       };
 
       // Create user document using userService (which extends FirestoreService)

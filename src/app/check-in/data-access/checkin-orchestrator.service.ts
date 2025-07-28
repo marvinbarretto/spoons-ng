@@ -1,26 +1,25 @@
 // src/app/check-in/data-access/checkin-orchestrator.service.ts
 
-import { Injectable, inject, signal, computed, effect } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { CheckInStore } from './check-in.store';
-import { CheckInModalService } from './check-in-modal.service';
+import { CameraService } from '@fourfold/angular-foundation';
+import { DataAggregatorService } from '@shared/data-access/data-aggregator.service';
 import { LLMService } from '@shared/data-access/llm.service';
+import { environment } from '../../../environments/environment';
 import { CarpetStorageService } from '../../carpets/data-access/carpet-storage.service';
 import { CarpetStrategyService } from '../../carpets/data-access/carpet-strategy.service';
-import { CameraService } from '@shared/data-access/camera.service';
-import { DataAggregatorService } from '@shared/data-access/data-aggregator.service';
-import { environment } from '../../../environments/environment';
+import { CheckInModalService } from './check-in-modal.service';
+import { CheckInStore } from './check-in.store';
 
-type CheckinStage = 
+type CheckinStage =
   | 'INITIALIZING'
   | 'CAMERA_STARTING'
-  | 'CAMERA_ACTIVE' 
+  | 'CAMERA_ACTIVE'
   | 'CAPTURING_PHOTO'
   | 'PHOTO_TAKEN'
   | 'PHOTO_REVIEW'
   | 'LLM_CHECKING'
   | 'RESULT';
-
 
 @Injectable({ providedIn: 'root' })
 export class CheckinOrchestrator {
@@ -36,7 +35,7 @@ export class CheckinOrchestrator {
   // ===================================
   // 🏗️ STATE SIGNALS
   // ===================================
-  
+
   private readonly _stage = signal<CheckinStage>('INITIALIZING');
   private readonly _pubId = signal<string | null>(null);
   private readonly _error = signal<string | null>(null);
@@ -76,7 +75,8 @@ export class CheckinOrchestrator {
 
   readonly showPhotoPreview = computed(() => {
     const stage = this.stage();
-    const shouldShow = stage === 'PHOTO_TAKEN' || stage === 'PHOTO_REVIEW' || stage === 'LLM_CHECKING';
+    const shouldShow =
+      stage === 'PHOTO_TAKEN' || stage === 'PHOTO_REVIEW' || stage === 'LLM_CHECKING';
     console.log('[CheckinOrchestrator] 🖼️ showPhotoPreview computed:', { stage, shouldShow });
     return shouldShow;
   });
@@ -99,15 +99,24 @@ export class CheckinOrchestrator {
   readonly statusMessage = computed(() => {
     const stage = this.stage();
     switch (stage) {
-      case 'INITIALIZING': return 'Getting ready...';
-      case 'CAMERA_STARTING': return 'Starting camera...';
-      case 'CAMERA_ACTIVE': return 'Ready to capture';
-      case 'CAPTURING_PHOTO': return 'Capturing...';
-      case 'PHOTO_TAKEN': return 'Photo captured';
-      case 'PHOTO_REVIEW': return 'Review your photo';
-      case 'LLM_CHECKING': return 'Processing...';
-      case 'RESULT': return 'Check-in complete!';
-      default: return '';
+      case 'INITIALIZING':
+        return 'Getting ready...';
+      case 'CAMERA_STARTING':
+        return 'Starting camera...';
+      case 'CAMERA_ACTIVE':
+        return 'Ready to capture';
+      case 'CAPTURING_PHOTO':
+        return 'Capturing...';
+      case 'PHOTO_TAKEN':
+        return 'Photo captured';
+      case 'PHOTO_REVIEW':
+        return 'Review your photo';
+      case 'LLM_CHECKING':
+        return 'Processing...';
+      case 'RESULT':
+        return 'Check-in complete!';
+      default:
+        return '';
     }
   });
 
@@ -126,7 +135,7 @@ export class CheckinOrchestrator {
 
   async startCheckin(pubId: string): Promise<void> {
     console.log('[CheckinOrchestrator] 🚀 Starting check-in for pub:', pubId);
-    
+
     try {
       this._pubId.set(pubId);
       this._error.set(null);
@@ -134,7 +143,6 @@ export class CheckinOrchestrator {
 
       // Start camera instead of file input
       await this.startCamera();
-
     } catch (error: any) {
       console.error('[CheckinOrchestrator] ❌ Failed to start:', error);
       this.handleError(error.message || 'Failed to initialize camera');
@@ -149,19 +157,19 @@ export class CheckinOrchestrator {
 
   async retryCheckin(): Promise<void> {
     console.log('[CheckinOrchestrator] 🔄 Retrying check-in');
-    
+
     try {
       // Clear error state
       this._error.set(null);
       this._stage.set('INITIALIZING');
-      
+
       // Reset photo data
       this._photoBlob.set(null);
       this._photoDataUrl.set(null);
-      
+
       // Restart camera
       await this.startCamera();
-      
+
       console.log('[CheckinOrchestrator] ✅ Retry successful - camera ready');
     } catch (error: any) {
       console.error('[CheckinOrchestrator] ❌ Retry failed:', error);
@@ -180,29 +188,28 @@ export class CheckinOrchestrator {
 
   private async startCamera(): Promise<void> {
     console.log('[CheckinOrchestrator] 📹 Starting camera');
-    
+
     if (!this.videoElement) {
       throw new Error('Video element not set');
     }
 
     try {
       this._stage.set('CAMERA_STARTING');
-      
+
       // Request camera access
       const stream = await this.cameraService.requestCamera({
         video: { facingMode: 'environment' },
-        audio: false
+        audio: false,
       });
-      
+
       // Attach stream to video element
       this.cameraService.attachToVideoElement(this.videoElement, stream);
-      
+
       // Wait for video to be ready
       await this.cameraService.waitForVideoReady(this.videoElement);
-      
+
       this._stage.set('CAMERA_ACTIVE');
       console.log('[CheckinOrchestrator] ✅ Camera ready for capture');
-      
     } catch (error: any) {
       console.error('[CheckinOrchestrator] ❌ Camera start failed:', error);
       throw error;
@@ -211,33 +218,35 @@ export class CheckinOrchestrator {
 
   async capturePhoto(): Promise<void> {
     console.log('[CheckinOrchestrator] 📸 Capturing photo from video stream');
-    
+
     if (!this.videoElement) {
       throw new Error('Video element not available');
     }
 
     try {
       this._stage.set('CAPTURING_PHOTO');
-      
+
       // Check if camera is ready for capture
       if (!this.cameraService.isCameraReadyForCapture(this.videoElement)) {
         throw new Error('Camera is not ready for capture');
       }
-      
+
       // Capture photo from video stream
-      const { dataUrl, blob } = await this.cameraService.capturePhotoToCanvas(this.videoElement, 0.95);
-      
+      const { dataUrl, blob } = await this.cameraService.capturePhotoToCanvas(
+        this.videoElement,
+        0.95
+      );
+
       // Store the captured photo
       this._photoDataUrl.set(dataUrl);
       this._photoBlob.set(blob);
-      
+
       this._stage.set('PHOTO_TAKEN');
       console.log('[CheckinOrchestrator] ✅ Photo captured successfully');
-      
+
       // Move to review stage - wait for user confirmation
       this._stage.set('PHOTO_REVIEW');
       console.log('[CheckinOrchestrator] 📋 Photo ready for review - waiting for user decision');
-      
     } catch (error: any) {
       console.error('[CheckinOrchestrator] ❌ Photo capture failed:', error);
       this.handleError('Failed to capture photo');
@@ -250,10 +259,10 @@ export class CheckinOrchestrator {
 
   confirmPhoto(): void {
     console.log('[CheckinOrchestrator] ✅ User confirmed photo - proceeding with LLM check');
-    
+
     const dataUrl = this._photoDataUrl();
     const blob = this._photoBlob();
-    
+
     if (!dataUrl || !blob) {
       console.error('[CheckinOrchestrator] ❌ No photo data available for confirmation');
       this.handleError('No photo data available');
@@ -271,28 +280,33 @@ export class CheckinOrchestrator {
   }
 
   retakePhoto(): void {
-    console.log('[CheckinOrchestrator] 🔄 User chose to retake photo - starting complete reset process');
-    
+    console.log(
+      '[CheckinOrchestrator] 🔄 User chose to retake photo - starting complete reset process'
+    );
+
     // Step 1: Clear all photo data immediately
     console.log('[CheckinOrchestrator] 📸 Clearing saved photo data (blob & dataUrl)');
     this._photoBlob.set(null);
     this._photoDataUrl.set(null);
-    
+
     // Step 2: Clear any error state
     console.log('[CheckinOrchestrator] ❌ Clearing error state');
     this._error.set(null);
-    
+
     // Step 3: Reset stage to remove photo preview and show camera again
     console.log('[CheckinOrchestrator] 🎬 Changing stage from PHOTO_REVIEW to CAMERA_ACTIVE');
     this._stage.set('CAMERA_ACTIVE');
-    
+
     // Step 4: Verify camera is still running
     if (this.videoElement && this.cameraService.isCameraReadyForCapture(this.videoElement)) {
       console.log('[CheckinOrchestrator] ✅ Camera verified - ready for new capture');
     } else {
-      console.warn('[CheckinOrchestrator] ⚠️ Camera may not be ready - video element:', !!this.videoElement);
+      console.warn(
+        '[CheckinOrchestrator] ⚠️ Camera may not be ready - video element:',
+        !!this.videoElement
+      );
     }
-    
+
     console.log('[CheckinOrchestrator] 🎯 Retake complete - user should now see live camera feed');
   }
 
@@ -306,10 +320,10 @@ export class CheckinOrchestrator {
 
     try {
       const result = await this.llmService.detectCarpet(photoDataUrl);
-      
+
       // Always proceed to result stage regardless of LLM result
       console.log('[CheckinOrchestrator] 📝 LLM analysis complete:', result);
-      
+
       const blob = this._photoBlob();
       if (blob) {
         console.log('[CheckinOrchestrator] ⚡ Proceeding to process check-in with LLM result');
@@ -317,7 +331,6 @@ export class CheckinOrchestrator {
       } else {
         throw new Error('No photo blob available');
       }
-
     } catch (error: any) {
       console.error('[CheckinOrchestrator] ❌ LLM analysis failed:', error);
       this.handleError('Failed to verify carpet');
@@ -333,7 +346,7 @@ export class CheckinOrchestrator {
 
       // Convert blob to canvas for storage
       const canvas = await this.blobToCanvas(blob);
-      
+
       // Process carpet with quality analysis and storage
       console.log('[CheckinOrchestrator] 💾 Processing carpet with quality analysis');
       const pubName = this.dataAggregator.getPubName(pubId);
@@ -344,12 +357,11 @@ export class CheckinOrchestrator {
       // Execute check-in with carpet result
       await this.checkinStore.checkinToPub(pubId, carpetResult);
       this._stage.set('RESULT');
-      
+
       console.log('[CheckinOrchestrator] 🎉 Check-in successful!');
-      
+
       // Show success modal directly to ensure it always appears
       this.showSuccessModal(pubId);
-
     } catch (error: any) {
       console.error('[CheckinOrchestrator] ❌ Processing failed:', error);
       this.handleError('Check-in failed');
@@ -357,7 +369,7 @@ export class CheckinOrchestrator {
   }
 
   private async blobToCanvas(blob: Blob): Promise<HTMLCanvasElement> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
@@ -377,10 +389,10 @@ export class CheckinOrchestrator {
 
   private showSuccessModal(pubId: string): void {
     console.log('[CheckinOrchestrator] 🎉 Showing success modal for pub:', pubId);
-    
+
     // Get the check-in results from the store
     const checkinResults = this.checkinStore.checkinResults();
-    
+
     if (checkinResults) {
       console.log('[CheckinOrchestrator] 📋 Found checkin results, showing modal:', checkinResults);
       this.checkInModalService.showCheckInResults(checkinResults, () => {
@@ -407,17 +419,17 @@ export class CheckinOrchestrator {
 
   cleanup(): void {
     console.log('[CheckinOrchestrator] 🧹 Cleaning up');
-    
+
     // Release camera resources
     this.cameraService.releaseCamera();
-    
+
     // Reset state
     this._stage.set('INITIALIZING');
     this._pubId.set(null);
     this._error.set(null);
     this._photoDataUrl.set(null);
     this._photoBlob.set(null);
-    
+
     this.videoElement = null;
   }
 }

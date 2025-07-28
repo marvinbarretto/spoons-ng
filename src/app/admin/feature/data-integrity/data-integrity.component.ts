@@ -1,16 +1,22 @@
 // src/app/admin/feature/data-integrity/data-integrity.component.ts
-import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, computed, inject, signal } from '@angular/core';
 
+import {
+  EmptyStateComponent,
+  ErrorStateComponent,
+  LoadingStateComponent,
+} from '@fourfold/angular-foundation';
 import { BaseComponent } from '@shared/base/base.component';
-import { LoadingStateComponent } from '@shared/ui/loading-state/loading-state.component';
-import { ErrorStateComponent } from '@shared/ui/error-state/error-state.component';
-import { EmptyStateComponent } from '@shared/ui/empty-state/empty-state.component';
 import { ButtonComponent } from '@shared/ui/button/button.component';
 import { DataTableComponent } from '@shared/ui/data-table/data-table.component';
 
-import { DataIntegrityService, type IntegrityReport, type DataInconsistency, type UserDataSummary } from '../../data-access/data-integrity.service';
 import type { TableColumn } from '@shared/ui/data-table/data-table.model';
+import {
+  DataIntegrityService,
+  type DataInconsistency,
+  type IntegrityReport,
+} from '../../data-access/data-integrity.service';
 
 type InconsistencyWithActions = DataInconsistency & {
   repairStatusText: string;
@@ -26,7 +32,7 @@ type InconsistencyWithActions = DataInconsistency & {
     ErrorStateComponent,
     EmptyStateComponent,
     ButtonComponent,
-    DataTableComponent
+    DataTableComponent,
   ],
   template: `
     <div class="data-integrity">
@@ -70,16 +76,16 @@ type InconsistencyWithActions = DataInconsistency & {
 
       <!-- Loading/Error States -->
       @if (scanning()) {
-        <app-loading-state text="Analyzing database integrity..." />
+        <ff-loading-state text="Analyzing database integrity..." />
       } @else if (error()) {
-        <app-error-state
+        <ff-error-state
           [message]="error()!"
           [showRetry]="true"
           retryText="Try Again"
           (retry)="performAnalysis()"
         />
       } @else if (!latestReport()) {
-        <app-empty-state
+        <ff-empty-state
           icon="🔍"
           title="No analysis performed yet"
           subtitle="Click 'Analyze Database' to start scanning for data inconsistencies"
@@ -123,19 +129,31 @@ type InconsistencyWithActions = DataInconsistency & {
                 <p class="section-subtitle">Records that reference deleted users</p>
               </div>
               <div class="orphaned-grid">
-                <div class="orphaned-item" [class.has-orphans]="report.orphanedRecords.checkins > 0">
+                <div
+                  class="orphaned-item"
+                  [class.has-orphans]="report.orphanedRecords.checkins > 0"
+                >
                   <div class="orphaned-count">{{ report.orphanedRecords.checkins }}</div>
                   <div class="orphaned-label">Orphaned Check-ins</div>
                 </div>
-                <div class="orphaned-item" [class.has-orphans]="report.orphanedRecords.pointsTransactions > 0">
+                <div
+                  class="orphaned-item"
+                  [class.has-orphans]="report.orphanedRecords.pointsTransactions > 0"
+                >
                   <div class="orphaned-count">{{ report.orphanedRecords.pointsTransactions }}</div>
                   <div class="orphaned-label">Orphaned Points</div>
                 </div>
-                <div class="orphaned-item" [class.has-orphans]="report.orphanedRecords.earnedBadges > 0">
+                <div
+                  class="orphaned-item"
+                  [class.has-orphans]="report.orphanedRecords.earnedBadges > 0"
+                >
                   <div class="orphaned-count">{{ report.orphanedRecords.earnedBadges }}</div>
                   <div class="orphaned-label">Orphaned Badges</div>
                 </div>
-                <div class="orphaned-item" [class.has-orphans]="report.orphanedRecords.landlords > 0">
+                <div
+                  class="orphaned-item"
+                  [class.has-orphans]="report.orphanedRecords.landlords > 0"
+                >
                   <div class="orphaned-count">{{ report.orphanedRecords.landlords }}</div>
                   <div class="orphaned-label">Orphaned Landlords</div>
                 </div>
@@ -197,7 +215,7 @@ type InconsistencyWithActions = DataInconsistency & {
             </section>
           } @else {
             <section class="no-issues">
-              <app-empty-state
+              <ff-empty-state
                 icon="✅"
                 title="No Data Issues Found"
                 subtitle="Your database appears to be consistent!"
@@ -217,9 +235,11 @@ type InconsistencyWithActions = DataInconsistency & {
                     <div class="user-header">
                       <h4>{{ userSummary.userName }}</h4>
                       <span class="user-id">{{ userSummary.userId.slice(-8) }}</span>
-                      <span class="issue-count">{{ userSummary.inconsistencies.length }} issues</span>
+                      <span class="issue-count"
+                        >{{ userSummary.inconsistencies.length }} issues</span
+                      >
                     </div>
-                    
+
                     <div class="data-comparison">
                       <div class="comparison-section">
                         <h5>📝 Summary Data (User Document)</h5>
@@ -230,7 +250,9 @@ type InconsistencyWithActions = DataInconsistency & {
                           </div>
                           <div class="data-item">
                             <span class="data-label">Verified Pubs:</span>
-                            <span class="data-value">{{ userSummary.summary.verifiedPubCount }}</span>
+                            <span class="data-value">{{
+                              userSummary.summary.verifiedPubCount
+                            }}</span>
                           </div>
                           <div class="data-item">
                             <span class="data-label">Total Pubs:</span>
@@ -246,21 +268,47 @@ type InconsistencyWithActions = DataInconsistency & {
                       <div class="comparison-section">
                         <h5>🔢 Calculated Data (From Collections)</h5>
                         <div class="data-grid">
-                          <div class="data-item" [class.mismatch]="userSummary.summary.totalPoints !== userSummary.calculated.totalPointsFromTransactions">
+                          <div
+                            class="data-item"
+                            [class.mismatch]="
+                              userSummary.summary.totalPoints !==
+                              userSummary.calculated.totalPointsFromTransactions
+                            "
+                          >
                             <span class="data-label">Total Points:</span>
-                            <span class="data-value">{{ userSummary.calculated.totalPointsFromTransactions }}</span>
+                            <span class="data-value">{{
+                              userSummary.calculated.totalPointsFromTransactions
+                            }}</span>
                           </div>
-                          <div class="data-item" [class.mismatch]="userSummary.summary.verifiedPubCount !== userSummary.calculated.verifiedPubCountFromCheckins">
+                          <div
+                            class="data-item"
+                            [class.mismatch]="
+                              userSummary.summary.verifiedPubCount !==
+                              userSummary.calculated.verifiedPubCountFromCheckins
+                            "
+                          >
                             <span class="data-label">Check-ins:</span>
-                            <span class="data-value">{{ userSummary.calculated.verifiedPubCountFromCheckins }}</span>
+                            <span class="data-value">{{
+                              userSummary.calculated.verifiedPubCountFromCheckins
+                            }}</span>
                           </div>
                           <div class="data-item">
                             <span class="data-label">Unique Pubs:</span>
-                            <span class="data-value">{{ userSummary.calculated.uniquePubsFromCheckins }}</span>
+                            <span class="data-value">{{
+                              userSummary.calculated.uniquePubsFromCheckins
+                            }}</span>
                           </div>
-                          <div class="data-item" [class.mismatch]="userSummary.summary.badgeCount !== userSummary.calculated.badgeCountFromEarned">
+                          <div
+                            class="data-item"
+                            [class.mismatch]="
+                              userSummary.summary.badgeCount !==
+                              userSummary.calculated.badgeCountFromEarned
+                            "
+                          >
                             <span class="data-label">Badges:</span>
-                            <span class="data-value">{{ userSummary.calculated.badgeCountFromEarned }}</span>
+                            <span class="data-value">{{
+                              userSummary.calculated.badgeCountFromEarned
+                            }}</span>
                           </div>
                         </div>
                       </div>
@@ -692,7 +740,9 @@ type InconsistencyWithActions = DataInconsistency & {
         padding: 0.5rem;
       }
 
-      .stats-grid, .orphaned-grid, .types-grid {
+      .stats-grid,
+      .orphaned-grid,
+      .types-grid {
         grid-template-columns: repeat(2, 1fr);
       }
 
@@ -721,7 +771,7 @@ type InconsistencyWithActions = DataInconsistency & {
         text-align: center;
       }
     }
-  `
+  `,
 })
 export class DataIntegrityComponent extends BaseComponent {
   private readonly dataIntegrityService = inject(DataIntegrityService);
@@ -742,32 +792,32 @@ export class DataIntegrityComponent extends BaseComponent {
       key: 'userName',
       label: 'User',
       sortable: true,
-      className: 'user-cell'
+      className: 'user-cell',
     },
     {
       key: 'type',
       label: 'Issue Type',
       sortable: true,
-      className: 'type-cell'
+      className: 'type-cell',
     },
     {
       key: 'severityDisplay',
       label: 'Severity',
       sortable: true,
-      className: 'severity-cell'
+      className: 'severity-cell',
     },
     {
       key: 'description',
       label: 'Description',
       sortable: false,
-      className: 'description-cell'
+      className: 'description-cell',
     },
     {
       key: 'canRepairDisplay',
       label: 'Auto-Repair',
       sortable: true,
-      className: 'repair-cell'
-    }
+      className: 'repair-cell',
+    },
   ];
 
   // Computed data
@@ -792,7 +842,7 @@ export class DataIntegrityComponent extends BaseComponent {
       ...inc,
       repairStatusText: inc.canAutoRepair ? '✅ Yes' : '❌ Manual',
       severityDisplay: this.formatSeverity(inc.severity),
-      canRepairDisplay: inc.canAutoRepair ? '✅ Yes' : '❌ No'
+      canRepairDisplay: inc.canAutoRepair ? '✅ Yes' : '❌ No',
     }));
   });
 
@@ -811,13 +861,14 @@ export class DataIntegrityComponent extends BaseComponent {
       console.log('[DataIntegrityComponent] 🔍 Starting database analysis...');
       const report = await this.dataIntegrityService.analyzeDataIntegrity();
       this.latestReport.set(report);
-      
+
       if (report.totalInconsistencies === 0) {
         this.showSuccess('✅ Database analysis complete - no issues found!');
       } else {
-        this.showSuccess(`📊 Analysis complete - found ${report.totalInconsistencies} issues across ${report.usersWithInconsistencies} users`);
+        this.showSuccess(
+          `📊 Analysis complete - found ${report.totalInconsistencies} issues across ${report.usersWithInconsistencies} users`
+        );
       }
-
     } catch (error: any) {
       console.error('[DataIntegrityComponent] ❌ Analysis failed:', error);
       this.error.set(`Analysis failed: ${error?.message || 'Unknown error'}`);
@@ -832,7 +883,7 @@ export class DataIntegrityComponent extends BaseComponent {
     try {
       console.log(`[DataIntegrityComponent] 🔧 Repairing issue: ${inconsistency.id}`);
       const result = await this.dataIntegrityService.repairInconsistency(inconsistency);
-      
+
       if (result.success) {
         this.showSuccess(`✅ Fixed: ${inconsistency.type} for ${inconsistency.userName}`);
         // Re-run analysis to update the display
@@ -840,7 +891,6 @@ export class DataIntegrityComponent extends BaseComponent {
       } else {
         this.showError(`❌ Repair failed: ${result.error}`);
       }
-
     } catch (error: any) {
       console.error('[DataIntegrityComponent] ❌ Repair failed:', error);
       this.showError(`Repair failed: ${error?.message || 'Unknown error'}`);
@@ -862,15 +912,21 @@ export class DataIntegrityComponent extends BaseComponent {
       return;
     }
 
-    if (!confirm(`🔧 Auto-repair ${autoRepairableIssues.length} issues?\n\nThis will update user summary fields to match calculated values from transactional data. This action cannot be undone.\n\nContinue?`)) {
+    if (
+      !confirm(
+        `🔧 Auto-repair ${autoRepairableIssues.length} issues?\n\nThis will update user summary fields to match calculated values from transactional data. This action cannot be undone.\n\nContinue?`
+      )
+    ) {
       return;
     }
 
     this.repairing.set(true);
 
     try {
-      console.log(`[DataIntegrityComponent] 🔧 Batch repairing ${autoRepairableIssues.length} issues...`);
-      
+      console.log(
+        `[DataIntegrityComponent] 🔧 Batch repairing ${autoRepairableIssues.length} issues...`
+      );
+
       let successCount = 0;
       let failureCount = 0;
 
@@ -892,12 +948,13 @@ export class DataIntegrityComponent extends BaseComponent {
       if (failureCount === 0) {
         this.showSuccess(`✅ Successfully repaired all ${successCount} issues!`);
       } else {
-        this.showSuccess(`⚠️ Repaired ${successCount} issues, but ${failureCount} failed. Check console for details.`);
+        this.showSuccess(
+          `⚠️ Repaired ${successCount} issues, but ${failureCount} failed. Check console for details.`
+        );
       }
 
       // Re-run analysis to update the display
       await this.performAnalysis();
-
     } catch (error: any) {
       console.error('[DataIntegrityComponent] ❌ Batch repair failed:', error);
       this.showError(`Batch repair failed: ${error?.message || 'Unknown error'}`);
@@ -923,16 +980,16 @@ export class DataIntegrityComponent extends BaseComponent {
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
-      second: '2-digit'
+      second: '2-digit',
     }).format(new Date(timestamp));
   }
 
   formatSeverity(severity: string): string {
     const severityMap = {
-      'critical': '🔴 Critical',
-      'high': '🟠 High',
-      'medium': '🟡 Medium',
-      'low': '🟢 Low'
+      critical: '🔴 Critical',
+      high: '🟠 High',
+      medium: '🟡 Medium',
+      low: '🟢 Low',
     };
     return severityMap[severity as keyof typeof severityMap] || severity;
   }
@@ -944,7 +1001,7 @@ export class DataIntegrityComponent extends BaseComponent {
       'badge-count-mismatch': 'Badge Count Mismatch',
       'missing-user-summary': 'Missing Summary Fields',
       'orphaned-checkin': 'Orphaned Check-in',
-      'orphaned-transaction': 'Orphaned Transaction'
+      'orphaned-transaction': 'Orphaned Transaction',
     };
     return typeMap[type as keyof typeof typeMap] || type;
   }

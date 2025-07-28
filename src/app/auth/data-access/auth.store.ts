@@ -18,13 +18,12 @@
  * - When user logs in/out, UserStore loads/clears profile data
  * - AuthStore provides uid → UserStore loads user/{uid} document
  */
-import { signal, computed, inject, Injectable } from '@angular/core';
-import { getAuth, updateProfile, User as FirebaseUser } from 'firebase/auth';
-import { AuthService } from './auth.service';
-import { SsrPlatformService } from '@fourfold/angular-foundation';
-import { OverlayService } from '../../shared/data-access/overlay.service';
-import { generateRandomName } from '../../shared/utils/anonymous-names';
+import { computed, inject, Injectable, signal } from '@angular/core';
+import { OverlayService, SsrPlatformService } from '@fourfold/angular-foundation';
 import type { User } from '@users/utils/user.model';
+import { User as FirebaseUser, getAuth, updateProfile } from 'firebase/auth';
+import { generateRandomName } from '../../shared/utils/anonymous-names';
+import { AuthService } from './auth.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthStore {
@@ -51,21 +50,20 @@ export class AuthStore {
 
   constructor() {
     this.platform.onlyOnBrowser(() => {
-
-      this.authService.onAuthChange(async (firebaseUser) => {
+      this.authService.onAuthChange(async firebaseUser => {
         const timestamp = new Date().toISOString();
         const currentState = {
           currentUser: !!this._user(),
           currentToken: !!this._token(),
           currentUid: this._user()?.uid?.slice(0, 8),
-          isReady: this._ready()
+          isReady: this._ready(),
         };
 
         console.log('[AuthStore] 🔄 Auth state change received at', timestamp, ':', {
           hasUser: !!firebaseUser,
           uid: firebaseUser?.uid?.slice(0, 8),
           isAnonymous: firebaseUser?.isAnonymous,
-          previousState: currentState
+          previousState: currentState,
         });
 
         if (firebaseUser) {
@@ -91,7 +89,7 @@ export class AuthStore {
       console.log('[AuthStore] handleUserSignIn called:', {
         uid: firebaseUser.uid.slice(0, 8),
         isAnonymous: firebaseUser.isAnonymous,
-        hasDisplayName: !!firebaseUser.displayName
+        hasDisplayName: !!firebaseUser.displayName,
       });
 
       const token = await firebaseUser.getIdToken();
@@ -140,7 +138,7 @@ export class AuthStore {
         uid: appUser.uid.slice(0, 8),
         hasToken: !!token,
         isAuthenticated: !!token,
-        displayName: appUser.displayName
+        displayName: appUser.displayName,
       });
 
       // ✅ Save to localStorage only
@@ -156,7 +154,6 @@ export class AuthStore {
 
       // ✅ REMOVED: No Firestore operations here
       // UserStore will handle loading/creating user documents
-
     } catch (error) {
       console.error('[AuthStore] ❌ Sign-in failed:', error);
       this.handleUserSignOut();
@@ -186,7 +183,6 @@ export class AuthStore {
     console.log('[AuthStore] 🚪 handleUserSignOut completed - all auth state cleared');
   }
 
-
   // ✅ ONLY auth operations
   logout(): void {
     console.log('[AuthStore] 🚪 logout() called - delegating to AuthService');
@@ -214,7 +210,7 @@ export class AuthStore {
 
         console.log('[AuthStore] ✅ Refreshed user from Firebase Auth:', {
           uid: updatedUser.uid.slice(0, 8),
-          displayName: updatedUser.displayName
+          displayName: updatedUser.displayName,
         });
       }
     });
@@ -244,13 +240,12 @@ export class AuthStore {
     await this.authService.continueAsGuest();
   }
 
-
   /**
    * Wait for auth state to be fully ready
    * This ensures user, token, and all auth state is properly populated
    */
   async waitForAuthReady(): Promise<void> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const maxAttempts = 30; // 3 seconds max
       let attempts = 0;
 
@@ -265,7 +260,7 @@ export class AuthStore {
           hasUser: !!user,
           hasToken: !!token,
           isReady,
-          uid: user?.uid?.slice(0, 8)
+          uid: user?.uid?.slice(0, 8),
         });
 
         // Auth is ready when we have a user, token, and ready flag is true
@@ -295,7 +290,7 @@ export class AuthStore {
    * This ensures the user is authenticated and has a valid token
    */
   async waitForUserAuthenticated(): Promise<void> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const maxAttempts = 30; // 3 seconds max
       let attempts = 0;
 
@@ -308,7 +303,7 @@ export class AuthStore {
           attempt: attempts,
           hasUser: !!user,
           isAuthenticated,
-          uid: user?.uid?.slice(0, 8)
+          uid: user?.uid?.slice(0, 8),
         });
 
         if (user && isAuthenticated) {
@@ -341,7 +336,9 @@ export class AuthStore {
 
   openAvatarSelector(): void {
     this.platform.onlyOnBrowser(async () => {
-      const { AvatarSelectorComponent } = await import('../../shared/ui/avatar-selector/avatar-selector.component');
+      const { AvatarSelectorComponent } = await import(
+        '../../shared/ui/avatar-selector/avatar-selector.component'
+      );
       const { componentRef, close } = this.overlayService.open(
         AvatarSelectorComponent,
         {},

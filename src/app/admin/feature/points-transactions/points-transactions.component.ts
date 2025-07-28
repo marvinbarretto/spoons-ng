@@ -1,18 +1,24 @@
 // src/app/admin/feature/points-transactions/points-transactions.component.ts
-import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
+import {
+  EmptyStateComponent,
+  ErrorStateComponent,
+  LoadingStateComponent,
+} from '@fourfold/angular-foundation';
 import { BaseComponent } from '@shared/base/base.component';
-import { LoadingStateComponent } from '@shared/ui/loading-state/loading-state.component';
-import { ErrorStateComponent } from '@shared/ui/error-state/error-state.component';
-import { EmptyStateComponent } from '@shared/ui/empty-state/empty-state.component';
 import { ButtonComponent } from '@shared/ui/button/button.component';
 import { DataTableComponent } from '@shared/ui/data-table/data-table.component';
 
-import { CollectionBrowserService, type CollectionRecord, type CollectionBrowserResult } from '../../data-access/collection-browser.service';
 import type { TableColumn } from '@shared/ui/data-table/data-table.model';
+import { CleanupService } from '@shared/utils/cleanup.service';
 import { UserStore } from '@users/data-access/user.store';
+import {
+  CollectionBrowserService,
+  type CollectionRecord,
+} from '../../data-access/collection-browser.service';
 
 type PointsTransactionRecord = CollectionRecord & {
   formattedDate: string;
@@ -31,7 +37,7 @@ type PointsTransactionRecord = CollectionRecord & {
     ErrorStateComponent,
     EmptyStateComponent,
     ButtonComponent,
-    DataTableComponent
+    DataTableComponent,
   ],
   template: `
     <div class="points-transactions">
@@ -130,16 +136,16 @@ type PointsTransactionRecord = CollectionRecord & {
 
       <!-- Loading/Error States -->
       @if (loading()) {
-        <app-loading-state text="Loading points transactions..." />
+        <ff-loading-state text="Loading points transactions..." />
       } @else if (error()) {
-        <app-error-state
+        <ff-error-state
           [message]="error()!"
           [showRetry]="true"
           retryText="Try Again"
           (retry)="loadTransactions(true)"
         />
       } @else if (enrichedTransactions().length === 0) {
-        <app-empty-state
+        <ff-empty-state
           icon="💰"
           title="No transactions found"
           subtitle="No points transactions match your current filters"
@@ -172,11 +178,7 @@ type PointsTransactionRecord = CollectionRecord & {
           <!-- Pagination -->
           @if (hasMoreData()) {
             <div class="pagination-controls">
-              <app-button
-                variant="secondary"
-                [loading]="loading()"
-                (onClick)="loadMore()"
-              >
+              <app-button variant="secondary" [loading]="loading()" (onClick)="loadMore()">
                 Load More Transactions
               </app-button>
             </div>
@@ -189,9 +191,10 @@ type PointsTransactionRecord = CollectionRecord & {
         <summary>🔧 Bulk Operations (Advanced)</summary>
         <div class="bulk-content">
           <div class="operation-warning">
-            ⚠️ <strong>Warning:</strong> Bulk operations permanently delete transaction data. Use with extreme caution.
+            ⚠️ <strong>Warning:</strong> Bulk operations permanently delete transaction data. Use
+            with extreme caution.
           </div>
-          
+
           <div class="operations-grid">
             <div class="operation-item">
               <h4>🗑️ Delete User's Transactions</h4>
@@ -213,7 +216,9 @@ type PointsTransactionRecord = CollectionRecord & {
                   Delete All
                 </app-button>
               </div>
-              <p class="helper-text">⚠️ This will permanently delete ALL transactions for the specified user ID</p>
+              <p class="helper-text">
+                ⚠️ This will permanently delete ALL transactions for the specified user ID
+              </p>
             </div>
 
             <div class="operation-item">
@@ -228,7 +233,24 @@ type PointsTransactionRecord = CollectionRecord & {
               >
                 Delete Everything
               </app-button>
-              <p class="helper-text">⚠️ This will permanently delete ALL transactions for ALL users</p>
+              <p class="helper-text">
+                ⚠️ This will permanently delete ALL transactions for ALL users
+              </p>
+            </div>
+
+            <div class="operation-item">
+              <h4>📊 Delete All User-Events</h4>
+              <p>Delete ALL user-events collection data (analytics/tracking data)</p>
+              <app-button
+                variant="warning"
+                size="sm"
+                [loading]="bulkOperationLoading()"
+                (onClick)="deleteAllUserEvents()"
+                [disabled]="loading()"
+              >
+                Delete User Events
+              </app-button>
+              <p class="helper-text">💰 Cost-efficient Firebase batch deletion</p>
             </div>
 
             <div class="operation-item">
@@ -312,7 +334,8 @@ type PointsTransactionRecord = CollectionRecord & {
       font-weight: 600;
     }
 
-    .filter-input, .filter-select {
+    .filter-input,
+    .filter-select {
       padding: 0.5rem;
       border: 1px solid var(--border);
       border-radius: 4px;
@@ -321,7 +344,8 @@ type PointsTransactionRecord = CollectionRecord & {
       font-size: 0.9rem;
     }
 
-    .filter-input:focus, .filter-select:focus {
+    .filter-input:focus,
+    .filter-select:focus {
       outline: none;
       border-color: var(--primary);
     }
@@ -557,17 +581,18 @@ type PointsTransactionRecord = CollectionRecord & {
         align-items: stretch;
       }
     }
-  `
+  `,
 })
 export class AdminPointsTransactionsComponent extends BaseComponent {
   private readonly collectionBrowserService = inject(CollectionBrowserService);
   private readonly userStore = inject(UserStore);
+  private readonly cleanupService = inject(CleanupService);
 
   // Filter states
   readonly userDisplayNameFilter = signal('');
   readonly minPointsFilter = signal<number | null>(null);
   readonly typeFilter = signal('');
-  
+
   // Bulk operations
   readonly bulkDeleteUserId = signal('');
   readonly bulkOperationLoading = signal(false);
@@ -584,44 +609,44 @@ export class AdminPointsTransactionsComponent extends BaseComponent {
       key: 'formattedDate',
       label: 'Date',
       sortable: true,
-      className: 'date-cell'
+      className: 'date-cell',
     },
     {
       key: 'userDisplayName',
       label: 'User',
       sortable: true,
-      className: 'user-cell'
+      className: 'user-cell',
     },
     {
       key: 'data.userId',
       label: 'User ID',
       sortable: true,
-      className: 'id-cell monospace'
+      className: 'id-cell monospace',
     },
     {
       key: 'pointsDisplay',
       label: 'Points',
       sortable: true,
-      className: 'number points-primary'
+      className: 'number points-primary',
     },
     {
       key: 'typeDisplay',
       label: 'Type',
       sortable: true,
-      className: 'type-cell'
+      className: 'type-cell',
     },
     {
       key: 'reasonDisplay',
       label: 'Reason',
       sortable: false,
-      className: 'reason-cell'
+      className: 'reason-cell',
     },
     {
       key: 'id',
       label: 'Transaction ID',
       sortable: false,
-      className: 'id-cell monospace'
-    }
+      className: 'id-cell monospace',
+    },
   ];
 
   // Computed properties
@@ -632,13 +657,15 @@ export class AdminPointsTransactionsComponent extends BaseComponent {
       userDisplayName: this.getUserDisplayName(transaction.data.userId),
       pointsDisplay: this.formatPoints(transaction.data.points || transaction.data.amount || 0),
       typeDisplay: this.formatTransactionType(transaction.data.type || transaction.data.source),
-      reasonDisplay: this.formatReason(transaction.data.reason || transaction.data.description || 'No reason specified')
+      reasonDisplay: this.formatReason(
+        transaction.data.reason || transaction.data.description || 'No reason specified'
+      ),
     }));
 
     // Apply client-side filtering by user display name
     const userNameFilter = this.userDisplayNameFilter().toLowerCase().trim();
     if (userNameFilter) {
-      transactions = transactions.filter(transaction => 
+      transactions = transactions.filter(transaction =>
         transaction.userDisplayName.toLowerCase().includes(userNameFilter)
       );
     }
@@ -651,22 +678,28 @@ export class AdminPointsTransactionsComponent extends BaseComponent {
     if (transactions.length === 0) return null;
 
     const totalTransactions = transactions.length;
-    const totalPoints = transactions.reduce((sum, t) => sum + (t.data.points || t.data.amount || 0), 0);
+    const totalPoints = transactions.reduce(
+      (sum, t) => sum + (t.data.points || t.data.amount || 0),
+      0
+    );
     const uniqueUsers = new Set(transactions.map(t => t.data.userId)).size;
-    const averageTransaction = totalTransactions > 0 ? Math.round(totalPoints / totalTransactions) : 0;
+    const averageTransaction =
+      totalTransactions > 0 ? Math.round(totalPoints / totalTransactions) : 0;
 
     return {
       totalTransactions,
       totalPoints,
       uniqueUsers,
-      averageTransaction
+      averageTransaction,
     };
   });
 
   readonly hasFiltersApplied = computed(() => {
-    return this.userDisplayNameFilter() !== '' || 
-           this.minPointsFilter() !== null || 
-           this.typeFilter() !== '';
+    return (
+      this.userDisplayNameFilter() !== '' ||
+      this.minPointsFilter() !== null ||
+      this.typeFilter() !== ''
+    );
   });
 
   readonly hasMoreData = computed(() => this.hasMore());
@@ -688,14 +721,14 @@ export class AdminPointsTransactionsComponent extends BaseComponent {
 
     try {
       const filters = this.buildFilters();
-      
+
       const result = await this.collectionBrowserService.browseCollection({
         collectionName: 'pointsTransactions',
         pageSize: 50,
         lastDocument: reset ? undefined : this.lastDocument(),
         filters,
         orderByField: 'createdAt',
-        orderDirection: 'desc'
+        orderDirection: 'desc',
       });
 
       if (reset) {
@@ -707,8 +740,9 @@ export class AdminPointsTransactionsComponent extends BaseComponent {
       this.hasMore.set(result.hasMore);
       this.lastDocument.set(result.lastDocument);
 
-      console.log(`[AdminPointsTransactions] Loaded ${result.records.length} transactions, hasMore: ${result.hasMore}`);
-
+      console.log(
+        `[AdminPointsTransactions] Loaded ${result.records.length} transactions, hasMore: ${result.hasMore}`
+      );
     } catch (error: any) {
       console.error('[AdminPointsTransactions] Failed to load transactions:', error);
       this.error.set(`Failed to load transactions: ${error?.message || 'Unknown error'}`);
@@ -757,7 +791,7 @@ export class AdminPointsTransactionsComponent extends BaseComponent {
 
   private formatDate(timestamp: any): string {
     if (!timestamp) return 'Unknown';
-    
+
     let date: Date;
     if (timestamp.toDate) {
       date = timestamp.toDate();
@@ -772,16 +806,16 @@ export class AdminPointsTransactionsComponent extends BaseComponent {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     }).format(date);
   }
 
   private getUserDisplayName(userId: string): string {
     if (!userId) return 'Unknown User';
-    
+
     const users = this.userStore.data();
     const user = users.find(u => u.uid === userId);
-    
+
     // Return displayName if found, otherwise show more of the user ID
     return user?.displayName || `${userId.slice(0, 12)}...`;
   }
@@ -792,15 +826,15 @@ export class AdminPointsTransactionsComponent extends BaseComponent {
 
   private formatTransactionType(type: string): string {
     if (!type) return 'Unknown';
-    
+
     const typeMap: { [key: string]: string } = {
-      'checkin': '🍺 Check-in',
-      'bonus': '🎉 Bonus',
-      'badge': '🏆 Badge',
-      'mission': '🎯 Mission',
-      'manual': '⚙️ Manual',
-      'landlord': '🏠 Landlord',
-      'carpet': '📸 Carpet'
+      checkin: '🍺 Check-in',
+      bonus: '🎉 Bonus',
+      badge: '🏆 Badge',
+      mission: '🎯 Mission',
+      manual: '⚙️ Manual',
+      landlord: '🏠 Landlord',
+      carpet: '📸 Carpet',
     };
 
     return typeMap[type.toLowerCase()] || `📝 ${type}`;
@@ -808,7 +842,7 @@ export class AdminPointsTransactionsComponent extends BaseComponent {
 
   private formatReason(reason: string): string {
     if (!reason || reason === 'No reason specified') return '—';
-    
+
     // Truncate long reasons
     return reason.length > 50 ? `${reason.substring(0, 50)}...` : reason;
   }
@@ -820,9 +854,9 @@ export class AdminPointsTransactionsComponent extends BaseComponent {
 
     const confirmed = confirm(
       `🗑️ Delete ALL transactions for user ID: ${userId}?\n\n` +
-      `This will permanently delete ALL point transactions for this user.\n` +
-      `This action CANNOT be undone.\n\n` +
-      `Are you absolutely sure you want to continue?`
+        `This will permanently delete ALL point transactions for this user.\n` +
+        `This action CANNOT be undone.\n\n` +
+        `Are you absolutely sure you want to continue?`
     );
 
     if (!confirmed) return;
@@ -843,7 +877,7 @@ export class AdminPointsTransactionsComponent extends BaseComponent {
           lastDocument: lastDoc,
           filters: [{ field: 'userId', operator: '==', value: userId }],
           orderByField: 'createdAt',
-          orderDirection: 'desc'
+          orderDirection: 'desc',
         });
 
         allUserTransactions.push(...result.records);
@@ -858,11 +892,16 @@ export class AdminPointsTransactionsComponent extends BaseComponent {
 
       // Delete all transactions
       const transactionIds = allUserTransactions.map(t => t.id);
-      const deleteResult = await this.collectionBrowserService.deleteRecords('pointsTransactions', transactionIds);
+      const deleteResult = await this.collectionBrowserService.deleteRecords(
+        'pointsTransactions',
+        transactionIds
+      );
 
       if (deleteResult.successCount > 0) {
-        this.showSuccess(`✅ Successfully deleted ${deleteResult.successCount} transactions for user ${userId}`);
-        
+        this.showSuccess(
+          `✅ Successfully deleted ${deleteResult.successCount} transactions for user ${userId}`
+        );
+
         // Clear the input and reload the current view
         this.bulkDeleteUserId.set('');
         await this.loadTransactions(true);
@@ -871,7 +910,6 @@ export class AdminPointsTransactionsComponent extends BaseComponent {
       if (deleteResult.failureCount > 0) {
         this.showError(`⚠️ Failed to delete ${deleteResult.failureCount} transactions`);
       }
-
     } catch (error: any) {
       console.error('[AdminPointsTransactions] Failed to delete user transactions:', error);
       this.showError(`Failed to delete transactions: ${error?.message || 'Unknown error'}`);
@@ -883,19 +921,19 @@ export class AdminPointsTransactionsComponent extends BaseComponent {
   async deleteAllTransactions(): Promise<void> {
     const confirmed = confirm(
       `☢️ NUCLEAR OPTION: Delete ALL transactions?\n\n` +
-      `This will permanently delete EVERY point transaction in the database.\n` +
-      `This affects ALL users and CANNOT be undone.\n\n` +
-      `Are you absolutely sure you want to continue?`
+        `This will permanently delete EVERY point transaction in the database.\n` +
+        `This affects ALL users and CANNOT be undone.\n\n` +
+        `Are you absolutely sure you want to continue?`
     );
 
     if (!confirmed) return;
 
     const doubleConfirm = confirm(
       `🚨 FINAL WARNING\n\n` +
-      `You are about to delete ALL transactions for ALL users.\n` +
-      `This will completely reset everyone's point history.\n\n` +
-      `This action is IRREVERSIBLE.\n\n` +
-      `Type YES to confirm or Cancel to abort.`
+        `You are about to delete ALL transactions for ALL users.\n` +
+        `This will completely reset everyone's point history.\n\n` +
+        `This action is IRREVERSIBLE.\n\n` +
+        `Type YES to confirm or Cancel to abort.`
     );
 
     if (!doubleConfirm) return;
@@ -922,14 +960,16 @@ export class AdminPointsTransactionsComponent extends BaseComponent {
           lastDocument: lastDoc,
           filters: [], // No filters = get everything
           orderByField: 'createdAt',
-          orderDirection: 'desc'
+          orderDirection: 'desc',
         });
 
         allTransactions.push(...result.records);
         hasMore = result.hasMore;
         lastDoc = result.lastDocument;
 
-        console.log(`[AdminPointsTransactions] Batch ${batchCount}: +${result.records.length} transactions (total: ${allTransactions.length})`);
+        console.log(
+          `[AdminPointsTransactions] Batch ${batchCount}: +${result.records.length} transactions (total: ${allTransactions.length})`
+        );
       }
 
       if (allTransactions.length === 0) {
@@ -937,15 +977,22 @@ export class AdminPointsTransactionsComponent extends BaseComponent {
         return;
       }
 
-      console.log(`[AdminPointsTransactions] 💥 Deleting ${allTransactions.length} total transactions...`);
+      console.log(
+        `[AdminPointsTransactions] 💥 Deleting ${allTransactions.length} total transactions...`
+      );
 
       // Delete all transactions
       const transactionIds = allTransactions.map(t => t.id);
-      const deleteResult = await this.collectionBrowserService.deleteRecords('pointsTransactions', transactionIds);
+      const deleteResult = await this.collectionBrowserService.deleteRecords(
+        'pointsTransactions',
+        transactionIds
+      );
 
       if (deleteResult.successCount > 0) {
-        this.showSuccess(`☢️ NUCLEAR DELETION COMPLETE: Deleted ${deleteResult.successCount} transactions`);
-        
+        this.showSuccess(
+          `☢️ NUCLEAR DELETION COMPLETE: Deleted ${deleteResult.successCount} transactions`
+        );
+
         // Reload the current view (should be empty now)
         await this.loadTransactions(true);
       }
@@ -954,11 +1001,48 @@ export class AdminPointsTransactionsComponent extends BaseComponent {
         this.showError(`⚠️ Failed to delete ${deleteResult.failureCount} transactions`);
       }
 
-      console.log(`[AdminPointsTransactions] ✅ Nuclear deletion completed: ${deleteResult.successCount} deleted, ${deleteResult.failureCount} failed`);
-
+      console.log(
+        `[AdminPointsTransactions] ✅ Nuclear deletion completed: ${deleteResult.successCount} deleted, ${deleteResult.failureCount} failed`
+      );
     } catch (error: any) {
       console.error('[AdminPointsTransactions] Failed to delete all transactions:', error);
       this.showError(`Failed to delete all transactions: ${error?.message || 'Unknown error'}`);
+    } finally {
+      this.bulkOperationLoading.set(false);
+    }
+  }
+
+  async deleteAllUserEvents(): Promise<void> {
+    const confirmed = confirm(
+      `📊 Delete ALL user-events data?\n\n` +
+        `This will permanently delete the entire user-events collection.\n` +
+        `This is analytics/tracking data and won't affect app functionality.\n\n` +
+        `💰 Uses cost-efficient Firebase batch operations.\n\n` +
+        `Continue with deletion?`
+    );
+
+    if (!confirmed) return;
+
+    this.bulkOperationLoading.set(true);
+
+    try {
+      console.log('[AdminPointsTransactions] 💰 Starting cost-efficient user-events deletion...');
+
+      // Use the optimized cleanup service method that batches 500 docs at a time
+      const result = await this.cleanupService.clearCollection('user-events');
+
+      if (result.success) {
+        this.showSuccess(`✅ Successfully deleted ${result.deletedCount} user-events documents`);
+        console.log(
+          `[AdminPointsTransactions] ✅ Cost-efficient deletion completed: ${result.deletedCount} user-events deleted`
+        );
+      } else {
+        this.showError(`❌ Failed to delete user-events: ${result.error}`);
+        console.error('[AdminPointsTransactions] Failed to delete user-events:', result.error);
+      }
+    } catch (error: any) {
+      console.error('[AdminPointsTransactions] Failed to delete user-events:', error);
+      this.showError(`Failed to delete user-events: ${error?.message || 'Unknown error'}`);
     } finally {
       this.bulkOperationLoading.set(false);
     }
@@ -977,7 +1061,6 @@ export class AdminPointsTransactionsComponent extends BaseComponent {
         this.showSuccess(`🔍 Found ${orphanedTransactions.length} orphaned transactions`);
         console.log('[AdminPointsTransactions] Orphaned transactions:', orphanedTransactions);
       }
-
     } catch (error: any) {
       console.error('[AdminPointsTransactions] Failed to find orphaned transactions:', error);
       this.showError(`Failed to find orphaned transactions: ${error?.message || 'Unknown error'}`);

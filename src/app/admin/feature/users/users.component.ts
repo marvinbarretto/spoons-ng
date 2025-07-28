@@ -1,16 +1,17 @@
 // src/app/admin/feature/users/users.component.ts
-import { Component, inject, computed, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, computed, inject, OnInit } from '@angular/core';
 
+import {
+  EmptyStateComponent,
+  ErrorStateComponent,
+  LoadingStateComponent,
+} from '@fourfold/angular-foundation';
 import { BaseComponent } from '../../../shared/base/base.component';
-import { LoadingStateComponent } from '../../../shared/ui/loading-state/loading-state.component';
-import { ErrorStateComponent } from '../../../shared/ui/error-state/error-state.component';
-import { EmptyStateComponent } from '../../../shared/ui/empty-state/empty-state.component';
-import { DataTableComponent } from '../../../shared/ui/data-table/data-table.component';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
+import { DataTableComponent } from '../../../shared/ui/data-table/data-table.component';
+import type { TableColumn } from '../../../shared/ui/data-table/data-table.model';
 import { UserStore } from '../../../users/data-access/user.store';
 import type { User } from '../../../users/utils/user.model';
-import type { TableColumn } from '../../../shared/ui/data-table/data-table.model';
 
 type UserWithDetails = User & {
   formattedJoinDate?: string;
@@ -25,8 +26,8 @@ type UserWithDetails = User & {
     ErrorStateComponent,
     EmptyStateComponent,
     DataTableComponent,
-    ButtonComponent
-],
+    ButtonComponent,
+  ],
   template: `
     <div class="admin-users">
       <header class="admin-header">
@@ -75,16 +76,16 @@ type UserWithDetails = User & {
       <!-- Users Table -->
       <section class="users-table">
         @if (storeLoading()) {
-          <app-loading-state text="Loading users..." />
+          <ff-loading-state text="Loading users..." />
         } @else if (storeError()) {
-          <app-error-state
+          <ff-error-state
             [message]="storeError()!"
             [showRetry]="true"
             retryText="Try Again"
             (retry)="handleRetry()"
           />
         } @else if (enrichedUsers().length === 0) {
-          <app-empty-state
+          <ff-empty-state
             icon="👥"
             title="No users found"
             subtitle="Users will appear here when they register"
@@ -202,7 +203,7 @@ type UserWithDetails = User & {
         align-items: stretch;
       }
     }
-  `
+  `,
 })
 export class AdminUsersComponent extends BaseComponent implements OnInit {
   private readonly userStore = inject(UserStore);
@@ -232,7 +233,7 @@ export class AdminUsersComponent extends BaseComponent implements OnInit {
       totalUsers: allUsers.length,
       activeUsers: activeUsers.length,
       anonymousUsers: anonymousUsers.length,
-      recentSignups: recentSignups.length
+      recentSignups: recentSignups.length,
     };
   });
 
@@ -242,32 +243,32 @@ export class AdminUsersComponent extends BaseComponent implements OnInit {
       key: 'displayName',
       label: 'User',
       sortable: true,
-      className: 'user-cell'
+      className: 'user-cell',
     },
     {
       key: 'email',
       label: 'Email',
       sortable: true,
-      className: 'name'
+      className: 'name',
     },
     {
       key: 'formattedJoinDate',
       label: 'Join Date',
       sortable: true,
-      className: 'date'
+      className: 'date',
     },
     {
       key: 'pointsDisplay',
       label: 'Points',
       sortable: true,
-      className: 'number points-primary'
+      className: 'number points-primary',
     },
     {
       key: 'statusDisplay',
       label: 'Status',
       sortable: true,
-      className: 'status'
-    }
+      className: 'status',
+    },
   ];
 
   // Computed enriched users with display data
@@ -279,7 +280,7 @@ export class AdminUsersComponent extends BaseComponent implements OnInit {
         ...user,
         formattedJoinDate: user.joinedAt ? this.formatDate(new Date(user.joinedAt)) : 'Unknown',
         statusDisplay: user.isAnonymous ? 'Anonymous' : 'Registered',
-        pointsDisplay: (user.totalPoints || 0).toString()
+        pointsDisplay: (user.totalPoints || 0).toString(),
       };
     });
   });
@@ -296,7 +297,7 @@ export class AdminUsersComponent extends BaseComponent implements OnInit {
       },
       {
         successMessage: 'User data refreshed successfully',
-        errorMessage: 'Failed to refresh user data'
+        errorMessage: 'Failed to refresh user data',
       }
     );
   }
@@ -315,7 +316,7 @@ export class AdminUsersComponent extends BaseComponent implements OnInit {
     return new Intl.DateTimeFormat('en-US', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
     }).format(date);
   }
 }

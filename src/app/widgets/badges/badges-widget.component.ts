@@ -11,13 +11,17 @@
  * @architecture Widget component - extends BaseWidgetComponent, self-contained data loading
  */
 
-import { Component, computed, inject, ChangeDetectionStrategy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit } from '@angular/core';
 
-import { BaseWidgetComponent } from '../base/base-widget.component';
+import {
+  EmptyStateComponent,
+  ErrorStateComponent,
+  LoadingStateComponent,
+} from '@fourfold/angular-foundation';
 import { BadgeStore } from '../../badges/data-access/badge.store';
-import { BadgeCrestComponent } from '../../shared/ui/badge-crest/badge-crest.component';
-import { LoadingStateComponent, ErrorStateComponent, EmptyStateComponent } from '../../shared/ui/state-components';
 import type { Badge } from '../../badges/utils/badge.model';
+import { BadgeCrestComponent } from '../../shared/ui/badge-crest/badge-crest.component';
+import { BaseWidgetComponent } from '../base/base-widget.component';
 
 type BadgeWithStatus = {
   badge: Badge;
@@ -32,22 +36,20 @@ type BadgeWithStatus = {
     <div class="badges-widget">
       <div class="widget-header">
         <h3 class="widget-title">🏅 Badge Collection</h3>
-        <div class="progress-summary">
-          {{ earnedCount() }} of {{ totalBadges() }} badges earned
-        </div>
+        <div class="progress-summary">{{ earnedCount() }} of {{ totalBadges() }} badges earned</div>
       </div>
 
       @if (isLoading()) {
-        <app-loading-state text="Loading badges..." />
+        <ff-loading-state text="Loading badges..." />
       } @else if (hasError()) {
-        <app-error-state 
+        <ff-error-state
           [message]="hasError()!"
           [showRetry]="true"
           retryText="Retry"
           (retry)="handleRetry()"
         />
       } @else if (totalBadges() === 0) {
-        <app-empty-state 
+        <ff-empty-state
           icon="🏅"
           title="No badges available"
           subtitle="Check back later for new badges to earn!"
@@ -60,69 +62,72 @@ type BadgeWithStatus = {
               [isEarned]="item.isEarned"
               size="medium"
               [showEarnedIndicator]="true"
-              [showBanner]="true" />
+              [showBanner]="true"
+            />
           }
         </div>
       }
     </div>
   `,
-  styles: [`
-    .badges-widget {
-      padding: 1rem;
-      background: var(--background-lighter);
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 0.5rem;
-      box-shadow: var(--shadow);
-    }
-
-    .widget-header {
-      margin-bottom: 1rem;
-      text-align: center;
-    }
-
-    .widget-title {
-      margin: 0 0 0.5rem 0;
-      font-size: 1.125rem;
-      font-weight: 600;
-      color: var(--text);
-    }
-
-    .progress-summary {
-      font-size: 0.875rem;
-      color: var(--text-secondary);
-      font-weight: 500;
-    }
-
-    .badges-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-      gap: 0.75rem;
-      justify-items: center;
-      max-width: 600px;
-      margin: 0 auto;
-    }
-
-    /* Responsive design */
-    @media (max-width: 480px) {
+  styles: [
+    `
       .badges-widget {
-        padding: 0.75rem;
+        padding: 1rem;
+        background: var(--background-lighter);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        box-shadow: var(--shadow);
       }
-      
+
+      .widget-header {
+        margin-bottom: 1rem;
+        text-align: center;
+      }
+
       .widget-title {
-        font-size: 1rem;
+        margin: 0 0 0.5rem 0;
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--text);
       }
-      
+
       .progress-summary {
-        font-size: 0.8125rem;
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        font-weight: 500;
       }
-      
+
       .badges-grid {
-        grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-        gap: 0.5rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+        gap: 0.75rem;
+        justify-items: center;
+        max-width: 600px;
+        margin: 0 auto;
       }
-    }
-  `]
+
+      /* Responsive design */
+      @media (max-width: 480px) {
+        .badges-widget {
+          padding: 0.75rem;
+        }
+
+        .widget-title {
+          font-size: 1rem;
+        }
+
+        .progress-summary {
+          font-size: 0.8125rem;
+        }
+
+        .badges-grid {
+          grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+          gap: 0.5rem;
+        }
+      }
+    `,
+  ],
 })
 export class BadgesWidgetComponent extends BaseWidgetComponent implements OnInit {
   private readonly badgeStore = inject(BadgeStore);
@@ -134,7 +139,7 @@ export class BadgesWidgetComponent extends BaseWidgetComponent implements OnInit
 
     return definitions.map(badge => ({
       badge,
-      isEarned: earned.some(e => e.badgeId === badge.id)
+      isEarned: earned.some(e => e.badgeId === badge.id),
     }));
   });
 

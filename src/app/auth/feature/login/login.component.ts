@@ -1,15 +1,19 @@
-import { Component, inject, signal, ChangeDetectionStrategy, computed, OnInit, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
-import { JsonPipe } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+  signal,
+} from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AuthStore } from '@auth/data-access/auth.store';
 import { BaseComponent } from '@shared/base/base.component';
+import { ThemeStore } from '@shared/data-access/theme.store';
 import { ButtonComponent } from '@shared/ui/button/button.component';
 import { FormInputComponent } from '@shared/ui/form-input/form-input.component';
 import { IconComponent } from '@shared/ui/icon/icon.component';
-import { AuthStore } from '@auth/data-access/auth.store';
 import { FormValidators } from '@shared/utils/form-validators';
-import { ToastService } from '@shared/data-access/toast.service';
-import { ThemeStore } from '@shared/data-access/theme.store';
 import type { ThemeType } from '@shared/utils/theme.tokens';
 
 @Component({
@@ -32,84 +36,80 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
       <div class="login-content">
         <div class="login-form-section">
           <form [formGroup]="loginForm" (ngSubmit)="handleSubmit()" class="login-form">
-          <!-- Email Field -->
-          <app-form-input
-            label="Email"
-            type="email"
-            placeholder="Enter your email"
-            iconLeft="email"
-            autocomplete="email"
-            [required]="true"
-            [errorMessage]="getFieldError('email')"
-            formControlName="email"
-          />
+            <!-- Email Field -->
+            <app-form-input
+              label="Email"
+              type="email"
+              placeholder="Enter your email"
+              iconLeft="email"
+              autocomplete="email"
+              [required]="true"
+              [errorMessage]="getFieldError('email')"
+              formControlName="email"
+            />
 
-          <!-- Password Field -->
-          <app-form-input
-            label="Password"
-            type="password"
-            placeholder="Enter your password"
-            iconLeft="lock"
-            autocomplete="current-password"
-            [required]="true"
-            [errorMessage]="getFieldError('password')"
-            formControlName="password"
-          />
+            <!-- Password Field -->
+            <app-form-input
+              label="Password"
+              type="password"
+              placeholder="Enter your password"
+              iconLeft="lock"
+              autocomplete="current-password"
+              [required]="true"
+              [errorMessage]="getFieldError('password')"
+              formControlName="password"
+            />
 
-          <!-- Remember Me Checkbox -->
-          <div class="remember-me-container">
-            <label class="remember-me-label">
-              <input
-                type="checkbox"
-                class="remember-me-checkbox"
-                formControlName="rememberMe"
-              />
-              <span class="remember-me-text">Remember me</span>
-            </label>
-          </div>
-
-          <!-- Error Message -->
-          @if (error()) {
-            <div class="form-error form-error--global">
-              {{ error() }}
+            <!-- Remember Me Checkbox -->
+            <div class="remember-me-container">
+              <label class="remember-me-label">
+                <input type="checkbox" class="remember-me-checkbox" formControlName="rememberMe" />
+                <span class="remember-me-text">Remember me</span>
+              </label>
             </div>
-          }
 
-          <!-- Submit Button -->
-          <app-button
-            type="submit"
-            variant="primary"
-            size="lg"
-            [fullWidth]="true"
-            [loading]="loading()"
-            class="submit-button"
-          >
-            @if (loading()) {
-              Signing In...
-            } @else {
-              Sign In
+            <!-- Error Message -->
+            @if (error()) {
+              <div class="form-error form-error--global">
+                {{ error() }}
+              </div>
             }
-          </app-button>
-        </form>
 
-        <!-- Alternative Login Methods -->
-        <div class="alternative-login">
-          <div class="divider">
-            <span class="divider-text">or</span>
+            <!-- Submit Button -->
+            <app-button
+              type="submit"
+              variant="primary"
+              size="lg"
+              [fullWidth]="true"
+              [loading]="loading()"
+              class="submit-button"
+            >
+              @if (loading()) {
+                Signing In...
+              } @else {
+                Sign In
+              }
+            </app-button>
+          </form>
+
+          <!-- Alternative Login Methods -->
+          <div class="alternative-login">
+            <div class="divider">
+              <span class="divider-text">or</span>
+            </div>
+
+            <app-button
+              variant="secondary"
+              size="lg"
+              [fullWidth]="true"
+              iconLeft="login"
+              [loading]="googleLoading()"
+              (onClick)="loginWithGoogle()"
+              class="google-button"
+            >
+              Continue with Google
+            </app-button>
           </div>
-
-          <app-button
-            variant="secondary"
-            size="lg"
-            [fullWidth]="true"
-            iconLeft="login"
-            [loading]="googleLoading()"
-            (onClick)="loginWithGoogle()"
-            class="google-button"
-          >
-            Continue with Google
-          </app-button>
-        </div>
         </div>
       </div>
 
@@ -123,7 +123,11 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
             </button>
           </p>
 
-          <button type="button" class="link-button forgot-password" (click)="handleForgotPassword()">
+          <button
+            type="button"
+            class="link-button forgot-password"
+            (click)="handleForgotPassword()"
+          >
             Forgot your password?
           </button>
         </div>
@@ -139,13 +143,11 @@ export class LoginComponent extends BaseComponent implements OnInit, OnDestroy {
   // Store original theme to restore on destroy
   private originalTheme: ThemeType | null = null;
 
-
-
   // Reactive form
   readonly loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]],
-    rememberMe: [false]
+    rememberMe: [false],
   });
 
   // UI state
@@ -175,7 +177,7 @@ export class LoginComponent extends BaseComponent implements OnInit, OnDestroy {
 
     this.loading.set(true);
     this.error.set(null);
-    
+
     // Disable form controls during processing
     this.loginForm.disable();
 
@@ -201,7 +203,7 @@ export class LoginComponent extends BaseComponent implements OnInit, OnDestroy {
 
     this.googleLoading.set(true);
     this.error.set(null);
-    
+
     // Disable form controls during Google login processing
     this.loginForm.disable();
 

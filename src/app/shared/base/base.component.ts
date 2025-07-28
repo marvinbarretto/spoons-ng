@@ -5,13 +5,12 @@ import {
   DestroyRef,
   inject,
   OnInit,
-  signal
+  signal,
 } from '@angular/core';
-import { Router, NavigationEnd } from '@angular/router';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { NavigationEnd, Router } from '@angular/router';
+import { SsrPlatformService, ToastService } from '@fourfold/angular-foundation';
 import { filter, map } from 'rxjs/operators';
-import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { SsrPlatformService } from '@fourfold/angular-foundation';
-import { ToastService } from '../data-access/toast.service';
 
 @Component({
   template: '',
@@ -23,7 +22,6 @@ export abstract class BaseComponent implements OnInit {
   protected readonly platform = inject(SsrPlatformService);
   protected readonly toastService = inject(ToastService);
   protected readonly router = inject(Router);
-
 
   // 📡 Universal component state - clean signal names
   protected readonly loading = signal(false);
@@ -42,15 +40,16 @@ export abstract class BaseComponent implements OnInit {
 
   // ✅ Common routing computeds
   protected readonly isHomepage = computed(() => this.currentRoute() === '/');
-  protected readonly isOnRoute = (route: string) => computed(() => {
-    const current = this.currentRoute();
-    // Special case for root route - must be exact match
-    if (route === '/') {
-      return current === '/';
-    }
-    // For other routes, use startsWith as before
-    return current.startsWith(route);
-  });
+  protected readonly isOnRoute = (route: string) =>
+    computed(() => {
+      const current = this.currentRoute();
+      // Special case for root route - must be exact match
+      if (route === '/') {
+        return current === '/';
+      }
+      // For other routes, use startsWith as before
+      return current.startsWith(route);
+    });
 
   ngOnInit(): void {
     this.onInit();
@@ -122,7 +121,7 @@ export abstract class BaseComponent implements OnInit {
     const {
       successMessage,
       errorMessage = 'Operation failed',
-      setLoadingState = true
+      setLoadingState = true,
     } = options || {};
 
     try {

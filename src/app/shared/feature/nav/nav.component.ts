@@ -1,18 +1,16 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 
-import { RouterModule, Router } from '@angular/router';
-import { LocationService } from '../../data-access/location.service';
-import { ChipUserComponent } from '../../ui/chips/chip-user/chip-user.component';
-import { ButtonComponent } from '../../ui/button/button.component';
+import { Router, RouterModule } from '@angular/router';
+import { LocationService, ToastService } from '@fourfold/angular-foundation';
 import { AuthStore } from '../../../auth/data-access/auth.store';
+import { LeaderboardStore } from '../../../leaderboard/data-access/leaderboard.store';
 import { UserStore } from '../../../users/data-access/user.store';
 import { DataAggregatorService } from '../../data-access/data-aggregator.service';
 import { ViewportService } from '../../data-access/viewport.service';
-import { ToastService } from '../../data-access/toast.service';
-import { LeaderboardStore } from '../../../leaderboard/data-access/leaderboard.store';
+import { ButtonComponent } from '../../ui/button/button.component';
+import { ButtonSize, ButtonVariant } from '../../ui/button/button.params';
 import type { UserChipData } from '../../ui/chips/chip-user/chip-user.component';
-import { ButtonVariant, ButtonSize } from '../../ui/button/button.params';
-import { UserProfileWidgetComponent } from "@/app/home/ui/user-profile-widget/user-profile-widget.component";
+import { ChipUserComponent } from '../../ui/chips/chip-user/chip-user.component';
 
 @Component({
   selector: 'app-nav',
@@ -53,7 +51,7 @@ export class NavComponent {
     return {
       displayName: this.displayName() || 'User',
       photoURL: user.photoURL || undefined,
-      email: user.email || undefined
+      email: user.email || undefined,
     };
   });
 
@@ -66,7 +64,7 @@ export class NavComponent {
     if (!currentUser) return null;
 
     const entries = this.leaderboardStore.leaderboardEntries();
-    
+
     // Sort by pubs manually to get the rank
     const sortedByPubs = [...entries].sort((a, b) => {
       if (b.uniquePubs !== a.uniquePubs) return b.uniquePubs - a.uniquePubs;
@@ -113,7 +111,7 @@ export class NavComponent {
   }
 
   private async waitForAuthStateCleared(): Promise<void> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const checkAuthState = () => {
         const user = this.authStore.user();
         if (!user) {

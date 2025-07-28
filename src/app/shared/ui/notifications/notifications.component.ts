@@ -1,11 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
-import { NotificationService } from '../../data-access/notification.service';
+import { NotificationService } from '@fourfold/angular-foundation';
 import { INotification } from '../../utils/notification.model';
 
 @Component({
   selector: 'app-notifications',
-  standalone: true,
   imports: [CommonModule],
   templateUrl: './notifications.component.html',
   styleUrl: './notifications.component.scss',

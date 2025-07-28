@@ -1,7 +1,7 @@
-import { Component, input, output, computed, inject } from '@angular/core';
+import { Component, computed, inject, input, output } from '@angular/core';
 
+import { LocationService } from '@fourfold/angular-foundation';
 import type { Pub } from '../../utils/pub.models';
-import { LocationService } from '../../../shared/data-access/location.service';
 
 export type PubCardVariant = 'compact' | 'normal' | 'overlay';
 
@@ -20,9 +20,11 @@ export type PubCardVariant = 'compact' | 'normal' | 'overlay';
           <span class="pub-name">{{ pub().name }}</span>
           <div class="pub-indicators">
             @if (visitIndicator()) {
-              <span class="pub-visit-indicator"
-                    [title]="visitIndicatorTitle()"
-                    [class.indicator--target]="isNearestUnvisited()">
+              <span
+                class="pub-visit-indicator"
+                [title]="visitIndicatorTitle()"
+                [class.indicator--target]="isNearestUnvisited()"
+              >
                 {{ visitIndicator() }}
               </span>
             }
@@ -164,7 +166,8 @@ export type PubCardVariant = 'compact' | 'normal' | 'overlay';
     }
 
     @keyframes pulse-indicator {
-      0%, 100% {
+      0%,
+      100% {
         transform: scale(1);
         opacity: 1;
       }
@@ -217,8 +220,13 @@ export type PubCardVariant = 'compact' | 'normal' | 'overlay';
     }
 
     @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.6; }
+      0%,
+      100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.6;
+      }
     }
 
     /* Mobile optimizations */
@@ -248,7 +256,7 @@ export type PubCardVariant = 'compact' | 'normal' | 'overlay';
     .pub-card-light--overlay .distance-icon {
       opacity: 0.9;
     }
-  `
+  `,
 })
 export class PubCardLightComponent {
   private readonly locationService = inject(LocationService);
@@ -265,9 +273,9 @@ export class PubCardLightComponent {
   readonly isLocalPub = input<boolean>(false);
 
   // ✅ New visit status inputs
-  readonly hasVerifiedVisit = input<boolean>(false);    // App check-in exists
-  readonly hasUnverifiedVisit = input<boolean>(false);  // Manual addition exists
-  readonly isNearestUnvisited = input<boolean>(false);  // Closest unvisited pub
+  readonly hasVerifiedVisit = input<boolean>(false); // App check-in exists
+  readonly hasUnverifiedVisit = input<boolean>(false); // Manual addition exists
+  readonly isNearestUnvisited = input<boolean>(false); // Closest unvisited pub
 
   // Output events
   readonly pubClick = output<Pub>();
@@ -289,7 +297,7 @@ export class PubCardLightComponent {
     if (!dist) return '';
 
     if (dist < 150) {
-      return `Here`
+      return `Here`;
     }
     if (dist < 1000) {
       return `${Math.round(dist)}m away`;

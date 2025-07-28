@@ -1,18 +1,18 @@
 // src/app/shared/feature/footer-nav/footer-nav.component.ts
-import { Component, computed, inject, ChangeDetectionStrategy, signal, effect, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 
-import { RouterModule, Router, NavigationEnd } from '@angular/router';
-import { filter, map } from 'rxjs/operators';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { CheckInStore } from '@/app/check-in/data-access/check-in.store';
+import { RouterModule } from '@angular/router';
+import { AuthStore } from '@auth/data-access/auth.store';
+import { LocationService, OverlayService } from '@fourfold/angular-foundation';
+import { NearbyPubStore } from '@pubs/data-access/nearby-pub.store';
 import { BaseComponent } from '@shared/base/base.component';
 import { ViewportService } from '@shared/data-access/viewport.service';
-import { NearbyPubStore } from '@pubs/data-access/nearby-pub.store';
-import { AuthStore } from '@auth/data-access/auth.store';
-import { CheckInStore } from '@/app/check-in/data-access/check-in.store';
 import { IconComponent } from '@shared/ui/icon/icon.component';
-import { OverlayService } from '@shared/data-access/overlay.service';
-import { LocationService } from '@shared/data-access/location.service';
-import { ModalCheckinAttemptComponent, CheckinErrorDetails, CheckinError } from '@shared/ui/modals/modal-checkin-attempt.component';
+import {
+  CheckinErrorDetails,
+  ModalCheckinAttemptComponent,
+} from '@shared/ui/modals/modal-checkin-attempt.component';
 
 type NavItem = {
   label: string;
@@ -32,7 +32,6 @@ type NavItem = {
     @if (shouldShowMobileNav()) {
       <nav class="footer-nav" role="navigation" aria-label="Main navigation">
         @for (item of navItems(); track item.label) {
-
           @if (item.isCheckin) {
             <!-- ✅ Check-in button - uses CheckInStore -->
             <button
@@ -47,7 +46,8 @@ type NavItem = {
                   size="lg"
                   [filled]="canCheckIn()"
                   weight="medium"
-                  customClass="check-in-icon" />
+                  customClass="check-in-icon"
+                />
               </div>
               <span class="nav-item__label">
                 {{ isCheckingIn() ? 'Scanning...' : item.label }}
@@ -66,7 +66,8 @@ type NavItem = {
                   [name]="item.iconName"
                   size="md"
                   [filled]="item.isActive"
-                  [weight]="item.isActive ? 'medium' : 'regular'" />
+                  [weight]="item.isActive ? 'medium' : 'regular'"
+                />
               </div>
               <span class="nav-item__label">{{ item.label }}</span>
             </a>
@@ -226,12 +227,15 @@ type NavItem = {
 
     /* ✅ Enhanced pulse animation for available check-in */
     @keyframes pulse-success {
-      0%, 100% {
+      0%,
+      100% {
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         transform: translateY(-8px) scale(1);
       }
       50% {
-        box-shadow: 0 8px 24px var(--accent), 0 0 0 6px rgba(var(--accent-rgb, 13, 110, 253), 0.3);
+        box-shadow:
+          0 8px 24px var(--accent),
+          0 0 0 6px rgba(var(--accent-rgb, 13, 110, 253), 0.3);
         transform: translateY(-8px) scale(1.15);
       }
     }
@@ -247,7 +251,6 @@ type NavItem = {
         font-weight: 700;
       }
     }
-
 
     /* ✅ Hide on desktop */
     @media (min-width: 768px) {
@@ -267,7 +270,7 @@ type NavItem = {
         height: 44px;
       }
     }
-  `
+  `,
 })
 export class FooterNavComponent extends BaseComponent {
   protected readonly viewportService = inject(ViewportService);
@@ -306,7 +309,6 @@ export class FooterNavComponent extends BaseComponent {
     return this.nearbyPubStore.isWithinCheckInRange(pub.id);
   });
 
-
   // ✅ Navigation items with Material Symbols
   readonly navItems = computed((): NavItem[] => {
     return [
@@ -314,32 +316,32 @@ export class FooterNavComponent extends BaseComponent {
         label: 'Home',
         route: '/',
         iconName: 'home',
-        isActive: this.isOnRoute('/')()
+        isActive: this.isOnRoute('/')(),
       },
       {
         label: 'Pubs',
         route: '/pubs',
         iconName: 'local_bar',
-        isActive: this.isOnRoute('/pubs')()
+        isActive: this.isOnRoute('/pubs')(),
       },
       {
         label: 'Check In',
         iconName: 'photo_camera',
         isActive: false, // New Check-in is not a route
-        isCheckin: true
+        isCheckin: true,
       },
       {
         label: 'Leaderboard',
         route: '/leaderboard',
         iconName: 'leaderboard',
-        isActive: this.isOnRoute('/leaderboard')()
+        isActive: this.isOnRoute('/leaderboard')(),
       },
       {
         label: 'Profile',
         route: '/profile',
         iconName: 'person',
-        isActive: this.isOnRoute('/profile')()
-      }
+        isActive: this.isOnRoute('/profile')(),
+      },
     ];
   });
 
@@ -360,7 +362,7 @@ export class FooterNavComponent extends BaseComponent {
     if (!this.user()) {
       this.showCheckinError({
         type: 'not-authenticated',
-        message: 'You need to be signed in to check in to pubs.'
+        message: 'You need to be signed in to check in to pubs.',
       });
       return;
     }
@@ -370,7 +372,8 @@ export class FooterNavComponent extends BaseComponent {
     if (!location) {
       this.showCheckinError({
         type: 'no-location',
-        message: 'We need your location to check you in. Please enable location services and try again.'
+        message:
+          'We need your location to check you in. Please enable location services and try again.',
       });
       return;
     }
@@ -391,7 +394,7 @@ export class FooterNavComponent extends BaseComponent {
     if (nearbyPubs.length === 0) {
       this.showCheckinError({
         type: 'no-nearby-pubs',
-        message: 'No pubs found nearby. Make sure you\'re within 50km of a Wetherspoons.'
+        message: "No pubs found nearby. Make sure you're within 50km of a Wetherspoons.",
       });
       return;
     }
@@ -401,7 +404,7 @@ export class FooterNavComponent extends BaseComponent {
     if (!pub) {
       this.showCheckinError({
         type: 'no-nearby-pubs',
-        message: 'No pubs found nearby. Make sure you\'re within 50km of a Wetherspoons.'
+        message: "No pubs found nearby. Make sure you're within 50km of a Wetherspoons.",
       });
       return;
     }
@@ -412,7 +415,7 @@ export class FooterNavComponent extends BaseComponent {
         type: 'out-of-range',
         message: `You're too far from ${pub.name}. Get within 200 meters to check in.`,
         pubName: pub.name,
-        distance: pub.distance
+        distance: pub.distance,
       });
       return;
     }
@@ -424,25 +427,27 @@ export class FooterNavComponent extends BaseComponent {
 
   private showCheckinError(errorDetails: CheckinErrorDetails): void {
     console.log('[FooterNav] Showing check-in error:', errorDetails);
-    
+
     const overlayResult = this.overlayService.open(
       ModalCheckinAttemptComponent,
       {
         width: 'auto',
-        maxWidth: '400px'
+        maxWidth: '400px',
       },
       { errorDetails }
     );
 
-    overlayResult.result.then((action) => {
+    overlayResult.result.then(action => {
       if (action === 'retry') {
         console.log('[FooterNav] User requested retry');
-        
+
         // Handle different retry actions based on error type
         switch (errorDetails.type) {
           case 'no-location':
           case 'poor-accuracy':
-            console.log('[FooterNav] 🔄 Retry clicked for location issue, calling refreshLocation()');
+            console.log(
+              '[FooterNav] 🔄 Retry clicked for location issue, calling refreshLocation()'
+            );
             this.locationService.refreshLocation();
             break;
           case 'no-nearby-pubs':
@@ -461,5 +466,4 @@ export class FooterNavComponent extends BaseComponent {
       }
     });
   }
-
 }

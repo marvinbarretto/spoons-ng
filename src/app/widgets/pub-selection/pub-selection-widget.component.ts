@@ -1,12 +1,20 @@
-import { Component, output, ChangeDetectionStrategy, signal, computed, inject, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  OnInit,
+  output,
+  signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-import type { Pub } from '../../pubs/utils/pub.models';
-import { PubStore } from '../../pubs/data-access/pub.store';
+import { LocationService } from '@fourfold/angular-foundation';
 import { NearbyPubStore } from '../../pubs/data-access/nearby-pub.store';
+import { PubStore } from '../../pubs/data-access/pub.store';
 import { PubCardLightComponent } from '../../pubs/ui/pub-card-light/pub-card-light.component';
+import type { Pub } from '../../pubs/utils/pub.models';
 import { DataAggregatorService } from '../../shared/data-access/data-aggregator.service';
-import { LocationService } from '../../shared/data-access/location.service';
 
 @Component({
   selector: 'app-pub-selection-widget',
@@ -18,9 +26,7 @@ import { LocationService } from '../../shared/data-access/location.service';
         <div class="selected-pub-display">
           <div class="selected-header">
             <span class="selected-label">Your Home Pub:</span>
-            <button type="button" class="change-btn" (click)="clearSelection()">
-              Change
-            </button>
+            <button type="button" class="change-btn" (click)="clearSelection()">Change</button>
           </div>
           <div class="selected-pub-card">
             <app-pub-card-light
@@ -161,7 +167,9 @@ import { LocationService } from '../../shared/data-access/location.service';
       border-radius: 0.75rem;
       font-size: 0.875rem;
       font-family: 'Fredoka', 'Atkinson Hyperlegible', sans-serif;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
       background: var(--background-lighter);
       backdrop-filter: blur(8px);
       -webkit-backdrop-filter: blur(8px);
@@ -392,7 +400,7 @@ import { LocationService } from '../../shared/data-access/location.service';
       }
     }
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PubSelectionWidgetComponent implements OnInit {
   // Injected services
@@ -431,7 +439,7 @@ export class PubSelectionWidgetComponent implements OnInit {
       id: pub.id,
       name: pub.name,
       distance: pub.distance || 0,
-      address: pub.address
+      address: pub.address,
     }));
   });
 
@@ -441,11 +449,12 @@ export class PubSelectionWidgetComponent implements OnInit {
 
     if (!searchTerm) return [];
 
-    return allPubs.filter(pub =>
-      pub.name.toLowerCase().includes(searchTerm) ||
-      pub.city?.toLowerCase().includes(searchTerm) ||
-      pub.region?.toLowerCase().includes(searchTerm) ||
-      pub.address?.toLowerCase().includes(searchTerm)
+    return allPubs.filter(
+      pub =>
+        pub.name.toLowerCase().includes(searchTerm) ||
+        pub.city?.toLowerCase().includes(searchTerm) ||
+        pub.region?.toLowerCase().includes(searchTerm) ||
+        pub.address?.toLowerCase().includes(searchTerm)
     );
   });
 
@@ -480,7 +489,12 @@ export class PubSelectionWidgetComponent implements OnInit {
     console.log('[PubSelectionWidget] Pub selected:', pub.name);
   }
 
-  protected selectPubFromNearby(nearbyPub: {id: string, name: string, distance: number, address?: string}): void {
+  protected selectPubFromNearby(nearbyPub: {
+    id: string;
+    name: string;
+    distance: number;
+    address?: string;
+  }): void {
     // Find the full pub data from nearby pubs
     const fullPub = this.nearbyPubs().find(p => p.id === nearbyPub.id);
     if (fullPub) {
@@ -488,7 +502,12 @@ export class PubSelectionWidgetComponent implements OnInit {
     }
   }
 
-  protected convertNearbyPubToPub(nearbyPub: {id: string, name: string, distance: number, address?: string}): Pub {
+  protected convertNearbyPubToPub(nearbyPub: {
+    id: string;
+    name: string;
+    distance: number;
+    address?: string;
+  }): Pub {
     return {
       id: nearbyPub.id,
       name: nearbyPub.name,
@@ -497,7 +516,7 @@ export class PubSelectionWidgetComponent implements OnInit {
       region: '',
       location: { lat: 0, lng: 0 },
       carpetUrl: '',
-      hasCarpet: false
+      hasCarpet: false,
     } as Pub;
   }
 

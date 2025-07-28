@@ -1,13 +1,13 @@
-import { Component, computed, inject, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PubSelectorComponent } from '../pub-selector/pub-selector.component';
-import { ButtonComponent } from '../button/button.component';
-import { PubCardLightComponent } from '../../../pubs/ui/pub-card-light/pub-card-light.component';
+import { Component, computed, inject, output, signal } from '@angular/core';
+import { LocationService } from '@fourfold/angular-foundation';
 import { PubStore } from '../../../pubs/data-access/pub.store';
-import { DataAggregatorService } from '../../data-access/data-aggregator.service';
-import { UserStore } from '../../../users/data-access/user.store';
-import { LocationService } from '../../data-access/location.service';
+import { PubCardLightComponent } from '../../../pubs/ui/pub-card-light/pub-card-light.component';
 import type { Pub } from '../../../pubs/utils/pub.models';
+import { UserStore } from '../../../users/data-access/user.store';
+import { DataAggregatorService } from '../../data-access/data-aggregator.service';
+import { ButtonComponent } from '../button/button.component';
+import { PubSelectorComponent } from '../pub-selector/pub-selector.component';
 
 interface SmartSuggestion {
   category: 'local';
@@ -26,7 +26,6 @@ interface SmartSuggestion {
         <p class="modal-subtitle">Document your past loyalty to boost your legendary status</p>
       </div>
 
-
       <!-- Search Section - First Priority -->
       <div class="search-section">
         <app-pub-selector
@@ -43,10 +42,10 @@ interface SmartSuggestion {
       @if (localSuggestions().length > 0) {
         <div class="suggestions-section">
           <h3 class="section-title">🏠 Quick Add - Near You</h3>
-          
+
           <div class="suggestion-list">
             @for (pub of localSuggestions(); track pub.id) {
-              <div 
+              <div
                 class="suggestion-item"
                 [class.selected]="isPubSelected(pub.id)"
                 (click)="toggleSuggestionPub(pub.id)"
@@ -77,18 +76,17 @@ interface SmartSuggestion {
             <span class="summary-icon">📈</span>
             <div class="summary-stats">
               <span class="summary-text">
-                {{ selectedPubIds().length }} historic visit{{ selectedPubIds().length === 1 ? '' : 's' }} ready to add
+                {{ selectedPubIds().length }} historic visit{{
+                  selectedPubIds().length === 1 ? '' : 's'
+                }}
+                ready to add
               </span>
               <span class="score-preview">
                 Pub count: {{ currentScoreboardData().pubsVisited }} → {{ previewPubCount() }}
               </span>
             </div>
           </div>
-          <button 
-            class="clear-selection-btn"
-            (click)="clearAllSelections()"
-            type="button"
-          >
+          <button class="clear-selection-btn" (click)="clearAllSelections()" type="button">
             Clear all
           </button>
         </div>
@@ -96,21 +94,17 @@ interface SmartSuggestion {
 
       <!-- Modal Actions -->
       <div class="modal-actions">
-        <app-button
-          variant="secondary"
-          size="md"
-          (onClick)="handleCancel()"
-        >
-          Cancel
-        </app-button>
-        
+        <app-button variant="secondary" size="md" (onClick)="handleCancel()"> Cancel </app-button>
+
         <app-button
           variant="primary"
           size="md"
           [disabled]="selectedPubIds().length === 0"
           (onClick)="handleSave()"
         >
-          Add {{ selectedPubIds().length }} Historic Visit{{ selectedPubIds().length === 1 ? '' : 's' }}
+          Add {{ selectedPubIds().length }} Historic Visit{{
+            selectedPubIds().length === 1 ? '' : 's'
+          }}
         </app-button>
       </div>
     </div>
@@ -145,7 +139,6 @@ interface SmartSuggestion {
       margin: 0;
       font-style: italic;
     }
-
 
     .search-section {
       margin-bottom: 2rem;
@@ -207,7 +200,6 @@ interface SmartSuggestion {
       color: var(--accent);
       font-size: 1.125rem;
     }
-
 
     .selection-summary {
       background: var(--background-lighter);
@@ -300,7 +292,7 @@ interface SmartSuggestion {
         margin-left: 0.5rem;
       }
     }
-  `
+  `,
 })
 export class HistoricalPubAdditionModalComponent {
   // Dependencies
@@ -336,9 +328,7 @@ export class HistoricalPubAdditionModalComponent {
 
     // TODO: Use user's actual location for better suggestions
     // For now, get first 8 pubs from different cities
-    const localPubs = allPubs
-      .filter(pub => pub.city && pub.region)
-      .slice(0, 8);
+    const localPubs = allPubs.filter(pub => pub.city && pub.region).slice(0, 8);
 
     return localPubs;
   });
@@ -347,7 +337,6 @@ export class HistoricalPubAdditionModalComponent {
     // Ensure pubs are loaded
     this.pubStore.loadOnce();
   }
-
 
   // Helper methods
   isPubSelected(pubId: string): boolean {
@@ -383,7 +372,7 @@ export class HistoricalPubAdditionModalComponent {
   async handleSave(): Promise<void> {
     const selectedIds = this.selectedPubIds();
     const user = this.user();
-    
+
     if (selectedIds.length === 0 || !user) {
       return;
     }
@@ -391,19 +380,19 @@ export class HistoricalPubAdditionModalComponent {
     try {
       // Get current manually added pub IDs to avoid duplicates
       const currentManualIds = user.manuallyAddedPubIds || [];
-      
+
       // Filter out any IDs that are already in the user's manual list
       const newPubIds = selectedIds.filter(id => !currentManualIds.includes(id));
-      
+
       if (newPubIds.length === 0) {
-        console.log('[HistoricalPubModal] All selected pubs already in user\'s manual list');
+        console.log("[HistoricalPubModal] All selected pubs already in user's manual list");
         this.result.emit([]);
         return;
       }
 
       // Update user's manually added pub IDs
       const updatedManualIds = [...currentManualIds, ...newPubIds];
-      
+
       // Calculate new pub counts
       const newUnverifiedCount = (user.unverifiedPubCount || 0) + newPubIds.length;
       const newTotalCount = (user.verifiedPubCount || 0) + newUnverifiedCount;
@@ -412,14 +401,15 @@ export class HistoricalPubAdditionModalComponent {
       await this.userStore.patchUser({
         manuallyAddedPubIds: updatedManualIds,
         unverifiedPubCount: newUnverifiedCount,
-        totalPubCount: newTotalCount
+        totalPubCount: newTotalCount,
       });
 
-      console.log(`[HistoricalPubModal] Successfully added ${newPubIds.length} historic pubs to user ${user.uid}`);
-      
+      console.log(
+        `[HistoricalPubModal] Successfully added ${newPubIds.length} historic pubs to user ${user.uid}`
+      );
+
       // Emit the successfully added IDs
       this.result.emit(newPubIds);
-      
     } catch (error) {
       console.error('[HistoricalPubModal] Error saving historic pubs:', error);
       // Still emit empty array to close modal gracefully

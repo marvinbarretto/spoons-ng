@@ -1,19 +1,24 @@
 // src/app/admin/feature/checkins-data/checkins-data.component.ts
-import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
+import {
+  EmptyStateComponent,
+  ErrorStateComponent,
+  LoadingStateComponent,
+} from '@fourfold/angular-foundation';
 import { BaseComponent } from '@shared/base/base.component';
-import { LoadingStateComponent } from '@shared/ui/loading-state/loading-state.component';
-import { ErrorStateComponent } from '@shared/ui/error-state/error-state.component';
-import { EmptyStateComponent } from '@shared/ui/empty-state/empty-state.component';
 import { ButtonComponent } from '@shared/ui/button/button.component';
 import { DataTableComponent } from '@shared/ui/data-table/data-table.component';
 
-import { CollectionBrowserService, type CollectionRecord } from '../../data-access/collection-browser.service';
 import { PubStore } from '@pubs/data-access/pub.store';
-import type { TableColumn } from '@shared/ui/data-table/data-table.model';
 import { UserDisplayPipe } from '@shared/pipes/user-display.pipe';
+import type { TableColumn } from '@shared/ui/data-table/data-table.model';
+import {
+  CollectionBrowserService,
+  type CollectionRecord,
+} from '../../data-access/collection-browser.service';
 
 type CheckinRecord = CollectionRecord & {
   formattedDate: string;
@@ -35,7 +40,7 @@ type CheckinRecord = CollectionRecord & {
     EmptyStateComponent,
     ButtonComponent,
     DataTableComponent,
-    UserDisplayPipe
+    UserDisplayPipe,
   ],
   template: `
     <div class="checkins-data">
@@ -146,16 +151,16 @@ type CheckinRecord = CollectionRecord & {
 
       <!-- Loading/Error States -->
       @if (loading()) {
-        <app-loading-state text="Loading check-ins data..." />
+        <ff-loading-state text="Loading check-ins data..." />
       } @else if (error()) {
-        <app-error-state
+        <ff-error-state
           [message]="error()!"
           [showRetry]="true"
           retryText="Try Again"
           (retry)="loadCheckins(true)"
         />
       } @else if (enrichedCheckins().length === 0) {
-        <app-empty-state
+        <ff-empty-state
           icon="🍺"
           title="No check-ins found"
           subtitle="No check-ins match your current filters"
@@ -188,11 +193,7 @@ type CheckinRecord = CollectionRecord & {
           <!-- Pagination -->
           @if (hasMoreData()) {
             <div class="pagination-controls">
-              <app-button
-                variant="secondary"
-                [loading]="loading()"
-                (onClick)="loadMore()"
-              >
+              <app-button variant="secondary" [loading]="loading()" (onClick)="loadMore()">
                 Load More Check-ins
               </app-button>
             </div>
@@ -208,26 +209,42 @@ type CheckinRecord = CollectionRecord & {
             <div class="insights-grid">
               <div class="insight-card">
                 <h4>User Engagement</h4>
-                <p><strong>{{ stats.uniqueUsers }}</strong> users have checked in</p>
-                <p>Average: <strong>{{ getAverageCheckinsPerUser(stats) }}</strong> check-ins per user</p>
+                <p>
+                  <strong>{{ stats.uniqueUsers }}</strong> users have checked in
+                </p>
+                <p>
+                  Average: <strong>{{ getAverageCheckinsPerUser(stats) }}</strong> check-ins per
+                  user
+                </p>
               </div>
 
               <div class="insight-card">
                 <h4>Pub Coverage</h4>
-                <p><strong>{{ stats.uniquePubs }}</strong> pubs have been visited</p>
-                <p>Average: <strong>{{ getAverageVisitsPerPub(stats) }}</strong> visits per pub</p>
+                <p>
+                  <strong>{{ stats.uniquePubs }}</strong> pubs have been visited
+                </p>
+                <p>
+                  Average: <strong>{{ getAverageVisitsPerPub(stats) }}</strong> visits per pub
+                </p>
               </div>
 
               <div class="insight-card">
                 <h4>Photo Engagement</h4>
-                <p><strong>{{ stats.photoRate }}%</strong> of check-ins include photos</p>
+                <p>
+                  <strong>{{ stats.photoRate }}%</strong> of check-ins include photos
+                </p>
                 <p>This indicates user engagement with the photo feature</p>
               </div>
 
               <div class="insight-card">
                 <h4>Points Distribution</h4>
-                <p><strong>{{ stats.totalPoints }}</strong> total points awarded</p>
-                <p>Average: <strong>{{ getAveragePointsPerCheckin(stats) }}</strong> points per check-in</p>
+                <p>
+                  <strong>{{ stats.totalPoints }}</strong> total points awarded
+                </p>
+                <p>
+                  Average: <strong>{{ getAveragePointsPerCheckin(stats) }}</strong> points per
+                  check-in
+                </p>
               </div>
             </div>
           }
@@ -239,9 +256,10 @@ type CheckinRecord = CollectionRecord & {
         <summary>🔧 Bulk Operations (Advanced)</summary>
         <div class="bulk-content">
           <div class="operation-warning">
-            ⚠️ <strong>Warning:</strong> Bulk operations can permanently affect user data. Use with caution.
+            ⚠️ <strong>Warning:</strong> Bulk operations can permanently affect user data. Use with
+            caution.
           </div>
-          
+
           <div class="operations-grid">
             <div class="operation-item">
               <h4>🗑️ Clean Orphaned Check-ins</h4>
@@ -340,7 +358,8 @@ type CheckinRecord = CollectionRecord & {
       font-weight: 600;
     }
 
-    .filter-input, .filter-select {
+    .filter-input,
+    .filter-select {
       padding: 0.5rem;
       border: 1px solid var(--border);
       border-radius: 4px;
@@ -349,7 +368,8 @@ type CheckinRecord = CollectionRecord & {
       font-size: 0.9rem;
     }
 
-    .filter-input:focus, .filter-select:focus {
+    .filter-input:focus,
+    .filter-select:focus {
       outline: none;
       border-color: var(--primary);
     }
@@ -577,11 +597,12 @@ type CheckinRecord = CollectionRecord & {
         align-items: flex-start;
       }
 
-      .insights-grid, .operations-grid {
+      .insights-grid,
+      .operations-grid {
         grid-template-columns: 1fr;
       }
     }
-  `
+  `,
 })
 export class AdminCheckinsDataComponent extends BaseComponent {
   private readonly collectionBrowserService = inject(CollectionBrowserService);
@@ -607,48 +628,48 @@ export class AdminCheckinsDataComponent extends BaseComponent {
       key: 'formattedDate',
       label: 'Date',
       sortable: true,
-      className: 'date-cell'
+      className: 'date-cell',
     },
     {
       key: 'userDisplayName',
       label: 'User',
       sortable: true,
-      className: 'user-cell'
+      className: 'user-cell',
     },
     {
       key: 'pubDisplayName',
       label: 'Pub',
       sortable: true,
-      className: 'pub-cell'
+      className: 'pub-cell',
     },
     {
       key: 'pointsDisplay',
       label: 'Points',
       sortable: true,
-      className: 'number points-primary'
+      className: 'number points-primary',
     },
     {
       key: 'photoIcon',
       label: 'Photo',
       sortable: true,
-      className: 'photo-cell center'
+      className: 'photo-cell center',
     },
     {
       key: 'statusDisplay',
       label: 'Status',
       sortable: true,
-      className: 'status-cell'
-    }
+      className: 'status-cell',
+    },
   ];
 
   // Computed properties
   readonly enrichedCheckins = computed((): CheckinRecord[] => {
     const pubs = this.pubStore.data();
-    
+
     return this.checkins().map(checkin => {
       const pub = pubs.find(p => p.id === checkin.data.pubId);
       const hasPhoto = !!(checkin.data.photoURL || checkin.data.carpetPhotoURL);
-      
+
       return {
         ...checkin,
         formattedDate: this.formatDate(checkin.data.timestamp || checkin.data.createdAt),
@@ -657,7 +678,7 @@ export class AdminCheckinsDataComponent extends BaseComponent {
         pointsDisplay: this.formatPoints(checkin.data.pointsEarned || checkin.data.points || 0),
         statusDisplay: this.getStatusDisplay(checkin.data),
         hasPhoto,
-        photoIcon: hasPhoto ? '📸' : '—'
+        photoIcon: hasPhoto ? '📸' : '—',
       };
     });
   });
@@ -669,24 +690,32 @@ export class AdminCheckinsDataComponent extends BaseComponent {
     const totalCheckins = checkins.length;
     const uniqueUsers = new Set(checkins.map(c => c.data.userId)).size;
     const uniquePubs = new Set(checkins.map(c => c.data.pubId)).size;
-    const totalPoints = checkins.reduce((sum, c) => sum + (c.data.pointsEarned || c.data.points || 0), 0);
-    const checkinsWithPhotos = checkins.filter(c => c.data.photoURL || c.data.carpetPhotoURL).length;
-    const photoRate = totalCheckins > 0 ? Math.round((checkinsWithPhotos / totalCheckins) * 100) : 0;
+    const totalPoints = checkins.reduce(
+      (sum, c) => sum + (c.data.pointsEarned || c.data.points || 0),
+      0
+    );
+    const checkinsWithPhotos = checkins.filter(
+      c => c.data.photoURL || c.data.carpetPhotoURL
+    ).length;
+    const photoRate =
+      totalCheckins > 0 ? Math.round((checkinsWithPhotos / totalCheckins) * 100) : 0;
 
     return {
       totalCheckins,
       uniqueUsers,
       uniquePubs,
       totalPoints,
-      photoRate
+      photoRate,
     };
   });
 
   readonly hasFiltersApplied = computed(() => {
-    return this.userIdFilter() !== '' || 
-           this.pubIdFilter() !== '' || 
-           this.dateFilter() !== '' ||
-           this.photoFilter() !== '';
+    return (
+      this.userIdFilter() !== '' ||
+      this.pubIdFilter() !== '' ||
+      this.dateFilter() !== '' ||
+      this.photoFilter() !== ''
+    );
   });
 
   readonly hasMoreData = computed(() => this.hasMore());
@@ -708,14 +737,14 @@ export class AdminCheckinsDataComponent extends BaseComponent {
 
     try {
       const filters = this.buildFilters();
-      
+
       const result = await this.collectionBrowserService.browseCollection({
         collectionName: 'checkins',
         pageSize: 50,
         lastDocument: reset ? undefined : this.lastDocument(),
         filters,
         orderByField: 'timestamp',
-        orderDirection: 'desc'
+        orderDirection: 'desc',
       });
 
       if (reset) {
@@ -727,8 +756,9 @@ export class AdminCheckinsDataComponent extends BaseComponent {
       this.hasMore.set(result.hasMore);
       this.lastDocument.set(result.lastDocument);
 
-      console.log(`[AdminCheckinsData] Loaded ${result.records.length} check-ins, hasMore: ${result.hasMore}`);
-
+      console.log(
+        `[AdminCheckinsData] Loaded ${result.records.length} check-ins, hasMore: ${result.hasMore}`
+      );
     } catch (error: any) {
       console.error('[AdminCheckinsData] Failed to load check-ins:', error);
       this.error.set(`Failed to load check-ins: ${error?.message || 'Unknown error'}`);
@@ -758,7 +788,11 @@ export class AdminCheckinsDataComponent extends BaseComponent {
   }
 
   async cleanOrphanedCheckins(): Promise<void> {
-    if (!confirm('🗑️ Clean orphaned check-ins?\n\nThis will remove check-ins from users that no longer exist. This action cannot be undone.\n\nContinue?')) {
+    if (
+      !confirm(
+        '🗑️ Clean orphaned check-ins?\n\nThis will remove check-ins from users that no longer exist. This action cannot be undone.\n\nContinue?'
+      )
+    ) {
       return;
     }
 
@@ -784,7 +818,6 @@ export class AdminCheckinsDataComponent extends BaseComponent {
       if (result.failureCount > 0) {
         this.showError(`⚠️ Failed to clean ${result.failureCount} check-ins`);
       }
-
     } catch (error: any) {
       console.error('[AdminCheckinsData] Failed to clean orphaned check-ins:', error);
       this.showError(`Failed to clean orphaned check-ins: ${error?.message || 'Unknown error'}`);
@@ -818,7 +851,7 @@ export class AdminCheckinsDataComponent extends BaseComponent {
       checkin.pubDisplayName,
       checkin.data.pointsEarned || checkin.data.points || 0,
       checkin.hasPhoto ? 'Yes' : 'No',
-      checkin.statusDisplay
+      checkin.statusDisplay,
     ]);
 
     // Create CSV content
@@ -864,7 +897,7 @@ export class AdminCheckinsDataComponent extends BaseComponent {
 
   private formatDate(timestamp: any): string {
     if (!timestamp) return 'Unknown';
-    
+
     let date: Date;
     if (timestamp.toDate) {
       date = timestamp.toDate();
@@ -879,7 +912,7 @@ export class AdminCheckinsDataComponent extends BaseComponent {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     }).format(date);
   }
 
@@ -891,12 +924,12 @@ export class AdminCheckinsDataComponent extends BaseComponent {
     if (checkinData.status) {
       return checkinData.status;
     }
-    
+
     // Infer status from data
     if (checkinData.pointsEarned || checkinData.points) {
       return '✅ Complete';
     }
-    
+
     return '⏳ Pending';
   }
 

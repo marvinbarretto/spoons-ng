@@ -1,11 +1,10 @@
 import { computed, inject, Injectable, Signal } from '@angular/core';
-import type { Pub, PubWithDistance } from '../utils/pub.models';
-import { haversineDistanceInMeters } from '../../shared/utils/geo';
-import { LocationService } from '../../shared/data-access/location.service';
-import { PubStore } from './pub.store';
-import { MAX_NEARBY_PUBS } from '../../constants';
+import { LocationService } from '@fourfold/angular-foundation';
 import { environment } from '../../../environments/environment';
-
+import { MAX_NEARBY_PUBS } from '../../constants';
+import { haversineDistanceInMeters } from '../../shared/utils/geo';
+import type { Pub, PubWithDistance } from '../utils/pub.models';
+import { PubStore } from './pub.store';
 
 /**
  * ✅ REACTIVE COMPUTED STORE
@@ -20,8 +19,7 @@ export class NearbyPubStore {
   protected readonly pubStore = inject(PubStore);
 
   // ✅ REACTIVE: Direct access to source signals with clean names
-  readonly location: Signal<{ lat: number; lng: number } | null> =
-    this.locationService.location;
+  readonly location: Signal<{ lat: number; lng: number } | null> = this.locationService.location;
 
   readonly allPubs: Signal<Pub[]> = this.pubStore.data;
 
@@ -31,20 +29,23 @@ export class NearbyPubStore {
     const pubs = this.allPubs();
 
     if (!location || !pubs.length) {
-      console.log('[NearbyPubStore] 📍 No location or pubs available:', { hasLocation: !!location, pubCount: pubs.length });
+      console.log('[NearbyPubStore] 📍 No location or pubs available:', {
+        hasLocation: !!location,
+        pubCount: pubs.length,
+      });
       return [];
     }
 
     const userLocation = { lat: location.lat, lng: location.lng };
     const radiusMeters = environment.nearbyPubsRadiusMeters || 50000; // 50km default
 
-    const pubsWithDistances: PubWithDistance[] = pubs.map((pub) => ({
+    const pubsWithDistances: PubWithDistance[] = pubs.map(pub => ({
       ...pub,
       distance: haversineDistanceInMeters(userLocation, pub.location),
     }));
 
     const filteredPubs = pubsWithDistances
-      .filter((pub) => pub.distance < radiusMeters)
+      .filter(pub => pub.distance < radiusMeters)
       .sort((a, b) => a.distance - b.distance)
       .slice(0, MAX_NEARBY_PUBS);
 
@@ -52,7 +53,7 @@ export class NearbyPubStore {
       totalPubs: pubs.length,
       radiusMeters,
       nearbyPubsFound: filteredPubs.length,
-      closestDistance: filteredPubs[0]?.distance || 'N/A'
+      closestDistance: filteredPubs[0]?.distance || 'N/A',
     });
 
     return filteredPubs;
@@ -96,7 +97,12 @@ export class NearbyPubStore {
   isWithinCheckInRange(pubId: string): boolean {
     const distance = this.getDistanceToPub(pubId);
     const checkInThreshold = environment.checkInDistanceThresholdMeters || 200;
-    console.log('[NearbyPubStore] 📍 Check-in range check:', { pubId, distance, checkInThreshold, withinRange: distance !== null && distance < checkInThreshold });
+    console.log('[NearbyPubStore] 📍 Check-in range check:', {
+      pubId,
+      distance,
+      checkInThreshold,
+      withinRange: distance !== null && distance < checkInThreshold,
+    });
     return distance !== null && distance < checkInThreshold;
   }
 
@@ -114,7 +120,7 @@ export class NearbyPubStore {
     return pubs
       .map(pub => ({
         ...pub,
-        distance: haversineDistanceInMeters(userLocation, pub.location)
+        distance: haversineDistanceInMeters(userLocation, pub.location),
       }))
       .filter(pub => pub.distance <= radiusMeters)
       .sort((a, b) => a.distance - b.distance);

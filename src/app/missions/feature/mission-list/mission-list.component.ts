@@ -1,42 +1,51 @@
 // src/app/missions/feature/mission-list/mission-list.component.ts
-import { Component, computed, inject, signal, effect } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 
-import { MissionCardComponent } from '../../ui/mission-card/mission-card.component';
-import { UserMissionsStore } from '../../data-access/user-missions.store';
 import { AuthStore } from '@auth/data-access/auth.store';
+import {
+  EmptyStateComponent,
+  ErrorStateComponent,
+  LoadingStateComponent,
+} from '@fourfold/angular-foundation';
 import { BaseComponent } from '../../../shared/base/base.component';
-import { ListFilterControlsComponent } from '../../../shared/ui/list-filter-controls/list-filter-controls.component';
 import { ListFilterStore } from '../../../shared/data-access/list-filter.store';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { ButtonSize } from '../../../shared/ui/button/button.params';
-import { LoadingStateComponent, ErrorStateComponent, EmptyStateComponent } from '../../../shared/ui/state-components';
+import { ListFilterControlsComponent } from '../../../shared/ui/list-filter-controls/list-filter-controls.component';
+import { UserMissionsStore } from '../../data-access/user-missions.store';
+import { MissionCardComponent } from '../../ui/mission-card/mission-card.component';
 import type { Mission } from '../../utils/mission.model';
 import type { MissionDisplayData } from '../../utils/user-mission-progress.model';
 
 @Component({
   selector: 'app-mission-list',
-  imports: [MissionCardComponent, ListFilterControlsComponent, ButtonComponent, LoadingStateComponent, ErrorStateComponent, EmptyStateComponent],
+  imports: [
+    MissionCardComponent,
+    ListFilterControlsComponent,
+    ButtonComponent,
+    LoadingStateComponent,
+    ErrorStateComponent,
+    EmptyStateComponent,
+  ],
   providers: [ListFilterStore],
   template: `
     <section class="mission-list-page">
       <header class="page-header">
         <h1>Missions ({{ totalMissionsCount() }})</h1>
-        <p class="page-subtitle">
-          Complete missions by visiting the required pubs to earn rewards
-        </p>
+        <p class="page-subtitle">Complete missions by visiting the required pubs to earn rewards</p>
       </header>
 
       @if (userMissionsStore.loading()) {
-        <app-loading-state text="Loading missions..." />
+        <ff-loading-state text="Loading missions..." />
       } @else if (userMissionsStore.error()) {
-        <app-error-state 
+        <ff-error-state
           [message]="userMissionsStore.error()!"
           [showRetry]="true"
           retryText="Try Again"
           (retry)="retryLoad()"
         />
       } @else if (totalMissionsCount() === 0) {
-        <app-empty-state 
+        <ff-empty-state
           icon="📝"
           title="No missions available yet"
           subtitle="Check back later for new challenges!"
@@ -74,7 +83,10 @@ import type { MissionDisplayData } from '../../utils/user-mission-progress.model
                 [checked]="filterMode() === 'joined'"
                 (change)="setFilter('joined')"
               />
-              Joined ({{ userMissionsStore.activeMissions().length + userMissionsStore.completedMissions().length }})
+              Joined ({{
+                userMissionsStore.activeMissions().length +
+                  userMissionsStore.completedMissions().length
+              }})
             </label>
           </div>
         </div>
@@ -110,15 +122,21 @@ import type { MissionDisplayData } from '../../utils/user-mission-progress.model
                   @if (missionData.isCompleted) {
                     <span class="completion-badge">✅ Completed</span>
                   } @else {
-                    <span class="progress-badge">📍 {{ missionData.completedCount }}/{{ missionData.totalCount }}</span>
+                    <span class="progress-badge"
+                      >📍 {{ missionData.completedCount }}/{{ missionData.totalCount }}</span
+                    >
                   }
                 } @else {
                   <app-button
                     variant="primary"
                     [size]="ButtonSize.SMALL"
                     (onClick)="handleStartMissionClick(missionData.mission)"
-                    [loading]="userMissionsStore.loading() || enrollingMissionId() === missionData.mission.id"
-                    [loadingText]="enrollingMissionId() === missionData.mission.id ? 'Joining...' : 'Loading...'"
+                    [loading]="
+                      userMissionsStore.loading() || enrollingMissionId() === missionData.mission.id
+                    "
+                    [loadingText]="
+                      enrollingMissionId() === missionData.mission.id ? 'Joining...' : 'Loading...'
+                    "
                   >
                     Join Mission
                   </app-button>
@@ -129,7 +147,7 @@ import type { MissionDisplayData } from '../../utils/user-mission-progress.model
         </div>
 
         @if (filteredAndSearchedMissions().length === 0) {
-          <app-empty-state 
+          <ff-empty-state
             icon="🔍"
             title="No missions match the current filter"
             [showAction]="true"
@@ -138,7 +156,6 @@ import type { MissionDisplayData } from '../../utils/user-mission-progress.model
           />
         }
       }
-
     </section>
   `,
   styles: `
@@ -164,7 +181,6 @@ import type { MissionDisplayData } from '../../utils/user-mission-progress.model
       margin: 0;
       font-size: 1rem;
     }
-
 
     .retry-btn,
     .btn-secondary {
@@ -327,8 +343,12 @@ import type { MissionDisplayData } from '../../utils/user-mission-progress.model
     }
 
     @keyframes spin {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     .completion-badge {
@@ -383,7 +403,7 @@ import type { MissionDisplayData } from '../../utils/user-mission-progress.model
         padding: 0.5rem 0.75rem;
       }
     }
-  `
+  `,
 })
 export class MissionListComponent extends BaseComponent {
   // ✅ Store dependencies
@@ -406,13 +426,14 @@ export class MissionListComponent extends BaseComponent {
 
   // ✅ Computed data using UserMissionsStore
   protected readonly totalMissionsCount = computed(() => {
-    const total = this.userMissionsStore.availableMissions().length +
+    const total =
+      this.userMissionsStore.availableMissions().length +
       this.userMissionsStore.activeMissions().length +
       this.userMissionsStore.completedMissions().length;
     console.log('[MissionList] Total missions count:', total, {
       available: this.userMissionsStore.availableMissions().length,
       active: this.userMissionsStore.activeMissions().length,
-      completed: this.userMissionsStore.completedMissions().length
+      completed: this.userMissionsStore.completedMissions().length,
     });
     return total;
   });
@@ -421,47 +442,53 @@ export class MissionListComponent extends BaseComponent {
     const available = this.userMissionsStore.availableMissions();
     const active = this.userMissionsStore.activeMissions();
     const completed = this.userMissionsStore.completedMissions();
-    
+
     // Use array spread to handle type differences
     const combined: MissionDisplayData[] = [...available, ...active, ...completed];
-    
+
     // Deduplication by mission ID (in case of overlaps)
-    const unique = combined.filter((mission, index, array) => 
-      array.findIndex(m => m.mission.id === mission.mission.id) === index
+    const unique = combined.filter(
+      (mission, index, array) => array.findIndex(m => m.mission.id === mission.mission.id) === index
     );
-    
+
     console.log('[MissionList] All missions computed:', {
       availableCount: available.length,
-      activeCount: active.length, 
+      activeCount: active.length,
       completedCount: completed.length,
       combinedCount: combined.length,
       uniqueCount: unique.length,
       availableIds: available.map(m => m.mission.id),
       activeIds: active.map(m => m.mission.id),
       completedIds: completed.map(m => m.mission.id),
-      finalIds: unique.map(m => m.mission.id)
+      finalIds: unique.map(m => m.mission.id),
     });
-    
+
     return unique;
   });
 
   protected readonly joinedMissions = computed(() => [
     ...this.userMissionsStore.activeMissions(),
-    ...this.userMissionsStore.completedMissions()
+    ...this.userMissionsStore.completedMissions(),
   ]);
 
   protected readonly filteredMissions = computed(() => {
     const mode = this.filterMode();
     let result;
     switch (mode) {
-      case 'available': result = this.userMissionsStore.availableMissions(); break;
-      case 'joined': result = this.joinedMissions(); break;
-      default: result = this.allMissions(); break;
+      case 'available':
+        result = this.userMissionsStore.availableMissions();
+        break;
+      case 'joined':
+        result = this.joinedMissions();
+        break;
+      default:
+        result = this.allMissions();
+        break;
     }
     console.log('[MissionList] Filtered missions:', {
       mode,
       count: result.length,
-      missionIds: result.map(m => m.mission.id)
+      missionIds: result.map(m => m.mission.id),
     });
     return result;
   });
@@ -476,14 +503,22 @@ export class MissionListComponent extends BaseComponent {
       missions = missions.filter(missionData => {
         const mission = missionData.mission;
         switch (quickFilter) {
-          case 'featured': return mission.featured;
-          case 'easy': return mission.difficulty === 'easy';
-          case 'medium': return mission.difficulty === 'medium';
-          case 'hard': return mission.difficulty === 'hard';
-          case 'extreme': return mission.difficulty === 'extreme';
-          case 'regional': return mission.category === 'regional';
-          case 'themed': return mission.category === 'themed';
-          default: return true;
+          case 'featured':
+            return mission.featured;
+          case 'easy':
+            return mission.difficulty === 'easy';
+          case 'medium':
+            return mission.difficulty === 'medium';
+          case 'hard':
+            return mission.difficulty === 'hard';
+          case 'extreme':
+            return mission.difficulty === 'extreme';
+          case 'regional':
+            return mission.category === 'regional';
+          case 'themed':
+            return mission.category === 'themed';
+          default:
+            return true;
         }
       });
     }
@@ -500,7 +535,7 @@ export class MissionListComponent extends BaseComponent {
     { key: 'hard', label: '🔴 Hard' },
     { key: 'extreme', label: '⚫ Extreme' },
     { key: 'regional', label: '🗺️ Regional' },
-    { key: 'themed', label: '🎯 Themed' }
+    { key: 'themed', label: '🎯 Themed' },
   ]);
 
   // ✅ Development helper
@@ -513,7 +548,7 @@ export class MissionListComponent extends BaseComponent {
       hasUser: !!user,
       uid: user?.uid,
       isAnonymous: user?.isAnonymous,
-      joinedMissionCount: this.joinedMissions().length
+      joinedMissionCount: this.joinedMissions().length,
     };
   });
 
@@ -525,7 +560,7 @@ export class MissionListComponent extends BaseComponent {
     currentFilter: this.filterMode(),
     filteredCount: this.filteredMissions().length,
     loading: this.userMissionsStore.loading(),
-    error: this.userMissionsStore.error()
+    error: this.userMissionsStore.error(),
   }));
 
   // ✅ Filter controls
@@ -554,7 +589,7 @@ export class MissionListComponent extends BaseComponent {
         (missionData: MissionDisplayData) => missionData.mission.category || '',
         (missionData: MissionDisplayData) => missionData.mission.subcategory || '',
         (missionData: MissionDisplayData) => missionData.mission.country || '',
-        (missionData: MissionDisplayData) => missionData.mission.region || ''
+        (missionData: MissionDisplayData) => missionData.mission.region || '',
       ])
     );
 
@@ -564,13 +599,13 @@ export class MissionListComponent extends BaseComponent {
         key: 'name',
         label: 'Name',
         getValue: (missionData: MissionDisplayData) => missionData.mission.name || '',
-        direction: 'asc'
+        direction: 'asc',
       },
       {
         key: 'points',
         label: 'Points',
         getValue: (missionData: MissionDisplayData) => missionData.mission.pointsReward || 0,
-        direction: 'desc'
+        direction: 'desc',
       },
       {
         key: 'difficulty',
@@ -580,14 +615,14 @@ export class MissionListComponent extends BaseComponent {
           const order = { easy: 1, medium: 2, hard: 3, extreme: 4 };
           return order[difficulty as keyof typeof order] || 2;
         },
-        direction: 'asc'
+        direction: 'asc',
       },
       {
         key: 'pubCount',
         label: 'Pub Count',
         getValue: (missionData: MissionDisplayData) => missionData.mission.pubIds?.length || 0,
-        direction: 'desc'
-      }
+        direction: 'desc',
+      },
     ]);
   }
 
@@ -599,47 +634,47 @@ export class MissionListComponent extends BaseComponent {
       const active = this.userMissionsStore.activeMissions();
       const completed = this.userMissionsStore.completedMissions();
       const loading = this.userMissionsStore.loading();
-      
+
       console.log('🔔 [MissionList] Store signals changed:', {
         counts: {
           available: available.length,
           active: active.length,
-          completed: completed.length
+          completed: completed.length,
         },
         loading,
         availableIds: available.map(m => m.mission.id),
         activeIds: active.map(m => m.mission.id),
         completedIds: completed.map(m => m.mission.id),
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     });
-    
+
     // Monitor computed signals
     effect(() => {
       const all = this.allMissions();
       const filtered = this.filteredMissions();
       const filteredAndSearched = this.filteredAndSearchedMissions();
-      
+
       console.log('🧮 [MissionList] Computed signals changed:', {
         counts: {
           allCount: all.length,
           filteredCount: filtered.length,
-          finalCount: filteredAndSearched.length
+          finalCount: filteredAndSearched.length,
         },
         filterMode: this.filterMode(),
         allIds: all.map(m => m.mission.id),
         filteredIds: filtered.map(m => m.mission.id),
         finalIds: filteredAndSearched.map(m => m.mission.id),
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     });
-    
+
     // Monitor filter mode changes
     effect(() => {
       const mode = this.filterMode();
       console.log('🎛️ [MissionList] Filter mode changed to:', mode, 'at', new Date().toISOString());
     });
-    
+
     // Monitor enrollment state
     effect(() => {
       const enrollingId = this.enrollingMissionId();
@@ -653,7 +688,9 @@ export class MissionListComponent extends BaseComponent {
 
   // ✅ Retry loading - no-op since UserMissionsStore handles loading automatically
   retryLoad(): void {
-    console.log('[MissionList] Retry load requested - UserMissionsStore handles loading automatically');
+    console.log(
+      '[MissionList] Retry load requested - UserMissionsStore handles loading automatically'
+    );
   }
 
   // ✅ Main action - start mission
@@ -677,8 +714,14 @@ export class MissionListComponent extends BaseComponent {
 
     try {
       this._enrollingMissionId.set(mission.id);
-      console.log('🚀 [MissionList] Starting enrollment process for:', mission.name, '(ID:', mission.id, ')');
-      
+      console.log(
+        '🚀 [MissionList] Starting enrollment process for:',
+        mission.name,
+        '(ID:',
+        mission.id,
+        ')'
+      );
+
       // Log detailed state BEFORE enrollment
       const beforeState = {
         available: this.userMissionsStore.availableMissions(),
@@ -686,9 +729,9 @@ export class MissionListComponent extends BaseComponent {
         completed: this.userMissionsStore.completedMissions(),
         all: this.allMissions(),
         filtered: this.filteredMissions(),
-        finalDisplay: this.filteredAndSearchedMissions()
+        finalDisplay: this.filteredAndSearchedMissions(),
       };
-      
+
       console.log('📊 [MissionList] BEFORE enrollment - detailed state:', {
         counts: {
           available: beforeState.available.length,
@@ -696,7 +739,7 @@ export class MissionListComponent extends BaseComponent {
           completed: beforeState.completed.length,
           all: beforeState.all.length,
           filtered: beforeState.filtered.length,
-          finalDisplay: beforeState.finalDisplay.length
+          finalDisplay: beforeState.finalDisplay.length,
         },
         availableIds: beforeState.available.map(m => m.mission.id),
         activeIds: beforeState.active.map(m => m.mission.id),
@@ -704,13 +747,15 @@ export class MissionListComponent extends BaseComponent {
         filterMode: this.filterMode(),
         targetMissionInAvailable: beforeState.available.some(m => m.mission.id === mission.id),
         targetMissionInActive: beforeState.active.some(m => m.mission.id === mission.id),
-        targetMissionInFinalDisplay: beforeState.finalDisplay.some(m => m.mission.id === mission.id)
+        targetMissionInFinalDisplay: beforeState.finalDisplay.some(
+          m => m.mission.id === mission.id
+        ),
       });
-      
+
       console.log('⏳ [MissionList] Calling userMissionsStore.enrollInMission...');
       await this.userMissionsStore.enrollInMission(mission.id);
       console.log('✅ [MissionList] userMissionsStore.enrollInMission completed');
-      
+
       // Log detailed state AFTER enrollment
       const afterState = {
         available: this.userMissionsStore.availableMissions(),
@@ -718,9 +763,9 @@ export class MissionListComponent extends BaseComponent {
         completed: this.userMissionsStore.completedMissions(),
         all: this.allMissions(),
         filtered: this.filteredMissions(),
-        finalDisplay: this.filteredAndSearchedMissions()
+        finalDisplay: this.filteredAndSearchedMissions(),
       };
-      
+
       console.log('📊 [MissionList] AFTER enrollment - detailed state:', {
         counts: {
           available: afterState.available.length,
@@ -728,7 +773,7 @@ export class MissionListComponent extends BaseComponent {
           completed: afterState.completed.length,
           all: afterState.all.length,
           filtered: afterState.filtered.length,
-          finalDisplay: afterState.finalDisplay.length
+          finalDisplay: afterState.finalDisplay.length,
         },
         availableIds: afterState.available.map(m => m.mission.id),
         activeIds: afterState.active.map(m => m.mission.id),
@@ -736,9 +781,9 @@ export class MissionListComponent extends BaseComponent {
         filterMode: this.filterMode(),
         targetMissionInAvailable: afterState.available.some(m => m.mission.id === mission.id),
         targetMissionInActive: afterState.active.some(m => m.mission.id === mission.id),
-        targetMissionInFinalDisplay: afterState.finalDisplay.some(m => m.mission.id === mission.id)
+        targetMissionInFinalDisplay: afterState.finalDisplay.some(m => m.mission.id === mission.id),
       });
-      
+
       // Log the changes
       console.log('🔄 [MissionList] State changes detected:', {
         availableChange: afterState.available.length - beforeState.available.length,
@@ -746,9 +791,11 @@ export class MissionListComponent extends BaseComponent {
         completedChange: afterState.completed.length - beforeState.completed.length,
         allChange: afterState.all.length - beforeState.all.length,
         finalDisplayChange: afterState.finalDisplay.length - beforeState.finalDisplay.length,
-        missionMovedFromAvailableToActive: beforeState.available.some(m => m.mission.id === mission.id) && afterState.active.some(m => m.mission.id === mission.id)
+        missionMovedFromAvailableToActive:
+          beforeState.available.some(m => m.mission.id === mission.id) &&
+          afterState.active.some(m => m.mission.id === mission.id),
       });
-      
+
       console.log('🎉 [MissionList] Successfully enrolled in mission:', mission.name);
       this.showSuccess(`Enrolled in mission: "${mission.name}"!`);
     } catch (error: any) {
@@ -769,7 +816,9 @@ export class MissionListComponent extends BaseComponent {
     }
 
     // Show confirmation dialog
-    const confirmed = confirm(`Are you sure you want to leave "${mission.name}"?\n\nThis will delete all your progress in this mission.`);
+    const confirmed = confirm(
+      `Are you sure you want to leave "${mission.name}"?\n\nThis will delete all your progress in this mission.`
+    );
     if (!confirmed) {
       return;
     }

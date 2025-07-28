@@ -1,14 +1,14 @@
 // src/app/check-in/data-access/check-in-modal.service.ts
 import { inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { OverlayService } from '@shared/data-access/overlay.service';
-import { UserProgressionService } from '@shared/data-access/user-progression.service';
 import { CheckInStore } from '@check-in/data-access/check-in.store';
-import { ModalCheckinCelebrationComponent } from '../ui/modal-checkin-celebration/modal-checkin-celebration.component';
-import { ModalCheckinPointsComponent } from '../ui/modal-checkin-success/modal-checkin-success.component';
-import { ModalCheckinLandlordComponent } from '../ui/modal-checkin-landlord/modal-checkin-landlord.component';
-import { CheckInResultData } from '../utils/check-in.models';
+import { OverlayService } from '@fourfold/angular-foundation';
+import { UserProgressionService } from '@shared/data-access/user-progression.service';
 import { environment } from '../../../environments/environment';
+import { ModalCheckinCelebrationComponent } from '../ui/modal-checkin-celebration/modal-checkin-celebration.component';
+import { ModalCheckinLandlordComponent } from '../ui/modal-checkin-landlord/modal-checkin-landlord.component';
+import { ModalCheckinPointsComponent } from '../ui/modal-checkin-success/modal-checkin-success.component';
+import { CheckInResultData } from '../utils/check-in.models';
 
 @Injectable({ providedIn: 'root' })
 export class CheckInModalService {
@@ -19,7 +19,7 @@ export class CheckInModalService {
 
   // Callback for when modal flow is completely dismissed
   private onModalFlowDismissed?: () => void;
-  
+
   // Track active timeouts for cleanup
   private activeTimeouts: Set<number> = new Set();
 
@@ -51,13 +51,15 @@ export class CheckInModalService {
       {},
       {
         data,
-        UserExperienceLevel: this.userProgressionService.userExperienceLevel()
+        UserExperienceLevel: this.userProgressionService.userExperienceLevel(),
       }
     );
 
     // Set up navigation fallback timeout
     const navigationFallbackTimeout = this.safeSetTimeout(() => {
-      console.warn('[CheckInModalService] Navigation fallback timeout triggered - forcing navigation to homepage');
+      console.warn(
+        '[CheckInModalService] Navigation fallback timeout triggered - forcing navigation to homepage'
+      );
       this.forceNavigationToHomepage();
     }, environment.MODAL_NAVIGATION_TIMEOUT || 10000);
 
@@ -91,20 +93,24 @@ export class CheckInModalService {
     });
 
     // Handle backdrop/escape dismissal via overlay result promise
-    result.then((value) => {
-      console.log('[CheckInModalService] Modal result promise resolved with value:', value);
-      clearFallbackTimeout();
+    result
+      .then(value => {
+        console.log('[CheckInModalService] Modal result promise resolved with value:', value);
+        clearFallbackTimeout();
 
-      // If modal was dismissed without explicit value (backdrop/escape), navigate home
-      if (value === undefined) {
-        console.log('[CheckInModalService] Modal dismissed via backdrop/escape - navigating to homepage');
+        // If modal was dismissed without explicit value (backdrop/escape), navigate home
+        if (value === undefined) {
+          console.log(
+            '[CheckInModalService] Modal dismissed via backdrop/escape - navigating to homepage'
+          );
+          this.forceNavigationToHomepage();
+        }
+      })
+      .catch(error => {
+        console.error('[CheckInModalService] Modal result promise rejected:', error);
+        clearFallbackTimeout();
         this.forceNavigationToHomepage();
-      }
-    }).catch((error) => {
-      console.error('[CheckInModalService] Modal result promise rejected:', error);
-      clearFallbackTimeout();
-      this.forceNavigationToHomepage();
-    });
+      });
   }
 
   /**
@@ -118,13 +124,15 @@ export class CheckInModalService {
       {},
       {
         data,
-        UserExperienceLevel: this.userProgressionService.userExperienceLevel()
+        UserExperienceLevel: this.userProgressionService.userExperienceLevel(),
       }
     );
 
     // Set up navigation fallback timeout
     const navigationFallbackTimeout = this.safeSetTimeout(() => {
-      console.warn('[CheckInModalService] Points modal navigation fallback timeout triggered - forcing navigation to homepage');
+      console.warn(
+        '[CheckInModalService] Points modal navigation fallback timeout triggered - forcing navigation to homepage'
+      );
       this.forceNavigationToHomepage();
     }, environment.MODAL_NAVIGATION_TIMEOUT || 10000);
 
@@ -147,7 +155,7 @@ export class CheckInModalService {
       //     this.showLandlordStatus(data);
       //   }, 200);
       // } else {
-        this.forceNavigationToHomepage();
+      this.forceNavigationToHomepage();
       // }
     });
 
@@ -159,20 +167,27 @@ export class CheckInModalService {
     });
 
     // Handle backdrop/escape dismissal via overlay result promise
-    result.then((value) => {
-      console.log('[CheckInModalService] Points modal result promise resolved with value:', value);
-      clearFallbackTimeout();
+    result
+      .then(value => {
+        console.log(
+          '[CheckInModalService] Points modal result promise resolved with value:',
+          value
+        );
+        clearFallbackTimeout();
 
-      // If modal was dismissed without explicit value (backdrop/escape), navigate home
-      if (value === undefined) {
-        console.log('[CheckInModalService] Points modal dismissed via backdrop/escape - navigating to homepage');
+        // If modal was dismissed without explicit value (backdrop/escape), navigate home
+        if (value === undefined) {
+          console.log(
+            '[CheckInModalService] Points modal dismissed via backdrop/escape - navigating to homepage'
+          );
+          this.forceNavigationToHomepage();
+        }
+      })
+      .catch(error => {
+        console.error('[CheckInModalService] Points modal result promise rejected:', error);
+        clearFallbackTimeout();
         this.forceNavigationToHomepage();
-      }
-    }).catch((error) => {
-      console.error('[CheckInModalService] Points modal result promise rejected:', error);
-      clearFallbackTimeout();
-      this.forceNavigationToHomepage();
-    });
+      });
   }
 
   /**
@@ -188,15 +203,17 @@ export class CheckInModalService {
         data: {
           isNewLandlord: data.isNewLandlord || false,
           landlordMessage: data.landlordMessage,
-          pub: data.pub
+          pub: data.pub,
         },
-        UserExperienceLevel: this.userProgressionService.userExperienceLevel()
+        UserExperienceLevel: this.userProgressionService.userExperienceLevel(),
       }
     );
 
     // Set up navigation fallback timeout
     const navigationFallbackTimeout = this.safeSetTimeout(() => {
-      console.warn('[CheckInModalService] Landlord modal navigation fallback timeout triggered - forcing navigation to homepage');
+      console.warn(
+        '[CheckInModalService] Landlord modal navigation fallback timeout triggered - forcing navigation to homepage'
+      );
       this.forceNavigationToHomepage();
     }, environment.MODAL_NAVIGATION_TIMEOUT || 10000);
 
@@ -215,7 +232,9 @@ export class CheckInModalService {
     });
 
     componentRef.instance.dismiss.subscribe(() => {
-      console.log('[CheckInModalService] Landlord modal dismissed via OK button - navigating to homepage');
+      console.log(
+        '[CheckInModalService] Landlord modal dismissed via OK button - navigating to homepage'
+      );
       clearFallbackTimeout();
       close();
       this.forceNavigationToHomepage();
@@ -233,20 +252,27 @@ export class CheckInModalService {
     });
 
     // Handle backdrop/escape dismissal via overlay result promise
-    result.then((value) => {
-      console.log('[CheckInModalService] Landlord modal result promise resolved with value:', value);
-      clearFallbackTimeout();
+    result
+      .then(value => {
+        console.log(
+          '[CheckInModalService] Landlord modal result promise resolved with value:',
+          value
+        );
+        clearFallbackTimeout();
 
-      // If modal was dismissed without explicit value (backdrop/escape), navigate home
-      if (value === undefined) {
-        console.log('[CheckInModalService] Landlord modal dismissed via backdrop/escape - navigating to homepage');
+        // If modal was dismissed without explicit value (backdrop/escape), navigate home
+        if (value === undefined) {
+          console.log(
+            '[CheckInModalService] Landlord modal dismissed via backdrop/escape - navigating to homepage'
+          );
+          this.forceNavigationToHomepage();
+        }
+      })
+      .catch(error => {
+        console.error('[CheckInModalService] Landlord modal result promise rejected:', error);
+        clearFallbackTimeout();
         this.forceNavigationToHomepage();
-      }
-    }).catch((error) => {
-      console.error('[CheckInModalService] Landlord modal result promise rejected:', error);
-      clearFallbackTimeout();
-      this.forceNavigationToHomepage();
-    });
+      });
   }
 
   /**
@@ -269,21 +295,24 @@ export class CheckInModalService {
     this.safeSetTimeout(() => {
       console.log('[CheckInModalService] Executing router.navigate to homepage');
 
-      this.router.navigate(['/'], {
-        replaceUrl: true // Replace current URL to prevent back navigation to check-in page
-      }).then((success) => {
-        console.log('[CheckInModalService] Router navigation completed successfully:', success);
-      }).catch((error) => {
-        console.error('[CheckInModalService] Router navigation failed:', error);
+      this.router
+        .navigate(['/'], {
+          replaceUrl: true, // Replace current URL to prevent back navigation to check-in page
+        })
+        .then(success => {
+          console.log('[CheckInModalService] Router navigation completed successfully:', success);
+        })
+        .catch(error => {
+          console.error('[CheckInModalService] Router navigation failed:', error);
 
-        // Fallback: try window.location as last resort
-        console.log('[CheckInModalService] Attempting fallback navigation via window.location');
-        try {
-          window.location.href = '/';
-        } catch (locationError) {
-          console.error('[CheckInModalService] Fallback navigation also failed:', locationError);
-        }
-      });
+          // Fallback: try window.location as last resort
+          console.log('[CheckInModalService] Attempting fallback navigation via window.location');
+          try {
+            window.location.href = '/';
+          } catch (locationError) {
+            console.error('[CheckInModalService] Fallback navigation also failed:', locationError);
+          }
+        });
     }, 100);
   }
 

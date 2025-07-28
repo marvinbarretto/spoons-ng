@@ -1,13 +1,12 @@
 // src/app/pubs/data-access/pub.store.ts
 import { Injectable, computed, inject } from '@angular/core';
-import { BaseStore } from '@shared/base/base.store';
-import { CacheService } from '@shared/data-access/cache.service';
-import { LocationService } from '@shared/data-access/location.service';
-import type { Pub } from '../utils/pub.models';
 import type { CheckIn } from '@check-in/utils/check-in.models';
-import { PubService } from './pub.service';
+import { CacheService, LocationService } from '@fourfold/angular-foundation';
+import { BaseStore } from '@shared/base/base.store';
 import { calculateDistance } from '@shared/utils/location.utils';
 import { Timestamp } from 'firebase/firestore';
+import type { Pub } from '../utils/pub.models';
+import { PubService } from './pub.service';
 
 @Injectable({ providedIn: 'root' })
 export class PubStore extends BaseStore<Pub> {
@@ -42,7 +41,7 @@ export class PubStore extends BaseStore<Pub> {
       ...pub,
       distance: location
         ? calculateDistance(location, { lat: pub.location.lat, lng: pub.location.lng })
-        : Infinity // ✅ Use Infinity instead of null - still sorts to bottom
+        : Infinity, // ✅ Use Infinity instead of null - still sorts to bottom
     }));
   });
 
@@ -55,7 +54,7 @@ export class PubStore extends BaseStore<Pub> {
     return this.cacheService.load({
       key: 'pubs-global',
       ttlMs: 1000 * 60 * 60, // 1 hour (pubs change rarely)
-      loadFresh: () => this.pubService.getAllPubs()
+      loadFresh: () => this.pubService.getAllPubs(),
       // ✅ No userId - global cache
     });
   }
@@ -74,7 +73,10 @@ export class PubStore extends BaseStore<Pub> {
 
   findByLocation(lat: number, lng: number, radiusKm: number = 1): Pub[] {
     return this.filter(pub => {
-      const distance = calculateDistance({ lat, lng }, { lat: pub.location.lat, lng: pub.location.lng });
+      const distance = calculateDistance(
+        { lat, lng },
+        { lat: pub.location.lat, lng: pub.location.lng }
+      );
       return distance <= radiusKm * 1000; // Convert km to meters
     });
   }
@@ -104,7 +106,11 @@ export class PubStore extends BaseStore<Pub> {
    * @param checkin - The check-in data
    * @param checkinId - ID of the created check-in document
    */
-  async updatePubStats(pubId: string, checkin: Omit<CheckIn, 'id'>, checkinId: string): Promise<void> {
+  async updatePubStats(
+    pubId: string,
+    checkin: Omit<CheckIn, 'id'>,
+    checkinId: string
+  ): Promise<void> {
     console.log('[PubStore] Updating pub stats for:', pubId);
 
     try {
@@ -126,7 +132,6 @@ export class PubStore extends BaseStore<Pub> {
 
       // Optionally refresh pub data to get updated stats
       // await this.refreshPubData();
-
     } catch (error) {
       console.error('[PubStore] Failed to update pub stats:', error);
       throw error;
@@ -145,7 +150,6 @@ export class PubStore extends BaseStore<Pub> {
       await this.pubService.incrementCheckinCount(pubId);
 
       console.log('[PubStore] Check-in count incremented successfully via PubService:', pubId);
-
     } catch (error) {
       console.error('[PubStore] Failed to increment check-in count:', error);
       throw error;
@@ -166,7 +170,6 @@ export class PubStore extends BaseStore<Pub> {
       await this.pubService.updatePubHistory(pubId, userId, timestamp);
 
       console.log('[PubStore] Pub history updated successfully via PubService:', pubId);
-
     } catch (error) {
       console.error('[PubStore] Failed to update pub history:', error);
       throw error;
@@ -175,7 +178,7 @@ export class PubStore extends BaseStore<Pub> {
 
   /**
    * Update pub carpet URL efficiently using signal updates
-   * 
+   *
    * 🎯 PERFORMANCE OPTIMIZATION:
    * Instead of invalidating the entire pub cache when one carpet URL changes,
    * we update the specific pub object in the signal directly. This provides:
@@ -183,21 +186,21 @@ export class PubStore extends BaseStore<Pub> {
    * - No cache invalidation overhead
    * - No network requests to reload all pubs
    * - Preserves cached data for other pubs
-   * 
+   *
    * 📊 FLOW:
    * 1. User checks in and uploads carpet image
    * 2. CarpetStorageService calls this method
    * 3. Firebase is updated via PubService
    * 4. In-memory signal is updated directly
    * 5. Template reactivity triggers immediate UI update
-   * 
+   *
    * ⚡ CACHE STRATEGY:
    * We deliberately avoid cache invalidation because:
    * - Carpet URLs are user-generated content that changes frequently
    * - Full cache reload would refetch ALL pubs unnecessarily
    * - Signal updates are instant and maintain data consistency
    * - Cache remains valid for all other pub data
-   * 
+   *
    * @param pubId - ID of the pub to update
    * @param carpetUrl - New carpet image URL from Firebase Storage
    */
@@ -214,7 +217,7 @@ export class PubStore extends BaseStore<Pub> {
       const updateData = {
         carpetUrl,
         hasCarpet: true, // Mark as having carpet when URL is provided
-        carpetUpdatedAt: Timestamp.now() // Track when carpet was last updated
+        carpetUpdatedAt: Timestamp.now(), // Track when carpet was last updated
       };
 
       // Use BaseStore's updateItem method to modify the signal
@@ -223,9 +226,11 @@ export class PubStore extends BaseStore<Pub> {
         updateData // Apply the carpet URL updates
       );
 
-      console.log('[PubStore] ✅ Pub carpet URL updated successfully with signal reactivity:', pubId);
+      console.log(
+        '[PubStore] ✅ Pub carpet URL updated successfully with signal reactivity:',
+        pubId
+      );
       console.log('[PubStore] 🚀 UI will update instantly via signal - no cache reload needed!');
-
     } catch (error) {
       console.error('[PubStore] ❌ Failed to update pub carpet URL:', error);
       throw error;

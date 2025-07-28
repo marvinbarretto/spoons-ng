@@ -1,5 +1,4 @@
 <section class="pub-list-page">
-
   <!-- ✅ Sticky condensed controls -->
   <section class="controls-section sticky-controls">
     <div class="controls-row">
@@ -16,9 +15,9 @@
           aria-label="Search pubs"
         />
         @if (searchTerm()) {
-          <button 
-            class="clear-search-btn" 
-            (click)="clearSearch()" 
+          <button
+            class="clear-search-btn"
+            (click)="clearSearch()"
             type="button"
             aria-label="Clear search"
           >
@@ -70,16 +69,16 @@
   <!-- ✅ Main content area with better space usage -->
   <section class="pub-list-container">
     @if (pubStore.loading()) {
-      <app-loading-state text="Loading pubs..." />
+      <ff-loading-state text="Loading pubs..." />
     } @else if (pubStore.error()) {
-      <app-error-state
+      <ff-error-state
         [message]="pubStore.error()!"
         [showRetry]="true"
         retryText="Try Again"
         (retry)="retryLoad()"
       />
     } @else if (filteredPubs().length === 0) {
-      <app-empty-state
+      <ff-empty-state
         icon="🍺"
         title="No pubs found"
         subtitle="Try adjusting your search or filters."
@@ -115,16 +114,16 @@
               class="pub-card-link"
               [attr.aria-label]="'View details for ' + pub.name"
             > -->
-              <app-pub-card
-                [pub]="pub"
-                [hasCheckedIn]="hasAnyVisit(pub.id)"
-                [hasVerifiedVisit]="hasVerifiedCheckIn(pub.id)"
-                [hasUnverifiedVisit]="hasUnverifiedVisit(pub.id)"
-                [checkinCount]="dataAggregatorService.getVisitCountForPub(pub.id)"
-                [showCheckinCount]="hasAnyVisit(pub.id)"
-                [isLocalPub]="dataAggregatorService.isLocalPub(pub.id)"
-                [checkInDistanceThreshold]="checkInDistanceThreshold"
-              />
+            <app-pub-card
+              [pub]="pub"
+              [hasCheckedIn]="hasAnyVisit(pub.id)"
+              [hasVerifiedVisit]="hasVerifiedCheckIn(pub.id)"
+              [hasUnverifiedVisit]="hasUnverifiedVisit(pub.id)"
+              [checkinCount]="dataAggregatorService.getVisitCountForPub(pub.id)"
+              [showCheckinCount]="hasAnyVisit(pub.id)"
+              [isLocalPub]="dataAggregatorService.isLocalPub(pub.id)"
+              [checkInDistanceThreshold]="checkInDistanceThreshold"
+            />
             <!-- </a> -->
           }
         }

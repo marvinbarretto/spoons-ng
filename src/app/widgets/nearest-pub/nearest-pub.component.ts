@@ -1,15 +1,14 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { BaseWidgetComponent } from '../base/base-widget.component';
+import { LocationService } from '@fourfold/angular-foundation';
+import { CheckInStore } from '../../check-in/data-access/check-in.store';
 import { NearbyPubStore } from '../../pubs/data-access/nearby-pub.store';
 import { DataAggregatorService } from '../../shared/data-access/data-aggregator.service';
-import { LocationService } from '../../shared/data-access/location.service';
 import { UserStore } from '../../users/data-access/user.store';
-import { CheckInStore } from '../../check-in/data-access/check-in.store';
-import { SsrPlatformService } from '@fourfold/angular-foundation';
+import { BaseWidgetComponent } from '../base/base-widget.component';
 
+import { EmptyStateComponent, LoadingStateComponent } from '@fourfold/angular-foundation';
 import { PubCardComponent } from '../../pubs/ui/pub-card/pub-card.component';
-import { LoadingStateComponent, EmptyStateComponent, LocationStateComponent } from '../../shared/ui/state-components';
-import type { Pub } from '../../pubs/utils/pub.models';
+import { LocationStateComponent } from '../../shared/ui/location-state/location-state.component';
 
 @Component({
   selector: 'app-nearest-pub',
@@ -17,14 +16,11 @@ import type { Pub } from '../../pubs/utils/pub.models';
   template: `
     <div class="widget-container">
       @if (loading()) {
-        <app-loading-state text="Finding nearby pubs..." />
+        <ff-loading-state text="Finding nearby pubs..." />
       } @else if (shouldShowLocationError()) {
-        <app-location-state
-          [message]="getLocationMessage()"
-          (retry)="requestLocation()"
-        />
+        <app-location-state [message]="getLocationMessage()" (retry)="requestLocation()" />
       } @else if (!hasNearbyPubs()) {
-        <app-empty-state
+        <ff-empty-state
           icon="📍"
           title="No pubs found nearby"
           subtitle="Try adjusting your location or search criteria"
@@ -48,31 +44,31 @@ import type { Pub } from '../../pubs/utils/pub.models';
       }
     </div>
   `,
-  styles: [`
-    .widget-container {
-      padding: 1rem;
-      background: var(--background-lighter);
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 0.5rem;
-      box-shadow: var(--shadow);
-    }
+  styles: [
+    `
+      .widget-container {
+        padding: 1rem;
+        background: var(--background-lighter);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        box-shadow: var(--shadow);
+      }
 
+      .widget-title {
+        margin: 0 0 1rem 0;
+        font-size: 1.125rem;
+        font-weight: 600;
+      }
 
-    .widget-title {
-      margin: 0 0 1rem 0;
-      font-size: 1.125rem;
-      font-weight: 600;
-    }
-
-    .nearby-pubs {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-
-  `],
-  changeDetection: ChangeDetectionStrategy.OnPush
+      .nearby-pubs {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+    `,
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class NearestPubComponent extends BaseWidgetComponent {
   // Direct store access for widget-specific location data
@@ -94,7 +90,7 @@ export class NearestPubComponent extends BaseWidgetComponent {
     return pubs.map(pub => ({
       ...pub,
       hasVisited: this.dataAggregatorService.hasVisitedPub(pub.id),
-      visitCount: this.dataAggregatorService.getVisitCountForPub(pub.id)
+      visitCount: this.dataAggregatorService.getVisitCountForPub(pub.id),
     }));
   });
 
@@ -108,7 +104,7 @@ export class NearestPubComponent extends BaseWidgetComponent {
       loading: locationLoading,
       hasLocation: !!hasLocation,
       error: locationError,
-      nearbyPubsCount: this.nearbyPubs().length
+      nearbyPubsCount: this.nearbyPubs().length,
     });
 
     if (!locationLoading && !hasLocation && locationError) {
@@ -132,7 +128,9 @@ export class NearestPubComponent extends BaseWidgetComponent {
   }
 
   protected requestLocation(): void {
-    console.log('[NearestPubComponent] 📍 User clicked "Grant Location Access" - requesting location...');
+    console.log(
+      '[NearestPubComponent] 📍 User clicked "Grant Location Access" - requesting location...'
+    );
     this.error.set(null);
     this.locationService.getCurrentLocation();
   }

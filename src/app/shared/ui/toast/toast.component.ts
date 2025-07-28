@@ -1,8 +1,7 @@
-import { Component, inject, effect, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ToastService, Toast } from '../../data-access/toast.service';
+import { Component, computed, effect, inject } from '@angular/core';
+import { Toast, ToastService } from '@fourfold/angular-foundation';
 import { IconComponent } from '../icon/icon.component';
-
 
 @Component({
   selector: 'app-toast',
@@ -15,11 +14,11 @@ export class ToastComponent {
   readonly toasts = this.toastService.toasts;
 
   // Separate toasts by position
-  readonly cornerToasts = computed(() => 
+  readonly cornerToasts = computed(() =>
     this.toasts().filter(toast => toast.position === 'corner')
   );
-  
-  readonly centerToasts = computed(() => 
+
+  readonly centerToasts = computed(() =>
     this.toasts().filter(toast => toast.position === 'center')
   );
 
@@ -38,9 +37,9 @@ export class ToastComponent {
   getIconName(type: Toast['type']): string {
     const iconMap: Record<Toast['type'], string> = {
       success: 'check_circle',
-      error: 'error', 
+      error: 'error',
       warning: 'warning',
-      info: 'info'
+      info: 'info',
     };
     return iconMap[type];
   }

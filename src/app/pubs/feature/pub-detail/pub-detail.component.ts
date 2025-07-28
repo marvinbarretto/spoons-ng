@@ -1,20 +1,18 @@
 // src/app/pubs/feature/pub-detail/pub-detail.component.ts
-import { Component, computed, inject, input } from '@angular/core';
-import { JsonPipe } from '@angular/common';
-import { Router, ActivatedRoute } from '@angular/router';
-import { PubStore } from '../../data-access/pub.store';
 import { CheckInStore } from '@/app/check-in/data-access/check-in.store';
-import { UserStore } from '@users/data-access/user.store';
+import { Component, computed, inject } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import type { CheckIn } from '@app/check-in/utils/check-in.models';
+import type { Landlord } from '@app/landlord/utils/landlord.model';
 import { AuthStore } from '@auth/data-access/auth.store';
-import { LocationService } from '@shared/data-access/location.service';
+import { LocationService } from '@fourfold/angular-foundation';
 import { BaseComponent } from '@shared/base/base.component';
 import { ButtonComponent } from '@shared/ui/button/button.component';
 import { ButtonSize } from '@shared/ui/button/button.params';
-import type { Pub } from '../../utils/pub.models';
-import { calculateDistance } from '@shared/utils/location.utils';
 import { generateRandomName } from '@shared/utils/anonymous-names';
-import type { Landlord } from '@app/landlord/utils/landlord.model';
-import type { CheckIn } from '@app/check-in/utils/check-in.models';
+import { calculateDistance } from '@shared/utils/location.utils';
+import { UserStore } from '@users/data-access/user.store';
+import { PubStore } from '../../data-access/pub.store';
 
 @Component({
   selector: 'app-pub-detail',
@@ -50,7 +48,9 @@ import type { CheckIn } from '@app/check-in/utils/check-in.models';
       } @else {
         <!-- Header with Back Button -->
         <header class="pub-header">
-          <app-button variant="ghost" [size]="ButtonSize.SMALL" (onClick)="goBack()">← Back</app-button>
+          <app-button variant="ghost" [size]="ButtonSize.SMALL" (onClick)="goBack()"
+            >← Back</app-button
+          >
 
           <!-- Pub Hero Section -->
           <div class="pub-hero">
@@ -73,16 +73,14 @@ import type { CheckIn } from '@app/check-in/utils/check-in.models';
         <!-- Quick Actions -->
         <div class="quick-actions">
           @if (canCheckIn()) {
-            <app-button
-              variant="primary"
-              [size]="ButtonSize.LARGE"
-              (onClick)="initiateCheckIn()"
-            >
+            <app-button variant="primary" [size]="ButtonSize.LARGE" (onClick)="initiateCheckIn()">
               📸 Check In Here
             </app-button>
           } @else if (hasCheckedIn()) {
             <div class="status-badge status-badge--success">
-              ✅ You've been here {{ userCheckins().length }} time{{ userCheckins().length === 1 ? '' : 's' }}
+              ✅ You've been here {{ userCheckins().length }} time{{
+                userCheckins().length === 1 ? '' : 's'
+              }}
             </div>
           } @else if (isNearby()) {
             <div class="status-badge status-badge--info" [class.distance-pulsing]="isMoving()">
@@ -107,7 +105,9 @@ import type { CheckIn } from '@app/check-in/utils/check-in.models';
               </div>
               <div class="detail-item">
                 <span class="detail-label">Location</span>
-                <span class="detail-value">{{ pub()!.city }}, {{ pub()!.region }}, {{ pub()!.country }}</span>
+                <span class="detail-value"
+                  >{{ pub()!.city }}, {{ pub()!.region }}, {{ pub()!.country }}</span
+                >
               </div>
               @if (checkinStats()?.totalCheckins) {
                 <div class="detail-item">
@@ -126,7 +126,9 @@ import type { CheckIn } from '@app/check-in/utils/check-in.models';
                 @if (hasCheckedIn()) {
                   <div class="activity-stat">
                     <span class="stat-number">{{ userCheckins().length }}</span>
-                    <span class="stat-label">Check-in{{ userCheckins().length === 1 ? '' : 's' }}</span>
+                    <span class="stat-label"
+                      >Check-in{{ userCheckins().length === 1 ? '' : 's' }}</span
+                    >
                   </div>
                   @if (userCheckins().length > 0) {
                     <div class="last-visit">
@@ -154,13 +156,17 @@ import type { CheckIn } from '@app/check-in/utils/check-in.models';
                 @if (pub()!.currentLandlord) {
                   <div class="current-landlord">
                     <span class="landlord-label">Current Landlord:</span>
-                    <span class="landlord-name">{{ getLandlordDisplayName(pub()!.currentLandlord!) }}</span>
+                    <span class="landlord-name">{{
+                      getLandlordDisplayName(pub()!.currentLandlord!)
+                    }}</span>
                   </div>
                 }
                 @if (pub()!.todayLandlord && pub()!.todayLandlord !== pub()!.currentLandlord) {
                   <div class="today-landlord">
                     <span class="landlord-label">Today's Landlord:</span>
-                    <span class="landlord-name">{{ getLandlordDisplayName(pub()!.todayLandlord!) }}</span>
+                    <span class="landlord-name">{{
+                      getLandlordDisplayName(pub()!.todayLandlord!)
+                    }}</span>
                   </div>
                 }
               </div>
@@ -302,8 +308,13 @@ import type { CheckIn } from '@app/check-in/utils/check-in.models';
     }
 
     @keyframes skeleton-pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.6; }
+      0%,
+      100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.6;
+      }
     }
 
     .error-state,
@@ -800,10 +811,15 @@ import type { CheckIn } from '@app/check-in/utils/check-in.models';
     }
 
     @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.6; }
+      0%,
+      100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.6;
+      }
     }
-  `
+  `,
 })
 export class PubDetailComponent extends BaseComponent {
   // ✅ Store dependencies
@@ -828,13 +844,11 @@ export class PubDetailComponent extends BaseComponent {
     return this.pubStore.pubs().find(p => p.id === id) || null;
   });
 
-  protected readonly isDataLoading = computed(() =>
-    this.pubStore.loading() || this.checkinStore.loading()
+  protected readonly isDataLoading = computed(
+    () => this.pubStore.loading() || this.checkinStore.loading()
   );
 
-  protected readonly dataError = computed(() =>
-    this.pubStore.error() || this.checkinStore.error()
-  );
+  protected readonly dataError = computed(() => this.pubStore.error() || this.checkinStore.error());
 
   // ✅ User and location data
   protected readonly user = this.userStore.user;
@@ -850,7 +864,7 @@ export class PubDetailComponent extends BaseComponent {
 
     return calculateDistance(location, {
       lat: pub.location.lat,
-      lng: pub.location.lng
+      lng: pub.location.lng,
     });
   });
 
@@ -881,16 +895,17 @@ export class PubDetailComponent extends BaseComponent {
 
     if (!user) return [];
 
-    return this.checkinStore.checkins().filter(
-      (checkin: any) => checkin.userId === user.uid && checkin.pubId === pubId
-    );
+    return this.checkinStore
+      .checkins()
+      .filter((checkin: any) => checkin.userId === user.uid && checkin.pubId === pubId);
   });
 
   protected readonly hasCheckedIn = computed(() => this.userCheckins().length > 0);
 
   protected readonly recentCheckins = computed(() => {
     const pubId = this.pubId();
-    return this.checkinStore.checkins()
+    return this.checkinStore
+      .checkins()
       .filter((checkin: any) => checkin.pubId === pubId)
       .sort((a: any, b: any) => b.timestamp.seconds - a.timestamp.seconds)
       .slice(0, 10); // Latest 10 check-ins
@@ -909,7 +924,7 @@ export class PubDetailComponent extends BaseComponent {
       region: pub.region,
       country: pub.country,
       location: pub.location,
-      carpetUrl: pub.carpetUrl
+      carpetUrl: pub.carpetUrl,
     };
   });
 
@@ -920,12 +935,12 @@ export class PubDetailComponent extends BaseComponent {
       meters: this.distance(),
       formatted: this.distanceText(),
       isNearby: this.isNearby(),
-      canCheckIn: this.canCheckIn()
+      canCheckIn: this.canCheckIn(),
     },
     locationPermission: {
       hasPermission: !!this.currentLocation(),
-      timestamp: new Date().toISOString()
-    }
+      timestamp: new Date().toISOString(),
+    },
   }));
 
   protected readonly userActivityData = computed(() => {
@@ -944,7 +959,7 @@ export class PubDetailComponent extends BaseComponent {
         id: c.id,
         timestamp: c.timestamp,
         // points: c.points // TODO: add points if available
-      }))
+      })),
     };
   });
 
@@ -957,7 +972,7 @@ export class PubDetailComponent extends BaseComponent {
       lastCheckinAt: pub.lastCheckinAt,
       recordEarlyCheckinAt: pub.recordEarlyCheckinAt,
       recordLatestCheckinAt: pub.recordLatestCheckinAt,
-      longestStreak: pub.longestStreak
+      longestStreak: pub.longestStreak,
     };
   });
 
@@ -968,7 +983,7 @@ export class PubDetailComponent extends BaseComponent {
     return {
       currentLandlord: pub.currentLandlord,
       todayLandlord: pub.todayLandlord,
-      landlordHistory: pub.landlordHistory?.slice(0, 5) // Latest 5
+      landlordHistory: pub.landlordHistory?.slice(0, 5), // Latest 5
     };
   });
 
@@ -983,7 +998,7 @@ export class PubDetailComponent extends BaseComponent {
       displayName: user?.displayName,
       emailVerified: user?.emailVerified,
       lastSignInTime: (user as any)?.metadata?.lastSignInTime,
-      creationTime: (user as any)?.metadata?.creationTime
+      creationTime: (user as any)?.metadata?.creationTime,
     };
   });
 
@@ -992,25 +1007,25 @@ export class PubDetailComponent extends BaseComponent {
       loading: this.pubStore.loading(),
       error: this.pubStore.error(),
       totalPubs: this.pubStore.totalCount(),
-      dataLoaded: this.pubStore.pubs().length > 0
+      dataLoaded: this.pubStore.pubs().length > 0,
     },
     checkinStore: {
       loading: this.checkinStore.loading(),
       error: this.checkinStore.error(),
       totalCheckins: this.checkinStore.checkins().length,
-      dataLoaded: this.checkinStore.checkins().length > 0
+      dataLoaded: this.checkinStore.checkins().length > 0,
     },
     userStore: {
       loading: this.userStore.loading(),
       error: this.userStore.error(),
       hasUser: !!this.userStore.user(),
-      dataLoaded: !!this.userStore.user()
+      dataLoaded: !!this.userStore.user(),
     },
     locationService: {
       hasLocation: !!this.locationService.location(),
       lastUpdated: new Date().toISOString(),
-      isWatching: false
-    }
+      isWatching: false,
+    },
   }));
 
   // ✅ Data loading

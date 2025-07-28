@@ -1,34 +1,24 @@
 // src/app/profile/ui/profile-header-widget/profile-header-widget.component.ts
-import { Component, computed, inject, ChangeDetectionStrategy } from '@angular/core';
-import { BaseComponent } from '@shared/base/base.component';
-import { UserStore } from '@users/data-access/user.store';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { AuthStore } from '@auth/data-access/auth.store';
-import { UserAvatarComponent } from '@shared/ui/user-avatar/user-avatar.component';
-import { OverlayService } from '@shared/data-access/overlay.service';
+import { OverlayService } from '@fourfold/angular-foundation';
 import { ProfileCustomisationModalComponent } from '@home/ui/profile-customisation-modal/profile-customisation-modal.component';
+import { BaseComponent } from '@shared/base/base.component';
+import { UserAvatarComponent } from '@shared/ui/user-avatar/user-avatar.component';
+import { UserStore } from '@users/data-access/user.store';
 
 @Component({
   selector: 'app-profile-header-widget',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    UserAvatarComponent
-  ],
+  imports: [UserAvatarComponent],
   template: `
     <div class="profile-header-widget">
       <div class="profile-header-content">
         <div class="profile-avatar-section">
           @if (user()) {
-            <app-user-avatar
-              [user]="user()!"
-              size="large"
-              class="profile-avatar"
-            />
+            <app-user-avatar [user]="user()!" size="large" class="profile-avatar" />
           }
-          <button
-            (click)="handleEditProfile()"
-            class="edit-profile-btn"
-            type="button"
-          >
+          <button (click)="handleEditProfile()" class="edit-profile-btn" type="button">
             Edit Profile
           </button>
         </div>
@@ -152,7 +142,7 @@ import { ProfileCustomisationModalComponent } from '@home/ui/profile-customisati
         justify-content: center;
       }
     }
-  `
+  `,
 })
 export class ProfileHeaderWidgetComponent extends BaseComponent {
   protected readonly userStore = inject(UserStore);
@@ -176,13 +166,10 @@ export class ProfileHeaderWidgetComponent extends BaseComponent {
   handleEditProfile(): void {
     console.log('[ProfileHeaderWidget] Opening profile customization modal');
 
-    const { componentRef, close } = this.overlayService.open(
-      ProfileCustomisationModalComponent,
-      {
-        maxWidth: '600px',
-        maxHeight: '90vh'
-      }
-    );
+    const { componentRef, close } = this.overlayService.open(ProfileCustomisationModalComponent, {
+      maxWidth: '600px',
+      maxHeight: '90vh',
+    });
 
     // Pass the close callback to the modal component
     componentRef.setInput('closeCallback', close);

@@ -1,8 +1,7 @@
-import { signal, computed, effect, Injectable, inject, Inject } from '@angular/core';
-import { CookieService } from './cookie.service';
-import { SsrPlatformService } from '@fourfold/angular-foundation';
-import { themes, defaultTheme, type ThemeType, type Theme } from '../utils/theme.tokens';
+import { computed, effect, inject, Inject, Injectable, signal } from '@angular/core';
+import { CookieService, SsrPlatformService } from '@fourfold/angular-foundation';
 import { USER_THEME_TOKEN } from '../../../libs/tokens/user-theme.token';
+import { defaultTheme, themes, type Theme, type ThemeType } from '../utils/theme.tokens';
 
 const THEME_COOKIE_KEY = 'theme';
 
@@ -62,11 +61,11 @@ export class ThemeStore {
 
     if (this.isDark()) {
       // Switch to a light theme (default to first light theme)
-      const newTheme = lightThemes[0]?.[0] as ThemeType || 'fresh';
+      const newTheme = (lightThemes[0]?.[0] as ThemeType) || 'fresh';
       this.setTheme(newTheme);
     } else {
       // Switch to a dark theme (default to first dark theme)
-      const newTheme = darkThemes[0]?.[0] as ThemeType || 'midnight';
+      const newTheme = (darkThemes[0]?.[0] as ThemeType) || 'midnight';
       this.setTheme(newTheme);
     }
   }
@@ -85,8 +84,7 @@ export class ThemeStore {
   }
 
   getAllThemes(): Array<{ type: ThemeType; theme: Theme }> {
-    return Object.entries(themes)
-      .map(([type, theme]) => ({ type: type as ThemeType, theme }));
+    return Object.entries(themes).map(([type, theme]) => ({ type: type as ThemeType, theme }));
   }
 
   // Generate CSS custom properties for current theme
@@ -148,21 +146,21 @@ export class ThemeStore {
     // ✅ UPDATED: Handle new theme names and legacy names
     const themeMap: Record<string, ThemeType> = {
       // New themes
-      'fresh': 'fresh',
-      'sunshine': 'sunshine',
-      'midnight': 'midnight',
-      'coral': 'coral',
-      'forest': 'forest',
+      fresh: 'fresh',
+      sunshine: 'sunshine',
+      midnight: 'midnight',
+      coral: 'coral',
+      forest: 'forest',
 
       // Legacy mappings (in case old cookies exist)
-      'sage': 'fresh',
-      'amber': 'sunshine',
-      'slate': 'midnight',
-      'default': 'fresh',
-      'light': 'fresh',
-      'dark': 'midnight',
-      'highcontrast': 'midnight',
-      'cvdsafe': 'fresh'
+      sage: 'fresh',
+      amber: 'sunshine',
+      slate: 'midnight',
+      default: 'fresh',
+      light: 'fresh',
+      dark: 'midnight',
+      highcontrast: 'midnight',
+      cvdsafe: 'fresh',
     };
 
     const normalized = themeInput.toLowerCase();
@@ -196,7 +194,9 @@ export class ThemeStore {
   }
 
   private _hasSystemThemePreference(): boolean {
-    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches !== undefined;
+    return (
+      window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches !== undefined
+    );
   }
 
   private _applyThemeToDOM(theme: Theme): void {

@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
-import { BadgeIconComponent } from '../../ui/badge-icon/badge-icon.component';
-import { ButtonComponent } from '../../../shared/ui/button/button.component';
-import { ButtonSize } from '../../../shared/ui/button/button.params';
-import type { Badge } from '../../utils/badge.model';
-import { BadgeFormComponent } from '../../ui/badge-form/badge-form.component';
-import { OverlayService } from '../../../shared/data-access/overlay.service';
+import { OverlayService } from '@fourfold/angular-foundation';
+import { ButtonComponent } from '@shared/ui/button/button.component';
+import { ButtonSize } from '@shared/ui/button/button.params';
 import { BadgeStore } from '../../data-access/badge.store';
+import { BadgeFormComponent } from '../../ui/badge-form/badge-form.component';
+import { BadgeIconComponent } from '../../ui/badge-icon/badge-icon.component';
+import type { Badge } from '../../utils/badge.model';
 
 @Component({
   selector: 'app-badge-admin-page',
@@ -14,9 +14,7 @@ import { BadgeStore } from '../../data-access/badge.store';
     <div class="admin-container">
       <header class="admin-header">
         <h1>Badge Administration</h1>
-        <app-button variant="primary" (onClick)="createBadge()">
-          + Create New Badge
-        </app-button>
+        <app-button variant="primary" (onClick)="createBadge()"> + Create New Badge </app-button>
       </header>
 
       @if (loading()) {
@@ -233,7 +231,7 @@ import { BadgeStore } from '../../data-access/badge.store';
       width: 160px;
     }
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BadgeAdminComponent implements OnInit {
   private readonly overlayService = inject(OverlayService);
@@ -267,11 +265,7 @@ export class BadgeAdminComponent implements OnInit {
   editBadge(badge: Badge): void {
     console.log('[BadgeAdmin] Edit badge clicked:', badge);
 
-    const { componentRef, close } = this.overlayService.open(
-      BadgeFormComponent,
-      {},
-      { badge }
-    );
+    const { componentRef, close } = this.overlayService.open(BadgeFormComponent, {}, { badge });
 
     componentRef.instance.closeCallback = (updated: Badge | null) => {
       if (updated) {

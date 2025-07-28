@@ -1,17 +1,22 @@
 // src/app/pubs/ui/pub-card/pub-card.component.ts
-import { Component, computed, input, output, inject } from '@angular/core';
+import { Component, computed, inject, input, output } from '@angular/core';
 
-import { environment } from '../../../../environments/environment';
-import type { Pub } from '../../utils/pub.models';
-import { LocationService } from '@shared/data-access/location.service';
+import { LocationService } from '@fourfold/angular-foundation';
 import { ChipStatusComponent } from '@shared/ui/chips/chip-status/chip-status.component';
 import { IndicatorContainerComponent } from '@shared/ui/status-indicators/indicator-container.component';
-import { IndicatorVisitVerifiedComponent } from '@shared/ui/status-indicators/indicator-visit-verified.component';
 import { IndicatorVisitUnverifiedComponent } from '@shared/ui/status-indicators/indicator-visit-unverified.component';
+import { IndicatorVisitVerifiedComponent } from '@shared/ui/status-indicators/indicator-visit-verified.component';
+import { environment } from '../../../../environments/environment';
+import type { Pub } from '../../utils/pub.models';
 
 @Component({
   selector: 'app-pub-card',
-  imports: [ChipStatusComponent, IndicatorContainerComponent, IndicatorVisitVerifiedComponent, IndicatorVisitUnverifiedComponent],
+  imports: [
+    ChipStatusComponent,
+    IndicatorContainerComponent,
+    IndicatorVisitVerifiedComponent,
+    IndicatorVisitUnverifiedComponent,
+  ],
   templateUrl: './pub-card.component.html',
   styles: `
     /* ===== MOBILE-FIRST BASE STYLES ===== */
@@ -61,8 +66,6 @@ import { IndicatorVisitUnverifiedComponent } from '@shared/ui/status-indicators/
       flex: 1;
     }
 
-
-
     /* Status badges - horizontal for mobile */
     .pub-card__status-badges {
       display: flex;
@@ -79,12 +82,10 @@ import { IndicatorVisitUnverifiedComponent } from '@shared/ui/status-indicators/
       flex: 1;
     }
 
-
     .pub-card__home-icon {
       font-size: 1rem;
       opacity: 0.8;
     }
-
 
     /* Content */
     .pub-card__content {
@@ -121,8 +122,6 @@ import { IndicatorVisitUnverifiedComponent } from '@shared/ui/status-indicators/
       margin: 0;
       font-weight: 500;
     }
-
-
 
     .pub-checkbox {
       appearance: none;
@@ -264,7 +263,8 @@ import { IndicatorVisitUnverifiedComponent } from '@shared/ui/status-indicators/
     }
 
     @keyframes pulse-glow {
-      0%, 100% {
+      0%,
+      100% {
         transform: scale(1);
         box-shadow: 0 0 0 0 var(--warning);
       }
@@ -321,7 +321,7 @@ import { IndicatorVisitUnverifiedComponent } from '@shared/ui/status-indicators/
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       }
     }
-  `
+  `,
 })
 export class PubCardComponent {
   // ✅ Inject LocationService for movement detection
@@ -330,13 +330,12 @@ export class PubCardComponent {
   // ✅ Required inputs - pure component pattern
   readonly pub = input.required<Pub & { distance: number | null }>();
 
-    // ✅ Selection mode inputs
-    readonly selectable = input<boolean>(false);
-    readonly isSelected = input<boolean>(false);
+  // ✅ Selection mode inputs
+  readonly selectable = input<boolean>(false);
+  readonly isSelected = input<boolean>(false);
 
   // ✅ Movement detection signal
   readonly isMoving = this.locationService.isMoving;
-
 
   // ✅ Optional inputs with defaults
   readonly hasCheckedIn = input<boolean>(false);
@@ -346,12 +345,12 @@ export class PubCardComponent {
   readonly checkInDistanceThreshold = input<number>(500); // Default 500m for backwards compatibility
 
   // ✅ New visit status inputs
-  readonly hasVerifiedVisit = input<boolean>(false);    // App check-in exists
-  readonly hasUnverifiedVisit = input<boolean>(false);  // Manual addition exists
-  readonly isNearestUnvisited = input<boolean>(false);  // Closest unvisited pub
+  readonly hasVerifiedVisit = input<boolean>(false); // App check-in exists
+  readonly hasUnverifiedVisit = input<boolean>(false); // Manual addition exists
+  readonly isNearestUnvisited = input<boolean>(false); // Closest unvisited pub
 
   // ✅ Address display control
-  readonly displayFullAddress = input<boolean>(false);  // Show full address vs city/region only
+  readonly displayFullAddress = input<boolean>(false); // Show full address vs city/region only
 
   // ✅ Outputs for interactions
   readonly cardClicked = output<Pub>();
@@ -391,8 +390,8 @@ export class PubCardComponent {
     return 'unvisited';
   });
 
-  readonly shouldShowVerificationBadge = computed(() =>
-    this.hasVerifiedVisit() || this.hasUnverifiedVisit()
+  readonly shouldShowVerificationBadge = computed(
+    () => this.hasVerifiedVisit() || this.hasUnverifiedVisit()
   );
 
   readonly visitBadgeText = computed(() => {
@@ -408,8 +407,8 @@ export class PubCardComponent {
   });
 
   // ✅ Visit status icon for display in title area
-  readonly hasAnyVisit = computed(() =>
-    this.hasVerifiedVisit() || this.hasUnverifiedVisit() || this.hasCheckedIn()
+  readonly hasAnyVisit = computed(
+    () => this.hasVerifiedVisit() || this.hasUnverifiedVisit() || this.hasCheckedIn()
   );
 
   readonly visitStatusIcon = computed(() => {
@@ -450,7 +449,7 @@ export class PubCardComponent {
     hasCheckedIn: this.hasCheckedIn(),
     checkinCount: this.checkinCount(),
     location: this.pub().location,
-    canCheckIn: this.canCheckIn()
+    canCheckIn: this.canCheckIn(),
   }));
 
   // ✅ Event handlers
@@ -461,13 +460,12 @@ export class PubCardComponent {
     this.cardClicked.emit(this.pub());
   }
 
-
   // ✅ Semantic checkbox change handler
   handleCheckboxChange(event: Event): void {
     const target = event.target as HTMLInputElement;
     this.selectionChanged.emit({
       pub: this.pub(),
-      selected: target.checked
+      selected: target.checked,
     });
   }
 }
