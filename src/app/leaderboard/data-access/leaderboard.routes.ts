@@ -4,7 +4,17 @@ import { LeaderboardContainerComponent } from '../feature/leaderboard-container/
 export const LEADERBOARD_ROUTES: Routes = [
   {
     path: '',
+    redirectTo: 'points',
+    pathMatch: 'full'
+  },
+  {
+    path: 'points',
     component: LeaderboardContainerComponent,
-    title: 'Leaderboard'
+    title: 'Points Leaderboard'
+  },
+  {
+    path: 'pubs',
+    component: LeaderboardContainerComponent,
+    title: 'Pubs Leaderboard'
   }
 ];

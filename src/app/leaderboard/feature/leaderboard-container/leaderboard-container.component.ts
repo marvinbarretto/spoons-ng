@@ -1,4 +1,6 @@
 import { Component, effect, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRoute } from '@angular/router';
 
 import {
   EmptyStateComponent,
@@ -7,142 +9,134 @@ import {
 } from '@fourfold/angular-foundation';
 import { BaseComponent } from '../../../shared/base/base.component';
 import { ChipUserComponent } from '../../../shared/ui/chips/chip-user/chip-user.component';
+import { TabGroupComponent, type Tab } from '../../../shared/ui/tabs';
 import { LeaderboardStore } from '../../data-access/leaderboard.store';
 
 @Component({
   selector: 'app-leaderboard-container',
-  imports: [LoadingStateComponent, ErrorStateComponent, EmptyStateComponent, ChipUserComponent],
+  imports: [
+    LoadingStateComponent,
+    ErrorStateComponent,
+    EmptyStateComponent,
+    ChipUserComponent,
+    TabGroupComponent,
+  ],
   template: `
     <div class="leaderboard">
       <!-- Tab Navigation -->
-      <div class="leaderboard-tabs">
-        <button class="tab" [class.active]="currentTab() === 'points'" (click)="setTab('points')">
-          🏆 Points League
-        </button>
-        <button
-          class="tab"
-          [class.active]="currentTab() === 'pub-count'"
-          (click)="setTab('pub-count')"
-        >
-          🎺 Pub Count League
-        </button>
-      </div>
+      <ff-tab-group
+        [tabs]="leaderboardTabs"
+        [selectedTab]="currentTab()"
+        (tabChange)="setTab($event)"
+      >
+        <!-- Current User Position -->
+        @if (currentUserPosition() && currentUserPosition()! > 100) {
+          <div class="user-position-banner">
+            <p>
+              Your position: <strong>#{{ currentUserPosition() }}</strong>
+            </p>
+          </div>
+        }
 
-      <!-- Current User Position -->
-      @if (currentUserPosition() && currentUserPosition()! > 100) {
-        <div class="user-position-banner">
-          <p>
-            Your position: <strong>#{{ currentUserPosition() }}</strong>
-          </p>
-        </div>
-      }
-
-      <!-- Loading State -->
-      @if (store.loading()) {
-        <ff-loading-state text="Loading leaderboard..." />
-      } @else if (store.error()) {
-        <!-- Error State -->
-        <ff-error-state
-          [message]="store.error()!"
-          [showRetry]="true"
-          retryText="Try Again"
-          (retry)="handleRetry()"
-        />
-      } @else if (topEntries().length === 0) {
-        <!-- Empty State -->
-        <ff-empty-state icon="🏆" title="No users found" subtitle="Try adjusting your filters" />
-      } @else {
-        <!-- Leaderboard Table -->
-        <div class="leaderboard-table">
-          @if (currentTab() === 'points') {
-            <!-- Points League Table -->
-            <div class="table-header">
-              <span class="col-rank">Rank</span>
-              <span class="col-user">User</span>
-              <span class="col-metric">Points</span>
-              <span class="col-extra">Streak</span>
-            </div>
-
-            @for (entry of topEntries(); track entry.userId) {
-              <div
-                class="table-row"
-                [class.current-user]="entry.isCurrentUser"
-                (click)="navigateToProfile(entry.userId)"
-              >
-                <span class="col-rank">
-                  <span class="rank-number">#{{ entry.rank }}</span>
-                </span>
-
-                <span class="col-user">
-                  <app-chip-user
-                    [user]="{
-                      displayName: entry.displayName,
-                      photoURL: entry.photoURL || undefined,
-                    }"
-                    [clickable]="false"
-                  />
-                  @if (entry.isCurrentUser) {
-                    <span class="current-user-badge">You</span>
-                  }
-                </span>
-
-                <span class="col-metric">
-                  <span class="metric-value">{{ getPoints(entry) }}</span>
-                </span>
-
-                <span class="col-extra">
-                  @if (entry.currentStreak && entry.currentStreak > 1) {
-                    <span class="streak-badge">🔥 {{ entry.currentStreak }} day streak</span>
-                  } @else {
-                    <span class="no-streak">-</span>
-                  }
-                </span>
+        <!-- Loading State -->
+        @if (store.loading()) {
+          <ff-loading-state text="Loading leaderboard..." />
+        } @else if (store.error()) {
+          <!-- Error State -->
+          <ff-error-state
+            [message]="store.error()!"
+            [showRetry]="true"
+            retryText="Try Again"
+            (retry)="handleRetry()"
+          />
+        } @else if (topEntries().length === 0) {
+          <!-- Empty State -->
+          <ff-empty-state icon="🏆" title="No users found" subtitle="Try adjusting your filters" />
+        } @else {
+          <!-- Leaderboard Table -->
+          <div class="leaderboard-table">
+            @if (currentTab() === 'points') {
+              <!-- Points League Table -->
+              <div class="table-header">
+                <span class="col-rank">Rank</span>
+                <span class="col-user">User</span>
+                <span class="col-metric">Points</span>
+                <span class="col-extra">Streak</span>
               </div>
-            }
-          } @else {
-            <!-- Pub Count League Table -->
-            <div class="table-header">
-              <span class="col-rank">Rank</span>
-              <span class="col-user">User</span>
-              <span class="col-metric">Pubs</span>
-              <span class="col-extra">Check-ins</span>
-            </div>
 
-            @for (entry of topEntries(); track entry.userId) {
-              <div
-                class="table-row"
-                [class.current-user]="entry.isCurrentUser"
-                (click)="navigateToProfile(entry.userId)"
-              >
-                <span class="col-rank">
-                  <span class="rank-number">#{{ entry.rank }}</span>
-                </span>
+              @for (entry of topEntries(); track entry.userId) {
+                <div class="table-row" [class.current-user]="entry.isCurrentUser">
+                  <span class="col-rank">
+                    <span class="rank-number">#{{ entry.rank }}</span>
+                  </span>
 
-                <span class="col-user">
-                  <app-chip-user
-                    [user]="{
-                      displayName: entry.displayName,
-                      photoURL: entry.photoURL || undefined,
-                    }"
-                    [clickable]="false"
-                  />
-                  @if (entry.isCurrentUser) {
-                    <span class="current-user-badge">You</span>
-                  }
-                </span>
+                  <span class="col-user">
+                    <app-chip-user
+                      [user]="{
+                        displayName: entry.displayName,
+                        photoURL: entry.photoURL || undefined,
+                      }"
+                      [clickable]="false"
+                    />
+                    @if (entry.isCurrentUser) {
+                      <span class="current-user-badge">You</span>
+                    }
+                  </span>
 
-                <span class="col-metric">
-                  <span class="metric-value">{{ getPubs(entry) }}</span>
-                </span>
+                  <span class="col-metric">
+                    <span class="metric-value">{{ getPoints(entry) }}</span>
+                  </span>
 
-                <span class="col-extra">
-                  <span class="checkins-count">{{ getCheckins(entry) }} check-ins</span>
-                </span>
+                  <span class="col-extra">
+                    @if (entry.currentStreak && entry.currentStreak > 1) {
+                      <span class="streak-badge">🔥 {{ entry.currentStreak }} day streak</span>
+                    } @else {
+                      <span class="no-streak">-</span>
+                    }
+                  </span>
+                </div>
+              }
+            } @else {
+              <!-- Pubs League Table -->
+              <div class="table-header">
+                <span class="col-rank">Rank</span>
+                <span class="col-user">User</span>
+                <span class="col-metric">Pubs</span>
+                <span class="col-extra">Check-ins</span>
               </div>
+
+              @for (entry of topEntries(); track entry.userId) {
+                <div class="table-row" [class.current-user]="entry.isCurrentUser">
+                  <span class="col-rank">
+                    <span class="rank-number">#{{ entry.rank }}</span>
+                  </span>
+
+                  <span class="col-user">
+                    <app-chip-user
+                      [user]="{
+                        displayName: entry.displayName,
+                        photoURL: entry.photoURL || undefined,
+                      }"
+                      [clickable]="false"
+                    />
+                    @if (entry.isCurrentUser) {
+                      <span class="current-user-badge">You</span>
+                    }
+                  </span>
+
+                  <span class="col-metric">
+                    <span class="metric-value">{{ getPubs(entry) }}</span>
+                  </span>
+
+                  <span class="col-extra">
+                    <span class="checkins-count">{{ getCheckins(entry) }} check-ins</span>
+                  </span>
+                </div>
+              }
             }
-          }
-        </div>
-      }
+          </div>
+        }
+      </ff-tab-group>
     </div>
   `,
   styles: `
@@ -150,36 +144,6 @@ import { LeaderboardStore } from '../../data-access/leaderboard.store';
       max-width: 1200px;
       margin: 0 auto;
       padding: 1rem;
-    }
-
-    .leaderboard-tabs {
-      display: flex;
-      gap: 0.5rem;
-      margin-bottom: 2rem;
-      border-bottom: 2px solid var(--border);
-    }
-
-    .tab {
-      padding: 1rem 1.5rem;
-      border: none;
-      background: none;
-      color: var(--text-secondary);
-      font-weight: 500;
-      border-bottom: 2px solid transparent;
-      transition: all 0.2s ease;
-      cursor: pointer;
-      font-size: 1rem;
-    }
-
-    .tab:hover {
-      color: var(--text);
-      background: var(--background-lighter);
-    }
-
-    .tab.active {
-      color: var(--primary);
-      border-bottom-color: var(--primary);
-      background: var(--background-lighter);
     }
 
     .user-position-banner {
@@ -300,15 +264,6 @@ import { LeaderboardStore } from '../../data-access/leaderboard.store';
         padding: 0.5rem;
       }
 
-      .leaderboard-tabs {
-        margin-bottom: 1rem;
-      }
-
-      .tab {
-        padding: 0.75rem 1rem;
-        font-size: 0.9rem;
-      }
-
       .table-header,
       .table-row {
         grid-template-columns: 60px 1fr 80px;
@@ -343,9 +298,25 @@ import { LeaderboardStore } from '../../data-access/leaderboard.store';
 })
 export class LeaderboardContainerComponent extends BaseComponent {
   protected readonly store = inject(LeaderboardStore);
+  private readonly route = inject(ActivatedRoute);
 
-  // Simple local state for tabs
-  readonly currentTab = signal<'points' | 'pub-count'>('points');
+  // Route-synced tab state
+  private readonly routeUrl = toSignal(this.route.url, { initialValue: [] });
+  readonly currentTab = signal<'points' | 'pubs'>('points');
+
+  // Tab configuration
+  readonly leaderboardTabs: Tab[] = [
+    {
+      id: 'points',
+      label: 'Points League',
+      icon: '🏆',
+    },
+    {
+      id: 'pubs',
+      label: 'Pubs League',
+      icon: '🎺',
+    },
+  ];
 
   // Computed properties for template
   readonly topEntries = this.store.topEntries;
@@ -354,19 +325,32 @@ export class LeaderboardContainerComponent extends BaseComponent {
   constructor() {
     super();
 
+    // Sync tab state with current route
+    effect(() => {
+      const urlSegments = this.routeUrl();
+      const lastSegment = urlSegments[urlSegments.length - 1]?.path;
+
+      if (lastSegment === 'points' || lastSegment === 'pubs') {
+        this.currentTab.set(lastSegment);
+      }
+    });
+
     // React to tab changes and update store sorting
     effect(() => {
       const tabType = this.currentTab();
       if (tabType === 'points') {
         this.store.setSortBy('points');
-      } else if (tabType === 'pub-count') {
+      } else if (tabType === 'pubs') {
         this.store.setSortBy('pubs');
       }
     });
   }
 
-  setTab(tab: 'points' | 'pub-count'): void {
-    this.currentTab.set(tab);
+  setTab(tab: string): void {
+    if (tab === 'points' || tab === 'pubs') {
+      // Navigate to the new route - this will trigger the route sync effect
+      this.router.navigate(['/leaderboard', tab]);
+    }
   }
 
   getPoints(entry: any): string {
@@ -385,11 +369,6 @@ export class LeaderboardContainerComponent extends BaseComponent {
     const period = this.store.period();
     const checkins = period === 'monthly' ? entry.monthlyCheckins : entry.totalCheckins;
     return checkins.toString();
-  }
-
-  navigateToProfile(userId: string): void {
-    // Navigate to user profile - using query param to identify specific user
-    this.router.navigate(['/profile'], { queryParams: { user: userId } });
   }
 
   async handleRetry(): Promise<void> {
