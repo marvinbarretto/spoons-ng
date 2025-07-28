@@ -15,6 +15,7 @@ import { UserService } from '../../../users/data-access/user.service';
 import { PubStore } from '../../../pubs/data-access/pub.store';
 import { CheckInService } from '../../../check-in/data-access/check-in.service';
 import { AdminCheckinService } from '../admin-checkins/admin-checkin.service';
+import { CollectionBrowserService, type UserDataAcrossCollections } from '../../data-access/collection-browser.service';
 import type { User } from '../../../users/utils/user.model';
 import type { CheckIn } from '../../../check-in/utils/check-in.models';
 import type { TableColumn } from '../../../shared/ui/data-table/data-table.model';
@@ -357,6 +358,225 @@ type CheckInWithDetails = CheckIn & {
                   />
                 }
               </div>
+            </section>
+
+            <!-- Cross-Collection Data Analysis -->
+            <section class="info-section">
+              <div class="section-header">
+                <h2>🔍 Cross-Collection Data Analysis</h2>
+                <app-button
+                  variant="primary"
+                  size="sm"
+                  [loading]="crossCollectionLoading()"
+                  (onClick)="loadCrossCollectionData()"
+                >
+                  {{ crossCollectionData() ? 'Refresh' : 'Load' }} Data Analysis
+                </app-button>
+              </div>
+
+              @if (crossCollectionLoading()) {
+                <app-loading-state text="Analyzing user data across collections..." />
+              } @else {
+                @if (crossCollectionData(); as data) {
+                <!-- Summary Overview -->
+                <div class="cross-collection-summary">
+                  <div class="summary-stats">
+                    <div class="summary-stat">
+                      <span class="stat-value">{{ data.totalRecords }}</span>
+                      <span class="stat-label">Total Records</span>
+                    </div>
+                    <div class="summary-stat">
+                      <span class="stat-value">{{ collectionsWithDataCount() }}</span>
+                      <span class="stat-label">Collections with Data</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Collection Breakdown -->
+                <div class="collections-breakdown">
+                  <h3>📊 Data by Collection</h3>
+                  <div class="collection-cards">
+                    
+                    <!-- Points Transactions -->
+                    @if (data.collections['pointsTransactions'] && data.collections['pointsTransactions'].length > 0) {
+                      <div class="collection-card">
+                        <div class="collection-header">
+                          <h4>💰 Points Transactions</h4>
+                          <span class="collection-count">{{ data.summary.pointsTransactions.count }}</span>
+                        </div>
+                        <div class="collection-details">
+                          <p><strong>Total Points:</strong> {{ data.summary.pointsTransactions.totalPoints }}</p>
+                          <p><strong>Latest:</strong> {{ formatCollectionDate(data.collections['pointsTransactions'][0]?.data?.createdAt) }}</p>
+                        </div>
+                        <div class="collection-actions">
+                          <app-button variant="secondary" size="xs" (onClick)="viewCollectionDetails('pointsTransactions', data.collections['pointsTransactions'])">
+                            View Details
+                          </app-button>
+                        </div>
+                      </div>
+                    }
+
+                    <!-- Check-ins -->
+                    @if (data.collections['checkins'] && data.collections['checkins'].length > 0) {
+                      <div class="collection-card">
+                        <div class="collection-header">
+                          <h4>🍺 Check-ins</h4>
+                          <span class="collection-count">{{ data.summary.checkins.count }}</span>
+                        </div>
+                        <div class="collection-details">
+                          <p><strong>Unique Pubs:</strong> {{ data.summary.checkins.uniquePubs }}</p>
+                          <p><strong>Latest:</strong> {{ formatCollectionDate(data.collections['checkins'][0]?.data?.timestamp) }}</p>
+                        </div>
+                        <div class="collection-actions">
+                          <app-button variant="secondary" size="xs" (onClick)="viewCollectionDetails('checkins', data.collections['checkins'])">
+                            View Details
+                          </app-button>
+                        </div>
+                      </div>
+                    }
+
+                    <!-- Earned Badges -->
+                    @if (data.collections['earnedBadges'] && data.collections['earnedBadges'].length > 0) {
+                      <div class="collection-card">
+                        <div class="collection-header">
+                          <h4>🏆 Earned Badges</h4>
+                          <span class="collection-count">{{ data.summary.earnedBadges.count }}</span>
+                        </div>
+                        <div class="collection-details">
+                          <p><strong>Achievements unlocked</strong></p>
+                          <p><strong>Latest:</strong> {{ formatCollectionDate(data.collections['earnedBadges'][0]?.data?.earnedAt) }}</p>
+                        </div>
+                        <div class="collection-actions">
+                          <app-button variant="secondary" size="xs" (onClick)="viewCollectionDetails('earnedBadges', data.collections['earnedBadges'])">
+                            View Details
+                          </app-button>
+                        </div>
+                      </div>
+                    }
+
+                    <!-- Mission Progress -->
+                    @if (data.collections['userMissionProgress'] && data.collections['userMissionProgress'].length > 0) {
+                      <div class="collection-card">
+                        <div class="collection-header">
+                          <h4>🎯 Mission Progress</h4>
+                          <span class="collection-count">{{ data.summary.userMissionProgress.count }}</span>
+                        </div>
+                        <div class="collection-details">
+                          <p><strong>Active missions</strong></p>
+                        </div>
+                        <div class="collection-actions">
+                          <app-button variant="secondary" size="xs" (onClick)="viewCollectionDetails('userMissionProgress', data.collections['userMissionProgress'])">
+                            View Details
+                          </app-button>
+                        </div>
+                      </div>
+                    }
+
+                    <!-- Landlord Positions -->
+                    @if (data.collections['landlords'] && data.collections['landlords'].length > 0) {
+                      <div class="collection-card">
+                        <div class="collection-header">
+                          <h4>🏠 Landlord Positions</h4>
+                          <span class="collection-count">{{ data.summary.landlords.count }}</span>
+                        </div>
+                        <div class="collection-details">
+                          <p><strong>Pub ownership records</strong></p>
+                        </div>
+                        <div class="collection-actions">
+                          <app-button variant="secondary" size="xs" (onClick)="viewCollectionDetails('landlords', data.collections['landlords'])">
+                            View Details
+                          </app-button>
+                        </div>
+                      </div>
+                    }
+
+                    <!-- User Events -->
+                    @if (data.collections['user-events'] && data.collections['user-events'].length > 0) {
+                      <div class="collection-card">
+                        <div class="collection-header">
+                          <h4>📝 User Events</h4>
+                          <span class="collection-count">{{ data.summary.userEvents.count }}</span>
+                        </div>
+                        <div class="collection-details">
+                          <p><strong>Activity logs</strong></p>
+                        </div>
+                        <div class="collection-actions">
+                          <app-button variant="secondary" size="xs" (onClick)="viewCollectionDetails('user-events', data.collections['user-events'])">
+                            View Details
+                          </app-button>
+                        </div>
+                      </div>
+                    }
+
+                  </div>
+                </div>
+
+                <!-- Data Consistency Check -->
+                <div class="data-consistency">
+                  <h3>🔧 Data Consistency</h3>
+                  <div class="consistency-grid">
+                    <div class="consistency-item" [class.inconsistent]="user.totalPoints !== data.summary.pointsTransactions.totalPoints">
+                      <span class="consistency-label">Points Summary vs Transactions:</span>
+                      <span class="consistency-values">
+                        {{ user.totalPoints || 0 }} vs {{ data.summary.pointsTransactions.totalPoints }}
+                        @if (user.totalPoints !== data.summary.pointsTransactions.totalPoints) {
+                          <span class="inconsistent-icon">⚠️</span>
+                        } @else {
+                          <span class="consistent-icon">✅</span>
+                        }
+                      </span>
+                    </div>
+                    
+                    <div class="consistency-item" [class.inconsistent]="user.verifiedPubCount !== data.summary.checkins.count">
+                      <span class="consistency-label">Pub Count vs Check-ins:</span>
+                      <span class="consistency-values">
+                        {{ user.verifiedPubCount || 0 }} vs {{ data.summary.checkins.count }}
+                        @if (user.verifiedPubCount !== data.summary.checkins.count) {
+                          <span class="inconsistent-icon">⚠️</span>
+                        } @else {
+                          <span class="consistent-icon">✅</span>
+                        }
+                      </span>
+                    </div>
+
+                    <div class="consistency-item" [class.inconsistent]="user.badgeCount !== data.summary.earnedBadges.count">
+                      <span class="consistency-label">Badge Count vs Earned:</span>
+                      <span class="consistency-values">
+                        {{ user.badgeCount || 0 }} vs {{ data.summary.earnedBadges.count }}
+                        @if (user.badgeCount !== data.summary.earnedBadges.count) {
+                          <span class="inconsistent-icon">⚠️</span>
+                        } @else {
+                          <span class="consistent-icon">✅</span>
+                        }
+                      </span>
+                    </div>
+                  </div>
+
+                  @if (hasDataInconsistencies(user, data)) {
+                    <div class="consistency-actions">
+                      <app-button
+                        variant="warning"
+                        size="sm"
+                        (onClick)="fixUserDataInconsistencies()"
+                      >
+                        🔧 Fix Data Inconsistencies
+                      </app-button>
+                    </div>
+                  }
+                </div>
+
+                } @else {
+                  <div class="no-analysis">
+                    <p>Click "Load Data Analysis" to analyze this user's data across all collections.</p>
+                    <p><strong>This will help identify:</strong></p>
+                    <ul>
+                      <li>Orphaned data in other collections</li>
+                      <li>Inconsistencies between summary fields and actual data</li>
+                      <li>Complete activity history across the system</li>
+                    </ul>
+                  </div>
+                }
+              }
             </section>
 
             <!-- Raw Data Section (Developer Debug) -->
@@ -870,6 +1090,199 @@ type CheckInWithDetails = CheckIn & {
         justify-content: center;
       }
     }
+
+    /* Cross-Collection Data Styles */
+    .cross-collection-summary {
+      margin-bottom: 1.5rem;
+    }
+
+    .summary-stats {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    .summary-stat {
+      text-align: center;
+      padding: 1rem;
+      background: var(--background);
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      min-width: 120px;
+    }
+
+    .summary-stat .stat-value {
+      display: block;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 0.25rem;
+    }
+
+    .summary-stat .stat-label {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .collections-breakdown {
+      margin-bottom: 2rem;
+    }
+
+    .collections-breakdown h3 {
+      margin: 0 0 1rem;
+      color: var(--text);
+      font-size: 1.1rem;
+    }
+
+    .collection-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+
+    .collection-card {
+      background: var(--background);
+      border-radius: 6px;
+      padding: 1rem;
+      border: 1px solid var(--border);
+    }
+
+    .collection-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .collection-header h4 {
+      margin: 0;
+      color: var(--text);
+      font-size: 1rem;
+    }
+
+    .collection-count {
+      background: var(--primary);
+      color: var(--background);
+      padding: 0.25rem 0.5rem;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .collection-details {
+      margin-bottom: 1rem;
+    }
+
+    .collection-details p {
+      margin: 0.25rem 0;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .collection-actions {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .data-consistency {
+      background: var(--background);
+      border-radius: 6px;
+      padding: 1rem;
+      border: 1px solid var(--border);
+    }
+
+    .data-consistency h3 {
+      margin: 0 0 1rem;
+      color: var(--text);
+      font-size: 1.1rem;
+    }
+
+    .consistency-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .consistency-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem;
+      border-radius: 4px;
+      background: var(--background-lighter);
+      border: 1px solid var(--border);
+    }
+
+    .consistency-item.inconsistent {
+      background: color-mix(in srgb, var(--warning) 10%, var(--background-lighter));
+      border-color: var(--warning);
+    }
+
+    .consistency-label {
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .consistency-values {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+    }
+
+    .inconsistent-icon {
+      color: var(--warning);
+    }
+
+    .consistent-icon {
+      color: var(--success);
+    }
+
+    .consistency-actions {
+      display: flex;
+      justify-content: center;
+    }
+
+    .no-analysis {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-secondary);
+    }
+
+    .no-analysis p {
+      margin: 0.5rem 0;
+    }
+
+    .no-analysis ul {
+      text-align: left;
+      max-width: 400px;
+      margin: 1rem auto;
+    }
+
+    /* Mobile responsive for cross-collection */
+    @media (max-width: 768px) {
+      .summary-stats {
+        flex-direction: column;
+      }
+
+      .collection-cards {
+        grid-template-columns: 1fr;
+      }
+
+      .consistency-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+      }
+
+      .consistency-values {
+        align-self: flex-end;
+      }
+    }
   `
 })
 export class AdminUserDetailComponent extends BaseComponent implements OnInit {
@@ -882,11 +1295,16 @@ export class AdminUserDetailComponent extends BaseComponent implements OnInit {
   private readonly pubStore = inject(PubStore); // Pub data for enriching home pub info
   private readonly checkInService = inject(CheckInService); // User-specific check-in data
   private readonly adminCheckinService = inject(AdminCheckinService); // Admin check-in operations
+  private readonly collectionBrowserService = inject(CollectionBrowserService); // Cross-collection data inspection
 
   readonly username = signal<string | null>(null);
   readonly userCheckIns = signal<CheckIn[]>([]);
   readonly checkInsLoading = signal(false);
   readonly imageError = signal(false);
+  
+  // Cross-collection data
+  readonly crossCollectionData = signal<UserDataAcrossCollections | null>(null);
+  readonly crossCollectionLoading = signal(false);
   
   // Home pub editing state
   readonly editingHomePub = signal(false);
@@ -976,6 +1394,15 @@ export class AdminUserDetailComponent extends BaseComponent implements OnInit {
       uniquePubs,
       recentCheckIns: recentCheckIns.length
     };
+  });
+
+  // Cross-collection data computed properties
+  readonly collectionsWithDataCount = computed(() => {
+    const data = this.crossCollectionData();
+    if (!data) return 0;
+    return Object.keys(data.collections).filter(key => 
+      data.collections[key] && data.collections[key].length > 0
+    ).length;
   });
 
   override async ngOnInit(): Promise<void> {
@@ -1176,5 +1603,104 @@ export class AdminUserDetailComponent extends BaseComponent implements OnInit {
     } finally {
       this.updatingHomePub.set(false);
     }
+  }
+
+  // Cross-collection data methods
+  async loadCrossCollectionData(): Promise<void> {
+    const user = this.selectedUser();
+    if (!user) {
+      this.showError('No user selected');
+      return;
+    }
+
+    this.crossCollectionLoading.set(true);
+
+    try {
+      console.log(`[UserDetail] Loading cross-collection data for user: ${user.uid}`);
+      const data = await this.collectionBrowserService.getUserDataAcrossCollections(user.uid);
+      this.crossCollectionData.set(data);
+      console.log(`[UserDetail] Cross-collection data loaded:`, data);
+    } catch (error: any) {
+      console.error('[UserDetail] Failed to load cross-collection data:', error);
+      this.showError(`Failed to load cross-collection data: ${error?.message || 'Unknown error'}`);
+    } finally {
+      this.crossCollectionLoading.set(false);
+    }
+  }
+
+  viewCollectionDetails(collectionName: string, records: any[]): void {
+    // For now, just log the details. In the future, this could open a modal or navigate to a detail view
+    console.log(`[UserDetail] Collection ${collectionName} details:`, records);
+    this.showSuccess(`Collection details logged to console (${records.length} records)`);
+    
+    // Future enhancement: Open a modal with detailed table view
+    // this.openCollectionDetailModal(collectionName, records);
+  }
+
+  hasDataInconsistencies(user: any, data: UserDataAcrossCollections): boolean {
+    return (
+      (user.totalPoints || 0) !== data.summary.pointsTransactions.totalPoints ||
+      (user.verifiedPubCount || 0) !== data.summary.checkins.count ||
+      (user.badgeCount || 0) !== data.summary.earnedBadges.count
+    );
+  }
+
+  async fixUserDataInconsistencies(): Promise<void> {
+    const user = this.selectedUser();
+    const data = this.crossCollectionData();
+    
+    if (!user || !data) {
+      this.showError('No user or cross-collection data available');
+      return;
+    }
+
+    if (!confirm('🔧 Fix data inconsistencies?\n\nThis will update the user summary fields to match the calculated values from actual transactions and records.\n\nContinue?')) {
+      return;
+    }
+
+    try {
+      const updates: Partial<any> = {
+        totalPoints: data.summary.pointsTransactions.totalPoints,
+        verifiedPubCount: data.summary.checkins.count,
+        badgeCount: data.summary.earnedBadges.count,
+        totalPubCount: data.summary.checkins.count + (user.unverifiedPubCount || 0)
+      };
+
+      await this.userService.updateUser(user.uid, updates);
+      await this.userStore.refresh();
+      
+      // Refresh cross-collection data to show updated consistency
+      await this.loadCrossCollectionData();
+      
+      this.showSuccess('✅ Data inconsistencies fixed successfully');
+      
+    } catch (error: any) {
+      console.error('[UserDetail] Failed to fix data inconsistencies:', error);
+      this.showError(`Failed to fix data inconsistencies: ${error?.message || 'Unknown error'}`);
+    }
+  }
+
+  formatCollectionDate(timestamp: any): string {
+    if (!timestamp) return 'Unknown';
+    
+    let date: Date;
+    if (timestamp.toDate) {
+      date = timestamp.toDate();
+    } else if (timestamp instanceof Date) {
+      date = timestamp;
+    } else {
+      date = new Date(timestamp);
+    }
+
+    return new Intl.DateTimeFormat('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
+  }
+
+  getObjectKeys(obj: Record<string, any>): string[] {
+    return Object.keys(obj);
   }
 }

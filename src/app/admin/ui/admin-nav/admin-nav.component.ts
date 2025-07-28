@@ -55,7 +55,8 @@ export class AdminNavComponent extends BaseComponent {
     { label: 'Check-ins', route: '/admin/checkins' },
     { label: 'Feedback', route: '/admin/feedback' },
     { label: 'Carpets', route: '/admin/carpets' },
-    { label: 'Errors', route: '/admin/errors' }
+    { label: 'Errors', route: '/admin/errors' },
+    { label: 'Data Integrity', route: '/admin/data-integrity' }
   ];
 
   readonly isAdminRoute = computed(() => {

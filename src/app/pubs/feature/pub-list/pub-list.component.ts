@@ -169,7 +169,7 @@ export class PubListComponent extends BaseComponent implements OnInit {
   }
 
   hasAnyVisit(pubId: string): boolean {
-    return this.hasVerifiedCheckIn(pubId) || this.hasUnverifiedVisit(pubId);
+    return this.dataAggregatorService.hasVisitedPub(pubId);
   }
 
   // ✅ Development helper

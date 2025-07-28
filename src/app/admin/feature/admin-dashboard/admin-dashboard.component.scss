@@ -1554,3 +1554,33 @@
   border-radius: 4px;
   border-left: 3px solid var(--primary, #3b82f6);
 }
+
+/* Priority section styling */
+.priority-section {
+  border: 2px solid var(--primary);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 3rem;
+  background: linear-gradient(135deg, 
+    color-mix(in srgb, var(--primary) 5%, transparent), 
+    color-mix(in srgb, var(--primary) 2%, transparent)
+  );
+}
+
+.priority-section h2 {
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.admin-card.priority {
+  border: 2px solid var(--primary);
+  background: var(--background);
+  transform: none;
+  transition: all 0.2s ease;
+}
+
+.admin-card.priority:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px color-mix(in srgb, var(--primary) 25%, transparent);
+  border-color: var(--primary);
+}

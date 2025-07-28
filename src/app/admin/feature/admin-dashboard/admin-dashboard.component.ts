@@ -64,12 +64,52 @@ type StatData = {
         </div>
       </section>
 
-      <!-- Current Admin Tools -->
-      <section class="admin-sections">
-        <h2>Active Admin Tools</h2>
-        <p class="section-subtitle">These tools are currently available with real data</p>
+      <!-- Data Analysis & Investigation Tools (Priority) -->
+      <section class="admin-sections priority-section">
+        <h2>🔍 Data Analysis & Investigation Tools</h2>
+        <p class="section-subtitle">⭐ Essential tools for investigating data inconsistencies like mb84's case</p>
         <div class="sections-grid">
-          @for (section of activeSections; track section.id) {
+          @for (section of dataAnalysisTools; track section.id) {
+            <div class="admin-card active priority">
+              <a [routerLink]="section.route" class="card-link">
+                <div class="card-icon">{{ section.icon }}</div>
+                <h3>{{ section.title }}</h3>
+                <p>{{ section.description }}</p>
+                @if (section.stats) {
+                  <div class="card-stats">{{ section.stats }}</div>
+                }
+              </a>
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- Core Management Tools -->
+      <section class="admin-sections">
+        <h2>📋 Core Management Tools</h2>
+        <p class="section-subtitle">Standard admin operations for content and user management</p>
+        <div class="sections-grid">
+          @for (section of managementTools; track section.id) {
+            <div class="admin-card active">
+              <a [routerLink]="section.route" class="card-link">
+                <div class="card-icon">{{ section.icon }}</div>
+                <h3>{{ section.title }}</h3>
+                <p>{{ section.description }}</p>
+                @if (section.stats) {
+                  <div class="card-stats">{{ section.stats }}</div>
+                }
+              </a>
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- System & Development Tools -->
+      <section class="admin-sections">
+        <h2>🛠️ System & Development Tools</h2>
+        <p class="section-subtitle">Technical tools for monitoring and development</p>
+        <div class="sections-grid">
+          @for (section of systemTools; track section.id) {
             <div class="admin-card active">
               <a [routerLink]="section.route" class="card-link">
                 <div class="card-icon">{{ section.icon }}</div>
@@ -251,17 +291,48 @@ export class AdminDashboardComponent {
 
   readonly isDevMode = isDevMode;
 
-  // Active admin tools with real data
-  readonly activeSections: AdminSection[] = [
+  // Data Analysis & Investigation Tools (Priority section)
+  readonly dataAnalysisTools: AdminSection[] = [
+    {
+      id: 'data-integrity',
+      title: '🔍 Cross-Collection Data Analysis',
+      description: '⭐ Find data inconsistencies, orphaned records, and summary mismatches',
+      route: '/admin/data-integrity',
+      icon: '🔍',
+      status: 'active',
+      stats: '📊 Essential for data reconciliation - START HERE'
+    },
+    {
+      id: 'points-transactions',
+      title: '💰 Points Transactions Browser',
+      description: '⭐ Browse all points transactions with user name filtering',
+      route: '/admin/points-transactions',
+      icon: '💰',
+      status: 'active',
+      stats: '🔍 Recently improved - filter by display name'
+    },
+    {
+      id: 'checkins-data',
+      title: '🍻 Check-ins Data Browser',
+      description: 'Advanced check-ins analysis with pub enrichment and export',
+      route: '/admin/checkins-data',
+      icon: '🍻',
+      status: 'active',
+      stats: '📈 Enhanced viewer with bulk operations'
+    },
     {
       id: 'users',
-      title: 'User Management',
-      description: 'View and manage all user accounts',
+      title: '👥 User Detail Browser',
+      description: 'View individual user profiles with cross-collection data',
       route: '/admin/users',
       icon: '👥',
       status: 'active',
-      stats: `${this.siteStats().allTime.users} users - Real data from UserStore`
-    },
+      stats: `${this.siteStats().allTime.users} users - detailed investigation tool`
+    }
+  ];
+
+  // Core Management Tools
+  readonly managementTools: AdminSection[] = [
     {
       id: 'missions',
       title: 'Missions',
@@ -306,7 +377,11 @@ export class AdminDashboardComponent {
       icon: '📸',
       status: 'active',
       stats: 'Photo management system'
-    },
+    }
+  ];
+
+  // System & Development Tools
+  readonly systemTools: AdminSection[] = [
     {
       id: 'errors',
       title: 'Error Logs',

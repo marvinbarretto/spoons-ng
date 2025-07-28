@@ -5,6 +5,7 @@ import { TableColumn } from './data-table.model';
 import { ChipUserComponent, UserChipData } from '../chips/chip-user/chip-user.component';
 import { ViewportService } from '../../data-access/viewport.service';
 import { IconComponent } from '../icon/icon.component';
+import { UserDisplayPipe } from '../../../shared/pipes/user-display.pipe';
 
 export type SortDirection = 'asc' | 'desc' | null;
 export type SortState = {

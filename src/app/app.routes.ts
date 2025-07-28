@@ -193,6 +193,33 @@ export const appRoutes: Routes = [
     data: { shell: 'feature' }
   },
   {
+    path: 'admin/data-integrity',
+    title: 'Data Integrity Analysis',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./admin/feature/data-integrity/data-integrity.component')
+        .then(m => m.DataIntegrityComponent),
+    data: { shell: 'feature' }
+  },
+  {
+    path: 'admin/points-transactions',
+    title: 'Points Transactions',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./admin/feature/points-transactions/points-transactions.component')
+        .then(m => m.AdminPointsTransactionsComponent),
+    data: { shell: 'feature' }
+  },
+  {
+    path: 'admin/checkins-data',
+    title: 'Check-ins Data Browser',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./admin/feature/checkins-data/checkins-data.component')
+        .then(m => m.AdminCheckinsDataComponent),
+    data: { shell: 'feature' }
+  },
+  {
     path: 'dev/components',
     title: 'Component Showcase',
     canActivate: [authGuard],

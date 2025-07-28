@@ -182,10 +182,10 @@ export class DataAggregatorService {
   }
 
   /**
-   * Check if user has visited a specific pub
+   * Check if user has visited a specific pub (verified OR manual)
    * @param pubId - Pub ID to check
    * @param userId - User ID (defaults to current user)
-   * @returns True if user has visited this pub
+   * @returns True if user has visited this pub (check-in OR manual visit)
    */
   hasVisitedPub(pubId: string, userId?: string): boolean {
     const targetUserId = userId || this.authStore.user()?.uid;
@@ -201,14 +201,26 @@ export class DataAggregatorService {
       return false;
     }
 
+    // Check verified visits (check-ins)
     const checkins = this.checkinStore.checkins();
-    const hasVisited = checkins.some(checkin =>
+    const hasVerifiedVisit = checkins.some(checkin =>
       checkin.userId === targetUserId && checkin.pubId === pubId
     );
+
+    // Check manual visits (only for current user)
+    let hasManualVisit = false;
+    if (targetUserId === this.authStore.user()?.uid) {
+      const user = this.userStore.user();
+      hasManualVisit = user?.manuallyAddedPubIds?.includes(pubId) || false;
+    }
+
+    const hasVisited = hasVerifiedVisit || hasManualVisit;
 
     this.debug.extreme('[DataAggregator] Pub visit check result', {
       pubId,
       userId: targetUserId,
+      hasVerifiedVisit,
+      hasManualVisit,
       hasVisited,
       totalCheckins: checkins.length
     });
