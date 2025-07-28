@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.114](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.113...v0.0.114) (2025-07-28)
+
+
+### Features
+
+* [Home] New user widget ([892edf6](https://github.com/marvinbarretto/spoons-ng/commit/892edf6c07b003df711628d55adae339e1fa912b))
+* [PubList] UI work, wip, bit more slick ([aa678b1](https://github.com/marvinbarretto/spoons-ng/commit/aa678b165b28591688549e3410bb343a635f53e8))
+
+
+### Bug Fixes
+
+* [LocationWidget] handle when no location ([d7368be](https://github.com/marvinbarretto/spoons-ng/commit/d7368be94e66ea8382ec44aa64598e1ef61566dc))
+
 ### [0.0.113](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.112...v0.0.113) (2025-07-27)
 
 
