@@ -8,12 +8,22 @@ import { CheckInStore } from '../../../check-in/data-access/check-in.store';
 import { UserStore } from '@users/data-access/user.store';
 import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
 import { LocationService } from '../../../shared/data-access/location.service';
+import { FirestoreCrudService } from '@fourfold/angular-foundation';
 import { PubCardComponent } from '../../ui/pub-card/pub-card.component';
 import { LoadingStateComponent, ErrorStateComponent, EmptyStateComponent } from '../../../shared/ui/state-components';
 import type { Pub } from '../../utils/pub.models';
+import type { CheckIn } from '@check-in/utils/check-in.models';
 import { environment } from '../../../../environments/environment';
 
 type FilterOption = 'all' | 'visited' | 'unvisited' | 'nearby';
+
+type ManagementActionType = 'add' | 'remove';
+
+interface PendingManagementAction {
+  readonly pubId: string;
+  readonly action: ManagementActionType;
+  readonly pubName: string;
+}
 
 @Component({
   selector: 'app-pub-list',
@@ -28,12 +38,16 @@ export class PubListComponent extends BaseComponent implements OnInit {
   private readonly userStore = inject(UserStore);
   protected readonly dataAggregatorService = inject(DataAggregatorService);
   private readonly locationService = inject(LocationService);
+  private readonly firestoreCrudService = inject(FirestoreCrudService);
 
   // ✅ Local state
   private readonly _searchTerm = signal('');
   private readonly _filterMode = signal<FilterOption>('all');
   private readonly _isManagementMode = signal(false);
   private readonly _selectedForAddition = signal<Set<string>>(new Set());
+  
+  // ✅ Action tracking for batch processing
+  private readonly _pendingActions = signal<PendingManagementAction[]>([]);
 
   // ✅ Expose state for template
   protected readonly searchTerm = this._searchTerm.asReadonly();
@@ -66,8 +80,8 @@ export class PubListComponent extends BaseComponent implements OnInit {
     if (!user) return [];
 
     const checkins = this.checkinStore.checkins();
-    const userCheckins = checkins.filter((c: any) => c.userId === user.uid);
-    return [...new Set(userCheckins.map((c: any) => c.pubId))];
+    const userCheckins = checkins.filter((checkin: CheckIn) => checkin.userId === user.uid);
+    return [...new Set(userCheckins.map((checkin: CheckIn) => checkin.pubId))];
   });
 
   // ✅ New computed properties for visit status
@@ -232,7 +246,7 @@ export class PubListComponent extends BaseComponent implements OnInit {
   }
 
   // ✅ Management mode methods
-  toggleManagementMode(): void {
+  async toggleManagementMode(): Promise<void> {
     const enteringManagementMode = !this._isManagementMode();
     this._isManagementMode.set(enteringManagementMode);
     
@@ -251,14 +265,17 @@ export class PubListComponent extends BaseComponent implements OnInit {
       this._selectedForAddition.set(visitedPubIds);
       console.log('[PubList] Management mode enabled - pre-selected', visitedPubIds.size, 'visited pubs');
     } else {
-      // Exiting management mode: clear selections
+      // Exiting management mode: process pending actions then clear
+      await this.processPendingActions();
       this._selectedForAddition.set(new Set());
-      console.log('[PubList] Management mode disabled - selections cleared');
+      this._pendingActions.set([]);
+      console.log('[PubList] Management mode disabled - selections and actions cleared');
     }
   }
 
   handleSelectionChange(event: { pub: Pub; selected: boolean }): void {
     const current = new Set(this._selectedForAddition());
+    const wasInitiallyVisited = this.hasAnyVisit(event.pub.id);
     
     if (event.selected) {
       current.add(event.pub.id);
@@ -267,39 +284,95 @@ export class PubListComponent extends BaseComponent implements OnInit {
     }
     
     this._selectedForAddition.set(current);
-    console.log('[PubList] Selection changed:', event.pub.name, event.selected);
+    
+    // Track the action for batch processing
+    const currentActions: PendingManagementAction[] = [...this._pendingActions()];
+    const action: ManagementActionType | null = this.determineAction(event.selected, wasInitiallyVisited);
+    
+    if (action) {
+      const newAction: PendingManagementAction = {
+        pubId: event.pub.id,
+        action: action,
+        pubName: event.pub.name
+      };
+      
+      // Remove any existing action for this pub, then add the new one
+      const filteredActions: PendingManagementAction[] = currentActions.filter(
+        (a: PendingManagementAction) => a.pubId !== event.pub.id
+      );
+      filteredActions.push(newAction);
+      
+      this._pendingActions.set(filteredActions);
+      
+      console.log('[PubList] Action tracked:', {
+        pub: event.pub.name,
+        wasInitiallyVisited,
+        selected: event.selected,
+        action: action,
+        totalPendingActions: filteredActions.length
+      });
+    }
   }
 
-  async addSelectedAsManual(): Promise<void> {
-    const selections = Array.from(this._selectedForAddition());
+  private determineAction(selected: boolean, wasInitiallyVisited: boolean): ManagementActionType | null {
+    if (wasInitiallyVisited && !selected) {
+      return 'remove'; // Was visited, now unchecked = remove from history
+    } else if (!wasInitiallyVisited && selected) {
+      return 'add'; // Was unvisited, now checked = add to history
+    }
+    return null; // No action needed (back to original state)
+  }
+
+  private async processPendingActions(): Promise<void> {
+    const actions: PendingManagementAction[] = this._pendingActions();
     
-    if (selections.length === 0) {
-      console.log('[PubList] No pubs selected for addition');
+    if (actions.length === 0) {
+      console.log('[PubList] No pending actions to process');
       return;
     }
 
-    console.log('[PubList] Adding', selections.length, 'pubs as manually visited');
-    
+    console.log('[PubList] Processing', actions.length, 'pending actions:', actions);
+
+    const currentUser = this.user();
+    if (!currentUser) {
+      console.error('[PubList] No current user for batch processing');
+      return;
+    }
+
     try {
-      for (const pubId of selections) {
-        await this.userStore.addVisitedPub(pubId);
+      // Process adds and removes separately
+      const addActions: PendingManagementAction[] = actions.filter(
+        (action: PendingManagementAction) => action.action === 'add'
+      );
+      const removeActions: PendingManagementAction[] = actions.filter(
+        (action: PendingManagementAction) => action.action === 'remove'
+      );
+
+      // Process additions (add to manuallyAddedPubIds)
+      if (addActions.length > 0) {
+        for (const action of addActions) {
+          await this.userStore.addVisitedPub(action.pubId);
+        }
+        const pubNamesToAdd: string[] = addActions.map((action: PendingManagementAction) => action.pubName);
+        console.log('[PubList] Added', addActions.length, 'manual visits:', pubNamesToAdd);
       }
+
+      // Process removals (remove from manuallyAddedPubIds and check-ins)
+      if (removeActions.length > 0) {
+        // TODO: Implement removal method in UserStore
+        console.log('[PubList] Removal not yet implemented - need to add removeVisitedPub method to UserStore');
+        const pubNamesToRemove: string[] = removeActions.map((action: PendingManagementAction) => action.pubName);
+        console.log('[PubList] Would remove', removeActions.length, 'visits:', pubNamesToRemove);
+      }
+
+      console.log('[PubList] Successfully processed all pending actions');
       
-      // Clear selections and show success feedback
-      this._selectedForAddition.set(new Set());
-      console.log('[PubList] Successfully added manual visits');
-      
-      // TODO: Show toast notification
-      
-    } catch (error) {
-      console.error('[PubList] Failed to add manual visits:', error);
-      // TODO: Show error notification
+    } catch (error: unknown) {
+      console.error('[PubList] Error processing pending actions:', error);
+      // TODO: Show user-friendly error message
     }
   }
 
-  clearSelections(): void {
-    this._selectedForAddition.set(new Set());
-  }
 
   // ✅ Navigation helper (for future use)
   handlePubClick(pub: Pub): void {

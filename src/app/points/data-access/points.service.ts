@@ -1,12 +1,14 @@
 // src/app/points/data-access/points.service.ts
 import { Injectable } from '@angular/core';
-import { POINTS_CONFIG } from '../utils/points.config';
-import type { PointsBreakdown, CheckInPointsData, PointsTransaction } from '../utils/points.models';
-import { FirestoreCrudService } from '@shared/data-access/firestore-crud.service';
-import { where } from 'firebase/firestore';
-import { calculateCheckInPoints, type CheckInPointsInput } from '@check-in/utils/points-calculation.utils';
+import {
+  calculateCheckInPoints,
+  type CheckInPointsInput,
+} from '@check-in/utils/points-calculation.utils';
+import { FirestoreCrudService } from '@fourfold/angular-foundation';
 import type { Pub } from '@pubs/utils/pub.models';
-
+import { where } from 'firebase/firestore';
+import { POINTS_CONFIG } from '../utils/points.config';
+import type { CheckInPointsData, PointsBreakdown, PointsTransaction } from '../utils/points.models';
 
 /**
  * PointsService
@@ -34,15 +36,19 @@ export class PointsService extends FirestoreCrudService<PointsTransaction> {
    * Calculate points for a check-in based on all factors
    * Now uses the shared utility function for consistent calculation
    */
-  calculateCheckInPoints(data: CheckInPointsData, checkInPub?: Pub, homePub?: Pub | null): PointsBreakdown {
+  calculateCheckInPoints(
+    data: CheckInPointsData,
+    checkInPub?: Pub,
+    homePub?: Pub | null
+  ): PointsBreakdown {
     const callId = Date.now();
     console.log(`🔄 [PointsService] === REGULAR CHECK-IN POINTS CALCULATION (${callId}) ===`);
     console.log(`🔄 [PointsService] Legacy data input (${callId}):`, data);
     console.log(`🔄 [PointsService] Pub data (${callId}):`, {
       checkInPub: checkInPub?.name || 'Missing',
-      homePub: homePub?.name || 'None set'
+      homePub: homePub?.name || 'None set',
     });
-    
+
     console.log(`🔄 [PointsService] Mapping to new shared utility format...`);
     // Map legacy CheckInPointsData to new CheckInPointsInput
     const input: CheckInPointsInput = {
@@ -53,15 +59,15 @@ export class PointsService extends FirestoreCrudService<PointsTransaction> {
       isHomePub: data.isHomePub,
       carpetConfirmed: data.carpetConfirmed,
       sharedSocial: data.sharedSocial,
-      currentStreak: data.currentStreak
+      currentStreak: data.currentStreak,
     };
-    
+
     console.log(`🔄 [PointsService] Calling SHARED UTILITY (same as admin!)...`);
     const result = calculateCheckInPoints(input);
-    
+
     console.log(`🔄 [PointsService] === REGULAR CHECK-IN RESULT (${callId}) ===`);
     console.log(`🔄 [PointsService] Points calculated by shared utility:`, result);
-    
+
     return result;
   }
 
@@ -77,7 +83,7 @@ export class PointsService extends FirestoreCrudService<PointsTransaction> {
       bonus: 0,
       multiplier: 1,
       total: points,
-      reason: `${points} points for ${action}`
+      reason: `${points} points for ${action}`,
     };
   }
 
@@ -123,7 +129,6 @@ export class PointsService extends FirestoreCrudService<PointsTransaction> {
     });
   }
 
-
   /**
    * Update user's total points in their profile
    * Creates document if it doesn't exist (for guest users)
@@ -132,11 +137,15 @@ export class PointsService extends FirestoreCrudService<PointsTransaction> {
     try {
       // First try to update existing document
       await this.updateDoc(`users/${userId}`, { totalPoints: newTotal });
-      console.log(`[PointsService] ✅ Updated existing user ${userId.slice(0, 8)} totalPoints to ${newTotal}`);
+      console.log(
+        `[PointsService] ✅ Updated existing user ${userId.slice(0, 8)} totalPoints to ${newTotal}`
+      );
     } catch (error: any) {
       // If document doesn't exist, create it (for guest users)
       if (error?.message?.includes('No document to update')) {
-        console.log(`[PointsService] 📝 Creating user document for ${userId.slice(0, 8)} with totalPoints: ${newTotal}`);
+        console.log(
+          `[PointsService] 📝 Creating user document for ${userId.slice(0, 8)} with totalPoints: ${newTotal}`
+        );
         try {
           await this.setDoc(`users/${userId}`, {
             totalPoints: newTotal,
@@ -146,15 +155,23 @@ export class PointsService extends FirestoreCrudService<PointsTransaction> {
             isAnonymous: true,
             photoURL: null,
             joinedAt: new Date().toISOString(),
-            realUser: false // Mark as guest user for leaderboard filtering
+            realUser: false, // Mark as guest user for leaderboard filtering
           });
-          console.log(`[PointsService] ✅ Created user document for guest ${userId.slice(0, 8)} with ${newTotal} points`);
+          console.log(
+            `[PointsService] ✅ Created user document for guest ${userId.slice(0, 8)} with ${newTotal} points`
+          );
         } catch (createError) {
-          console.error(`[PointsService] ❌ Failed to create user document for ${userId.slice(0, 8)}:`, createError);
+          console.error(
+            `[PointsService] ❌ Failed to create user document for ${userId.slice(0, 8)}:`,
+            createError
+          );
           throw createError;
         }
       } else {
-        console.error(`[PointsService] ❌ Failed to update totalPoints for user ${userId.slice(0, 8)}:`, error);
+        console.error(
+          `[PointsService] ❌ Failed to update totalPoints for user ${userId.slice(0, 8)}:`,
+          error
+        );
         throw error;
       }
     }
@@ -172,16 +189,19 @@ export class PointsService extends FirestoreCrudService<PointsTransaction> {
   // 🔧 PRIVATE HELPERS
   // ===================================
 
-
   /**
    * Get display name for quality tier
    */
   private getQualityTierDisplayName(tier: 'standard' | 'high' | 'exceptional' | 'perfect'): string {
     switch (tier) {
-      case 'perfect': return 'perfect';
-      case 'exceptional': return 'exceptional';
-      case 'high': return 'high-quality';
-      default: return 'standard';
+      case 'perfect':
+        return 'perfect';
+      case 'exceptional':
+        return 'exceptional';
+      case 'high':
+        return 'high-quality';
+      default:
+        return 'standard';
     }
   }
 }

@@ -1,33 +1,99 @@
 
-@use '../../../shared/styles/auth-layout' as auth;
+// ===== LOGIN COMPONENT - Content Only =====
+// Layout handled by FullScreenShell, this component focuses on content styling
 
 .login-container {
-  @include auth.auth-container;
-
-  /* Login-specific background */
-  background-image:
-    linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.8)),
-    url('/assets/carpets/red-lion.jpg');
+  /* Use semantic theme colors with darker gradient for auth contrast */
+  background: linear-gradient(
+    135deg,
+    var(--background-darker) 0%,
+    var(--background-darkest) 100%
+  );
+  
+  /* Full height to work with shell layout */
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .login-header {
-  @include auth.auth-header;
+  flex-shrink: 0;
+  text-align: center;
+  padding: 2rem 1.5rem 1rem;
+  position: relative;
+
+  @media (max-width: 768px) {
+    padding: 1.5rem 1rem 1rem;
+  }
 }
 
 .back-button {
-  @include auth.auth-back-button;
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 10;
+
+  /* Use theme colors for styling */
+  background: var(--background-lighter);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 0;
+  outline: none;
+  color: var(--text);
+
+  &:hover {
+    background: var(--background-lightest);
+    border-color: var(--border-strong);
+    transform: scale(1.05);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
 }
 
 .logo-container {
-  @include auth.auth-logo;
+  margin-bottom: 1.5rem;
+
+  img {
+    width: 80px;
+    height: 80px;
+    filter: drop-shadow(0 2px 4px var(--shadow));
+  }
 }
 
 .login-content {
-  @include auth.auth-content;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  min-height: 0; /* Allow flex item to shrink */
 }
 
 .login-actions {
-  @include auth.auth-actions;
+  flex-shrink: 0; /* Never shrink */
+  padding: 1.5rem;
+
+  /* Use theme colors for subtle separation */
+  background: var(--background-lighter);
+  border-top: 1px solid var(--border);
+
+  /* Ensure actions are thumb-friendly on mobile */
+  @media (max-width: 768px) {
+    padding: 1rem 1rem 1.5rem;
+  }
 }
 
     .login-title {

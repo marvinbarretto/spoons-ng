@@ -8,12 +8,12 @@ import { CheckInStore } from '../../check-in/data-access/check-in.store';
 import { SsrPlatformService } from '@fourfold/angular-foundation';
 
 import { PubCardComponent } from '../../pubs/ui/pub-card/pub-card.component';
-import { LoadingStateComponent, ErrorStateComponent, EmptyStateComponent, LocationStateComponent } from '../../shared/ui/state-components';
+import { LoadingStateComponent, EmptyStateComponent, LocationStateComponent } from '../../shared/ui/state-components';
 import type { Pub } from '../../pubs/utils/pub.models';
 
 @Component({
   selector: 'app-nearest-pub',
-  imports: [PubCardComponent, LoadingStateComponent, ErrorStateComponent, EmptyStateComponent, LocationStateComponent],
+  imports: [PubCardComponent, LoadingStateComponent, EmptyStateComponent, LocationStateComponent],
   template: `
     <div class="widget-container">
       @if (loading()) {

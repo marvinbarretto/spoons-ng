@@ -74,30 +74,6 @@
     </div>
   </section>
 
-  <!-- ✅ Bulk actions bar (when selections made) -->
-  @if (isManagementMode() && selectedCount() > 0) {
-    <section class="bulk-actions-bar">
-      <span class="selection-count">
-        {{ selectedCount() }} pub{{ selectedCount() !== 1 ? 's' : '' }} selected
-      </span>
-      <div class="bulk-actions">
-        <button
-          class="action-btn action-btn--secondary"
-          (click)="clearSelections()"
-          type="button"
-        >
-          Clear
-        </button>
-        <button
-          class="action-btn action-btn--primary"
-          (click)="addSelectedAsManual()"
-          type="button"
-        >
-          Add as Visited
-        </button>
-      </div>
-    </section>
-  }
 
   <!-- ✅ Main content area with better space usage -->
   <section class="pub-list-container">

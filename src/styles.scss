@@ -24,7 +24,11 @@ body {
   // ✅ SIMPLIFIED: Clean theme tokens without fallbacks
   background-color: var(--background);
   color: var(--text);
-  min-height: 100vh;
+  
+  // ✅ Dynamic viewport height for mobile browser toolbar handling
+  min-height: 100vh; /* Fallback for older browsers */
+  min-height: 100svh; /* Small viewport height (when toolbar is visible) */
+  min-height: 100dvh; /* Dynamic viewport height (preferred) */
 
   // ✅ Enhanced typography and UX
   line-height: 1.6;

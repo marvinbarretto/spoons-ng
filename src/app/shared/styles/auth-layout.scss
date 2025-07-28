@@ -3,8 +3,11 @@
 
 // Main container mixin - handles viewport and safe areas
 @mixin auth-container {
-  min-height: 100vh;
-  min-height: 100dvh; // Dynamic viewport height for mobile browsers
+  // ✅ Progressive viewport height enhancement for mobile browser toolbars
+  min-height: 100vh; /* Fallback for older browsers */
+  min-height: 100svh; /* Small viewport height (when toolbar is visible) */
+  min-height: 100dvh; /* Dynamic viewport height (preferred) */
+  
   display: flex;
   flex-direction: column;
   position: relative;

@@ -19,8 +19,22 @@ import { FeedbackButtonComponent } from '../../../feedback/ui/feedback-button/fe
   styles: `
     .full-screen-shell {
       position: relative;
-      min-height: 100vh;
       isolation: isolate;
+      
+      /* Progressive viewport height enhancement for mobile browser toolbars */
+      min-height: 100vh; /* Fallback for older browsers */
+      min-height: 100svh; /* Small viewport height (when toolbar is visible) */
+      min-height: 100dvh; /* Dynamic viewport height (preferred) */
+      
+      /* Safe area handling for mobile devices with notches */
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+      
+      /* Flexbox layout for proper content flow */
+      display: flex;
+      flex-direction: column;
     }
   `
 })

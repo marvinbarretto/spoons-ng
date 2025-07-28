@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
-import { FirestoreCrudService } from '../../shared/data-access/firestore-crud.service';
-import { Feedback, CreateFeedbackInput } from '../utils/feedback.model';
-import { where, orderBy } from '@angular/fire/firestore';
+import { orderBy, where } from '@angular/fire/firestore';
+import { FirestoreCrudService } from '@fourfold/angular-foundation';
 import { nanoid } from 'nanoid';
+import { CreateFeedbackInput, Feedback } from '../utils/feedback.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class FeedbackService extends FirestoreCrudService<Feedback> {
   protected override path = 'feedback';
@@ -30,13 +30,13 @@ export class FeedbackService extends FirestoreCrudService<Feedback> {
         currentUrl: window.location.href,
         viewport: {
           width: window.innerWidth,
-          height: window.innerHeight
+          height: window.innerHeight,
         },
-        timestamp: new Date()
+        timestamp: new Date(),
       },
       status: 'pending',
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     await this.create(feedbackData);
@@ -66,7 +66,7 @@ export class FeedbackService extends FirestoreCrudService<Feedback> {
   ): Promise<void> {
     const updateData: Partial<Feedback> = {
       status,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     if (adminNotes !== undefined) {
@@ -75,5 +75,4 @@ export class FeedbackService extends FirestoreCrudService<Feedback> {
 
     return this.update(feedbackId, updateData);
   }
-
 }

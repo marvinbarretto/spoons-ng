@@ -1,27 +1,46 @@
 @use 'styles/index' as *;
-@use '../../../shared/styles/auth-layout' as auth;
+
+// ===== REGISTRATION FLOW COMPONENT - Content Only =====
+// Layout handled by FullScreenShell, this component focuses on content styling
 
 .registration-flow-container {
-  @include auth.auth-container;
+  /* Use semantic theme colors with darker gradient for form contrast */
+  background: linear-gradient(135deg, var(--background-darker) 0%, var(--background-darkest) 100%);
 
-  // Carpet background with dark overlay (like splash page)
-  background-image:
-    linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)),
-    url('/assets/carpets/moon-under-water-watford.jpg');
+  /* Full height to work with shell layout */
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 // Step Content
 .step-content-container {
-  @include auth.auth-content;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  min-height: 0; /* Allow flex item to shrink */
   align-items: center;
   justify-content: center;
   padding: 0.5rem;
 }
 
 .step-content {
-  @include auth.auth-form;
+  /* Use theme colors for form styling */
+  background: var(--background-lighter);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
   max-width: 400px;
   margin: 0 auto;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
 }
 
 .step-header {
@@ -51,7 +70,7 @@
 
 // Email Form Container
 .email-form-container {
-  @include auth.glassmorphism-container(12px);
+  @include glassmorphism-container(12px);
   margin-top: 1rem;
   padding: 1rem;
   border-radius: 1rem;
@@ -183,7 +202,8 @@ label {
   line-height: 1;
   position: absolute;
   right: 1rem;
-  top: 0; bottom: 0;
+  top: 0;
+  bottom: 0;
 
   &:hover:not(:disabled) {
     color: var(--text);
@@ -504,7 +524,6 @@ label {
 
 // Navigation
 .step-navigation {
-  @include auth.auth-actions;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -541,9 +560,6 @@ label {
     font-size: 3rem;
   }
 }
-
-// Apply auth layout animations
-@include auth.auth-animations;
 
 // Custom step transition animation
 .step-content {

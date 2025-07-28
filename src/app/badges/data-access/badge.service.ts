@@ -1,13 +1,12 @@
 // src/app/badges/data-access/badge.service.ts
 import { Injectable } from '@angular/core';
-import { where, orderBy } from '@angular/fire/firestore';
-import { FirestoreCrudService } from '../../shared/data-access/firestore-crud.service';
-import type { Badge, EarnedBadge } from '../utils/badge.model';
+import { orderBy, where } from '@angular/fire/firestore';
+import { FirestoreCrudService } from '@fourfold/angular-foundation';
 import type { UserBadgeSummary } from '../../users/utils/user.model';
+import type { Badge, EarnedBadge } from '../utils/badge.model';
 
 @Injectable({ providedIn: 'root' })
 export class BadgeService extends FirestoreCrudService<Badge> {
-
   // ✅ Set the path for badge definitions
   protected path = 'badges';
 
@@ -19,7 +18,10 @@ export class BadgeService extends FirestoreCrudService<Badge> {
     console.log('[BadgeService] getBadges - fetching from badges collection');
     const badges = await this.getAll();
     console.log('[BadgeService] getBadges result:', badges.length, 'badges found');
-    console.log('[BadgeService] Badge IDs:', badges.map(b => b.id));
+    console.log(
+      '[BadgeService] Badge IDs:',
+      badges.map(b => b.id)
+    );
     return badges;
   }
 
@@ -108,7 +110,9 @@ export class BadgeService extends FirestoreCrudService<Badge> {
       );
 
       const hasBadge = existingBadges.length > 0;
-      console.log(`[BadgeService] User ${userId} ${hasBadge ? 'has' : 'does not have'} badge ${badgeId}`);
+      console.log(
+        `[BadgeService] User ${userId} ${hasBadge ? 'has' : 'does not have'} badge ${badgeId}`
+      );
       return hasBadge;
     } catch (error) {
       console.error('[BadgeService] Error checking user badge:', error);
@@ -137,10 +141,7 @@ export class BadgeService extends FirestoreCrudService<Badge> {
   // USER SUMMARY UPDATES
   // ===================================
 
-  async updateUserBadgeSummary(
-    userId: string,
-    summary: UserBadgeSummary
-  ): Promise<void> {
+  async updateUserBadgeSummary(userId: string, summary: UserBadgeSummary): Promise<void> {
     console.log('[BadgeService] Updating user badge summary:', { userId, summary });
     await this.updateDoc(`users/${userId}`, summary);
   }
@@ -162,10 +163,13 @@ export class BadgeService extends FirestoreCrudService<Badge> {
     console.log('[BadgeService] getBadgeAwardCounts');
     const allEarned = await this.getAllEarnedBadges();
 
-    return allEarned.reduce((counts, earned) => {
-      counts[earned.badgeId] = (counts[earned.badgeId] || 0) + 1;
-      return counts;
-    }, {} as Record<string, number>);
+    return allEarned.reduce(
+      (counts, earned) => {
+        counts[earned.badgeId] = (counts[earned.badgeId] || 0) + 1;
+        return counts;
+      },
+      {} as Record<string, number>
+    );
   }
 
   async getEarnedBadgesForUserSince(userId: string, timestamp: number): Promise<EarnedBadge[]> {
@@ -188,10 +192,7 @@ export class BadgeService extends FirestoreCrudService<Badge> {
   async getBadgeByName(name: string): Promise<Badge | null> {
     console.log('[BadgeService] getBadgeByName:', name);
 
-    const badges = await this.getDocsWhere<Badge>(
-      'badges',
-      where('name', '==', name)
-    );
+    const badges = await this.getDocsWhere<Badge>('badges', where('name', '==', name));
 
     return badges.length > 0 ? badges[0] : null;
   }

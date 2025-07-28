@@ -1,21 +1,26 @@
-@use '../../../shared/styles/auth-layout' as auth;
+// ===== SPLASH COMPONENT - Content Only =====
+// Layout handled by FullScreenShell, this component focuses on content styling
 
 .splash-container {
-  @include auth.auth-container;
-
-  /* Use theme background with subtle gradient */
+  /* Use semantic theme colors with subtle gradient */
   background: linear-gradient(
     135deg,
     var(--background) 0%,
     var(--background-lighter) 100%
   );
-  min-height: 100vh;
+  
+  /* Full height to work with shell layout */
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
 
 .splash-content {
-  @include auth.auth-content;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  min-height: 0; /* Allow flex item to shrink */
 }
 
 .hero-section {
@@ -24,10 +29,11 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 3rem 1.5rem;
+  padding: 2rem 1.5rem;
   max-width: 500px;
   margin: 0 auto;
   flex: 1;
+  min-height: 0; /* Allow flex shrinking */
 }
 
 .logo-container {
@@ -37,9 +43,9 @@
 .beer-icon {
   font-size: 4rem;
   filter: drop-shadow(0 2px 4px var(--shadow));
+  /* Use shared animation instead of local keyframe */
   animation: gentle-bounce 2s ease-in-out infinite;
 }
-
 
 .hero-title {
   font-size: clamp(2rem, 5vw, 2.75rem);
@@ -59,12 +65,12 @@
 }
 
 .splash-actions {
-  @include auth.auth-actions;
-
+  flex-shrink: 0; /* Never shrink */
+  padding: 1.5rem;
+  
   /* Clean styling using theme colors */
   background: var(--background-lighter);
   border-top: 1px solid var(--border);
-  padding: 2rem 1.5rem;
 }
 
 .auth-buttons {
@@ -129,18 +135,26 @@
   text-decoration-color: var(--primary-hover);
 }
 
-/* Responsive adjustments */
+/* Mobile-specific content adjustments */
 @media (max-width: 768px) {
   .hero-section {
-    padding: 2rem 1rem;
+    padding: 1rem 1rem;
   }
 
   .beer-icon {
     font-size: 3rem;
   }
 
+  .logo-container {
+    margin-bottom: 1rem;
+  }
+
+  .hero-title {
+    margin-bottom: 0.75rem;
+  }
+
   .splash-actions {
-    padding: 1.5rem 1rem;
+    padding: 1.25rem 1rem;
   }
 
   .auth-buttons {
@@ -148,12 +162,13 @@
   }
 }
 
-/* Animation for smooth entrance */
+/* Content-specific animations using shared keyframes */
 .hero-section {
+  /* Use shared slideInUp animation */
   animation: slideInUp 0.8s ease-out;
 }
 
 .splash-actions {
+  /* Use shared slideInUp animation with delay */
   animation: slideInUp 0.8s ease-out 0.2s both;
 }
-

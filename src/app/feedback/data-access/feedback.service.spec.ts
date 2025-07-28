@@ -1,15 +1,18 @@
 import { TestBed } from '@angular/core/testing';
 import { Firestore } from '@angular/fire/firestore';
+import { FirestoreCrudService } from '@fourfold/angular-foundation';
+import {
+  createFirebaseMetricsMock,
+  createFirestoreMock,
+} from '../../shared/testing/firebase.mocks';
+import { CreateFeedbackInput, Feedback, FeedbackType } from '../utils/feedback.model';
 import { FeedbackService } from './feedback.service';
-import { FirestoreCrudService } from '../../shared/data-access/firestore-crud.service';
-import { Feedback, CreateFeedbackInput, FeedbackType } from '../utils/feedback.model';
-import { createFirestoreMock, createFirebaseMetricsMock } from '../../shared/testing/firebase.mocks';
 
 // Mock FirestoreCrudService
 const mockFirestoreCrudService = {
   create: jest.fn(),
   getDocsWhere: jest.fn(),
-  update: jest.fn()
+  update: jest.fn(),
 };
 
 describe('FeedbackService', () => {
@@ -22,7 +25,7 @@ describe('FeedbackService', () => {
   const mockCreateFeedbackInput: CreateFeedbackInput = {
     type: 'bug' as FeedbackType,
     message: 'Test feedback message',
-    screenshot: new Blob(['fake screenshot'], { type: 'image/png' })
+    screenshot: new Blob(['fake screenshot'], { type: 'image/png' }),
   };
 
   beforeEach(() => {
@@ -30,8 +33,8 @@ describe('FeedbackService', () => {
       providers: [
         { provide: Firestore, useValue: createFirestoreMock() },
         { provide: 'FirebaseMetricsService', useValue: createFirebaseMetricsMock() },
-        { provide: FirestoreCrudService, useValue: mockFirestoreCrudService }
-      ]
+        { provide: FirestoreCrudService, useValue: mockFirestoreCrudService },
+      ],
     });
 
     service = TestBed.inject(FeedbackService);
@@ -62,33 +65,35 @@ describe('FeedbackService', () => {
       expect(mockFirestoreCrudService.create).toHaveBeenCalledTimes(1);
 
       const createdFeedback = mockFirestoreCrudService.create.mock.calls[0][0] as Feedback;
-      expect(createdFeedback).toEqual(expect.objectContaining({
-        id: expect.any(String),
-        userId: mockUserId,
-        userEmail: mockUserEmail,
-        userDisplayName: mockUserDisplayName,
-        type: 'bug',
-        message: 'Test feedback message',
-        screenshotUrl: 'mock-screenshot-url',
-        context: expect.objectContaining({
-          userAgent: expect.any(String),
-          currentUrl: expect.any(String),
-          viewport: expect.objectContaining({
-            width: expect.any(Number),
-            height: expect.any(Number)
+      expect(createdFeedback).toEqual(
+        expect.objectContaining({
+          id: expect.any(String),
+          userId: mockUserId,
+          userEmail: mockUserEmail,
+          userDisplayName: mockUserDisplayName,
+          type: 'bug',
+          message: 'Test feedback message',
+          screenshotUrl: 'mock-screenshot-url',
+          context: expect.objectContaining({
+            userAgent: expect.any(String),
+            currentUrl: expect.any(String),
+            viewport: expect.objectContaining({
+              width: expect.any(Number),
+              height: expect.any(Number),
+            }),
+            timestamp: expect.any(Date),
           }),
-          timestamp: expect.any(Date)
-        }),
-        status: 'pending',
-        createdAt: expect.any(Date),
-        updatedAt: expect.any(Date)
-      }));
+          status: 'pending',
+          createdAt: expect.any(Date),
+          updatedAt: expect.any(Date),
+        })
+      );
     });
 
     it('should handle feedback without screenshot', async () => {
       const inputWithoutScreenshot: CreateFeedbackInput = {
         type: 'suggestion',
-        message: 'Test suggestion'
+        message: 'Test suggestion',
       };
 
       const result = await service.submitFeedback(
@@ -147,12 +152,12 @@ describe('FeedbackService', () => {
           userAgent: 'test-agent',
           currentUrl: 'test-url',
           viewport: { width: 1920, height: 1080 },
-          timestamp: new Date()
+          timestamp: new Date(),
         },
         status: 'pending',
         createdAt: new Date(),
-        updatedAt: new Date()
-      }
+        updatedAt: new Date(),
+      },
     ];
 
     it('should return user feedback ordered by creation date', async () => {
@@ -164,7 +169,7 @@ describe('FeedbackService', () => {
       expect(mockFirestoreCrudService.getDocsWhere).toHaveBeenCalledWith(
         'feedback',
         expect.any(Object), // where clause
-        expect.any(Object)  // orderBy clause
+        expect.any(Object) // orderBy clause
       );
     });
   });
@@ -173,7 +178,7 @@ describe('FeedbackService', () => {
     it('should return pending feedback ordered by creation date', async () => {
       const mockPendingFeedback = [
         { id: '1', status: 'pending' },
-        { id: '2', status: 'pending' }
+        { id: '2', status: 'pending' },
       ] as Feedback[];
 
       mockFirestoreCrudService.getDocsWhere.mockResolvedValue(mockPendingFeedback);
@@ -184,7 +189,7 @@ describe('FeedbackService', () => {
       expect(mockFirestoreCrudService.getDocsWhere).toHaveBeenCalledWith(
         'feedback',
         expect.any(Object), // where clause
-        expect.any(Object)  // orderBy clause
+        expect.any(Object) // orderBy clause
       );
     });
   });
@@ -201,7 +206,7 @@ describe('FeedbackService', () => {
 
       expect(mockFirestoreCrudService.update).toHaveBeenCalledWith(feedbackId, {
         status: newStatus,
-        updatedAt: expect.any(Date)
+        updatedAt: expect.any(Date),
       });
     });
 
@@ -213,7 +218,7 @@ describe('FeedbackService', () => {
       expect(mockFirestoreCrudService.update).toHaveBeenCalledWith(feedbackId, {
         status: newStatus,
         updatedAt: expect.any(Date),
-        adminNotes: adminNotes
+        adminNotes: adminNotes,
       });
     });
   });
@@ -228,7 +233,7 @@ describe('FeedbackService', () => {
         readAsDataURL: jest.fn(),
         result: mockDataUrl,
         onloadend: null as any,
-        onerror: null as any
+        onerror: null as any,
       };
 
       global.FileReader = jest.fn(() => mockFileReader) as any;
@@ -254,7 +259,7 @@ describe('FeedbackService', () => {
         readAsDataURL: jest.fn(),
         result: null,
         onloadend: null as any,
-        onerror: null as any
+        onerror: null as any,
       };
 
       global.FileReader = jest.fn(() => mockFileReader) as any;

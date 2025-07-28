@@ -1,15 +1,20 @@
 // src/app/admin/feature/admin-checkins/admin-checkin.service.ts
 import { Injectable, inject } from '@angular/core';
+import { CheckInService } from '@check-in/data-access/check-in.service';
+import {
+  calculateCheckInContext,
+  type CheckInContextInput,
+} from '@check-in/utils/check-in-context.utils';
+import type { CheckIn } from '@check-in/utils/check-in.models';
+import {
+  calculateCheckInPoints,
+  type CheckInPointsInput,
+} from '@check-in/utils/points-calculation.utils';
+import { FirestoreCrudService } from '@fourfold/angular-foundation';
+import { PubService } from '@pubs/data-access/pub.service';
+import { UserService } from '@users/data-access/user.service';
 import { Timestamp } from 'firebase/firestore';
 import { firstValueFrom } from 'rxjs';
-import { FirestoreCrudService } from '@shared/data-access/firestore-crud.service';
-import type { CheckIn } from '@check-in/utils/check-in.models';
-import { calculateCheckInPoints, type CheckInPointsInput } from '@check-in/utils/points-calculation.utils';
-import { calculateCheckInContext, type CheckInContextInput } from '@check-in/utils/check-in-context.utils';
-import type { Pub } from '@pubs/utils/pub.models';
-import { CheckInService } from '@check-in/data-access/check-in.service';
-import { UserService } from '@users/data-access/user.service';
-import { PubService } from '@pubs/data-access/pub.service';
 
 type ManualCheckInData = {
   userId: string;
@@ -27,7 +32,7 @@ type ManualCheckInData = {
 @Injectable({ providedIn: 'root' })
 export class AdminCheckinService extends FirestoreCrudService<CheckIn> {
   protected path = 'checkins';
-  
+
   // Injected services for context gathering
   private readonly checkInService = inject(CheckInService);
   private readonly userService = inject(UserService);
@@ -102,7 +107,7 @@ export class AdminCheckinService extends FirestoreCrudService<CheckIn> {
         totalCheckIns: allCheckIns.length,
         todayCheckIns: todayCheckIns.length,
         weeklyCheckIns: weeklyCheckIns.length,
-        uniqueUsers
+        uniqueUsers,
       };
     } catch (error) {
       console.error('[AdminCheckinService] Failed to get check-in stats:', error);
@@ -123,31 +128,33 @@ export class AdminCheckinService extends FirestoreCrudService<CheckIn> {
       pointsOverride: data.pointsEarned,
       carpetConfirmed: data.carpetConfirmed,
       sharedSocial: data.sharedSocial,
-      currentStreak: data.currentStreak
+      currentStreak: data.currentStreak,
     });
-    
+
     try {
       console.log(`⚡ [AdminCheckinService] Step 1: Gathering context data (${callId})`);
       console.group(`⚡ Data Fetching (${callId})`);
-      
+
       console.log('⚡ Fetching user data...');
       console.log('⚡ Fetching pub data...');
       console.log('⚡ Fetching user check-in history...');
-      
+
       // Gather context data for points calculation
       const [user, checkInPub, userTotalCheckins, pubSpecificCheckins] = await Promise.all([
         firstValueFrom(this.userService.getUser(data.userId)),
         this.pubService.getPub(data.pubId),
         this.checkInService.getUserTotalCheckinCount(data.userId),
-        this.checkInService.getUserCheckinCount(data.userId, data.pubId)
+        this.checkInService.getUserCheckinCount(data.userId, data.pubId),
       ]);
-      
+
       console.log(`⚡ [AdminCheckinService] Data fetching results (${callId}):`);
       console.log(`⚡   User: ${user ? user.displayName + ' (' + user.uid + ')' : 'NOT FOUND'}`);
-      console.log(`⚡   Check-in pub: ${checkInPub ? checkInPub.name + ' (' + checkInPub.id + ')' : 'NOT FOUND'}`);
+      console.log(
+        `⚡   Check-in pub: ${checkInPub ? checkInPub.name + ' (' + checkInPub.id + ')' : 'NOT FOUND'}`
+      );
       console.log(`⚡   User total check-ins: ${userTotalCheckins}`);
       console.log(`⚡   User check-ins to this pub: ${pubSpecificCheckins}`);
-      
+
       console.groupEnd();
 
       if (!checkInPub) {
@@ -158,7 +165,9 @@ export class AdminCheckinService extends FirestoreCrudService<CheckIn> {
       console.log(`⚡ [AdminCheckinService] Step 2: Getting home pub data (${callId})`);
       // Get user's home pub for distance calculation
       const homePub = user?.homePubId ? await this.pubService.getPub(user.homePubId) : null;
-      console.log(`⚡   User home pub: ${homePub ? homePub.name + ' (' + homePub.id + ')' : 'None set'}`);
+      console.log(
+        `⚡   User home pub: ${homePub ? homePub.name + ' (' + homePub.id + ')' : 'None set'}`
+      );
 
       console.log(`⚡ [AdminCheckinService] Step 3: Using shared context utilities (${callId})`);
       // Calculate check-in context using shared utilities
@@ -172,7 +181,7 @@ export class AdminCheckinService extends FirestoreCrudService<CheckIn> {
         pubSpecificCheckins: pubSpecificCheckins + 1, // +1 because we're creating this check-in
         carpetConfirmed: data.carpetConfirmed,
         sharedSocial: data.sharedSocial,
-        currentStreak: data.currentStreak
+        currentStreak: data.currentStreak,
       };
 
       console.log(`⚡ [AdminCheckinService] Calling shared context calculation...`);
@@ -180,7 +189,7 @@ export class AdminCheckinService extends FirestoreCrudService<CheckIn> {
 
       console.log(`⚡ [AdminCheckinService] Step 4: Using shared points calculation (${callId})`);
       console.log(`⚡ [AdminCheckinService] KEY MOMENT: Distance bonus will be calculated!`);
-      
+
       // Calculate points using shared utilities
       const pointsInput: CheckInPointsInput = {
         checkInPub,
@@ -191,7 +200,7 @@ export class AdminCheckinService extends FirestoreCrudService<CheckIn> {
         carpetConfirmed: context.carpetConfirmed,
         sharedSocial: context.sharedSocial,
         currentStreak: context.currentStreak,
-        customReason: 'Manual check-in by admin'
+        customReason: 'Manual check-in by admin',
       };
 
       console.log(`⚡ [AdminCheckinService] Calling SINGLE SOURCE OF TRUTH for points...`);
@@ -199,26 +208,32 @@ export class AdminCheckinService extends FirestoreCrudService<CheckIn> {
 
       console.log(`⚡ [AdminCheckinService] Step 5: Points calculation complete (${callId})`);
       console.log(`⚡ [AdminCheckinService] Calculated points breakdown:`, pointsBreakdown);
-      
+
       // Use calculated points or override if provided
       const finalPointsEarned = data.pointsEarned ?? pointsBreakdown.total;
-      const finalPointsBreakdown = data.pointsEarned ? {
-        ...pointsBreakdown,
-        total: data.pointsEarned,
-        reason: `Manual override: ${data.pointsEarned} points (originally ${pointsBreakdown.total})`
-      } : pointsBreakdown;
-      
+      const finalPointsBreakdown = data.pointsEarned
+        ? {
+            ...pointsBreakdown,
+            total: data.pointsEarned,
+            reason: `Manual override: ${data.pointsEarned} points (originally ${pointsBreakdown.total})`,
+          }
+        : pointsBreakdown;
+
       if (data.pointsEarned) {
         console.log(`⚡ [AdminCheckinService] POINTS OVERRIDE APPLIED (${callId}):`);
         console.log(`⚡   Original calculated: ${pointsBreakdown.total} points`);
         console.log(`⚡   Admin override: ${data.pointsEarned} points`);
       } else {
-        console.log(`⚡ [AdminCheckinService] USING CALCULATED POINTS (${callId}): ${pointsBreakdown.total}`);
+        console.log(
+          `⚡ [AdminCheckinService] USING CALCULATED POINTS (${callId}): ${pointsBreakdown.total}`
+        );
         if (pointsBreakdown.distance > 0) {
-          console.log(`⚡ 🎉 SUCCESS: Distance bonus of ${pointsBreakdown.distance} points applied to manual check-in!`);
+          console.log(
+            `⚡ 🎉 SUCCESS: Distance bonus of ${pointsBreakdown.distance} points applied to manual check-in!`
+          );
         }
       }
-      
+
       console.log(`⚡ [AdminCheckinService] Step 6: Creating check-in document (${callId})`);
       // Create the check-in data
       const checkInData: Omit<CheckIn, 'id'> = {
@@ -227,7 +242,7 @@ export class AdminCheckinService extends FirestoreCrudService<CheckIn> {
         timestamp: Timestamp.fromDate(data.timestamp),
         dateKey: data.timestamp.toISOString().split('T')[0],
         pointsEarned: finalPointsEarned,
-        pointsBreakdown: finalPointsBreakdown
+        pointsBreakdown: finalPointsBreakdown,
       };
 
       // Create the document
@@ -244,7 +259,6 @@ export class AdminCheckinService extends FirestoreCrudService<CheckIn> {
       console.log(`⚡   Final breakdown:`, finalPointsBreakdown);
 
       return docId;
-
     } catch (error) {
       console.error('[AdminCheckinService] Failed to create manual check-in:', error);
       throw error;
