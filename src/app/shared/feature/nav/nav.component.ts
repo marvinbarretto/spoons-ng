@@ -129,4 +129,8 @@ export class NavComponent {
   login() {
     this.router.navigate(['/login']);
   }
+
+  navigateToProfile() {
+    this.router.navigate(['/profile']);
+  }
 }

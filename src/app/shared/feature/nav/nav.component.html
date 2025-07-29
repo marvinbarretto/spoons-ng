@@ -34,8 +34,9 @@
           [user]="userChipData()!"
           [size]="isMobile() ? 'sm' : 'md'"
           [showName]="true"
-          [clickable]="false"
+          [clickable]="true"
           variant="default"
+          (click)="navigateToProfile()"
         />
         @if (scoreboardData().totalPoints > 0 && !scoreboardData().isLoading) {
           <div class="points-badge">
