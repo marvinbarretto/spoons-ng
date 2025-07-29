@@ -115,22 +115,22 @@
             </div>
           } @else {
             <!-- Normal mode: navigation enabled -->
-            <!-- <a
+            <a
               [routerLink]="['/pubs', pub.id]"
               class="pub-card-link"
               [attr.aria-label]="'View details for ' + pub.name"
-            > -->
-            <app-pub-card
-              [pub]="pub"
-              [hasCheckedIn]="hasAnyVisit(pub.id)"
-              [hasVerifiedVisit]="hasVerifiedCheckIn(pub.id)"
-              [hasUnverifiedVisit]="hasUnverifiedVisit(pub.id)"
-              [checkinCount]="dataAggregatorService.getVisitCountForPub(pub.id)"
-              [showCheckinCount]="hasAnyVisit(pub.id)"
-              [isLocalPub]="dataAggregatorService.isLocalPub(pub.id)"
-              [checkInDistanceThreshold]="checkInDistanceThreshold"
-            />
-            <!-- </a> -->
+            >
+              <app-pub-card
+                [pub]="pub"
+                [hasCheckedIn]="hasAnyVisit(pub.id)"
+                [hasVerifiedVisit]="hasVerifiedCheckIn(pub.id)"
+                [hasUnverifiedVisit]="hasUnverifiedVisit(pub.id)"
+                [checkinCount]="dataAggregatorService.getVisitCountForPub(pub.id)"
+                [showCheckinCount]="hasAnyVisit(pub.id)"
+                [isLocalPub]="dataAggregatorService.isLocalPub(pub.id)"
+                [checkInDistanceThreshold]="checkInDistanceThreshold"
+              />
+            </a>
           }
         }
       </div>
