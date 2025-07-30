@@ -90,23 +90,23 @@ export function getCurrentPosition(): Promise<GeolocationPosition> {
     }
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      position => {
         console.log('[LocationUtils] 📍 Position acquired:', {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
-          accuracy: position.coords.accuracy
+          accuracy: position.coords.accuracy,
         });
         resolve(position);
       },
-      (error) => {
+      error => {
         const message = getLocationErrorMessage(error);
         console.error('[LocationUtils] 📍 Location error:', message);
         reject(new Error(message));
       },
       {
         enableHighAccuracy: true,
-        timeout: 10000,        // Match LocationService timeout
-        maximumAge: 10000,     // Match LocationService maxAge  
+        timeout: 10000, // Match LocationService timeout
+        maximumAge: 10000, // Match LocationService maxAge
       }
     );
   });

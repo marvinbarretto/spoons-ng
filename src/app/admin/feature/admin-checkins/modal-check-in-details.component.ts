@@ -1,13 +1,13 @@
 // src/app/admin/feature/admin-checkins/modal-check-in-details.component.ts
-import { Component, input, output, signal, computed, inject } from '@angular/core';
+import { Component, computed, inject, input, output, signal } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { Timestamp } from 'firebase/firestore';
+import type { CheckIn, PointsBreakdown } from '../../../check-in/utils/check-in.models';
+import { PubStore } from '../../../pubs/data-access/pub.store';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { ChipUserComponent } from '../../../shared/ui/chips/chip-user/chip-user.component';
 import { UserStore } from '../../../users/data-access/user.store';
-import { PubStore } from '../../../pubs/data-access/pub.store';
-import type { CheckIn, PointsBreakdown } from '../../../check-in/utils/check-in.models';
 
 type CheckInWithDetails = CheckIn & {
   displayName?: string;
@@ -17,11 +17,7 @@ type CheckInWithDetails = CheckIn & {
 
 @Component({
   selector: 'app-modal-check-in-details',
-  imports: [
-    FormsModule,
-    ButtonComponent,
-    ChipUserComponent
-],
+  imports: [FormsModule, ButtonComponent, ChipUserComponent],
   template: `
     <div class="modal-check-in-details">
       <header class="modal-header">
@@ -38,7 +34,7 @@ type CheckInWithDetails = CheckIn & {
               <app-chip-user
                 [user]="{
                   displayName: user.displayName,
-                  photoURL: user.photoURL || undefined
+                  photoURL: user.photoURL || undefined,
                 }"
                 [clickable]="false"
               />
@@ -79,7 +75,6 @@ type CheckInWithDetails = CheckIn & {
                 class="form-input"
               />
             </div>
-
 
             <div class="form-group">
               <label>Points Breakdown</label>
@@ -177,18 +172,14 @@ type CheckInWithDetails = CheckIn & {
             @if (checkIn().badgeName) {
               <div class="form-group">
                 <label>Badge Earned</label>
-                <div class="badge-info">
-                  🏆 {{ checkIn().badgeName }}
-                </div>
+                <div class="badge-info">🏆 {{ checkIn().badgeName }}</div>
               </div>
             }
 
             @if (checkIn().carpetImageKey) {
               <div class="form-group">
                 <label>Carpet Image</label>
-                <div class="carpet-info">
-                  📸 {{ checkIn().carpetImageKey }}
-                </div>
+                <div class="carpet-info">📸 {{ checkIn().carpetImageKey }}</div>
               </div>
             }
           </div>
@@ -228,13 +219,7 @@ type CheckInWithDetails = CheckIn & {
           </app-button>
         </div>
         <div class="button-group">
-          <app-button
-            variant="secondary"
-            size="sm"
-            (onClick)="handleClose()"
-          >
-            Cancel
-          </app-button>
+          <app-button variant="secondary" size="sm" (onClick)="handleClose()"> Cancel </app-button>
           <app-button
             variant="primary"
             size="sm"
@@ -255,7 +240,9 @@ type CheckInWithDetails = CheckIn & {
       max-height: 90vh;
       background: var(--background);
       border-radius: 12px;
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      box-shadow:
+        0 20px 25px -5px rgba(0, 0, 0, 0.1),
+        0 10px 10px -5px rgba(0, 0, 0, 0.04);
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -368,7 +355,7 @@ type CheckInWithDetails = CheckIn & {
       font-size: 0.9rem;
     }
 
-    .checkbox-label input[type="checkbox"] {
+    .checkbox-label input[type='checkbox'] {
       margin: 0;
     }
 
@@ -578,7 +565,7 @@ type CheckInWithDetails = CheckIn & {
         justify-content: center;
       }
     }
-  `
+  `,
 })
 export class ModalCheckInDetailsComponent {
   // Inputs
@@ -631,7 +618,7 @@ export class ModalCheckInDetailsComponent {
   getCurrentBreakdown() {
     const editableBreakdown = this.editableData().pointsBreakdown;
     const originalBreakdown = this.checkIn().pointsBreakdown;
-    
+
     // Merge original with any editable changes
     return {
       base: editableBreakdown?.base ?? originalBreakdown?.base ?? 0,
@@ -640,7 +627,7 @@ export class ModalCheckInDetailsComponent {
       multiplier: editableBreakdown?.multiplier ?? originalBreakdown?.multiplier ?? 1,
       total: editableBreakdown?.total ?? originalBreakdown?.total ?? 0,
       reason: editableBreakdown?.reason ?? originalBreakdown?.reason ?? '',
-      photoQuality: editableBreakdown?.photoQuality ?? originalBreakdown?.photoQuality
+      photoQuality: editableBreakdown?.photoQuality ?? originalBreakdown?.photoQuality,
     };
   }
 
@@ -648,17 +635,21 @@ export class ModalCheckInDetailsComponent {
   getCurrentBreakdownValue(field: keyof PointsBreakdown): any {
     const breakdown = this.getCurrentBreakdown();
     const value = breakdown[field];
-    
+
     // Provide sensible defaults
     if (value === undefined || value === null) {
       switch (field) {
-        case 'multiplier': return 1;
-        case 'reason': return '';
-        case 'photoQuality': return '';
-        default: return 0;
+        case 'multiplier':
+          return 1;
+        case 'reason':
+          return '';
+        case 'photoQuality':
+          return '';
+        default:
+          return 0;
       }
     }
-    
+
     return value;
   }
 
@@ -670,7 +661,7 @@ export class ModalCheckInDetailsComponent {
       this._editableData.update(data => ({
         ...data,
         timestamp: Timestamp.fromDate(date),
-        dateKey: date.toISOString().split('T')[0]
+        dateKey: date.toISOString().split('T')[0],
       }));
     }
   }
@@ -678,47 +669,50 @@ export class ModalCheckInDetailsComponent {
   updateBreakdownValue(field: string, event: Event): void {
     const input = event.target as HTMLInputElement;
     let value: any = input.value;
-    
+
     // Parse numeric fields
     if (['base', 'distance', 'bonus', 'multiplier', 'photoQuality'].includes(field)) {
       const parsed = field === 'multiplier' ? parseFloat(value) : parseInt(value, 10);
       value = isNaN(parsed) ? (field === 'multiplier' ? 1 : 0) : parsed;
     }
-    
+
     // Update the breakdown in editable data
     this._editableData.update(data => {
-      const currentBreakdown = data.pointsBreakdown || this.checkIn().pointsBreakdown || {
-        base: 0,
-        distance: 0,
-        bonus: 0,
-        multiplier: 1,
-        total: 0,
-        reason: ''
-      };
+      const currentBreakdown = data.pointsBreakdown ||
+        this.checkIn().pointsBreakdown || {
+          base: 0,
+          distance: 0,
+          bonus: 0,
+          multiplier: 1,
+          total: 0,
+          reason: '',
+        };
       const updatedBreakdown: PointsBreakdown = {
         ...currentBreakdown,
-        [field]: value
+        [field]: value,
       };
-      
+
       // Auto-calculate total and update pointsEarned
-      const baseCalc = (updatedBreakdown.base || 0) + (updatedBreakdown.distance || 0) + (updatedBreakdown.bonus || 0);
+      const baseCalc =
+        (updatedBreakdown.base || 0) +
+        (updatedBreakdown.distance || 0) +
+        (updatedBreakdown.bonus || 0);
       const calculatedTotal = Math.round(baseCalc * (updatedBreakdown.multiplier || 1));
       updatedBreakdown.total = calculatedTotal;
-      
+
       return {
         ...data,
         pointsBreakdown: updatedBreakdown,
-        pointsEarned: calculatedTotal // Keep pointsEarned in sync
+        pointsEarned: calculatedTotal, // Keep pointsEarned in sync
       };
     });
   }
-
 
   updateLandlordStatus(event: Event): void {
     const input = event.target as HTMLInputElement;
     this._editableData.update(data => ({
       ...data,
-      madeUserLandlord: input.checked
+      madeUserLandlord: input.checked,
     }));
   }
 

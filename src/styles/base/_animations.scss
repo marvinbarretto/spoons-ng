@@ -16,22 +16,22 @@
 // - Duration controls individual animation speed
 
 // Base timing values - adjust these to control all animation speeds
-$anim-duration-fast: 0.2s;          // Quick interactions (hovers, small transitions)
-$anim-duration-normal: 0.6s;        // Standard animations (slide-ins, fades)
-$anim-duration-slow: 0.8s;          // Deliberate animations (modals, important reveals)
-$anim-duration-slower: 1s;          // Very slow animations (celebrations, emphasis)
+$anim-duration-fast: 0.2s; // Quick interactions (hovers, small transitions)
+$anim-duration-normal: 0.6s; // Standard animations (slide-ins, fades)
+$anim-duration-slow: 0.8s; // Deliberate animations (modals, important reveals)
+$anim-duration-slower: 1s; // Very slow animations (celebrations, emphasis)
 
 // Stagger delays for sequential animations
-$anim-stagger-fast: 0.05s;          // Rapid-fire reveals
-$anim-stagger-normal: 0.15s;        // Comfortable pacing between items
-$anim-stagger-slow: 0.2s;           // Deliberate pacing
-$anim-stagger-slower: 0.3s;         // Dramatic effect
+$anim-stagger-fast: 0.05s; // Rapid-fire reveals
+$anim-stagger-normal: 0.15s; // Comfortable pacing between items
+$anim-stagger-slow: 0.2s; // Deliberate pacing
+$anim-stagger-slower: 0.3s; // Dramatic effect
 
 // Initial delays before animations start
-$anim-delay-short: 0.1s;            // Barely noticeable delay
-$anim-delay-normal: 0.3s;           // Noticeable pause
-$anim-delay-long: 0.6s;             // Significant pause
-$anim-delay-dramatic: 1s;           // Dramatic pause
+$anim-delay-short: 0.1s; // Barely noticeable delay
+$anim-delay-normal: 0.3s; // Noticeable pause
+$anim-delay-long: 0.6s; // Significant pause
+$anim-delay-dramatic: 1s; // Dramatic pause
 
 // ===================================
 // 🎨 CSS CUSTOM PROPERTIES
@@ -43,17 +43,17 @@ $anim-delay-dramatic: 1s;           // Dramatic pause
   --animation-duration-normal: #{$anim-duration-normal};
   --animation-duration-slow: #{$anim-duration-slow};
   --animation-duration-slower: #{$anim-duration-slower};
-  
+
   // Stagger properties
   --animation-stagger-fast: #{$anim-stagger-fast};
   --animation-stagger-normal: #{$anim-stagger-normal};
   --animation-stagger-slow: #{$anim-stagger-slow};
-  
+
   // Delay properties
   --animation-delay-short: #{$anim-delay-short};
   --animation-delay-normal: #{$anim-delay-normal};
   --animation-delay-long: #{$anim-delay-long};
-  
+
   // Easing functions
   --animation-easing-ease: ease;
   --animation-easing-ease-out: ease-out;
@@ -176,29 +176,32 @@ $anim-delay-dramatic: 1s;           // Dramatic pause
 // ===================================
 
 @keyframes distance-pulse {
-  0%, 100% { 
-    opacity: 1; 
+  0%,
+  100% {
+    opacity: 1;
     transform: scale(1);
     background-color: transparent;
   }
-  50% { 
-    opacity: 0.8; 
+  50% {
+    opacity: 0.8;
     transform: scale(1.02);
     background-color: rgba(74, 222, 128, 0.1);
   }
 }
 
 @keyframes distance-highlight {
-  0%, 100% { 
+  0%,
+  100% {
     box-shadow: 0 0 0 0 rgba(74, 222, 128, 0);
   }
-  50% { 
+  50% {
     box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.3);
   }
 }
 
 @keyframes celebration-bounce {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
   }
   25% {
@@ -213,7 +216,8 @@ $anim-delay-dramatic: 1s;           // Dramatic pause
 }
 
 @keyframes shake {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateX(0);
   }
   25% {
@@ -225,20 +229,22 @@ $anim-delay-dramatic: 1s;           // Dramatic pause
 }
 
 @keyframes gentle-bounce {
-  0%, 100% { 
-    transform: translateY(0); 
+  0%,
+  100% {
+    transform: translateY(0);
   }
-  50% { 
-    transform: translateY(-8px); 
+  50% {
+    transform: translateY(-8px);
   }
 }
 
 @keyframes placeholder-pulse {
-  0%, 100% { 
-    opacity: 0.7; 
+  0%,
+  100% {
+    opacity: 0.7;
   }
-  50% { 
-    opacity: 1; 
+  50% {
+    opacity: 1;
   }
 }
 
@@ -414,14 +420,14 @@ $anim-delay-dramatic: 1s;           // Dramatic pause
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  
+
   // But still provide subtle feedback without motion
   .animate-distance-pulse,
   .animate-distance-highlight {
     animation: none;
     background-color: rgba(74, 222, 128, 0.05);
   }
-  
+
   .skeleton {
     animation: none;
     background: #f5f5f5;

@@ -1,7 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { SsrPlatformService } from '@fourfold/angular-foundation';
 
-
 @Injectable({ providedIn: 'root' })
 export class ShareService {
   private readonly _platform = inject(SsrPlatformService);
@@ -19,7 +18,7 @@ export class ShareService {
           text: 'Check in to pubs. Claim your local. Become the Landlord!',
           url,
         })
-        .catch((err) => {
+        .catch(err => {
           console.warn('[Share] Cancelled or failed', err);
         });
     });

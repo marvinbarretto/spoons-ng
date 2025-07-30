@@ -1,9 +1,9 @@
 import { TestBed } from '@angular/core/testing';
-import { CarpetStorageService } from './carpet-storage.service';
-import { IndexedDbService } from '@shared/data-access/indexed-db.service';
 import { AuthStore } from '@auth/data-access/auth.store';
+import { IndexedDbService } from '@shared/data-access/indexed-db.service';
 import { CarpetPhotoData } from '@shared/utils/carpet-photo.models';
 import { Pub } from '../../pubs/utils/pub.models';
+import { CarpetStorageService } from './carpet-storage.service';
 
 describe('CarpetStorageService', () => {
   let service: CarpetStorageService;
@@ -14,7 +14,7 @@ describe('CarpetStorageService', () => {
     id: 'test-pub-123',
     name: 'The Test Tavern',
     address: '123 Test Street',
-    location: { lat: 51.5074, lng: -0.1278 }
+    location: { lat: 51.5074, lng: -0.1278 },
   };
 
   const mockPhotoData: CarpetPhotoData = {
@@ -25,8 +25,8 @@ describe('CarpetStorageService', () => {
     metadata: {
       timestamp: new Date().toISOString(),
       deviceInfo: { userAgent: 'test' },
-      imageInfo: { width: 400, height: 400, format: 'webp', sizeKB: 45 }
-    }
+      imageInfo: { width: 400, height: 400, format: 'webp', sizeKB: 45 },
+    },
   };
 
   beforeEach(() => {
@@ -38,19 +38,19 @@ describe('CarpetStorageService', () => {
       getAllKeys: jest.fn(),
       delete: jest.fn(),
       clear: jest.fn(),
-      getStorageEstimate: jest.fn()
+      getStorageEstimate: jest.fn(),
     } as jest.Mocked<IndexedDbService>;
 
     const authStoreMock = {
-      uid: jest.fn().mockReturnValue('test-user-123')
+      uid: jest.fn().mockReturnValue('test-user-123'),
     } as jest.Mocked<AuthStore>;
 
     TestBed.configureTestingModule({
       providers: [
         CarpetStorageService,
         { provide: IndexedDbService, useValue: indexedDbMock },
-        { provide: AuthStore, useValue: authStoreMock }
-      ]
+        { provide: AuthStore, useValue: authStoreMock },
+      ],
     });
 
     service = TestBed.inject(CarpetStorageService);
@@ -85,7 +85,7 @@ describe('CarpetStorageService', () => {
           pubName: 'The Test Tavern',
           blob: mockPhotoData.blob,
           size: mockPhotoData.blob.size,
-          type: 'image/webp'
+          type: 'image/webp',
         }),
         expect.any(String) // key
       );
@@ -112,9 +112,9 @@ describe('CarpetStorageService', () => {
       jest.spyOn(service, 'initialize').mockResolvedValue();
 
       // Act & Assert
-      await expect(
-        service.savePhotoFromCarpetData(mockPhotoData, mockPub)
-      ).rejects.toThrow('User must be authenticated to save photos');
+      await expect(service.savePhotoFromCarpetData(mockPhotoData, mockPub)).rejects.toThrow(
+        'User must be authenticated to save photos'
+      );
     });
 
     it('should handle different pub names correctly', async () => {
@@ -122,7 +122,7 @@ describe('CarpetStorageService', () => {
       const pubWithSpecialChars: Pub = {
         ...mockPub,
         id: 'special-pub',
-        name: "O'Malley's Café & Pub"
+        name: "O'Malley's Café & Pub",
       };
       jest.spyOn(service, 'initialize').mockResolvedValue();
 
@@ -135,7 +135,7 @@ describe('CarpetStorageService', () => {
         expect.any(String),
         expect.objectContaining({
           pubId: 'special-pub',
-          pubName: "O'Malley's Café & Pub"
+          pubName: "O'Malley's Café & Pub",
         }),
         expect.any(String)
       );

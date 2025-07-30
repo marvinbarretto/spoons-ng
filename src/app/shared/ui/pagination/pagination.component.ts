@@ -1,6 +1,6 @@
 // src/app/shared/ui/pagination/pagination.component.ts
 import { CommonModule } from '@angular/common';
-import { Component, input, output, computed } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ButtonComponent } from '../button/button.component';
 
@@ -17,9 +17,7 @@ export class PaginationComponent {
 
   readonly pageChange = output<number>();
 
-  readonly pageNumbers = computed(() =>
-    Array.from({ length: this.totalPages() }, (_, i) => i + 1)
-  );
+  readonly pageNumbers = computed(() => Array.from({ length: this.totalPages() }, (_, i) => i + 1));
 
   previousPage(): void {
     if (this.currentPage() > 1) {

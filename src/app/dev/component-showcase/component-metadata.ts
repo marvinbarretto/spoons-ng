@@ -1,6 +1,6 @@
-export type PropControlType = 
+export type PropControlType =
   | 'text'
-  | 'number' 
+  | 'number'
   | 'boolean'
   | 'select'
   | 'color'
@@ -35,7 +35,7 @@ export interface ComponentExample {
 
 // Component metadata definitions
 export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
-  'ChipStatus': {
+  ChipStatus: {
     name: 'ChipStatus',
     description: 'Status indicator chip for displaying loading, success, error, and other states',
     category: 'Chips & Tags',
@@ -52,13 +52,13 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
           { label: 'Info', value: 'info' },
           { label: 'Active', value: 'active' },
           { label: 'Inactive', value: 'inactive' },
-          { label: 'Neutral', value: 'neutral' }
-        ]
+          { label: 'Neutral', value: 'neutral' },
+        ],
       },
       text: {
         type: 'text',
         label: 'Status Text',
-        defaultValue: 'Status'
+        defaultValue: 'Status',
       },
       size: {
         type: 'select',
@@ -68,38 +68,38 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
           { label: 'Extra Small', value: 'xs' },
           { label: 'Small', value: 'sm' },
           { label: 'Medium', value: 'md' },
-          { label: 'Large', value: 'lg' }
-        ]
+          { label: 'Large', value: 'lg' },
+        ],
       },
       showIcon: {
         type: 'boolean',
         label: 'Show Icon',
-        defaultValue: true
+        defaultValue: true,
       },
       animated: {
         type: 'boolean',
         label: 'Animated',
-        defaultValue: false
+        defaultValue: false,
       },
       icon: {
         type: 'text',
         label: 'Custom Icon',
-        defaultValue: ''
+        defaultValue: '',
       },
       tooltip: {
         type: 'text',
         label: 'Tooltip',
-        defaultValue: ''
-      }
+        defaultValue: '',
+      },
     },
     examples: [
       { title: 'Loading State', props: { type: 'loading', text: 'Loading...', animated: true } },
       { title: 'Success State', props: { type: 'success', text: 'Complete' } },
       { title: 'Error State', props: { type: 'error', text: 'Failed' } },
-      { title: 'Icon Only', props: { type: 'active', text: '', showIcon: true } }
-    ]
+      { title: 'Icon Only', props: { type: 'active', text: '', showIcon: true } },
+    ],
   },
-  'ChipCount': {
+  ChipCount: {
     name: 'ChipCount',
     description: 'Count display chip with formatting and prefix/suffix support',
     category: 'Chips & Tags',
@@ -107,17 +107,17 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
       count: {
         type: 'number',
         label: 'Count',
-        defaultValue: 42
+        defaultValue: 42,
       },
       prefix: {
         type: 'text',
         label: 'Prefix',
-        defaultValue: ''
+        defaultValue: '',
       },
       suffix: {
         type: 'text',
         label: 'Suffix',
-        defaultValue: ''
+        defaultValue: '',
       },
       size: {
         type: 'select',
@@ -127,8 +127,8 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
           { label: 'Extra Small', value: 'xs' },
           { label: 'Small', value: 'sm' },
           { label: 'Medium', value: 'md' },
-          { label: 'Large', value: 'lg' }
-        ]
+          { label: 'Large', value: 'lg' },
+        ],
       },
       variant: {
         type: 'select',
@@ -141,43 +141,43 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
           { label: 'Success', value: 'success' },
           { label: 'Warning', value: 'warning' },
           { label: 'Error', value: 'error' },
-          { label: 'Accent', value: 'accent' }
-        ]
+          { label: 'Accent', value: 'accent' },
+        ],
       },
       clickable: {
         type: 'boolean',
         label: 'Clickable',
-        defaultValue: false
+        defaultValue: false,
       },
       formatLargeNumbers: {
         type: 'boolean',
         label: 'Format Large Numbers',
-        defaultValue: true
+        defaultValue: true,
       },
       showSign: {
         type: 'boolean',
         label: 'Show Sign',
-        defaultValue: false
+        defaultValue: false,
       },
       icon: {
         type: 'text',
         label: 'Icon',
-        defaultValue: ''
+        defaultValue: '',
       },
       label: {
         type: 'text',
         label: 'Label',
-        defaultValue: ''
-      }
+        defaultValue: '',
+      },
     },
     examples: [
       { title: 'Basic Count', props: { count: 42 } },
       { title: 'Points', props: { count: 1250, prefix: '+', suffix: 'pts' } },
       { title: 'Large Number', props: { count: 12500, formatLargeNumbers: true } },
-      { title: 'Negative', props: { count: -50, showSign: true, variant: 'error' } }
-    ]
+      { title: 'Negative', props: { count: -50, showSign: true, variant: 'error' } },
+    ],
   },
-  'ChipFilter': {
+  ChipFilter: {
     name: 'ChipFilter',
     description: 'Filter pill component for toggleable selections',
     category: 'Chips & Tags',
@@ -185,17 +185,17 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
       label: {
         type: 'text',
         label: 'Label',
-        defaultValue: 'Filter'
+        defaultValue: 'Filter',
       },
       active: {
         type: 'boolean',
         label: 'Active',
-        defaultValue: false
+        defaultValue: false,
       },
       count: {
         type: 'number',
         label: 'Count',
-        defaultValue: 5
+        defaultValue: 5,
       },
       size: {
         type: 'select',
@@ -205,38 +205,38 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
           { label: 'Extra Small', value: 'xs' },
           { label: 'Small', value: 'sm' },
           { label: 'Medium', value: 'md' },
-          { label: 'Large', value: 'lg' }
-        ]
+          { label: 'Large', value: 'lg' },
+        ],
       },
       disabled: {
         type: 'boolean',
         label: 'Disabled',
-        defaultValue: false
+        defaultValue: false,
       },
       removable: {
         type: 'boolean',
         label: 'Removable',
-        defaultValue: false
+        defaultValue: false,
       },
       formatNumbers: {
         type: 'boolean',
         label: 'Format Numbers',
-        defaultValue: true
+        defaultValue: true,
       },
       icon: {
         type: 'text',
         label: 'Icon',
-        defaultValue: ''
-      }
+        defaultValue: '',
+      },
     },
     examples: [
       { title: 'Basic Filter', props: { label: 'All', count: 42 } },
       { title: 'Active Filter', props: { label: 'Popular', count: 15, active: true } },
       { title: 'Removable', props: { label: 'Recent', active: true, removable: true } },
-      { title: 'Disabled', props: { label: 'Archived', count: 0, disabled: true } }
-    ]
+      { title: 'Disabled', props: { label: 'Archived', count: 0, disabled: true } },
+    ],
   },
-  'ChipProgress': {
+  ChipProgress: {
     name: 'ChipProgress',
     description: 'Progress indicator chip for step-by-step processes',
     category: 'Chips & Tags',
@@ -250,23 +250,23 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
           { label: 'In Progress', value: 'in-progress' },
           { label: 'Completed', value: 'completed' },
           { label: 'Failed', value: 'failed' },
-          { label: 'Warning', value: 'warning' }
-        ]
+          { label: 'Warning', value: 'warning' },
+        ],
       },
       label: {
         type: 'text',
         label: 'Label',
-        defaultValue: 'Step'
+        defaultValue: 'Step',
       },
       value: {
         type: 'number',
         label: 'Value',
-        defaultValue: null
+        defaultValue: null,
       },
       maxValue: {
         type: 'number',
         label: 'Max Value',
-        defaultValue: null
+        defaultValue: null,
       },
       size: {
         type: 'select',
@@ -276,43 +276,56 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
           { label: 'Extra Small', value: 'xs' },
           { label: 'Small', value: 'sm' },
           { label: 'Medium', value: 'md' },
-          { label: 'Large', value: 'lg' }
-        ]
+          { label: 'Large', value: 'lg' },
+        ],
       },
       showIcon: {
         type: 'boolean',
         label: 'Show Icon',
-        defaultValue: true
+        defaultValue: true,
       },
       showProgress: {
         type: 'boolean',
         label: 'Show Progress',
-        defaultValue: true
+        defaultValue: true,
       },
       showValue: {
         type: 'boolean',
         label: 'Show Value',
-        defaultValue: false
+        defaultValue: false,
       },
       isActive: {
         type: 'boolean',
         label: 'Active',
-        defaultValue: false
+        defaultValue: false,
       },
       unit: {
         type: 'text',
         label: 'Unit',
-        defaultValue: ''
-      }
+        defaultValue: '',
+      },
     },
     examples: [
       { title: 'Pending', props: { state: 'pending', label: 'Upload' } },
-      { title: 'In Progress', props: { state: 'in-progress', label: 'Processing', isActive: true } },
+      {
+        title: 'In Progress',
+        props: { state: 'in-progress', label: 'Processing', isActive: true },
+      },
       { title: 'Completed', props: { state: 'completed', label: 'Done' } },
-      { title: 'With Value', props: { state: 'in-progress', label: 'Progress', value: 75, maxValue: 100, showValue: true, unit: '%' } }
-    ]
+      {
+        title: 'With Value',
+        props: {
+          state: 'in-progress',
+          label: 'Progress',
+          value: 75,
+          maxValue: 100,
+          showValue: true,
+          unit: '%',
+        },
+      },
+    ],
   },
-  'ChipIcon': {
+  ChipIcon: {
     name: 'ChipIcon',
     description: 'Icon chip with optional label and count',
     category: 'Chips & Tags',
@@ -320,17 +333,17 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
       icon: {
         type: 'text',
         label: 'Icon Name',
-        defaultValue: 'star'
+        defaultValue: 'star',
       },
       label: {
         type: 'text',
         label: 'Label',
-        defaultValue: ''
+        defaultValue: '',
       },
       count: {
         type: 'number',
         label: 'Count',
-        defaultValue: null
+        defaultValue: null,
       },
       size: {
         type: 'select',
@@ -340,8 +353,8 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
           { label: 'Extra Small', value: 'xs' },
           { label: 'Small', value: 'sm' },
           { label: 'Medium', value: 'md' },
-          { label: 'Large', value: 'lg' }
-        ]
+          { label: 'Large', value: 'lg' },
+        ],
       },
       variant: {
         type: 'select',
@@ -353,18 +366,18 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
           { label: 'Secondary', value: 'secondary' },
           { label: 'Success', value: 'success' },
           { label: 'Warning', value: 'warning' },
-          { label: 'Error', value: 'error' }
-        ]
+          { label: 'Error', value: 'error' },
+        ],
       },
       clickable: {
         type: 'boolean',
         label: 'Clickable',
-        defaultValue: false
+        defaultValue: false,
       },
       filled: {
         type: 'boolean',
         label: 'Filled',
-        defaultValue: false
+        defaultValue: false,
       },
       weight: {
         type: 'select',
@@ -374,18 +387,21 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
           { label: 'Light', value: 'light' },
           { label: 'Regular', value: 'regular' },
           { label: 'Medium', value: 'medium' },
-          { label: 'Bold', value: 'bold' }
-        ]
-      }
+          { label: 'Bold', value: 'bold' },
+        ],
+      },
     },
     examples: [
       { title: 'Icon Only', props: { icon: 'favorite' } },
       { title: 'With Label', props: { icon: 'star', label: 'Rating' } },
       { title: 'With Count', props: { icon: 'thumb_up', count: 42 } },
-      { title: 'Clickable', props: { icon: 'share', label: 'Share', clickable: true, variant: 'primary' } }
-    ]
+      {
+        title: 'Clickable',
+        props: { icon: 'share', label: 'Share', clickable: true, variant: 'primary' },
+      },
+    ],
   },
-  'ChipBadge': {
+  ChipBadge: {
     name: 'ChipBadge',
     description: 'Badge chip for displaying achievements and earned items',
     category: 'Chips & Tags',
@@ -393,7 +409,7 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
       earned: {
         type: 'boolean',
         label: 'Earned',
-        defaultValue: false
+        defaultValue: false,
       },
       size: {
         type: 'select',
@@ -403,28 +419,28 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
           { label: 'Extra Small', value: 'xs' },
           { label: 'Small', value: 'sm' },
           { label: 'Medium', value: 'md' },
-          { label: 'Large', value: 'lg' }
-        ]
+          { label: 'Large', value: 'lg' },
+        ],
       },
       showName: {
         type: 'boolean',
         label: 'Show Name',
-        defaultValue: true
+        defaultValue: true,
       },
       clickable: {
         type: 'boolean',
         label: 'Clickable',
-        defaultValue: false
-      }
+        defaultValue: false,
+      },
     },
     examples: [
       { title: 'Unearned', props: { earned: false } },
       { title: 'Earned', props: { earned: true } },
       { title: 'Icon Only', props: { earned: true, showName: false } },
-      { title: 'Clickable', props: { earned: true, clickable: true } }
-    ]
+      { title: 'Clickable', props: { earned: true, clickable: true } },
+    ],
   },
-  'ChipUser': {
+  ChipUser: {
     name: 'ChipUser',
     description: 'User chip displaying avatar and name',
     category: 'Chips & Tags',
@@ -437,8 +453,8 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
           { label: 'Extra Small', value: 'xs' },
           { label: 'Small', value: 'sm' },
           { label: 'Medium', value: 'md' },
-          { label: 'Large', value: 'lg' }
-        ]
+          { label: 'Large', value: 'lg' },
+        ],
       },
       variant: {
         type: 'select',
@@ -447,28 +463,28 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
         options: [
           { label: 'Default', value: 'default' },
           { label: 'Primary', value: 'primary' },
-          { label: 'Secondary', value: 'secondary' }
-        ]
+          { label: 'Secondary', value: 'secondary' },
+        ],
       },
       showName: {
         type: 'boolean',
         label: 'Show Name',
-        defaultValue: true
+        defaultValue: true,
       },
       clickable: {
         type: 'boolean',
         label: 'Clickable',
-        defaultValue: false
-      }
+        defaultValue: false,
+      },
     },
     examples: [
       { title: 'Basic User', props: { showName: true } },
       { title: 'Avatar Only', props: { showName: false } },
       { title: 'Clickable', props: { clickable: true, variant: 'primary' } },
-      { title: 'Small Size', props: { size: 'sm', showName: true } }
-    ]
+      { title: 'Small Size', props: { size: 'sm', showName: true } },
+    ],
   },
-  'Button': {
+  Button: {
     name: 'Button',
     description: 'Versatile button component with multiple variants, sizes, and states',
     category: 'Core Controls',
@@ -477,7 +493,7 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
         type: 'text',
         label: 'Button Text',
         defaultValue: 'Click me',
-        description: 'The text displayed on the button'
+        description: 'The text displayed on the button',
       },
       variant: {
         type: 'select',
@@ -490,9 +506,9 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
           { label: 'Success', value: 'success' },
           { label: 'Warning', value: 'warning' },
           { label: 'Ghost', value: 'ghost' },
-          { label: 'Link', value: 'link' }
+          { label: 'Link', value: 'link' },
         ],
-        description: 'Visual style variant of the button'
+        description: 'Visual style variant of the button',
       },
       size: {
         type: 'select',
@@ -503,67 +519,67 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
           { label: 'Small', value: 'sm' },
           { label: 'Medium', value: 'md' },
           { label: 'Large', value: 'lg' },
-          { label: 'Extra Large', value: 'xl' }
+          { label: 'Extra Large', value: 'xl' },
         ],
-        description: 'Size of the button'
+        description: 'Size of the button',
       },
       loading: {
         type: 'boolean',
         label: 'Loading State',
         defaultValue: false,
-        description: 'Shows loading spinner when true'
+        description: 'Shows loading spinner when true',
       },
       disabled: {
         type: 'boolean',
         label: 'Disabled',
         defaultValue: false,
-        description: 'Disables the button when true'
+        description: 'Disables the button when true',
       },
       fullWidth: {
         type: 'boolean',
         label: 'Full Width',
         defaultValue: false,
-        description: 'Makes button take full container width'
+        description: 'Makes button take full container width',
       },
       iconLeft: {
         type: 'text',
         label: 'Left Icon',
         defaultValue: '',
-        description: 'Material icon name to show on the left'
+        description: 'Material icon name to show on the left',
       },
       iconRight: {
         type: 'text',
         label: 'Right Icon',
         defaultValue: '',
-        description: 'Material icon name to show on the right'
+        description: 'Material icon name to show on the right',
       },
       loadingText: {
         type: 'text',
         label: 'Loading Text',
         defaultValue: 'Loading...',
-        description: 'Text to show when loading'
-      }
+        description: 'Text to show when loading',
+      },
     },
     examples: [
       {
         title: 'Primary Button',
         description: 'Default primary button style',
-        props: { text: 'Primary Button', variant: 'primary' }
+        props: { text: 'Primary Button', variant: 'primary' },
       },
       {
         title: 'Loading State',
         description: 'Button with loading spinner',
-        props: { text: 'Save Changes', variant: 'primary', loading: true }
+        props: { text: 'Save Changes', variant: 'primary', loading: true },
       },
       {
         title: 'With Icons',
         description: 'Button with left and right icons',
-        props: { text: 'Download', variant: 'secondary', iconLeft: 'download' }
-      }
-    ]
+        props: { text: 'Download', variant: 'secondary', iconLeft: 'download' },
+      },
+    ],
   },
 
-  'Icon': {
+  Icon: {
     name: 'Icon',
     description: 'Material Symbols icon component with size and weight variants',
     category: 'Core Controls',
@@ -572,7 +588,7 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
         type: 'text',
         label: 'Icon Name',
         defaultValue: 'star',
-        description: 'Material Symbols icon name'
+        description: 'Material Symbols icon name',
       },
       size: {
         type: 'select',
@@ -583,15 +599,15 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
           { label: 'Small', value: 'sm' },
           { label: 'Medium', value: 'md' },
           { label: 'Large', value: 'lg' },
-          { label: 'Extra Large', value: 'xl' }
+          { label: 'Extra Large', value: 'xl' },
         ],
-        description: 'Size of the icon'
+        description: 'Size of the icon',
       },
       filled: {
         type: 'boolean',
         label: 'Filled',
         defaultValue: false,
-        description: 'Uses filled variant when true'
+        description: 'Uses filled variant when true',
       },
       weight: {
         type: 'select',
@@ -601,32 +617,32 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
           { label: 'Light', value: 'light' },
           { label: 'Regular', value: 'regular' },
           { label: 'Medium', value: 'medium' },
-          { label: 'Bold', value: 'bold' }
+          { label: 'Bold', value: 'bold' },
         ],
-        description: 'Font weight of the icon'
+        description: 'Font weight of the icon',
       },
       interactive: {
         type: 'boolean',
         label: 'Interactive',
         defaultValue: false,
-        description: 'Adds hover effects when true'
-      }
+        description: 'Adds hover effects when true',
+      },
     },
     examples: [
       {
         title: 'Basic Icon',
         description: 'Standard icon with default settings',
-        props: { name: 'home' }
+        props: { name: 'home' },
       },
       {
         title: 'Large Filled',
         description: 'Large filled icon with medium weight',
-        props: { name: 'favorite', size: 'lg', filled: true, weight: 'medium' }
-      }
-    ]
+        props: { name: 'favorite', size: 'lg', filled: true, weight: 'medium' },
+      },
+    ],
   },
 
-  'LoadingState': {
+  LoadingState: {
     name: 'LoadingState',
     description: 'Standardized loading indicator with customizable text',
     category: 'State Components',
@@ -635,22 +651,22 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
         type: 'text',
         label: 'Loading Text',
         defaultValue: 'Loading...',
-        description: 'Text to display below the spinner'
-      }
+        description: 'Text to display below the spinner',
+      },
     },
     examples: [
       {
         title: 'Default Loading',
-        props: { text: 'Loading...' }
+        props: { text: 'Loading...' },
       },
       {
         title: 'Custom Message',
-        props: { text: 'Fetching your data...' }
-      }
-    ]
+        props: { text: 'Fetching your data...' },
+      },
+    ],
   },
 
-  'ErrorState': {
+  ErrorState: {
     name: 'ErrorState',
     description: 'Error display with optional retry functionality',
     category: 'State Components',
@@ -659,45 +675,45 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
         type: 'text',
         label: 'Error Message',
         defaultValue: 'Something went wrong',
-        description: 'The error message to display'
+        description: 'The error message to display',
       },
       showRetry: {
         type: 'boolean',
         label: 'Show Retry Button',
         defaultValue: true,
-        description: 'Shows retry button when true'
+        description: 'Shows retry button when true',
       },
       retryText: {
         type: 'text',
         label: 'Retry Button Text',
         defaultValue: 'Try Again',
-        description: 'Text for the retry button'
+        description: 'Text for the retry button',
       },
       icon: {
         type: 'text',
         label: 'Error Icon',
         defaultValue: 'error',
-        description: 'Material icon to show with error'
-      }
+        description: 'Material icon to show with error',
+      },
     },
     examples: [
       {
         title: 'Basic Error',
-        props: { message: 'Failed to load data' }
+        props: { message: 'Failed to load data' },
       },
       {
         title: 'Network Error',
-        props: { 
-          message: 'Network connection failed', 
-          showRetry: true, 
+        props: {
+          message: 'Network connection failed',
+          showRetry: true,
           retryText: 'Retry Connection',
-          icon: 'wifi_off'
-        }
-      }
-    ]
+          icon: 'wifi_off',
+        },
+      },
+    ],
   },
 
-  'EmptyState': {
+  EmptyState: {
     name: 'EmptyState',
     description: 'Empty state display with optional action button',
     category: 'State Components',
@@ -706,52 +722,52 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
         type: 'text',
         label: 'Title',
         defaultValue: 'No items found',
-        description: 'Main title for the empty state'
+        description: 'Main title for the empty state',
       },
       subtitle: {
         type: 'text',
         label: 'Subtitle',
         defaultValue: '',
-        description: 'Optional subtitle text'
+        description: 'Optional subtitle text',
       },
       icon: {
         type: 'text',
         label: 'Icon/Emoji',
         defaultValue: '📭',
-        description: 'Icon or emoji to display'
+        description: 'Icon or emoji to display',
       },
       showAction: {
         type: 'boolean',
         label: 'Show Action Button',
         defaultValue: false,
-        description: 'Shows action button when true'
+        description: 'Shows action button when true',
       },
       actionText: {
         type: 'text',
         label: 'Action Button Text',
         defaultValue: 'Take Action',
-        description: 'Text for the action button'
-      }
+        description: 'Text for the action button',
+      },
     },
     examples: [
       {
         title: 'Basic Empty State',
-        props: { title: 'No messages', icon: '💬' }
+        props: { title: 'No messages', icon: '💬' },
       },
       {
         title: 'With Action',
-        props: { 
-          title: 'No pubs nearby', 
+        props: {
+          title: 'No pubs nearby',
           subtitle: 'Try expanding your search radius',
           icon: '🏪',
           showAction: true,
-          actionText: 'Expand Search'
-        }
-      }
-    ]
+          actionText: 'Expand Search',
+        },
+      },
+    ],
   },
 
-  'PubCardLight': {
+  PubCardLight: {
     name: 'PubCardLight',
     description: 'Lightweight pub card component with multiple variants and status indicators',
     category: 'Data Display',
@@ -760,25 +776,25 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
         type: 'text',
         label: 'Pub Name',
         defaultValue: 'The Crown & Anchor',
-        description: 'Name of the pub'
+        description: 'Name of the pub',
       },
       pubAddress: {
         type: 'text',
         label: 'Address',
         defaultValue: '123 High Street, London',
-        description: 'Full address of the pub'
+        description: 'Full address of the pub',
       },
       pubCity: {
         type: 'text',
         label: 'City',
         defaultValue: 'London',
-        description: 'City where the pub is located'
+        description: 'City where the pub is located',
       },
       pubRegion: {
         type: 'text',
         label: 'Region',
         defaultValue: 'Greater London',
-        description: 'Region or state'
+        description: 'Region or state',
       },
       variant: {
         type: 'select',
@@ -787,9 +803,9 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
         options: [
           { label: 'Normal', value: 'normal' },
           { label: 'Compact', value: 'compact' },
-          { label: 'Overlay', value: 'overlay' }
+          { label: 'Overlay', value: 'overlay' },
         ],
-        description: 'Visual variant of the pub card'
+        description: 'Visual variant of the pub card',
       },
       distance: {
         type: 'number',
@@ -797,50 +813,50 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
         defaultValue: 250,
         min: 0,
         max: 10000,
-        description: 'Distance to the pub in meters'
+        description: 'Distance to the pub in meters',
       },
       showAddress: {
         type: 'boolean',
         label: 'Show Address',
         defaultValue: true,
-        description: 'Display the pub address'
+        description: 'Display the pub address',
       },
       showLocation: {
         type: 'boolean',
         label: 'Show Location',
         defaultValue: true,
-        description: 'Display city and region'
+        description: 'Display city and region',
       },
       showDistance: {
         type: 'boolean',
         label: 'Show Distance',
         defaultValue: true,
-        description: 'Display distance information'
+        description: 'Display distance information',
       },
       isLocalPub: {
         type: 'boolean',
         label: 'Local Pub',
         defaultValue: false,
-        description: 'Mark as user\'s local pub'
+        description: "Mark as user's local pub",
       },
       hasVerifiedVisit: {
         type: 'boolean',
         label: 'Verified Visit',
         defaultValue: false,
-        description: 'User has verified check-in'
+        description: 'User has verified check-in',
       },
       hasUnverifiedVisit: {
         type: 'boolean',
         label: 'Unverified Visit',
         defaultValue: false,
-        description: 'User has manual visit record'
+        description: 'User has manual visit record',
       },
       isNearestUnvisited: {
         type: 'boolean',
         label: 'Nearest Unvisited',
         defaultValue: false,
-        description: 'Target pub indicator'
-      }
+        description: 'Target pub indicator',
+      },
     },
     examples: [
       {
@@ -851,8 +867,8 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
           pubAddress: '45 Market Street',
           pubCity: 'Manchester',
           pubRegion: 'Greater Manchester',
-          distance: 150
-        }
+          distance: 150,
+        },
       },
       {
         title: 'Compact Variant',
@@ -863,19 +879,19 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
           pubCity: 'Edinburgh',
           variant: 'compact',
           distance: 500,
-          showDistance: true
-        }
+          showDistance: true,
+        },
       },
       {
         title: 'Overlay Variant',
         description: 'For hero sections with backgrounds',
         props: {
-          pubName: 'The Blacksmith\'s Arms',
+          pubName: "The Blacksmith's Arms",
           pubAddress: '78 Old Road',
           pubCity: 'York',
           variant: 'overlay',
-          isLocalPub: true
-        }
+          isLocalPub: true,
+        },
       },
       {
         title: 'With Visit Status',
@@ -885,8 +901,8 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
           pubAddress: '234 Castle Street',
           pubCity: 'Cardiff',
           hasVerifiedVisit: true,
-          distance: 75
-        }
+          distance: 75,
+        },
       },
       {
         title: 'Target Pub',
@@ -897,40 +913,41 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
           pubCity: 'Brighton',
           isNearestUnvisited: true,
           distance: 320,
-          showDistance: true
-        }
-      }
-    ]
+          showDistance: true,
+        },
+      },
+    ],
   },
 
-  'PubCard': {
+  PubCard: {
     name: 'PubCard',
-    description: 'Full-featured pub card with selection mode, status badges, and detailed information',
+    description:
+      'Full-featured pub card with selection mode, status badges, and detailed information',
     category: 'Data Display',
     props: {
       pubName: {
         type: 'text',
         label: 'Pub Name',
         defaultValue: 'The Crown & Anchor',
-        description: 'Name of the pub'
+        description: 'Name of the pub',
       },
       pubAddress: {
         type: 'text',
         label: 'Address',
         defaultValue: '123 High Street, London',
-        description: 'Full address of the pub'
+        description: 'Full address of the pub',
       },
       pubCity: {
         type: 'text',
         label: 'City',
         defaultValue: 'London',
-        description: 'City where the pub is located'
+        description: 'City where the pub is located',
       },
       pubRegion: {
         type: 'text',
         label: 'Region',
         defaultValue: 'Greater London',
-        description: 'Region or state'
+        description: 'Region or state',
       },
       distance: {
         type: 'number',
@@ -938,25 +955,25 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
         defaultValue: 250,
         min: 0,
         max: 10000,
-        description: 'Distance to the pub in meters'
+        description: 'Distance to the pub in meters',
       },
       selectable: {
         type: 'boolean',
         label: 'Selectable Mode',
         defaultValue: false,
-        description: 'Show checkbox for selection'
+        description: 'Show checkbox for selection',
       },
       isSelected: {
         type: 'boolean',
         label: 'Is Selected',
         defaultValue: false,
-        description: 'Whether the pub is currently selected'
+        description: 'Whether the pub is currently selected',
       },
       hasCheckedIn: {
         type: 'boolean',
         label: 'Has Checked In',
         defaultValue: false,
-        description: 'Legacy check-in status'
+        description: 'Legacy check-in status',
       },
       checkinCount: {
         type: 'number',
@@ -964,38 +981,38 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
         defaultValue: 0,
         min: 0,
         max: 1000,
-        description: 'Number of check-ins at this pub'
+        description: 'Number of check-ins at this pub',
       },
       showCheckinCount: {
         type: 'boolean',
         label: 'Show Check-in Count',
         defaultValue: false,
-        description: 'Display the check-in counter'
+        description: 'Display the check-in counter',
       },
       isLocalPub: {
         type: 'boolean',
         label: 'Local Pub',
         defaultValue: false,
-        description: 'Mark as user\'s local pub'
+        description: "Mark as user's local pub",
       },
       hasVerifiedVisit: {
         type: 'boolean',
         label: 'Verified Visit',
         defaultValue: false,
-        description: 'User has verified check-in'
+        description: 'User has verified check-in',
       },
       hasUnverifiedVisit: {
         type: 'boolean',
         label: 'Unverified Visit',
         defaultValue: false,
-        description: 'User has manual visit record'
+        description: 'User has manual visit record',
       },
       isNearestUnvisited: {
         type: 'boolean',
         label: 'Nearest Unvisited',
         defaultValue: false,
-        description: 'Target pub indicator'
-      }
+        description: 'Target pub indicator',
+      },
     },
     examples: [
       {
@@ -1006,8 +1023,8 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
           pubAddress: '45 Market Street',
           pubCity: 'Manchester',
           pubRegion: 'Greater Manchester',
-          distance: 150
-        }
+          distance: 150,
+        },
       },
       {
         title: 'Selectable Mode',
@@ -1018,8 +1035,8 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
           pubCity: 'Edinburgh',
           distance: 500,
           selectable: true,
-          isSelected: true
-        }
+          isSelected: true,
+        },
       },
       {
         title: 'With Visit Status',
@@ -1031,8 +1048,8 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
           hasVerifiedVisit: true,
           distance: 75,
           checkinCount: 5,
-          showCheckinCount: true
-        }
+          showCheckinCount: true,
+        },
       },
       {
         title: 'Target Pub',
@@ -1042,22 +1059,22 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
           pubAddress: '567 Kings Road',
           pubCity: 'Brighton',
           isNearestUnvisited: true,
-          distance: 320
-        }
+          distance: 320,
+        },
       },
       {
         title: 'Local Pub',
-        description: 'User\'s local pub with home indicator',
+        description: "User's local pub with home indicator",
         props: {
-          pubName: 'The Blacksmith\'s Arms',
+          pubName: "The Blacksmith's Arms",
           pubAddress: '78 Old Road',
           pubCity: 'York',
           isLocalPub: true,
           hasCheckedIn: true,
           checkinCount: 25,
           showCheckinCount: true,
-          distance: 50
-        }
+          distance: 50,
+        },
       },
       {
         title: 'Check-in Ready',
@@ -1067,11 +1084,11 @@ export const COMPONENT_METADATA: Record<string, ComponentMetadata> = {
           pubAddress: '100 Queen Street',
           pubCity: 'Bath',
           distance: 300,
-          hasUnverifiedVisit: true
-        }
-      }
-    ]
-  }
+          hasUnverifiedVisit: true,
+        },
+      },
+    ],
+  },
 };
 
 // Helper functions
@@ -1090,11 +1107,11 @@ export function getComponentsByCategory(category: string): ComponentMetadata[] {
 export function generateDefaultProps(componentName: string): Record<string, any> {
   const metadata = getComponentMetadata(componentName);
   if (!metadata) return {};
-  
+
   const defaultProps: Record<string, any> = {};
   Object.entries(metadata.props).forEach(([key, control]) => {
     defaultProps[key] = control.defaultValue;
   });
-  
+
   return defaultProps;
 }

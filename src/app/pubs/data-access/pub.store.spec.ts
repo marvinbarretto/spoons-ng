@@ -1,13 +1,13 @@
 // src/app/pubs/data-access/pub.store.spec.ts
-import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
-import { PubStore } from './pub.store';
-import { PubService } from './pub.service';
+import { TestBed } from '@angular/core/testing';
 import { CacheService } from '../../shared/data-access/cache.service';
+import type { GeoLocation } from '../../shared/data-access/location.service';
 import { LocationService } from '../../shared/data-access/location.service';
 import { watchSignal } from '../../shared/testing/signal-test-utils.spec';
 import type { Pub } from '../utils/pub.models';
-import type { GeoLocation } from '../../shared/data-access/location.service';
+import { PubService } from './pub.service';
+import { PubStore } from './pub.store';
 
 describe('PubStore Sorting', () => {
   let store: PubStore;
@@ -37,11 +37,11 @@ describe('PubStore Sorting', () => {
       address: '456 Mid St',
       city: 'London',
       region: 'Greater London',
-      location: { lat: 51.5000, lng: -0.1500 }, // Middle distance
-    }
+      location: { lat: 51.5, lng: -0.15 }, // Middle distance
+    },
   ];
 
-  const testLocation: GeoLocation = { lat: 51.5200, lng: -0.0800 }; // Near Alpha Pub
+  const testLocation: GeoLocation = { lat: 51.52, lng: -0.08 }; // Near Alpha Pub
 
   beforeEach(() => {
     mockCacheService = {
@@ -50,7 +50,7 @@ describe('PubStore Sorting', () => {
     } as any;
 
     mockLocationService = {
-      location: signal<GeoLocation | null>(null)
+      location: signal<GeoLocation | null>(null),
     };
 
     TestBed.configureTestingModule({
@@ -59,7 +59,7 @@ describe('PubStore Sorting', () => {
         { provide: CacheService, useValue: mockCacheService },
         { provide: LocationService, useValue: mockLocationService },
         { provide: PubService, useValue: {} },
-      ]
+      ],
     });
 
     store = TestBed.inject(PubStore);
@@ -120,7 +120,7 @@ describe('PubStore Sorting', () => {
       // Arrange - Set all pubs to same location
       const samePubs: Pub[] = mockPubs.map(pub => ({
         ...pub,
-        location: { lat: 51.5074, lng: -0.1278 }
+        location: { lat: 51.5074, lng: -0.1278 },
       }));
 
       mockCacheService.load.mockResolvedValue(samePubs);

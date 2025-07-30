@@ -1,4 +1,4 @@
-import { signal, computed } from '@angular/core';
+import { computed, signal } from '@angular/core';
 
 export class MockDataAggregatorService {
   private _loading = signal(false);
@@ -8,7 +8,7 @@ export class MockDataAggregatorService {
     totalPoints: 0,
     totalCheckins: 0,
     badgeCount: 0,
-    landlordCount: 0
+    landlordCount: 0,
   });
   private _leaderboardData = signal<any[]>([]);
   private _achievements = signal<any[]>([]);
@@ -39,7 +39,7 @@ export class MockDataAggregatorService {
     displayName: 'Test User',
     photoURL: null,
     isAnonymous: false,
-    onboardingCompleted: true
+    onboardingCompleted: true,
   }));
 
   // Test helper methods
@@ -96,7 +96,7 @@ export class MockDataAggregatorService {
       totalPoints: 0,
       totalCheckins: 0,
       badgeCount: 0,
-      landlordCount: 0
+      landlordCount: 0,
     });
     this._leaderboardData.set([]);
     this._achievements.set([]);

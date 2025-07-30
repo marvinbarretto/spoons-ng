@@ -1,9 +1,9 @@
 // src/app/home/ui/profile-customisation-modal/widgets/display-name-widget/display-name-widget.component.ts
-import { Component, input, output, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { generateRandomName } from '../../../../../shared/utils/anonymous-names';
 import type { User } from '@users/utils/user.model';
+import { generateRandomName } from '../../../../../shared/utils/anonymous-names';
 
 @Component({
   selector: 'app-display-name-widget',
@@ -56,7 +56,9 @@ import type { User } from '@users/utils/user.model';
         <div class="tips-section">
           <div class="tip">
             <span class="tip-icon">💡</span>
-            <span class="tip-text">Your display name is how other players will see you on leaderboards</span>
+            <span class="tip-text"
+              >Your display name is how other players will see you on leaderboards</span
+            >
           </div>
         </div>
       }
@@ -202,7 +204,7 @@ import type { User } from '@users/utils/user.model';
         justify-content: center;
       }
     }
-  `
+  `,
 })
 export class DisplayNameWidgetComponent {
   readonly maxLength = 30;

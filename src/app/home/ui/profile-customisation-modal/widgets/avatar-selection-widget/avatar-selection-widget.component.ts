@@ -1,9 +1,17 @@
-import { Component, input, output, computed, signal, inject, ChangeDetectionStrategy } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 
-import { AvatarService } from '@shared/data-access/avatar.service';
-import { UserStore } from '@users/data-access/user.store';
 import { AuthStore } from '@auth/data-access/auth.store';
 import type { AvatarOption } from '@shared/data-access/avatar.service';
+import { AvatarService } from '@shared/data-access/avatar.service';
+import { UserStore } from '@users/data-access/user.store';
 
 @Component({
   selector: 'app-avatar-selection-widget',
@@ -58,7 +66,6 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
       border-radius: 8px;
     }
 
-
     .current-avatar {
       display: flex;
       align-items: center;
@@ -105,7 +112,6 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
     .status-circle.saved {
       background: #10b981;
     }
-
 
     .avatar-grid {
       display: grid;
@@ -201,14 +207,12 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
     }
 
     @media (max-width: 640px) {
-
       .avatar-option {
         width: 50px;
         height: 50px;
       }
-
     }
-  `
+  `,
 })
 export class AvatarSelectionWidgetComponent {
   private readonly _avatarService = inject(AvatarService);
@@ -250,8 +254,6 @@ export class AvatarSelectionWidgetComponent {
     return this.currentAvatarUrl();
   });
 
-
-
   isSelected(avatar: AvatarOption): boolean {
     return this._selectedAvatarId() === avatar.id;
   }
@@ -273,5 +275,4 @@ export class AvatarSelectionWidgetComponent {
   private getAuthUid(): string | null {
     return this._authStore.user()?.uid || null;
   }
-
 }

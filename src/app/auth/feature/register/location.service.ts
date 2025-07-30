@@ -30,7 +30,7 @@ export class LocationService {
       const error: LocationError = {
         code: 0,
         message: 'Geolocation not supported',
-        userFriendlyMessage: 'Your device or browser doesn\'t support location services.'
+        userFriendlyMessage: "Your device or browser doesn't support location services.",
       };
       this.locationError.set(error);
       this.permissionStatus.set('unavailable');
@@ -49,11 +49,11 @@ export class LocationService {
       };
 
       navigator.geolocation.getCurrentPosition(
-        (position) => {
+        position => {
           console.log('[LocationService] ✅ Location permission granted:', {
             lat: position.coords.latitude,
             lng: position.coords.longitude,
-            accuracy: position.coords.accuracy
+            accuracy: position.coords.accuracy,
           });
 
           this.currentPosition.set(position);
@@ -62,7 +62,7 @@ export class LocationService {
           this.locationError.set(null);
           resolve(position);
         },
-        (error) => {
+        error => {
           console.error('[LocationService] ❌ Location request failed:', error);
 
           const locationError = this.mapGeolocationError(error);
@@ -83,25 +83,27 @@ export class LocationService {
         return {
           code: error.code,
           message: error.message,
-          userFriendlyMessage: 'Location access was denied. Please enable location permissions in your browser settings and try again.'
+          userFriendlyMessage:
+            'Location access was denied. Please enable location permissions in your browser settings and try again.',
         };
       case error.POSITION_UNAVAILABLE:
         return {
           code: error.code,
           message: error.message,
-          userFriendlyMessage: 'Your location couldn\'t be determined. Please check your device\'s location settings.'
+          userFriendlyMessage:
+            "Your location couldn't be determined. Please check your device's location settings.",
         };
       case error.TIMEOUT:
         return {
           code: error.code,
           message: error.message,
-          userFriendlyMessage: 'Location request timed out. Please try again.'
+          userFriendlyMessage: 'Location request timed out. Please try again.',
         };
       default:
         return {
           code: error.code,
           message: error.message,
-          userFriendlyMessage: 'An error occurred while getting your location. Please try again.'
+          userFriendlyMessage: 'An error occurred while getting your location. Please try again.',
         };
     }
   }
@@ -111,12 +113,14 @@ export class LocationService {
     const R = 6371; // Earth's radius in kilometers
     const dLat = this.toRadians(lat2 - lat1);
     const dLon = this.toRadians(lon2 - lon1);
-    
-    const a = 
+
+    const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(this.toRadians(lat1)) * Math.cos(this.toRadians(lat2)) *
-      Math.sin(dLon / 2) * Math.sin(dLon / 2);
-    
+      Math.cos(this.toRadians(lat1)) *
+        Math.cos(this.toRadians(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c; // Distance in kilometers
   }
@@ -163,7 +167,7 @@ export class LocationService {
       console.log('[LocationService] ✅ Found nearest pub:', {
         name: nearestPub.name,
         distance: `${shortestDistance.toFixed(2)}km`,
-        id: nearestPub.id
+        id: nearestPub.id,
       });
     } else {
       console.log('[LocationService] ❌ No nearby pubs found');
@@ -173,7 +177,10 @@ export class LocationService {
   }
 
   // Find multiple nearby pubs (for selection)
-  async findNearbyPubs(position: GeolocationPosition, maxDistance: number = 50): Promise<Array<Pub & { distance: number }>> {
+  async findNearbyPubs(
+    position: GeolocationPosition,
+    maxDistance: number = 50
+  ): Promise<Array<Pub & { distance: number }>> {
     const userLat = position.coords.latitude;
     const userLng = position.coords.longitude;
 

@@ -1,10 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import { signal } from '@angular/core';
 
-import { SplashComponent } from './splash.component';
 import { AuthStore } from '@auth/data-access/auth.store';
-import { BaseComponent } from '@shared/base/base.component';
+import { SplashComponent } from './splash.component';
 
 describe('SplashComponent', () => {
   let component: SplashComponent;
@@ -59,18 +57,18 @@ describe('SplashComponent', () => {
 
       expect(mockAuthStore.markSplashAsSeen).toHaveBeenCalled();
       expect(mockRouter.navigate).toHaveBeenCalledWith(['/login']);
-      
+
       consoleSpy.mockRestore();
     });
 
     it('should manage loading state correctly', async () => {
       mockRouter.navigate.mockResolvedValue(true);
-      
+
       expect(component.loading()).toBe(false);
-      
+
       const navigationPromise = component.navigateToLogin();
       expect(component.loading()).toBe(true);
-      
+
       await navigationPromise;
       expect(component.loading()).toBe(false);
     });
@@ -94,18 +92,18 @@ describe('SplashComponent', () => {
 
       expect(mockAuthStore.markSplashAsSeen).toHaveBeenCalled();
       expect(mockRouter.navigate).toHaveBeenCalledWith(['/register']);
-      
+
       consoleSpy.mockRestore();
     });
 
     it('should manage loading state correctly', async () => {
       mockRouter.navigate.mockResolvedValue(true);
-      
+
       expect(component.loading()).toBe(false);
-      
+
       const navigationPromise = component.navigateToRegister();
       expect(component.loading()).toBe(true);
-      
+
       await navigationPromise;
       expect(component.loading()).toBe(false);
     });
@@ -130,19 +128,19 @@ describe('SplashComponent', () => {
 
       expect(mockAuthStore.continueAsGuest).toHaveBeenCalled();
       expect(mockRouter.navigate).not.toHaveBeenCalled();
-      
+
       consoleSpy.mockRestore();
     });
 
     it('should manage guest loading state correctly', async () => {
       mockAuthStore.continueAsGuest.mockResolvedValue();
       mockRouter.navigate.mockResolvedValue(true);
-      
+
       expect(component.guestLoading()).toBe(false);
-      
+
       const guestPromise = component.continueAsGuest();
       expect(component.guestLoading()).toBe(true);
-      
+
       await guestPromise;
       expect(component.guestLoading()).toBe(false);
     });
@@ -150,11 +148,11 @@ describe('SplashComponent', () => {
     it('should reset guest loading state on error', async () => {
       mockAuthStore.continueAsGuest.mockRejectedValue(new Error('Auth failed'));
       const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-      
+
       expect(component.guestLoading()).toBe(false);
-      
+
       await component.continueAsGuest();
-      
+
       expect(component.guestLoading()).toBe(false);
       consoleSpy.mockRestore();
     });

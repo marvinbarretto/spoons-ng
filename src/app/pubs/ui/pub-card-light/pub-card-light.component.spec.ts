@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { PubCardLightComponent } from './pub-card-light.component';
 import { LocationService } from '../../../shared/data-access/location.service';
 import type { Pub } from '../../utils/pub.models';
+import { PubCardLightComponent } from './pub-card-light.component';
 
 // Mock LocationService
 class MockLocationService {
@@ -18,11 +18,11 @@ const mockPub: Pub = {
   postcode: 'TE5T 1NG',
   location: {
     lat: 51.5074,
-    lng: -0.1278
+    lng: -0.1278,
   },
   carpetImageUrl: 'test-carpet.jpg',
   thumbnailImageUrl: 'test-thumb.jpg',
-  websiteUrl: 'https://testpub.com'
+  websiteUrl: 'https://testpub.com',
 };
 
 describe('PubCardLightComponent', () => {
@@ -35,14 +35,12 @@ describe('PubCardLightComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [PubCardLightComponent],
-      providers: [
-        { provide: LocationService, useValue: mockLocationService }
-      ]
+      providers: [{ provide: LocationService, useValue: mockLocationService }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PubCardLightComponent);
     component = fixture.componentInstance;
-    
+
     // Set required inputs
     fixture.componentRef.setInput('pub', mockPub);
     fixture.detectChanges();
@@ -172,7 +170,7 @@ describe('PubCardLightComponent', () => {
       const pubWithoutRegion = { ...mockPub, region: '' };
       fixture.componentRef.setInput('pub', pubWithoutRegion);
       fixture.detectChanges();
-      
+
       expect(component.locationText()).toBe('Test City');
     });
 
@@ -180,7 +178,7 @@ describe('PubCardLightComponent', () => {
       const pubWithoutLocation = { ...mockPub, city: '', region: '' };
       fixture.componentRef.setInput('pub', pubWithoutLocation);
       fixture.detectChanges();
-      
+
       expect(component.locationText()).toBe('');
     });
   });

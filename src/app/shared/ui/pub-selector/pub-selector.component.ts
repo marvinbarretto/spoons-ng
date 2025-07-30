@@ -1,11 +1,11 @@
 // src/app/shared/ui/pub-selector/pub-selector.component.ts
-import { Component, computed, inject, input, output, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { PubStore } from '@pubs/data-access/pub.store';
-import { DataAggregatorService } from '../../data-access/data-aggregator.service';
-import { PubCardLightComponent } from '../../../pubs/ui/pub-card-light/pub-card-light.component';
 import type { Pub } from '@pubs/utils/pub.models';
+import { PubCardLightComponent } from '../../../pubs/ui/pub-card-light/pub-card-light.component';
+import { DataAggregatorService } from '../../data-access/data-aggregator.service';
 
 @Component({
   selector: 'app-pub-selector',
@@ -39,13 +39,7 @@ import type { Pub } from '@pubs/utils/pub.models';
           <div class="selected-pubs">
             <div class="selected-header">
               <span class="selected-count">{{ selectedPubs().length }} pubs selected</span>
-              <button
-                type="button"
-                class="clear-all-btn"
-                (click)="clearAll()"
-              >
-                Clear all
-              </button>
+              <button type="button" class="clear-all-btn" (click)="clearAll()">Clear all</button>
             </div>
             <div class="selected-list">
               @for (pub of selectedPubs(); track pub.id) {
@@ -127,7 +121,6 @@ import type { Pub } from '@pubs/utils/pub.models';
       @if (showError() && errorMessage()) {
         <div class="error-text">{{ errorMessage() }}</div>
       }
-
     </div>
   `,
   styles: `
@@ -165,7 +158,9 @@ import type { Pub } from '@pubs/utils/pub.models';
       border: 1px solid var(--border);
       border-radius: 8px;
       font-size: 0.875rem;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
       background: var(--background-lighter);
       color: var(--text);
     }
@@ -396,7 +391,6 @@ import type { Pub } from '@pubs/utils/pub.models';
       color: var(--error);
     }
 
-
     /* Responsive design */
     @media (max-width: 640px) {
       .selected-header {
@@ -416,7 +410,7 @@ import type { Pub } from '@pubs/utils/pub.models';
         align-self: flex-end;
       }
     }
-  `
+  `,
 })
 export class PubSelectorComponent {
   // ✅ Dependencies
@@ -467,18 +461,18 @@ export class PubSelectorComponent {
 
     // Apply search filter
     if (searchTerm) {
-      filtered = filtered.filter(pub =>
-        pub.name.toLowerCase().includes(searchTerm) ||
-        pub.city?.toLowerCase().includes(searchTerm) ||
-        pub.region?.toLowerCase().includes(searchTerm) ||
-        pub.address?.toLowerCase().includes(searchTerm)
+      filtered = filtered.filter(
+        pub =>
+          pub.name.toLowerCase().includes(searchTerm) ||
+          pub.city?.toLowerCase().includes(searchTerm) ||
+          pub.region?.toLowerCase().includes(searchTerm) ||
+          pub.address?.toLowerCase().includes(searchTerm)
       );
     }
 
     // Limit results for performance
     return filtered.slice(0, this.maxDisplayResults());
   });
-
 
   // ✅ Initialize pub data
   constructor() {

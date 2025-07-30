@@ -8,9 +8,8 @@ describe('NearestPubComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NearestPubComponent]
-    })
-    .compileComponents();
+      imports: [NearestPubComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(NearestPubComponent);
     component = fixture.componentInstance;

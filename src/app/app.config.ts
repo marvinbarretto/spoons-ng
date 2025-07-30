@@ -1,31 +1,36 @@
-import { ApplicationConfig, ErrorHandler, inject, provideAppInitializer, provideZoneChangeDetection, isDevMode } from '@angular/core';
+import {
+  ApplicationConfig,
+  inject,
+  isDevMode,
+  provideAppInitializer,
+  provideZoneChangeDetection,
+} from '@angular/core';
 import { provideRouter, TitleStrategy, withPreloading } from '@angular/router';
-import { OnboardingAwarePreloadingStrategy } from './shared/strategies/onboarding-aware-preloading.strategy';
 import { TELEGRAM_CONFIG } from '@fourfold/angular-foundation';
+import { OnboardingAwarePreloadingStrategy } from './shared/strategies/onboarding-aware-preloading.strategy';
 
-import { appRoutes } from './app.routes';
+import { provideHttpClient, withFetch } from '@angular/common/http';
+import { provideServiceWorker } from '@angular/service-worker';
+import player from 'lottie-web';
+import { provideCacheableAnimationLoader, provideLottieOptions } from 'ngx-lottie';
+import { firebaseProviders } from '../../firebase.config';
+import { environment } from '../environments/environment';
 import { USER_THEME_TOKEN } from '../libs/tokens/user-theme.token';
+import { appRoutes } from './app.routes';
 import { ThemeStore } from './shared/data-access/theme.store';
 import { DevCacheBuster } from './shared/utils/dev-cache-buster';
-import { provideHttpClient, withFetch } from '@angular/common/http';
-import { environment } from '../environments/environment';
 import { TemplatePageTitleStrategy } from './TemplatePageTitleStrategy';
-import { firebaseProviders } from '../../firebase.config';
-import { provideServiceWorker } from '@angular/service-worker';
-import { provideCacheableAnimationLoader, provideLottieOptions } from 'ngx-lottie';
-import player from 'lottie-web';
-
 
 export const appConfig: ApplicationConfig = {
   providers: [
     ...firebaseProviders,
     { provide: USER_THEME_TOKEN, useValue: 'light' },
-    { 
-      provide: TELEGRAM_CONFIG, 
+    {
+      provide: TELEGRAM_CONFIG,
       useValue: {
         botToken: environment.telegram?.botToken,
-        chatId: environment.telegram?.chatId
-      }
+        chatId: environment.telegram?.chatId,
+      },
     },
     provideLottieOptions({ player: () => player }),
     provideCacheableAnimationLoader(),
@@ -41,9 +46,10 @@ export const appConfig: ApplicationConfig = {
     provideRouter(appRoutes, withPreloading(OnboardingAwarePreloadingStrategy)),
     provideHttpClient(withFetch()),
     { provide: 'environment', useValue: environment },
-    { provide: TitleStrategy, useClass: TemplatePageTitleStrategy }, provideServiceWorker('ngsw-worker.js', {
-            enabled: !isDevMode(),
-            registrationStrategy: 'registerWhenStable:30000'
-          })
-  ]
+    { provide: TitleStrategy, useClass: TemplatePageTitleStrategy },
+    provideServiceWorker('ngsw-worker.js', {
+      enabled: !isDevMode(),
+      registrationStrategy: 'registerWhenStable:30000',
+    }),
+  ],
 };

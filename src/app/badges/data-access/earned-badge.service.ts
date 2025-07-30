@@ -1,7 +1,7 @@
 // badges/data-access/earned-badge.service.ts
 import { Injectable } from '@angular/core';
-import { where } from 'firebase/firestore';
 import { FirestoreService } from '@fourfold/angular-foundation';
+import { where } from 'firebase/firestore';
 import type { EarnedBadge } from '../utils/badge.model';
 
 @Injectable({ providedIn: 'root' })
@@ -32,7 +32,11 @@ export class EarnedBadgeService extends FirestoreService {
   /**
    * Award a badge to a user (with duplicate protection)
    */
-  async awardBadge(userId: string, badgeId: string, metadata?: Record<string, any>): Promise<EarnedBadge> {
+  async awardBadge(
+    userId: string,
+    badgeId: string,
+    metadata?: Record<string, any>
+  ): Promise<EarnedBadge> {
     console.log('[EarnedBadgeService] awardBadge', { userId, badgeId, metadata });
 
     // Check for duplicates
@@ -46,7 +50,7 @@ export class EarnedBadgeService extends FirestoreService {
       userId,
       badgeId,
       awardedAt: Date.now(),
-      metadata: metadata || {}
+      metadata: metadata || {},
     };
 
     // Add to Firestore and get the reference
@@ -55,7 +59,7 @@ export class EarnedBadgeService extends FirestoreService {
     // Return the complete earned badge with the generated ID
     const earnedBadge: EarnedBadge = {
       id: docRef.id,
-      ...earnedBadgeData
+      ...earnedBadgeData,
     };
 
     console.log(`🏅 Badge awarded: ${badgeId} to user ${userId}`);
@@ -98,9 +102,12 @@ export class EarnedBadgeService extends FirestoreService {
     console.log('[EarnedBadgeService] getBadgeAwardCounts');
     const allEarned = await this.getAllEarnedBadges();
 
-    return allEarned.reduce((counts, earned) => {
-      counts[earned.badgeId] = (counts[earned.badgeId] || 0) + 1;
-      return counts;
-    }, {} as Record<string, number>);
+    return allEarned.reduce(
+      (counts, earned) => {
+        counts[earned.badgeId] = (counts[earned.badgeId] || 0) + 1;
+        return counts;
+      },
+      {} as Record<string, number>
+    );
   }
 }

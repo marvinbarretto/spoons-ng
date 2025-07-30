@@ -4,7 +4,7 @@ import { SsrPlatformService } from '@fourfold/angular-foundation';
 export type SocialMediaPlatform = 'twitter' | 'facebook' | 'whatsapp' | 'telegram';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SocialMediaService {
   private readonly _platform = inject(SsrPlatformService);

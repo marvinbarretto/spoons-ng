@@ -1,7 +1,6 @@
-import { inject, Injectable } from "@angular/core";
-import { MissionService } from "./mission.service";
-import { signal } from "@angular/core";
-import { Mission } from "../utils/mission.model";
+import { inject, Injectable, signal } from '@angular/core';
+import { Mission } from '../utils/mission.model';
+import { MissionService } from './mission.service';
 
 @Injectable({ providedIn: 'root' })
 export class MissionStore {
@@ -36,7 +35,7 @@ export class MissionStore {
   async create(mission: Mission): Promise<void> {
     try {
       await this.missionService.create(mission.id, mission);
-      this.missions.update((prev) => [...prev, mission]);
+      this.missions.update(prev => [...prev, mission]);
     } catch (err) {
       this.error.set(err);
       console.error('[MissionStore] Create failed', err);
@@ -49,9 +48,7 @@ export class MissionStore {
   async update(mission: Mission): Promise<void> {
     try {
       await this.missionService.update(mission.id, mission);
-      this.missions.update((prev) =>
-        prev.map(m => (m.id === mission.id ? mission : m))
-      );
+      this.missions.update(prev => prev.map(m => (m.id === mission.id ? mission : m)));
     } catch (err) {
       this.error.set(err);
       console.error('[MissionStore] Update failed', err);
@@ -64,7 +61,7 @@ export class MissionStore {
   async delete(id: string): Promise<void> {
     try {
       await this.missionService.delete(id);
-      this.missions.update((prev) => prev.filter(m => m.id !== id));
+      this.missions.update(prev => prev.filter(m => m.id !== id));
     } catch (err) {
       this.error.set(err);
       console.error('[MissionStore] Delete failed', err);

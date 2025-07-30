@@ -4,12 +4,12 @@
 
 // src/app/checkin/data-access/checkin.service.ts
 import { Injectable, inject, signal } from '@angular/core';
-import { Timestamp, where } from 'firebase/firestore';
 import { FirestoreService } from '@fourfold/angular-foundation';
-import { NearbyPubStore } from '../../pubs/data-access/nearby-pub.store';
-import { AuthStore } from '../../auth/data-access/auth.store';
-import type { CheckIn } from '../utils/check-in.models';
+import { Timestamp, where } from 'firebase/firestore';
 import { environment } from '../../../environments/environment';
+import { AuthStore } from '../../auth/data-access/auth.store';
+import { NearbyPubStore } from '../../pubs/data-access/nearby-pub.store';
+import type { CheckIn } from '../utils/check-in.models';
 
 @Injectable({ providedIn: 'root' })
 export class CheckInService extends FirestoreService {
@@ -40,7 +40,9 @@ export class CheckInService extends FirestoreService {
 
     // Gate 1: Daily limit check
     if (environment.ACTIVE_DEVELOPMENT_MODE) {
-      console.log('[CheckInService] 📅 Daily limit check SKIPPED (ACTIVE_DEVELOPMENT_MODE enabled)');
+      console.log(
+        '[CheckInService] 📅 Daily limit check SKIPPED (ACTIVE_DEVELOPMENT_MODE enabled)'
+      );
     } else {
       console.log('[CheckInService] 📅 Running daily limit check...');
       const dailyCheck = await this.dailyLimitCheck(pubId);
@@ -88,7 +90,7 @@ export class CheckInService extends FirestoreService {
 
       // ✅ REAL: Build today's date key
       const todayDateKey = new Date().toISOString().split('T')[0];
-      console.log('[CheckInService] 📅 Today\'s date key:', todayDateKey);
+      console.log("[CheckInService] 📅 Today's date key:", todayDateKey);
 
       // ✅ REAL: Query Firestore for today's check-in using inherited FirestoreService method
       const existingCheckins = await this.getDocsWhere<CheckIn>(
@@ -101,7 +103,7 @@ export class CheckInService extends FirestoreService {
       console.log('[CheckInService] 📅 Query results:', {
         collection: 'checkins',
         query: { userId, pubId, dateKey: todayDateKey },
-        resultCount: existingCheckins.length
+        resultCount: existingCheckins.length,
       });
 
       if (existingCheckins.length > 0) {
@@ -109,29 +111,28 @@ export class CheckInService extends FirestoreService {
         console.log('[CheckInService] ❌ Found existing check-in today:', {
           checkinId: existingCheckin.id,
           timestamp: existingCheckin.timestamp,
-          dateKey: existingCheckin.dateKey
+          dateKey: existingCheckin.dateKey,
         });
 
         return {
           passed: false,
-          reason: 'You have already checked into this pub today. Try again tomorrow!'
+          reason: 'You have already checked into this pub today. Try again tomorrow!',
         };
       }
 
       console.log('[CheckInService] ✅ No existing check-in found for today - user can check in');
       return { passed: true };
-
     } catch (error: any) {
       console.error('[CheckInService] 📅 Error checking daily limit:', error);
       console.error('[CheckInService] 📅 Error details:', {
         message: error?.message,
         code: error?.code,
-        stack: error?.stack
+        stack: error?.stack,
       });
 
       return {
         passed: false,
-        reason: 'Could not verify daily check-in limit. Please try again.'
+        reason: 'Could not verify daily check-in limit. Please try again.',
       };
     }
   }
@@ -148,7 +149,9 @@ export class CheckInService extends FirestoreService {
       const distance = this.nearbyPubStore.getDistanceToPub(pubId);
 
       if (distance === null) {
-        console.log('[CheckInService] 📍 Could not determine distance (no location or pub not found)');
+        console.log(
+          '[CheckInService] 📍 Could not determine distance (no location or pub not found)'
+        );
         return { passed: false, reason: 'Could not determine your location or pub location' };
       }
 
@@ -164,105 +167,113 @@ export class CheckInService extends FirestoreService {
         console.log('[CheckInService] 📍 User is too far from pub');
         return {
           passed: false,
-          reason: `You are ${distanceInMeters}m away. Must be within ${threshold}m to check in.`
+          reason: `You are ${distanceInMeters}m away. Must be within ${threshold}m to check in.`,
         };
       }
 
       console.log('[CheckInService] 📍 User is within check-in range');
       return { passed: true };
-
     } catch (error) {
       console.error('[CheckInService] 📍 Error checking proximity:', error);
       return { passed: false, reason: 'Failed to check your location' };
     }
   }
 
-/**
- * Create a new check-in with complete data including points, badges, landlord status
- *
- * @param pubId - The pub to check into
- * @param carpetImageKey - Optional key for captured carpet image
- * @param checkinData - Optional complete check-in data to save (if not provided, creates minimal check-in)
- * @returns Promise<string> - The ID of the created check-in document
- */
-async createCheckin(pubId: string, carpetImageKey?: string, checkinData?: Partial<CheckIn>): Promise<string> {
-  console.log('[CheckInService] 💾 Creating REAL check-in for pub:', pubId);
+  /**
+   * Create a new check-in with complete data including points, badges, landlord status
+   *
+   * @param pubId - The pub to check into
+   * @param carpetImageKey - Optional key for captured carpet image
+   * @param checkinData - Optional complete check-in data to save (if not provided, creates minimal check-in)
+   * @returns Promise<string> - The ID of the created check-in document
+   */
+  async createCheckin(
+    pubId: string,
+    carpetImageKey?: string,
+    checkinData?: Partial<CheckIn>
+  ): Promise<string> {
+    console.log('[CheckInService] 💾 Creating REAL check-in for pub:', pubId);
 
-  if (carpetImageKey) {
-    console.log('[CheckInService] 🎨 Including carpet image key:', carpetImageKey);
-  }
+    if (carpetImageKey) {
+      console.log('[CheckInService] 🎨 Including carpet image key:', carpetImageKey);
+    }
 
-  if (checkinData) {
-    console.log('[CheckInService] 📋 Complete check-in data provided:', {
-      hasPointsEarned: 'pointsEarned' in checkinData,
-      hasPointsBreakdown: 'pointsBreakdown' in checkinData,
-      hasBadgeName: 'badgeName' in checkinData,
-      hasMadeUserLandlord: 'madeUserLandlord' in checkinData,
-      hasMissionUpdated: 'missionUpdated' in checkinData
+    if (checkinData) {
+      console.log('[CheckInService] 📋 Complete check-in data provided:', {
+        hasPointsEarned: 'pointsEarned' in checkinData,
+        hasPointsBreakdown: 'pointsBreakdown' in checkinData,
+        hasBadgeName: 'badgeName' in checkinData,
+        hasMadeUserLandlord: 'madeUserLandlord' in checkinData,
+        hasMissionUpdated: 'missionUpdated' in checkinData,
+      });
+    }
+
+    const userId = this.authStore.uid();
+    if (!userId) {
+      console.log('[CheckInService] ❌ No authenticated user - cannot create check-in');
+      throw new Error('User must be authenticated to check in');
+    }
+
+    // Build check-in data
+    const timestamp = new Date();
+    const dateKey = timestamp.toISOString().split('T')[0];
+
+    // Create complete check-in data including all calculated fields
+    const completeCheckinData: Omit<CheckIn, 'id'> = {
+      userId,
+      pubId,
+      timestamp: Timestamp.fromDate(timestamp),
+      dateKey,
+      // Include carpet image key if provided
+      ...(carpetImageKey && { carpetImageKey }),
+      // Include all additional check-in data (points, badges, landlord status, etc.)
+      ...checkinData,
+    };
+
+    console.log('[CheckInService] 💾 Complete check-in data prepared:', {
+      userId: completeCheckinData.userId,
+      pubId: completeCheckinData.pubId,
+      timestamp: timestamp.toISOString(),
+      dateKey: completeCheckinData.dateKey,
+      pointsEarned: completeCheckinData.pointsEarned,
+      hasPointsBreakdown: !!completeCheckinData.pointsBreakdown,
+      badgeName: completeCheckinData.badgeName,
+      madeUserLandlord: completeCheckinData.madeUserLandlord,
+      missionUpdated: completeCheckinData.missionUpdated,
+      carpetImageKey: completeCheckinData.carpetImageKey,
     });
+
+    // Save to Firestore
+    console.log(
+      '[CheckInService] 💾 Saving complete check-in data to Firestore collection: checkins'
+    );
+
+    const docRef = await this.addDocToCollection('checkins', completeCheckinData);
+    const docId = docRef.id;
+
+    console.log('[CheckInService] ✅ Check-in created successfully with complete data!');
+    console.log('[CheckInService] ✅ Firestore document ID:', docId);
+    console.log('[CheckInService] ✅ Document path:', `checkins/${docId}`);
+    console.log('[CheckInService] ✅ Points saved:', completeCheckinData.pointsEarned);
+    console.log('[CheckInService] ✅ Badge awarded:', completeCheckinData.badgeName || 'none');
+    console.log(
+      '[CheckInService] ✅ Made landlord:',
+      completeCheckinData.madeUserLandlord || false
+    );
+
+    if (carpetImageKey) {
+      console.log('[CheckInService] 🎨 Carpet image linked to check-in:', carpetImageKey);
+    }
+
+    // Log the complete document for debugging
+    console.log('[CheckInService] 📄 Complete Firestore document saved:', {
+      collection: 'checkins',
+      documentId: docId,
+      data: completeCheckinData,
+    });
+
+    return docId;
   }
-
-  const userId = this.authStore.uid();
-  if (!userId) {
-    console.log('[CheckInService] ❌ No authenticated user - cannot create check-in');
-    throw new Error('User must be authenticated to check in');
-  }
-
-  // Build check-in data
-  const timestamp = new Date();
-  const dateKey = timestamp.toISOString().split('T')[0];
-
-  // Create complete check-in data including all calculated fields
-  const completeCheckinData: Omit<CheckIn, 'id'> = {
-    userId,
-    pubId,
-    timestamp: Timestamp.fromDate(timestamp),
-    dateKey,
-    // Include carpet image key if provided
-    ...(carpetImageKey && { carpetImageKey }),
-    // Include all additional check-in data (points, badges, landlord status, etc.)
-    ...checkinData
-  };
-
-  console.log('[CheckInService] 💾 Complete check-in data prepared:', {
-    userId: completeCheckinData.userId,
-    pubId: completeCheckinData.pubId,
-    timestamp: timestamp.toISOString(),
-    dateKey: completeCheckinData.dateKey,
-    pointsEarned: completeCheckinData.pointsEarned,
-    hasPointsBreakdown: !!completeCheckinData.pointsBreakdown,
-    badgeName: completeCheckinData.badgeName,
-    madeUserLandlord: completeCheckinData.madeUserLandlord,
-    missionUpdated: completeCheckinData.missionUpdated,
-    carpetImageKey: completeCheckinData.carpetImageKey
-  });
-
-  // Save to Firestore
-  console.log('[CheckInService] 💾 Saving complete check-in data to Firestore collection: checkins');
-
-  const docRef = await this.addDocToCollection('checkins', completeCheckinData);
-  const docId = docRef.id;
-
-  console.log('[CheckInService] ✅ Check-in created successfully with complete data!');
-  console.log('[CheckInService] ✅ Firestore document ID:', docId);
-  console.log('[CheckInService] ✅ Document path:', `checkins/${docId}`);
-  console.log('[CheckInService] ✅ Points saved:', completeCheckinData.pointsEarned);
-  console.log('[CheckInService] ✅ Badge awarded:', completeCheckinData.badgeName || 'none');
-  console.log('[CheckInService] ✅ Made landlord:', completeCheckinData.madeUserLandlord || false);
-
-  if (carpetImageKey) {
-    console.log('[CheckInService] 🎨 Carpet image linked to check-in:', carpetImageKey);
-  }
-
-  // Log the complete document for debugging
-  console.log('[CheckInService] 📄 Complete Firestore document saved:', {
-    collection: 'checkins',
-    documentId: docId,
-    data: completeCheckinData
-  });
-
-  return docId;
-}
 
   /**
    * Load all check-ins for a specific user
@@ -271,14 +282,11 @@ async createCheckin(pubId: string, carpetImageKey?: string, checkinData?: Partia
     console.log('[CheckInService] 📡 Loading check-ins for user:', userId);
 
     try {
-      const checkins = await this.getDocsWhere<CheckIn>(
-        'checkins',
-        where('userId', '==', userId)
-      );
+      const checkins = await this.getDocsWhere<CheckIn>('checkins', where('userId', '==', userId));
 
       console.log('[CheckInService] 📡 Loaded check-ins:', {
         userId,
-        count: checkins.length
+        count: checkins.length,
       });
 
       return checkins;
@@ -309,14 +317,14 @@ async createCheckin(pubId: string, carpetImageKey?: string, checkinData?: Partia
     return error?.message || 'Failed to save check-in. Please try again.';
   }
 
-   /**
+  /**
    * Check if this is the user's first ever check-in to this pub
    *
    * @param userId - The user to check
    * @param pubId - The pub to check
    * @returns Promise<boolean> - True if this is their first visit
    */
-   async isFirstEverCheckIn(userId: string, pubId: string): Promise<boolean> {
+  async isFirstEverCheckIn(userId: string, pubId: string): Promise<boolean> {
     console.log('[CheckInService] 🔍 Checking if first visit...', { userId, pubId });
 
     try {
@@ -326,25 +334,24 @@ async createCheckin(pubId: string, carpetImageKey?: string, checkinData?: Partia
       console.log('[CheckInService] 🔍 First visit check:', {
         checkinCount,
         isFirst,
-        logic: 'count === 1 means first visit (just created)'
+        logic: 'count === 1 means first visit (just created)',
       });
 
       return isFirst;
-
     } catch (error) {
       console.error('[CheckInService] 🔍 Error checking first visit:', error);
       return false; // Default to false if we can't determine
     }
   }
 
-   /**
+  /**
    * Get total number of check-ins by user to this pub
    *
    * @param userId - The user to check
    * @param pubId - The pub to check
    * @returns Promise<number> - Total check-in count
    */
-   async getUserCheckinCount(userId: string, pubId: string): Promise<number> {
+  async getUserCheckinCount(userId: string, pubId: string): Promise<number> {
     console.log('[CheckInService] 📊 Getting user check-in count...', { userId, pubId });
 
     try {
@@ -357,17 +364,15 @@ async createCheckin(pubId: string, carpetImageKey?: string, checkinData?: Partia
       console.log('[CheckInService] 📊 Check-in count query result:', {
         collection: 'checkins',
         query: { userId, pubId },
-        resultCount: checkins.length
+        resultCount: checkins.length,
       });
 
       return checkins.length;
-
     } catch (error) {
       console.error('[CheckInService] 📊 Error getting check-in count:', error);
       return 0; // Default to 0 if we can't query
     }
   }
-
 
   /**
    * Get total number of check-ins by user across all pubs
@@ -387,11 +392,10 @@ async createCheckin(pubId: string, carpetImageKey?: string, checkinData?: Partia
       console.log('[CheckInService] 📊 Total check-in count query result:', {
         collection: 'checkins',
         query: { userId },
-        resultCount: allCheckins.length
+        resultCount: allCheckins.length,
       });
 
       return allCheckins.length;
-
     } catch (error) {
       console.error('[CheckInService] 📊 Error getting total check-in count:', error);
       return 0;
@@ -419,11 +423,10 @@ async createCheckin(pubId: string, carpetImageKey?: string, checkinData?: Partia
       console.log('[CheckInService] 🏠 Unique pub count query result:', {
         totalCheckins: allCheckins.length,
         uniquePubs: uniqueCount,
-        pubIds: Array.from(uniquePubIds)
+        pubIds: Array.from(uniquePubIds),
       });
 
       return uniqueCount;
-
     } catch (error) {
       console.error('[CheckInService] 🏠 Error getting unique pub count:', error);
       return 0;
@@ -453,11 +456,13 @@ async createCheckin(pubId: string, carpetImageKey?: string, checkinData?: Partia
     try {
       console.log('[CheckInService] 🌐 Fetching ALL check-ins from server (bypassing cache)...');
       const checkIns = await this.getDocsWhereFromServer<CheckIn>('checkins');
-      console.log(`[CheckInService] ✅ Server fetch complete: ${checkIns.length} check-ins (fresh data)`);
+      console.log(
+        `[CheckInService] ✅ Server fetch complete: ${checkIns.length} check-ins (fresh data)`
+      );
       console.log('[CheckInService] 🔍 Fresh server check-ins summary:', {
         totalCheckIns: checkIns.length,
         uniqueUsers: new Set(checkIns.map(c => c.userId)).size,
-        withPoints: checkIns.filter(c => (c.pointsEarned || 0) > 0).length
+        withPoints: checkIns.filter(c => (c.pointsEarned || 0) > 0).length,
       });
       return checkIns;
     } catch (error) {
@@ -473,7 +478,9 @@ async createCheckin(pubId: string, carpetImageKey?: string, checkinData?: Partia
   async loadAllCheckIns(): Promise<void> {
     this._loadingAllCheckIns.set(true);
     try {
-      console.log('[CheckInService] 🏆 Loading all check-ins for leaderboard (fresh server data)...');
+      console.log(
+        '[CheckInService] 🏆 Loading all check-ins for leaderboard (fresh server data)...'
+      );
       // 🔥 Use server-side fetch to bypass cache for real-time leaderboard data
       const checkIns = await this.getAllCheckInsFromServer();
       console.log(`[CheckInService] ✅ Loaded ${checkIns.length} fresh check-ins for leaderboard`);
@@ -499,13 +506,16 @@ async createCheckin(pubId: string, carpetImageKey?: string, checkinData?: Partia
    */
   addCheckInToGlobalSignal(checkIn: CheckIn): void {
     this._allCheckIns.update(checkIns => {
-      const exists = checkIns.some(c =>
-        c.userId === checkIn.userId &&
-        c.pubId === checkIn.pubId &&
-        c.timestamp.isEqual(checkIn.timestamp)
+      const exists = checkIns.some(
+        c =>
+          c.userId === checkIn.userId &&
+          c.pubId === checkIn.pubId &&
+          c.timestamp.isEqual(checkIn.timestamp)
       );
       if (!exists) {
-        console.log(`[CheckInService] Adding check-in to global signal: ${checkIn.userId} -> ${checkIn.pubId}`);
+        console.log(
+          `[CheckInService] Adding check-in to global signal: ${checkIn.userId} -> ${checkIn.pubId}`
+        );
         return [...checkIns, checkIn];
       }
       return checkIns;

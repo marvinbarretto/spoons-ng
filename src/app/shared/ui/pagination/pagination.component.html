@@ -1,4 +1,3 @@
-
 <!-- src/app/shared/ui/pagination/pagination.component.html -->
 <nav class="pagination" *ngIf="totalPages() > 1">
   <p>
@@ -6,11 +5,7 @@
   </p>
 
   <div class="buttons">
-    <app-button
-      (onClick)="previousPage()"
-      [disabled]="currentPage() === 1"
-      [icon]="'arrow_back'"
-    >
+    <app-button (onClick)="previousPage()" [disabled]="currentPage() === 1" [icon]="'arrow_back'">
       Previous
     </app-button>
 

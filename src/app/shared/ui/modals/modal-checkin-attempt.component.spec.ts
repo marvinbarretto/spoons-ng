@@ -1,5 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ModalCheckinAttemptComponent, CheckinErrorDetails } from './modal-checkin-attempt.component';
+import {
+  CheckinErrorDetails,
+  ModalCheckinAttemptComponent,
+} from './modal-checkin-attempt.component';
 
 describe('ModalCheckinAttemptComponent', () => {
   let component: ModalCheckinAttemptComponent;
@@ -7,19 +10,18 @@ describe('ModalCheckinAttemptComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ModalCheckinAttemptComponent]
-    })
-    .compileComponents();
-    
+      imports: [ModalCheckinAttemptComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(ModalCheckinAttemptComponent);
     component = fixture.componentInstance;
-    
+
     // Set required input
     fixture.componentRef.setInput('errorDetails', {
       type: 'no-location',
-      message: 'Test message'
+      message: 'Test message',
     } as CheckinErrorDetails);
-    
+
     fixture.detectChanges();
   });
 
@@ -46,25 +48,25 @@ describe('ModalCheckinAttemptComponent', () => {
 
   it('should show correct icon for different error types', () => {
     expect(component.getIconName()).toBe('location_off');
-    
+
     fixture.componentRef.setInput('errorDetails', {
       type: 'poor-accuracy',
-      message: 'Test message'
+      message: 'Test message',
     } as CheckinErrorDetails);
     fixture.detectChanges();
-    
+
     expect(component.getIconName()).toBe('gps_not_fixed');
   });
 
   it('should show correct title for different error types', () => {
     expect(component.getTitle()).toBe('Location Access Needed');
-    
+
     fixture.componentRef.setInput('errorDetails', {
       type: 'out-of-range',
-      message: 'Test message'
+      message: 'Test message',
     } as CheckinErrorDetails);
     fixture.detectChanges();
-    
+
     expect(component.getTitle()).toBe('Too Far from Pub');
   });
 });

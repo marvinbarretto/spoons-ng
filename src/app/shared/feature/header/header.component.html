@@ -2,10 +2,26 @@
 <div class="site-header" #headerRef>
   @if (!isHomepage()) {
     <a routerLink="/" class="header__title">
-      <h1>Spoonscount <small>{{version}} <span class="env-badge env-badge--{{environmentName().toLowerCase()}}">{{environmentName()}}</span></small></h1>
+      <h1>
+        Spoonscount
+        <small
+          >{{ version }}
+          <span class="env-badge env-badge--{{ environmentName().toLowerCase() }}">{{
+            environmentName()
+          }}</span></small
+        >
+      </h1>
     </a>
   } @else {
-    <h1 class="header__title">Spoonscount <small>{{version}} <span class="env-badge env-badge--{{environmentName().toLowerCase()}}">{{environmentName()}}</span></small></h1>
+    <h1 class="header__title">
+      Spoonscount
+      <small
+        >{{ version }}
+        <span class="env-badge env-badge--{{ environmentName().toLowerCase() }}">{{
+          environmentName()
+        }}</span></small
+      >
+    </h1>
   }
 
   <!-- ✅ SIMPLIFIED NAVIGATION:

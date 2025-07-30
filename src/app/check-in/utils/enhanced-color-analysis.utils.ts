@@ -36,11 +36,11 @@ export function extractEnhancedColors(videoElement: HTMLVideoElement): ColorProf
 
   // Multi-region sampling to avoid lighting bias
   const regions = [
-    { x: 60, y: 60, w: 60, h: 60 },     // Top-left
-    { x: 180, y: 60, w: 60, h: 60 },    // Top-right
-    { x: 60, y: 180, w: 60, h: 60 },    // Bottom-left
-    { x: 180, y: 180, w: 60, h: 60 },   // Bottom-right
-    { x: 120, y: 120, w: 60, h: 60 }    // Center
+    { x: 60, y: 60, w: 60, h: 60 }, // Top-left
+    { x: 180, y: 60, w: 60, h: 60 }, // Top-right
+    { x: 60, y: 180, w: 60, h: 60 }, // Bottom-left
+    { x: 180, y: 180, w: 60, h: 60 }, // Bottom-right
+    { x: 120, y: 120, w: 60, h: 60 }, // Center
   ];
 
   const colorCounts: { [key: string]: number } = {};
@@ -73,7 +73,7 @@ export function extractEnhancedColors(videoElement: HTMLVideoElement): ColorProf
 
   // Get dominant colors (top 6)
   const dominantColors = Object.entries(colorCounts)
-    .sort(([,a], [,b]) => b - a)
+    .sort(([, a], [, b]) => b - a)
     .slice(0, 6)
     .map(([color]) => color);
 
@@ -95,7 +95,7 @@ export function extractEnhancedColors(videoElement: HTMLVideoElement): ColorProf
     saturationLevel,
     colorDistribution,
     sampledPixels,
-    processingTime: performance.now() - startTime
+    processingTime: performance.now() - startTime,
   };
 }
 
@@ -106,14 +106,16 @@ export function calculateColorVariance(rgbValues: number[][]): number {
   if (rgbValues.length === 0) return 0;
 
   // Calculate mean for each channel
-  const means = [0, 1, 2].map(i =>
-    rgbValues.reduce((sum, rgb) => sum + rgb[i], 0) / rgbValues.length
+  const means = [0, 1, 2].map(
+    i => rgbValues.reduce((sum, rgb) => sum + rgb[i], 0) / rgbValues.length
   );
 
   // Calculate combined variance across all channels
-  const variance = rgbValues.reduce((sum, rgb) =>
-    sum + [0, 1, 2].reduce((s, i) => s + Math.pow(rgb[i] - means[i], 2), 0), 0
-  ) / rgbValues.length;
+  const variance =
+    rgbValues.reduce(
+      (sum, rgb) => sum + [0, 1, 2].reduce((s, i) => s + Math.pow(rgb[i] - means[i], 2), 0),
+      0
+    ) / rgbValues.length;
 
   return Math.sqrt(variance);
 }
@@ -164,9 +166,7 @@ export function calculateColorSimilarity(color1: string, color2: string): number
  */
 function hexToRgb(hex: string): [number, number, number] | null {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result ? [
-    parseInt(result[1], 16),
-    parseInt(result[2], 16),
-    parseInt(result[3], 16)
-  ] : null;
+  return result
+    ? [parseInt(result[1], 16), parseInt(result[2], 16), parseInt(result[3], 16)]
+    : null;
 }

@@ -31,11 +31,7 @@ import type { Pub } from '../../../pubs/utils/pub.models';
       </div>
       @if (showCarpet() && pub().carpetUrl) {
         <div class="pub-chip__carpet-preview">
-          <img
-            [src]="pub().carpetUrl"
-            [alt]="'Carpet at ' + pub().name"
-            class="carpet-thumbnail"
-          />
+          <img [src]="pub().carpetUrl" [alt]="'Carpet at ' + pub().name" class="carpet-thumbnail" />
         </div>
       }
     </div>
@@ -181,7 +177,7 @@ import type { Pub } from '../../../pubs/utils/pub.models';
     }
 
     /* Dark mode styles handled by theme tokens */
-  `
+  `,
 })
 export class PubChipComponent {
   // Required inputs

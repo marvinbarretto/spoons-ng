@@ -1,6 +1,6 @@
 import { Injectable, computed, signal } from '@angular/core';
-import { CheckinGate } from './gate.interface';
 import { CHECKIN_GATE_THRESHOLDS } from './checkin-thresholds.config';
+import { CheckinGate } from './gate.interface';
 
 @Injectable({ providedIn: 'root' })
 export class CarpetTextureGate implements CheckinGate {
@@ -12,17 +12,17 @@ export class CarpetTextureGate implements CheckinGate {
 
   readonly textureComplexity = this._textureComplexity.asReadonly();
   readonly currentValue = computed(() => this._textureComplexity());
-  
+
   readonly passed = computed(() => {
     const value = this._textureComplexity();
     const isPassed = value > this.threshold;
-    
+
     console.log('[CarpetTextureGate] Check:', {
       textureComplexity: value,
       threshold: this.threshold,
-      passed: isPassed
+      passed: isPassed,
     });
-    
+
     return isPassed;
   });
 

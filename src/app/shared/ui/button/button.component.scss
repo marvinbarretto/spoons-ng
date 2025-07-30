@@ -44,7 +44,7 @@
   }
 
   // Sizes
-  &[data-size="xs"] {
+  &[data-size='xs'] {
     padding: 0.25rem 0.5rem;
     font-size: 0.75rem;
     min-height: 1.5rem;
@@ -55,7 +55,7 @@
     }
   }
 
-  &[data-size="sm"] {
+  &[data-size='sm'] {
     padding: 0.375rem 0.75rem;
     font-size: 0.875rem;
     min-height: 2rem;
@@ -66,7 +66,7 @@
     }
   }
 
-  &[data-size="md"] {
+  &[data-size='md'] {
     padding: 0.5rem 1rem;
     font-size: 1rem;
     min-height: 2.5rem;
@@ -77,7 +77,7 @@
     }
   }
 
-  &[data-size="lg"] {
+  &[data-size='lg'] {
     padding: 0.75rem 1.5rem;
     font-size: 1.125rem;
     min-height: 3rem;
@@ -88,7 +88,7 @@
     }
   }
 
-  &[data-size="xl"] {
+  &[data-size='xl'] {
     padding: 1rem 2rem;
     font-size: 1.25rem;
     min-height: 3.5rem;
@@ -100,7 +100,7 @@
   }
 
   // Variants
-  &[data-variant="primary"] {
+  &[data-variant='primary'] {
     background-color: var(--primary);
     color: var(--on-primary);
 
@@ -116,7 +116,7 @@
     }
   }
 
-  &[data-variant="secondary"] {
+  &[data-variant='secondary'] {
     background-color: var(--secondary);
     color: var(--on-secondary);
     border: 1px solid var(--border);
@@ -131,7 +131,7 @@
     }
   }
 
-  &[data-variant="danger"] {
+  &[data-variant='danger'] {
     background-color: var(--error);
     color: var(--background-lighter);
 
@@ -148,7 +148,7 @@
     }
   }
 
-  &[data-variant="success"] {
+  &[data-variant='success'] {
     background-color: var(--success);
     color: var(--background-lighter);
 
@@ -165,7 +165,7 @@
     }
   }
 
-  &[data-variant="warning"] {
+  &[data-variant='warning'] {
     background-color: var(--warning);
     color: var(--text);
 
@@ -182,7 +182,7 @@
     }
   }
 
-  &[data-variant="ghost"] {
+  &[data-variant='ghost'] {
     background-color: transparent;
     color: var(--text);
     border: 1px solid transparent;
@@ -197,7 +197,7 @@
     }
   }
 
-  &[data-variant="link"] {
+  &[data-variant='link'] {
     background-color: transparent;
     color: var(--primary);
     border: none;
@@ -213,7 +213,7 @@
     }
   }
 
-  &[data-variant="outline"] {
+  &[data-variant='outline'] {
     background-color: transparent;
     color: var(--primary);
     border: 1px solid var(--primary);

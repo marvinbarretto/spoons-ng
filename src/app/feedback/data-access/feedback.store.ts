@@ -1,11 +1,11 @@
-import { Injectable, inject, computed, runInInjectionContext, Injector } from '@angular/core';
+import { Injectable, Injector, computed, inject, runInInjectionContext } from '@angular/core';
+import { TelegramNotification, TelegramNotificationService } from '@fourfold/angular-foundation';
 import { BaseStore } from '../../shared/base/base.store';
+import { CreateFeedbackInput, Feedback, FeedbackSubmissionResult } from '../utils/feedback.model';
 import { FeedbackService } from './feedback.service';
-import { Feedback, CreateFeedbackInput, FeedbackSubmissionResult } from '../utils/feedback.model';
-import { TelegramNotificationService, TelegramNotification } from '@fourfold/angular-foundation';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class FeedbackStore extends BaseStore<Feedback> {
   private readonly feedbackService = inject(FeedbackService);
@@ -27,7 +27,7 @@ export class FeedbackStore extends BaseStore<Feedback> {
   async submitFeedback(input: CreateFeedbackInput): Promise<FeedbackSubmissionResult> {
     console.log('[FeedbackStore] Starting feedback submission...', {
       type: input.type,
-      messageLength: input.message?.length || 0
+      messageLength: input.message?.length || 0,
     });
 
     try {
@@ -41,7 +41,7 @@ export class FeedbackStore extends BaseStore<Feedback> {
         console.error('[FeedbackStore] No authenticated user found');
         return {
           success: false,
-          error: 'User not authenticated'
+          error: 'User not authenticated',
         };
       }
 
@@ -67,13 +67,13 @@ export class FeedbackStore extends BaseStore<Feedback> {
           currentUrl: window.location.href,
           viewport: {
             width: window.innerWidth,
-            height: window.innerHeight
+            height: window.innerHeight,
           },
-          timestamp: new Date()
+          timestamp: new Date(),
         },
         status: 'pending',
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       this.addItem(newFeedback);
@@ -91,10 +91,10 @@ export class FeedbackStore extends BaseStore<Feedback> {
         metadata: {
           userAgent: newFeedback.context?.userAgent,
           viewport: newFeedback.context?.viewport,
-          status: newFeedback.status
-        }
+          status: newFeedback.status,
+        },
       };
-      
+
       this.telegramService.sendNotification(telegramNotification).catch(error => {
         console.error('[FeedbackStore] Failed to send Telegram notification:', error);
       });
@@ -102,12 +102,15 @@ export class FeedbackStore extends BaseStore<Feedback> {
       console.log('[FeedbackStore] About to show success toast');
       console.log('[FeedbackStore] ToastService instance:', this.toastService);
       this.toastService.success('Feedback submitted successfully!');
-      console.log('[FeedbackStore] Success toast called - checking toasts signal:', this.toastService.toasts());
+      console.log(
+        '[FeedbackStore] Success toast called - checking toasts signal:',
+        this.toastService.toasts()
+      );
       console.log('[FeedbackStore] Success toast shown');
 
       const successResult = {
         success: true,
-        feedbackId: result.id
+        feedbackId: result.id,
       };
       console.log('[FeedbackStore] Returning success result:', successResult);
       return successResult;
@@ -119,7 +122,7 @@ export class FeedbackStore extends BaseStore<Feedback> {
 
       return {
         success: false,
-        error: errorMessage
+        error: errorMessage,
       };
     } finally {
       this._loading.set(false);
@@ -135,14 +138,11 @@ export class FeedbackStore extends BaseStore<Feedback> {
       await this.feedbackService.updateFeedbackStatus(feedbackId, status, adminNotes);
 
       // Update local state
-      this.updateItem(
-        item => item.id === feedbackId,
-        {
-          status,
-          updatedAt: new Date(),
-          ...(adminNotes && { adminNotes })
-        }
-      );
+      this.updateItem(item => item.id === feedbackId, {
+        status,
+        updatedAt: new Date(),
+        ...(adminNotes && { adminNotes }),
+      });
 
       this.toastService.success('Feedback status updated');
     } catch (error: any) {

@@ -447,7 +447,7 @@
 
           .firebase-stat {
             text-align: center;
-            
+
             .firebase-value {
               font-size: 11px;
               font-weight: bold;
@@ -472,7 +472,7 @@
 
           .cache-ratio {
             text-align: center;
-            
+
             .ratio-circle {
               width: 40px;
               height: 40px;
@@ -480,7 +480,11 @@
               display: flex;
               align-items: center;
               justify-content: center;
-              background: conic-gradient(#28a745 0deg, #28a745 calc(var(--ratio) * 360deg), #e9ecef calc(var(--ratio) * 360deg));
+              background: conic-gradient(
+                #28a745 0deg,
+                #28a745 calc(var(--ratio) * 360deg),
+                #e9ecef calc(var(--ratio) * 360deg)
+              );
               position: relative;
               margin: 0 auto 2px;
 
@@ -534,7 +538,7 @@
 
           .error-summary {
             text-align: center;
-            
+
             .error-rate {
               font-size: 11px;
               font-weight: bold;
@@ -711,12 +715,17 @@
   }
 
   @keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
   }
 
   @keyframes pulse-danger {
-    0%, 100% {
+    0%,
+    100% {
       box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4);
     }
     50% {

@@ -71,7 +71,7 @@ export function formatTimestamp(
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   };
 
   return date.toLocaleDateString(undefined, { ...defaultOptions, ...options });
@@ -84,7 +84,7 @@ export function formatTime(timestamp: unknown): string {
   return formatTimestamp(timestamp, {
     hour: '2-digit',
     minute: '2-digit',
-    second: '2-digit'
+    second: '2-digit',
   });
 }
 
@@ -95,7 +95,7 @@ export function formatDate(timestamp: unknown): string {
   return formatTimestamp(timestamp, {
     year: 'numeric',
     month: 'short',
-    day: 'numeric'
+    day: 'numeric',
   });
 }
 

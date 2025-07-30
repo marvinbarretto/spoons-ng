@@ -38,7 +38,7 @@ export class MockDeviceOrientationGate {
   setOrientation(data: Partial<DeviceOrientationData>): void {
     this._orientation.update(current => ({
       ...current,
-      ...data
+      ...data,
     }));
   }
 
@@ -66,7 +66,7 @@ export class MockDeviceOrientationGate {
   simulateUnstable(): void {
     this._orientation.update(current => ({
       ...current,
-      stable: false
+      stable: false,
     }));
   }
 }

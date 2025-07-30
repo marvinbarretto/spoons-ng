@@ -1,7 +1,6 @@
 import { Injectable, computed, signal } from '@angular/core';
-import { CheckinGate } from './gate.interface';
-import { CHECKIN_GATE_THRESHOLDS } from './checkin-thresholds.config';
 import { extractEnhancedColors, type ColorProfile } from '../../utils';
+import { CheckinGate } from './gate.interface';
 
 @Injectable({ providedIn: 'root' })
 export class EnhancedColorVarianceGate implements CheckinGate {
@@ -16,7 +15,7 @@ export class EnhancedColorVarianceGate implements CheckinGate {
   // Public signals
   readonly colorProfile = this._colorProfile.asReadonly();
   readonly isAnalyzing = this._isAnalyzing.asReadonly();
-  
+
   readonly currentValue = computed(() => {
     const profile = this._colorProfile();
     return profile ? Math.round(profile.variance) : null;
@@ -32,7 +31,9 @@ export class EnhancedColorVarianceGate implements CheckinGate {
     const saturationPass = profile.saturationLevel > 0.2; // Some color saturation
     const colorDiversityPass = profile.dominantColors.length >= 3; // Multiple colors
 
-    const passCount = [variancePass, contrastPass, saturationPass, colorDiversityPass].filter(Boolean).length;
+    const passCount = [variancePass, contrastPass, saturationPass, colorDiversityPass].filter(
+      Boolean
+    ).length;
     const result = passCount >= 3; // At least 3/4 factors must pass
 
     console.log('[EnhancedColorVarianceGate] Analysis:', {
@@ -45,7 +46,7 @@ export class EnhancedColorVarianceGate implements CheckinGate {
       saturationPass,
       colorDiversityPass,
       passCount,
-      result
+      result,
     });
 
     return result;
@@ -56,21 +57,20 @@ export class EnhancedColorVarianceGate implements CheckinGate {
    */
   async analyzeFrame(videoElement: HTMLVideoElement): Promise<void> {
     console.log('[EnhancedColorVarianceGate] Starting enhanced color analysis');
-    
+
     this._isAnalyzing.set(true);
-    
+
     try {
       const profile = extractEnhancedColors(videoElement);
       this._colorProfile.set(profile);
-      
+
       console.log('[EnhancedColorVarianceGate] Analysis complete:', {
         variance: Math.round(profile.variance),
         dominantColors: profile.dominantColors.slice(0, 3),
         contrastRatio: Math.round(profile.contrastRatio * 100) + '%',
         saturationLevel: Math.round(profile.saturationLevel * 100) + '%',
-        processingTime: Math.round(profile.processingTime) + 'ms'
+        processingTime: Math.round(profile.processingTime) + 'ms',
       });
-      
     } catch (error) {
       console.error('[EnhancedColorVarianceGate] Analysis failed:', error);
       this._colorProfile.set(null);
@@ -86,10 +86,12 @@ export class EnhancedColorVarianceGate implements CheckinGate {
     const profile = this._colorProfile();
     if (!profile) return 'No analysis data';
 
-    return `Variance: ${Math.round(profile.variance)}, ` +
-           `Contrast: ${Math.round(profile.contrastRatio * 100)}%, ` +
-           `Colors: ${profile.dominantColors.length}, ` +
-           `Saturation: ${Math.round(profile.saturationLevel * 100)}%`;
+    return (
+      `Variance: ${Math.round(profile.variance)}, ` +
+      `Contrast: ${Math.round(profile.contrastRatio * 100)}%, ` +
+      `Colors: ${profile.dominantColors.length}, ` +
+      `Saturation: ${Math.round(profile.saturationLevel * 100)}%`
+    );
   }
 
   /**

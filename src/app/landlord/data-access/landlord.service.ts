@@ -1,10 +1,10 @@
 // src/app/landlord/data-access/landlord.service.ts
 import { inject, Injectable } from '@angular/core';
 import { FirestoreService } from '@fourfold/angular-foundation';
-import { Landlord } from '../utils/landlord.model';
-import { AuthStore } from '../../auth/data-access/auth.store';
 import { Timestamp } from 'firebase/firestore';
-import { toDate, toTimestamp } from '../../shared/utils/timestamp.utils';
+import { AuthStore } from '../../auth/data-access/auth.store';
+import { toTimestamp } from '../../shared/utils/timestamp.utils';
+import { Landlord } from '../utils/landlord.model';
 
 @Injectable({ providedIn: 'root' })
 export class LandlordService extends FirestoreService {
@@ -14,7 +14,10 @@ export class LandlordService extends FirestoreService {
    * Try to award landlord status for a pub on a specific date
    * Returns the landlord data (existing or new) without updating any store
    */
-  async tryAwardLandlord(pubId: string, checkinDate: Date): Promise<{ landlord: Landlord | null; wasAwarded: boolean }> {
+  async tryAwardLandlord(
+    pubId: string,
+    checkinDate: Date
+  ): Promise<{ landlord: Landlord | null; wasAwarded: boolean }> {
     const dateKey = checkinDate.toISOString().split('T')[0];
     const landlordDocPath = `landlords/${pubId}_${dateKey}`;
 
@@ -24,7 +27,10 @@ export class LandlordService extends FirestoreService {
 
       if (existingLandlord) {
         const normalizedLandlord = this.normalizeLandlord(existingLandlord);
-        console.log(`[LandlordService] 👑 Landlord already exists for ${pubId} on ${dateKey}:`, normalizedLandlord?.userId);
+        console.log(
+          `[LandlordService] 👑 Landlord already exists for ${pubId} on ${dateKey}:`,
+          normalizedLandlord?.userId
+        );
         return { landlord: normalizedLandlord, wasAwarded: false };
       }
 
@@ -41,14 +47,13 @@ export class LandlordService extends FirestoreService {
         pubId,
         claimedAt: Timestamp.now(),
         dateKey,
-        isActive: true
+        isActive: true,
       };
 
       await this.setDoc(landlordDocPath, newLandlord);
 
       console.log(`[LandlordService] 👑 Landlord awarded to ${userId} for ${pubId} on ${dateKey}`);
       return { landlord: newLandlord, wasAwarded: true };
-
     } catch (error) {
       console.error('[LandlordService] ❌ Error awarding landlord:', error);
       return { landlord: null, wasAwarded: false };
@@ -72,7 +77,7 @@ export class LandlordService extends FirestoreService {
         const normalizedLandlord = this.normalizeLandlord(landlordData);
         console.log(`[LandlordService] 👑 Found landlord for ${pubId}:`, {
           userId: normalizedLandlord?.userId,
-          claimedAt: normalizedLandlord?.claimedAt
+          claimedAt: normalizedLandlord?.claimedAt,
         });
         return normalizedLandlord;
       } else {
@@ -99,7 +104,7 @@ export class LandlordService extends FirestoreService {
         userId: data.userId || '',
         pubId: data.pubId || '',
         dateKey: data.dateKey || new Date().toISOString().split('T')[0],
-        streakDays: data.streakDays // ✅ Add optional streakDays
+        streakDays: data.streakDays, // ✅ Add optional streakDays
       } as Landlord;
     } catch (error) {
       console.error('[LandlordService] Failed to normalize landlord:', data, error);

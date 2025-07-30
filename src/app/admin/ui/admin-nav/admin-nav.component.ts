@@ -1,8 +1,8 @@
-import { Component, inject, computed } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 
-import { RouterModule, Router } from '@angular/router';
-import { BaseComponent } from '../../../shared/base/base.component';
+import { RouterModule } from '@angular/router';
 import { AuthStore } from '../../../auth/data-access/auth.store';
+import { BaseComponent } from '../../../shared/base/base.component';
 import { UserStore } from '../../../users/data-access/user.store';
 
 type AdminNavItem = {
@@ -19,7 +19,10 @@ type AdminNavItem = {
       <nav class="admin-nav">
         <ul class="admin-nav-list">
           @for (item of adminNavItems; track item.route) {
-            <li routerLinkActive="active" [routerLinkActiveOptions]="{ exact: item.exact || false }">
+            <li
+              routerLinkActive="active"
+              [routerLinkActiveOptions]="{ exact: item.exact || false }"
+            >
               <a [routerLink]="item.route">{{ item.label }}</a>
             </li>
           }
@@ -27,7 +30,10 @@ type AdminNavItem = {
       </nav>
     } @else if (isAdminRoute()) {
       <!-- Debug info when on admin route but nav not showing -->
-      <div class="admin-nav-debug" style="background: #ff000020; color: #ff0000; padding: 8px; margin: 4px; border-radius: 4px; font-size: 12px;">
+      <div
+        class="admin-nav-debug"
+        style="background: #ff000020; color: #ff0000; padding: 8px; margin: 4px; border-radius: 4px; font-size: 12px;"
+      >
         <strong>🔍 Admin Nav Debug:</strong>
         @if (!userStore.currentUser()) {
           No current user (loading: {{ userStore.loading() }})
@@ -36,12 +42,15 @@ type AdminNavItem = {
         } @else {
           Unknown issue
         }
-        <br>
-        <small>User: {{ userStore.currentUser()?.uid?.slice(0, 8) }}, Email: {{ userStore.currentUser()?.email }}</small>
+        <br />
+        <small
+          >User: {{ userStore.currentUser()?.uid?.slice(0, 8) }}, Email:
+          {{ userStore.currentUser()?.email }}</small
+        >
       </div>
     }
   `,
-  styleUrl: './admin-nav.component.scss'
+  styleUrl: './admin-nav.component.scss',
 })
 export class AdminNavComponent extends BaseComponent {
   protected readonly authStore = inject(AuthStore);
@@ -56,7 +65,7 @@ export class AdminNavComponent extends BaseComponent {
     { label: 'Feedback', route: '/admin/feedback' },
     { label: 'Carpets', route: '/admin/carpets' },
     { label: 'Errors', route: '/admin/errors' },
-    { label: 'Data Integrity', route: '/admin/data-integrity' }
+    { label: 'Data Integrity', route: '/admin/data-integrity' },
   ];
 
   readonly isAdminRoute = computed(() => {
@@ -67,16 +76,16 @@ export class AdminNavComponent extends BaseComponent {
   readonly isCurrentUserAdmin = computed(() => {
     const currentUser = this.userStore.currentUser();
     const isAdmin = currentUser?.isAdmin === true;
-    
+
     // Debug logging for admin check
     console.log('[AdminNavComponent] 🔍 Admin check:', {
       hasCurrentUser: !!currentUser,
       uid: currentUser?.uid?.slice(0, 8),
       email: currentUser?.email,
       isAdmin: currentUser?.isAdmin,
-      computedResult: isAdmin
+      computedResult: isAdmin,
     });
-    
+
     return isAdmin;
   });
 
@@ -97,7 +106,7 @@ export class AdminNavComponent extends BaseComponent {
       isAdmin,
       userStoreLoading,
       shouldShow,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     console.log('[AdminNavComponent] 🔍 Nav visibility debug:', debug);

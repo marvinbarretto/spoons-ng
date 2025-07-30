@@ -8,9 +8,8 @@ describe('PubSelectorComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PubSelectorComponent]
-    })
-    .compileComponents();
+      imports: [PubSelectorComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(PubSelectorComponent);
     component = fixture.componentInstance;

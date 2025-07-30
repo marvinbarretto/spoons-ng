@@ -1,5 +1,5 @@
+import { NgIf } from '@angular/common';
 import { Component, Input, Signal } from '@angular/core';
-import { NgForOf, NgIf } from '@angular/common';
 import type { Badge } from '../../utils/badge.model';
 
 @Component({
@@ -12,33 +12,41 @@ import type { Badge } from '../../utils/badge.model';
       <ul class="badge-list">
         @for (badge of badges(); track badge.id) {
           <li>
-            <img *ngIf="badge.iconUrl" [src]="badge.iconUrl" width="48" height="48" [alt]="badge.name" />
+            <img
+              *ngIf="badge.iconUrl"
+              [src]="badge.iconUrl"
+              width="48"
+              height="48"
+              [alt]="badge.name"
+            />
             <div>{{ badge.name }}</div>
           </li>
         }
       </ul>
     </section>
   `,
-  styles: [`
-    .badge-list {
-      display: flex;
-      gap: 1rem;
-      list-style: none;
-      padding: 0;
-    }
+  styles: [
+    `
+      .badge-list {
+        display: flex;
+        gap: 1rem;
+        list-style: none;
+        padding: 0;
+      }
 
-    li {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-    }
+      li {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
 
-    img {
-      border-radius: 50%;
-      background: var(--background-darkest);
-    }
-  `]
+      img {
+        border-radius: 50%;
+        background: var(--background-darkest);
+      }
+    `,
+  ],
 })
 export class UserBadgesComponent {
   // TODO: old syntax

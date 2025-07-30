@@ -54,12 +54,11 @@ export class LandlordStore {
 
       this._todayLandlord.update(map => ({
         ...map,
-        [pubId]: landlord
+        [pubId]: landlord,
       }));
 
       this._loadedPubs.update(set => new Set([...set, pubId]));
       console.log(`[LandlordStore] ✅ Loaded landlord for ${pubId}:`, landlord?.userId || 'none');
-
     } catch (err: any) {
       const msg = `Failed to load landlord for ${pubId}`;
       this._error.set(msg);
@@ -75,7 +74,7 @@ export class LandlordStore {
   set(pubId: string, landlord: Landlord | null): void {
     this._todayLandlord.update(map => ({
       ...map,
-      [pubId]: landlord
+      [pubId]: landlord,
     }));
 
     this._loadedPubs.update(set => new Set([...set, pubId]));
@@ -120,13 +119,17 @@ export class LandlordStore {
    * Handle landlord logic for a check-in
    * Encapsulates all landlord service calls and state updates
    */
-  async tryAwardLandlordForCheckin(pubId: string, userId: string, checkinDate: Date): Promise<LandlordResult> {
+  async tryAwardLandlordForCheckin(
+    pubId: string,
+    userId: string,
+    checkinDate: Date
+  ): Promise<LandlordResult> {
     console.log(`[LandlordStore] 👑 Processing landlord logic for check-in`, { pubId, userId });
 
     try {
       // Use landlord service to determine if user becomes landlord
       const serviceResult = await this.landlordService.tryAwardLandlord(pubId, checkinDate);
-      
+
       // Update local state if landlord was awarded
       if (serviceResult.landlord) {
         this.set(pubId, serviceResult.landlord);
@@ -135,18 +138,17 @@ export class LandlordStore {
       const result: LandlordResult = {
         landlord: serviceResult.landlord,
         wasAwarded: serviceResult.wasAwarded,
-        isNewLandlord: serviceResult.wasAwarded && serviceResult.landlord?.userId === userId
+        isNewLandlord: serviceResult.wasAwarded && serviceResult.landlord?.userId === userId,
       };
 
       console.log(`[LandlordStore] 👑 Landlord result:`, result);
       return result;
-
     } catch (error) {
       console.error(`[LandlordStore] ❌ Error in landlord check-in logic:`, error);
       return {
         landlord: null,
         wasAwarded: false,
-        isNewLandlord: false
+        isNewLandlord: false,
       };
     }
   }

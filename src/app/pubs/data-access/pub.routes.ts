@@ -5,15 +5,11 @@ export const PUBS_ROUTES: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('../feature/pub-list/pub-list.component').then(
-        (m) => m.PubListComponent
-      ),
+      import('../feature/pub-list/pub-list.component').then(m => m.PubListComponent),
   },
   {
     path: ':pubId',
     loadComponent: () =>
-      import('../feature/pub-detail/pub-detail.component').then(
-        (m) => m.PubDetailComponent
-      ),
+      import('../feature/pub-detail/pub-detail.component').then(m => m.PubDetailComponent),
   },
 ];

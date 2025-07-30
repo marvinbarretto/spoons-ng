@@ -1,53 +1,51 @@
 // src/app/home/ui/profile-customisation-modal/profile-customisation-modal.component.ts
-import { Component, inject, signal, computed, ChangeDetectionStrategy, OnInit, input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 
-import { UserStore } from '@users/data-access/user.store';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { AvatarService } from '@shared/data-access/avatar.service';
 import { ButtonComponent } from '@shared/ui/button/button.component';
+import { UserStore } from '@users/data-access/user.store';
 
 // Import widgets
-import { ThemeSelectionWidgetComponent } from './widgets/theme-selection-widget/theme-selection-widget.component';
 import { ProfileIdentityWidgetComponent } from './widgets/profile-identity-widget/profile-identity-widget.component';
+import { ThemeSelectionWidgetComponent } from './widgets/theme-selection-widget/theme-selection-widget.component';
 
 @Component({
   selector: 'app-profile-customisation-modal',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    ButtonComponent,
-    ThemeSelectionWidgetComponent,
-    ProfileIdentityWidgetComponent
-],
+  imports: [ButtonComponent, ThemeSelectionWidgetComponent, ProfileIdentityWidgetComponent],
   template: `
     <div class="modal-container">
-
       <div class="modal-header">
         <h2>🎮 Customize Your Profile</h2>
-        <button type="button" class="close-btn" (click)="close()">        <!-- TODO: Bring in an icon-component to handle exit icon -->
-        ×</button>
+        <button type="button" class="close-btn" (click)="close()">
+          <!-- TODO: Bring in an icon-component to handle exit icon -->
+          ×
+        </button>
       </div>
 
-
-
       <div class="modal-body">
-
         <app-profile-identity-widget
           [user]="user()"
           [displayName]="tempDisplayName()"
           [selectedAvatarId]="selectedAvatarId()"
           (displayNameChanged)="onDisplayNameChanged($event)"
-          (avatarSelected)="onAvatarSelected($event)" />
+          (avatarSelected)="onAvatarSelected($event)"
+        />
 
         <app-theme-selection-widget />
-
       </div>
 
       <div class="modal-footer">
-        <app-button
-          variant="secondary"
-          (onClick)="close()"
-          [disabled]="saving()"
-        >
+        <app-button variant="secondary" (onClick)="close()" [disabled]="saving()">
           Cancel
         </app-button>
 
@@ -169,18 +167,18 @@ import { ProfileIdentityWidgetComponent } from './widgets/profile-identity-widge
         flex-direction: column-reverse;
       }
     }
-  `
+  `,
 })
 export class ProfileCustomisationModalComponent implements OnInit {
   private readonly userStore = inject(UserStore);
   private readonly authStore = inject(AuthStore);
   private readonly avatarService = inject(AvatarService);
-  
+
   // Input for close callback
   closeCallback = input<() => void>();
 
   // ✅ Component State
-  readonly tempDisplayName = signal('');  // Temporary value during editing
+  readonly tempDisplayName = signal(''); // Temporary value during editing
   readonly selectedAvatarId = signal('');
   readonly saving = computed(() => this.userStore.loading());
 
@@ -245,7 +243,7 @@ export class ProfileCustomisationModalComponent implements OnInit {
       console.log('[ProfileModal] Saving changes:', {
         displayName: updates['displayName'],
         photoURL: updates['photoURL'],
-        userId: user.uid
+        userId: user.uid,
       });
 
       // Save via UserStore
@@ -253,7 +251,6 @@ export class ProfileCustomisationModalComponent implements OnInit {
 
       console.log('[ProfileModal] ✅ Changes saved successfully');
       this.close();
-
     } catch (error: any) {
       console.error('[ProfileModal] ❌ Save failed:', error);
       // TODO: Show error toast

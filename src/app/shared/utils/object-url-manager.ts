@@ -11,7 +11,7 @@ export class ObjectUrlManager {
    */
   trackUrls<T extends { key: string; imageUrl: string }>(items: T[]): void {
     const currentKeys = new Set(items.map(item => item.key));
-    
+
     // Revoke URLs for items that are no longer present
     this.keyToUrlMap.forEach((url, key) => {
       if (!currentKeys.has(key)) {
@@ -21,7 +21,7 @@ export class ObjectUrlManager {
         console.log('🧹 [ObjectUrlManager] Revoked URL for removed item:', key);
       }
     });
-    
+
     // Track new URLs
     items.forEach(item => {
       if (item.imageUrl.startsWith('blob:')) {

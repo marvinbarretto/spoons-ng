@@ -1,7 +1,7 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { FirestoreService } from '@fourfold/angular-foundation';
-import { UserMissionProgress } from '../utils/user-mission-progress.model';
 import { where } from 'firebase/firestore';
+import { UserMissionProgress } from '../utils/user-mission-progress.model';
 
 @Injectable({ providedIn: 'root' })
 export class UserMissionProgressService extends FirestoreService {
@@ -20,7 +20,10 @@ export class UserMissionProgressService extends FirestoreService {
   /**
    * Get progress for a specific user-mission combination.
    */
-  async getUserMissionProgress(userId: string, missionId: string): Promise<UserMissionProgress | undefined> {
+  async getUserMissionProgress(
+    userId: string,
+    missionId: string
+  ): Promise<UserMissionProgress | undefined> {
     const id = `${userId}_${missionId}`;
     return await this.getDocByPath<UserMissionProgress>(`${this.collectionPath}/${id}`);
   }
@@ -38,7 +41,7 @@ export class UserMissionProgressService extends FirestoreService {
       completedPubIds: [],
       isCompleted: false,
       progressPercentage: 0,
-      lastUpdated: new Date()
+      lastUpdated: new Date(),
     };
 
     await this.setDoc(`${this.collectionPath}/${id}`, progress);
@@ -74,7 +77,7 @@ export class UserMissionProgressService extends FirestoreService {
       progressPercentage,
       isCompleted,
       lastUpdated: new Date(),
-      ...(isCompleted && !existingProgress.completedAt && { completedAt: new Date() })
+      ...(isCompleted && !existingProgress.completedAt && { completedAt: new Date() }),
     };
 
     await this.updateDoc(`${this.collectionPath}/${id}`, updates);
@@ -89,7 +92,7 @@ export class UserMissionProgressService extends FirestoreService {
       isCompleted: true,
       completedAt: new Date(),
       progressPercentage: 100,
-      lastUpdated: new Date()
+      lastUpdated: new Date(),
     });
   }
 

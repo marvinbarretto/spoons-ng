@@ -100,7 +100,13 @@
   justify-content: space-between;
   padding: 2rem;
   z-index: 2;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.5) 0%, transparent 30%, transparent 70%, rgba(0, 0, 0, 0.5) 100%);
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.5) 0%,
+    transparent 30%,
+    transparent 70%,
+    rgba(0, 0, 0, 0.5) 100%
+  );
 }
 
 .camera-header {
@@ -191,7 +197,8 @@
     }
   }
 
-  .camera-icon, .capturing-icon {
+  .camera-icon,
+  .capturing-icon {
     font-size: 2rem;
     transition: all 0.3s ease;
   }
@@ -289,20 +296,26 @@
   border-top: 3px solid var(--primary);
   border-radius: 50%;
   @include spin(1s);
+  margin-bottom: 1rem;
+}
+
+.analyzing-retake-btn {
+  margin-top: 1rem;
+  padding: 0.5rem 1.5rem;
+  font-size: 0.9rem;
+  background: rgba(var(--background-rgb), 0.8);
+  border: 1px solid var(--border);
+  
+  &:hover {
+    background: rgba(var(--background-rgb), 0.9);
+  }
 }
 
 // ===================================
-// 🎯 PHOTO ACTIONS
+// 🎯 RETAKE BUTTON STYLING
 // ===================================
 
-.photo-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-}
-
-.retake-btn, .confirm-btn {
+.retake-btn {
   padding: 0.75rem 2rem;
   background: var(--background-lighter);
   color: var(--text);
@@ -431,8 +444,13 @@
 
 // Camera and framing animations
 @keyframes camera-pulse {
-  0%, 100% { filter: brightness(1); }
-  50% { filter: brightness(1.05); }
+  0%,
+  100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.05);
+  }
 }
 
 @keyframes frame-pulse {
@@ -448,7 +466,8 @@
 
 // Capture button animations
 @keyframes capture-ready {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
   }
   50% {
@@ -457,7 +476,8 @@
 }
 
 @keyframes capture-hover {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 25px var(--primary);
   }
   50% {
@@ -466,7 +486,8 @@
 }
 
 @keyframes capture-processing {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
   }
   50% {
@@ -508,8 +529,12 @@
 }
 
 @keyframes capture-icon-spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 // ===================================
@@ -571,7 +596,8 @@
       bottom: -6px;
     }
 
-    .camera-icon, .capturing-icon {
+    .camera-icon,
+    .capturing-icon {
       font-size: 1.5rem;
     }
 

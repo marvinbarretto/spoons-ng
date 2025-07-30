@@ -1,12 +1,12 @@
 /**
  * @fileoverview DebugService - Multi-level debug logging system
- * 
+ *
  * DEBUG LEVELS:
  * - OFF: Production mode, no debug logs
  * - ESSENTIAL: Critical operations only (errors, auth, major state changes)
- * - STANDARD: Heavy operational logging (store operations, data flow, API calls)  
+ * - STANDARD: Heavy operational logging (store operations, data flow, API calls)
  * - EXTREME: Everything including animations, fine-grained timing, verbose details
- * 
+ *
  * USAGE:
  * ```typescript
  * // Instead of console.log
@@ -14,10 +14,10 @@
  * this.debug.extreme('[Animation] Smart animate points:', { from, to, strategy });
  * this.debug.essential('[Auth] User login failed:', error);
  * ```
- * 
+ *
  * CONFIGURATION:
  * Set debugLevel in environment.ts: 'OFF' | 'ESSENTIAL' | 'STANDARD' | 'EXTREME'
- * 
+ *
  * BENEFITS:
  * - Clean production console (OFF)
  * - Appropriate verbosity for debugging
@@ -25,7 +25,7 @@
  * - Consistent logging patterns across app
  */
 
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 
 export type DebugLevel = 'OFF' | 'ESSENTIAL' | 'STANDARD' | 'EXTREME';
@@ -37,16 +37,19 @@ export class DebugService {
     OFF: 0,
     ESSENTIAL: 1,
     STANDARD: 2,
-    EXTREME: 3
+    EXTREME: 3,
   };
 
   constructor() {
     // Get debug level from environment, default to STANDARD for dev
-    this.currentLevel = (environment as any).debugLevel || (environment.production ? 'OFF' : 'STANDARD');
-    
+    this.currentLevel =
+      (environment as any).debugLevel || (environment.production ? 'OFF' : 'STANDARD');
+
     // Log debug service initialization
     if (this.shouldLog('ESSENTIAL')) {
-      console.log(`🐛 [Debug] Debug level: ${this.currentLevel} (${this.levelValues[this.currentLevel]})`);
+      console.log(
+        `🐛 [Debug] Debug level: ${this.currentLevel} (${this.levelValues[this.currentLevel]})`
+      );
     }
   }
 
@@ -105,7 +108,7 @@ export class DebugService {
   }
 
   /**
-   * Warning logging - Always shown regardless of level  
+   * Warning logging - Always shown regardless of level
    * Use for: Deprecation warnings, fallback scenarios, potential issues
    */
   warn(message: string, data?: any): void {
@@ -138,7 +141,7 @@ export class DebugService {
     if (this.shouldLog('EXTREME')) {
       const duration = performance.now() - startTime;
       const message = `⏱️ ${operation} completed in ${duration.toFixed(1)}ms`;
-      
+
       if (data !== undefined) {
         console.log(message, data);
       } else {
@@ -216,7 +219,7 @@ export class DebugService {
       environment: environment.production ? 'production' : 'development',
       essentialEnabled: this.shouldLog('ESSENTIAL'),
       standardEnabled: this.shouldLog('STANDARD'),
-      extremeEnabled: this.shouldLog('EXTREME')
+      extremeEnabled: this.shouldLog('EXTREME'),
     });
   }
 }

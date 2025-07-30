@@ -18,7 +18,7 @@ input {
   border-radius: 4px;
 }
 
-button[type="submit"] {
+button[type='submit'] {
   align-self: start;
   padding: 0.5rem 1rem;
   font-size: 1rem;
@@ -33,7 +33,6 @@ button[disabled] {
   opacity: 0.5;
   cursor: not-allowed;
 }
-
 
 .icon-grid {
   display: grid;

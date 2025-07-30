@@ -1,8 +1,8 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { HeaderComponent } from '@shared/feature/header/header.component';
-import { FooterComponent } from '@shared/feature/footer/footer.component';
 import { FooterNavComponent } from '@shared/feature/footer-nav/footer-nav.component';
+import { FooterComponent } from '@shared/feature/footer/footer.component';
+import { HeaderComponent } from '@shared/feature/header/header.component';
 import { NotificationsComponent } from '@shared/ui/notifications/notifications.component';
 import { ToastComponent } from '@shared/ui/toast/toast.component';
 import { FeedbackButtonComponent } from '../../../feedback/ui/feedback-button/feedback-button.component';
@@ -10,7 +10,15 @@ import { FeedbackButtonComponent } from '../../../feedback/ui/feedback-button/fe
 @Component({
   selector: 'app-feature-shell',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, HeaderComponent, FooterComponent, FooterNavComponent, NotificationsComponent, ToastComponent, FeedbackButtonComponent],
+  imports: [
+    RouterOutlet,
+    HeaderComponent,
+    FooterComponent,
+    FooterNavComponent,
+    NotificationsComponent,
+    ToastComponent,
+    FeedbackButtonComponent,
+  ],
   template: `
     <div class="feature-shell">
       <div class="site-container">
@@ -52,7 +60,7 @@ import { FeedbackButtonComponent } from '../../../feedback/ui/feedback-button/fe
     .main-content {
       flex: 1;
     }
-  `
+  `,
 })
 export class FeatureShell {
   constructor() {

@@ -8,9 +8,8 @@ describe('AdvancedListControlsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AdvancedListControlsComponent]
-    })
-    .compileComponents();
+      imports: [AdvancedListControlsComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(AdvancedListControlsComponent);
     component = fixture.componentInstance;

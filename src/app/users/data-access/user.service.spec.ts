@@ -1,7 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { Firestore } from '@angular/fire/firestore';
+import {
+  createFirebaseMetricsMock,
+  createFirestoreMock,
+} from '../../shared/testing/firebase.mocks';
 import { UserService } from './user.service';
-import { createFirestoreMock, createFirebaseMetricsMock } from '../../shared/testing/firebase.mocks';
 
 describe('UserService', () => {
   let service: UserService;
@@ -10,8 +13,8 @@ describe('UserService', () => {
     TestBed.configureTestingModule({
       providers: [
         { provide: Firestore, useValue: createFirestoreMock() },
-        { provide: 'FirebaseMetricsService', useValue: createFirebaseMetricsMock() }
-      ]
+        { provide: 'FirebaseMetricsService', useValue: createFirebaseMetricsMock() },
+      ],
     });
     service = TestBed.inject(UserService);
   });

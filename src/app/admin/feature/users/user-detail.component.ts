@@ -1449,10 +1449,23 @@ export class AdminUserDetailComponent extends BaseComponent implements OnInit {
 
   readonly selectedUser = computed(() => {
     const targetUsername = this.username();
+    console.log('[AdminUserDetail] Computing selectedUser with targetUsername:', targetUsername);
     if (!targetUsername) return null;
 
     const users = this.userStore.data();
-    return users.find(user => user.displayName === targetUsername) || null;
+    console.log('[AdminUserDetail] Available users count:', users.length);
+    console.log(
+      '[AdminUserDetail] Available user displayNames:',
+      users.map(u => u.displayName)
+    );
+
+    const foundUser = users.find(user => user.displayName === targetUsername);
+    console.log(
+      '[AdminUserDetail] Found user:',
+      foundUser ? `${foundUser.displayName} (${foundUser.uid})` : 'null'
+    );
+
+    return foundUser || null;
   });
 
   // Computed property for home pub information
@@ -1544,7 +1557,10 @@ export class AdminUserDetailComponent extends BaseComponent implements OnInit {
   override async ngOnInit(): Promise<void> {
     // Get username from route params
     this.route.params.subscribe(params => {
-      this.username.set(params['username'] || null);
+      console.log('[AdminUserDetail] Route params received:', params);
+      const usernameParam = params['username'];
+      console.log('[AdminUserDetail] Username parameter:', usernameParam);
+      this.username.set(usernameParam || null);
       this.imageError.set(false); // Reset image error when user changes
     });
 

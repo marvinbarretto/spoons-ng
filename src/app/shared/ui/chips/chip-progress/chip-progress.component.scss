@@ -3,59 +3,59 @@
 .chip-progress {
   @include chip-base;
   position: relative;
-  
+
   // Size variations
   &.size--xs {
     @include chip-size('xs');
   }
-  
+
   &.size--sm {
     @include chip-size('sm');
   }
-  
+
   &.size--md {
     @include chip-size('md');
   }
-  
+
   &.size--lg {
     @include chip-size('lg');
   }
-  
+
   // State variations
   &.state--pending {
     background: var(--background-lighter);
     color: var(--text-muted);
     border-color: var(--border);
   }
-  
+
   &.state--in-progress {
     background: var(--info);
     color: var(--background);
     border-color: var(--info);
   }
-  
+
   &.state--completed {
     background: var(--success);
     color: var(--background);
     border-color: var(--success);
   }
-  
+
   &.state--failed {
     background: var(--error);
     color: var(--background);
     border-color: var(--error);
   }
-  
+
   &.state--warning {
     background: var(--warning);
     color: var(--background);
     border-color: var(--warning);
   }
-  
+
   // Active state
   &.active {
     box-shadow: 0 0 0 2px var(--primary);
-    
+
     &::before {
       content: '';
       position: absolute;
@@ -69,13 +69,13 @@
       z-index: -1;
     }
   }
-  
+
   // Animated progress state
   &.animated {
     .chip-icon {
       animation: spin 2s linear infinite;
     }
-    
+
     .progress-spinner {
       animation: spin-with-translate 1s linear infinite;
     }
@@ -124,8 +124,12 @@
 }
 
 @keyframes spin-with-translate {
-  from { transform: translate(-50%, -50%) rotate(0deg); }
-  to { transform: translate(-50%, -50%) rotate(360deg); }
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
 }
 
 // Accessibility

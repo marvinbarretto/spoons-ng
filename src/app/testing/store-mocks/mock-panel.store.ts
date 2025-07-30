@@ -1,4 +1,4 @@
-import { signal, computed } from '@angular/core';
+import { computed, signal } from '@angular/core';
 
 export class MockPanelStore {
   private _isOpen = signal(false);

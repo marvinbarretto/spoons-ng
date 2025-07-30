@@ -1,9 +1,9 @@
 // src/app/shared/ui/avatar-selector/avatar-selector.component.ts
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 
 import { AuthStore } from '../../../auth/data-access/auth.store';
-import { ButtonComponent } from '../button/button.component';
 import { UserStore } from '../../../users/data-access/user.store';
+import { ButtonComponent } from '../button/button.component';
 
 type AvatarOption = {
   id: string;
@@ -19,7 +19,9 @@ type AvatarOption = {
     <div class="modal-container">
       <div class="modal-header">
         <h2>Choose Your Pub Persona</h2>
-        <p class="subtitle">{{ userDisplayName() }}, pick an avatar that represents your pub-crawling spirit!</p>
+        <p class="subtitle">
+          {{ userDisplayName() }}, pick an avatar that represents your pub-crawling spirit!
+        </p>
       </div>
 
       <div class="modal-body">
@@ -51,11 +53,7 @@ type AvatarOption = {
       </div>
 
       <div class="modal-footer">
-        <app-button
-          variant="ghost"
-          (onClick)="skipSelection()"
-          [disabled]="saving()"
-        >
+        <app-button variant="ghost" (onClick)="skipSelection()" [disabled]="saving()">
           Skip for Now
         </app-button>
 
@@ -70,144 +68,146 @@ type AvatarOption = {
       </div>
     </div>
   `,
-  styles: [`
-    .modal-container {
-      background: var(--background);
-      border: 1px solid var(--background-darker);
-      border-radius: 12px;
-      max-width: 600px;
-      width: 90vw;
-      max-height: 80vh;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .modal-header {
-      padding: 1.5rem;
-      border-bottom: 1px solid var(--background-lighter);
-      text-align: center;
-
-      h2 {
-        margin: 0 0 0.5rem;
-        color: var(--text);
-      }
-
-      .subtitle {
-        margin: 0;
-        opacity: 0.8;
-        color: var(--text);
-      }
-    }
-
-    .modal-body {
-      flex: 1;
-      padding: 1.5rem;
-      overflow-y: auto;
-    }
-
-    .selection-preview {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 1rem;
-      background: var(--background-lighter);
-      border-radius: 8px;
-      margin-bottom: 1.5rem;
-
-      .preview-avatar {
-        font-size: 3rem;
-        line-height: 1;
-      }
-
-      .preview-info h3 {
-        margin: 0 0 0.25rem;
-        color: var(--text);
-      }
-
-      .preview-info small {
-        opacity: 0.7;
-        color: var(--text);
-      }
-    }
-
-    .avatar-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-      gap: 1rem;
-    }
-
-    .avatar-option {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 1rem;
-      background: var(--background);
-      border: 2px solid var(--background-lighter);
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-
-      &:hover {
-        border-color: var(--color-buttonPrimaryBase);
-        transform: translateY(-2px);
-      }
-
-      &.selected {
-        border-color: var(--color-buttonPrimaryBase);
-        background: rgba(59, 130, 246, 0.1);
-      }
-
-      .avatar-emoji {
-        font-size: 2.5rem;
-        line-height: 1;
-      }
-
-      .avatar-name {
-        font-size: 0.85rem;
-        font-weight: 500;
-        text-align: center;
-        color: var(--text);
-      }
-    }
-
-    .modal-footer {
-      padding: 1.5rem;
-      border-top: 1px solid var(--background-lighter);
-      display: flex;
-      justify-content: space-between;
-      gap: 1rem;
-    }
-
-    @media (max-width: 600px) {
+  styles: [
+    `
       .modal-container {
-        width: 95vw;
-        max-height: 90vh;
+        background: var(--background);
+        border: 1px solid var(--background-darker);
+        border-radius: 12px;
+        max-width: 600px;
+        width: 90vw;
+        max-height: 80vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .modal-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--background-lighter);
+        text-align: center;
+
+        h2 {
+          margin: 0 0 0.5rem;
+          color: var(--text);
+        }
+
+        .subtitle {
+          margin: 0;
+          opacity: 0.8;
+          color: var(--text);
+        }
+      }
+
+      .modal-body {
+        flex: 1;
+        padding: 1.5rem;
+        overflow-y: auto;
+      }
+
+      .selection-preview {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: var(--background-lighter);
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+
+        .preview-avatar {
+          font-size: 3rem;
+          line-height: 1;
+        }
+
+        .preview-info h3 {
+          margin: 0 0 0.25rem;
+          color: var(--text);
+        }
+
+        .preview-info small {
+          opacity: 0.7;
+          color: var(--text);
+        }
       }
 
       .avatar-grid {
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-        gap: 0.75rem;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 1rem;
       }
 
       .avatar-option {
-        padding: 0.75rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem;
+        background: var(--background);
+        border: 2px solid var(--background-lighter);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+          border-color: var(--color-buttonPrimaryBase);
+          transform: translateY(-2px);
+        }
+
+        &.selected {
+          border-color: var(--color-buttonPrimaryBase);
+          background: rgba(59, 130, 246, 0.1);
+        }
 
         .avatar-emoji {
-          font-size: 2rem;
+          font-size: 2.5rem;
+          line-height: 1;
         }
 
         .avatar-name {
-          font-size: 0.75rem;
+          font-size: 0.85rem;
+          font-weight: 500;
+          text-align: center;
+          color: var(--text);
         }
       }
 
       .modal-footer {
-        flex-direction: column-reverse;
+        padding: 1.5rem;
+        border-top: 1px solid var(--background-lighter);
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
       }
-    }
-  `]
+
+      @media (max-width: 600px) {
+        .modal-container {
+          width: 95vw;
+          max-height: 90vh;
+        }
+
+        .avatar-grid {
+          grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+          gap: 0.75rem;
+        }
+
+        .avatar-option {
+          padding: 0.75rem;
+
+          .avatar-emoji {
+            font-size: 2rem;
+          }
+
+          .avatar-name {
+            font-size: 0.75rem;
+          }
+        }
+
+        .modal-footer {
+          flex-direction: column-reverse;
+        }
+      }
+    `,
+  ],
 })
 export class AvatarSelectorComponent {
   private readonly authStore = inject(AuthStore);
@@ -275,7 +275,6 @@ export class AvatarSelectorComponent {
 
       // Close modal after successful save
       this.closeModal();
-
     } catch (error) {
       console.error('[AvatarSelector] ❌ Failed to save avatar:', error);
     } finally {
@@ -290,10 +289,14 @@ export class AvatarSelectorComponent {
 
   getCategoryName(category: AvatarOption['category']): string {
     switch (category) {
-      case 'traditional': return 'Classic Pub Character';
-      case 'quirky': return 'Unique Personality';
-      case 'fancy': return 'Refined Taste';
-      default: return 'Pub Crawler';
+      case 'traditional':
+        return 'Classic Pub Character';
+      case 'quirky':
+        return 'Unique Personality';
+      case 'fancy':
+        return 'Refined Taste';
+      default:
+        return 'Pub Crawler';
     }
   }
 }

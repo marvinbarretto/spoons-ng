@@ -1,25 +1,21 @@
-import { Component, inject, computed, effect } from '@angular/core';
-import { Router, ActivatedRoute, NavigationEnd, RouterOutlet } from '@angular/router';
-import { filter } from 'rxjs';
+import { Component, computed, effect, inject } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { SsrPlatformService } from '@fourfold/angular-foundation';
-import { PageTitleService } from './shared/data-access/page-title.service';
-import { PubStore } from './pubs/data-access/pub.store';
-import { LandlordStore } from './landlord/data-access/landlord.store';
+import { filter } from 'rxjs';
 import { CheckInModalService } from './check-in/data-access/check-in-modal.service';
 import { CheckInStore } from './check-in/data-access/check-in.store';
-import { FullScreenShell } from './shared/feature/shells/full-screen.shell';
+import { LandlordStore } from './landlord/data-access/landlord.store';
+import { PubStore } from './pubs/data-access/pub.store';
+import { PageTitleService } from './shared/data-access/page-title.service';
+import { SessionService } from './shared/data-access/session.service';
 import { DashboardShell } from './shared/feature/shells/dashboard.shell';
 import { FeatureShell } from './shared/feature/shells/feature.shell';
+import { FullScreenShell } from './shared/feature/shells/full-screen.shell';
 
 @Component({
   selector: 'app-root',
-  imports: [
-    RouterOutlet,
-    FullScreenShell,
-    DashboardShell,
-    FeatureShell,
-  ],
+  imports: [RouterOutlet, FullScreenShell, DashboardShell, FeatureShell],
   template: `
     @if (currentShell()) {
       @switch (currentShell()) {
@@ -38,7 +34,7 @@ import { FeatureShell } from './shared/feature/shells/feature.shell';
       <router-outlet></router-outlet>
     }
   `,
-  styleUrl: './app.component.scss'
+  styleUrl: './app.component.scss',
 })
 export class AppComponent {
   protected readonly router = inject(Router);
@@ -50,6 +46,9 @@ export class AppComponent {
   protected readonly landlordStore = inject(LandlordStore);
   protected readonly checkInModalService = inject(CheckInModalService);
   protected readonly checkinStore = inject(CheckInStore);
+  
+  // Initialize SessionService to handle app-wide session data management
+  private readonly sessionService = inject(SessionService);
 
   // Track current shell based on route data
   private readonly navigationEnd$ = this.router.events.pipe(
@@ -112,7 +111,7 @@ export class AppComponent {
           filter((event): event is NavigationEnd => event instanceof NavigationEnd),
           takeUntilDestroyed()
         )
-        .subscribe((event) => {
+        .subscribe(event => {
           console.log('[AppComponent] 🧭 Navigation completed to:', event.url);
           console.log('[AppComponent] 🏠 Current shell after navigation:', this.currentShell());
         });
@@ -121,11 +120,15 @@ export class AppComponent {
       if (!window.location.hostname.includes('spoons')) {
         window.addEventListener('load', () => {
           const resources = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
-          const jsResources = resources.filter(r => r.name.includes('.js') && !r.name.includes('node_modules'));
+          const jsResources = resources.filter(
+            r => r.name.includes('.js') && !r.name.includes('node_modules')
+          );
           const totalTransferSize = jsResources.reduce((sum, r) => sum + (r.transferSize || 0), 0);
           const totalSize = jsResources.reduce((sum, r) => sum + (r.decodedBodySize || 0), 0);
 
-          console.log(`📦 Bundle: ${jsResources.length} JS files, ${(totalTransferSize/1024).toFixed(0)}KB transferred, ${(totalSize/1024).toFixed(0)}KB uncompressed`);
+          console.log(
+            `📦 Bundle: ${jsResources.length} JS files, ${(totalTransferSize / 1024).toFixed(0)}KB transferred, ${(totalSize / 1024).toFixed(0)}KB uncompressed`
+          );
         });
       }
     });

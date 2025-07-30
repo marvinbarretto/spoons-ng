@@ -8,9 +8,8 @@ describe('ModalCheckinSuccessComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ModalCheckinSuccessComponent]
-    })
-    .compileComponents();
+      imports: [ModalCheckinSuccessComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(ModalCheckinSuccessComponent);
     component = fixture.componentInstance;

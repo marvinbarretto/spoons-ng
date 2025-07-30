@@ -1,4 +1,12 @@
-import { Component, signal, ElementRef, ViewChild, OnDestroy, AfterViewInit, inject } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  inject,
+  OnDestroy,
+  signal,
+  ViewChild,
+} from '@angular/core';
 
 import { BaseComponent } from '../../../shared/base/base.component';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
@@ -37,33 +45,30 @@ interface ColorConfig {
       <div class="controls">
         <h3>🌊 Wave Squares - Canvas Version</h3>
         <div class="button-group">
-          <app-button
-            variant="primary"
-            size="sm"
-            (click)="startWave()"
-            [disabled]="isAnimating()">
+          <app-button variant="primary" size="sm" (click)="startWave()" [disabled]="isAnimating()">
             Start Animation
           </app-button>
           <app-button
             variant="secondary"
             size="sm"
             (click)="stopWave()"
-            [disabled]="!isAnimating()">
+            [disabled]="!isAnimating()"
+          >
             Stop Animation
           </app-button>
-          <app-button
-            variant="outline"
-            size="sm"
-            (click)="resetWave()">
-            Reset
-          </app-button>
+          <app-button variant="outline" size="sm" (click)="resetWave()"> Reset </app-button>
         </div>
 
         <div class="configuration-panel">
           <div class="config-row">
             <div class="config-group">
               <label for="pattern">Pattern:</label>
-              <select id="pattern" [value]="pattern()" (change)="updatePattern($event)" class="config-select">
+              <select
+                id="pattern"
+                [value]="pattern()"
+                (change)="updatePattern($event)"
+                class="config-select"
+              >
                 <option value="wave">Wave</option>
                 <option value="random">Random</option>
                 <option value="ripple">Ripple</option>
@@ -72,18 +77,19 @@ interface ColorConfig {
                 <option value="spiral">Spiral</option>
               </select>
             </div>
-            
+
             <div class="config-group">
               <label for="speed">Speed:</label>
-              <input 
+              <input
                 id="speed"
-                type="range" 
-                min="0.5" 
-                max="3" 
-                step="0.1" 
-                [value]="waveSpeed()" 
+                type="range"
+                min="0.5"
+                max="3"
+                step="0.1"
+                [value]="waveSpeed()"
                 (input)="updateSpeed($event)"
-                class="config-slider">
+                class="config-slider"
+              />
               <span>{{ waveSpeed() }}x</span>
             </div>
           </div>
@@ -91,21 +97,27 @@ interface ColorConfig {
           <div class="config-row">
             <div class="config-group">
               <label for="gridSize">Grid Size:</label>
-              <input 
+              <input
                 id="gridSize"
-                type="range" 
-                min="5" 
-                max="15" 
-                step="1" 
-                [value]="gridSize()" 
+                type="range"
+                min="5"
+                max="15"
+                step="1"
+                [value]="gridSize()"
                 (input)="updateGridSize($event)"
-                class="config-slider">
+                class="config-slider"
+              />
               <span>{{ gridSize() }}x{{ gridSize() }}</span>
             </div>
-            
+
             <div class="config-group">
               <label for="colorType">Visual:</label>
-              <select id="colorType" [value]="colorConfig().type" (change)="updateColorType($event)" class="config-select">
+              <select
+                id="colorType"
+                [value]="colorConfig().type"
+                (change)="updateColorType($event)"
+                class="config-select"
+              >
                 <option value="flat">Flat Colors</option>
                 <option value="gradient">Gradients</option>
                 <option value="image">Images</option>
@@ -117,21 +129,23 @@ interface ColorConfig {
             <div class="config-row">
               <div class="config-group">
                 <label for="frontColor">Front Color:</label>
-                <input 
+                <input
                   id="frontColor"
-                  type="color" 
-                  [value]="colorConfig().frontColor" 
+                  type="color"
+                  [value]="colorConfig().frontColor"
                   (input)="updateColor('front', $event)"
-                  class="color-picker">
+                  class="color-picker"
+                />
               </div>
               <div class="config-group">
                 <label for="backColor">Back Color:</label>
-                <input 
+                <input
                   id="backColor"
-                  type="color" 
-                  [value]="colorConfig().backColor" 
+                  type="color"
+                  [value]="colorConfig().backColor"
                   (input)="updateColor('back', $event)"
-                  class="color-picker">
+                  class="color-picker"
+                />
               </div>
             </div>
           }
@@ -140,11 +154,12 @@ interface ColorConfig {
             <div class="config-row">
               <div class="config-group">
                 <label for="frontImage">Front Image:</label>
-                <select 
-                  id="frontImage" 
-                  [value]="colorConfig().frontImage || ''" 
+                <select
+                  id="frontImage"
+                  [value]="colorConfig().frontImage || ''"
                   (change)="updateImage('front', $event)"
-                  class="config-select">
+                  class="config-select"
+                >
                   <option value="">Select Carpet</option>
                   <option value="random">Random</option>
                   @for (carpet of carpetService.images(); track carpet.id) {
@@ -154,11 +169,12 @@ interface ColorConfig {
               </div>
               <div class="config-group">
                 <label for="backImage">Back Image:</label>
-                <select 
-                  id="backImage" 
-                  [value]="colorConfig().backImage || ''" 
+                <select
+                  id="backImage"
+                  [value]="colorConfig().backImage || ''"
                   (change)="updateImage('back', $event)"
-                  class="config-select">
+                  class="config-select"
+                >
                   <option value="">Select Carpet</option>
                   <option value="random">Random</option>
                   @for (carpet of carpetService.images(); track carpet.id) {
@@ -172,22 +188,25 @@ interface ColorConfig {
           <div class="preset-themes">
             <label>Quick Themes:</label>
             <div class="theme-buttons">
-              <app-button variant="outline" size="xs" (click)="applyTheme('sunset')">🌅 Sunset</app-button>
-              <app-button variant="outline" size="xs" (click)="applyTheme('ocean')">🌊 Ocean</app-button>
-              <app-button variant="outline" size="xs" (click)="applyTheme('forest')">🌲 Forest</app-button>
-              <app-button variant="outline" size="xs" (click)="applyTheme('neon')">⚡ Neon</app-button>
+              <app-button variant="outline" size="xs" (click)="applyTheme('sunset')"
+                >🌅 Sunset</app-button
+              >
+              <app-button variant="outline" size="xs" (click)="applyTheme('ocean')"
+                >🌊 Ocean</app-button
+              >
+              <app-button variant="outline" size="xs" (click)="applyTheme('forest')"
+                >🌲 Forest</app-button
+              >
+              <app-button variant="outline" size="xs" (click)="applyTheme('neon')"
+                >⚡ Neon</app-button
+              >
             </div>
           </div>
         </div>
       </div>
 
       <div class="canvas-container">
-        <canvas 
-          #canvas
-          width="400" 
-          height="400"
-          class="wave-canvas">
-        </canvas>
+        <canvas #canvas width="400" height="400" class="wave-canvas"> </canvas>
       </div>
 
       <div class="info">
@@ -199,132 +218,134 @@ interface ColorConfig {
       </div>
     </div>
   `,
-  styles: [`
-    .wave-squares-container {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-      padding: 1rem;
-      max-width: 600px;
-      margin: 0 auto;
-    }
+  styles: [
+    `
+      .wave-squares-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        padding: 1rem;
+        max-width: 600px;
+        margin: 0 auto;
+      }
 
-    .controls {
-      text-align: center;
-    }
+      .controls {
+        text-align: center;
+      }
 
-    .controls h3 {
-      margin-bottom: 1rem;
-      color: var(--text);
-    }
+      .controls h3 {
+        margin-bottom: 1rem;
+        color: var(--text);
+      }
 
-    .button-group {
-      display: flex;
-      gap: 0.5rem;
-      justify-content: center;
-      flex-wrap: wrap;
-      margin-bottom: 1rem;
-    }
+      .button-group {
+        display: flex;
+        gap: 0.5rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-bottom: 1rem;
+      }
 
-    .configuration-panel {
-      background: var(--background-lighter);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 1rem;
-      margin-top: 1rem;
-    }
+      .configuration-panel {
+        background: var(--background-lighter);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+      }
 
-    .config-row {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 0.75rem;
-      align-items: center;
-      flex-wrap: wrap;
-    }
+      .config-row {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 0.75rem;
+        align-items: center;
+        flex-wrap: wrap;
+      }
 
-    .config-group {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      color: var(--text-muted);
-      font-size: 0.9rem;
-    }
+      .config-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+      }
 
-    .config-select {
-      padding: 0.25rem 0.5rem;
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      background: var(--background);
-      color: var(--text);
-      font-size: 0.9rem;
-    }
+      .config-select {
+        padding: 0.25rem 0.5rem;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        background: var(--background);
+        color: var(--text);
+        font-size: 0.9rem;
+      }
 
-    .config-slider {
-      width: 80px;
-      accent-color: var(--primary);
-    }
+      .config-slider {
+        width: 80px;
+        accent-color: var(--primary);
+      }
 
-    .color-picker {
-      width: 40px;
-      height: 25px;
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      cursor: pointer;
-    }
+      .color-picker {
+        width: 40px;
+        height: 25px;
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        cursor: pointer;
+      }
 
-    .preset-themes {
-      border-top: 1px solid var(--border);
-      padding-top: 0.75rem;
-      margin-top: 0.75rem;
-    }
+      .preset-themes {
+        border-top: 1px solid var(--border);
+        padding-top: 0.75rem;
+        margin-top: 0.75rem;
+      }
 
-    .preset-themes label {
-      display: block;
-      margin-bottom: 0.5rem;
-      color: var(--text-muted);
-      font-size: 0.9rem;
-    }
+      .preset-themes label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+      }
 
-    .theme-buttons {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
+      .theme-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
 
-    .canvas-container {
-      display: flex;
-      justify-content: center;
-      background: var(--background-lighter);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 1rem;
-    }
+      .canvas-container {
+        display: flex;
+        justify-content: center;
+        background: var(--background-lighter);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 1rem;
+      }
 
-    .wave-canvas {
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      background: var(--background);
-      cursor: pointer;
-    }
+      .wave-canvas {
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        background: var(--background);
+        cursor: pointer;
+      }
 
-    .info {
-      text-align: center;
-      background: var(--background-lighter);
-      padding: 1rem;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-    }
+      .info {
+        text-align: center;
+        background: var(--background-lighter);
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+      }
 
-    .info p {
-      margin: 0.25rem 0;
-      color: var(--text-muted);
-      font-size: 0.9rem;
-    }
-  `]
+      .info p {
+        margin: 0.25rem 0;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+      }
+    `,
+  ],
 })
 export class WaveSquaresCanvasComponent extends BaseComponent implements AfterViewInit, OnDestroy {
   @ViewChild('canvas', { static: true }) canvasRef!: ElementRef<HTMLCanvasElement>;
-  
+
   private ctx!: CanvasRenderingContext2D;
   private animationId: number | null = null;
   private waveStartTime = 0;
@@ -342,7 +363,7 @@ export class WaveSquaresCanvasComponent extends BaseComponent implements AfterVi
   protected readonly colorConfig = signal<ColorConfig>({
     type: 'flat',
     frontColor: '#dc3545',
-    backColor: '#007bff'
+    backColor: '#007bff',
   });
 
   constructor() {
@@ -410,23 +431,23 @@ export class WaveSquaresCanvasComponent extends BaseComponent implements AfterVi
     const currentConfig = this.colorConfig();
     this.colorConfig.set({
       ...currentConfig,
-      type: target.value as ColorType
+      type: target.value as ColorType,
     });
   }
 
   updateColor(side: 'front' | 'back', event: Event): void {
     const target = event.target as HTMLInputElement;
     const currentConfig = this.colorConfig();
-    
+
     if (side === 'front') {
       this.colorConfig.set({
         ...currentConfig,
-        frontColor: target.value
+        frontColor: target.value,
       });
     } else {
       this.colorConfig.set({
         ...currentConfig,
-        backColor: target.value
+        backColor: target.value,
       });
     }
   }
@@ -434,23 +455,23 @@ export class WaveSquaresCanvasComponent extends BaseComponent implements AfterVi
   updateImage(side: 'front' | 'back', event: Event): void {
     const target = event.target as HTMLSelectElement;
     const currentConfig = this.colorConfig();
-    
+
     if (side === 'front') {
       this.colorConfig.set({
         ...currentConfig,
-        frontImage: target.value
+        frontImage: target.value,
       });
     } else {
       this.colorConfig.set({
         ...currentConfig,
-        backImage: target.value
+        backImage: target.value,
       });
     }
   }
 
   applyTheme(theme: string): void {
     let config: ColorConfig;
-    
+
     switch (theme) {
       case 'sunset':
         config = { type: 'flat', frontColor: '#ff6b35', backColor: '#f7931e' };
@@ -467,7 +488,7 @@ export class WaveSquaresCanvasComponent extends BaseComponent implements AfterVi
       default:
         config = { type: 'flat', frontColor: '#dc3545', backColor: '#007bff' };
     }
-    
+
     this.colorConfig.set(config);
   }
 
@@ -480,7 +501,7 @@ export class WaveSquaresCanvasComponent extends BaseComponent implements AfterVi
     for (let row = 0; row < gridSize; row++) {
       for (let col = 0; col < gridSize; col++) {
         const delay = this.calculateDelay(row, col, gridSize);
-        
+
         squares.push({
           x: 10 + col * squareSize,
           y: 10 + row * squareSize,
@@ -489,7 +510,7 @@ export class WaveSquaresCanvasComponent extends BaseComponent implements AfterVi
           isFlipping: false,
           delay,
           row,
-          col
+          col,
         });
       }
     }
@@ -500,17 +521,17 @@ export class WaveSquaresCanvasComponent extends BaseComponent implements AfterVi
   private calculateDelay(row: number, col: number, gridSize: number): number {
     const pattern = this.pattern();
     const baseDelay = 100; // Base delay between squares
-    
+
     switch (pattern) {
       case 'wave':
         // Diagonal wave from top-left
         const distance = Math.sqrt(row * row + col * col);
         return distance * 80;
-        
+
       case 'random':
         // Random delay between 0 and 2000ms
         return Math.random() * 2000;
-        
+
       case 'ripple':
         // Circular ripple from center
         const centerRow = (gridSize - 1) / 2;
@@ -519,21 +540,21 @@ export class WaveSquaresCanvasComponent extends BaseComponent implements AfterVi
           Math.pow(row - centerRow, 2) + Math.pow(col - centerCol, 2)
         );
         return rippleDistance * 120;
-        
+
       case 'rows':
         // Sequential rows
         return row * 200;
-        
+
       case 'columns':
         // Sequential columns
         return col * 200;
-        
+
       case 'spiral':
         // Spiral from outside to inside
         const minDist = Math.min(row, col, gridSize - 1 - row, gridSize - 1 - col);
         const maxDist = Math.max(row, col, gridSize - 1 - row, gridSize - 1 - col);
         return (maxDist - minDist) * 150;
-        
+
       default:
         return 0;
     }
@@ -543,7 +564,7 @@ export class WaveSquaresCanvasComponent extends BaseComponent implements AfterVi
     const resetSquares = this.squares().map(square => ({
       ...square,
       flipProgress: 0,
-      isFlipping: false
+      isFlipping: false,
     }));
     this.squares.set(resetSquares);
   }
@@ -553,7 +574,7 @@ export class WaveSquaresCanvasComponent extends BaseComponent implements AfterVi
 
     const currentTime = performance.now();
     const elapsedTime = currentTime - this.waveStartTime;
-    
+
     // Update FPS
     this.updateFPS(currentTime);
 
@@ -561,26 +582,26 @@ export class WaveSquaresCanvasComponent extends BaseComponent implements AfterVi
     const squares = this.squares().map(square => {
       const adjustedDelay = square.delay / this.waveSpeed();
       const shouldFlip = elapsedTime >= adjustedDelay;
-      
+
       if (shouldFlip && !square.isFlipping) {
         return { ...square, isFlipping: true };
       }
-      
+
       if (square.isFlipping) {
         const flipDuration = 600 / this.waveSpeed(); // 600ms flip duration
         const flipElapsed = elapsedTime - adjustedDelay;
         const progress = Math.min(flipElapsed / flipDuration, 1);
-        
+
         // Smooth easing function
         const easedProgress = this.easeInOutSine(progress);
-        
+
         if (progress >= 1) {
           return { ...square, flipProgress: 1, isFlipping: false };
         }
-        
+
         return { ...square, flipProgress: easedProgress };
       }
-      
+
       return square;
     });
 
@@ -590,7 +611,7 @@ export class WaveSquaresCanvasComponent extends BaseComponent implements AfterVi
     // Check if wave is complete and should restart
     const maxDelay = Math.max(...this.squares().map(s => s.delay));
     const waveDuration = (maxDelay + 1000) / this.waveSpeed();
-    
+
     if (elapsedTime >= waveDuration) {
       this.waveStartTime = currentTime;
       this.resetSquares();
@@ -603,7 +624,7 @@ export class WaveSquaresCanvasComponent extends BaseComponent implements AfterVi
     if (!this.ctx) return;
 
     const canvas = this.canvasRef.nativeElement;
-    
+
     // Clear canvas
     this.ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -645,17 +666,31 @@ export class WaveSquaresCanvasComponent extends BaseComponent implements AfterVi
     this.ctx.strokeRect(rectX, rectY, scaledWidth, scaledHeight);
   }
 
-  private drawColorSquare(x: number, y: number, width: number, height: number, flipProgress: number, config: ColorConfig): void {
+  private drawColorSquare(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    flipProgress: number,
+    config: ColorConfig
+  ): void {
     // Determine color based on flip progress and configuration
     const color = flipProgress < 0.5 ? config.frontColor : config.backColor;
-    
+
     this.ctx.fillStyle = color;
     this.ctx.fillRect(x, y, width, height);
   }
 
-  private drawImageSquare(x: number, y: number, width: number, height: number, flipProgress: number, config: ColorConfig): void {
+  private drawImageSquare(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    flipProgress: number,
+    config: ColorConfig
+  ): void {
     let image: HTMLImageElement | undefined;
-    
+
     if (flipProgress < 0.5) {
       // Front side
       if (config.frontImage === 'random') {
@@ -689,7 +724,7 @@ export class WaveSquaresCanvasComponent extends BaseComponent implements AfterVi
 
   private updateFPS(currentTime: number): void {
     this.frameCount++;
-    
+
     if (currentTime - this.lastFpsUpdate >= 1000) {
       this.fps.set(Math.round(this.frameCount));
       this.frameCount = 0;

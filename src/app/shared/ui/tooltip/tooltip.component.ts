@@ -1,4 +1,4 @@
-import { Component, input, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 @Component({
   selector: 'app-tooltip',
@@ -37,11 +37,13 @@ import { Component, input, ChangeDetectionStrategy } from '@angular/core';
       max-width: 200px;
 
       /* Smooth transition */
-      transition: opacity 0.2s ease, visibility 0.2s ease;
+      transition:
+        opacity 0.2s ease,
+        visibility 0.2s ease;
 
       /* Arrow */
       &::after {
-        content: "";
+        content: '';
         position: absolute;
         top: 100%;
         left: 50%;
@@ -68,7 +70,7 @@ import { Component, input, ChangeDetectionStrategy } from '@angular/core';
         max-width: 150px;
       }
     }
-  `
+  `,
 })
 export class TooltipComponent {
   readonly text = input.required<string>();

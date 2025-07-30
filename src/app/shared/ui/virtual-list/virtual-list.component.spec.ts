@@ -8,9 +8,8 @@ describe('VirtualListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [VirtualListComponent]
-    })
-    .compileComponents();
+      imports: [VirtualListComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(VirtualListComponent);
     component = fixture.componentInstance;

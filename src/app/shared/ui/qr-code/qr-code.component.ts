@@ -8,22 +8,24 @@ import { SsrPlatformService } from '@fourfold/angular-foundation';
       <canvas #canvas></canvas>
     </div>
   `,
-  styles: [`
-    .qr-code-container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 1rem;
-      background: white;
-      border-radius: 8px;
-      margin-top: 1rem;
-    }
+  styles: [
+    `
+      .qr-code-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 1rem;
+        background: white;
+        border-radius: 8px;
+        margin-top: 1rem;
+      }
 
-    canvas {
-      max-width: 100%;
-      height: auto;
-    }
-  `]
+      canvas {
+        max-width: 100%;
+        height: auto;
+      }
+    `,
+  ],
 })
 export class QrCodeComponent implements OnInit {
   @Input({ required: true }) url!: string;
@@ -48,20 +50,25 @@ export class QrCodeComponent implements OnInit {
     try {
       const QRCode = await import('qrcode');
 
-      QRCode.default.toCanvas(this.canvas.nativeElement, this.url, {
-        width: this.size,
-        margin: 2,
-        color: {
-          dark: '#000000',
-          light: '#FFFFFF'
+      QRCode.default.toCanvas(
+        this.canvas.nativeElement,
+        this.url,
+        {
+          width: this.size,
+          margin: 2,
+          color: {
+            dark: '#000000',
+            light: '#FFFFFF',
+          },
+        },
+        error => {
+          if (error) {
+            console.error('[QrCode] Error generating QR code:', error);
+          } else {
+            console.log('[QrCode] QR code generated successfully');
+          }
         }
-      }, (error) => {
-        if (error) {
-          console.error('[QrCode] Error generating QR code:', error);
-        } else {
-          console.log('[QrCode] QR code generated successfully');
-        }
-      });
+      );
     } catch (error) {
       console.error('[QrCode] Error loading QR code library:', error);
     }

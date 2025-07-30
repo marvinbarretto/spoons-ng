@@ -7,7 +7,7 @@ describe('EmptyStateComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [EmptyStateComponent]
+      imports: [EmptyStateComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(EmptyStateComponent);
@@ -30,18 +30,20 @@ describe('EmptyStateComponent', () => {
     fixture.componentRef.setInput('title', 'No missions');
     fixture.componentRef.setInput('subtitle', 'Start your first mission');
     fixture.detectChanges();
-    
+
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('.empty-icon')?.textContent).toContain('🎯');
     expect(compiled.querySelector('.empty-title')?.textContent).toContain('No missions');
-    expect(compiled.querySelector('.empty-subtitle')?.textContent).toContain('Start your first mission');
+    expect(compiled.querySelector('.empty-subtitle')?.textContent).toContain(
+      'Start your first mission'
+    );
   });
 
   it('should show action button when showAction is true', () => {
     fixture.componentRef.setInput('showAction', true);
     fixture.componentRef.setInput('actionText', 'Get Started');
     fixture.detectChanges();
-    
+
     const compiled = fixture.nativeElement as HTMLElement;
     const actionButton = compiled.querySelector('.action-button');
     expect(actionButton).toBeTruthy();
@@ -63,16 +65,16 @@ describe('EmptyStateComponent', () => {
   it('should emit action event when action button is clicked', () => {
     fixture.componentRef.setInput('showAction', true);
     fixture.detectChanges();
-    
+
     let actionEmitted = false;
     component.action.subscribe(() => {
       actionEmitted = true;
     });
-    
+
     const compiled = fixture.nativeElement as HTMLElement;
     const actionButton = compiled.querySelector('.action-button') as HTMLButtonElement;
     actionButton.click();
-    
+
     expect(actionEmitted).toBe(true);
   });
 
@@ -80,11 +82,11 @@ describe('EmptyStateComponent', () => {
     fixture.componentRef.setInput('showAction', true);
     fixture.componentRef.setInput('actionLabel', 'Start new mission');
     fixture.detectChanges();
-    
+
     const compiled = fixture.nativeElement as HTMLElement;
     const icon = compiled.querySelector('.empty-icon');
     expect(icon?.getAttribute('aria-hidden')).toBe('true');
-    
+
     const actionButton = compiled.querySelector('.action-button');
     expect(actionButton?.getAttribute('aria-label')).toContain('Start new mission');
   });

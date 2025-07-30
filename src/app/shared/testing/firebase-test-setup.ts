@@ -1,6 +1,5 @@
 // src/app/shared/testing/firebase-test-setup.ts
-import { Provider } from '@angular/core';
-import { signal } from '@angular/core';
+import { Provider, signal } from '@angular/core';
 
 /**
  * Comprehensive Firebase testing setup
@@ -41,7 +40,7 @@ export function createFirebaseTestProviders(): Provider[] {
     signInAnonymously: jest.fn().mockResolvedValue({ user: { uid: 'test-uid' } }),
     signInWithEmailAndPassword: jest.fn().mockResolvedValue({ user: { uid: 'test-uid' } }),
     signOut: jest.fn().mockResolvedValue(undefined),
-    onAuthStateChanged: jest.fn((callback) => {
+    onAuthStateChanged: jest.fn(callback => {
       // Simulate no user initially
       callback(null);
       return jest.fn(); // Unsubscribe function

@@ -1,8 +1,8 @@
 import { TestBed } from '@angular/core/testing';
-import { AuthStore } from './auth.store';
-import { AuthService } from './auth.service';
 import { SsrPlatformService } from '@fourfold/angular-foundation';
 import { OverlayService } from '../../shared/data-access/overlay.service';
+import { AuthService } from './auth.service';
+import { AuthStore } from './auth.store';
 
 describe('AuthStore', () => {
   let store: AuthStore;
@@ -26,7 +26,7 @@ describe('AuthStore', () => {
     mockPlatformService = {
       isServer: false,
       isBrowser: true,
-      onlyOnBrowser: jest.fn((fn) => fn()),
+      onlyOnBrowser: jest.fn(fn => fn()),
     } as any;
 
     // Mock OverlayService
@@ -206,7 +206,9 @@ describe('AuthStore', () => {
       expect(store.isExplicitGuest()).toBe(false);
 
       // Platform service should be used for localStorage operations
-      expect(mockPlatformService.onlyOnBrowser.mock.calls.length).toBeGreaterThan(onlyOnBrowserCallsBefore);
+      expect(mockPlatformService.onlyOnBrowser.mock.calls.length).toBeGreaterThan(
+        onlyOnBrowserCallsBefore
+      );
     });
   });
 });

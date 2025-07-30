@@ -1,7 +1,6 @@
-
-import { Timestamp } from "firebase/firestore";
-import { CheckIn } from "../../check-in/utils/check-in.models";
-import { Landlord } from "../../landlord/utils/landlord.model";
+import { Timestamp } from 'firebase/firestore';
+import { CheckIn } from '../../check-in/utils/check-in.models';
+import { Landlord } from '../../landlord/utils/landlord.model';
 
 export type Pub = {
   id: string;
@@ -14,8 +13,8 @@ export type Pub = {
   location: { lat: number; lng: number };
 
   carpetUrl?: string;
-  hasCarpet?: boolean;           // 🆕 Flag indicating if pub has carpet stored
-  carpetUpdatedAt?: Timestamp;   // 🆕 When carpet status was last updated
+  hasCarpet?: boolean; // 🆕 Flag indicating if pub has carpet stored
+  carpetUpdatedAt?: Timestamp; // 🆕 When carpet status was last updated
 
   lastCheckinAt?: Timestamp;
   checkinCount?: number;

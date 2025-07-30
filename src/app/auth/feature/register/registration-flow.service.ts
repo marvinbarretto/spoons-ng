@@ -1,5 +1,5 @@
-import { Injectable, inject, signal, runInInjectionContext, Injector } from '@angular/core';
-import { Firestore, collection, query, where, getDocs } from '@angular/fire/firestore';
+import { Injectable, Injector, inject, runInInjectionContext, signal } from '@angular/core';
+import { Firestore, collection, getDocs, query, where } from '@angular/fire/firestore';
 
 export type RegistrationStep = 'auth' | 'profile' | 'location' | 'complete';
 
@@ -61,11 +61,16 @@ export class RegistrationFlowService {
     console.log('[RegistrationFlowService] 🚀 nextStep() called');
     console.log('[RegistrationFlowService] Current step:', this.currentStep());
     console.log('[RegistrationFlowService] Can go next:', this.canGoNext());
-    
+
     if (this.canGoNext()) {
       const nextIndex = this.currentStepIndex() + 1;
-      console.log('[RegistrationFlowService] Next index:', nextIndex, 'Total steps:', this.steps.length);
-      
+      console.log(
+        '[RegistrationFlowService] Next index:',
+        nextIndex,
+        'Total steps:',
+        this.steps.length
+      );
+
       if (nextIndex < this.steps.length) {
         const nextStep = this.steps[nextIndex];
         console.log('[RegistrationFlowService] Setting next step to:', nextStep);
@@ -120,7 +125,9 @@ export class RegistrationFlowService {
     // Check for invalid characters (allow letters, numbers, spaces, hyphens, underscores)
     const validPattern = /^[a-zA-Z0-9\s\-_]+$/;
     if (!validPattern.test(username.trim())) {
-      this.usernameValidationError.set('Username can only contain letters, numbers, spaces, hyphens, and underscores');
+      this.usernameValidationError.set(
+        'Username can only contain letters, numbers, spaces, hyphens, and underscores'
+      );
       return false;
     }
 
@@ -144,7 +151,6 @@ export class RegistrationFlowService {
       // Username is available
       this.usernameValidationError.set(null);
       return true;
-
     } catch (error) {
       console.error('[RegistrationFlowService] Username validation error:', error);
       this.usernameValidationError.set('Unable to check username availability. Please try again.');
@@ -157,13 +163,41 @@ export class RegistrationFlowService {
   // Generate random username
   generateRandomUsername(): string {
     const adjectives = [
-      'quick', 'brave', 'clever', 'bright', 'happy', 'lucky', 'swift', 'bold',
-      'wise', 'kind', 'cool', 'calm', 'sharp', 'smart', 'fun', 'wild'
+      'quick',
+      'brave',
+      'clever',
+      'bright',
+      'happy',
+      'lucky',
+      'swift',
+      'bold',
+      'wise',
+      'kind',
+      'cool',
+      'calm',
+      'sharp',
+      'smart',
+      'fun',
+      'wild',
     ];
-    
+
     const nouns = [
-      'fox', 'eagle', 'wolf', 'bear', 'lion', 'tiger', 'hawk', 'owl',
-      'deer', 'rabbit', 'horse', 'falcon', 'dragon', 'phoenix', 'star', 'moon'
+      'fox',
+      'eagle',
+      'wolf',
+      'bear',
+      'lion',
+      'tiger',
+      'hawk',
+      'owl',
+      'deer',
+      'rabbit',
+      'horse',
+      'falcon',
+      'dragon',
+      'phoenix',
+      'star',
+      'moon',
     ];
 
     const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];

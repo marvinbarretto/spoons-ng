@@ -1,9 +1,9 @@
 import { Injectable, computed, signal } from '@angular/core';
-import { CheckinGate } from './gate.interface';
 import { CHECKIN_GATE_THRESHOLDS } from './checkin-thresholds.config';
+import { CheckinGate } from './gate.interface';
 
 export type DeviceOrientationData = {
-  beta: number;  // Front-to-back tilt in degrees
+  beta: number; // Front-to-back tilt in degrees
 };
 
 @Injectable({ providedIn: 'root' })
@@ -14,7 +14,7 @@ export class DeviceOrientationGate implements CheckinGate {
 
   // Orientation state
   private readonly _deviceOrientation = signal<DeviceOrientationData>({
-    beta: 0
+    beta: 0,
   });
 
   private readonly _isMonitoring = signal(false);
@@ -42,13 +42,13 @@ export class DeviceOrientationGate implements CheckinGate {
   readonly passed = computed(() => {
     const orientation = this._deviceOrientation();
     const beta = orientation.beta;
-    
+
     // Acceptable range: -5 to 45 degrees
     const isAcceptable = beta >= -5 && beta <= 45;
 
     console.log('[DeviceOrientationGate] Check:', {
       beta,
-      isAcceptable
+      isAcceptable,
     });
 
     return isAcceptable;
@@ -89,13 +89,14 @@ export class DeviceOrientationGate implements CheckinGate {
         }
       } else {
         // No permission needed (Android, older iOS)
-        console.log('[DeviceOrientationGate] Adding device orientation listener (no permission needed)');
+        console.log(
+          '[DeviceOrientationGate] Adding device orientation listener (no permission needed)'
+        );
         this._hasPermission.set(true);
         this._attachOrientationListener();
       }
 
       this._isMonitoring.set(true);
-
     } catch (error) {
       console.error('[DeviceOrientationGate] Failed to start orientation monitoring:', error);
     }
@@ -160,11 +161,10 @@ export class DeviceOrientationGate implements CheckinGate {
     this.orientationTimeout = setTimeout(() => {
       // Round beta to integer
       const roundedBeta = event.beta !== null ? Math.round(event.beta) : 0;
-      
+
       console.log('[DeviceOrientationGate] Orientation update:', { beta: roundedBeta });
-      
+
       this._deviceOrientation.set({ beta: roundedBeta });
     }, 50);
   }
-
 }

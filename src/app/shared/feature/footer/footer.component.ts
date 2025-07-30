@@ -1,9 +1,6 @@
-import { Component } from '@angular/core';
-import { DevDebugComponent } from "../../utils/dev-debug/dev-debug.component";
-import { ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { DevDebugComponent } from '../../utils/dev-debug/dev-debug.component';
 import { APP_VERSION } from '../../utils/version';
-import { environment } from '../../../../environments/environment';
-
 
 @Component({
   selector: 'app-footer',
@@ -11,14 +8,14 @@ import { environment } from '../../../../environments/environment';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <footer class="footer">
-        <app-dev-debug />
+      <app-dev-debug />
       <div class="footer-content">
         <p>&copy; {{ currentYear }} Spoonscount {{ version }}</p>
       </div>
     </footer>
   `,
   styles: `
-.footer {
+    .footer {
       background-color: var(--background-darkest, #f8fafc);
       color: var(--text-secondary, #64748b);
       padding: 2rem 1rem 1rem;
@@ -53,7 +50,7 @@ import { environment } from '../../../../environments/environment';
         font-size: 0.75rem;
       }
     }
-  `
+  `,
 })
 export class FooterComponent {
   currentYear = new Date().getFullYear();

@@ -45,11 +45,11 @@ export type PhotoAnalysisResult = {
   detected: boolean;
   confidence: number;
   reasoning: string;
-  
+
   // Photo quality assessment
   photoQuality: PhotoQualityMetrics;
   qualityBonus: number; // 0-100, bonus points for photo quality
-  
+
   // Theme-specific data
   themeId: string;
   themeElements: {
@@ -57,11 +57,11 @@ export type PhotoAnalysisResult = {
     missing: string[]; // Expected elements that weren't found
     bonus: string[]; // Bonus elements that were found
   };
-  
+
   // Visual analysis
   visualElements: string[];
   story?: string[]; // Engaging observations
-  
+
   // Legacy compatibility
   isCarpet?: boolean; // For backward compatibility with carpet detection
 };
@@ -88,9 +88,9 @@ export const ANALYSIS_THEMES = {
     targetElements: ['carpet', 'rug', 'floor covering', 'mat'],
     bonusElements: ['pattern', 'vintage', 'unique design'],
     qualityWeight: 0.3,
-    minimumConfidence: 60
+    minimumConfidence: 60,
   } as AnalysisTheme,
-  
+
   GUINNESS: {
     id: 'guinness',
     name: 'Guinness Promotion',
@@ -98,9 +98,9 @@ export const ANALYSIS_THEMES = {
     targetElements: ['guinness', 'stout', 'pint', 'black beer'],
     bonusElements: ['guinness tap', 'guinness glass', 'promotional material', 'perfect pour'],
     qualityWeight: 0.4,
-    minimumConfidence: 70
+    minimumConfidence: 70,
   } as AnalysisTheme,
-  
+
   GENERAL: {
     id: 'general',
     name: 'General Pub Analysis',
@@ -108,6 +108,6 @@ export const ANALYSIS_THEMES = {
     targetElements: ['pub', 'bar', 'interior'],
     bonusElements: ['historic features', 'unique character', 'atmosphere'],
     qualityWeight: 0.2,
-    minimumConfidence: 50
-  } as AnalysisTheme
+    minimumConfidence: 50,
+  } as AnalysisTheme,
 } as const;

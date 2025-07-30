@@ -16,21 +16,23 @@ export class MockCheckinGateCoordinator {
     hasTexture: true,
     hasEdges: true,
     metricsReady: true,
-    carpetConfidence: 'possible' as CarpetConfidence
+    carpetConfidence: 'possible' as CarpetConfidence,
   });
 
   readonly gateStatus = this._gateStates.asReadonly();
 
   readonly allGatesPassed = computed(() => {
     const gates = this._gateStates();
-    return gates.deviceOriented &&
-           gates.isStable &&
-           gates.carpetConfidence === 'possible' &&
-           gates.goodSharpness &&
-           gates.goodContrast &&
-           gates.hasTexture &&
-           gates.hasEdges &&
-           gates.lowMotion;
+    return (
+      gates.deviceOriented &&
+      gates.isStable &&
+      gates.carpetConfidence === 'possible' &&
+      gates.goodSharpness &&
+      gates.goodContrast &&
+      gates.hasTexture &&
+      gates.hasEdges &&
+      gates.lowMotion
+    );
   });
 
   readonly carpetConfidence = computed(() => this._gateStates().carpetConfidence);
@@ -45,7 +47,7 @@ export class MockCheckinGateCoordinator {
   setGateStates(states: Partial<ReturnType<typeof this.gateStatus>>): void {
     this._gateStates.update(current => ({
       ...current,
-      ...states
+      ...states,
     }));
   }
 
@@ -62,7 +64,7 @@ export class MockCheckinGateCoordinator {
       hasTexture: false,
       hasEdges: false,
       metricsReady: false,
-      carpetConfidence: 'no'
+      carpetConfidence: 'no',
     });
   }
 
@@ -79,7 +81,7 @@ export class MockCheckinGateCoordinator {
       hasTexture: true,
       hasEdges: true,
       metricsReady: true,
-      carpetConfidence: 'possible'
+      carpetConfidence: 'possible',
     });
   }
 }

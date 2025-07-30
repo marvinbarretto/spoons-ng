@@ -1,8 +1,8 @@
 // src/app/checkin/data-access/__tests__/checkin.store.spec.ts
 
 import { TestBed } from '@angular/core/testing';
-import { CheckInStore } from './check-in.store';
 import { CheckInService } from './check-in.service';
+import { CheckInStore } from './check-in.store';
 
 describe('CheckInStore', () => {
   let store: CheckInStore;
@@ -12,14 +12,11 @@ describe('CheckInStore', () => {
     // Create Jest mock for CheckInService
     const serviceMock = {
       canCheckIn: jest.fn(),
-      createCheckin: jest.fn()
+      createCheckin: jest.fn(),
     } as jest.Mocked<Partial<CheckInService>>;
 
     TestBed.configureTestingModule({
-      providers: [
-        CheckInStore,
-        { provide: CheckInService, useValue: serviceMock }
-      ]
+      providers: [CheckInStore, { provide: CheckInService, useValue: serviceMock }],
     });
 
     store = TestBed.inject(CheckInStore);
@@ -65,8 +62,7 @@ describe('CheckInStore', () => {
       mockService.canCheckIn.mockResolvedValue(validationError);
 
       // Act & Assert
-      await expect(store.checkinToPub(pubId))
-        .rejects.toThrow('Too far away');
+      await expect(store.checkinToPub(pubId)).rejects.toThrow('Too far away');
 
       // Assert - Service calls
       expect(mockService.canCheckIn).toHaveBeenCalledWith(pubId);
@@ -83,8 +79,7 @@ describe('CheckInStore', () => {
       mockService.createCheckin.mockRejectedValue(new Error('Network error'));
 
       // Act & Assert
-      await expect(store.checkinToPub(pubId))
-        .rejects.toThrow('Network error');
+      await expect(store.checkinToPub(pubId)).rejects.toThrow('Network error');
 
       // Assert - Both service calls were made
       expect(mockService.canCheckIn).toHaveBeenCalledWith(pubId);
@@ -143,7 +138,7 @@ describe('CheckInStore', () => {
       const pubId = 'test-pub-123';
       mockService.canCheckIn.mockResolvedValue({
         allowed: false,
-        reason: 'Already checked in today'
+        reason: 'Already checked in today',
       });
 
       // Act
@@ -181,12 +176,13 @@ describe('CheckInStore', () => {
       const pubId = 'moon-under-water-watford';
       mockService.canCheckIn.mockResolvedValue({
         allowed: false,
-        reason: 'You are 729m away. Must be within 100m to check in.'
+        reason: 'You are 729m away. Must be within 100m to check in.',
       });
 
       // Act & Assert
-      await expect(store.checkinToPub(pubId))
-        .rejects.toThrow('You are 729m away. Must be within 100m to check in.');
+      await expect(store.checkinToPub(pubId)).rejects.toThrow(
+        'You are 729m away. Must be within 100m to check in.'
+      );
 
       expect(mockService.canCheckIn).toHaveBeenCalledWith(pubId);
       expect(mockService.createCheckin).not.toHaveBeenCalled();
@@ -197,12 +193,13 @@ describe('CheckInStore', () => {
       const pubId = 'test-pub-123';
       mockService.canCheckIn.mockResolvedValue({
         allowed: false,
-        reason: 'You have already checked into this pub today'
+        reason: 'You have already checked into this pub today',
       });
 
       // Act & Assert
-      await expect(store.checkinToPub(pubId))
-        .rejects.toThrow('You have already checked into this pub today');
+      await expect(store.checkinToPub(pubId)).rejects.toThrow(
+        'You have already checked into this pub today'
+      );
     });
 
     it('should handle successful nearby check-in', async () => {
@@ -226,8 +223,7 @@ describe('CheckInStore', () => {
       mockService.canCheckIn.mockRejectedValue(new Error('Unexpected error'));
 
       // Act & Assert
-      await expect(store.checkinToPub(pubId))
-        .rejects.toThrow('Unexpected error');
+      await expect(store.checkinToPub(pubId)).rejects.toThrow('Unexpected error');
 
       expect(store.isProcessing()).toBe(false);
     });
@@ -324,7 +320,7 @@ describe('CheckInStore', () => {
       const pubId = 'test-pub-123';
       mockService.canCheckIn.mockResolvedValue({
         allowed: false,
-        reason: 'Validation failed'
+        reason: 'Validation failed',
       });
 
       // Act
@@ -346,15 +342,15 @@ describe('CheckInStore', () => {
 
     beforeEach(() => {
       const firestoreMock = {
-        getDocsWhere: jest.fn()
+        getDocsWhere: jest.fn(),
       };
 
       TestBed.configureTestingModule({
         providers: [
           CheckInService,
           // Mock the inherited FirestoreService methods
-          { provide: 'FirestoreService', useValue: firestoreMock }
-        ]
+          { provide: 'FirestoreService', useValue: firestoreMock },
+        ],
       });
 
       service = TestBed.inject(CheckInService);
@@ -370,7 +366,7 @@ describe('CheckInStore', () => {
         const mockCheckins = [
           { id: '1', userId, pubId: 'pub1', dateKey: '2025-06-18' },
           { id: '2', userId, pubId: 'pub2', dateKey: '2025-06-19' },
-          { id: '3', userId, pubId: 'pub1', dateKey: '2025-06-19' }
+          { id: '3', userId, pubId: 'pub1', dateKey: '2025-06-19' },
         ];
         mockFirestore.getDocsWhere.mockResolvedValue(mockCheckins);
 
@@ -418,7 +414,7 @@ describe('CheckInStore', () => {
 
         // Mock getUserCheckinCount to return 1 (just created)
         mockFirestore.getDocsWhere.mockResolvedValue([
-          { id: '1', userId, pubId, dateKey: '2025-06-19' }
+          { id: '1', userId, pubId, dateKey: '2025-06-19' },
         ]);
 
         // Act
@@ -436,7 +432,7 @@ describe('CheckInStore', () => {
         // Mock getUserCheckinCount to return 2+ (multiple visits)
         mockFirestore.getDocsWhere.mockResolvedValue([
           { id: '1', userId, pubId, dateKey: '2025-06-18' },
-          { id: '2', userId, pubId, dateKey: '2025-06-19' }
+          { id: '2', userId, pubId, dateKey: '2025-06-19' },
         ]);
 
         // Act
@@ -467,7 +463,7 @@ describe('CheckInStore', () => {
         const pubId = 'test-pub-123';
         const mockCheckins = [
           { id: '1', userId, pubId, dateKey: '2025-06-18' },
-          { id: '2', userId, pubId, dateKey: '2025-06-19' }
+          { id: '2', userId, pubId, dateKey: '2025-06-19' },
         ];
         mockFirestore.getDocsWhere.mockResolvedValue(mockCheckins);
 
@@ -479,7 +475,7 @@ describe('CheckInStore', () => {
         expect(mockFirestore.getDocsWhere).toHaveBeenCalledWith(
           'checkins',
           expect.any(Object), // where userId == test-user-123
-          expect.any(Object)  // where pubId == test-pub-123
+          expect.any(Object) // where pubId == test-pub-123
         );
       });
     });
@@ -498,7 +494,7 @@ describe('CheckInStore', () => {
         // Act
         const [isFirstVisit, totalCount] = await Promise.all([
           service.isFirstEverCheckIn(newUserId, pubId),
-          service.getUserTotalCheckinCount(newUserId)
+          service.getUserTotalCheckinCount(newUserId),
         ]);
 
         // Assert - Should be first visit and first ever
@@ -514,17 +510,21 @@ describe('CheckInStore', () => {
         // Mock: 1 check-in to this pub, but 10 total check-ins
         mockFirestore.getDocsWhere
           .mockResolvedValueOnce([{ id: '10', userId, pubId }]) // getUserCheckinCount: first visit to THIS pub
-          .mockResolvedValueOnce(Array(10).fill(null).map((_, i) => ({ id: i, userId }))); // getUserTotalCheckinCount: 10 total
+          .mockResolvedValueOnce(
+            Array(10)
+              .fill(null)
+              .map((_, i) => ({ id: i, userId }))
+          ); // getUserTotalCheckinCount: 10 total
 
         // Act
         const [isFirstVisit, totalCount] = await Promise.all([
           service.isFirstEverCheckIn(userId, pubId),
-          service.getUserTotalCheckinCount(userId)
+          service.getUserTotalCheckinCount(userId),
         ]);
 
         // Assert - First visit to this pub, but not first ever
-        expect(isFirstVisit).toBe(true);  // First time at THIS pub
-        expect(totalCount).toBe(10);      // Experienced user overall
+        expect(isFirstVisit).toBe(true); // First time at THIS pub
+        expect(totalCount).toBe(10); // Experienced user overall
       });
     });
   });

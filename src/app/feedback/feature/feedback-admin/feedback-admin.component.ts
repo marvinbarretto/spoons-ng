@@ -1,6 +1,6 @@
 // src/app/feedback/feature/feedback-admin/feedback-admin.component.ts
-import { Component, inject, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FeedbackStore } from '../../data-access/feedback.store';
 import { Feedback } from '../../utils/feedback.model';
@@ -31,7 +31,7 @@ type FeedbackTypeFilter = 'all' | 'bug' | 'suggestion' | 'confusion';
           </span>
         </div>
       </header>
-    
+
       <!-- Filters -->
       <section class="filters-section">
         <div class="filter-group">
@@ -41,13 +41,13 @@ type FeedbackTypeFilter = 'all' | 'bug' | 'suggestion' | 'confusion';
               class="filter-btn"
               [class.active]="statusFilter() === status"
               (click)="statusFilter.set(status)"
-              >
+            >
               {{ status | titlecase }}
               ({{ getCountForStatus(status) }})
             </button>
           }
         </div>
-    
+
         <div class="filter-group">
           <label>Type:</label>
           @for (type of typeFilters; track type) {
@@ -55,14 +55,14 @@ type FeedbackTypeFilter = 'all' | 'bug' | 'suggestion' | 'confusion';
               class="filter-btn"
               [class.active]="typeFilter() === type"
               (click)="typeFilter.set(type)"
-              >
+            >
               {{ type | titlecase }}
               ({{ getCountForType(type) }})
             </button>
           }
         </div>
       </section>
-    
+
       <!-- Feedback List -->
       <section class="feedback-list">
         @if (loading()) {
@@ -90,17 +90,17 @@ type FeedbackTypeFilter = 'all' | 'bug' | 'suggestion' | 'confusion';
                     {{ feedback.status | titlecase }}
                   </span>
                 </div>
-    
+
                 <div class="feedback-content">
                   <p class="feedback-message">{{ feedback.message }}</p>
-    
+
                   @if (feedback.context) {
                     <div class="feedback-metadata">
                       <strong>Context:</strong>
                       <pre>{{ formatMetadata(feedback.context) }}</pre>
                     </div>
                   }
-    
+
                   @if (feedback.adminNotes) {
                     <div class="admin-notes">
                       <strong>Admin Notes:</strong>
@@ -108,7 +108,7 @@ type FeedbackTypeFilter = 'all' | 'bug' | 'suggestion' | 'confusion';
                     </div>
                   }
                 </div>
-    
+
                 <div class="card-actions">
                   @if (feedback.status === 'pending') {
                     <div class="admin-controls">
@@ -123,14 +123,14 @@ type FeedbackTypeFilter = 'all' | 'bug' | 'suggestion' | 'confusion';
                           class="btn btn-resolve"
                           (click)="resolveFeedback(feedback.id)"
                           [disabled]="isUpdating()"
-                          >
+                        >
                           Mark Resolved
                         </button>
                         <button
                           class="btn btn-dismiss"
                           (click)="dismissFeedback(feedback.id)"
                           [disabled]="isUpdating()"
-                          >
+                        >
                           Dismiss
                         </button>
                       </div>
@@ -140,7 +140,7 @@ type FeedbackTypeFilter = 'all' | 'bug' | 'suggestion' | 'confusion';
                       class="btn btn-reopen"
                       (click)="reopenFeedback(feedback.id)"
                       [disabled]="isUpdating()"
-                      >
+                    >
                       Reopen
                     </button>
                   }
@@ -150,7 +150,7 @@ type FeedbackTypeFilter = 'all' | 'bug' | 'suggestion' | 'confusion';
           </div>
         }
       </section>
-    
+
       <!-- Debug Info -->
       @if (isDevMode()) {
         <section class="debug-section">
@@ -163,8 +163,8 @@ type FeedbackTypeFilter = 'all' | 'bug' | 'suggestion' | 'confusion';
         </section>
       }
     </div>
-    `,
-  styleUrl: './feedback-admin.component.scss'
+  `,
+  styleUrl: './feedback-admin.component.scss',
 })
 export class FeedbackAdminComponent {
   private readonly feedbackStore = inject(FeedbackStore);
@@ -177,13 +177,15 @@ export class FeedbackAdminComponent {
   // Computed counts
   readonly pendingCount = computed(() => this.feedbackStore.pendingFeedback().length);
   readonly resolvedCount = computed(() => this.feedbackStore.resolvedFeedback().length);
-  readonly wontfixCount = computed(() => this.allFeedback().filter(f => f.status === 'wontfix').length);
+  readonly wontfixCount = computed(
+    () => this.allFeedback().filter(f => f.status === 'wontfix').length
+  );
   readonly totalCount = computed(() => this.allFeedback().length);
 
   // Filters
   readonly statusFilter = signal<FeedbackFilter>('all');
   readonly typeFilter = signal<FeedbackTypeFilter>('all');
-  
+
   readonly statusFilters: FeedbackFilter[] = ['all', 'pending', 'resolved', 'wontfix'];
   readonly typeFilters: FeedbackTypeFilter[] = ['all', 'bug', 'suggestion', 'confusion'];
 
@@ -196,17 +198,17 @@ export class FeedbackAdminComponent {
   // Filtered feedback based on current filters
   readonly filteredFeedback = computed(() => {
     let feedback = this.allFeedback();
-    
+
     // Apply status filter
     if (this.statusFilter() !== 'all') {
       feedback = feedback.filter(f => f.status === this.statusFilter());
     }
-    
+
     // Apply type filter
     if (this.typeFilter() !== 'all') {
       feedback = feedback.filter(f => f.type === this.typeFilter());
     }
-    
+
     // Sort by date (newest first)
     return feedback.sort((a, b) => {
       const dateA = typeof a.createdAt === 'string' ? new Date(a.createdAt) : a.createdAt;
@@ -220,8 +222,8 @@ export class FeedbackAdminComponent {
     this.isUpdating.set(true);
     try {
       await this.feedbackStore.updateFeedbackStatus(
-        feedbackId, 
-        'resolved', 
+        feedbackId,
+        'resolved',
         this.adminNotes[feedbackId]
       );
       delete this.adminNotes[feedbackId];
@@ -238,8 +240,8 @@ export class FeedbackAdminComponent {
     this.isUpdating.set(true);
     try {
       await this.feedbackStore.updateFeedbackStatus(
-        feedbackId, 
-        'wontfix', 
+        feedbackId,
+        'wontfix',
         this.adminNotes[feedbackId] || 'Dismissed by admin'
       );
       delete this.adminNotes[feedbackId];
@@ -279,21 +281,25 @@ export class FeedbackAdminComponent {
 
   getFeedbackIcon(type: Feedback['type']): string {
     switch (type) {
-      case 'bug': return '🐛';
-      case 'suggestion': return '💡';
-      case 'confusion': return '❓';
-      default: return '💬';
+      case 'bug':
+        return '🐛';
+      case 'suggestion':
+        return '💡';
+      case 'confusion':
+        return '❓';
+      default:
+        return '💬';
     }
   }
 
   formatDate(dateInput: string | Date): string {
     const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
       day: 'numeric',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   }
 

@@ -1,10 +1,9 @@
-import { Injectable, inject, signal, effect, computed } from '@angular/core';
+import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { AuthStore } from '../../auth/data-access/auth.store';
+import { CheckInStore } from '../../check-in/data-access/check-in.store';
+import { MissionDisplayData, UserMissionProgress } from '../utils/user-mission-progress.model';
 import { MissionStore } from './mission.store';
 import { UserMissionProgressService } from './user-mission-progress.service';
-import { CheckInStore } from '../../check-in/data-access/check-in.store';
-import { Mission } from '../utils/mission.model';
-import { UserMissionProgress, MissionDisplayData } from '../utils/user-mission-progress.model';
 
 @Injectable({ providedIn: 'root' })
 export class UserMissionsStore {
@@ -29,13 +28,13 @@ export class UserMissionsStore {
   readonly activeMissions = computed(() => {
     const missions = this.missionStore.missions();
     const progress = this._userProgress();
-    
+
     return progress
       .filter(p => !p.isCompleted)
       .map(p => {
         const mission = missions.find(m => m.id === p.missionId);
         if (!mission) return null;
-        
+
         return {
           mission,
           progress: p,
@@ -43,7 +42,7 @@ export class UserMissionsStore {
           isCompleted: false,
           progressPercentage: p.progressPercentage,
           completedCount: p.completedPubIds.length,
-          totalCount: mission.pubIds.length
+          totalCount: mission.pubIds.length,
         } as MissionDisplayData;
       })
       .filter((item): item is MissionDisplayData => item !== null);
@@ -52,13 +51,13 @@ export class UserMissionsStore {
   readonly completedMissions = computed(() => {
     const missions = this.missionStore.missions();
     const progress = this._userProgress();
-    
+
     return progress
       .filter(p => p.isCompleted)
       .map(p => {
         const mission = missions.find(m => m.id === p.missionId);
         if (!mission) return null;
-        
+
         return {
           mission,
           progress: p,
@@ -66,7 +65,7 @@ export class UserMissionsStore {
           isCompleted: true,
           progressPercentage: 100,
           completedCount: p.completedPubIds.length,
-          totalCount: mission.pubIds.length
+          totalCount: mission.pubIds.length,
         } as MissionDisplayData;
       })
       .filter((item): item is MissionDisplayData => item !== null);
@@ -76,7 +75,7 @@ export class UserMissionsStore {
     const missions = this.missionStore.missions();
     const progress = this._userProgress();
     const progressMissionIds = progress.map(p => p.missionId);
-    
+
     return missions
       .filter(m => !progressMissionIds.includes(m.id))
       .map(mission => ({
@@ -86,7 +85,7 @@ export class UserMissionsStore {
         isCompleted: false,
         progressPercentage: 0,
         completedCount: 0,
-        totalCount: mission.pubIds.length
+        totalCount: mission.pubIds.length,
       }));
   });
 
@@ -100,7 +99,7 @@ export class UserMissionsStore {
         hasUser: !!user,
         userId: userId?.slice(0, 8),
         isAnonymous: user?.isAnonymous,
-        previousUserId: this.lastLoadedUserId?.slice(0, 8)
+        previousUserId: this.lastLoadedUserId?.slice(0, 8),
       });
 
       // Clear data if no user
@@ -129,18 +128,19 @@ export class UserMissionsStore {
     effect(() => {
       const user = this.authStore.user();
       const checkins = this.checkinStore.checkins();
-      
+
       if (!user || checkins.length === 0) return;
 
       console.log('[UserMissionsStore] Check-ins changed, checking for mission updates', {
         userId: user.uid.slice(0, 8),
-        totalCheckins: checkins.length
+        totalCheckins: checkins.length,
       });
 
       // Get user check-ins that haven't been processed yet
-      const userCheckins = checkins
-        .filter(c => c.userId === user.uid && !this.processedCheckinIds.has(c.id));
-      
+      const userCheckins = checkins.filter(
+        c => c.userId === user.uid && !this.processedCheckinIds.has(c.id)
+      );
+
       if (userCheckins.length === 0) {
         console.log('[UserMissionsStore] No new check-ins to process');
         return;
@@ -148,14 +148,14 @@ export class UserMissionsStore {
 
       console.log('[UserMissionsStore] Processing new check-ins', {
         newCheckins: userCheckins.length,
-        checkinIds: userCheckins.map(c => c.id)
+        checkinIds: userCheckins.map(c => c.id),
       });
 
       // Process each new check-in
       userCheckins.forEach(checkin => {
         // Mark as processed immediately to prevent reprocessing
         this.processedCheckinIds.add(checkin.id);
-        
+
         // Check if this pub is part of any active missions
         const activeMissions = this._userProgress().filter(p => !p.isCompleted);
         const relevantMissions = activeMissions.filter(progress => {
@@ -167,7 +167,7 @@ export class UserMissionsStore {
           console.log('[UserMissionsStore] Found relevant missions for check-in', {
             checkinId: checkin.id,
             pubId: checkin.pubId,
-            relevantMissionIds: relevantMissions.map(m => m.missionId)
+            relevantMissionIds: relevantMissions.map(m => m.missionId),
           });
 
           // Update mission progress for each relevant mission
@@ -186,7 +186,7 @@ export class UserMissionsStore {
     if (!user) return;
 
     console.log('[UserMissionsStore] Loading user missions...');
-    
+
     // Prevent multiple simultaneous loads
     if (this._loading()) {
       console.log('[UserMissionsStore] Already loading, skipping...');
@@ -225,13 +225,13 @@ export class UserMissionsStore {
     }
 
     console.log('🎯 [UserMissionsStore] Starting enrollInMission for:', missionId);
-    
+
     // Log state BEFORE enrollment
     const beforeProgress = this._userProgress();
     const beforeAvailable = this.availableMissions();
     const beforeActive = this.activeMissions();
     const beforeCompleted = this.completedMissions();
-    
+
     console.log('📊 [UserMissionsStore] BEFORE enrollment state:', {
       userProgressCount: beforeProgress.length,
       availableCount: beforeAvailable.length,
@@ -241,24 +241,24 @@ export class UserMissionsStore {
       availableIds: beforeAvailable.map(m => m.mission.id),
       activeIds: beforeActive.map(m => m.mission.id),
       targetMissionInProgress: beforeProgress.some(p => p.missionId === missionId),
-      targetMissionInAvailable: beforeAvailable.some(m => m.mission.id === missionId)
+      targetMissionInAvailable: beforeAvailable.some(m => m.mission.id === missionId),
     });
 
     try {
       console.log('⚡ [UserMissionsStore] Calling userMissionProgressService.enrollInMission...');
       await this.userMissionProgressService.enrollInMission(user.uid, missionId);
       console.log('✅ [UserMissionsStore] Service call completed, now reloading missions...');
-      
+
       // Reload user missions to reflect changes
       await this.loadUserMissions();
       console.log('🔄 [UserMissionsStore] loadUserMissions completed');
-      
+
       // Log state AFTER enrollment
       const afterProgress = this._userProgress();
       const afterAvailable = this.availableMissions();
       const afterActive = this.activeMissions();
       const afterCompleted = this.completedMissions();
-      
+
       console.log('📊 [UserMissionsStore] AFTER enrollment state:', {
         userProgressCount: afterProgress.length,
         availableCount: afterAvailable.length,
@@ -268,18 +268,22 @@ export class UserMissionsStore {
         availableIds: afterAvailable.map(m => m.mission.id),
         activeIds: afterActive.map(m => m.mission.id),
         targetMissionInProgress: afterProgress.some(p => p.missionId === missionId),
-        targetMissionInActive: afterActive.some(m => m.mission.id === missionId)
+        targetMissionInActive: afterActive.some(m => m.mission.id === missionId),
       });
-      
+
       // Log changes
       console.log('🔀 [UserMissionsStore] Changes detected:', {
         progressChange: afterProgress.length - beforeProgress.length,
         availableChange: afterAvailable.length - beforeAvailable.length,
         activeChange: afterActive.length - beforeActive.length,
-        missionMovedToActive: !beforeActive.some(m => m.mission.id === missionId) && afterActive.some(m => m.mission.id === missionId),
-        missionRemovedFromAvailable: beforeAvailable.some(m => m.mission.id === missionId) && !afterAvailable.some(m => m.mission.id === missionId)
+        missionMovedToActive:
+          !beforeActive.some(m => m.mission.id === missionId) &&
+          afterActive.some(m => m.mission.id === missionId),
+        missionRemovedFromAvailable:
+          beforeAvailable.some(m => m.mission.id === missionId) &&
+          !afterAvailable.some(m => m.mission.id === missionId),
       });
-      
+
       console.log('🎉 [UserMissionsStore] Enrollment completed successfully for:', missionId);
     } catch (error: any) {
       console.error('❌ [UserMissionsStore] Failed to enroll in mission:', error);
@@ -302,12 +306,12 @@ export class UserMissionsStore {
       }
 
       await this.userMissionProgressService.updateProgress(
-        user.uid, 
-        missionId, 
-        pubId, 
+        user.uid,
+        missionId,
+        pubId,
         mission.pubIds.length
       );
-      
+
       // Reload user missions to reflect changes
       await this.loadUserMissions();
     } catch (error: any) {

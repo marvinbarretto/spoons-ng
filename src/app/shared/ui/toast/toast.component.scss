@@ -14,7 +14,7 @@
   flex-direction: column;
   align-items: flex-end;
   pointer-events: auto;
-  
+
   @media (max-width: 768px) {
     top: 10px;
     right: 10px;
@@ -34,7 +34,7 @@
   pointer-events: auto;
   max-width: 90vw;
   width: 100%;
-  
+
   @media (min-width: 640px) {
     max-width: 400px;
   }
@@ -56,7 +56,7 @@
   // Default colors
   background-color: var(--background-lighter);
   color: var(--text);
-  
+
   // Center toast specific styling
   &--center {
     padding: 16px 20px;
@@ -64,23 +64,23 @@
     margin-bottom: 0; // No margin for center toasts (gap handles spacing)
     min-width: 280px;
     max-width: 100%;
-    box-shadow: 
+    box-shadow:
       var(--shadow),
       0 10px 25px rgba(0, 0, 0, 0.15);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
-    
+
     // Enhanced glassmorphism for center toasts
     background: var(--background-lighter);
     border: 1px solid var(--border);
-    
+
     .toast-message {
       font-size: 1rem;
       font-weight: 500;
       text-align: center;
       line-height: 1.5;
     }
-    
+
     .toast-icon {
       font-size: 1.25rem;
     }

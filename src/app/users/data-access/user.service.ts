@@ -1,4 +1,4 @@
-import { Injectable, signal, inject, effect } from '@angular/core';
+import { effect, inject, Injectable, signal } from '@angular/core';
 import { FirestoreService } from '@fourfold/angular-foundation';
 import { CacheCoherenceService } from '../../shared/data-access/cache-coherence.service';
 import { User } from '../utils/user.model';
@@ -45,16 +45,19 @@ export class UserService extends FirestoreService {
 
   async getAllUsers(): Promise<User[]> {
     const users = await this.getDocsWhere<User>('users');
-    
+
     // Debug logging for isAdmin field tracking
-    console.log('[UserService] 🔍 Raw Firestore users with isAdmin status:', users.map(u => ({
-      uid: u.uid.slice(0, 8), 
-      displayName: u.displayName, 
-      email: u.email,
-      isAdmin: u.isAdmin,
-      hasIsAdminField: 'isAdmin' in u
-    })));
-    
+    console.log(
+      '[UserService] 🔍 Raw Firestore users with isAdmin status:',
+      users.map(u => ({
+        uid: u.uid.slice(0, 8),
+        displayName: u.displayName,
+        email: u.email,
+        isAdmin: u.isAdmin,
+        hasIsAdminField: 'isAdmin' in u,
+      }))
+    );
+
     return users;
   }
 
@@ -65,15 +68,18 @@ export class UserService extends FirestoreService {
   async getAllUsersFromServer(): Promise<User[]> {
     console.log('[UserService] 🌐 Fetching ALL users from server (bypassing cache)...');
     const users = await this.getDocsWhereFromServer<User>('users');
-    
+
     console.log(`[UserService] ✅ Server fetch complete: ${users.length} users (fresh data)`);
-    console.log('[UserService] 🔍 Fresh server users with points:', users.map(u => ({
-      uid: u.uid.slice(0, 8), 
-      displayName: u.displayName, 
-      totalPoints: u.totalPoints,
-      isAdmin: u.isAdmin
-    })));
-    
+    console.log(
+      '[UserService] 🔍 Fresh server users with points:',
+      users.map(u => ({
+        uid: u.uid.slice(0, 8),
+        displayName: u.displayName,
+        totalPoints: u.totalPoints,
+        isAdmin: u.isAdmin,
+      }))
+    );
+
     return users;
   }
 
@@ -124,9 +130,7 @@ export class UserService extends FirestoreService {
    */
   updateUserInGlobalSignal(uid: string, updates: Partial<User>): void {
     this._allUsers.update(users =>
-      users.map(user =>
-        user.uid === uid ? { ...user, ...updates } : user
-      )
+      users.map(user => (user.uid === uid ? { ...user, ...updates } : user))
     );
     console.log(`[UserService] Updated user ${uid} in global signal`);
   }
@@ -146,9 +150,11 @@ export class UserService extends FirestoreService {
       console.log(`[UserService] 🔄 Refreshing all users data...`);
       await this.refreshAllUsers();
       console.log(`[UserService] ✅ All users data refreshed after cache invalidation`);
-
     } catch (error) {
-      console.error(`[UserService] ❌ Failed to refresh users data after cache invalidation:`, error);
+      console.error(
+        `[UserService] ❌ Failed to refresh users data after cache invalidation:`,
+        error
+      );
     }
   }
 }

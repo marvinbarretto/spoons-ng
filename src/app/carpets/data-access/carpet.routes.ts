@@ -5,6 +5,6 @@ export const CARPETS_ROUTES: Routes = [
   {
     path: '',
     redirectTo: 'detector',
-    pathMatch: 'full'
-  }
+    pathMatch: 'full',
+  },
 ];

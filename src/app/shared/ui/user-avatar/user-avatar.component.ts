@@ -1,4 +1,4 @@
-import { Component, input, computed } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 
 import { User } from '../../../users/utils/user.model';
 
@@ -69,7 +69,7 @@ export type UserAvatarData = {
         height: 28px;
       }
     }
-  `
+  `,
 })
 export class UserAvatarComponent {
   readonly user = input.required<User>();
@@ -87,8 +87,10 @@ export class UserAvatarComponent {
     }
 
     // Check if it's a real user (has email/displayName) vs anonymous
-    const isAnonymousUser = !user.email && !user.displayName &&
-                           (user.displayName?.includes('-') || user.displayName?.includes('(You)'));
+    const isAnonymousUser =
+      !user.email &&
+      !user.displayName &&
+      (user.displayName?.includes('-') || user.displayName?.includes('(You)'));
 
     if (isAnonymousUser) {
       // Use NPC image for anonymous users

@@ -21,18 +21,18 @@ export const POINTS_CONFIG = {
   },
 
   photoQuality: {
-    highQuality: 10,    // 80-89% overall quality score
-    exceptional: 15,    // 90%+ overall quality score
-    perfect: 20,        // 95%+ with all factors > 85%
+    highQuality: 10, // 80-89% overall quality score
+    exceptional: 15, // 90%+ overall quality score
+    perfect: 20, // 95%+ with all factors > 85%
   },
 
   streaks: {
     daily: {
-      "3": 10,
-      "7": 25,
-      "14": 50,
-      "30": 100,
-    } as Record<string, number>
+      '3': 10,
+      '7': 25,
+      '14': 50,
+      '30': 100,
+    } as Record<string, number>,
   },
 
   achievements: {
@@ -40,5 +40,5 @@ export const POINTS_CONFIG = {
     explorer: 15,
     local: 30,
     homePubLoyalty: 5, // Bonus for frequent visits to home pub
-  }
+  },
 } as const;

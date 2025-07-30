@@ -71,14 +71,14 @@ export interface Environment {
     siteMap?: boolean;
     accessibility?: boolean;
     checkinGates?: {
-      pointDown?: boolean,
-      holdSteady?: boolean,
-      sharpness?: boolean,
-      contrast?: boolean,
-      texture?: boolean,
-      pattern?: boolean,
-      colorVariance?: boolean,
-      patternRecognition?: boolean
-    }
+      pointDown?: boolean;
+      holdSteady?: boolean;
+      sharpness?: boolean;
+      contrast?: boolean;
+      texture?: boolean;
+      pattern?: boolean;
+      colorVariance?: boolean;
+      patternRecognition?: boolean;
+    };
   };
 }

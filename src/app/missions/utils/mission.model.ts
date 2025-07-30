@@ -8,7 +8,15 @@ export type Mission = {
   timeLimitHours?: number; // optional
   // Enhanced properties for new mission system
   category?: 'regional' | 'themed';
-  subcategory?: 'historical' | 'geographic' | 'quirky' | 'transport' | 'social' | 'completion' | 'dark-political' | 'weird-wonderful';
+  subcategory?:
+    | 'historical'
+    | 'geographic'
+    | 'quirky'
+    | 'transport'
+    | 'social'
+    | 'completion'
+    | 'dark-political'
+    | 'weird-wonderful';
   difficulty?: 'easy' | 'medium' | 'hard' | 'extreme';
   emoji?: string;
   featured?: boolean;

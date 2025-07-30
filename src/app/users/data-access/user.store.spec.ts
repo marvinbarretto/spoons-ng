@@ -1,18 +1,18 @@
 /**
  * @fileoverview UserStore Tests - Protecting scoreboard data accuracy
- * 
+ *
  * CRITICAL TESTS:
  * - pubsVisited computed signal accuracy
- * - totalPoints computed signal accuracy  
+ * - totalPoints computed signal accuracy
  * - patchUser() real-time updates for scoreboard
  * - Auth-reactive loading/clearing behavior
  */
-import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
-import { UserStore } from './user.store';
-import { UserService } from './user.service';
+import { TestBed } from '@angular/core/testing';
 import { AuthStore } from '../../auth/data-access/auth.store';
 import type { User } from '../utils/user.model';
+import { UserService } from './user.service';
+import { UserStore } from './user.store';
 
 describe('UserStore - Scoreboard Data Protection', () => {
   let userStore: UserStore;
@@ -34,7 +34,7 @@ describe('UserStore - Scoreboard Data Protection', () => {
     landlordPubIds: ['pub1', 'pub2'],
     streaks: {},
     joinedMissionIds: [],
-    joinedAt: new Date().toISOString()
+    joinedAt: new Date().toISOString(),
   };
 
   beforeEach(() => {
@@ -42,20 +42,20 @@ describe('UserStore - Scoreboard Data Protection', () => {
     mockUserService = {
       getUser: jest.fn(),
       createUser: jest.fn(),
-      updateUser: jest.fn()
+      updateUser: jest.fn(),
     } as any;
-    
+
     // Create mock AuthStore with signal
     mockAuthStore = {
-      user: signal(null)
+      user: signal(null),
     };
 
     TestBed.configureTestingModule({
       providers: [
         UserStore,
         { provide: UserService, useValue: mockUserService },
-        { provide: AuthStore, useValue: mockAuthStore }
-      ]
+        { provide: AuthStore, useValue: mockAuthStore },
+      ],
     });
 
     userStore = TestBed.inject(UserStore);
@@ -68,7 +68,7 @@ describe('UserStore - Scoreboard Data Protection', () => {
 
       // Act & Assert
       expect(userStore.pubsVisited()).toBe(3);
-      
+
       console.log('✅ pubsVisited computed correctly:', userStore.pubsVisited());
     });
 
@@ -95,7 +95,7 @@ describe('UserStore - Scoreboard Data Protection', () => {
 
       // Act & Assert
       expect(userStore.totalPoints()).toBe(250);
-      
+
       console.log('✅ totalPoints computed correctly:', userStore.totalPoints());
     });
 
@@ -119,13 +119,13 @@ describe('UserStore - Scoreboard Data Protection', () => {
       expect(userStore.pubsVisited()).toBe(3);
 
       // Act - Add new pub via patchUser (simulating check-in)
-      userStore.patchUser({ 
-        checkedInPubIds: [...mockUser.checkedInPubIds, 'pub4'] 
+      userStore.patchUser({
+        checkedInPubIds: [...mockUser.checkedInPubIds, 'pub4'],
       });
 
       // Assert - Should immediately reflect new count
       expect(userStore.pubsVisited()).toBe(4);
-      
+
       console.log('✅ pubsVisited updated immediately after check-in');
     });
 
@@ -138,7 +138,7 @@ describe('UserStore - Scoreboard Data Protection', () => {
 
       // Assert - Should immediately reflect new total
       expect(userStore.totalPoints()).toBe(275);
-      
+
       console.log('✅ totalPoints updated immediately after points award');
     });
 
@@ -147,14 +147,14 @@ describe('UserStore - Scoreboard Data Protection', () => {
       userStore.patchUser({
         totalPoints: 285,
         checkedInPubIds: [...mockUser.checkedInPubIds, 'pub4', 'pub5'],
-        badgeCount: 6
+        badgeCount: 6,
       });
 
       // Assert - All values should update immediately
       expect(userStore.totalPoints()).toBe(285);
       expect(userStore.pubsVisited()).toBe(5);
       expect(userStore.badgeCount()).toBe(6);
-      
+
       console.log('✅ Multiple scoreboard values updated simultaneously');
     });
   });
@@ -173,27 +173,27 @@ describe('UserStore - Scoreboard Data Protection', () => {
       expect(userStore.pubsVisited()).toBe(0);
       expect(userStore.totalPoints()).toBe(0);
       expect(userStore.user()).toBeNull();
-      
+
       console.log('✅ Scoreboard data cleared on logout');
     });
 
     it('should maintain data consistency during user switches', () => {
       // Arrange - User 1 logged in
       userStore.setUser(mockUser);
-      
+
       // Act - Switch to different user
       const user2: User = {
         ...mockUser,
         uid: 'user-2',
         checkedInPubIds: ['pub10'],
-        totalPoints: 50
+        totalPoints: 50,
       };
       userStore.setUser(user2);
 
       // Assert - Should show new user's data immediately
       expect(userStore.pubsVisited()).toBe(1);
       expect(userStore.totalPoints()).toBe(50);
-      
+
       console.log('✅ Clean user switch without stale data');
     });
   });
@@ -204,30 +204,30 @@ describe('UserStore - Scoreboard Data Protection', () => {
       const incompleteUser: User = {
         ...mockUser,
         checkedInPubIds: undefined as any,
-        totalPoints: undefined as any
+        totalPoints: undefined as any,
       };
-      
+
       // Act
       userStore.setUser(incompleteUser);
 
       // Assert - Should default to safe values
       expect(userStore.pubsVisited()).toBe(0);
       expect(userStore.totalPoints()).toBe(0);
-      
+
       console.log('✅ Handles undefined fields gracefully');
     });
 
     it('should prevent patchUser when no user is loaded', () => {
       // Arrange - No user loaded
       userStore.setUser(null);
-      
+
       // Act - Try to patch user
       userStore.patchUser({ totalPoints: 100 });
 
       // Assert - Should remain at default values
       expect(userStore.totalPoints()).toBe(0);
       expect(userStore.user()).toBeNull();
-      
+
       console.log('✅ Prevents invalid updates when no user');
     });
   });

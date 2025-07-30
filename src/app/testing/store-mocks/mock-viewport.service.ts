@@ -1,4 +1,4 @@
-import { signal, computed } from '@angular/core';
+import { computed, signal } from '@angular/core';
 
 export class MockViewportService {
   private _isMobile = signal(false);
@@ -13,7 +13,9 @@ export class MockViewportService {
   readonly screenHeight = this._screenHeight.asReadonly();
 
   readonly isTablet = computed(() => !this._isMobile() && !this._isDesktop());
-  readonly orientation = computed(() => this._screenWidth() > this._screenHeight() ? 'landscape' : 'portrait');
+  readonly orientation = computed(() =>
+    this._screenWidth() > this._screenHeight() ? 'landscape' : 'portrait'
+  );
 
   // Test helper methods
   setMobile(isMobile: boolean): void {

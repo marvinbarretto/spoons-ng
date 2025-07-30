@@ -1,4 +1,4 @@
-import { Component, input, computed, output } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 
 export type ChipSize = 'xs' | 'sm' | 'md' | 'lg';
 
@@ -13,28 +13,30 @@ export type ChipSize = 'xs' | 'sm' | 'md' | 'lg';
       [attr.aria-label]="ariaLabel()"
       [attr.title]="tooltip() || ariaLabel()"
       [disabled]="disabled()"
-      (click)="handleClick()">
-      
+      (click)="handleClick()"
+    >
       @if (icon()) {
         <span class="chip-icon">{{ icon() }}</span>
       }
-      
+
       <span class="chip-label">{{ label() }}</span>
-      
+
       @if (count() !== null && count() !== undefined) {
         <span class="chip-count">{{ formattedCount() }}</span>
       }
-      
+
       @if (removable() && active()) {
-        <span class="chip-remove" 
-              (click)="handleRemove($event)"
-              [attr.aria-label]="'Remove ' + label() + ' filter'">
+        <span
+          class="chip-remove"
+          (click)="handleRemove($event)"
+          [attr.aria-label]="'Remove ' + label() + ' filter'"
+        >
           ×
         </span>
       }
     </button>
   `,
-  styleUrl: './chip-filter.component.scss'
+  styleUrl: './chip-filter.component.scss',
 })
 export class ChipFilterComponent {
   readonly label = input.required<string>();
@@ -54,7 +56,7 @@ export class ChipFilterComponent {
   readonly formattedCount = computed(() => {
     const value = this.count();
     if (value === null || value === undefined) return '';
-    
+
     if (this.formatNumbers() && value >= 1000) {
       if (value >= 1000000) {
         return (value / 1000000).toFixed(1) + 'M';
@@ -64,49 +66,49 @@ export class ChipFilterComponent {
         return (value / 1000).toFixed(1) + 'k';
       }
     }
-    
+
     return value.toString();
   });
 
   readonly chipClasses = computed(() => {
     const classes: string[] = [];
-    
+
     classes.push(`size--${this.size()}`);
-    
+
     if (this.active()) {
       classes.push('active');
     }
-    
+
     if (this.disabled()) {
       classes.push('disabled');
     }
-    
+
     if (this.removable() && this.active()) {
       classes.push('removable');
     }
-    
+
     if (this.customClass()) {
       classes.push(this.customClass());
     }
-    
+
     return classes.join(' ');
   });
 
   readonly ariaLabel = computed(() => {
     const parts: string[] = [];
-    
+
     parts.push(this.label());
-    
+
     if (this.count() !== null && this.count() !== undefined) {
       parts.push(`${this.count()} items`);
     }
-    
+
     parts.push(this.active() ? 'selected' : 'not selected');
-    
+
     if (this.disabled()) {
       parts.push('disabled');
     }
-    
+
     return parts.join(', ');
   });
 

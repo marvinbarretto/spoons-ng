@@ -1,13 +1,6 @@
 // src/app/shared/ui/list-item/list-item.component.ts
-import {
-  Component,
-  input,
-  output,
-  computed,
-  ChangeDetectionStrategy,
-  inject
-} from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { ThemeStore } from '../../data-access/theme.store';
 
 export type ListItemSize = 'sm' | 'md' | 'lg';
@@ -55,11 +48,7 @@ export type ListItemConfig = {
       @if (config().icon || config().image) {
         <div class="list-item__media">
           @if (config().image) {
-            <img
-              [src]="config().image!"
-              [alt]="config().title"
-              class="list-item__image"
-            />
+            <img [src]="config().image!" [alt]="config().title" class="list-item__image" />
           } @else if (config().icon) {
             <span class="list-item__icon">{{ config().icon }}</span>
           }
@@ -72,10 +61,7 @@ export type ListItemConfig = {
           <h3 class="list-item__title">{{ config().title }}</h3>
 
           @if (config().badge) {
-            <span
-              class="list-item__badge"
-              [class]="badgeClasses()"
-            >
+            <span class="list-item__badge" [class]="badgeClasses()">
               {{ config().badge }}
             </span>
           }
@@ -96,10 +82,7 @@ export type ListItemConfig = {
           }
 
           @if (config().status) {
-            <span
-              class="list-item__status"
-              [class]="statusClasses()"
-            >
+            <span class="list-item__status" [class]="statusClasses()">
               {{ statusText() }}
             </span>
           }
@@ -108,11 +91,7 @@ export type ListItemConfig = {
 
       <!-- Action button for option variant -->
       @if (variant() === 'option') {
-        <button
-          class="list-item__action"
-          [disabled]="config().disabled"
-          type="button"
-        >
+        <button class="list-item__action" [disabled]="config().disabled" type="button">
           {{ config().checked ? '✓' : '→' }}
         </button>
       }
@@ -392,7 +371,7 @@ export type ListItemConfig = {
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
       }
     }
-  `
+  `,
 })
 export class ListItemComponent {
   protected readonly themeStore = inject(ThemeStore);
@@ -450,19 +429,27 @@ export class ListItemComponent {
   readonly statusText = computed(() => {
     const status = this.config().status;
     switch (status) {
-      case 'success': return '✓ Success';
-      case 'warning': return '⚠ Warning';
-      case 'error': return '✗ Error';
-      case 'info': return 'ℹ Info';
-      default: return '';
+      case 'success':
+        return '✓ Success';
+      case 'warning':
+        return '⚠ Warning';
+      case 'error':
+        return '✗ Error';
+      case 'info':
+        return 'ℹ Info';
+      default:
+        return '';
     }
   });
 
   readonly role = computed(() => {
     switch (this.variant()) {
-      case 'checkbox': return 'checkbox';
-      case 'option': return 'option';
-      default: return this.clickable() ? 'button' : null;
+      case 'checkbox':
+        return 'checkbox';
+      case 'option':
+        return 'option';
+      default:
+        return this.clickable() ? 'button' : null;
     }
   });
 
@@ -481,7 +468,7 @@ export class ListItemComponent {
     const checkbox = event.target as HTMLInputElement;
     this.checked.emit({
       config: this.config(),
-      checked: checkbox.checked
+      checked: checkbox.checked,
     });
   }
 
@@ -489,7 +476,7 @@ export class ListItemComponent {
     const newChecked = !this.config().checked;
     this.checked.emit({
       config: this.config(),
-      checked: newChecked
+      checked: newChecked,
     });
   }
 }

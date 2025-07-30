@@ -10,10 +10,18 @@
   }
 
   // Size variants
-  &.size--xs { @include chip-size('xs'); }
-  &.size--sm { @include chip-size('sm'); }
-  &.size--md { @include chip-size('md'); }
-  &.size--lg { @include chip-size('lg'); }
+  &.size--xs {
+    @include chip-size('xs');
+  }
+  &.size--sm {
+    @include chip-size('sm');
+  }
+  &.size--md {
+    @include chip-size('md');
+  }
+  &.size--lg {
+    @include chip-size('lg');
+  }
 
   // Earned state
   &.earned {

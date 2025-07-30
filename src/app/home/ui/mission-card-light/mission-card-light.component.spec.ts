@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MissionCardLightComponent } from './mission-card-light.component';
 import { Mission } from '../../../missions/utils/mission.model';
+import { MissionCardLightComponent } from './mission-card-light.component';
 
 describe('MissionCardLightComponent', () => {
   let component: MissionCardLightComponent;
@@ -22,12 +22,12 @@ describe('MissionCardLightComponent', () => {
     region: 'London',
     badgeRewardId: null,
     subcategory: null,
-    timeLimitHours: null
+    timeLimitHours: null,
   };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MissionCardLightComponent]
+      imports: [MissionCardLightComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(MissionCardLightComponent);
@@ -71,17 +71,17 @@ describe('MissionCardLightComponent', () => {
   it('should emit missionClick when clicked', () => {
     const emitSpy = jest.spyOn(component.missionClick, 'emit');
     fixture.detectChanges();
-    
+
     const cardElement = fixture.nativeElement.querySelector('.mission-card-light');
     cardElement.click();
-    
+
     expect(emitSpy).toHaveBeenCalledWith(mockMission);
   });
 
   it('should calculate progress percentage correctly', () => {
     fixture.componentRef.setInput('progress', 2);
     fixture.detectChanges();
-    
+
     expect(component.progressPercentage()).toBe(67);
   });
 });

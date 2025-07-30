@@ -1,10 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 
-import { AccountSettingsWidgetComponent } from './account-settings-widget.component';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { UserStore } from '@users/data-access/user.store';
 import type { User } from '@users/utils/user.model';
+import { AccountSettingsWidgetComponent } from './account-settings-widget.component';
 
 describe('AccountSettingsWidgetComponent', () => {
   let component: AccountSettingsWidgetComponent;
@@ -97,7 +97,7 @@ describe('AccountSettingsWidgetComponent', () => {
   describe('handleDeleteAccount', () => {
     it('should delete account and navigate to splash when user double confirms', async () => {
       (global.confirm as jest.Mock)
-        .mockReturnValueOnce(true)  // First confirmation
+        .mockReturnValueOnce(true) // First confirmation
         .mockReturnValueOnce(true); // Second confirmation
 
       const showSuccessSpy = jest.spyOn(component, 'showSuccess').mockImplementation();
@@ -120,7 +120,7 @@ describe('AccountSettingsWidgetComponent', () => {
 
     it('should not delete account when user cancels second confirmation', async () => {
       (global.confirm as jest.Mock)
-        .mockReturnValueOnce(true)  // First confirmation
+        .mockReturnValueOnce(true) // First confirmation
         .mockReturnValueOnce(false); // Cancel second confirmation
 
       await component.handleDeleteAccount();
@@ -130,15 +130,13 @@ describe('AccountSettingsWidgetComponent', () => {
     });
 
     it('should handle deletion errors gracefully', async () => {
-      (global.confirm as jest.Mock)
-        .mockReturnValueOnce(true)
-        .mockReturnValueOnce(true);
+      (global.confirm as jest.Mock).mockReturnValueOnce(true).mockReturnValueOnce(true);
 
       const showErrorSpy = jest.spyOn(component, 'showError').mockImplementation();
 
       // Mock deletion process to throw error (in real implementation)
       // For now, it's just a timeout, so we'll test the error handling path differently
-      
+
       await component.handleDeleteAccount();
 
       // Since current implementation uses setTimeout and doesn't actually throw,
@@ -147,9 +145,7 @@ describe('AccountSettingsWidgetComponent', () => {
     });
 
     it('should manage isDeleting state correctly during deletion', async () => {
-      (global.confirm as jest.Mock)
-        .mockReturnValueOnce(true)
-        .mockReturnValueOnce(true);
+      (global.confirm as jest.Mock).mockReturnValueOnce(true).mockReturnValueOnce(true);
 
       expect(component.isDeleting()).toBe(false);
 
@@ -170,14 +166,14 @@ describe('AccountSettingsWidgetComponent', () => {
     it('should show correct description for anonymous users', () => {
       const anonymousUser = { ...mockUser, isAnonymous: true };
       mockUserStore.user = jest.fn().mockReturnValue(anonymousUser);
-      
+
       const description = component.accountTypeDescription();
       expect(description).toBe('Anonymous account - your data is stored locally');
     });
 
     it('should handle no user gracefully', () => {
       mockUserStore.user = jest.fn().mockReturnValue(null);
-      
+
       const description = component.accountTypeDescription();
       expect(description).toBe('No account');
     });
@@ -191,7 +187,7 @@ describe('AccountSettingsWidgetComponent', () => {
 
       // This ensures logged out users get the full onboarding experience again
       expect(mockRouter.navigate).toHaveBeenCalledWith(['/splash']);
-      
+
       // The AuthStore.logout() will reset hasSeenSplash to false
       // So when they hit the auth guard, they'll see the splash screen
       expect(mockAuthStore.logout).toHaveBeenCalled();

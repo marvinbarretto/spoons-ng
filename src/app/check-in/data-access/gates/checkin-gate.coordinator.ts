@@ -1,14 +1,14 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { SimpleOrientationGate } from './simple-orientation.gate';
-import { MotionStabilityGate } from './motion-stability.gate';
-import { ImageSharpnessGate } from './image-sharpness.gate';
-import { ImageContrastGate } from './image-contrast.gate';
-import { CarpetTextureGate } from './carpet-texture.gate';
-import { CarpetEdgeDensityGate } from './carpet-edge-density.gate';
-import { EnhancedColorVarianceGate } from './enhanced-color-variance.gate';
-import { CarpetPatternRecognitionGate } from './carpet-pattern-recognition.gate';
-import { LocationAwareThresholdService } from '../location-aware-threshold.service';
 import { FeatureFlagService } from '../../../shared/data-access/feature-flag.service';
+import { LocationAwareThresholdService } from '../location-aware-threshold.service';
+import { CarpetEdgeDensityGate } from './carpet-edge-density.gate';
+import { CarpetPatternRecognitionGate } from './carpet-pattern-recognition.gate';
+import { CarpetTextureGate } from './carpet-texture.gate';
+import { EnhancedColorVarianceGate } from './enhanced-color-variance.gate';
+import { ImageContrastGate } from './image-contrast.gate';
+import { ImageSharpnessGate } from './image-sharpness.gate';
+import { MotionStabilityGate } from './motion-stability.gate';
+import { SimpleOrientationGate } from './simple-orientation.gate';
 
 export type IntelligentGateStatus = {
   // Basic gates (always available)
@@ -19,17 +19,17 @@ export type IntelligentGateStatus = {
   goodContrast: boolean;
   hasTexture: boolean;
   hasEdges: boolean;
-  
+
   // Enhanced gates (optional)
   enhancedColorAnalysis?: boolean;
   patternRecognition?: boolean;
-  
+
   // Meta information
   carpetConfidence: 'no' | 'possible' | 'likely' | 'certain';
   intelligenceLevel: 'basic' | 'enhanced' | 'advanced';
   confidenceScore: number; // 0-100
   failedGates: string[];
-  
+
   // Location-aware
   isLocationOptimized: boolean;
   thresholdSource: string;
@@ -51,14 +51,14 @@ export class CheckinGateCoordinator {
   private readonly imageContrastGate = inject(ImageContrastGate);
   private readonly carpetTextureGate = inject(CarpetTextureGate);
   private readonly carpetEdgeDensityGate = inject(CarpetEdgeDensityGate);
-  
+
   // Enhanced gates (optional)
   private readonly enhancedColorGate = inject(EnhancedColorVarianceGate);
   private readonly patternRecognitionGate = inject(CarpetPatternRecognitionGate);
-  
+
   // Location service
   private readonly locationService = inject(LocationAwareThresholdService);
-  
+
   // Feature flag service
   private readonly featureFlagService = inject(FeatureFlagService);
 
@@ -67,7 +67,7 @@ export class CheckinGateCoordinator {
     useEnhancedAnalysis: true,
     useLocationOptimization: true,
     dynamicWeighting: true,
-    fallbackToBasic: true
+    fallbackToBasic: true,
   });
 
   readonly config = this._config.asReadonly();
@@ -75,22 +75,26 @@ export class CheckinGateCoordinator {
   // Intelligent gate status with dynamic analysis
   readonly intelligentGateStatus = computed((): IntelligentGateStatus => {
     const config = this._config();
-    
+
     // Always get basic gate status
     const basicStatus = this.getBasicGateStatus();
-    
+
     // Get enhanced analysis if enabled
     const enhancedStatus = config.useEnhancedAnalysis ? this.getEnhancedGateStatus() : {};
-    
+
     // Calculate intelligent carpet confidence
-    const carpetConfidence = this.calculateIntelligentConfidence(basicStatus, enhancedStatus, config);
-    
+    const carpetConfidence = this.calculateIntelligentConfidence(
+      basicStatus,
+      enhancedStatus,
+      config
+    );
+
     // Calculate overall confidence score
     const confidenceScore = this.calculateConfidenceScore(basicStatus, enhancedStatus, config);
-    
+
     // Determine intelligence level
     const intelligenceLevel = this.determineIntelligenceLevel(config);
-    
+
     // Get failed gates
     const failedGates = this.getFailedGates(basicStatus, enhancedStatus);
 
@@ -102,7 +106,7 @@ export class CheckinGateCoordinator {
       confidenceScore,
       failedGates,
       isLocationOptimized: this.locationService.isLocationOptimized(),
-      thresholdSource: this.locationService.adaptiveThresholds().source
+      thresholdSource: this.locationService.adaptiveThresholds().source,
     };
 
     console.log('[IntelligentGateCoordinator] Intelligent analysis complete:', {
@@ -110,7 +114,7 @@ export class CheckinGateCoordinator {
       confidenceScore,
       intelligenceLevel,
       failedGatesCount: failedGates.length,
-      isLocationOptimized: result.isLocationOptimized
+      isLocationOptimized: result.isLocationOptimized,
     });
 
     return result;
@@ -119,30 +123,30 @@ export class CheckinGateCoordinator {
   // Simple gate status for debugging
   readonly gateStatus = computed(() => {
     return {
-      deviceOriented: this.featureFlagService.isEnabled('checkinGates.pointDown') 
-        ? this.simpleOrientationGate.passed() 
+      deviceOriented: this.featureFlagService.isEnabled('checkinGates.pointDown')
+        ? this.simpleOrientationGate.passed()
         : true,
-      motionStable: this.featureFlagService.isEnabled('checkinGates.holdSteady') 
-        ? this.motionStabilityGate.passed() 
+      motionStable: this.featureFlagService.isEnabled('checkinGates.holdSteady')
+        ? this.motionStabilityGate.passed()
         : true,
-      goodSharpness: this.featureFlagService.isEnabled('checkinGates.sharpness') 
-        ? this.imageSharpnessGate.passed() 
+      goodSharpness: this.featureFlagService.isEnabled('checkinGates.sharpness')
+        ? this.imageSharpnessGate.passed()
         : true,
-      goodContrast: this.featureFlagService.isEnabled('checkinGates.contrast') 
-        ? this.imageContrastGate.passed() 
+      goodContrast: this.featureFlagService.isEnabled('checkinGates.contrast')
+        ? this.imageContrastGate.passed()
         : true,
-      hasTexture: this.featureFlagService.isEnabled('checkinGates.texture') 
-        ? this.carpetTextureGate.passed() 
+      hasTexture: this.featureFlagService.isEnabled('checkinGates.texture')
+        ? this.carpetTextureGate.passed()
         : true,
-      hasEdges: this.featureFlagService.isEnabled('checkinGates.pattern') 
-        ? this.carpetEdgeDensityGate.passed() 
+      hasEdges: this.featureFlagService.isEnabled('checkinGates.pattern')
+        ? this.carpetEdgeDensityGate.passed()
         : true,
-      colorVariance: this.featureFlagService.isEnabled('checkinGates.colorVariance') 
-        ? this.enhancedColorGate.passed() 
+      colorVariance: this.featureFlagService.isEnabled('checkinGates.colorVariance')
+        ? this.enhancedColorGate.passed()
         : true,
-      patternRecognition: this.featureFlagService.isEnabled('checkinGates.patternRecognition') 
-        ? this.patternRecognitionGate.passed() 
-        : true
+      patternRecognition: this.featureFlagService.isEnabled('checkinGates.patternRecognition')
+        ? this.patternRecognitionGate.passed()
+        : true,
     };
   });
 
@@ -150,7 +154,7 @@ export class CheckinGateCoordinator {
   readonly allGatesPassed = computed(() => {
     const status = this.gateStatus();
     const allPassed = Object.values(status).every(Boolean);
-    
+
     if (allPassed) {
       console.log('[CheckinGateCoordinator] ✅ All gates passed!');
     } else {
@@ -159,7 +163,7 @@ export class CheckinGateCoordinator {
         .map(([gate, _]) => gate);
       console.log('[CheckinGateCoordinator] ❌ Failed gates:', failedGates);
     }
-    
+
     return allPassed;
   });
 
@@ -175,7 +179,11 @@ export class CheckinGateCoordinator {
    * Set location context for adaptive thresholds
    */
   setLocationContext(pubId?: string, latitude?: number, longitude?: number): void {
-    console.log('[IntelligentGateCoordinator] Setting location context:', { pubId, latitude, longitude });
+    console.log('[IntelligentGateCoordinator] Setting location context:', {
+      pubId,
+      latitude,
+      longitude,
+    });
     this.locationService.updateLocation({ pubId, latitude, longitude });
   }
 
@@ -184,27 +192,27 @@ export class CheckinGateCoordinator {
    */
   private getBasicGateStatus() {
     return {
-      deviceOriented: this.featureFlagService.isEnabled('checkinGates.pointDown') 
-        ? this.simpleOrientationGate.passed() 
+      deviceOriented: this.featureFlagService.isEnabled('checkinGates.pointDown')
+        ? this.simpleOrientationGate.passed()
         : true,
-      isStable: this.featureFlagService.isEnabled('checkinGates.holdSteady') 
-        ? this.motionStabilityGate.passed() 
+      isStable: this.featureFlagService.isEnabled('checkinGates.holdSteady')
+        ? this.motionStabilityGate.passed()
         : true,
-      lowMotion: this.featureFlagService.isEnabled('checkinGates.holdSteady') 
-        ? this.motionStabilityGate.passed() 
+      lowMotion: this.featureFlagService.isEnabled('checkinGates.holdSteady')
+        ? this.motionStabilityGate.passed()
         : true,
-      goodSharpness: this.featureFlagService.isEnabled('checkinGates.sharpness') 
-        ? this.imageSharpnessGate.passed() 
+      goodSharpness: this.featureFlagService.isEnabled('checkinGates.sharpness')
+        ? this.imageSharpnessGate.passed()
         : true,
-      goodContrast: this.featureFlagService.isEnabled('checkinGates.contrast') 
-        ? this.imageContrastGate.passed() 
+      goodContrast: this.featureFlagService.isEnabled('checkinGates.contrast')
+        ? this.imageContrastGate.passed()
         : true,
-      hasTexture: this.featureFlagService.isEnabled('checkinGates.texture') 
-        ? this.carpetTextureGate.passed() 
+      hasTexture: this.featureFlagService.isEnabled('checkinGates.texture')
+        ? this.carpetTextureGate.passed()
         : true,
-      hasEdges: this.featureFlagService.isEnabled('checkinGates.pattern') 
-        ? this.carpetEdgeDensityGate.passed() 
-        : true
+      hasEdges: this.featureFlagService.isEnabled('checkinGates.pattern')
+        ? this.carpetEdgeDensityGate.passed()
+        : true,
     };
   }
 
@@ -214,7 +222,7 @@ export class CheckinGateCoordinator {
   private getEnhancedGateStatus() {
     return {
       enhancedColorAnalysis: this.enhancedColorGate.passed(),
-      patternRecognition: this.patternRecognitionGate.passed()
+      patternRecognition: this.patternRecognitionGate.passed(),
     };
   }
 
@@ -222,11 +230,10 @@ export class CheckinGateCoordinator {
    * Calculate intelligent carpet confidence using multiple signals
    */
   private calculateIntelligentConfidence(
-    basicStatus: any, 
-    enhancedStatus: any, 
+    basicStatus: any,
+    enhancedStatus: any,
     config: IntelligentGateConfig
   ): 'no' | 'possible' | 'likely' | 'certain' {
-    
     // Count basic passes
     const basicPasses = Object.values(basicStatus).filter(Boolean).length;
     const totalBasic = Object.values(basicStatus).length;
@@ -241,8 +248,9 @@ export class CheckinGateCoordinator {
     }
 
     // Combined analysis
-    const combinedRatio = config.useEnhancedAnalysis ? 
-      (basicRatio * 0.6 + enhancedRatio * 0.4) : basicRatio;
+    const combinedRatio = config.useEnhancedAnalysis
+      ? basicRatio * 0.6 + enhancedRatio * 0.4
+      : basicRatio;
 
     // Location optimization bonus
     const locationBonus = this.locationService.isLocationOptimized() ? 0.1 : 0;
@@ -289,7 +297,9 @@ export class CheckinGateCoordinator {
   /**
    * Determine current intelligence level
    */
-  private determineIntelligenceLevel(config: IntelligentGateConfig): 'basic' | 'enhanced' | 'advanced' {
+  private determineIntelligenceLevel(
+    config: IntelligentGateConfig
+  ): 'basic' | 'enhanced' | 'advanced' {
     if (config.useEnhancedAnalysis && config.useLocationOptimization && config.dynamicWeighting) {
       return 'advanced';
     }
@@ -320,14 +330,16 @@ export class CheckinGateCoordinator {
    * Traditional all-gates-must-pass logic
    */
   private traditionalAllGatesPassed(status: IntelligentGateStatus): boolean {
-    return status.deviceOriented &&
-           status.isStable &&
-           status.lowMotion &&
-           status.goodSharpness &&
-           status.goodContrast &&
-           status.hasTexture &&
-           status.hasEdges &&
-           status.carpetConfidence !== 'no';
+    return (
+      status.deviceOriented &&
+      status.isStable &&
+      status.lowMotion &&
+      status.goodSharpness &&
+      status.goodContrast &&
+      status.hasTexture &&
+      status.hasEdges &&
+      status.carpetConfidence !== 'no'
+    );
   }
 
   /**
@@ -335,9 +347,11 @@ export class CheckinGateCoordinator {
    */
   getStatusSummary(): string {
     const status = this.intelligentGateStatus();
-    return `${status.carpetConfidence.toUpperCase()} carpet confidence ` +
-           `(${status.confidenceScore}%) using ${status.intelligenceLevel} analysis ` +
-           `${status.isLocationOptimized ? 'with location optimization' : ''}`;
+    return (
+      `${status.carpetConfidence.toUpperCase()} carpet confidence ` +
+      `(${status.confidenceScore}%) using ${status.intelligenceLevel} analysis ` +
+      `${status.isLocationOptimized ? 'with location optimization' : ''}`
+    );
   }
 
   /**

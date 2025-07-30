@@ -1,10 +1,10 @@
 // src/app/missions/feature/missions-admin/missions-admin.component.ts
-import { Component, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { Component, computed, inject } from '@angular/core';
+import { RouterModule } from '@angular/router';
 import { ButtonComponent } from '@shared/ui/button/button.component';
-import { MissionStore } from '../../data-access/mission.store';
 import { BaseComponent } from '../../../shared/base/base.component';
+import { MissionStore } from '../../data-access/mission.store';
 import type { Mission } from '../../utils/mission.model';
 
 @Component({
@@ -15,9 +15,7 @@ import type { Mission } from '../../utils/mission.model';
       <header class="page-header">
         <div class="header-content">
           <h1>Mission Management</h1>
-          <p class="page-subtitle">
-            Create and manage missions for users to complete
-          </p>
+          <p class="page-subtitle">Create and manage missions for users to complete</p>
         </div>
 
         <div class="header-actions">
@@ -37,9 +35,7 @@ import type { Mission } from '../../utils/mission.model';
           <div class="error-icon">❌</div>
           <p>Failed to load missions</p>
           <p class="error-message">{{ missionStore.error() }}</p>
-          <app-button (onClick)="handleRetry()" variant="secondary">
-            Try Again
-          </app-button>
+          <app-button (onClick)="handleRetry()" variant="secondary"> Try Again </app-button>
         </div>
       } @else if (missionStore.missions().length === 0) {
         <div class="empty-state">
@@ -99,9 +95,7 @@ import type { Mission } from '../../utils/mission.model';
                     </div>
                   </td>
                   <td class="points-reward">
-                    <div class="points-badge">
-                      {{ mission.pointsReward || 25 }}pts
-                    </div>
+                    <div class="points-badge">{{ mission.pointsReward || 25 }}pts</div>
                   </td>
                   <td class="time-limit">
                     @if (mission.timeLimitHours) {
@@ -119,17 +113,8 @@ import type { Mission } from '../../utils/mission.model';
                   </td>
                   <td class="actions">
                     <div class="action-buttons">
-                      <app-button
-                        (onClick)="handleEdit(mission.id)"
-                        size="sm"
-                      >
-                        Edit
-                      </app-button>
-                      <app-button
-                        (onClick)="handleDelete(mission)"
-                        variant="danger"
-                        size="sm"
-                      >
+                      <app-button (onClick)="handleEdit(mission.id)" size="sm"> Edit </app-button>
+                      <app-button (onClick)="handleDelete(mission)" variant="danger" size="sm">
                         Delete
                       </app-button>
                     </div>
@@ -208,7 +193,9 @@ import type { Mission } from '../../utils/mission.model';
     }
 
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     .error-icon,
@@ -477,15 +464,15 @@ import type { Mission } from '../../utils/mission.model';
         display: none;
       }
     }
-  `
+  `,
 })
 export class MissionsAdminComponent extends BaseComponent {
   // ✅ Dependencies
   protected readonly missionStore = inject(MissionStore);
 
   // ✅ Computed statistics
-  protected readonly activeMissionsCount = computed(() =>
-    this.missionStore.missions().filter(m => m.badgeRewardId).length
+  protected readonly activeMissionsCount = computed(
+    () => this.missionStore.missions().filter(m => m.badgeRewardId).length
   );
 
   protected readonly averagePubCount = computed(() => {
@@ -504,7 +491,7 @@ export class MissionsAdminComponent extends BaseComponent {
     loading: this.missionStore.loading(),
     error: this.missionStore.error(),
     missionCount: this.missionStore.missions().length,
-    hasData: this.missionStore.missions().length > 0
+    hasData: this.missionStore.missions().length > 0,
   }));
 
   protected readonly debugMissionSummary = computed(() => {
@@ -513,10 +500,13 @@ export class MissionsAdminComponent extends BaseComponent {
       totalMissions: missions.length,
       withRewards: this.activeMissionsCount(),
       averagePubs: this.averagePubCount(),
-      pubCountRange: missions.length > 0 ? {
-        min: Math.min(...missions.map(m => m.pubIds.length)),
-        max: Math.max(...missions.map(m => m.pubIds.length))
-      } : null
+      pubCountRange:
+        missions.length > 0
+          ? {
+              min: Math.min(...missions.map(m => m.pubIds.length)),
+              max: Math.max(...missions.map(m => m.pubIds.length)),
+            }
+          : null,
     };
   });
 
@@ -545,8 +535,8 @@ export class MissionsAdminComponent extends BaseComponent {
   async handleDelete(mission: Mission): Promise<void> {
     const confirmed = confirm(
       `Are you sure you want to delete "${mission.name}"?\n\n` +
-      `This mission has ${mission.pubIds.length} pubs and will be permanently removed.\n\n` +
-      `This action cannot be undone.`
+        `This mission has ${mission.pubIds.length} pubs and will be permanently removed.\n\n` +
+        `This action cannot be undone.`
     );
 
     if (!confirmed) {

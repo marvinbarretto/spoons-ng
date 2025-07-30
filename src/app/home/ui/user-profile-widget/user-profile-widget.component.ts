@@ -1,9 +1,8 @@
 // src/app/home/ui/user-profile-widget/user-profile-widget.component.ts
-import { Component, input, output, computed, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 
 import { ChipUserComponent, UserChipData } from '@shared/ui/chips/chip-user/chip-user.component';
 import type { User } from '@users/utils/user.model';
-
 
 @Component({
   selector: 'app-user-profile-widget',
@@ -68,7 +67,7 @@ import type { User } from '@users/utils/user.model';
         font-size: 0.8rem;
       }
     }
-  `
+  `,
 })
 export class UserProfileWidgetComponent {
   // ✅ Inputs
@@ -89,7 +88,7 @@ export class UserProfileWidgetComponent {
       displayName,
       photoURL: currentUser.photoURL || undefined,
       email: currentUser.email || undefined,
-      realDisplayName: currentUser.isAnonymous ? undefined : displayName
+      realDisplayName: currentUser.isAnonymous ? undefined : displayName,
     };
   });
 

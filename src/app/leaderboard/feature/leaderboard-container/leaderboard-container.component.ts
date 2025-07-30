@@ -150,7 +150,7 @@ export class LeaderboardContainerComponent extends BaseComponent {
       key: 'displayName',
       label: 'User',
       className: 'user-cell',
-      renderer: () => '',  // Function to trigger ChipUser rendering
+      renderer: () => '', // Function to trigger ChipUser rendering
     },
     {
       key: 'totalPoints',
@@ -185,7 +185,7 @@ export class LeaderboardContainerComponent extends BaseComponent {
       key: 'displayName',
       label: 'User',
       className: 'user-cell',
-      renderer: () => '',  // Function to trigger ChipUser rendering
+      renderer: () => '', // Function to trigger ChipUser rendering
     },
     {
       key: 'uniquePubs',
@@ -247,8 +247,23 @@ export class LeaderboardContainerComponent extends BaseComponent {
   };
 
   readonly navigateToProfile = (entry: LeaderboardEntry): void => {
-    // Navigate to user profile - using query param to identify specific user
-    this.router.navigate(['/profile'], { queryParams: { user: entry.userId } });
+    console.log('[Leaderboard] Row clicked - navigateToProfile called with entry:', entry);
+    console.log('[Leaderboard] Entry userId:', entry.userId);
+    console.log('[Leaderboard] Entry displayName:', entry.displayName);
+    console.log('[Leaderboard] Entry email:', entry.email);
+
+    // Navigate to user profile using public route with displayName as username
+    const targetRoute = ['/users', entry.displayName];
+    console.log('[Leaderboard] Navigating to route:', targetRoute);
+
+    this.router
+      .navigate(targetRoute)
+      .then(success => {
+        console.log('[Leaderboard] Navigation result:', success);
+      })
+      .catch(error => {
+        console.error('[Leaderboard] Navigation error:', error);
+      });
   };
 
   getPoints(entry: LeaderboardEntry): string {

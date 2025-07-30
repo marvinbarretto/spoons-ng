@@ -1,4 +1,3 @@
-
 // Create a global error boundary for timestamp issues
 // src/app/shared/utils/error-handlers.ts
 export function withTimestampErrorHandling<T>(

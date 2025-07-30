@@ -1,20 +1,16 @@
 // src/app/missions/ui/mission-card/mission-card.component.ts
-import { Component, computed, input, output, inject } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 
-import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
 import { PubStore } from '../../../pubs/data-access/pub.store';
-import { PubChipComponent } from '../pub-chip/pub-chip.component';
+import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
 import type { Mission } from '../../utils/mission.model';
-import type { Pub } from '../../../pubs/utils/pub.models';
+import { PubChipComponent } from '../pub-chip/pub-chip.component';
 
 @Component({
   selector: 'app-mission-card',
   imports: [PubChipComponent],
   template: `
-    <article
-      class="mission-card"
-      [class.mission-card--joined]="isJoined()"
-    >
+    <article class="mission-card" [class.mission-card--joined]="isJoined()">
       <header class="mission-card__header">
         <div class="mission-card__title-section">
           <h3 class="mission-card__title">
@@ -31,7 +27,10 @@ import type { Pub } from '../../../pubs/utils/pub.models';
               <span class="meta-badge meta-badge--subcategory">{{ mission().subcategory }}</span>
             }
             @if (mission().difficulty) {
-              <span class="meta-badge meta-badge--difficulty meta-badge--{{ mission().difficulty }}">{{ mission().difficulty }}</span>
+              <span
+                class="meta-badge meta-badge--difficulty meta-badge--{{ mission().difficulty }}"
+                >{{ mission().difficulty }}</span
+              >
             }
             @if (mission().featured) {
               <span class="meta-badge meta-badge--featured">⭐ Featured</span>
@@ -78,10 +77,16 @@ import type { Pub } from '../../../pubs/utils/pub.models';
             </div>
           }
 
-          @if (mission().requiredPubs && mission().totalPubs && mission().requiredPubs !== mission().totalPubs) {
+          @if (
+            mission().requiredPubs &&
+            mission().totalPubs &&
+            mission().requiredPubs !== mission().totalPubs
+          ) {
             <div class="stat">
               <span class="stat__label">Required:</span>
-              <span class="stat__value">{{ mission().requiredPubs }}/{{ mission().totalPubs }}</span>
+              <span class="stat__value"
+                >{{ mission().requiredPubs }}/{{ mission().totalPubs }}</span
+              >
             </div>
           }
         </div>
@@ -90,7 +95,9 @@ import type { Pub } from '../../../pubs/utils/pub.models';
           <div class="mission-card__pubs">
             <details class="pub-list-details">
               <summary class="pub-list-summary">
-                <span class="pub-list-count">{{ missionPubs().pubs.length }} Pubs in this mission</span>
+                <span class="pub-list-count"
+                  >{{ missionPubs().pubs.length }} Pubs in this mission</span
+                >
                 <span class="pub-list-toggle-icon">▼</span>
               </summary>
               <div class="pub-chips">
@@ -114,10 +121,7 @@ import type { Pub } from '../../../pubs/utils/pub.models';
       @if (isJoined() && progress() !== null) {
         <div class="mission-card__progress">
           <div class="progress-bar">
-            <div
-              class="progress-bar__fill"
-              [style.width.%]="progressPercentage()"
-            ></div>
+            <div class="progress-bar__fill" [style.width.%]="progressPercentage()"></div>
           </div>
           <span class="progress-text">
             <span class="progress-text__percentage">{{ progressPercentage() }}%</span>
@@ -130,7 +134,6 @@ import type { Pub } from '../../../pubs/utils/pub.models';
       <div class="mission-card__actions">
         <ng-content select="[slot=actions]"></ng-content>
       </div>
-
     </article>
   `,
   styles: `
@@ -395,13 +398,22 @@ import type { Pub } from '../../../pubs/utils/pub.models';
       left: 0;
       right: 0;
       bottom: 0;
-      background: linear-gradient(90deg, transparent 0%, var(--backgroundLightest) 50%, transparent 100%);
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        var(--backgroundLightest) 50%,
+        transparent 100%
+      );
       animation: shimmer 2s infinite;
     }
 
     @keyframes shimmer {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(100%); }
+      0% {
+        transform: translateX(-100%);
+      }
+      100% {
+        transform: translateX(100%);
+      }
     }
 
     .progress-text {
@@ -484,7 +496,6 @@ import type { Pub } from '../../../pubs/utils/pub.models';
       gap: 0.5rem;
     }
 
-
     /* Responsive design */
     @media (max-width: 640px) {
       .mission-card__header {
@@ -499,7 +510,6 @@ import type { Pub } from '../../../pubs/utils/pub.models';
       }
     }
 
-
     .mission-card__actions {
       margin-top: 1rem;
       padding-top: 1rem;
@@ -512,7 +522,7 @@ import type { Pub } from '../../../pubs/utils/pub.models';
     .mission-card__actions:empty {
       display: none;
     }
-  `
+  `,
 })
 export class MissionCardComponent {
   // ✅ Dependency injection
@@ -552,17 +562,16 @@ export class MissionCardComponent {
         name: pub?.name || 'Unknown Pub',
         hasVisited,
         visitCount: hasVisited ? this.dataAggregatorService.getVisitCountForPub(pubId) : 0,
-        hasCrest: !!pub?.carpetUrl
+        hasCrest: !!pub?.carpetUrl,
       };
     });
 
     return {
       pubCount: mission.pubIds.length,
       pubs: pubDetails,
-      completedCount: pubDetails.filter(p => p.hasVisited).length
+      completedCount: pubDetails.filter(p => p.hasVisited).length,
     };
   });
-
 
   // ✅ No event handlers - purely presentational component
 }

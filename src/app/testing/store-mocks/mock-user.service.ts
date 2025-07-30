@@ -6,11 +6,11 @@ import { User, createUser } from '../../users/utils/user.model';
 export class MockUserService {
   // Test data storage
   private mockUsers = new Map<string, User>();
-  
+
   // Global users signal for leaderboard reactivity (matches real service)
   private readonly _allUsers = signal<User[]>([]);
   readonly allUsers = this._allUsers.asReadonly();
-  
+
   // Loading state for global users
   private readonly _loadingAllUsers = signal(false);
   readonly loadingAllUsers = this._loadingAllUsers.asReadonly();
@@ -100,10 +100,8 @@ export class MockUserService {
    * Update a user in the global users signal (matches real service)
    */
   updateUserInGlobalSignal(uid: string, updates: Partial<User>): void {
-    this._allUsers.update(users => 
-      users.map(user => 
-        user.uid === uid ? { ...user, ...updates } : user
-      )
+    this._allUsers.update(users =>
+      users.map(user => (user.uid === uid ? { ...user, ...updates } : user))
     );
   }
 
@@ -152,7 +150,7 @@ export class MockUserService {
       unverifiedPubCount: 0,
       totalPubCount: 0,
       onboardingCompleted: true,
-      realUser: true
+      realUser: true,
     });
 
     this.setMockUser(testUser.uid, testUser);

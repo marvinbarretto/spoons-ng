@@ -4,13 +4,12 @@ import { environment } from '../../../environments/environment';
 
 /**
  * 🛠️ DEVELOPMENT CACHE BUSTER
- * 
+ *
  * Quick utilities to clear Firebase offline cache during development.
  * Only works in development mode for safety.
  */
 @Injectable({ providedIn: 'root' })
 export class DevCacheBuster {
-  
   /**
    * Clear all Firebase offline cache
    * ⚠️ This will force fresh data from server on next request
@@ -24,10 +23,9 @@ export class DevCacheBuster {
     try {
       // Clear Firebase IndexedDB persistence data
       await this.clearFirebaseIndexedDB();
-      
+
       console.log('🧹 Firebase cache cleared! Refresh page to see fresh data.');
       console.log('💡 Tip: You can also call window.devCacheBuster.clearAll() from console');
-      
     } catch (error) {
       console.error('❌ Failed to clear Firebase cache:', error);
     }
@@ -40,24 +38,23 @@ export class DevCacheBuster {
     if (!this.isDevelopment()) return;
 
     console.log('🧹 Clearing all caches and reloading...');
-    
+
     try {
       // Clear Firebase cache
       await this.clearFirebaseCache();
-      
+
       // Clear browser caches
       if ('caches' in window) {
         const cacheNames = await caches.keys();
         await Promise.all(cacheNames.map(name => caches.delete(name)));
       }
-      
+
       // Clear localStorage and sessionStorage
       localStorage.clear();
       sessionStorage.clear();
-      
+
       // Reload without cache
       window.location.reload();
-      
     } catch (error) {
       console.error('❌ Failed to clear all caches:', error);
       // Fallback: just reload
@@ -72,23 +69,22 @@ export class DevCacheBuster {
     if (!this.isDevelopment()) return;
 
     console.log('📊 CACHE STATUS:');
-    
+
     try {
       // Check Firebase IndexedDB
       const dbExists = await this.checkFirebaseDB();
       console.log(`🔥 Firebase offline DB: ${dbExists ? '✅ Active' : '❌ Not found'}`);
-      
+
       // Check browser caches
       if ('caches' in window) {
         const cacheNames = await caches.keys();
         console.log(`💾 Service Worker caches: ${cacheNames.length} found`);
         cacheNames.forEach(name => console.log(`   - ${name}`));
       }
-      
+
       // Check storage
       console.log(`📁 localStorage items: ${localStorage.length}`);
       console.log(`📂 sessionStorage items: ${sessionStorage.length}`);
-      
     } catch (error) {
       console.error('❌ Failed to check cache status:', error);
     }
@@ -119,11 +115,11 @@ window.devCacheBuster.help()     - Show this help
 - Ctrl+Shift+C = Clear Firebase cache
 - Ctrl+Shift+R = Clear all and reload
         `);
-      }
+      },
     };
 
     // Add keyboard shortcuts
-    document.addEventListener('keydown', (e) => {
+    document.addEventListener('keydown', e => {
       if (e.ctrlKey && e.shiftKey) {
         if (e.code === 'KeyC') {
           e.preventDefault();
@@ -158,19 +154,19 @@ window.devCacheBuster.help()     - Show this help
 
       dbNames.forEach(dbName => {
         const deleteReq = indexedDB.deleteDatabase(dbName);
-        
+
         deleteReq.onsuccess = () => {
           console.log(`🗑️ Cleared: ${dbName}`);
           cleared++;
           if (cleared === total) resolve();
         };
-        
+
         deleteReq.onerror = () => {
           console.log(`⚠️ Could not clear: ${dbName} (may not exist)`);
           cleared++;
           if (cleared === total) resolve();
         };
-        
+
         deleteReq.onblocked = () => {
           console.warn(`🚫 Blocked: ${dbName} (close other tabs)`);
           cleared++;
@@ -189,15 +185,15 @@ window.devCacheBuster.help()     - Show this help
   }
 
   private async checkFirebaseDB(): Promise<boolean> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const dbName = `firestore/${environment.firebaseConfig.projectId}/[DEFAULT]`;
       const request = indexedDB.open(dbName);
-      
+
       request.onsuccess = () => {
         request.result.close();
         resolve(true);
       };
-      
+
       request.onerror = () => resolve(false);
       request.onupgradeneeded = () => {
         request.result.close();

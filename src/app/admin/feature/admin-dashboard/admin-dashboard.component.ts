@@ -1,11 +1,11 @@
 // src/app/admin/feature/admin-dashboard/admin-dashboard.component.ts
-import { Component, inject, computed, isDevMode, signal } from '@angular/core';
+import { Component, computed, inject, isDevMode, signal } from '@angular/core';
 
 import { RouterModule } from '@angular/router';
 // DatabaseMetricsService removed - was over-engineered premature optimization
 import { FirebaseMetricsService } from '@fourfold/angular-foundation';
-import { LeaderboardStore } from '../../../leaderboard/data-access/leaderboard.store';
 import { FeedbackStore } from '../../../feedback/data-access/feedback.store';
+import { LeaderboardStore } from '../../../leaderboard/data-access/leaderboard.store';
 import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
 import { ErrorLoggingService } from '../../../shared/data-access/error-logging.service';
 
@@ -67,7 +67,9 @@ type StatData = {
       <!-- Data Analysis & Investigation Tools (Priority) -->
       <section class="admin-sections priority-section">
         <h2>🔍 Data Analysis & Investigation Tools</h2>
-        <p class="section-subtitle">⭐ Essential tools for investigating data inconsistencies like mb84's case</p>
+        <p class="section-subtitle">
+          ⭐ Essential tools for investigating data inconsistencies like mb84's case
+        </p>
         <div class="sections-grid">
           @for (section of dataAnalysisTools; track section.id) {
             <div class="admin-card active priority">
@@ -159,7 +161,7 @@ type StatData = {
       </section>
     </div>
   `,
-  styleUrl: './admin-dashboard.component.scss'
+  styleUrl: './admin-dashboard.component.scss',
 })
 export class AdminDashboardComponent {
   // Database metrics service removed - focus on core functionality first
@@ -199,28 +201,28 @@ export class AdminDashboardComponent {
         label: 'Total Users',
         sourceType: siteData.allTime.users > 0 ? 'real' : 'placeholder',
         sourceDetail: `✅ REAL DATA: LeaderboardStore.siteStats.allTime.users | Raw siteData: ${JSON.stringify(siteData.allTime)}`,
-        icon: siteData.allTime.users > 0 ? '✅' : '🔶'
+        icon: siteData.allTime.users > 0 ? '✅' : '🔶',
       },
       {
         value: siteData.allTime.checkins,
         label: 'Total Check-ins',
         sourceType: siteData.allTime.checkins > 0 ? 'real' : 'placeholder',
         sourceDetail: `✅ REAL DATA: LeaderboardStore.siteStats.allTime.checkins | Monthly: ${siteData.thisMonth.checkins}`,
-        icon: siteData.allTime.checkins > 0 ? '✅' : '🔶'
+        icon: siteData.allTime.checkins > 0 ? '✅' : '🔶',
       },
       {
         value: siteData.allTime.pubsConquered,
         label: 'Pubs Visited',
         sourceType: siteData.allTime.pubsConquered > 0 ? 'real' : 'placeholder',
         sourceDetail: `✅ REAL DATA: LeaderboardStore.siteStats.allTime.pubsConquered | Total pubs in system: ${siteData.allTime.totalPubsInSystem}`,
-        icon: siteData.allTime.pubsConquered > 0 ? '✅' : '🔶'
+        icon: siteData.allTime.pubsConquered > 0 ? '✅' : '🔶',
       },
       {
         value: pendingCount,
         label: 'Pending Feedback',
         sourceType: allFeedback.length > 0 ? 'real' : 'placeholder',
         sourceDetail: `FeedbackStore.pendingFeedback.length | Total feedback: ${allFeedback.length}, Loading: ${this.feedbackStore.loading()}, Error: ${this.feedbackStore.error()}`,
-        icon: allFeedback.length > 0 ? '✅' : '🔶'
+        icon: allFeedback.length > 0 ? '✅' : '🔶',
       },
       // Activity Metrics (Real Data)
       {
@@ -228,14 +230,14 @@ export class AdminDashboardComponent {
         label: 'Active This Month',
         sourceType: siteData.thisMonth.activeUsers > 0 ? 'real' : 'placeholder',
         sourceDetail: `✅ REAL DATA: LeaderboardStore.siteStats.thisMonth.activeUsers | New users: ${siteData.thisMonth.newUsers}`,
-        icon: siteData.thisMonth.activeUsers > 0 ? '✅' : '🔶'
+        icon: siteData.thisMonth.activeUsers > 0 ? '✅' : '🔶',
       },
       {
         value: siteData.thisMonth.checkins,
         label: 'Check-ins This Month',
         sourceType: siteData.thisMonth.checkins > 0 ? 'real' : 'placeholder',
         sourceDetail: `✅ REAL DATA: LeaderboardStore.siteStats.thisMonth.checkins | Raw monthly data: ${JSON.stringify(siteData.thisMonth)}`,
-        icon: siteData.thisMonth.checkins > 0 ? '✅' : '🔶'
+        icon: siteData.thisMonth.checkins > 0 ? '✅' : '🔶',
       },
       // Global Data Debug
       {
@@ -243,14 +245,14 @@ export class AdminDashboardComponent {
         label: 'Global Users',
         sourceType: globalData.totalUsers > 0 ? 'real' : 'placeholder',
         sourceDetail: `✅ REAL DATA: LeaderboardStore.globalDataStats.totalUsers | CheckIns: ${globalData.totalCheckIns}, Active: ${globalData.activeUsers}`,
-        icon: globalData.totalUsers > 0 ? '✅' : '🔶'
+        icon: globalData.totalUsers > 0 ? '✅' : '🔶',
       },
       {
         value: scoreboardData.totalPubs || 0,
         label: 'Total Pubs',
         sourceType: (scoreboardData.totalPubs || 0) > 0 ? 'real' : 'placeholder',
         sourceDetail: `dataAggregatorService.scoreboardData.totalPubs | Loading: ${scoreboardData.isLoading}, Pubs visited: ${scoreboardData.pubsVisited}`,
-        icon: (scoreboardData.totalPubs || 0) > 0 ? '✅' : '🔶'
+        icon: (scoreboardData.totalPubs || 0) > 0 ? '✅' : '🔶',
       },
       // Engagement Metrics
       {
@@ -258,15 +260,15 @@ export class AdminDashboardComponent {
         label: 'Carpet Photo Rate',
         sourceType: 'calculated',
         sourceDetail: `Percentage of photos identified as carpet photos - indicates engagement with the fun aspect`,
-        icon: '🏠'
+        icon: '🏠',
       },
       {
         value: this.getFirstCheckInRate(),
         label: 'First Check-in Rate',
         sourceType: 'calculated',
         sourceDetail: `New users completing first check-in within 24hrs - interesting behavioral metric`,
-        icon: '📊'
-      }
+        icon: '📊',
+      },
     ];
 
     console.log('🔍 [AdminDashboard] FULL DEBUG DATA:', {
@@ -278,13 +280,13 @@ export class AdminDashboardComponent {
       feedbackStore: {
         loading: this.feedbackStore.loading(),
         error: this.feedbackStore.error(),
-        data: allFeedback
+        data: allFeedback,
       },
       leaderboardStore: {
         loading: this.leaderboardStore.loading(),
-        error: this.leaderboardStore.error()
+        error: this.leaderboardStore.error(),
       },
-      stats
+      stats,
     });
     return stats;
   });
@@ -300,7 +302,7 @@ export class AdminDashboardComponent {
       route: '/admin/data-integrity',
       icon: '🔍',
       status: 'active',
-      stats: '📊 Essential for data reconciliation - START HERE'
+      stats: '📊 Essential for data reconciliation - START HERE',
     },
     {
       id: 'points-transactions',
@@ -309,7 +311,7 @@ export class AdminDashboardComponent {
       route: '/admin/points-transactions',
       icon: '💰',
       status: 'active',
-      stats: '🔍 Recently improved - filter by display name'
+      stats: '🔍 Recently improved - filter by display name',
     },
     {
       id: 'checkins-data',
@@ -318,7 +320,7 @@ export class AdminDashboardComponent {
       route: '/admin/checkins-data',
       icon: '🍻',
       status: 'active',
-      stats: '📈 Enhanced viewer with bulk operations'
+      stats: '📈 Enhanced viewer with bulk operations',
     },
     {
       id: 'users',
@@ -327,8 +329,8 @@ export class AdminDashboardComponent {
       route: '/admin/users',
       icon: '👥',
       status: 'active',
-      stats: `${this.siteStats().allTime.users} users - detailed investigation tool`
-    }
+      stats: `${this.siteStats().allTime.users} users - detailed investigation tool`,
+    },
   ];
 
   // Core Management Tools
@@ -340,7 +342,7 @@ export class AdminDashboardComponent {
       route: '/admin/missions',
       icon: '🎯',
       status: 'active',
-      stats: 'Real CRUD via MissionStore'
+      stats: 'Real CRUD via MissionStore',
     },
     {
       id: 'badges',
@@ -349,7 +351,7 @@ export class AdminDashboardComponent {
       route: '/admin/badges',
       icon: '🏆',
       status: 'active',
-      stats: 'Real CRUD via BadgeStore'
+      stats: 'Real CRUD via BadgeStore',
     },
     {
       id: 'checkins',
@@ -358,7 +360,7 @@ export class AdminDashboardComponent {
       route: '/admin/checkins',
       icon: '🍺',
       status: 'active',
-      stats: 'Real CRUD via AdminCheckinService'
+      stats: 'Real CRUD via AdminCheckinService',
     },
     {
       id: 'feedback',
@@ -367,7 +369,7 @@ export class AdminDashboardComponent {
       route: '/admin/feedback',
       icon: '💬',
       status: 'active',
-      stats: `${this.pendingFeedback().length} pending reviews - Real CRUD available`
+      stats: `${this.pendingFeedback().length} pending reviews - Real CRUD available`,
     },
     {
       id: 'carpets',
@@ -376,8 +378,8 @@ export class AdminDashboardComponent {
       route: '/admin/carpets',
       icon: '📸',
       status: 'active',
-      stats: 'Photo management system'
-    }
+      stats: 'Photo management system',
+    },
   ];
 
   // System & Development Tools
@@ -389,7 +391,7 @@ export class AdminDashboardComponent {
       route: '/admin/errors',
       icon: '🚨',
       status: 'active',
-      stats: `${this.errorStats().unresolvedErrors} unresolved, ${this.errorStats().criticalErrors} critical`
+      stats: `${this.errorStats().unresolvedErrors} unresolved, ${this.errorStats().criticalErrors} critical`,
     },
     {
       id: 'components',
@@ -398,8 +400,8 @@ export class AdminDashboardComponent {
       route: '/dev/components',
       icon: '🛠️',
       status: 'active',
-      stats: 'Design system components'
-    }
+      stats: 'Design system components',
+    },
   ];
 
   // Future admin tools - planned features
@@ -411,7 +413,7 @@ export class AdminDashboardComponent {
       route: '/admin/analytics',
       icon: '📈',
       status: 'coming-soon',
-      stats: `${this.globalDataStats().totalUsers} users, ${this.globalDataStats().totalCheckIns} check-ins - Real data ready`
+      stats: `${this.globalDataStats().totalUsers} users, ${this.globalDataStats().totalCheckIns} check-ins - Real data ready`,
     },
     {
       id: 'pubs',
@@ -420,7 +422,7 @@ export class AdminDashboardComponent {
       route: '/admin/pubs',
       icon: '🍺',
       status: 'coming-soon',
-      stats: 'PubStore integration needed'
+      stats: 'PubStore integration needed',
     },
     {
       id: 'content',
@@ -429,7 +431,7 @@ export class AdminDashboardComponent {
       route: '/admin/content',
       icon: '🛡️',
       status: 'coming-soon',
-      stats: 'Automated moderation system'
+      stats: 'Automated moderation system',
     },
     {
       id: 'settings',
@@ -438,7 +440,7 @@ export class AdminDashboardComponent {
       route: '/admin/settings',
       icon: '⚙️',
       status: 'coming-soon',
-      stats: 'Feature flag system'
+      stats: 'Feature flag system',
     },
     {
       id: 'reports',
@@ -447,7 +449,7 @@ export class AdminDashboardComponent {
       route: '/admin/reports',
       icon: '📋',
       status: 'coming-soon',
-      stats: 'CSV/PDF export capabilities'
+      stats: 'CSV/PDF export capabilities',
     },
     {
       id: 'audit',
@@ -456,8 +458,8 @@ export class AdminDashboardComponent {
       route: '/admin/audit',
       icon: '🔍',
       status: 'coming-soon',
-      stats: 'Action tracking system'
-    }
+      stats: 'Action tracking system',
+    },
   ];
 
   // Complex cache analytics removed - Firebase handles caching automatically
@@ -469,24 +471,24 @@ export class AdminDashboardComponent {
     cacheLatencyVsNetwork: {
       speedImprovement: 0,
       cacheAvg: 0,
-      networkAvg: 0
+      networkAvg: 0,
     },
     costSavingsReal: {
       costSavedToday: 0,
       projectedMonthlySavings: 0,
-      operationsSaved: 0
-    }
+      operationsSaved: 0,
+    },
   }));
 
   readonly cacheHealthStatus = computed(() => ({
-    insights: []
+    insights: [],
   }));
 
   readonly optimizationRecommendations = computed(() => []);
 
   readonly tierPerformance = computed(() => ({
     tierBreakdown: [],
-    tierRecommendations: []
+    tierRecommendations: [],
   }));
 
   clearFirebaseCache(): void {
@@ -501,7 +503,7 @@ export class AdminDashboardComponent {
       hour12: false,
       hour: '2-digit',
       minute: '2-digit',
-      second: '2-digit'
+      second: '2-digit',
     });
   }
 
@@ -517,13 +519,13 @@ export class AdminDashboardComponent {
   getCarpetPhotoRate(): string {
     const siteData = this.siteStats();
     const totalCheckIns = siteData.allTime.checkins;
-    
+
     if (totalCheckIns === 0) return '0%';
-    
+
     // TODO: Count check-ins with carpet bonus points from existing aggregated data
     // This would come from the same data source that feeds siteStats
     // For now, we need to add carpet bonus tracking to the leaderboard aggregation
-    
+
     // Placeholder until we add carpet bonus counting to LeaderboardStore
     return 'TBD';
   }
@@ -532,14 +534,14 @@ export class AdminDashboardComponent {
     const siteData = this.siteStats();
     const totalUsers = siteData.allTime.users;
     const totalCheckIns = siteData.allTime.checkins;
-    
+
     if (totalUsers === 0) return '0%';
-    
+
     // Calculate users who have completed at least one check-in
     // This assumes each user has roughly equal check-in distribution
     const usersWithCheckIns = Math.min(totalCheckIns, totalUsers);
     const rate = Math.round((usersWithCheckIns / totalUsers) * 100);
-    
+
     return `${rate}%`;
   }
 }

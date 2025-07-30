@@ -1,12 +1,12 @@
 /**
  * @fileoverview ErrorLoggingService - Centralized error tracking and storage
- * 
+ *
  * RESPONSIBILITIES:
  * - Capture and store errors with context and stack traces
  * - Categorize errors by type (check-in, points, badges, etc.)
  * - Provide admin interface to view and analyze errors
  * - Store errors in Firestore for persistence and analysis
- * 
+ *
  * USAGE:
  * - Call logError() from try/catch blocks
  * - Include user context, operation details, and full stack traces
@@ -14,15 +14,15 @@
  */
 
 import { Injectable, inject, signal } from '@angular/core';
-import { Timestamp } from 'firebase/firestore';
 import { FirestoreService } from '@fourfold/angular-foundation';
+import { Timestamp } from 'firebase/firestore';
 import { AuthStore } from '../../auth/data-access/auth.store';
 
-export type ErrorCategory = 
+export type ErrorCategory =
   | 'check-in'
   | 'points'
   | 'badges'
-  | 'landlord' 
+  | 'landlord'
   | 'missions'
   | 'auth'
   | 'database'
@@ -39,20 +39,20 @@ export type SystemError = {
   message: string;
   stackTrace?: string;
   timestamp: Timestamp;
-  
+
   // User context
   userId?: string;
   userDisplayName?: string;
   isAnonymous?: boolean;
-  
+
   // Operation context
   operation: string;
   operationContext?: Record<string, any>;
-  
+
   // System context
   userAgent?: string;
   url?: string;
-  
+
   // Resolution
   resolved?: boolean;
   resolvedAt?: Timestamp;
@@ -63,11 +63,11 @@ export type SystemError = {
 @Injectable({ providedIn: 'root' })
 export class ErrorLoggingService extends FirestoreService {
   private readonly authStore = inject(AuthStore);
-  
+
   // Recent errors for quick access
   private readonly _recentErrors = signal<SystemError[]>([]);
   readonly recentErrors = this._recentErrors.asReadonly();
-  
+
   // Error counts by category
   private readonly _errorCounts = signal<Record<ErrorCategory, number>>({
     'check-in': 0,
@@ -79,10 +79,10 @@ export class ErrorLoggingService extends FirestoreService {
     database: 0,
     network: 0,
     validation: 0,
-    unknown: 0
+    unknown: 0,
   });
   readonly errorCounts = this._errorCounts.asReadonly();
-  
+
   // Loading state
   private readonly _loading = signal(false);
   readonly loading = this._loading.asReadonly();
@@ -101,7 +101,10 @@ export class ErrorLoggingService extends FirestoreService {
     } = {}
   ): Promise<string> {
     const callId = Date.now();
-    console.log(`[ErrorLoggingService] 🚨 Logging ${category} error (${callId}):`, { operation, error });
+    console.log(`[ErrorLoggingService] 🚨 Logging ${category} error (${callId}):`, {
+      operation,
+      error,
+    });
 
     try {
       const user = this.authStore.user();
@@ -114,21 +117,21 @@ export class ErrorLoggingService extends FirestoreService {
         message: options.customMessage || errorMessage,
         stackTrace,
         timestamp: Timestamp.now(),
-        
+
         // User context
         userId: user?.uid,
         userDisplayName: user?.displayName,
         isAnonymous: user?.isAnonymous,
-        
+
         // Operation context
         operation,
         operationContext: options.operationContext,
-        
+
         // System context
         userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : undefined,
         url: typeof window !== 'undefined' ? window.location.href : undefined,
-        
-        resolved: false
+
+        resolved: false,
       };
 
       console.log(`[ErrorLoggingService] 💾 Saving error to Firestore (${callId}):`, systemError);
@@ -142,13 +145,13 @@ export class ErrorLoggingService extends FirestoreService {
       // Update local state
       const completeError: SystemError = {
         id: errorId,
-        ...systemError
+        ...systemError,
       };
 
       this._recentErrors.update(errors => [completeError, ...errors].slice(0, 50)); // Keep latest 50
       this._errorCounts.update(counts => ({
         ...counts,
-        [category]: counts[category] + 1
+        [category]: counts[category] + 1,
       }));
 
       // Log to console for immediate debugging
@@ -161,7 +164,6 @@ export class ErrorLoggingService extends FirestoreService {
       }
 
       return errorId;
-
     } catch (loggingError) {
       console.error(`[ErrorLoggingService] ❌ Failed to log error (${callId}):`, loggingError);
       // Still log to console even if Firestore fails
@@ -191,8 +193,8 @@ export class ErrorLoggingService extends FirestoreService {
         userId: context.userId,
         pointsData: context.pointsData,
         carpetResult: context.carpetResult,
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      },
     });
   }
 
@@ -217,8 +219,8 @@ export class ErrorLoggingService extends FirestoreService {
         pubId: context.pubId,
         pointsData: context.pointsData,
         breakdown: context.breakdown,
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      },
     });
   }
 
@@ -229,9 +231,9 @@ export class ErrorLoggingService extends FirestoreService {
     this._loading.set(true);
     try {
       console.log('[ErrorLoggingService] 📡 Loading recent errors...');
-      
+
       const errors = await this.getDocsWhere<SystemError>(
-        'systemErrors',
+        'systemErrors'
         // Add ordering by timestamp desc when we implement it
       );
 
@@ -253,7 +255,7 @@ export class ErrorLoggingService extends FirestoreService {
         database: 0,
         network: 0,
         validation: 0,
-        unknown: 0
+        unknown: 0,
       };
 
       errors.forEach(error => {
@@ -264,7 +266,6 @@ export class ErrorLoggingService extends FirestoreService {
 
       console.log(`[ErrorLoggingService] ✅ Loaded ${sortedErrors.length} recent errors`);
       console.log('[ErrorLoggingService] 📊 Error counts by category:', counts);
-
     } catch (error) {
       console.error('[ErrorLoggingService] ❌ Failed to load recent errors:', error);
       throw error;
@@ -283,7 +284,7 @@ export class ErrorLoggingService extends FirestoreService {
         resolved: true,
         resolvedAt: Timestamp.now(),
         resolvedBy: user?.uid || 'unknown',
-        resolution
+        resolution,
       });
 
       // Update local state
@@ -315,8 +316,8 @@ export class ErrorLoggingService extends FirestoreService {
     const errors = this._recentErrors();
     const unresolvedErrors = errors.filter(e => !e.resolved);
     const criticalErrors = errors.filter(e => e.severity === 'critical');
-    const recentErrors = errors.filter(e => 
-      e.timestamp.toMillis() > Date.now() - 24 * 60 * 60 * 1000 // Last 24 hours
+    const recentErrors = errors.filter(
+      e => e.timestamp.toMillis() > Date.now() - 24 * 60 * 60 * 1000 // Last 24 hours
     );
 
     const categoryCounts = this._errorCounts();
@@ -330,7 +331,7 @@ export class ErrorLoggingService extends FirestoreService {
       unresolvedErrors: unresolvedErrors.length,
       criticalErrors: criticalErrors.length,
       recentErrors: recentErrors.length,
-      topCategories
+      topCategories,
     };
   }
 
@@ -349,20 +350,12 @@ export class ErrorLoggingService extends FirestoreService {
     }
 
     // High severity for user-facing failures
-    if (
-      category === 'check-in' ||
-      category === 'points' ||
-      message.includes('failed to')
-    ) {
+    if (category === 'check-in' || category === 'points' || message.includes('failed to')) {
       return 'high';
     }
 
     // Medium for degraded functionality
-    if (
-      category === 'badges' ||
-      category === 'landlord' ||
-      category === 'missions'
-    ) {
+    if (category === 'badges' || category === 'landlord' || category === 'missions') {
       return 'medium';
     }
 
@@ -385,7 +378,7 @@ export class ErrorLoggingService extends FirestoreService {
       database: 0,
       network: 0,
       validation: 0,
-      unknown: 0
+      unknown: 0,
     });
     this._loading.set(false);
   }

@@ -4,14 +4,14 @@ import { LLMService } from './llm.service';
 // Mock Google Generative AI
 const mockGenerateContent = jest.fn();
 const mockModel = {
-  generateContent: mockGenerateContent
+  generateContent: mockGenerateContent,
 };
 const mockGenAI = {
-  getGenerativeModel: jest.fn().mockReturnValue(mockModel)
+  getGenerativeModel: jest.fn().mockReturnValue(mockModel),
 };
 
 jest.mock('@google/generative-ai', () => ({
-  GoogleGenerativeAI: jest.fn().mockImplementation(() => mockGenAI)
+  GoogleGenerativeAI: jest.fn().mockImplementation(() => mockGenAI),
 }));
 
 // Mock canvas and image operations since they're not available in test environment
@@ -48,7 +48,7 @@ describe('LLMService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [LLMService]
+      providers: [LLMService],
     });
     service = TestBed.inject(LLMService);
     jest.clearAllMocks();
@@ -63,8 +63,8 @@ describe('LLMService', () => {
       // Mock successful carpet detection
       mockGenerateContent.mockResolvedValue({
         response: {
-          text: () => 'Is Carpet: Yes\nConfidence: 85%\nReasoning: Clear carpet pattern visible'
-        }
+          text: () => 'Is Carpet: Yes\nConfidence: 85%\nReasoning: Clear carpet pattern visible',
+        },
       });
 
       const result = await service.isCarpet('data:image/jpeg;base64,fake-image-data');
@@ -77,8 +77,8 @@ describe('LLMService', () => {
       // Mock no carpet detection
       mockGenerateContent.mockResolvedValue({
         response: {
-          text: () => 'Is Carpet: No\nConfidence: 90%\nReasoning: Hard floor surface detected'
-        }
+          text: () => 'Is Carpet: No\nConfidence: 90%\nReasoning: Hard floor surface detected',
+        },
       });
 
       const result = await service.isCarpet('data:image/jpeg;base64,fake-image-data');
@@ -111,8 +111,9 @@ describe('LLMService', () => {
     it('should return successful carpet detection result', async () => {
       mockGenerateContent.mockResolvedValue({
         response: {
-          text: () => 'Is Carpet: Yes\nConfidence: 85%\nReasoning: Textile pattern visible\nVisual Elements: Red, geometric pattern'
-        }
+          text: () =>
+            'Is Carpet: Yes\nConfidence: 85%\nReasoning: Textile pattern visible\nVisual Elements: Red, geometric pattern',
+        },
       });
 
       const result = await service.detectCarpet('data:image/jpeg;base64,fake-image-data');
@@ -126,8 +127,8 @@ describe('LLMService', () => {
     it('should handle malformed LLM response gracefully', async () => {
       mockGenerateContent.mockResolvedValue({
         response: {
-          text: () => 'Some random response without proper format'
-        }
+          text: () => 'Some random response without proper format',
+        },
       });
 
       const result = await service.detectCarpet('data:image/jpeg;base64,fake-image-data');
@@ -150,35 +151,35 @@ describe('LLMService', () => {
   describe('signal states', () => {
     it('should track processing state during LLM calls', async () => {
       let processingState: boolean;
-      
+
       // Set up a slow mock to test processing state
       mockGenerateContent.mockImplementation(async () => {
         processingState = service.isProcessing();
         await new Promise(resolve => setTimeout(resolve, 10));
         return {
           response: {
-            text: () => 'Is Carpet: Yes\nConfidence: 80%'
-          }
+            text: () => 'Is Carpet: Yes\nConfidence: 80%',
+          },
         };
       });
 
       const promise = service.isCarpet('data:image/jpeg;base64,fake-image-data');
-      
+
       // Should be processing during the call
       await promise;
       expect(processingState).toBe(true);
-      
+
       // Should not be processing after completion
       expect(service.isProcessing()).toBe(false);
     });
 
     it('should increment request count on successful calls', async () => {
       const initialCount = service.requestCount();
-      
+
       mockGenerateContent.mockResolvedValue({
         response: {
-          text: () => 'Is Carpet: Yes\nConfidence: 80%'
-        }
+          text: () => 'Is Carpet: Yes\nConfidence: 80%',
+        },
       });
 
       await service.detectCarpet('data:image/jpeg;base64,fake-image-data');

@@ -249,6 +249,26 @@ export class AdminCheckinService extends FirestoreCrudService<CheckIn> {
       const docRef = await this.addDocToCollection('checkins', checkInData);
       const docId = docRef.id;
 
+      console.log(`⚡ [AdminCheckinService] Step 7: Adding pub to user's verified pub count (${callId})`);
+      // Admin check-ins are authentic/verified visits, so increment verifiedPubCount
+      if (user) {
+        const currentVerifiedCount = user.verifiedPubCount || 0;
+        const currentUnverifiedCount = user.unverifiedPubCount || 0;
+        const newVerifiedCount = currentVerifiedCount + 1;
+        const newTotalCount = newVerifiedCount + currentUnverifiedCount;
+        
+        console.log(`⚡   Admin check-in treated as VERIFIED pub visit`);
+        console.log(`⚡   Previous verified pubs: ${currentVerifiedCount}`);
+        console.log(`⚡   New verified pubs: ${newVerifiedCount}`);
+        console.log(`⚡   Total pub count: ${newTotalCount}`);
+        
+        await this.userService.updateUser(data.userId, {
+          verifiedPubCount: newVerifiedCount,
+          totalPubCount: newTotalCount
+        });
+        console.log(`⚡   User profile updated with verified pub visit`);
+      }
+
       console.log(`⚡ [AdminCheckinService] === MANUAL CHECK-IN CREATION COMPLETE (${callId}) ===`);
       console.log(`⚡ [AdminCheckinService] SUCCESS SUMMARY:`);
       console.log(`⚡   Check-in ID: ${docId}`);

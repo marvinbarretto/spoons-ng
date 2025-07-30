@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { FeatureFlagService } from './feature-flag.service';
 import { environment } from '../../../environments/environment';
+import { FeatureFlagService } from './feature-flag.service';
 
 // Define a type for feature flags for easier mocking
 type FeatureFlags = Record<string, boolean>;
@@ -19,17 +19,19 @@ jest.mock('../../../environments/environment', () => ({
 describe('FeatureFlagService', () => {
   let service: FeatureFlagService;
 
-
   // Helper function to set environment properties for a test
   const setEnvironment = (prod: boolean, enableAll: boolean, flags: FeatureFlags) => {
     Object.defineProperty(environment, 'production', { value: prod, configurable: true });
-    Object.defineProperty(environment, 'enableAllFeaturesForDev', { value: enableAll, configurable: true });
+    Object.defineProperty(environment, 'enableAllFeaturesForDev', {
+      value: enableAll,
+      configurable: true,
+    });
     Object.defineProperty(environment, 'featureFlags', { value: flags, configurable: true });
   };
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [FeatureFlagService]
+      providers: [FeatureFlagService],
     });
     service = TestBed.inject(FeatureFlagService);
   });
@@ -94,7 +96,10 @@ describe('FeatureFlagService', () => {
 
   describe('Development Mode: enableAllFeaturesForDev is false (production=false)', () => {
     beforeEach(() => {
-      setEnvironment(false, false, { devFlagTrueFalseScenario: true, devFlagFalseFalseScenario: false });
+      setEnvironment(false, false, {
+        devFlagTrueFalseScenario: true,
+        devFlagFalseFalseScenario: false,
+      });
     });
 
     it('6.1. should return false if the specific flag is false in environment.featureFlags', () => {

@@ -17,5 +17,5 @@ export const ButtonSize = {
   EXTRA_LARGE: 'xl',
 } as const;
 
-export type ButtonVariantType = typeof ButtonVariant[keyof typeof ButtonVariant];
-export type ButtonSizeType = typeof ButtonSize[keyof typeof ButtonSize];
+export type ButtonVariantType = (typeof ButtonVariant)[keyof typeof ButtonVariant];
+export type ButtonSizeType = (typeof ButtonSize)[keyof typeof ButtonSize];

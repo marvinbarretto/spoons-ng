@@ -1,9 +1,9 @@
 // badges/data-access/badge-logic.service.spec.ts
 import { TestBed } from '@angular/core/testing';
-import { BadgeLogicService } from './badge-logic.service';
-import { BadgeStore } from './badge.store';
 import { BadgeTestFactories } from '../testing/badge-test-factories';
 import type { BadgeTriggerContext } from '../utils/badge.model';
+import { BadgeLogicService } from './badge-logic.service';
+import { BadgeStore } from './badge.store';
 
 /**
  * Test suite for BadgeLogicService.
@@ -17,14 +17,11 @@ describe('BadgeLogicService', () => {
 
   beforeEach(() => {
     const badgeStoreMock = {
-      hasEarnedBadge: jest.fn()
+      hasEarnedBadge: jest.fn(),
     } as jest.Mocked<Partial<BadgeStore>>;
 
     TestBed.configureTestingModule({
-      providers: [
-        BadgeLogicService,
-        { provide: BadgeStore, useValue: badgeStoreMock }
-      ]
+      providers: [BadgeLogicService, { provide: BadgeStore, useValue: badgeStoreMock }],
     });
 
     service = TestBed.inject(BadgeLogicService);
@@ -80,7 +77,7 @@ describe('BadgeLogicService', () => {
         userId,
         checkIn: BadgeTestFactories.createCheckIn(userId, 'pub1'), // Required by type
         userCheckIns: [], // Empty check-ins
-        userBadges: []
+        userBadges: [],
       };
 
       // Act
@@ -216,7 +213,7 @@ describe('BadgeLogicService', () => {
         BadgeTestFactories.createCheckIn(userId, 'pub1', 3), // Same pub again
         BadgeTestFactories.createCheckIn(userId, 'pub2', 2),
         BadgeTestFactories.createCheckIn(userId, 'pub3', 1),
-        BadgeTestFactories.createCheckIn(userId, 'pub4', 0) // Only 4 unique pubs
+        BadgeTestFactories.createCheckIn(userId, 'pub4', 0), // Only 4 unique pubs
       ];
       const context = BadgeTestFactories.createContext(userId, checkIns);
 
@@ -255,8 +252,12 @@ describe('BadgeLogicService', () => {
       // Arrange: 10 check-ins across 5 different pubs (eligible for both regular and explorer)
       const userId = 'user123';
       const checkIns = [
-        ...BadgeTestFactories.createMultiPubCheckIns(userId, ['pub1', 'pub2', 'pub3', 'pub4', 'pub5'], 9),
-        ...BadgeTestFactories.createSequentialCheckIns(userId, 5, 'pub1', 4) // Additional check-ins at pub1
+        ...BadgeTestFactories.createMultiPubCheckIns(
+          userId,
+          ['pub1', 'pub2', 'pub3', 'pub4', 'pub5'],
+          9
+        ),
+        ...BadgeTestFactories.createSequentialCheckIns(userId, 5, 'pub1', 4), // Additional check-ins at pub1
       ];
       const context = BadgeTestFactories.createContext(userId, checkIns);
 
@@ -312,9 +313,9 @@ describe('BadgeLogicService', () => {
         currentBadges: ['first-checkin'],
         badgeChecks: {
           firstTime: false, // Not first check-in anymore
-          regular: false,   // Not 10 check-ins
-          explorer: false   // Not 5 pubs
-        }
+          regular: false, // Not 10 check-ins
+          explorer: false, // Not 5 pubs
+        },
       });
     });
   });

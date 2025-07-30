@@ -1,6 +1,6 @@
 import { Injectable, computed, signal } from '@angular/core';
-import { CheckinGate } from './gate.interface';
 import { analyzeAdvancedTexture, type TextureFeatures } from '../../utils';
+import { CheckinGate } from './gate.interface';
 
 @Injectable({ providedIn: 'root' })
 export class CarpetPatternRecognitionGate implements CheckinGate {
@@ -15,7 +15,7 @@ export class CarpetPatternRecognitionGate implements CheckinGate {
   // Public signals
   readonly textureFeatures = this._textureFeatures.asReadonly();
   readonly isAnalyzing = this._isAnalyzing.asReadonly();
-  
+
   readonly currentValue = computed(() => {
     const features = this._textureFeatures();
     return features ? this.calculateCombinedScore(features) : null;
@@ -36,7 +36,7 @@ export class CarpetPatternRecognitionGate implements CheckinGate {
       colorComplexity: features.colorComplexity,
       combinedScore,
       threshold: this.threshold,
-      passed: result
+      passed: result,
     });
 
     return result;
@@ -47,19 +47,18 @@ export class CarpetPatternRecognitionGate implements CheckinGate {
    */
   async analyzeFrame(videoElement: HTMLVideoElement): Promise<void> {
     console.log('[CarpetPatternRecognitionGate] Starting pattern analysis');
-    
+
     this._isAnalyzing.set(true);
-    
+
     try {
       const features = analyzeAdvancedTexture(videoElement);
       this._textureFeatures.set(features);
-      
+
       console.log('[CarpetPatternRecognitionGate] Analysis complete:', {
         patternType: features.patternType,
         combinedScore: this.calculateCombinedScore(features),
-        processingTime: Math.round(features.processingTime) + 'ms'
+        processingTime: Math.round(features.processingTime) + 'ms',
       });
-      
     } catch (error) {
       console.error('[CarpetPatternRecognitionGate] Analysis failed:', error);
       this._textureFeatures.set(null);
@@ -74,11 +73,12 @@ export class CarpetPatternRecognitionGate implements CheckinGate {
   private calculateCombinedScore(features: TextureFeatures): number {
     // Weight different features based on carpet detection importance
     const weights = this.getPatternWeights(features.patternType);
-    
-    const score = (features.contrast * weights.contrast) +
-                  (features.edgeDensity * weights.edges) +
-                  (features.repetitionScore * weights.repetition) +
-                  (features.colorComplexity * weights.complexity);
+
+    const score =
+      features.contrast * weights.contrast +
+      features.edgeDensity * weights.edges +
+      features.repetitionScore * weights.repetition +
+      features.colorComplexity * weights.complexity;
 
     return Math.round(score);
   }
@@ -90,35 +90,35 @@ export class CarpetPatternRecognitionGate implements CheckinGate {
     switch (patternType) {
       case 'geometric':
         return {
-          contrast: 0.4,     // High weight - geometric patterns have strong contrast
-          edges: 0.3,        // High weight - clear edges
-          repetition: 0.2,   // Medium weight - regular repetition
-          complexity: 0.1    // Low weight - usually simpler colors
+          contrast: 0.4, // High weight - geometric patterns have strong contrast
+          edges: 0.3, // High weight - clear edges
+          repetition: 0.2, // Medium weight - regular repetition
+          complexity: 0.1, // Low weight - usually simpler colors
         };
-      
+
       case 'ornamental':
         return {
-          contrast: 0.2,     // Lower weight - softer contrast
-          edges: 0.3,        // Medium weight - curved edges
-          repetition: 0.2,   // Medium weight - organic repetition
-          complexity: 0.3    // High weight - complex colors/patterns
+          contrast: 0.2, // Lower weight - softer contrast
+          edges: 0.3, // Medium weight - curved edges
+          repetition: 0.2, // Medium weight - organic repetition
+          complexity: 0.3, // High weight - complex colors/patterns
         };
-      
+
       case 'mixed':
         return {
-          contrast: 0.25,    // Balanced weights for mixed patterns
+          contrast: 0.25, // Balanced weights for mixed patterns
           edges: 0.25,
           repetition: 0.25,
-          complexity: 0.25
+          complexity: 0.25,
         };
-      
+
       case 'plain':
       default:
         return {
-          contrast: 0.1,     // Very low weights - plain carpets are subtle
+          contrast: 0.1, // Very low weights - plain carpets are subtle
           edges: 0.2,
           repetition: 0.3,
-          complexity: 0.4    // Higher weight on color variation
+          complexity: 0.4, // Higher weight on color variation
         };
     }
   }
@@ -134,7 +134,7 @@ export class CarpetPatternRecognitionGate implements CheckinGate {
       geometric: 'Strong geometric patterns with clear edges',
       ornamental: 'Curved ornamental patterns with complex colors',
       mixed: 'Mixed pattern with varied elements',
-      plain: 'Plain or simple pattern with subtle variation'
+      plain: 'Plain or simple pattern with subtle variation',
     };
 
     return descriptions[features.patternType] || 'Unknown pattern';

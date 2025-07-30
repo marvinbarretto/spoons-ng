@@ -1,30 +1,30 @@
 /**
  * @fileoverview PointsStore Tests - UserStore synchronization protection
- * 
+ *
  * CRITICAL TESTS:
  * - awardCheckInPoints() updates UserStore.totalPoints immediately
  * - Points calculation accuracy
  * - Prevents duplicate/concurrent awards
  * - Auth-reactive loading behavior
  */
-import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
-import { PointsStore } from './points.store';
-import { PointsService } from './points.service';
+import { TestBed } from '@angular/core/testing';
 import { AuthStore } from '../../auth/data-access/auth.store';
 import { UserStore } from '../../users/data-access/user.store';
 import type { CheckInPointsData, PointsBreakdown, PointsTransaction } from '../utils/points.models';
+import { PointsService } from './points.service';
+import { PointsStore } from './points.store';
 
 describe('PointsStore - UserStore Synchronization', () => {
   let pointsStore: PointsStore;
   let mockPointsService: jest.Mocked<PointsService>;
-  let mockAuthStore: { user: ReturnType<typeof signal<any>>, uid: jest.Mock };
+  let mockAuthStore: { user: ReturnType<typeof signal<any>>; uid: jest.Mock };
   let mockUserStore: jest.Mocked<UserStore>;
 
   const mockUser = {
     uid: 'test-user-123',
     isAnonymous: false,
-    email: 'test@example.com'
+    email: 'test@example.com',
   };
 
   const mockPointsData: CheckInPointsData = {
@@ -34,7 +34,7 @@ describe('PointsStore - UserStore Synchronization', () => {
     isFirstEver: false,
     currentStreak: 1,
     carpetConfirmed: true,
-    sharedSocial: false
+    sharedSocial: false,
   };
 
   const mockBreakdown: PointsBreakdown = {
@@ -43,7 +43,7 @@ describe('PointsStore - UserStore Synchronization', () => {
     bonus: 15,
     multiplier: 1,
     total: 30,
-    reason: 'First visit + carpet confirmed'
+    reason: 'First visit + carpet confirmed',
   };
 
   const mockTransaction: PointsTransaction = {
@@ -54,7 +54,7 @@ describe('PointsStore - UserStore Synchronization', () => {
     points: 30,
     breakdown: mockBreakdown,
     pubId: 'test-pub',
-    createdAt: new Date()
+    createdAt: new Date(),
   };
 
   beforeEach(() => {
@@ -65,16 +65,16 @@ describe('PointsStore - UserStore Synchronization', () => {
       updateUserTotalPoints: jest.fn(),
       getUserTotalPoints: jest.fn(),
       getUserTransactions: jest.fn(),
-      calculateSocialPoints: jest.fn()
+      calculateSocialPoints: jest.fn(),
     } as any;
 
     mockAuthStore = {
       user: signal(mockUser),
-      uid: jest.fn().mockReturnValue('test-user-123')
+      uid: jest.fn().mockReturnValue('test-user-123'),
     };
 
     mockUserStore = {
-      patchUser: jest.fn()
+      patchUser: jest.fn(),
     } as any;
 
     // Setup service returns
@@ -89,8 +89,8 @@ describe('PointsStore - UserStore Synchronization', () => {
         PointsStore,
         { provide: PointsService, useValue: mockPointsService },
         { provide: AuthStore, useValue: mockAuthStore },
-        { provide: UserStore, useValue: mockUserStore }
-      ]
+        { provide: UserStore, useValue: mockUserStore },
+      ],
     });
 
     pointsStore = TestBed.inject(PointsStore);
@@ -106,7 +106,7 @@ describe('PointsStore - UserStore Synchronization', () => {
 
       // Assert - UserStore should be updated with new total
       expect(mockUserStore.patchUser).toHaveBeenCalledWith({ totalPoints: 130 });
-      
+
       console.log('✅ UserStore.totalPoints updated immediately for scoreboard');
     });
 
@@ -119,7 +119,7 @@ describe('PointsStore - UserStore Synchronization', () => {
 
       // Assert - Should patch UserStore with 50 + 30 = 80
       expect(mockUserStore.patchUser).toHaveBeenCalledWith({ totalPoints: 80 });
-      
+
       console.log('✅ Point calculation accuracy maintained');
     });
 
@@ -137,7 +137,7 @@ describe('PointsStore - UserStore Synchronization', () => {
 
       // UserStore should still be updated for immediate UI feedback
       expect(mockUserStore.patchUser).toHaveBeenCalledWith({ totalPoints: 130 });
-      
+
       console.log('✅ UserStore updated even if Firestore fails (optimistic updates)');
     });
 
@@ -149,16 +149,16 @@ describe('PointsStore - UserStore Synchronization', () => {
         bonus: 0,
         multiplier: 1,
         total: 5,
-        reason: 'Share bonus'
+        reason: 'Share bonus',
       };
       mockPointsService.calculateSocialPoints.mockReturnValue(socialBreakdown);
       mockPointsService.createTransaction.mockResolvedValue({
         ...mockTransaction,
         type: 'social',
         action: 'share',
-        points: 5
+        points: 5,
       } as any);
-      
+
       pointsStore['_totalPoints'].set(200);
 
       // Act
@@ -166,7 +166,7 @@ describe('PointsStore - UserStore Synchronization', () => {
 
       // Assert
       expect(mockUserStore.patchUser).toHaveBeenCalledWith({ totalPoints: 205 });
-      
+
       console.log('✅ Social points also update UserStore');
     });
   });
@@ -177,11 +177,12 @@ describe('PointsStore - UserStore Synchronization', () => {
       pointsStore['_loading'].set(true);
 
       // Act & Assert - Should reject duplicate calls
-      await expect(pointsStore.awardCheckInPoints(mockPointsData))
-        .rejects.toThrow('Points award already in progress');
+      await expect(pointsStore.awardCheckInPoints(mockPointsData)).rejects.toThrow(
+        'Points award already in progress'
+      );
 
       expect(mockUserStore.patchUser).not.toHaveBeenCalled();
-      
+
       console.log('✅ Prevents duplicate point awards');
     });
 
@@ -190,11 +191,12 @@ describe('PointsStore - UserStore Synchronization', () => {
       mockAuthStore.user.set(null);
 
       // Act & Assert
-      await expect(pointsStore.awardCheckInPoints(mockPointsData))
-        .rejects.toThrow('User not authenticated');
+      await expect(pointsStore.awardCheckInPoints(mockPointsData)).rejects.toThrow(
+        'User not authenticated'
+      );
 
       expect(mockUserStore.patchUser).not.toHaveBeenCalled();
-      
+
       console.log('✅ Prevents points award without authentication');
     });
   });
@@ -206,7 +208,7 @@ describe('PointsStore - UserStore Synchronization', () => {
 
       // Assert - Should delegate calculation to service
       expect(mockPointsService.calculateCheckInPoints).toHaveBeenCalledWith(mockPointsData);
-      
+
       console.log('✅ Uses PointsService for calculation consistency');
     });
 
@@ -221,10 +223,10 @@ describe('PointsStore - UserStore Synchronization', () => {
           type: 'check-in',
           points: 30,
           breakdown: mockBreakdown,
-          pubId: 'test-pub'
+          pubId: 'test-pub',
         })
       );
-      
+
       console.log('✅ Transaction record includes accurate breakdown');
     });
   });
@@ -233,13 +235,13 @@ describe('PointsStore - UserStore Synchronization', () => {
     it('should reset points when user becomes null', () => {
       // Arrange - Set some points
       pointsStore['_totalPoints'].set(100);
-      
+
       // Act - User logs out
       pointsStore.reset();
 
       // Assert - Points should be cleared
       expect(pointsStore.totalPoints()).toBe(0);
-      
+
       console.log('✅ Points cleared on logout');
     });
 
@@ -249,7 +251,7 @@ describe('PointsStore - UserStore Synchronization', () => {
 
       // Assert - Should notify UserStore of reset
       expect(mockUserStore.patchUser).toHaveBeenCalledWith({ totalPoints: 0 });
-      
+
       console.log('✅ UserStore notified during points reset');
     });
   });
@@ -261,8 +263,7 @@ describe('PointsStore - UserStore Synchronization', () => {
       pointsStore['_totalPoints'].set(100);
 
       // Act & Assert - Should fail but maintain state consistency
-      await expect(pointsStore.awardCheckInPoints(mockPointsData))
-        .rejects.toThrow();
+      await expect(pointsStore.awardCheckInPoints(mockPointsData)).rejects.toThrow();
 
       // Local state should be preserved (error handling might rollback UserStore too)
       console.log('✅ Error handling maintains state consistency');

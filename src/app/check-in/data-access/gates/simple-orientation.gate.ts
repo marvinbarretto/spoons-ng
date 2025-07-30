@@ -1,6 +1,6 @@
 import { Injectable, computed, signal } from '@angular/core';
-import { CheckinGate } from './gate.interface';
 import { CHECKIN_GATE_THRESHOLDS } from './checkin-thresholds.config';
+import { CheckinGate } from './gate.interface';
 
 @Injectable({ providedIn: 'root' })
 export class SimpleOrientationGate implements CheckinGate {
@@ -12,23 +12,24 @@ export class SimpleOrientationGate implements CheckinGate {
 
   readonly beta = this._beta.asReadonly();
   readonly currentValue = computed(() => this._beta());
-  
+
   // Expose orientation for compatibility with template
   readonly orientation = computed(() => ({ beta: this._beta() || 0 }));
-  
+
   readonly passed = computed(() => {
     const betaValue = this._beta();
     if (betaValue === null) return false;
-    
-    const isPassed = betaValue >= CHECKIN_GATE_THRESHOLDS.simpleOrientation.min && 
-                     betaValue <= CHECKIN_GATE_THRESHOLDS.simpleOrientation.max;
-    
+
+    const isPassed =
+      betaValue >= CHECKIN_GATE_THRESHOLDS.simpleOrientation.min &&
+      betaValue <= CHECKIN_GATE_THRESHOLDS.simpleOrientation.max;
+
     console.log('[SimpleOrientationGate] Check:', {
       beta: betaValue,
       range: `${CHECKIN_GATE_THRESHOLDS.simpleOrientation.min} to ${CHECKIN_GATE_THRESHOLDS.simpleOrientation.max}`,
-      passed: isPassed
+      passed: isPassed,
     });
-    
+
     return isPassed;
   });
 

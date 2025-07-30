@@ -111,7 +111,7 @@ export class PubListComponent extends BaseComponent implements OnInit {
     if (!this.isManagementMode()) {
       return false;
     }
-    
+
     // Check if any selections have been made (different from initial state)
     return this.selectedCount() > 0;
   });

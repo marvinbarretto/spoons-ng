@@ -17,8 +17,9 @@
   border-bottom: 1px solid var(--border);
 
   // ✅ NEW: Smooth transitions
-  transition: background-color 0.3s ease, border-color 0.3s ease;
-
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
 }
 
 .header__title {
@@ -293,15 +294,15 @@ nav ul {
 }
 
 // ✅ NEW: Theme-specific enhancements
-[data-theme="sage"] .header__title {
+[data-theme='sage'] .header__title {
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-600) 100%);
 }
 
-[data-theme="amber"] .main-nav {
+[data-theme='amber'] .main-nav {
   background: linear-gradient(135deg, var(--background-darkest) 0%, var(--background-darkest) 100%);
 }
 
-[data-theme="coral"] .menu {
+[data-theme='coral'] .menu {
   border: 1px solid var(--border-secondary);
 }
 

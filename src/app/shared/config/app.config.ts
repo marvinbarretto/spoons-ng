@@ -1,7 +1,8 @@
 export const APP = {
   name: 'Spoonscount',
   tagline: 'Track your Spoons visits',
-  description: 'Gamified pub check-in app where you photograph carpets, earn points, and compete on leaderboards',
+  description:
+    'Gamified pub check-in app where you photograph carpets, earn points, and compete on leaderboards',
 
   // URLs
   urls: {
@@ -11,7 +12,7 @@ export const APP = {
 
   // Social media handles (for future use)
   social: {
-    twitter: '@spoonscount',  // TODO: Set up actual handles
+    twitter: '@spoonscount', // TODO: Set up actual handles
     instagram: '@spoonscount',
-  }
+  },
 } as const;

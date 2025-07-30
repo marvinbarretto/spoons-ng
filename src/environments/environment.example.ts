@@ -24,11 +24,11 @@ export const environment: Environment = {
     measurementId: 'MEASUREMENT_ID',
   },
   llm: {
-    gemini: 'GEMINI_API_KEY'
+    gemini: 'GEMINI_API_KEY',
   },
   telegram: {
     botToken: 'YOUR_TELEGRAM_BOT_TOKEN',
-    chatId: 'YOUR_TELEGRAM_CHAT_ID'
+    chatId: 'YOUR_TELEGRAM_CHAT_ID',
   },
   database: {
     name: 'Spoonscount',
@@ -36,7 +36,7 @@ export const environment: Environment = {
     stores: {
       carpets: 'carpets',
       // Add other stores as needed
-    }
+    },
   },
   featureFlags: {
     landlord: false,
@@ -44,6 +44,6 @@ export const environment: Environment = {
     search: false,
     badges: false,
     missions: false,
-    photoUpload: false
+    photoUpload: false,
   },
 };

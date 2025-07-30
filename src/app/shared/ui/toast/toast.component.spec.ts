@@ -1,8 +1,8 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
-import { ToastComponent } from './toast.component';
-import { ToastService, Toast } from '../../data-access/toast.service';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Toast, ToastService } from '../../data-access/toast.service';
 import { IconComponent } from '../icon/icon.component';
+import { ToastComponent } from './toast.component';
 
 describe('ToastComponent', () => {
   let component: ToastComponent;
@@ -15,28 +15,26 @@ describe('ToastComponent', () => {
       message: 'Success message',
       type: 'success',
       sticky: false,
-      timeout: 3000
+      timeout: 3000,
     },
     {
-      id: 'test-2', 
+      id: 'test-2',
       message: 'Error message',
       type: 'error',
       sticky: true,
-      timeout: 5000
-    }
+      timeout: 5000,
+    },
   ];
 
   beforeEach(async () => {
     const toastServiceSpy = {
       toasts: signal(mockToasts),
-      dismiss: jest.fn()
+      dismiss: jest.fn(),
     };
 
     await TestBed.configureTestingModule({
       imports: [ToastComponent, IconComponent],
-      providers: [
-        { provide: ToastService, useValue: toastServiceSpy }
-      ]
+      providers: [{ provide: ToastService, useValue: toastServiceSpy }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ToastComponent);
@@ -123,7 +121,7 @@ describe('ToastComponent', () => {
     it('should call toastService.dismiss with correct ID when dismiss icon is clicked', () => {
       const dismissIcon = fixture.nativeElement.querySelector('.toast-dismiss-icon');
       dismissIcon.click();
-      
+
       expect(mockToastService.dismiss).toHaveBeenCalledWith('test-1');
     });
 
@@ -136,21 +134,23 @@ describe('ToastComponent', () => {
   describe('Signal Reactivity', () => {
     it('should update when toasts signal changes', () => {
       const newToasts: Toast[] = [
-        { id: 'new-1', message: 'New toast', type: 'info', sticky: false }
+        { id: 'new-1', message: 'New toast', type: 'info', sticky: false },
       ];
-      
+
       mockToastService.toasts.set(newToasts);
       fixture.detectChanges();
-      
+
       const toastElements = fixture.nativeElement.querySelectorAll('.toast');
       expect(toastElements.length).toBe(1);
-      expect(fixture.nativeElement.querySelector('.toast-message').textContent.trim()).toBe('New toast');
+      expect(fixture.nativeElement.querySelector('.toast-message').textContent.trim()).toBe(
+        'New toast'
+      );
     });
 
     it('should render no toasts when signal is empty', () => {
       mockToastService.toasts.set([]);
       fixture.detectChanges();
-      
+
       const toastElements = fixture.nativeElement.querySelectorAll('.toast');
       expect(toastElements.length).toBe(0);
     });

@@ -3,59 +3,59 @@
 .chip-filter {
   @include chip-base;
   @include chip-clickable;
-  
+
   background: var(--background-lighter);
   color: var(--text);
   border: 1px solid var(--border);
   font-weight: 500;
   position: relative;
   padding-right: 0.75rem;
-  
+
   // Size variations
   &.size--xs {
     @include chip-size('xs');
   }
-  
+
   &.size--sm {
     @include chip-size('sm');
   }
-  
+
   &.size--md {
     @include chip-size('md');
   }
-  
+
   &.size--lg {
     @include chip-size('lg');
   }
-  
+
   // Active state
   &.active {
     background: var(--primary);
     color: var(--on-primary);
     border-color: var(--primary);
-    
+
     &:hover {
       background: var(--primary-hover);
       border-color: var(--primary-hover);
     }
   }
-  
+
   // Disabled state
   &.disabled {
     opacity: 0.5;
     cursor: not-allowed;
-    
+
     &:hover {
       transform: none;
       box-shadow: none;
     }
   }
-  
+
   // Removable state
   &.removable {
     padding-right: 2rem;
   }
-  
+
   // Hover state (for non-active filters)
   &:not(.active):not(.disabled):hover {
     background: var(--background-lightest);
@@ -78,11 +78,11 @@
   margin-left: 0.25rem;
   opacity: 0.8;
   font-size: 0.9em;
-  
+
   &::before {
     content: '(';
   }
-  
+
   &::after {
     content: ')';
   }
@@ -103,11 +103,11 @@
   cursor: pointer;
   border-radius: 50%;
   transition: all 0.15s ease;
-  
+
   &:hover {
     background: rgba(0, 0, 0, 0.1);
   }
-  
+
   &:active {
     transform: translateY(-50%) scale(0.9);
   }

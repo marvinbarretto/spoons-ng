@@ -1,4 +1,4 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { computed, Injectable, signal } from '@angular/core';
 import { CapturedPhoto } from '../checkin-capture.service';
 
 /**
@@ -12,7 +12,7 @@ export class MockCheckinCaptureService {
     canvas: document.createElement('canvas'),
     width: 640,
     height: 480,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   };
 
   private readonly _capturedPhoto = signal<CapturedPhoto | null>(null);
@@ -29,15 +29,15 @@ export class MockCheckinCaptureService {
 
   async capturePhoto(videoElement: HTMLVideoElement): Promise<CapturedPhoto> {
     console.log('[MockCheckinCapture] capturePhoto called');
-    
+
     this._isProcessing.set(true);
-    
+
     // Simulate async capture
     await new Promise(resolve => setTimeout(resolve, 10));
-    
+
     this._capturedPhoto.set(this.mockPhoto);
     this._isProcessing.set(false);
-    
+
     return this.mockPhoto;
   }
 
@@ -66,7 +66,7 @@ export class MockCheckinCaptureService {
   setMockPhoto(photo: Partial<CapturedPhoto>): void {
     this._capturedPhoto.set({
       ...this.mockPhoto,
-      ...photo
+      ...photo,
     });
   }
 }

@@ -1,13 +1,6 @@
 // src/app/shared/ui/advanced-list-controls/advanced-list-controls.component.ts
-import {
-  Component,
-  input,
-  output,
-  computed,
-  signal,
-  ChangeDetectionStrategy
-} from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 export type SortOption = {
@@ -78,15 +71,9 @@ export type ListControlsState = {
         <!-- Sort Dropdown -->
         <div class="control-group">
           <label class="control-label">Sort:</label>
-          <select
-            class="control-select"
-            [value]="sortBy()"
-            (change)="onSortChange($event)"
-          >
+          <select class="control-select" [value]="sortBy()" (change)="onSortChange($event)">
             @for (option of config().sortOptions; track option.key) {
-              <option [value]="option.key">
-                {{ option.icon || '' }} {{ option.label }}
-              </option>
+              <option [value]="option.key">{{ option.icon || '' }} {{ option.label }}</option>
             }
           </select>
         </div>
@@ -172,11 +159,7 @@ export type ListControlsState = {
           </span>
 
           @if (hasActiveFilters()) {
-            <button
-              type="button"
-              class="clear-filters"
-              (click)="clearAllFilters()"
-            >
+            <button type="button" class="clear-filters" (click)="clearAllFilters()">
               Clear filters
             </button>
           }
@@ -476,7 +459,7 @@ export type ListControlsState = {
         min-height: 2.75rem;
       }
     }
-  `
+  `,
 })
 export class AdvancedListControlsComponent {
   // ✅ Inputs
@@ -503,18 +486,20 @@ export class AdvancedListControlsComponent {
 
   // ✅ Computed
   readonly hasActiveFilters = computed(() => {
-    return this.searchQuery().length > 0 ||
-           this.activeFilters().length > 0 ||
-           this.sortBy().length > 0;
+    return (
+      this.searchQuery().length > 0 || this.activeFilters().length > 0 || this.sortBy().length > 0
+    );
   });
 
-  readonly currentState = computed((): ListControlsState => ({
-    searchQuery: this.searchQuery(),
-    sortBy: this.sortBy(),
-    activeFilters: this.activeFilters(),
-    viewMode: this.viewMode(),
-    bulkMode: this.bulkMode()
-  }));
+  readonly currentState = computed(
+    (): ListControlsState => ({
+      searchQuery: this.searchQuery(),
+      sortBy: this.sortBy(),
+      activeFilters: this.activeFilters(),
+      viewMode: this.viewMode(),
+      bulkMode: this.bulkMode(),
+    })
+  );
 
   // ✅ Outputs
   readonly stateChanged = output<ListControlsState>();

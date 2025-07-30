@@ -3,7 +3,6 @@ import { Injectable, inject } from '@angular/core';
 import type { BadgeTriggerContext } from '../utils/badge.model';
 import { BadgeStore } from './badge.store';
 
-
 /**
  * Contains all badge eligibility logic.
  * Each method returns true if the user should earn that badge.
@@ -18,7 +17,7 @@ export class BadgeLogicService {
   checkFirstTimeBadge(context: BadgeTriggerContext): boolean {
     console.log('[BadgeLogic] Checking First Time badge', {
       userId: context.userId,
-      checkInCount: context.userCheckIns.length
+      checkInCount: context.userCheckIns.length,
     });
 
     // User gets this badge on their very first check-in
@@ -39,7 +38,7 @@ export class BadgeLogicService {
   checkRegularBadge(context: BadgeTriggerContext): boolean {
     console.log('[BadgeLogic] Checking Regular badge', {
       userId: context.userId,
-      checkInCount: context.userCheckIns.length
+      checkInCount: context.userCheckIns.length,
     });
 
     // User gets this badge on their 10th check-in
@@ -60,7 +59,7 @@ export class BadgeLogicService {
   checkEarlyBirdBadge(context: BadgeTriggerContext): boolean {
     console.log('[BadgeLogic] Checking Early Bird badge', {
       userId: context.userId,
-      checkInCount: context.userCheckIns.length
+      checkInCount: context.userCheckIns.length,
     });
 
     // Check if any check-ins were before noon
@@ -85,7 +84,7 @@ export class BadgeLogicService {
   checkNightOwlBadge(context: BadgeTriggerContext): boolean {
     console.log('[BadgeLogic] Checking Night Owl badge', {
       userId: context.userId,
-      checkInCount: context.userCheckIns.length
+      checkInCount: context.userCheckIns.length,
     });
 
     // Check if any check-ins were after 9 PM
@@ -110,7 +109,7 @@ export class BadgeLogicService {
   checkExplorerBadge(context: BadgeTriggerContext): boolean {
     console.log('[BadgeLogic] Checking Explorer badge', {
       userId: context.userId,
-      checkInCount: context.userCheckIns.length
+      checkInCount: context.userCheckIns.length,
     });
 
     // Count unique pubs the user has visited
@@ -120,7 +119,7 @@ export class BadgeLogicService {
     console.log('📊 [BadgeLogic] Explorer analysis:', {
       totalCheckIns: context.userCheckIns.length,
       uniquePubs: uniquePubCount,
-      pubIds: Array.from(uniquePubIds)
+      pubIds: Array.from(uniquePubIds),
     });
 
     // User gets this badge when they've visited 5 different pubs
@@ -137,7 +136,9 @@ export class BadgeLogicService {
         console.log('📝 [BadgeLogic] User already has Explorer badge');
       }
     } else {
-      console.log(`📝 [BadgeLogic] User needs ${5 - uniquePubCount} more unique pubs for Explorer badge`);
+      console.log(
+        `📝 [BadgeLogic] User needs ${5 - uniquePubCount} more unique pubs for Explorer badge`
+      );
     }
 
     return false;
@@ -181,7 +182,7 @@ export class BadgeLogicService {
     console.log('🎯 [BadgeLogic] Badge evaluation complete:', {
       userId: context.userId,
       eligibleBadges,
-      totalEligible: eligibleBadges.length
+      totalEligible: eligibleBadges.length,
     });
 
     return eligibleBadges;
@@ -203,8 +204,8 @@ export class BadgeLogicService {
         regular: this.checkRegularBadge(context),
         explorer: this.checkExplorerBadge(context),
         earlyBird: this.checkEarlyBirdBadge(context),
-        nightOwl: this.checkNightOwlBadge(context)
-      }
+        nightOwl: this.checkNightOwlBadge(context),
+      },
     };
   }
 }

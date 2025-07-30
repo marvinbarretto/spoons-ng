@@ -1,10 +1,10 @@
-import { Component, inject, signal, output, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
-import { BaseComponent } from '../../../shared/base/base.component';
-import { FeedbackStore } from '../../data-access/feedback.store';
-import { FeedbackType, CreateFeedbackInput } from '../../utils/feedback.model';
-import { IconComponent } from '../../../shared/ui/icon/icon.component';
-import { ButtonComponent } from '../../../shared/ui/button/button.component';
+import { Component, ElementRef, inject, output, signal, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { BaseComponent } from '../../../shared/base/base.component';
+import { ButtonComponent } from '../../../shared/ui/button/button.component';
+import { IconComponent } from '../../../shared/ui/icon/icon.component';
+import { FeedbackStore } from '../../data-access/feedback.store';
+import { CreateFeedbackInput, FeedbackType } from '../../utils/feedback.model';
 
 @Component({
   selector: 'app-feedback-modal',
@@ -41,9 +41,7 @@ import { FormsModule } from '@angular/forms';
         </div>
 
         <div class="feedback-modal__message">
-          <label class="feedback-modal__label" for="feedback-message">
-            Tell us more
-          </label>
+          <label class="feedback-modal__label" for="feedback-message"> Tell us more </label>
           <textarea
             #messageTextarea
             id="feedback-message"
@@ -65,11 +63,7 @@ import { FormsModule } from '@angular/forms';
       </div>
 
       <div class="feedback-modal__actions">
-        <app-button
-          variant="ghost"
-          (click)="close()"
-          [disabled]="submitting()"
-        >
+        <app-button variant="ghost" (click)="close()" [disabled]="submitting()">
           Cancel
         </app-button>
         <app-button
@@ -83,230 +77,226 @@ import { FormsModule } from '@angular/forms';
       </div>
     </section>
   `,
-  styles: [`
-    .feedback-modal {
-      background: var(--background-darkest);
-      border-radius: 12px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-      max-width: 400px;
-      min-width: 280px;
-      max-height: 85vh;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      margin: 16px;
-    }
-
-
-    .feedback-modal__header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    @media (max-width: 320px) {
-      .feedback-modal__header {
-        padding: 14px 16px;
-      }
-    }
-
-    .feedback-modal__title {
-      margin: 0;
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--text);
-    }
-
-    @media (max-width: 320px) {
-      .feedback-modal__title {
-        font-size: 16px;
-      }
-    }
-
-    .feedback-modal__close {
-      background: none;
-      border: none;
-      padding: 8px;
-      cursor: pointer;
-      border-radius: 8px;
-      color: var(--text-secondary);
-      transition: background-color 0.2s;
-    }
-
-    .feedback-modal__close:hover {
-      background: var(--background-darker);
-    }
-
-    .feedback-modal__content {
-      padding: 20px;
-      flex: 1;
-      overflow-y: auto;
-    }
-
-    @media (max-width: 320px) {
-      .feedback-modal__content {
-        padding: 16px;
-      }
-    }
-
-    .feedback-modal__label {
-      display: block;
-      font-weight: 500;
-      color: var(--text);
-      margin-bottom: 12px;
-    }
-
-    .feedback-modal__type-selector {
-      margin-bottom: 24px;
-    }
-
-    .feedback-type-options {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    @media (max-width: 320px) {
-      .feedback-type-options {
-        grid-template-columns: 1fr;
-        gap: 8px;
-      }
-    }
-
-    .feedback-type-option {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      padding: 16px 12px;
-      border: 2px solid var(--border);
-      border-radius: 8px;
-      background: var(--background-darkest);
-      cursor: pointer;
-      transition: all 0.2s;
-      text-align: center;
-      min-height: 70px;
-    }
-
-    @media (max-width: 320px) {
-      .feedback-type-option {
-        flex-direction: row;
-        justify-content: flex-start;
-        text-align: left;
-        padding: 12px;
-        min-height: auto;
-      }
-    }
-
-    .feedback-type-option:hover {
-      border-color: var(--primary);
-      background: var(--background-darker);
-    }
-
-    .feedback-type-option--selected {
-      border-color: var(--primary);
-      background: var(--primary);
-      color: var(--on-primary);
-      transform: scale(1.02);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    }
-
-    .feedback-type-option--selected .feedback-type-option__icon {
-      color: var(--on-primary);
-    }
-
-    .feedback-type-option--selected .feedback-type-option__label {
-      color: var(--on-primary);
-      font-weight: 600;
-    }
-
-    .feedback-type-option__icon {
-      --icon-size: 24px;
-      color: var(--primary);
-      margin-top: 2px;
-    }
-
-
-
-    .feedback-type-option__label {
-      display: block;
-      font-weight: 500;
-      color: var(--text);
-      margin-bottom: 4px;
-    }
-
-
-
-    .feedback-modal__textarea {
-      width: 100%;
-      padding: 16px;
-      border: 2px solid var(--border);
-      border-radius: 8px;
-      background: var(--background-darker);
-      color: var(--text);
-      font-family: inherit;
-      font-size: 16px;
-      resize: vertical;
-      min-height: 100px;
-      transition: all 0.2s;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .feedback-modal__textarea:focus {
-      outline: none;
-      border-color: var(--primary);
-      background: var(--background-darkest);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-      transform: translateY(-1px);
-    }
-
-    .feedback-modal__textarea:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-
-    .feedback-modal__error {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px;
-      background: var(--error);
-      color: var(--background);
-      border-radius: 8px;
-      margin-top: 16px;
-    }
-
-    .feedback-modal__error-icon {
-      --icon-size: 20px;
-    }
-
-    .feedback-modal__actions {
-      display: flex;
-      gap: 12px;
-      justify-content: flex-end;
-      padding: 16px 20px;
-      border-top: 1px solid var(--border);
-    }
-
-    @media (max-width: 320px) {
-      .feedback-modal__actions {
-        padding: 14px 16px;
-        flex-direction: column;
-        gap: 8px;
-      }
-    }
-
-    @media (max-width: 640px) {
+  styles: [
+    `
       .feedback-modal {
-        max-height: 90vh;
-        margin: 12px;
+        background: var(--background-darkest);
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        max-width: 400px;
+        min-width: 280px;
+        max-height: 85vh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        margin: 16px;
       }
-    }
-  `]
+
+      .feedback-modal__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      @media (max-width: 320px) {
+        .feedback-modal__header {
+          padding: 14px 16px;
+        }
+      }
+
+      .feedback-modal__title {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text);
+      }
+
+      @media (max-width: 320px) {
+        .feedback-modal__title {
+          font-size: 16px;
+        }
+      }
+
+      .feedback-modal__close {
+        background: none;
+        border: none;
+        padding: 8px;
+        cursor: pointer;
+        border-radius: 8px;
+        color: var(--text-secondary);
+        transition: background-color 0.2s;
+      }
+
+      .feedback-modal__close:hover {
+        background: var(--background-darker);
+      }
+
+      .feedback-modal__content {
+        padding: 20px;
+        flex: 1;
+        overflow-y: auto;
+      }
+
+      @media (max-width: 320px) {
+        .feedback-modal__content {
+          padding: 16px;
+        }
+      }
+
+      .feedback-modal__label {
+        display: block;
+        font-weight: 500;
+        color: var(--text);
+        margin-bottom: 12px;
+      }
+
+      .feedback-modal__type-selector {
+        margin-bottom: 24px;
+      }
+
+      .feedback-type-options {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      @media (max-width: 320px) {
+        .feedback-type-options {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+      }
+
+      .feedback-type-option {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        padding: 16px 12px;
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        background: var(--background-darkest);
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
+        min-height: 70px;
+      }
+
+      @media (max-width: 320px) {
+        .feedback-type-option {
+          flex-direction: row;
+          justify-content: flex-start;
+          text-align: left;
+          padding: 12px;
+          min-height: auto;
+        }
+      }
+
+      .feedback-type-option:hover {
+        border-color: var(--primary);
+        background: var(--background-darker);
+      }
+
+      .feedback-type-option--selected {
+        border-color: var(--primary);
+        background: var(--primary);
+        color: var(--on-primary);
+        transform: scale(1.02);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      }
+
+      .feedback-type-option--selected .feedback-type-option__icon {
+        color: var(--on-primary);
+      }
+
+      .feedback-type-option--selected .feedback-type-option__label {
+        color: var(--on-primary);
+        font-weight: 600;
+      }
+
+      .feedback-type-option__icon {
+        --icon-size: 24px;
+        color: var(--primary);
+        margin-top: 2px;
+      }
+
+      .feedback-type-option__label {
+        display: block;
+        font-weight: 500;
+        color: var(--text);
+        margin-bottom: 4px;
+      }
+
+      .feedback-modal__textarea {
+        width: 100%;
+        padding: 16px;
+        border: 2px solid var(--border);
+        border-radius: 8px;
+        background: var(--background-darker);
+        color: var(--text);
+        font-family: inherit;
+        font-size: 16px;
+        resize: vertical;
+        min-height: 100px;
+        transition: all 0.2s;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .feedback-modal__textarea:focus {
+        outline: none;
+        border-color: var(--primary);
+        background: var(--background-darkest);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        transform: translateY(-1px);
+      }
+
+      .feedback-modal__textarea:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .feedback-modal__error {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px;
+        background: var(--error);
+        color: var(--background);
+        border-radius: 8px;
+        margin-top: 16px;
+      }
+
+      .feedback-modal__error-icon {
+        --icon-size: 20px;
+      }
+
+      .feedback-modal__actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        padding: 16px 20px;
+        border-top: 1px solid var(--border);
+      }
+
+      @media (max-width: 320px) {
+        .feedback-modal__actions {
+          padding: 14px 16px;
+          flex-direction: column;
+          gap: 8px;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .feedback-modal {
+          max-height: 90vh;
+          margin: 12px;
+        }
+      }
+    `,
+  ],
 })
 export class FeedbackModalComponent extends BaseComponent {
   protected readonly feedbackStore = inject(FeedbackStore);
@@ -324,13 +314,13 @@ export class FeedbackModalComponent extends BaseComponent {
     {
       value: 'bug' as FeedbackType,
       label: 'Bug',
-      icon: 'bug_report'
+      icon: 'bug_report',
     },
     {
       value: 'suggestion' as FeedbackType,
       label: 'Suggestion',
-      icon: 'lightbulb'
-    }
+      icon: 'lightbulb',
+    },
   ];
 
   readonly canSubmit = signal(false);
@@ -351,7 +341,6 @@ export class FeedbackModalComponent extends BaseComponent {
     console.log('[FeedbackModal] Can submit updated:', this.canSubmit());
   }
 
-
   async submitFeedback(): Promise<void> {
     console.log('[FeedbackModal] Submit feedback clicked');
     this.updateCanSubmit();
@@ -363,34 +352,37 @@ export class FeedbackModalComponent extends BaseComponent {
 
     console.log('[FeedbackModal] Starting feedback submission...', {
       type: this.selectedType(),
-      messageLength: this.message.trim().length
+      messageLength: this.message.trim().length,
     });
 
-    await this.handleAsync(async () => {
-      this.submitting.set(true);
-      try {
-        const input: CreateFeedbackInput = {
-          type: this.selectedType(),
-          message: this.message.trim()
-        };
+    await this.handleAsync(
+      async () => {
+        this.submitting.set(true);
+        try {
+          const input: CreateFeedbackInput = {
+            type: this.selectedType(),
+            message: this.message.trim(),
+          };
 
-        const result = await this.feedbackStore.submitFeedback(input);
+          const result = await this.feedbackStore.submitFeedback(input);
 
-        if (result.success) {
-          console.log('[FeedbackModal] Feedback submitted successfully!');
-          console.log('[FeedbackModal] Emitting result(true) to close modal');
-          this.result.emit(true); // Let OverlayService handle the close
-          console.log('[FeedbackModal] Modal should close automatically via OverlayService');
-        } else {
-          console.error('[FeedbackModal] Feedback submission failed:', result.error);
-          this.error.set(result.error || 'Failed to submit feedback');
+          if (result.success) {
+            console.log('[FeedbackModal] Feedback submitted successfully!');
+            console.log('[FeedbackModal] Emitting result(true) to close modal');
+            this.result.emit(true); // Let OverlayService handle the close
+            console.log('[FeedbackModal] Modal should close automatically via OverlayService');
+          } else {
+            console.error('[FeedbackModal] Feedback submission failed:', result.error);
+            this.error.set(result.error || 'Failed to submit feedback');
+          }
+        } finally {
+          this.submitting.set(false);
         }
-      } finally {
-        this.submitting.set(false);
+      },
+      {
+        setLoadingState: false,
       }
-    }, {
-      setLoadingState: false
-    });
+    );
   }
 
   close(): void {

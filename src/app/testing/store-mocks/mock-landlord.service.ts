@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Landlord } from '../../landlord/utils/landlord.model';
 import { Timestamp } from 'firebase/firestore';
+import { Landlord } from '../../landlord/utils/landlord.model';
 
 @Injectable()
 export class MockLandlordService {
@@ -11,10 +11,13 @@ export class MockLandlordService {
    * Mock implementation of tryAwardLandlord
    * Returns fake landlord data without Firebase calls
    */
-  async tryAwardLandlord(pubId: string, checkinDate: Date): Promise<{ landlord: Landlord | null; wasAwarded: boolean }> {
+  async tryAwardLandlord(
+    pubId: string,
+    checkinDate: Date
+  ): Promise<{ landlord: Landlord | null; wasAwarded: boolean }> {
     const dateKey = checkinDate.toISOString().split('T')[0];
     const landlordKey = `${pubId}_${dateKey}`;
-    
+
     // Check if landlord already exists in mock data
     const existingLandlord = this.mockLandlords.get(landlordKey);
     if (existingLandlord) {
@@ -28,12 +31,12 @@ export class MockLandlordService {
       pubId,
       claimedAt: Timestamp.now(),
       dateKey,
-      isActive: true
+      isActive: true,
     };
 
     // Store in mock data
     this.mockLandlords.set(landlordKey, newLandlord);
-    
+
     return { landlord: newLandlord, wasAwarded: true };
   }
 
@@ -44,7 +47,7 @@ export class MockLandlordService {
   async getTodayLandlord(pubId: string): Promise<Landlord | null> {
     const today = new Date().toISOString().split('T')[0];
     const landlordKey = `${pubId}_${today}`;
-    
+
     // Return mock landlord if exists, otherwise null
     return this.mockLandlords.get(landlordKey) || null;
   }
@@ -64,7 +67,7 @@ export class MockLandlordService {
         userId: data.userId || 'test-user-id',
         pubId: data.pubId || 'test-pub-id',
         dateKey: data.dateKey || new Date().toISOString().split('T')[0],
-        streakDays: data.streakDays
+        streakDays: data.streakDays,
       } as Landlord;
     } catch (error) {
       console.error('[MockLandlordService] Failed to normalize landlord:', data, error);

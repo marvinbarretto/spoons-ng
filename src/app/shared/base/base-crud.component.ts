@@ -12,8 +12,6 @@ export interface CrudStore<T> {
   remove(id: string): Promise<void>;
 }
 export abstract class BaseCrudComponent<T extends { id: string }> {
-
-
   protected abstract getStore(): CrudStore<T>;
 
   protected readonly items = computed(() => this.getStore().data());
@@ -40,4 +38,3 @@ export abstract class BaseCrudComponent<T extends { id: string }> {
     await this.getStore().loadOnce();
   }
 }
-

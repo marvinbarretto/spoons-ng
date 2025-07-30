@@ -1,9 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 
-import { BadgeEvaluatorService } from './badge-evaluator.service';
-import { Badge } from '../utils/badge.model';
 import { CheckIn } from '@check-in/utils/check-in.models';
 import { Timestamp } from 'firebase/firestore';
+import { Badge } from '../utils/badge.model';
+import { BadgeEvaluatorService } from './badge-evaluator.service';
 
 describe('BadgeEvaluatorService', () => {
   let service: BadgeEvaluatorService;
@@ -17,7 +17,7 @@ describe('BadgeEvaluatorService', () => {
     award: jest.fn((badge: Badge) => {
       mockAwarded.push(badge.id);
     }),
-  }
+  };
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
@@ -25,7 +25,6 @@ describe('BadgeEvaluatorService', () => {
 
     mockAwarded = [];
     // service = new BadgeEvaluatorService(mockBadgeStore as any)
-
   });
 
   it('should be created', () => {
@@ -77,9 +76,7 @@ describe('BadgeEvaluatorService', () => {
     ];
     await service.evaluate(checkins[2], checkins);
 
-    expect(mockBadgeStore.award).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 'hat-trick' })
-    );
+    expect(mockBadgeStore.award).toHaveBeenCalledWith(expect.objectContaining({ id: 'hat-trick' }));
   });
 
   it('does not award the same badge twice', async () => {

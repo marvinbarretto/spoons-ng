@@ -23,7 +23,6 @@ export function getMockUser(overrides: Partial<User> = {}): User {
   };
 }
 
-
 // TODO: Mend and updatethis...
 export function createTestUser(overrides: Partial<Omit<User, 'UserExperienceLevel'>> = {}): User {
   const defaultData: Omit<User, 'UserExperienceLevel'> = {
@@ -37,7 +36,7 @@ export function createTestUser(overrides: Partial<Omit<User, 'UserExperienceLeve
     emailVerified: true,
     isAnonymous: false,
     joinedAt: new Date().toISOString(),
-    ...overrides
+    ...overrides,
   };
 
   return createUser(defaultData);

@@ -1,12 +1,14 @@
 // src/app/profile/ui/sharing-widget/sharing-widget.component.ts
-import { Component, computed, inject, signal, ChangeDetectionStrategy } from '@angular/core';
-import { ShareService } from '../../../share/data-access/share.service';
-import { SocialMediaService, type SocialMediaPlatform } from '../../../share/data-access/social-media.service';
-import { getShareMessage } from '../../../share/data-access/share-messages';
-import { SsrPlatformService } from '@fourfold/angular-foundation';
-import { QrCodeComponent } from '@shared/ui/qr-code/qr-code.component';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { BaseComponent } from '@shared/base/base.component';
 import { IconComponent } from '@shared/ui/icon/icon.component';
+import { QrCodeComponent } from '@shared/ui/qr-code/qr-code.component';
+import { getShareMessage } from '../../../share/data-access/share-messages';
+import { ShareService } from '../../../share/data-access/share.service';
+import {
+  SocialMediaService,
+  type SocialMediaPlatform,
+} from '../../../share/data-access/social-media.service';
 
 @Component({
   selector: 'app-sharing-widget',
@@ -17,21 +19,12 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
       <h2 class="widget-title">Share Spoonscount</h2>
 
       <div class="share-actions">
-        <button
-          (click)="share()"
-          [disabled]="!canShare()"
-          class="share-btn primary"
-          type="button"
-        >
+        <button (click)="share()" [disabled]="!canShare()" class="share-btn primary" type="button">
           <app-icon name="share" size="sm" />
           Share via...
         </button>
 
-        <button
-          (click)="copyLink()"
-          class="share-btn secondary"
-          type="button"
-        >
+        <button (click)="copyLink()" class="share-btn secondary" type="button">
           <app-icon name="link" size="sm" />
           Copy Link
         </button>
@@ -40,38 +33,22 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
       <div class="social-section">
         <h3>Share on Social Media</h3>
         <div class="social-grid">
-          <button
-            (click)="shareToSocial('twitter')"
-            class="social-btn"
-            type="button"
-          >
+          <button (click)="shareToSocial('twitter')" class="social-btn" type="button">
             <app-icon name="public" size="sm" />
             Twitter/X
           </button>
 
-          <button
-            (click)="shareToSocial('facebook')"
-            class="social-btn"
-            type="button"
-          >
+          <button (click)="shareToSocial('facebook')" class="social-btn" type="button">
             <app-icon name="public" size="sm" />
             Facebook
           </button>
 
-          <button
-            (click)="shareToSocial('whatsapp')"
-            class="social-btn"
-            type="button"
-          >
+          <button (click)="shareToSocial('whatsapp')" class="social-btn" type="button">
             <app-icon name="chat" size="sm" />
             WhatsApp
           </button>
 
-          <button
-            (click)="shareToSocial('telegram')"
-            class="social-btn"
-            type="button"
-          >
+          <button (click)="shareToSocial('telegram')" class="social-btn" type="button">
             <app-icon name="send" size="sm" />
             Telegram
           </button>
@@ -219,7 +196,7 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
         grid-template-columns: 1fr 1fr;
       }
     }
-  `
+  `,
 })
 export class SharingWidgetComponent extends BaseComponent {
   private readonly shareService = inject(ShareService);
@@ -228,9 +205,7 @@ export class SharingWidgetComponent extends BaseComponent {
   // TODO: This should come from environment config
   protected readonly shareUrl = signal('https://spoons-15e03.firebaseapp.com');
 
-  protected readonly canShare = computed(() =>
-    this.platform.isBrowser && !!navigator.share
-  );
+  protected readonly canShare = computed(() => this.platform.isBrowser && !!navigator.share);
 
   constructor() {
     super();
@@ -239,21 +214,22 @@ export class SharingWidgetComponent extends BaseComponent {
 
   share(): void {
     console.log('[SharingWidget] Native share triggered');
-    this.platform.onlyOnBrowser(() =>
-      this.shareService.shareApp(this.shareUrl())
-    );
+    this.platform.onlyOnBrowser(() => this.shareService.shareApp(this.shareUrl()));
   }
 
   copyLink(): void {
     console.log('[SharingWidget] Copying link to clipboard');
     this.platform.onlyOnBrowser(() => {
-      navigator.clipboard.writeText(this.shareUrl()).then(() => {
-        console.log('[SharingWidget] Link copied successfully');
-        this.showSuccess('Link copied to clipboard!');
-      }).catch(error => {
-        console.error('[SharingWidget] Failed to copy link:', error);
-        this.showError('Failed to copy link');
-      });
+      navigator.clipboard
+        .writeText(this.shareUrl())
+        .then(() => {
+          console.log('[SharingWidget] Link copied successfully');
+          this.showSuccess('Link copied to clipboard!');
+        })
+        .catch(error => {
+          console.error('[SharingWidget] Failed to copy link:', error);
+          this.showError('Failed to copy link');
+        });
     });
   }
 

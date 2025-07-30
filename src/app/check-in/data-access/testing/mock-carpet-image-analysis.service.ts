@@ -21,7 +21,7 @@ export class MockCarpetImageAnalysisService {
     isStable: true,
     analysisTime: 25,
     frameSize: '640x480',
-    timestamp: Date.now()
+    timestamp: Date.now(),
   };
 
   private readonly _metrics = signal<CarpetImageMetrics | null>(this.mockMetrics);
@@ -37,10 +37,10 @@ export class MockCarpetImageAnalysisService {
   async analyzeVideoFrame(videoElement: HTMLVideoElement): Promise<CarpetImageMetrics> {
     console.log('[MockCarpetImageAnalysis] analyzeVideoFrame called');
     this._isAnalyzing.set(true);
-    
+
     // Simulate async operation
     await new Promise(resolve => setTimeout(resolve, 10));
-    
+
     this._isAnalyzing.set(false);
     return this.mockMetrics;
   }
@@ -51,7 +51,7 @@ export class MockCarpetImageAnalysisService {
   setMockMetrics(metrics: Partial<CarpetImageMetrics>): void {
     this._metrics.set({
       ...this.mockMetrics,
-      ...metrics
+      ...metrics,
     });
   }
 

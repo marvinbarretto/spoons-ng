@@ -1,9 +1,9 @@
 // src/app/badges/data-access/badge-award.service.ts
 import { Injectable, inject } from '@angular/core';
+import type { CheckIn } from '@check-in/utils/check-in.models';
+import type { BadgeTriggerContext, EarnedBadgeWithDetails } from '../utils/badge.model';
 import { BadgeLogicService } from './badge-logic.service';
 import { BadgeStore } from './badge.store'; // ✅ Use unified BadgeStore
-import type { CheckIn } from '@check-in/utils/check-in.models';
-import type { BadgeTriggerContext, EarnedBadge, EarnedBadgeWithDetails } from '../utils/badge.model';
 
 /**
  * Orchestrates badge evaluation and awarding after check-ins.
@@ -14,21 +14,21 @@ export class BadgeAwardService {
   protected readonly _badgeLogic = inject(BadgeLogicService);
   protected readonly _badgeStore = inject(BadgeStore); // ✅ Use unified store
 
-/**
- * Simplified badge checking for new check-in flow
- * @param userId - User to check badges for
- * @returns Array of newly awarded badge IDs (for success overlay)
- */
-async checkAndAwardBadges(userId: string): Promise<string[]> {
-  console.log('[BadgeAwardService] 🏅 Checking badges for user:', userId);
+  /**
+   * Simplified badge checking for new check-in flow
+   * @param userId - User to check badges for
+   * @returns Array of newly awarded badge IDs (for success overlay)
+   */
+  async checkAndAwardBadges(userId: string): Promise<string[]> {
+    console.log('[BadgeAwardService] 🏅 Checking badges for user:', userId);
 
-  try {
-    // For now, just return empty array
-    // TODO: Implement actual badge logic when ready
-    console.log('[BadgeAwardService] 📝 Badge checking complete (stub implementation)');
-    return [];
+    try {
+      // For now, just return empty array
+      // TODO: Implement actual badge logic when ready
+      console.log('[BadgeAwardService] 📝 Badge checking complete (stub implementation)');
+      return [];
 
-    /* Future implementation:
+      /* Future implementation:
     // 1. Get user's check-ins from store
     const checkIns = this._checkInStore.getUserCheckIns(userId);
 
@@ -59,13 +59,11 @@ async checkAndAwardBadges(userId: string): Promise<string[]> {
     console.log('[BadgeAwardService] ✅ Awarded badges:', awardedBadgeIds);
     return awardedBadgeIds;
     */
-
-  } catch (error) {
-    console.error('[BadgeAwardService] ❌ Error checking badges:', error);
-    return []; // Don't let badge errors break check-in flow
+    } catch (error) {
+      console.error('[BadgeAwardService] ❌ Error checking badges:', error);
+      return []; // Don't let badge errors break check-in flow
+    }
   }
-}
-
 
   /**
    * Main entry point: evaluate and award badges after a check-in
@@ -79,7 +77,7 @@ async checkAndAwardBadges(userId: string): Promise<string[]> {
     console.log('🎬 [BadgeAward] Starting badge evaluation process', {
       userId,
       newCheckInId: newCheckIn.id,
-      pubId: newCheckIn.pubId
+      pubId: newCheckIn.pubId,
     });
 
     try {
@@ -96,11 +94,14 @@ async checkAndAwardBadges(userId: string): Promise<string[]> {
       } catch (error) {
         console.log('[BadgeAward] 📝 Cache clearing failed (likely in test environment):', error);
       }
-      
+
       console.log('[BadgeAward] 🔄 Loading badge definitions...');
       await this._badgeStore.loadDefinitions();
-      console.log('[BadgeAward] ✅ Badge definitions load complete. Available badges:', this._badgeStore.definitions().length);
-      
+      console.log(
+        '[BadgeAward] ✅ Badge definitions load complete. Available badges:',
+        this._badgeStore.definitions().length
+      );
+
       // 1. Build the context with provided user data
       const context = this.buildTriggerContext(userId, newCheckIn, allUserCheckIns);
 
@@ -111,7 +112,7 @@ async checkAndAwardBadges(userId: string): Promise<string[]> {
         uniquePubs: new Set(context.userCheckIns.map(c => c.pubId)).size,
         currentBadges: context.userBadges.map(b => b.badgeId),
         lastCheckInPub: context.checkIn.pubId,
-        checkInTime: new Date(context.checkIn.timestamp.toMillis()).toLocaleString()
+        checkInTime: new Date(context.checkIn.timestamp.toMillis()).toLocaleString(),
       });
 
       const eligibleBadgeIds = this._badgeLogic.evaluateAllBadges(context);
@@ -119,7 +120,7 @@ async checkAndAwardBadges(userId: string): Promise<string[]> {
       console.log('🎯 [BadgeAward] Badge evaluation results:', {
         eligibleBadgeIds,
         totalEligible: eligibleBadgeIds.length,
-        badgeDefinitionsAvailable: this._badgeStore.definitions().map(d => d.id)
+        badgeDefinitionsAvailable: this._badgeStore.definitions().map(d => d.id),
       });
 
       if (eligibleBadgeIds.length === 0) {
@@ -136,7 +137,10 @@ async checkAndAwardBadges(userId: string): Promise<string[]> {
           const badgeDefinition = this._badgeStore.definitions().find(d => d.id === badgeId);
           if (!badgeDefinition) {
             console.error(`❌ [BadgeAward] Badge definition not found for ID: ${badgeId}`);
-            console.error(`Available badge IDs:`, this._badgeStore.definitions().map(d => d.id));
+            console.error(
+              `Available badge IDs:`,
+              this._badgeStore.definitions().map(d => d.id)
+            );
             continue;
           }
 
@@ -146,22 +150,25 @@ async checkAndAwardBadges(userId: string): Promise<string[]> {
             continue;
           }
 
-          console.log(`🏅 [BadgeAward] Attempting to award badge: ${badgeId} (${badgeDefinition.name})`);
+          console.log(
+            `🏅 [BadgeAward] Attempting to award badge: ${badgeId} (${badgeDefinition.name})`
+          );
 
           const earnedBadge = await this._badgeStore.awardBadge(badgeId, {
             triggeredBy: 'check-in',
             checkInId: newCheckIn.id,
             pubId: newCheckIn.pubId,
-            awardedAt: Date.now()
+            awardedAt: Date.now(),
           });
 
           // Return enriched badge data with full definition
           awardedBadges.push({
             earnedBadge,
-            badge: badgeDefinition
+            badge: badgeDefinition,
           });
-          console.log(`✅ [BadgeAward] Successfully awarded badge: ${badgeId} (${badgeDefinition.name})`);
-
+          console.log(
+            `✅ [BadgeAward] Successfully awarded badge: ${badgeId} (${badgeDefinition.name})`
+          );
         } catch (error) {
           console.error(`❌ [BadgeAward] Failed to award badge ${badgeId}:`, error);
           // Continue with other badges even if one fails
@@ -173,8 +180,8 @@ async checkAndAwardBadges(userId: string): Promise<string[]> {
         totalAwarded: awardedBadges.length,
         awardedBadges: awardedBadges.map(b => ({
           badgeId: b.earnedBadge.badgeId,
-          name: b.badge.name
-        }))
+          name: b.badge.name,
+        })),
       });
 
       return awardedBadges;
@@ -187,16 +194,14 @@ async checkAndAwardBadges(userId: string): Promise<string[]> {
   /**
    * Evaluate badges for a user without awarding (for testing/preview)
    */
-  async evaluateBadgesForUser(
-    userId: string,
-    allUserCheckIns: CheckIn[]
-  ): Promise<string[]> {
+  async evaluateBadgesForUser(userId: string, allUserCheckIns: CheckIn[]): Promise<string[]> {
     console.log('🧪 [BadgeAward] Evaluating badges for user (test mode):', userId);
 
     try {
       // Use the most recent check-in as the trigger
-      const mostRecentCheckIn = allUserCheckIns
-        .sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis())[0];
+      const mostRecentCheckIn = allUserCheckIns.sort(
+        (a, b) => b.timestamp.toMillis() - a.timestamp.toMillis()
+      )[0];
 
       if (!mostRecentCheckIn) {
         console.log('📝 [BadgeAward] No check-ins found for user');
@@ -208,7 +213,7 @@ async checkAndAwardBadges(userId: string): Promise<string[]> {
 
       console.log('🧪 [BadgeAward] Test evaluation complete:', {
         userId,
-        eligibleBadges: eligibleBadgeIds
+        eligibleBadges: eligibleBadgeIds,
       });
 
       return eligibleBadgeIds;
@@ -234,9 +239,9 @@ async checkAndAwardBadges(userId: string): Promise<string[]> {
     const context: BadgeTriggerContext = {
       userId,
       totalCheckIns: allUserCheckIns.length,
-     userBadges: currentBadges,
-     userCheckIns: allUserCheckIns,
-     checkIn: newCheckIn,
+      userBadges: currentBadges,
+      userCheckIns: allUserCheckIns,
+      checkIn: newCheckIn,
       // Add more context as needed for badge logic
     };
 
@@ -257,7 +262,7 @@ async checkAndAwardBadges(userId: string): Promise<string[]> {
       badgeLogicAvailable: !!this._badgeLogic,
       badgeStoreAvailable: !!this._badgeStore,
       definitionsLoaded: this._badgeStore.definitions().length > 0,
-      userBadgesLoaded: this._badgeStore.hasEarnedBadges()
+      userBadgesLoaded: this._badgeStore.hasEarnedBadges(),
     };
   }
 }

@@ -1,4 +1,3 @@
-import { EarnedBadge } from '@badges/utils/badge.model';
 import { User } from '@users/utils/user.model';
 
 export interface AuthResponse {
@@ -20,4 +19,3 @@ export interface RegisterPayload {
 export interface RegisterForm extends RegisterPayload {
   confirmPassword: string;
 }
-

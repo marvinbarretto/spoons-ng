@@ -1,11 +1,10 @@
-import { Injectable } from "@angular/core";
-import { Title } from "@angular/platform-browser";
-import { RouterStateSnapshot, TitleStrategy } from "@angular/router";
+import { Injectable } from '@angular/core';
+import { Title } from '@angular/platform-browser';
+import { RouterStateSnapshot, TitleStrategy } from '@angular/router';
 
-@Injectable({providedIn: 'root'})
+@Injectable({ providedIn: 'root' })
 export class TemplatePageTitleStrategy extends TitleStrategy {
-  constructor(
-    private readonly title: Title) {
+  constructor(private readonly title: Title) {
     super();
   }
 
@@ -18,8 +17,7 @@ export class TemplatePageTitleStrategy extends TitleStrategy {
 
     if (title !== undefined) {
       this.title.setTitle(`${customTitle} - ${companyName}`);
-    }
-    else {
+    } else {
       this.title.setTitle(`${companyName}`);
     }
   }

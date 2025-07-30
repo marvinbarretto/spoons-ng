@@ -7,7 +7,7 @@ describe('ChipCountComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ChipCountComponent]
+      imports: [ChipCountComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ChipCountComponent);
@@ -61,7 +61,7 @@ describe('ChipCountComponent', () => {
       fixture.componentRef.setInput('count', 10);
       fixture.componentRef.setInput('size', 'md');
       fixture.componentRef.setInput('variant', 'primary');
-      
+
       const classes = component.chipClasses();
       expect(classes).toContain('size--md');
       expect(classes).toContain('variant--primary');
@@ -90,7 +90,7 @@ describe('ChipCountComponent', () => {
       fixture.componentRef.setInput('label', 'Points');
       fixture.componentRef.setInput('prefix', '+');
       fixture.componentRef.setInput('suffix', 'pts');
-      
+
       expect(component.ariaLabel()).toBe('Points + 42 pts');
     });
 
@@ -110,24 +110,24 @@ describe('ChipCountComponent', () => {
     it('should emit clicked event when clickable', () => {
       const clickedSpy = jest.fn();
       component.clicked.subscribe(clickedSpy);
-      
+
       fixture.componentRef.setInput('count', 25);
       fixture.componentRef.setInput('clickable', true);
-      
+
       component.handleClick();
-      
+
       expect(clickedSpy).toHaveBeenCalledWith(25);
     });
 
     it('should not emit when not clickable', () => {
       const clickedSpy = jest.fn();
       component.clicked.subscribe(clickedSpy);
-      
+
       fixture.componentRef.setInput('count', 25);
       fixture.componentRef.setInput('clickable', false);
-      
+
       component.handleClick();
-      
+
       expect(clickedSpy).not.toHaveBeenCalled();
     });
   });

@@ -1,6 +1,6 @@
 import { Injectable, computed, signal } from '@angular/core';
-import { CheckinGate } from './gate.interface';
 import { CHECKIN_GATE_THRESHOLDS } from './checkin-thresholds.config';
+import { CheckinGate } from './gate.interface';
 
 @Injectable({ providedIn: 'root' })
 export class ImageSharpnessGate implements CheckinGate {
@@ -12,17 +12,17 @@ export class ImageSharpnessGate implements CheckinGate {
 
   readonly sharpness = this._sharpness.asReadonly();
   readonly currentValue = computed(() => this._sharpness());
-  
+
   readonly passed = computed(() => {
     const value = this._sharpness();
     const isPassed = value > this.threshold;
-    
+
     console.log('[ImageSharpnessGate] Check:', {
       sharpness: value,
       threshold: this.threshold,
-      passed: isPassed
+      passed: isPassed,
     });
-    
+
     return isPassed;
   });
 

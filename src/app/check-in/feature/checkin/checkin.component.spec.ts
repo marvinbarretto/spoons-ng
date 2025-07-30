@@ -1,10 +1,10 @@
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { CheckinComponent } from './checkin.component';
-import { CheckinOrchestrator } from '../../data-access/checkin-orchestrator.service';
 import { NearbyPubStore } from '../../../pubs/data-access/nearby-pub.store';
 import { PubStore } from '../../../pubs/data-access/pub.store';
 import { CheckInStore } from '../../data-access/check-in.store';
-import { signal } from '@angular/core';
+import { CheckinOrchestrator } from '../../data-access/checkin-orchestrator.service';
+import { CheckinComponent } from './checkin.component';
 
 describe('CheckinComponent', () => {
   let component: CheckinComponent;
@@ -30,20 +30,20 @@ describe('CheckinComponent', () => {
       showCameraButton: signal(false),
       showRetakeButton: signal(false),
       photoDataUrl: signal(null),
-      photoFile: signal(null)
+      photoFile: signal(null),
     };
 
     mockNearbyPubStore = {
-      closestPub: signal({ id: 'test-pub-id', name: 'Test Pub' })
+      closestPub: signal({ id: 'test-pub-id', name: 'Test Pub' }),
     };
 
     mockPubStore = {
-      get: jest.fn().mockReturnValue({ id: 'test-pub-id', name: 'Test Pub' })
+      get: jest.fn().mockReturnValue({ id: 'test-pub-id', name: 'Test Pub' }),
     };
 
     mockCheckinStore = {
       checkinToPub: jest.fn(),
-      checkinResults: signal({ success: true, points: { total: 100 }, badges: [] })
+      checkinResults: signal({ success: true, points: { total: 100 }, badges: [] }),
     };
 
     await TestBed.configureTestingModule({
@@ -52,8 +52,8 @@ describe('CheckinComponent', () => {
         { provide: CheckinOrchestrator, useValue: mockOrchestrator },
         { provide: NearbyPubStore, useValue: mockNearbyPubStore },
         { provide: PubStore, useValue: mockPubStore },
-        { provide: CheckInStore, useValue: mockCheckinStore }
-      ]
+        { provide: CheckInStore, useValue: mockCheckinStore },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CheckinComponent);

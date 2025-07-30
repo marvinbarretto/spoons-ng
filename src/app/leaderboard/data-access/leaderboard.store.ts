@@ -1,14 +1,18 @@
-import { Injectable, computed, inject, signal, effect } from '@angular/core';
+import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { AuthStore } from '../../auth/data-access/auth.store';
-import { DataAggregatorService } from '../../shared/data-access/data-aggregator.service';
-import { CacheCoherenceService } from '../../shared/data-access/cache-coherence.service';
-import { UserService } from '../../users/data-access/user.service';
 import { CheckInService } from '../../check-in/data-access/check-in.service';
+import { CacheCoherenceService } from '../../shared/data-access/cache-coherence.service';
+import { DataAggregatorService } from '../../shared/data-access/data-aggregator.service';
 import { ErrorLoggingService } from '../../shared/data-access/error-logging.service';
-import { LeaderboardEntry, LeaderboardSortBy, LeaderboardFilters, LeaderboardPeriod } from '../utils/leaderboard.models'
+import { UserService } from '../../users/data-access/user.service';
+import {
+  LeaderboardEntry,
+  LeaderboardPeriod,
+  LeaderboardSortBy,
+} from '../utils/leaderboard.models';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class LeaderboardStore {
   private readonly authStore = inject(AuthStore);
@@ -33,21 +37,24 @@ export class LeaderboardStore {
   readonly showRealUsersOnly = this._showRealUsersOnly.asReadonly();
 
   constructor() {
-    console.log('[Leaderboard] ✅ Store initialized with clean architecture');
-
-    // Load global data on initialization
-    this.loadData();
+    console.log('[Leaderboard] ✅ Store initialized - data loading handled by SessionService');
 
     // React to cache invalidation for real-time updates
+    // Note: SessionService handles initial data loading, this only handles cache updates
     effect(() => {
       const invalidation = this.cacheCoherence.invalidations();
-      if (invalidation && (
-        invalidation.collection === 'users' ||
-        invalidation.collection === 'checkins' ||
-        invalidation.collection === 'leaderboards'
-      )) {
-        console.log('[Leaderboard] 🔄 Cache invalidated, refreshing data:', invalidation.collection);
-        this.loadData();
+      if (
+        invalidation &&
+        (invalidation.collection === 'users' ||
+          invalidation.collection === 'checkins' ||
+          invalidation.collection === 'leaderboards')
+      ) {
+        console.log(
+          '[Leaderboard] 🔄 Cache invalidated:',
+          invalidation.collection,
+          '- data will be refreshed by SessionService'
+        );
+        // Data refresh is now handled by SessionService, not directly here
       }
     });
   }
@@ -62,7 +69,10 @@ export class LeaderboardStore {
     console.log('[Leaderboard] Computing entries:', {
       totalUsers: allUsers.length,
       totalCheckIns: allCheckIns.length,
-      showRealOnly
+      showRealOnly,
+      currentUserUid: currentUser?.uid?.slice(0, 8),
+      usersWithManualPubs: allUsers.filter(u => u.manuallyAddedPubIds?.length > 0).length,
+      usersWithPoints: allUsers.filter(u => (u.totalPoints || 0) > 0).length,
     });
 
     if (allUsers.length === 0) {
@@ -74,14 +84,14 @@ export class LeaderboardStore {
     const realUsers = allUsers.filter(u => u.realUser === true);
     const guestUsers = allUsers.filter(u => u.realUser !== true);
     const usersWithPoints = allUsers.filter(u => (u.totalPoints || 0) > 0);
-    
+
     console.log('[Leaderboard] 🔍 User breakdown:', {
       totalUsers: allUsers.length,
       realUsers: realUsers.length,
       guestUsers: guestUsers.length,
       usersWithPoints: usersWithPoints.length,
       showRealOnly,
-      willBeFiltered: showRealOnly ? guestUsers.length : 0
+      willBeFiltered: showRealOnly ? guestUsers.length : 0,
     });
 
     // Log users with points who might be filtered
@@ -94,8 +104,8 @@ export class LeaderboardStore {
             uid: u.uid?.slice(0, 8),
             displayName: u.displayName,
             totalPoints: u.totalPoints,
-            realUser: u.realUser
-          }))
+            realUser: u.realUser,
+          })),
         });
       }
     }
@@ -111,7 +121,7 @@ export class LeaderboardStore {
               uid: user.uid?.slice(0, 8),
               displayName: user.displayName,
               totalPoints: user.totalPoints,
-              realUser: user.realUser
+              realUser: user.realUser,
             });
           }
           return false;
@@ -121,35 +131,54 @@ export class LeaderboardStore {
       .map(user => {
         // Get user's check-ins
         const userCheckIns = allCheckIns.filter(c => c.userId === user.uid);
-        const uniquePubs = new Set(userCheckIns.map(c => c.pubId)).size;
 
-        // Add manually added pubs
-        const manualPubs = user.manuallyAddedPubIds?.length || 0;
-        const totalUniquePubs = uniquePubs + manualPubs;
+        // Use DataAggregatorService for consistent pub count calculation (with deduplication)
+        // Pass user data to include manually added pubs
+        const totalUniquePubs = this.dataAggregator.getPubsVisitedForUser(user.uid, user);
+
+        // 🔍 DEBUGGING: Log users with potential data issues
+        if ((user.totalPoints || 0) > 0 && totalUniquePubs === 0) {
+          console.warn(`[Leaderboard] 🚨 USER WITH POINTS BUT NO PUBS:`, {
+            uid: user.uid?.slice(0, 8),
+            displayName: user.displayName,
+            totalPoints: user.totalPoints,
+            calculatedPubs: totalUniquePubs,
+            checkins: userCheckIns.length,
+            manuallyAddedPubIds: user.manuallyAddedPubIds,
+            hasManualPubs: !!user.manuallyAddedPubIds?.length,
+          });
+        }
 
         // Calculate monthly stats (current month)
         const monthlyStats = this.calculateMonthlyStats(userCheckIns, user);
 
         // Get last activity
-        const lastCheckin = userCheckIns
-          .sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis())[0];
+        const lastCheckin = userCheckIns.sort(
+          (a, b) => b.timestamp.toMillis() - a.timestamp.toMillis()
+        )[0];
         const lastActive = lastCheckin?.timestamp.toDate().toISOString();
 
         // Calculate current streak
         const currentStreak = this.calculateStreak(userCheckIns);
 
         // 🔍 DEBUGGING: Log points data mismatch issues
-        const pointsFromCheckins = userCheckIns.reduce((sum, checkin) => sum + (checkin.pointsEarned || 0), 0);
+        const pointsFromCheckins = userCheckIns.reduce(
+          (sum, checkin) => sum + (checkin.pointsEarned || 0),
+          0
+        );
         const pointsFromUser = user.totalPoints || 0;
-        
+
         if (pointsFromUser !== pointsFromCheckins && userCheckIns.length > 0) {
-          console.warn(`[Leaderboard] 🚨 POINTS MISMATCH for ${user.displayName || user.uid?.slice(0, 8)}:`, {
-            userDocPoints: pointsFromUser,
-            calculatedFromCheckins: pointsFromCheckins,
-            checkinsCount: userCheckIns.length,
-            checkinPoints: userCheckIns.map(c => ({ id: c.id, points: c.pointsEarned })),
-            userId: user.uid?.slice(0, 8)
-          });
+          console.warn(
+            `[Leaderboard] 🚨 POINTS MISMATCH for ${user.displayName || user.uid?.slice(0, 8)}:`,
+            {
+              userDocPoints: pointsFromUser,
+              calculatedFromCheckins: pointsFromCheckins,
+              checkinsCount: userCheckIns.length,
+              checkinPoints: userCheckIns.map(c => ({ id: c.id, points: c.pointsEarned })),
+              userId: user.uid?.slice(0, 8),
+            }
+          );
 
           // 🔍 Log this as an error for admin review
           try {
@@ -165,8 +194,8 @@ export class LeaderboardStore {
                   userDocPoints: pointsFromUser,
                   calculatedFromCheckins: pointsFromCheckins,
                   checkinsCount: userCheckIns.length,
-                  checkinPoints: userCheckIns.map(c => ({ id: c.id, points: c.pointsEarned }))
-                }
+                  checkinPoints: userCheckIns.map(c => ({ id: c.id, points: c.pointsEarned })),
+                },
               }
             );
           } catch (logError) {
@@ -177,7 +206,7 @@ export class LeaderboardStore {
         const entry: LeaderboardEntry = {
           userId: user.uid,
           displayName: this.getUserDisplayName(user),
-          // All-time stats  
+          // All-time stats
           totalPoints: user.totalPoints || 0, // 🔍 This comes from user document, not calculated!
           uniquePubs: totalUniquePubs,
           totalCheckins: userCheckIns.length,
@@ -191,7 +220,7 @@ export class LeaderboardStore {
           isCurrentUser: currentUser?.uid === user.uid,
           joinedDate: user.joinedAt || new Date().toISOString(),
           lastActive,
-          currentStreak
+          currentStreak,
         };
 
         return entry;
@@ -208,16 +237,14 @@ export class LeaderboardStore {
     console.log('[Leaderboard] ✅ Computed entries:', {
       total: sortedEntries.length,
       sortBy: this.sortBy(),
-      topUser: sortedEntries[0]?.displayName
+      topUser: sortedEntries[0]?.displayName,
     });
 
     return sortedEntries;
   });
 
   // Top 100 entries for display
-  readonly topEntries = computed(() =>
-    this.leaderboardEntries().slice(0, 100)
-  );
+  readonly topEntries = computed(() => this.leaderboardEntries().slice(0, 100));
 
   // Current user position
   readonly currentUserPosition = computed(() => {
@@ -245,7 +272,7 @@ export class LeaderboardStore {
       totalUsers: entries.length,
       totalPoints: entries.reduce((sum, e) => sum + e.totalPoints, 0),
       totalCheckins: entries.reduce((sum, e) => sum + e.totalCheckins, 0),
-      totalUniquePubs: entries.reduce((sum, e) => sum + e.uniquePubs, 0)
+      totalUniquePubs: entries.reduce((sum, e) => sum + e.uniquePubs, 0),
     };
   });
 
@@ -254,45 +281,41 @@ export class LeaderboardStore {
     const entries = this.leaderboardEntries();
     const allUsers = this.userService.allUsers();
     const allCheckIns = this.checkinService.allCheckIns();
-    
+
     // Calculate monthly stats (current month)
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    
+
     // Monthly check-ins
-    const monthlyCheckIns = allCheckIns.filter(c => 
-      c.timestamp.toDate() >= monthStart
-    );
-    
+    const monthlyCheckIns = allCheckIns.filter(c => c.timestamp.toDate() >= monthStart);
+
     // Monthly unique users who checked in
     const monthlyActiveUserIds = new Set(monthlyCheckIns.map(c => c.userId));
-    
+
     // Monthly new users (joined this month)
-    const monthlyNewUsers = allUsers.filter(u => 
-      u.joinedAt && new Date(u.joinedAt) >= monthStart
-    );
-    
+    const monthlyNewUsers = allUsers.filter(u => u.joinedAt && new Date(u.joinedAt) >= monthStart);
+
     // Total unique pubs visited across all users
     const allPubIds = new Set(allCheckIns.map(c => c.pubId));
-    
+
     // Get total pubs in system from pub store if available
     // This will be populated by the DataAggregatorService
     const totalPubsInSystem = 0; // TODO: Connect to PubStore when admin needs it
-    
+
     const siteStats = {
       allTime: {
         users: allUsers.length,
         checkins: allCheckIns.length,
         pubsConquered: allPubIds.size,
-        totalPubsInSystem
+        totalPubsInSystem,
       },
       thisMonth: {
         activeUsers: monthlyActiveUserIds.size,
         newUsers: monthlyNewUsers.length,
-        checkins: monthlyCheckIns.length
-      }
+        checkins: monthlyCheckIns.length,
+      },
     };
-    
+
     console.log('[Leaderboard] 📊 Site stats computed:', siteStats);
     return siteStats;
   });
@@ -301,20 +324,18 @@ export class LeaderboardStore {
   readonly globalDataStats = computed(() => {
     const allUsers = this.userService.allUsers();
     const allCheckIns = this.checkinService.allCheckIns();
-    
+
     // Calculate active users (users with check-ins in last 30 days)
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    const recentCheckIns = allCheckIns.filter(c => 
-      c.timestamp.toDate() >= thirtyDaysAgo
-    );
+    const recentCheckIns = allCheckIns.filter(c => c.timestamp.toDate() >= thirtyDaysAgo);
     const activeUserIds = new Set(recentCheckIns.map(c => c.userId));
-    
+
     const globalStats = {
       totalUsers: allUsers.length,
       totalCheckIns: allCheckIns.length,
-      activeUsers: activeUserIds.size
+      activeUsers: activeUserIds.size,
     };
-    
+
     console.log('[Leaderboard] 🌍 Global data stats computed:', globalStats);
     return globalStats;
   });
@@ -347,46 +368,49 @@ export class LeaderboardStore {
 
     try {
       console.log('[Leaderboard] Loading global data...');
-      await Promise.all([
-        this.userService.loadAllUsers(),
-        this.checkinService.loadAllCheckIns()
-      ]);
-      
+      await Promise.all([this.userService.loadAllUsers(), this.checkinService.loadAllCheckIns()]);
+
       // 🔍 DEBUGGING: Log the actual data to see what we're working with
       const users = this.userService.allUsers();
       const checkins = this.checkinService.allCheckIns();
-      
+
       console.log('[Leaderboard] ✅ Global data loaded successfully:', {
         usersCount: users.length,
-        checkinsCount: checkins.length
+        checkinsCount: checkins.length,
       });
 
       // 🔍 DEBUGGING: Log user points data to identify sync issues
       const usersWithPoints = users.filter(u => (u.totalPoints || 0) > 0);
       if (usersWithPoints.length > 0) {
-        console.log('[Leaderboard] 📊 Users with points in database:', usersWithPoints.map(u => ({
-          uid: u.uid?.slice(0, 8),
-          displayName: u.displayName,
-          totalPoints: u.totalPoints,
-          realUser: u.realUser,
-          hasCheckins: checkins.some(c => c.userId === u.uid)
-        })));
+        console.log(
+          '[Leaderboard] 📊 Users with points in database:',
+          usersWithPoints.map(u => ({
+            uid: u.uid?.slice(0, 8),
+            displayName: u.displayName,
+            totalPoints: u.totalPoints,
+            realUser: u.realUser,
+            hasCheckins: checkins.some(c => c.userId === u.uid),
+          }))
+        );
       }
 
       // 🔍 DEBUGGING: Check for check-ins without corresponding user points
       const userIdsWithCheckins = new Set(checkins.map(c => c.userId));
-      const usersWithCheckinsButNoPoints = users.filter(u => 
-        userIdsWithCheckins.has(u.uid) && (u.totalPoints || 0) === 0
+      const usersWithCheckinsButNoPoints = users.filter(
+        u => userIdsWithCheckins.has(u.uid) && (u.totalPoints || 0) === 0
       );
-      
+
       if (usersWithCheckinsButNoPoints.length > 0) {
-        console.warn('[Leaderboard] ⚠️ Users with check-ins but zero points:', 
+        console.warn(
+          '[Leaderboard] ⚠️ Users with check-ins but zero points:',
           usersWithCheckinsButNoPoints.map(u => ({
             uid: u.uid?.slice(0, 8),
             displayName: u.displayName,
             totalPoints: u.totalPoints,
             checkinsCount: checkins.filter(c => c.userId === u.uid).length,
-            checkinsWithPoints: checkins.filter(c => c.userId === u.uid && (c.pointsEarned || 0) > 0).length
+            checkinsWithPoints: checkins.filter(
+              c => c.userId === u.uid && (c.pointsEarned || 0) > 0
+            ).length,
           }))
         );
 
@@ -394,7 +418,7 @@ export class LeaderboardStore {
         for (const user of usersWithCheckinsButNoPoints) {
           const userCheckins = checkins.filter(c => c.userId === user.uid);
           const checkinsWithPoints = userCheckins.filter(c => (c.pointsEarned || 0) > 0);
-          
+
           try {
             await this.errorLoggingService.logError(
               'points',
@@ -412,9 +436,9 @@ export class LeaderboardStore {
                     id: c.id,
                     pointsEarned: c.pointsEarned,
                     pubId: c.pubId,
-                    timestamp: c.timestamp?.toDate?.()?.toISOString()
-                  }))
-                }
+                    timestamp: c.timestamp?.toDate?.()?.toISOString(),
+                  })),
+                },
               }
             );
           } catch (logError) {
@@ -422,7 +446,6 @@ export class LeaderboardStore {
           }
         }
       }
-      
     } catch (error) {
       console.error('[Leaderboard] ❌ Failed to load data:', error);
       this._error.set(error instanceof Error ? error.message : 'Failed to load leaderboard data');
@@ -481,13 +504,14 @@ export class LeaderboardStore {
     if (userCheckins.length === 0) return 0;
 
     // Sort check-ins by date (newest first)
-    const sortedCheckins = userCheckins
-      .sort((a, b) => b.timestamp.toMillis() - a.timestamp.toMillis());
+    const sortedCheckins = userCheckins.sort(
+      (a, b) => b.timestamp.toMillis() - a.timestamp.toMillis()
+    );
 
     // Get unique dates only
-    const uniqueDates = Array.from(new Set(
-      sortedCheckins.map(c => c.timestamp.toDate().toDateString())
-    )).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+    const uniqueDates = Array.from(
+      new Set(sortedCheckins.map(c => c.timestamp.toDate().toDateString()))
+    ).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
 
     if (uniqueDates.length === 0) return 0;
 
@@ -502,9 +526,11 @@ export class LeaderboardStore {
     // Count consecutive days
     let streak = 1;
     for (let i = 1; i < uniqueDates.length; i++) {
-      const currentDate = new Date(uniqueDates[i-1]);
+      const currentDate = new Date(uniqueDates[i - 1]);
       const previousDate = new Date(uniqueDates[i]);
-      const daysDiff = Math.floor((currentDate.getTime() - previousDate.getTime()) / (24 * 60 * 60 * 1000));
+      const daysDiff = Math.floor(
+        (currentDate.getTime() - previousDate.getTime()) / (24 * 60 * 60 * 1000)
+      );
 
       if (daysDiff === 1) {
         streak++;
@@ -516,14 +542,15 @@ export class LeaderboardStore {
     return streak;
   }
 
-  private calculateMonthlyStats(userCheckins: any[], user: any): { points: number; pubs: number; checkins: number } {
+  private calculateMonthlyStats(
+    userCheckins: any[],
+    user: any
+  ): { points: number; pubs: number; checkins: number } {
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
     // Filter check-ins for current month
-    const monthlyCheckins = userCheckins.filter(c =>
-      c.timestamp.toDate() >= monthStart
-    );
+    const monthlyCheckins = userCheckins.filter(c => c.timestamp.toDate() >= monthStart);
 
     // Calculate monthly unique pubs
     const monthlyUniquePubs = new Set(monthlyCheckins.map(c => c.pubId)).size;
@@ -535,29 +562,31 @@ export class LeaderboardStore {
     const monthlyCheckinsCount = monthlyCheckins.length;
     const totalPoints = user.totalPoints || 0;
 
-    const estimatedMonthlyPoints = totalCheckins > 0
-      ? Math.round((monthlyCheckinsCount / totalCheckins) * totalPoints)
-      : 0;
+    const estimatedMonthlyPoints =
+      totalCheckins > 0 ? Math.round((monthlyCheckinsCount / totalCheckins) * totalPoints) : 0;
 
     return {
       points: estimatedMonthlyPoints,
       pubs: monthlyUniquePubs,
-      checkins: monthlyCheckinsCount
+      checkins: monthlyCheckinsCount,
     };
   }
 
-  private getStatsForPeriod(entry: LeaderboardEntry, period: LeaderboardPeriod): { points: number; pubs: number; checkins: number } {
+  private getStatsForPeriod(
+    entry: LeaderboardEntry,
+    period: LeaderboardPeriod
+  ): { points: number; pubs: number; checkins: number } {
     if (period === 'monthly') {
       return {
         points: entry.monthlyPoints,
         pubs: entry.monthlyPubs,
-        checkins: entry.monthlyCheckins
+        checkins: entry.monthlyCheckins,
       };
     } else {
       return {
         points: entry.totalPoints,
         pubs: entry.uniquePubs,
-        checkins: entry.totalCheckins
+        checkins: entry.totalCheckins,
       };
     }
   }

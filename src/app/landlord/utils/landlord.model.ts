@@ -1,6 +1,6 @@
 // Update the landlord model to be more flexible
 // src/app/landlord/utils/landlord.model.ts
-import { Timestamp } from "firebase/firestore";
+import { Timestamp } from 'firebase/firestore';
 
 export interface Landlord {
   id: string;

@@ -1,5 +1,4 @@
 <div class="home-container">
-
   <!-- ✅ NEW USER QUICK START -->
   @if (isNewUser()) {
     <section class="quick-start-widget">
@@ -32,9 +31,6 @@
     <!-- ✅ EXISTING USER SCOREBOARD -->
     <app-scoreboard-hero-widget></app-scoreboard-hero-widget>
   }
-
-
-
 
   <!-- ✅ NEAREST PUBS - HIGH PRIORITY FOR NEW USERS -->
   @defer (on viewport) {
@@ -80,7 +76,7 @@
     @if (isBeginner() || isExperienced()) {
       <app-suggested-mission-widget></app-suggested-mission-widget>
     }
-   } @placeholder (minimum 200ms) {
+  } @placeholder (minimum 200ms) {
     <div class="widget-placeholder">
       <div class="placeholder-content">🎯 Loading mission suggestions...</div>
     </div>
@@ -171,15 +167,12 @@
     </div>
   }
 
-
   <!-- ✅ Action Cards -->
   <!-- <app-action-cards
     [showStartMission]="activeMissions().length === 0"
     (startMission)="handleStartMission()"
     (openGuide)="handleOpenGuide()"
     (openSettings)="handleOpenSettings()" /> -->
-
-
 
   <!-- ✅ Development Debug Section -->
   <!-- @if (isDevelopment()) {

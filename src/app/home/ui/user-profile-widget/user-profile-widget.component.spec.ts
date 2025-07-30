@@ -1,23 +1,24 @@
 // src/app/home/ui/user-profile-widget/user-profile-widget.component.spec.ts
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { UserProfileWidgetComponent } from './user-profile-widget.component';
 import type { User } from '@users/utils/user.model';
+import { UserProfileWidgetComponent } from './user-profile-widget.component';
 
 describe('UserProfileWidgetComponent', () => {
   let component: UserProfileWidgetComponent;
   let fixture: ComponentFixture<UserProfileWidgetComponent>;
 
-  const createMockUser = (overrides: Partial<User> = {}): User => ({
-    uid: 'test-user',
-    displayName: 'Test User',
-    photoURL: null,
-    isAnonymous: false,
-    ...overrides
-  } as User);
+  const createMockUser = (overrides: Partial<User> = {}): User =>
+    ({
+      uid: 'test-user',
+      displayName: 'Test User',
+      photoURL: null,
+      isAnonymous: false,
+      ...overrides,
+    }) as User;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [UserProfileWidgetComponent]
+      imports: [UserProfileWidgetComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(UserProfileWidgetComponent);
@@ -45,7 +46,7 @@ describe('UserProfileWidgetComponent', () => {
     it('should convert "Anonymous" to "Explorer" for anonymous users', () => {
       const user = createMockUser({
         displayName: 'Anonymous User 123',
-        isAnonymous: true
+        isAnonymous: true,
       });
       fixture.componentRef.setInput('user', user);
       fixture.detectChanges();
@@ -53,7 +54,6 @@ describe('UserProfileWidgetComponent', () => {
       expect(component.displayName()).toBe('Explorer User 123');
     });
   });
-
 
   describe('Event Emission', () => {
     it('should emit openProfile when clicked', () => {

@@ -1,13 +1,12 @@
 // badges/testing/badge-test-factories.ts
-import { Timestamp } from 'firebase/firestore';
-import type { BadgeTriggerContext, EarnedBadge, Badge } from '../utils/badge.model';
 import type { CheckIn } from '@check-in/utils/check-in.models';
+import { Timestamp } from 'firebase/firestore';
+import type { Badge, BadgeTriggerContext, EarnedBadge } from '../utils/badge.model';
 /**
  * Test data factories for badge-related testing.
  * Provides consistent, reusable test data creation methods.
  */
 export class BadgeTestFactories {
-
   /**
    * Creates a mock CheckIn object for testing.
    *
@@ -47,7 +46,7 @@ export class BadgeTestFactories {
       timestamp: Timestamp.fromDate(date),
       dateKey: date.toISOString().split('T')[0],
       madeUserLandlord: false,
-      ...overrides
+      ...overrides,
     };
   }
 
@@ -81,7 +80,7 @@ export class BadgeTestFactories {
       badgeId,
       awardedAt: Date.now(),
       metadata: {},
-      ...overrides
+      ...overrides,
     };
   }
 
@@ -114,7 +113,7 @@ export class BadgeTestFactories {
       criteria: `Test criteria for ${id}`,
       createdAt: undefined,
       updatedAt: undefined,
-      ...overrides
+      ...overrides,
     };
   }
 
@@ -154,7 +153,7 @@ export class BadgeTestFactories {
       userId,
       checkIn: checkIns[checkIns.length - 1], // Latest check-in as trigger
       userCheckIns: checkIns,
-      userBadges: earnedBadges
+      userBadges: earnedBadges,
     };
   }
 
@@ -182,9 +181,7 @@ export class BadgeTestFactories {
     pubIds: string[],
     startDaysAgo: number = 0
   ): CheckIn[] {
-    return pubIds.map((pubId, index) =>
-      this.createCheckIn(userId, pubId, startDaysAgo - index)
-    );
+    return pubIds.map((pubId, index) => this.createCheckIn(userId, pubId, startDaysAgo - index));
   }
 
   /**

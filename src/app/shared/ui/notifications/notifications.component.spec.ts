@@ -1,7 +1,7 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { NotificationsComponent } from './notifications.component';
-import { NotificationService } from '../../data-access/notification.service';
 import { CommonModule } from '@angular/common';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { NotificationService } from '../../data-access/notification.service';
+import { NotificationsComponent } from './notifications.component';
 
 describe('NotificationsComponent', () => {
   let component: NotificationsComponent;
@@ -30,6 +30,8 @@ describe('NotificationsComponent', () => {
 
   it('should track by id', () => {
     const id = '1';
-    expect(component.trackById(0, { id, type: 'info', message: 'test', sticky: true, timeout: 1000 })).toBe(id);
+    expect(
+      component.trackById(0, { id, type: 'info', message: 'test', sticky: true, timeout: 1000 })
+    ).toBe(id);
   });
 });

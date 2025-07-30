@@ -8,9 +8,8 @@ describe('InlineSvgComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [InlineSvgComponent]
-    })
-    .compileComponents();
+      imports: [InlineSvgComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(InlineSvgComponent);
     component = fixture.componentInstance;

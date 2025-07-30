@@ -1,10 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 
-import { CheckInStore } from './check-in.store';
 import { AuthStore } from '../../auth/data-access/auth.store';
 import { PointsStore } from '../../points/data-access/points.store';
 import { PubStore } from '../../pubs/data-access/pub.store';
 import { CheckInService } from './check-in.service';
+import { CheckInStore } from './check-in.store';
 
 describe('CheckInStore', () => {
   let store: CheckInStore;
@@ -16,18 +16,17 @@ describe('CheckInStore', () => {
     mockService = TestBed.inject(CheckInService) as jest.Mocked<CheckInService>;
   });
 
-
   describe('🎯 Points & Success Flow Integration', () => {
     beforeEach(() => {
       // Add additional mocks for new dependencies
       const pointsStoreMock = {
-        awardCheckInPoints: jest.fn()
+        awardCheckInPoints: jest.fn(),
       };
       const authStoreMock = {
-        uid: jest.fn(() => 'test-user-123')
+        uid: jest.fn(() => 'test-user-123'),
       };
       const pubStoreMock = {
-        get: jest.fn()
+        get: jest.fn(),
       };
 
       TestBed.configureTestingModule({
@@ -36,8 +35,8 @@ describe('CheckInStore', () => {
           { provide: CheckInService, useValue: mockService },
           { provide: PointsStore, useValue: pointsStoreMock },
           { provide: AuthStore, useValue: authStoreMock },
-          { provide: PubStore, useValue: pubStoreMock }
-        ]
+          { provide: PubStore, useValue: pubStoreMock },
+        ],
       });
 
       // Re-inject with new mocks
@@ -65,7 +64,7 @@ describe('CheckInStore', () => {
         base: 5,
         bonus: 25, // First ever bonus
         distance: 0,
-        total: 30
+        total: 30,
       });
 
       // Act
@@ -81,7 +80,7 @@ describe('CheckInStore', () => {
         isFirstEver: true,
         currentStreak: 0,
         hasPhoto: false,
-        sharedSocial: false
+        sharedSocial: false,
       });
     });
 
@@ -179,22 +178,22 @@ describe('CheckInStore', () => {
           success: true,
           checkin: expect.objectContaining({
             userId: 'test-user-123',
-            pubId: 'test-pub-123'
+            pubId: 'test-pub-123',
           }),
           pub: expect.objectContaining({
             id: pubId,
-            name: 'Test Pub'
+            name: 'Test Pub',
           }),
           points: expect.objectContaining({
-            total: 5
+            total: 5,
           }),
           isFirstEver: false,
           debugInfo: expect.objectContaining({
             flow: 'CheckInStore',
             userId: 'test-user-123',
             isFirstEver: false,
-            totalCheckins: 3
-          })
+            totalCheckins: 3,
+          }),
         })
       );
 

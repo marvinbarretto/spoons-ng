@@ -1,9 +1,9 @@
-import { Component, input, output, computed, inject } from '@angular/core';
+import { Component, computed, inject, input, output } from '@angular/core';
 
-import type { Mission } from '../../../missions/utils/mission.model';
 import { PubChipComponent } from '../../../missions/ui/pub-chip/pub-chip.component';
-import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
+import type { Mission } from '../../../missions/utils/mission.model';
 import { PubStore } from '../../../pubs/data-access/pub.store';
+import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
 
 @Component({
   selector: 'app-mission-card-light',
@@ -24,7 +24,7 @@ import { PubStore } from '../../../pubs/data-access/pub.store';
           </div>
         }
       </div>
-      
+
       @if (isJoined() && progress() !== null) {
         <div class="mission-progress">
           <div class="progress-info">
@@ -32,10 +32,7 @@ import { PubStore } from '../../../pubs/data-access/pub.store';
             <span class="progress-percentage">{{ progressPercentage() }}%</span>
           </div>
           <div class="progress-bar">
-            <div 
-              class="progress-fill"
-              [style.width.%]="progressPercentage()"
-            ></div>
+            <div class="progress-fill" [style.width.%]="progressPercentage()"></div>
           </div>
         </div>
       } @else {
@@ -51,7 +48,9 @@ import { PubStore } from '../../../pubs/data-access/pub.store';
         <div class="mission-card__pubs">
           <details class="pub-list-details">
             <summary class="pub-list-summary">
-              <span class="pub-list-count">{{ missionPubs().pubs.length }} Pubs in this mission</span>
+              <span class="pub-list-count"
+                >{{ missionPubs().pubs.length }} Pubs in this mission</span
+              >
               <span class="pub-list-toggle-icon">▼</span>
             </summary>
             <div class="pub-chips">
@@ -74,7 +73,11 @@ import { PubStore } from '../../../pubs/data-access/pub.store';
   `,
   styles: `
     .mission-card-light {
-      background: linear-gradient(135deg, var(--background-lighter) 0%, var(--background-lightest) 100%);
+      background: linear-gradient(
+        135deg,
+        var(--background-lighter) 0%,
+        var(--background-lightest) 100%
+      );
       border: 2px solid var(--border-strong);
       background-clip: padding-box;
       border-radius: 12px;
@@ -230,7 +233,12 @@ import { PubStore } from '../../../pubs/data-access/pub.store';
 
     .progress-fill {
       height: 100%;
-      background: linear-gradient(135deg, var(--success) 0%, var(--primary) 50%, var(--accent) 100%);
+      background: linear-gradient(
+        135deg,
+        var(--success) 0%,
+        var(--primary) 50%,
+        var(--accent) 100%
+      );
       border-radius: 6px;
       transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
@@ -250,8 +258,12 @@ import { PubStore } from '../../../pubs/data-access/pub.store';
     }
 
     @keyframes shimmer {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(100%); }
+      0% {
+        transform: translateX(-100%);
+      }
+      100% {
+        transform: translateX(100%);
+      }
     }
 
     /* Accessibility: Reduced motion support */
@@ -337,7 +349,7 @@ import { PubStore } from '../../../pubs/data-access/pub.store';
         gap: 0.75rem;
         margin-bottom: 1rem;
       }
-      
+
       .mission-points {
         align-self: flex-end;
         padding: 0.625rem 1rem;
@@ -438,7 +450,7 @@ import { PubStore } from '../../../pubs/data-access/pub.store';
       position: relative;
       z-index: 2;
     }
-  `
+  `,
 })
 export class MissionCardLightComponent {
   protected readonly dataAggregatorService = inject(DataAggregatorService);
@@ -448,13 +460,13 @@ export class MissionCardLightComponent {
   readonly isJoined = input<boolean>(false);
   readonly progress = input<number | null>(null);
   readonly showPubDetails = input<boolean>(false);
-  
+
   readonly missionClick = output<Mission>();
-  
+
   protected onMissionClick(): void {
     this.missionClick.emit(this.mission());
   }
-  
+
   readonly progressPercentage = computed(() => {
     const prog = this.progress();
     const total = this.mission().pubIds.length;
@@ -476,14 +488,14 @@ export class MissionCardLightComponent {
         name: pub?.name || 'Unknown Pub',
         hasVisited,
         visitCount: hasVisited ? this.dataAggregatorService.getVisitCountForPub(pubId) : 0,
-        hasCrest: !!pub?.carpetUrl
+        hasCrest: !!pub?.carpetUrl,
       };
     });
 
     return {
       pubCount: mission.pubIds.length,
       pubs: pubDetails,
-      completedCount: pubDetails.filter(p => p.hasVisited).length
+      completedCount: pubDetails.filter(p => p.hasVisited).length,
     };
   });
 }

@@ -1,5 +1,5 @@
 // src/app/shared/testing/signal-test-utils.ts
-import { signal, computed, effect, Signal } from '@angular/core';
+import { effect, signal, Signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 /**

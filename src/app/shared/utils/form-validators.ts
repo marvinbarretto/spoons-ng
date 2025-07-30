@@ -1,7 +1,6 @@
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 
 export class FormValidators {
-  
   /**
    * Validates that passwords match
    */
@@ -9,11 +8,11 @@ export class FormValidators {
     return (control: AbstractControl): ValidationErrors | null => {
       const password = control.get(passwordField);
       const confirmPassword = control.get(confirmPasswordField);
-      
+
       if (!password || !confirmPassword) {
         return null;
       }
-      
+
       return password.value === confirmPassword.value ? null : { passwordMismatch: true };
     };
   }
@@ -24,7 +23,7 @@ export class FormValidators {
   static passwordStrength(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       const value = control.value;
-      
+
       if (!value) {
         return null;
       }
@@ -35,7 +34,9 @@ export class FormValidators {
       const hasSpecial = /[^A-Za-z0-9]/.test(value);
       const hasMinLength = value.length >= 8;
 
-      const score = [hasNumber, hasUpper, hasLower, hasSpecial, hasMinLength].filter(Boolean).length;
+      const score = [hasNumber, hasUpper, hasLower, hasSpecial, hasMinLength].filter(
+        Boolean
+      ).length;
 
       if (score < 3) {
         return { weakPassword: true };
@@ -51,7 +52,7 @@ export class FormValidators {
   static displayName(): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       const value = control.value;
-      
+
       if (!value) {
         return null;
       }
@@ -79,7 +80,11 @@ export class FormValidators {
   /**
    * Gets password strength score and label
    */
-  static getPasswordStrength(password: string): { score: number; label: string; percentage: number } {
+  static getPasswordStrength(password: string): {
+    score: number;
+    label: string;
+    percentage: number;
+  } {
     if (!password) {
       return { score: 0, label: '', percentage: 0 };
     }
@@ -89,7 +94,7 @@ export class FormValidators {
       /[A-Z]/.test(password),
       /[a-z]/.test(password),
       /[0-9]/.test(password),
-      /[^A-Za-z0-9]/.test(password)
+      /[^A-Za-z0-9]/.test(password),
     ];
 
     const score = checks.filter(Boolean).length;
@@ -113,25 +118,25 @@ export class FormValidators {
     switch (errorKey) {
       case 'required':
         return `${this.getFieldDisplayName(controlName)} is required`;
-      
+
       case 'email':
         return 'Please enter a valid email address';
-      
+
       case 'minlength':
         return `${this.getFieldDisplayName(controlName)} must be at least ${errorValue.requiredLength} characters`;
-      
+
       case 'maxlength':
         return `${this.getFieldDisplayName(controlName)} must be less than ${errorValue.requiredLength} characters`;
-      
+
       case 'passwordMismatch':
         return 'Passwords do not match';
-      
+
       case 'weakPassword':
         return 'Password is too weak. Use a mix of letters, numbers, and symbols';
-      
+
       case 'invalidDisplayName':
         return 'Display name contains invalid characters';
-      
+
       default:
         return `${this.getFieldDisplayName(controlName)} is invalid`;
     }
@@ -147,7 +152,7 @@ export class FormValidators {
       confirmPassword: 'Confirm Password',
       displayName: 'Display Name',
       firstName: 'First Name',
-      lastName: 'Last Name'
+      lastName: 'Last Name',
     };
 
     return displayNames[controlName] || controlName;
@@ -173,26 +178,17 @@ export interface AuthFormConfig {
 export class FormBuilderHelper {
   static createAuthForm(config: AuthFormConfig = {}) {
     return {
-      email: [
-        config.email?.value || '',
-        config.email?.validators || []
-      ],
-      password: [
-        config.password?.value || '',
-        config.password?.validators || []
-      ],
+      email: [config.email?.value || '', config.email?.validators || []],
+      password: [config.password?.value || '', config.password?.validators || []],
       ...(config.confirmPassword && {
         confirmPassword: [
           config.confirmPassword.value || '',
-          config.confirmPassword.validators || []
-        ]
+          config.confirmPassword.validators || [],
+        ],
       }),
       ...(config.displayName && {
-        displayName: [
-          config.displayName.value || '',
-          config.displayName.validators || []
-        ]
-      })
+        displayName: [config.displayName.value || '', config.displayName.validators || []],
+      }),
     };
   }
 }

@@ -1,11 +1,11 @@
 // src/app/carpets/data-access/carpet-strategy.service.ts
 import { Injectable, inject } from '@angular/core';
-import { CarpetStorageService } from './carpet-storage.service';
+import { Storage } from '@angular/fire/storage';
 import { PubService } from '@pubs/data-access/pub.service';
 import { LLMService } from '@shared/data-access/llm.service';
-import { Storage } from '@angular/fire/storage';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { ANALYSIS_THEMES, PhotoQualityMetrics } from '@shared/utils/llm-types';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { CarpetStorageService } from './carpet-storage.service';
 
 type CarpetProcessResult = {
   localStored: boolean;
@@ -19,9 +19,9 @@ type CarpetProcessResult = {
 };
 
 type CarpetVersions = {
-  local: Blob;      // 600x600 AVIF for UI backgrounds
-  llm: Blob;        // 300x300 JPEG for analysis
-  firestore: Blob;  // 600x600 AVIF for ML training
+  local: Blob; // 600x600 AVIF for UI backgrounds
+  llm: Blob; // 300x300 JPEG for analysis
+  firestore: Blob; // 600x600 AVIF for ML training
 };
 
 @Injectable({ providedIn: 'root' })
@@ -41,7 +41,12 @@ export class CarpetStrategyService {
     pubName: string
   ): Promise<CarpetProcessResult> {
     console.log('[CarpetStrategy] 🎨 Starting carpet workflow for:', pubName);
-    console.log('[CarpetStrategy] 📐 Full resolution canvas:', fullResCanvas.width, 'x', fullResCanvas.height);
+    console.log(
+      '[CarpetStrategy] 📐 Full resolution canvas:',
+      fullResCanvas.width,
+      'x',
+      fullResCanvas.height
+    );
 
     try {
       // 1. Create optimized versions from full res
@@ -57,19 +62,22 @@ export class CarpetStrategyService {
       console.log('[CarpetStrategy] 🤖 Enhanced LLM analysis complete:', {
         detected: llmResult.isCarpet,
         confidence: llmResult.confidence,
-        photoQuality: llmResult.photoQuality
+        photoQuality: llmResult.photoQuality,
       });
 
       if (!llmResult.isCarpet) {
         console.log('[CarpetStrategy] ❌ LLM rejected - not a carpet');
-        console.log('[CarpetStrategy] 📊 But preserving photo quality data:', llmResult.photoQuality);
+        console.log(
+          '[CarpetStrategy] 📊 But preserving photo quality data:',
+          llmResult.photoQuality
+        );
         return {
           localStored: true,
           llmConfirmed: false,
           firestoreUploaded: false,
           localKey,
           photoQuality: llmResult.photoQuality, // Preserve photo quality for points calculation
-          error: 'LLM analysis: Not a carpet detected'
+          error: 'LLM analysis: Not a carpet detected',
         };
       }
 
@@ -85,7 +93,7 @@ export class CarpetStrategyService {
           firestoreUploaded: false,
           localKey,
           // Include photo quality metric for storage decisions
-          photoQuality: llmResult.photoQuality
+          photoQuality: llmResult.photoQuality,
         };
       }
 
@@ -105,11 +113,14 @@ export class CarpetStrategyService {
           localKey,
           firestoreUrl,
           // Include photo quality metric for storage decisions
-          photoQuality: llmResult.photoQuality
+          photoQuality: llmResult.photoQuality,
         };
       } catch (firestoreError) {
-        console.error('[CarpetStrategy] ⚠️ Firestore upload failed (continuing with local-only):', firestoreError);
-        
+        console.error(
+          '[CarpetStrategy] ⚠️ Firestore upload failed (continuing with local-only):',
+          firestoreError
+        );
+
         // Check-in continues with local-only storage
         return {
           localStored: true,
@@ -118,17 +129,16 @@ export class CarpetStrategyService {
           localKey,
           error: `Firestore upload failed: ${firestoreError}`,
           // Include photo quality metric even if upload fails
-          photoQuality: llmResult.photoQuality
+          photoQuality: llmResult.photoQuality,
         };
       }
-
     } catch (error) {
       console.error('[CarpetStrategy] ❌ Error in carpet workflow:', error);
       return {
         localStored: false,
         llmConfirmed: false,
         firestoreUploaded: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     } finally {
       // 7. Clean up full resolution canvas
@@ -150,11 +160,11 @@ export class CarpetStrategyService {
     // Local version: 600x600 AVIF/WebP for UI backgrounds
     const localCanvas = this.resizeCanvas(fullResCanvas, 600, 600);
     const localBlob = await this.canvasToBlob(localCanvas, 'avif', 0.8);
-    
+
     // LLM version: 300x300 JPEG for analysis (cost efficiency)
     const llmCanvas = this.resizeCanvas(fullResCanvas, 300, 300);
     const llmBlob = await this.canvasToBlob(llmCanvas, 'jpeg', 0.6);
-    
+
     // Firestore version: 600x600 AVIF/WebP for ML training
     const firestoreCanvas = this.resizeCanvas(fullResCanvas, 600, 600);
     const firestoreBlob = await this.canvasToBlob(firestoreCanvas, 'avif', 0.8);
@@ -172,34 +182,44 @@ export class CarpetStrategyService {
     return {
       local: localBlob,
       llm: llmBlob,
-      firestore: firestoreBlob
+      firestore: firestoreBlob,
     };
   }
 
   /**
    * 🔄 Resize canvas to target dimensions (square crop from center)
    */
-  private resizeCanvas(sourceCanvas: HTMLCanvasElement, width: number, height: number): HTMLCanvasElement {
+  private resizeCanvas(
+    sourceCanvas: HTMLCanvasElement,
+    width: number,
+    height: number
+  ): HTMLCanvasElement {
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
-    
+
     const ctx = canvas.getContext('2d')!;
-    
+
     // Calculate center crop from source
     const sourceSize = Math.min(sourceCanvas.width, sourceCanvas.height);
     const sourceX = (sourceCanvas.width - sourceSize) / 2;
     const sourceY = (sourceCanvas.height - sourceSize) / 2;
-    
+
     // Draw with smooth scaling
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(
       sourceCanvas,
-      sourceX, sourceY, sourceSize, sourceSize,  // Source crop
-      0, 0, width, height                        // Destination
+      sourceX,
+      sourceY,
+      sourceSize,
+      sourceSize, // Source crop
+      0,
+      0,
+      width,
+      height // Destination
     );
-    
+
     return canvas;
   }
 
@@ -213,16 +233,17 @@ export class CarpetStrategyService {
   ): Promise<Blob> {
     return new Promise((resolve, reject) => {
       const mimeType = `image/${format}`;
-      
+
       canvas.toBlob(
-        (blob) => {
+        blob => {
           if (blob) {
             resolve(blob);
           } else {
             // Fallback to JPEG if format unsupported
             console.log(`[CarpetStrategy] ${format} unsupported, falling back to JPEG`);
             canvas.toBlob(
-              (fallbackBlob) => fallbackBlob ? resolve(fallbackBlob) : reject(new Error('Failed to create blob')),
+              fallbackBlob =>
+                fallbackBlob ? resolve(fallbackBlob) : reject(new Error('Failed to create blob')),
               'image/jpeg',
               quality
             );
@@ -238,23 +259,26 @@ export class CarpetStrategyService {
    * 🤖 Enhanced LLM analysis with full themed system and quality assessment
    * Now uses the complete PhotoAnalysisResult for detailed quality metrics
    */
-  private async analyzeCarpetWithLLM(llmBlob: Blob): Promise<{ 
-    isCarpet: boolean; 
-    confidence: number; 
+  private async analyzeCarpetWithLLM(llmBlob: Blob): Promise<{
+    isCarpet: boolean;
+    confidence: number;
     photoQuality?: PhotoQualityMetrics;
   }> {
     console.log('[CarpetStrategy] 🤖 Starting enhanced themed LLM analysis...');
-    
+
     try {
       // Convert blob to data URL for LLM service
       const dataUrl = await this.blobToDataUrl(llmBlob);
-      
+
       // Use the new themed analysis system for complete quality assessment
-      const themedResult = await this._llmService.analyzePhotoWithTheme(dataUrl, ANALYSIS_THEMES.CARPET);
-      
+      const themedResult = await this._llmService.analyzePhotoWithTheme(
+        dataUrl,
+        ANALYSIS_THEMES.CARPET
+      );
+
       if (themedResult.success) {
         const analysis = themedResult.data;
-        
+
         // 📊 ENHANCED LOGGING - Full LLM result details
         console.log('[CarpetStrategy] ✨ ENHANCED LLM ANALYSIS RESULT ✨');
         console.log('='.repeat(60));
@@ -262,56 +286,54 @@ export class CarpetStrategyService {
         console.log(`  • Carpet Detected: ${analysis.detected}`);
         console.log(`  • Confidence: ${analysis.confidence}%`);
         console.log(`  • Reasoning: ${analysis.reasoning}`);
-        
+
         console.log('\n📸 Photo Quality Assessment (for storage decisions):');
         console.log(`  • Overall Score: ${analysis.photoQuality.overall}%`);
         console.log(`  • Focus/Sharpness: ${analysis.photoQuality.focus}%`);
         console.log(`  • Lighting: ${analysis.photoQuality.lighting}%`);
         console.log(`  • Composition: ${analysis.photoQuality.composition}%`);
         console.log(`  • Quality Factors: ${analysis.photoQuality.factors.join(', ')}`);
-        
+
         console.log('\n🔍 Theme Elements Analysis:');
         console.log(`  • Found Elements: ${analysis.themeElements.found.join(', ') || 'None'}`);
         console.log(`  • Missing Elements: ${analysis.themeElements.missing.join(', ') || 'None'}`);
         console.log(`  • Bonus Elements: ${analysis.themeElements.bonus.join(', ') || 'None'}`);
-        
+
         if (analysis.story && analysis.story.length > 0) {
           console.log('\n📜 Story Elements:');
           analysis.story.forEach((story, index) => {
             console.log(`  ${index + 1}. ${story}`);
           });
         }
-        
+
         console.log('='.repeat(60));
-        
+
         return {
           isCarpet: analysis.detected,
           confidence: analysis.confidence,
-          photoQuality: analysis.photoQuality
+          photoQuality: analysis.photoQuality,
         };
       } else {
         console.error('[CarpetStrategy] ❌ Themed analysis failed:', themedResult.error);
-        
+
         // Fallback to simple analysis for backward compatibility
         console.log('[CarpetStrategy] 🔄 Falling back to simple carpet analysis...');
         const simpleResult = await this._llmService.analyzeCarpet(dataUrl);
-        
+
         console.log('[CarpetStrategy] 🔄 Simple analysis result:', simpleResult);
         return {
           isCarpet: simpleResult.isCarpet,
-          confidence: simpleResult.confidence
+          confidence: simpleResult.confidence,
         };
       }
-      
     } catch (error) {
       console.error('[CarpetStrategy] ❌ LLM analysis error:', error);
-      return { 
-        isCarpet: false, 
-        confidence: 0
+      return {
+        isCarpet: false,
+        confidence: 0,
       };
     }
   }
-  
 
   /**
    * 🔄 Convert blob to data URL for LLM analysis
@@ -331,7 +353,7 @@ export class CarpetStrategyService {
    */
   private async uploadToFirestore(blob: Blob, pubId: string): Promise<string> {
     console.log('[CarpetStrategy] ☁️ Uploading to Firebase Storage...');
-    
+
     try {
       // Check for existing carpet and log if overwriting
       const existingCheck = await this.checkForExistingCarpet(pubId);
@@ -344,13 +366,12 @@ export class CarpetStrategyService {
       const timestamp = Date.now();
       const extension = this.getBlobExtension(blob);
       const filename = `carpets/${pubId}_${timestamp}.${extension}`;
-      
+
       // TODO: Implement Firebase Storage upload
       const uploadUrl = await this.uploadBlobToStorage(blob, filename);
-      
+
       console.log('[CarpetStrategy] ✅ Upload complete:', uploadUrl);
       return uploadUrl;
-      
     } catch (error) {
       console.error('[CarpetStrategy] ❌ Firestore upload failed:', error);
       throw error;
@@ -363,11 +384,11 @@ export class CarpetStrategyService {
    */
   private async checkForExistingCarpet(pubId: string): Promise<{ exists: boolean; url?: string }> {
     console.log('[CarpetStrategy] 🔍 Checking for existing carpet:', pubId);
-    
+
     // TODO: Implement actual check
     // - Query Firebase Storage for existing carpet files
     // - Or query Firestore carpets collection
-    
+
     return { exists: false };
   }
 
@@ -376,20 +397,24 @@ export class CarpetStrategyService {
    * Real implementation with proper error handling
    */
   private async uploadBlobToStorage(blob: Blob, filename: string): Promise<string> {
-    console.log('[CarpetStrategy] 📤 Uploading blob to Firebase Storage:', filename, (blob.size / 1024).toFixed(1) + 'KB');
-    
+    console.log(
+      '[CarpetStrategy] 📤 Uploading blob to Firebase Storage:',
+      filename,
+      (blob.size / 1024).toFixed(1) + 'KB'
+    );
+
     try {
       // Create a reference to the file in Firebase Storage
       const storageRef = ref(this._storage, filename);
-      
+
       // Upload the blob to Firebase Storage
       const snapshot = await uploadBytes(storageRef, blob);
       console.log('[CarpetStrategy] ✅ Upload complete, getting download URL...');
-      
+
       // Get the download URL
       const downloadURL = await getDownloadURL(snapshot.ref);
       console.log('[CarpetStrategy] ✅ Download URL obtained:', downloadURL);
-      
+
       return downloadURL;
     } catch (error) {
       console.error('[CarpetStrategy] ❌ Firebase Storage upload failed:', error);
@@ -402,10 +427,14 @@ export class CarpetStrategyService {
    */
   private getBlobExtension(blob: Blob): string {
     switch (blob.type) {
-      case 'image/avif': return 'avif';
-      case 'image/webp': return 'webp';
-      case 'image/jpeg': return 'jpg';
-      default: return 'jpg';
+      case 'image/avif':
+        return 'avif';
+      case 'image/webp':
+        return 'webp';
+      case 'image/jpeg':
+        return 'jpg';
+      default:
+        return 'jpg';
     }
   }
 
@@ -414,18 +443,18 @@ export class CarpetStrategyService {
    */
   private cleanupCanvas(canvas: HTMLCanvasElement): void {
     console.log('[CarpetStrategy] 🧹 Cleaning up full resolution canvas');
-    
+
     // Clear canvas content
     const ctx = canvas.getContext('2d');
     if (ctx) {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
-    
+
     // Remove from DOM if attached
     if (canvas.parentNode) {
       canvas.parentNode.removeChild(canvas);
     }
-    
+
     // Force garbage collection hint
     canvas.width = 0;
     canvas.height = 0;
@@ -445,8 +474,8 @@ export class CarpetStrategyService {
       defaultQuality: {
         local: 0.8,
         llm: 0.6,
-        firestore: 0.8
-      }
+        firestore: 0.8,
+      },
     };
   }
 }

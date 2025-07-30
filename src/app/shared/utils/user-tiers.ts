@@ -21,9 +21,9 @@ export function getUserTier(user: any): UserTier {
  */
 export const TIER_LIMITS = {
   anonymous: {
-    maxPubsTracked: 50,           // Let them get hooked first
-    leaderboardVisible: true,      // Show them what they're competing for
-    canEarnBadges: false,         // Incentive to upgrade
+    maxPubsTracked: 50, // Let them get hooked first
+    leaderboardVisible: true, // Show them what they're competing for
+    canEarnBadges: false, // Incentive to upgrade
     canCustomizeProfile: false,
     canExportData: false,
     showsInGlobalLeaderboard: false, // They see it but aren't ranked
@@ -44,7 +44,7 @@ export const TIER_LIMITS = {
     canExportData: true,
     showsInGlobalLeaderboard: true,
     earlyFeatureAccess: true,
-  }
+  },
 } as const;
 
 /**
@@ -82,7 +82,10 @@ export function getUpgradeMessage(visitedPubsCount: number, tier: UserTier): str
  * @param action - Action they want to perform
  * @returns Whether action is allowed
  */
-export function canPerformAction(tier: UserTier, action: keyof typeof TIER_LIMITS.anonymous): boolean {
+export function canPerformAction(
+  tier: UserTier,
+  action: keyof typeof TIER_LIMITS.anonymous
+): boolean {
   return TIER_LIMITS[tier][action] as boolean;
 }
 

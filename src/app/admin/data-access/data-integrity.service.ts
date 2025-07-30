@@ -1,13 +1,19 @@
 // src/app/admin/data-access/data-integrity.service.ts
-import { Injectable, inject } from '@angular/core';
-import { FirestoreService } from '@fourfold/angular-foundation';
-import { collection, getDocs, query, where } from '@angular/fire/firestore';
-import type { User } from '@users/utils/user.model';
+import { Injectable } from '@angular/core';
+import { where } from '@angular/fire/firestore';
 import type { CheckIn } from '@check-in/utils/check-in.models';
+import { FirestoreService } from '@fourfold/angular-foundation';
+import type { User } from '@users/utils/user.model';
 
 export type DataInconsistency = {
   id: string;
-  type: 'orphaned-checkin' | 'orphaned-transaction' | 'points-mismatch' | 'pub-count-mismatch' | 'badge-count-mismatch' | 'missing-user-summary';
+  type:
+    | 'orphaned-checkin'
+    | 'orphaned-transaction'
+    | 'points-mismatch'
+    | 'pub-count-mismatch'
+    | 'badge-count-mismatch'
+    | 'missing-user-summary';
   severity: 'low' | 'medium' | 'high' | 'critical';
   userId?: string;
   userName?: string;
@@ -55,10 +61,9 @@ export type IntegrityReport = {
 };
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DataIntegrityService extends FirestoreService {
-
   /**
    * Perform comprehensive data integrity analysis
    */
@@ -101,14 +106,14 @@ export class DataIntegrityService extends FirestoreService {
       inconsistenciesByType,
       orphanedRecords,
       userSummaries: userSummaries.filter(us => us.inconsistencies.length > 0), // Only include users with issues
-      canAutoRepairCount
+      canAutoRepairCount,
     };
 
     console.log('[DataIntegrityService] ✅ Analysis complete:', {
       totalUsers: report.totalUsers,
       usersWithIssues: report.usersWithInconsistencies,
       totalIssues: report.totalInconsistencies,
-      orphanedRecords: report.orphanedRecords
+      orphanedRecords: report.orphanedRecords,
     });
 
     return report;
@@ -124,7 +129,7 @@ export class DataIntegrityService extends FirestoreService {
     const [checkins, pointsTransactions, earnedBadges] = await Promise.all([
       this.getUserCheckins(user.uid),
       this.getUserPointsTransactions(user.uid),
-      this.getUserEarnedBadges(user.uid)
+      this.getUserEarnedBadges(user.uid),
     ]);
 
     // Calculate actual values from transactions
@@ -132,7 +137,7 @@ export class DataIntegrityService extends FirestoreService {
       totalPointsFromTransactions: this.calculateTotalPoints(pointsTransactions),
       verifiedPubCountFromCheckins: checkins.length,
       uniquePubsFromCheckins: new Set(checkins.map(c => c.pubId)).size,
-      badgeCountFromEarned: earnedBadges.length
+      badgeCountFromEarned: earnedBadges.length,
     };
 
     // Current summary values (with fallbacks)
@@ -141,7 +146,7 @@ export class DataIntegrityService extends FirestoreService {
       verifiedPubCount: user.verifiedPubCount || 0,
       unverifiedPubCount: user.unverifiedPubCount || 0,
       totalPubCount: user.totalPubCount || 0,
-      badgeCount: user.badgeCount || 0
+      badgeCount: user.badgeCount || 0,
     };
 
     // Check for inconsistencies
@@ -155,14 +160,16 @@ export class DataIntegrityService extends FirestoreService {
       userName: user.displayName,
       summary,
       calculated,
-      inconsistencies
+      inconsistencies,
     };
   }
 
   /**
    * Find orphaned records that reference non-existent users
    */
-  private async findOrphanedRecords(validUserIds: string[]): Promise<IntegrityReport['orphanedRecords']> {
+  private async findOrphanedRecords(
+    validUserIds: string[]
+  ): Promise<IntegrityReport['orphanedRecords']> {
     console.log('[DataIntegrityService] 🔍 Scanning for orphaned records...');
 
     const validUserSet = new Set(validUserIds);
@@ -171,7 +178,7 @@ export class DataIntegrityService extends FirestoreService {
       this.getDocsWhere<CheckIn>('checkins'),
       this.getDocsWhere<any>('pointsTransactions'),
       this.getDocsWhere<any>('earnedBadges'),
-      this.getDocsWhere<any>('landlords')
+      this.getDocsWhere<any>('landlords'),
     ]);
 
     const orphanedCheckins = checkins.filter(c => !validUserSet.has(c.userId)).length;
@@ -183,14 +190,14 @@ export class DataIntegrityService extends FirestoreService {
       checkins: orphanedCheckins,
       pointsTransactions: orphanedTransactions,
       earnedBadges: orphanedBadges,
-      landlords: orphanedLandlords
+      landlords: orphanedLandlords,
     });
 
     return {
       checkins: orphanedCheckins,
       pointsTransactions: orphanedTransactions,
       earnedBadges: orphanedBadges,
-      landlords: orphanedLandlords
+      landlords: orphanedLandlords,
     };
   }
 
@@ -213,7 +220,10 @@ export class DataIntegrityService extends FirestoreService {
     try {
       return await this.getDocsWhere<any>('pointsTransactions', where('userId', '==', userId));
     } catch (error) {
-      console.warn(`[DataIntegrityService] Failed to get points transactions for user ${userId}:`, error);
+      console.warn(
+        `[DataIntegrityService] Failed to get points transactions for user ${userId}:`,
+        error
+      );
       return [];
     }
   }
@@ -261,7 +271,7 @@ export class DataIntegrityService extends FirestoreService {
         expectedValue: calculated.totalPointsFromTransactions,
         affectedCollections: ['users', 'pointsTransactions'],
         canAutoRepair: true,
-        repairDescription: `Update user.totalPoints from ${summary.totalPoints} to ${calculated.totalPointsFromTransactions}`
+        repairDescription: `Update user.totalPoints from ${summary.totalPoints} to ${calculated.totalPointsFromTransactions}`,
       });
     }
   }
@@ -287,7 +297,7 @@ export class DataIntegrityService extends FirestoreService {
         expectedValue: calculated.verifiedPubCountFromCheckins,
         affectedCollections: ['users', 'checkins'],
         canAutoRepair: true,
-        repairDescription: `Update user.verifiedPubCount from ${summary.verifiedPubCount} to ${calculated.verifiedPubCountFromCheckins}`
+        repairDescription: `Update user.verifiedPubCount from ${summary.verifiedPubCount} to ${calculated.verifiedPubCountFromCheckins}`,
       });
     }
 
@@ -305,7 +315,7 @@ export class DataIntegrityService extends FirestoreService {
         expectedValue: expectedTotalPubCount,
         affectedCollections: ['users'],
         canAutoRepair: true,
-        repairDescription: `Update user.totalPubCount from ${summary.totalPubCount} to ${expectedTotalPubCount}`
+        repairDescription: `Update user.totalPubCount from ${summary.totalPubCount} to ${expectedTotalPubCount}`,
       });
     }
   }
@@ -331,7 +341,7 @@ export class DataIntegrityService extends FirestoreService {
         expectedValue: calculated.badgeCountFromEarned,
         affectedCollections: ['users', 'earnedBadges'],
         canAutoRepair: true,
-        repairDescription: `Update user.badgeCount from ${summary.badgeCount} to ${calculated.badgeCountFromEarned}`
+        repairDescription: `Update user.badgeCount from ${summary.badgeCount} to ${calculated.badgeCountFromEarned}`,
       });
     }
   }
@@ -345,7 +355,7 @@ export class DataIntegrityService extends FirestoreService {
     inconsistencies: DataInconsistency[]
   ): void {
     const missingFields: string[] = [];
-    
+
     if (user.totalPoints === undefined) missingFields.push('totalPoints');
     if (user.verifiedPubCount === undefined) missingFields.push('verifiedPubCount');
     if (user.unverifiedPubCount === undefined) missingFields.push('unverifiedPubCount');
@@ -364,7 +374,7 @@ export class DataIntegrityService extends FirestoreService {
         expectedValue: 'Calculated from transactional data',
         affectedCollections: ['users'],
         canAutoRepair: true,
-        repairDescription: `Initialize missing summary fields: ${missingFields.join(', ')}`
+        repairDescription: `Initialize missing summary fields: ${missingFields.join(', ')}`,
       });
     }
   }
@@ -372,7 +382,9 @@ export class DataIntegrityService extends FirestoreService {
   /**
    * Auto-repair a specific inconsistency
    */
-  async repairInconsistency(inconsistency: DataInconsistency): Promise<{ success: boolean; error?: string }> {
+  async repairInconsistency(
+    inconsistency: DataInconsistency
+  ): Promise<{ success: boolean; error?: string }> {
     if (!inconsistency.canAutoRepair) {
       return { success: false, error: 'This inconsistency cannot be auto-repaired' };
     }
@@ -382,7 +394,9 @@ export class DataIntegrityService extends FirestoreService {
     }
 
     try {
-      console.log(`[DataIntegrityService] 🔧 Repairing ${inconsistency.type} for user ${inconsistency.userId}`);
+      console.log(
+        `[DataIntegrityService] 🔧 Repairing ${inconsistency.type} for user ${inconsistency.userId}`
+      );
 
       switch (inconsistency.type) {
         case 'points-mismatch':
@@ -401,9 +415,10 @@ export class DataIntegrityService extends FirestoreService {
           return { success: false, error: `Unknown inconsistency type: ${inconsistency.type}` };
       }
 
-      console.log(`[DataIntegrityService] ✅ Successfully repaired ${inconsistency.type} for user ${inconsistency.userId}`);
+      console.log(
+        `[DataIntegrityService] ✅ Successfully repaired ${inconsistency.type} for user ${inconsistency.userId}`
+      );
       return { success: true };
-
     } catch (error: any) {
       console.error(`[DataIntegrityService] ❌ Failed to repair ${inconsistency.type}:`, error);
       return { success: false, error: error?.message || 'Unknown error during repair' };
@@ -420,7 +435,10 @@ export class DataIntegrityService extends FirestoreService {
   /**
    * Repair pub count mismatch
    */
-  private async repairPubCountMismatch(userId: string, inconsistency: DataInconsistency): Promise<void> {
+  private async repairPubCountMismatch(
+    userId: string,
+    inconsistency: DataInconsistency
+  ): Promise<void> {
     const updates: Partial<User> = {};
 
     if (inconsistency.id.includes('total-pub-count')) {
@@ -454,13 +472,14 @@ export class DataIntegrityService extends FirestoreService {
 
     // Recalculate all summary fields
     const userSummary = await this.analyzeUserData(user);
-    
+
     const updates: Partial<User> = {
       totalPoints: userSummary.calculated.totalPointsFromTransactions,
       verifiedPubCount: userSummary.calculated.verifiedPubCountFromCheckins,
       unverifiedPubCount: user.unverifiedPubCount || 0,
-      totalPubCount: userSummary.calculated.verifiedPubCountFromCheckins + (user.unverifiedPubCount || 0),
-      badgeCount: userSummary.calculated.badgeCountFromEarned
+      totalPubCount:
+        userSummary.calculated.verifiedPubCountFromCheckins + (user.unverifiedPubCount || 0),
+      badgeCount: userSummary.calculated.badgeCountFromEarned,
     };
 
     await this.updateDoc(`users/${userId}`, updates);
@@ -469,7 +488,9 @@ export class DataIntegrityService extends FirestoreService {
   /**
    * Remove orphaned records for a specific user
    */
-  async removeOrphanedRecordsForUser(userId: string): Promise<{ success: boolean; deletedCounts: Record<string, number>; error?: string }> {
+  async removeOrphanedRecordsForUser(
+    userId: string
+  ): Promise<{ success: boolean; deletedCounts: Record<string, number>; error?: string }> {
     try {
       console.log(`[DataIntegrityService] 🗑️ Removing orphaned records for user ${userId}`);
 
@@ -477,12 +498,12 @@ export class DataIntegrityService extends FirestoreService {
         checkins: 0,
         pointsTransactions: 0,
         earnedBadges: 0,
-        landlords: 0
+        landlords: 0,
       };
 
       // Remove from each collection
       const collections = ['checkins', 'pointsTransactions', 'earnedBadges', 'landlords'];
-      
+
       for (const collectionName of collections) {
         const docs = await this.getDocsWhere<any>(collectionName, where('userId', '==', userId));
         for (const doc of docs) {
@@ -491,11 +512,16 @@ export class DataIntegrityService extends FirestoreService {
         }
       }
 
-      console.log(`[DataIntegrityService] ✅ Removed orphaned records for user ${userId}:`, deletedCounts);
+      console.log(
+        `[DataIntegrityService] ✅ Removed orphaned records for user ${userId}:`,
+        deletedCounts
+      );
       return { success: true, deletedCounts };
-
     } catch (error: any) {
-      console.error(`[DataIntegrityService] ❌ Failed to remove orphaned records for user ${userId}:`, error);
+      console.error(
+        `[DataIntegrityService] ❌ Failed to remove orphaned records for user ${userId}:`,
+        error
+      );
       return { success: false, deletedCounts: {}, error: error?.message || 'Unknown error' };
     }
   }

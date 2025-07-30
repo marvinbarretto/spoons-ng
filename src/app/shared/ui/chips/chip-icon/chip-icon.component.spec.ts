@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ChipIconComponent } from './chip-icon.component';
 import { IconComponent } from '../../icon/icon.component';
+import { ChipIconComponent } from './chip-icon.component';
 
 describe('ChipIconComponent', () => {
   let component: ChipIconComponent;
@@ -8,12 +8,12 @@ describe('ChipIconComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ChipIconComponent, IconComponent]
+      imports: [ChipIconComponent, IconComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ChipIconComponent);
     component = fixture.componentInstance;
-    
+
     // Set required input
     fixture.componentRef.setInput('icon', 'star');
     fixture.detectChanges();
@@ -31,7 +31,7 @@ describe('ChipIconComponent', () => {
   it('should display label when provided', () => {
     fixture.componentRef.setInput('label', 'Test Label');
     fixture.detectChanges();
-    
+
     const labelElement = fixture.nativeElement.querySelector('.chip-text');
     expect(labelElement.textContent).toContain('Test Label');
   });
@@ -44,7 +44,7 @@ describe('ChipIconComponent', () => {
   it('should display count badge when count is provided', () => {
     fixture.componentRef.setInput('count', 5);
     fixture.detectChanges();
-    
+
     const countBadge = fixture.nativeElement.querySelector('.count-badge');
     expect(countBadge).toBeTruthy();
     expect(countBadge.textContent).toContain('5');
@@ -53,7 +53,7 @@ describe('ChipIconComponent', () => {
   it('should not display count badge when count is null', () => {
     fixture.componentRef.setInput('count', null);
     fixture.detectChanges();
-    
+
     const countBadge = fixture.nativeElement.querySelector('.count-badge');
     expect(countBadge).toBeFalsy();
   });
@@ -67,7 +67,7 @@ describe('ChipIconComponent', () => {
   it('should apply correct size classes', () => {
     fixture.componentRef.setInput('size', 'lg');
     fixture.detectChanges();
-    
+
     const chipElement = fixture.nativeElement.querySelector('.chip-icon');
     expect(chipElement.classList).toContain('size--lg');
   });
@@ -75,7 +75,7 @@ describe('ChipIconComponent', () => {
   it('should apply correct variant classes', () => {
     fixture.componentRef.setInput('variant', 'success');
     fixture.detectChanges();
-    
+
     const chipElement = fixture.nativeElement.querySelector('.chip-icon');
     expect(chipElement.classList).toContain('variant--success');
   });
@@ -83,7 +83,7 @@ describe('ChipIconComponent', () => {
   it('should apply clickable class when clickable is true', () => {
     fixture.componentRef.setInput('clickable', true);
     fixture.detectChanges();
-    
+
     const chipElement = fixture.nativeElement.querySelector('.chip-icon');
     expect(chipElement.classList).toContain('clickable');
   });
@@ -91,33 +91,33 @@ describe('ChipIconComponent', () => {
   it('should emit clicked event when clicked and clickable', () => {
     fixture.componentRef.setInput('clickable', true);
     fixture.detectChanges();
-    
+
     const clickedSpy = jest.fn();
     component.clicked.subscribe(clickedSpy);
-    
+
     const chipElement = fixture.nativeElement.querySelector('.chip-icon');
     chipElement.click();
-    
+
     expect(clickedSpy).toHaveBeenCalledWith('star');
   });
 
   it('should not emit clicked event when not clickable', () => {
     fixture.componentRef.setInput('clickable', false);
     fixture.detectChanges();
-    
+
     const clickedSpy = jest.fn();
     component.clicked.subscribe(clickedSpy);
-    
+
     const chipElement = fixture.nativeElement.querySelector('.chip-icon');
     chipElement.click();
-    
+
     expect(clickedSpy).not.toHaveBeenCalled();
   });
 
   it('should map chip size to icon size correctly', () => {
     fixture.componentRef.setInput('size', 'lg');
     fixture.detectChanges();
-    
+
     expect(component.iconSize()).toBe('md');
   });
 
@@ -126,7 +126,7 @@ describe('ChipIconComponent', () => {
     fixture.componentRef.setInput('count', 5);
     fixture.componentRef.setInput('clickable', true);
     fixture.detectChanges();
-    
+
     const ariaLabel = component.ariaLabel();
     expect(ariaLabel).toBe('Test, count 5, clickable');
   });
@@ -134,7 +134,7 @@ describe('ChipIconComponent', () => {
   it('should generate aria label with icon name when no label provided', () => {
     fixture.componentRef.setInput('clickable', true);
     fixture.detectChanges();
-    
+
     const ariaLabel = component.ariaLabel();
     expect(ariaLabel).toBe('Icon star, clickable');
   });

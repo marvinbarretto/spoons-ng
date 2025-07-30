@@ -1,11 +1,10 @@
 import { Injectable, inject } from '@angular/core';
-import { PreloadingStrategy, Route } from '@angular/router';
+import { PreloadingStrategy, Route, Router } from '@angular/router';
 import { Observable, of, timer } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-import { Router } from '@angular/router';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class OnboardingAwarePreloadingStrategy implements PreloadingStrategy {
   private readonly router = inject(Router);
@@ -21,7 +20,9 @@ export class OnboardingAwarePreloadingStrategy implements PreloadingStrategy {
     const isInOnboarding = currentUrl.includes('/register');
 
     if (isInOnboarding) {
-      console.log('[PreloadingStrategy] 🚀 User in onboarding - starting background download of main app');
+      console.log(
+        '[PreloadingStrategy] 🚀 User in onboarding - starting background download of main app'
+      );
 
       // Wait a moment to let onboarding settle, then start preloading
       return timer(2000).pipe(

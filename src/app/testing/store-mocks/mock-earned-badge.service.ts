@@ -14,8 +14,9 @@ export class MockEarnedBadgeService {
    * Mock implementation of getEarnedBadgesForUser
    */
   async getEarnedBadgesForUser(userId: string): Promise<EarnedBadge[]> {
-    const userBadges = Array.from(this.mockEarnedBadges.values())
-      .filter(badge => badge.userId === userId);
+    const userBadges = Array.from(this.mockEarnedBadges.values()).filter(
+      badge => badge.userId === userId
+    );
     return userBadges;
   }
 
@@ -30,7 +31,11 @@ export class MockEarnedBadgeService {
   /**
    * Mock implementation of awardBadge
    */
-  async awardBadge(userId: string, badgeId: string, metadata?: Record<string, any>): Promise<EarnedBadge> {
+  async awardBadge(
+    userId: string,
+    badgeId: string,
+    metadata?: Record<string, any>
+  ): Promise<EarnedBadge> {
     // Check for duplicates
     const hasAlready = await this.userHasBadge(userId, badgeId);
     if (hasAlready) {
@@ -43,12 +48,12 @@ export class MockEarnedBadgeService {
       userId,
       badgeId,
       awardedAt: Date.now(),
-      metadata: metadata || {}
+      metadata: metadata || {},
     };
 
     const key = `${userId}_${badgeId}`;
     this.mockEarnedBadges.set(key, earnedBadge);
-    
+
     return earnedBadge;
   }
 
@@ -76,7 +81,7 @@ export class MockEarnedBadgeService {
       userId: 'test-user-id',
       badgeId: 'test-badge-id',
       awardedAt: Date.now(),
-      metadata: {}
+      metadata: {},
     };
 
     this.setMockEarnedBadge(testEarnedBadge.userId, testEarnedBadge.badgeId, testEarnedBadge);

@@ -1,8 +1,8 @@
 // src/app/shared/ui/user-selector/user-selector.component.spec.ts
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { UserSelectorComponent } from './user-selector.component';
-import { MockUserStore } from '../../../testing/store-mocks/mock-user.store';
 import { UserStore } from '@users/data-access/user.store';
+import { MockUserStore } from '../../../testing/store-mocks/mock-user.store';
+import { UserSelectorComponent } from './user-selector.component';
 
 describe('UserSelectorComponent', () => {
   let component: UserSelectorComponent;
@@ -11,9 +11,7 @@ describe('UserSelectorComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [UserSelectorComponent],
-      providers: [
-        { provide: UserStore, useClass: MockUserStore }
-      ]
+      providers: [{ provide: UserStore, useClass: MockUserStore }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(UserSelectorComponent);
@@ -27,7 +25,7 @@ describe('UserSelectorComponent', () => {
 
   it('should emit selectionChange when user is selected', () => {
     spyOn(component.selectionChange, 'emit');
-    
+
     const mockUser = {
       uid: 'test-user-1',
       displayName: 'Test User',
@@ -45,7 +43,7 @@ describe('UserSelectorComponent', () => {
       manuallyAddedPubIds: [],
       verifiedPubCount: 0,
       unverifiedPubCount: 0,
-      totalPubCount: 0
+      totalPubCount: 0,
     };
 
     component.selectUser(mockUser);
@@ -55,7 +53,7 @@ describe('UserSelectorComponent', () => {
 
   it('should clear selection', () => {
     spyOn(component.selectionChange, 'emit');
-    
+
     component.clearSelection();
 
     expect(component.selectionChange.emit).toHaveBeenCalledWith(null);

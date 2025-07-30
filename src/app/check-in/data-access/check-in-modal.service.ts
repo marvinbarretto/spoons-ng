@@ -1,6 +1,7 @@
 // src/app/check-in/data-access/check-in-modal.service.ts
 import { inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
+import { RegistrationPromptService } from '@auth/data-access/registration-prompt.service';
 import { CheckInStore } from '@check-in/data-access/check-in.store';
 import { OverlayService } from '@fourfold/angular-foundation';
 import { UserProgressionService } from '@shared/data-access/user-progression.service';
@@ -16,12 +17,19 @@ export class CheckInModalService {
   private readonly userProgressionService = inject(UserProgressionService);
   private readonly checkinStore = inject(CheckInStore);
   private readonly router = inject(Router);
+  private readonly registrationPromptService = inject(RegistrationPromptService);
 
   // Callback for when modal flow is completely dismissed
   private onModalFlowDismissed?: () => void;
 
   // Track active timeouts for cleanup
   private activeTimeouts: Set<number> = new Set();
+
+  /**
+   * Modal transition delay to ensure smooth UX
+   * Prevents modal stacking, animation conflicts, and DOM cleanup issues
+   */
+  private readonly MODAL_TRANSITION_DELAY = 200;
 
   /**
    * Show consecutive modals for check-in results
@@ -78,7 +86,7 @@ export class CheckInModalService {
       // Brief delay for smooth transition
       this.safeSetTimeout(() => {
         this.showPointsDetails(data);
-      }, 200);
+      }, this.MODAL_TRANSITION_DELAY);
     });
 
     componentRef.instance.skip.subscribe(() => {
@@ -89,7 +97,7 @@ export class CheckInModalService {
       // Brief delay for smooth transition
       this.safeSetTimeout(() => {
         this.showPointsDetails(data);
-      }, 200);
+      }, this.MODAL_TRANSITION_DELAY);
     });
 
     // Handle backdrop/escape dismissal via overlay result promise
@@ -148,15 +156,56 @@ export class CheckInModalService {
       clearFallbackTimeout();
       close();
 
-      // TODO: Landlord modal temporarily disabled until feature is complete
-      // Continue to landlord modal if applicable, otherwise finish
-      // if (data.isNewLandlord || data.landlordMessage) {
-      //   this.safeSetTimeout(() => {
-      //     this.showLandlordStatus(data);
-      //   }, 200);
-      // } else {
-      this.forceNavigationToHomepage();
-      // }
+      // Check if we should show registration prompt after successful check-in
+      this.safeSetTimeout(async () => {
+        if (this.registrationPromptService.shouldShow('first-checkin')) {
+          await this.registrationPromptService.showPrompt({
+            trigger: 'first-checkin',
+            context: {
+              pointsEarned: data.points?.total || 0,
+              totalPoints: data.points?.total || 0,
+              badgesEarned: (data.badges || []).length,
+            },
+          });
+          return;
+        }
+
+        // Check for points milestone
+        if (this.registrationPromptService.shouldShow('points-milestone')) {
+          await this.registrationPromptService.showPrompt({
+            trigger: 'points-milestone',
+            context: {
+              pointsEarned: data.points?.total || 0,
+              totalPoints: data.points?.total || 0,
+            },
+          });
+          return;
+        }
+
+        // Check for badge earned
+        if (
+          (data.badges || []).length > 0 &&
+          this.registrationPromptService.shouldShow('badge-earned')
+        ) {
+          await this.registrationPromptService.showPrompt({
+            trigger: 'badge-earned',
+            context: {
+              badgesEarned: (data.badges || []).length,
+            },
+          });
+          return;
+        }
+
+        // TODO: Landlord modal temporarily disabled until feature is complete
+        // Continue to landlord modal if applicable, otherwise finish
+        // if (data.isNewLandlord || data.landlordMessage) {
+        //   this.safeSetTimeout(() => {
+        //     this.showLandlordStatus(data);
+        //   }, this.MODAL_TRANSITION_DELAY);
+        // } else {
+        this.forceNavigationToHomepage();
+        // }
+      }, this.MODAL_TRANSITION_DELAY);
     });
 
     componentRef.instance.dismiss.subscribe(() => {
@@ -248,7 +297,7 @@ export class CheckInModalService {
       // Brief delay for smooth transition
       this.safeSetTimeout(() => {
         this.showCelebration(data);
-      }, 200);
+      }, this.MODAL_TRANSITION_DELAY);
     });
 
     // Handle backdrop/escape dismissal via overlay result promise

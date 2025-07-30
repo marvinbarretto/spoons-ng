@@ -1,11 +1,10 @@
 // src/app/shared/ui/data-table/data-table.component.ts
-import { Component, input, computed, signal, inject } from "@angular/core";
+import { Component, computed, inject, input, signal } from '@angular/core';
 
-import { TableColumn } from './data-table.model';
-import { ChipUserComponent, UserChipData } from '../chips/chip-user/chip-user.component';
 import { ViewportService } from '../../data-access/viewport.service';
+import { ChipUserComponent, UserChipData } from '../chips/chip-user/chip-user.component';
 import { IconComponent } from '../icon/icon.component';
-import { UserDisplayPipe } from '../../../shared/pipes/user-display.pipe';
+import { TableColumn } from './data-table.model';
 
 export type SortDirection = 'asc' | 'desc' | null;
 export type SortState = {
@@ -34,7 +33,11 @@ export type SortState = {
                     <span>{{ column.label }}</span>
                     @if (column.sortable && sortState().column === column.key) {
                       <app-icon
-                        [name]="sortState().direction === 'asc' ? 'keyboard_arrow_up' : 'keyboard_arrow_down'"
+                        [name]="
+                          sortState().direction === 'asc'
+                            ? 'keyboard_arrow_up'
+                            : 'keyboard_arrow_down'
+                        "
                         size="sm"
                         class="sort-indicator"
                       />
@@ -87,7 +90,8 @@ export type SortState = {
       border-collapse: collapse;
     }
 
-    th, td {
+    th,
+    td {
       padding: 0.75rem;
       text-align: center;
       border-bottom: 1px solid var(--background-lighter);
@@ -221,7 +225,8 @@ export type SortState = {
 
     /* Mobile responsiveness */
     @media (max-width: 600px) {
-      th, td {
+      th,
+      td {
         padding: 0.5rem 0.25rem;
         font-size: 0.9rem;
       }
@@ -239,7 +244,7 @@ export type SortState = {
         height: 28px;
       }
     }
-  `
+  `,
 })
 export class DataTableComponent {
   readonly data = input.required<any[]>();
@@ -276,9 +281,7 @@ export class DataTableComponent {
     if (!search) return this.data();
 
     return this.data().filter(row =>
-      Object.values(row).some(value =>
-        String(value).toLowerCase().includes(search)
-      )
+      Object.values(row).some(value => String(value).toLowerCase().includes(search))
     );
   });
 
@@ -336,9 +339,14 @@ export class DataTableComponent {
   }
 
   handleRowClick(row: any): void {
+    console.log('[DataTable] Row clicked:', row);
     const clickHandler = this.onRowClick();
+    console.log('[DataTable] Click handler exists:', !!clickHandler);
     if (clickHandler) {
+      console.log('[DataTable] Calling click handler with row data');
       clickHandler(row);
+    } else {
+      console.log('[DataTable] No click handler provided');
     }
   }
 
@@ -350,18 +358,17 @@ export class DataTableComponent {
     if (currentSort.column === column.key) {
       // Cycle through: asc -> desc -> null
       const newDirection: SortDirection =
-        currentSort.direction === 'asc' ? 'desc' :
-        currentSort.direction === 'desc' ? null : 'asc';
+        currentSort.direction === 'asc' ? 'desc' : currentSort.direction === 'desc' ? null : 'asc';
 
       this.sortState.set({
         column: newDirection ? column.key : null,
-        direction: newDirection
+        direction: newDirection,
       });
     } else {
       // New column, start with descending
       this.sortState.set({
         column: column.key,
-        direction: 'desc'
+        direction: 'desc',
       });
     }
   }
@@ -379,7 +386,7 @@ export class DataTableComponent {
       displayName: row.displayName || 'Unknown User',
       photoURL: row.photoURL,
       email: row.email,
-      realDisplayName: row.realDisplayName
+      realDisplayName: row.realDisplayName,
     };
   }
 }

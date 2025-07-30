@@ -8,9 +8,8 @@ describe('ListFilterControlsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ListFilterControlsComponent]
-    })
-    .compileComponents();
+      imports: [ListFilterControlsComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(ListFilterControlsComponent);
     component = fixture.componentInstance;

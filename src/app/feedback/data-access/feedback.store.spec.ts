@@ -1,25 +1,25 @@
-import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
-import { FeedbackStore } from './feedback.store';
-import { FeedbackService } from './feedback.service';
-import { ToastService } from '../../shared/data-access/toast.service';
+import { TestBed } from '@angular/core/testing';
 import { AuthStore } from '../../auth/data-access/auth.store';
-import { Feedback, CreateFeedbackInput, FeedbackType } from '../utils/feedback.model';
+import { ToastService } from '../../shared/data-access/toast.service';
+import { CreateFeedbackInput, Feedback, FeedbackType } from '../utils/feedback.model';
+import { FeedbackService } from './feedback.service';
+import { FeedbackStore } from './feedback.store';
 
 // Mock services
 const mockFeedbackService = {
   submitFeedback: jest.fn(),
   getUserFeedback: jest.fn(),
-  updateFeedbackStatus: jest.fn()
+  updateFeedbackStatus: jest.fn(),
 };
 
 const mockToastService = {
   success: jest.fn(),
-  error: jest.fn()
+  error: jest.fn(),
 };
 
 const mockAuthStore = {
-  user: signal(null)
+  user: signal(null),
 };
 
 describe('FeedbackStore', () => {
@@ -29,7 +29,7 @@ describe('FeedbackStore', () => {
     uid: 'test-user-id',
     displayName: 'Test User',
     email: 'test@example.com',
-    isAnonymous: false
+    isAnonymous: false,
   };
 
   const mockFeedback: Feedback = {
@@ -43,17 +43,17 @@ describe('FeedbackStore', () => {
       userAgent: 'test-agent',
       currentUrl: 'test-url',
       viewport: { width: 1920, height: 1080 },
-      timestamp: new Date()
+      timestamp: new Date(),
     },
     status: 'pending',
     createdAt: new Date(),
-    updatedAt: new Date()
+    updatedAt: new Date(),
   };
 
   const mockCreateFeedbackInput: CreateFeedbackInput = {
     type: 'bug' as FeedbackType,
     message: 'Test feedback message',
-    screenshot: new Blob(['fake screenshot'], { type: 'image/png' })
+    screenshot: new Blob(['fake screenshot'], { type: 'image/png' }),
   };
 
   beforeEach(() => {
@@ -62,8 +62,8 @@ describe('FeedbackStore', () => {
         FeedbackStore,
         { provide: FeedbackService, useValue: mockFeedbackService },
         { provide: ToastService, useValue: mockToastService },
-        { provide: AuthStore, useValue: mockAuthStore }
-      ]
+        { provide: AuthStore, useValue: mockAuthStore },
+      ],
     });
 
     store = TestBed.inject(FeedbackStore);
@@ -112,7 +112,7 @@ describe('FeedbackStore', () => {
 
       expect(result).toEqual({
         success: true,
-        feedbackId: 'new-feedback-id'
+        feedbackId: 'new-feedback-id',
       });
 
       expect(mockFeedbackService.submitFeedback).toHaveBeenCalledWith(
@@ -162,7 +162,7 @@ describe('FeedbackStore', () => {
 
       expect(result).toEqual({
         success: false,
-        error: 'User not authenticated'
+        error: 'User not authenticated',
       });
 
       expect(mockFeedbackService.submitFeedback).not.toHaveBeenCalled();
@@ -177,7 +177,7 @@ describe('FeedbackStore', () => {
 
       expect(result).toEqual({
         success: false,
-        error: 'Service error'
+        error: 'Service error',
       });
 
       expect(mockToastService.error).toHaveBeenCalledWith('Service error');
@@ -191,13 +191,15 @@ describe('FeedbackStore', () => {
 
       await store.submitFeedback(mockCreateFeedbackInput);
 
-      expect(addItemSpy).toHaveBeenCalledWith(expect.objectContaining({
-        id: 'new-feedback-id',
-        userId: 'test-user-id',
-        type: 'bug',
-        message: 'Test feedback message',
-        status: 'pending'
-      }));
+      expect(addItemSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'new-feedback-id',
+          userId: 'test-user-id',
+          type: 'bug',
+          message: 'Test feedback message',
+          status: 'pending',
+        })
+      );
     });
   });
 
@@ -241,7 +243,7 @@ describe('FeedbackStore', () => {
         { ...mockFeedback, id: '1', type: 'bug', status: 'pending' },
         { ...mockFeedback, id: '2', type: 'suggestion', status: 'resolved' },
         { ...mockFeedback, id: '3', type: 'confusion', status: 'pending' },
-        { ...mockFeedback, id: '4', type: 'bug', status: 'resolved' }
+        { ...mockFeedback, id: '4', type: 'bug', status: 'resolved' },
       ];
 
       (store as any)._data.set(mockFeedbackData);

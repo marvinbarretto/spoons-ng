@@ -1,10 +1,9 @@
 import { TestBed } from '@angular/core/testing';
 import { CanActivateFn, Router } from '@angular/router';
-import { signal } from '@angular/core';
 
+import type { User } from '@users/utils/user.model';
 import { authGuard } from './auth.guard';
 import { AuthStore } from './auth.store';
-import type { User } from '@users/utils/user.model';
 
 describe('authGuard', () => {
   let mockAuthStore: jest.Mocked<AuthStore>;

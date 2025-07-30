@@ -8,9 +8,8 @@ describe('SharePanelComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SharePanelComponent]
-    })
-    .compileComponents();
+      imports: [SharePanelComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(SharePanelComponent);
     component = fixture.componentInstance;

@@ -1,35 +1,34 @@
 // src/app/widgets/user-avatar/user-avatar.component.spec.ts
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { UserAvatarComponent } from './user-avatar.component';
 import { AvatarService } from '../../shared/data-access/avatar.service';
 import type { User } from '../../users/utils/user.model';
+import { UserAvatarComponent } from './user-avatar.component';
 
 describe('UserAvatarComponent', () => {
   let component: UserAvatarComponent;
   let fixture: ComponentFixture<UserAvatarComponent>;
   let mockAvatarService: jest.Mocked<AvatarService>;
 
-  const createMockUser = (overrides?: Partial<User>): User => ({
-    uid: 'test-user-123',
-    displayName: 'Test User',
-    email: 'test@example.com',
-    photoURL: 'https://example.com/avatar.jpg',
-    isAnonymous: false,
-    accentColor: '#FF6B35',
-    ...overrides
-  } as User);
+  const createMockUser = (overrides?: Partial<User>): User =>
+    ({
+      uid: 'test-user-123',
+      displayName: 'Test User',
+      email: 'test@example.com',
+      photoURL: 'https://example.com/avatar.jpg',
+      isAnonymous: false,
+      accentColor: '#FF6B35',
+      ...overrides,
+    }) as User;
 
   beforeEach(async () => {
     // Create mock AvatarService
     mockAvatarService = {
-      getAvatarUrl: jest.fn().mockReturnValue('https://example.com/test-avatar.jpg')
+      getAvatarUrl: jest.fn().mockReturnValue('https://example.com/test-avatar.jpg'),
     } as any;
 
     await TestBed.configureTestingModule({
       imports: [UserAvatarComponent],
-      providers: [
-        { provide: AvatarService, useValue: mockAvatarService }
-      ]
+      providers: [{ provide: AvatarService, useValue: mockAvatarService }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(UserAvatarComponent);

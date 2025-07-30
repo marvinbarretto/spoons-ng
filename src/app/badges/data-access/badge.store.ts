@@ -2,10 +2,9 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { BaseStore } from '@shared/base/base.store';
 import { CacheService } from '@shared/data-access/cache.service';
-import type { EarnedBadge, Badge } from '../utils/badge.model';
-import { BadgeService } from './badge.service';
 import { UserStore } from '@users/data-access/user.store';
-import { AuthStore } from '@auth/data-access/auth.store';
+import type { Badge, EarnedBadge } from '../utils/badge.model';
+import { BadgeService } from './badge.service';
 
 @Injectable({ providedIn: 'root' })
 export class BadgeStore extends BaseStore<EarnedBadge> {
@@ -45,10 +44,12 @@ export class BadgeStore extends BaseStore<EarnedBadge> {
     const earned = this.earnedBadges();
     const definitions = this._definitions();
 
-    return earned.map(earnedBadge => ({
-      earnedBadge,
-      badge: definitions.find(def => def.id === earnedBadge.badgeId)
-    })).filter(item => item.badge); // Only include badges with valid definitions
+    return earned
+      .map(earnedBadge => ({
+        earnedBadge,
+        badge: definitions.find(def => def.id === earnedBadge.badgeId),
+      }))
+      .filter(item => item.badge); // Only include badges with valid definitions
   });
 
   readonly recentBadges = computed(() =>
@@ -89,9 +90,13 @@ export class BadgeStore extends BaseStore<EarnedBadge> {
       loadFresh: async () => {
         console.log('[BadgeStore] 🌐 Fetching earned badges from network...');
         const earnedBadges = await this._badgeService.getEarnedBadgesForUser(userId);
-        console.log('[BadgeStore] ✅ Network fetch complete:', earnedBadges.length, 'earned badges');
+        console.log(
+          '[BadgeStore] ✅ Network fetch complete:',
+          earnedBadges.length,
+          'earned badges'
+        );
         return earnedBadges;
-      }
+      },
     });
   }
 
@@ -104,7 +109,11 @@ export class BadgeStore extends BaseStore<EarnedBadge> {
     const currentDefinitions = this._definitions();
 
     if (this._definitionsLoaded && currentDefinitions.length > 0) {
-      console.log('[BadgeStore] ⏭ Badge definitions already loaded:', currentDefinitions.length, 'definitions');
+      console.log(
+        '[BadgeStore] ⏭ Badge definitions already loaded:',
+        currentDefinitions.length,
+        'definitions'
+      );
       return;
     }
 
@@ -133,9 +142,12 @@ export class BadgeStore extends BaseStore<EarnedBadge> {
           console.log('[BadgeStore] 🌐 Fetching badge definitions from network...');
           const defs = await this._badgeService.getBadges();
           console.log('[BadgeStore] ✅ Network fetch complete:', defs.length, 'badge definitions');
-          console.log('[BadgeStore] 📋 Badge definitions:', defs.map(d => ({ id: d.id, name: d.name })));
+          console.log(
+            '[BadgeStore] 📋 Badge definitions:',
+            defs.map(d => ({ id: d.id, name: d.name }))
+          );
           return defs;
-        }
+        },
         // No userId - global cache
       });
 
@@ -148,7 +160,10 @@ export class BadgeStore extends BaseStore<EarnedBadge> {
       this._definitions.set(definitions);
       this._definitionsLoaded = true;
       console.log('[BadgeStore] ✅ Badge definitions loaded:', definitions.length);
-      console.log('[BadgeStore] ✅ Badge IDs:', definitions.map(d => d.id));
+      console.log(
+        '[BadgeStore] ✅ Badge IDs:',
+        definitions.map(d => d.id)
+      );
     } catch (error: any) {
       this._definitionsError.set(error?.message || 'Failed to load badge definitions');
       console.error('[BadgeStore] ❌ Failed to load badge definitions:', error);
@@ -167,7 +182,7 @@ export class BadgeStore extends BaseStore<EarnedBadge> {
     // Load both badge definitions and user's earned badges
     await Promise.all([
       this.loadDefinitions(),
-      super.loadOnce() // Load user's earned badges from BaseStore
+      super.loadOnce(), // Load user's earned badges from BaseStore
     ]);
 
     console.log('[BadgeStore] ✅ Full badge data loaded');
@@ -236,9 +251,7 @@ export class BadgeStore extends BaseStore<EarnedBadge> {
 
     // Update local definitions
     this._definitions.update(current =>
-      current.map(badge =>
-        badge.id === badgeId ? { ...badge, ...updates } : badge
-      )
+      current.map(badge => (badge.id === badgeId ? { ...badge, ...updates } : badge))
     );
 
     // Clear global cache to ensure fresh data
@@ -254,9 +267,7 @@ export class BadgeStore extends BaseStore<EarnedBadge> {
     await this._badgeService.deleteBadge(badgeId);
 
     // Update local definitions
-    this._definitions.update(current =>
-      current.filter(badge => badge.id !== badgeId)
-    );
+    this._definitions.update(current => current.filter(badge => badge.id !== badgeId));
 
     // Clear global cache to ensure fresh data
     this.cacheService.clear('badge-definitions');
@@ -298,7 +309,10 @@ export class BadgeStore extends BaseStore<EarnedBadge> {
     // Log current state
     const currentDefinitions = this._definitions();
     console.log('[BadgeStore] 📊 Current definitions count:', currentDefinitions.length);
-    console.log('[BadgeStore] 📊 Available badge IDs:', currentDefinitions.map(d => d.id));
+    console.log(
+      '[BadgeStore] 📊 Available badge IDs:',
+      currentDefinitions.map(d => d.id)
+    );
 
     // Check if badge definition exists
     const badgeDefinition = this.getBadge(badgeId);
@@ -343,7 +357,7 @@ export class BadgeStore extends BaseStore<EarnedBadge> {
     const currentBadges = this.earnedBadges();
     const summary = {
       badgeCount: currentBadges.length,
-      badgeIds: currentBadges.map(b => b.badgeId)
+      badgeIds: currentBadges.map(b => b.badgeId),
     };
 
     try {
@@ -516,8 +530,8 @@ export class BadgeStore extends BaseStore<EarnedBadge> {
       hasEarnedBadges: this.hasEarnedBadges(),
       cacheStatus: {
         definitionsCache: 'global',
-        earnedBadgesCache: this._userId() ? `user-${this._userId()}` : 'none'
-      }
+        earnedBadgesCache: this._userId() ? `user-${this._userId()}` : 'none',
+      },
     };
   }
 }

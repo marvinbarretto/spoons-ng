@@ -7,7 +7,7 @@
   min-height: 100vh; /* Fallback for older browsers */
   min-height: 100svh; /* Small viewport height (when toolbar is visible) */
   min-height: 100dvh; /* Dynamic viewport height (preferred) */
-  
+
   display: flex;
   flex-direction: column;
   position: relative;
@@ -48,11 +48,7 @@
   padding: 1.5rem;
 
   // Subtle gradient to separate from content
-  background: linear-gradient(
-    to bottom,
-    transparent 0%,
-    rgba(0, 0, 0, 0.1) 100%
-  );
+  background: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.1) 100%);
 
   // Ensure actions are thumb-friendly on mobile
   @media (max-width: 768px) {

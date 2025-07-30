@@ -7,9 +7,8 @@ describe('RecentActivityWidgetComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [RecentActivityWidgetComponent]
-    })
-    .compileComponents();
+      imports: [RecentActivityWidgetComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(RecentActivityWidgetComponent);
     component = fixture.componentInstance;

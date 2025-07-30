@@ -1,10 +1,10 @@
 // src/app/shared/ui/user-selector/user-selector.component.ts
-import { Component, computed, inject, input, output, signal, effect } from '@angular/core';
+import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { UserStore } from '@users/data-access/user.store';
-import { ChipUserComponent, type UserChipData } from '../chips/chip-user/chip-user.component';
 import type { User } from '@users/utils/user.model';
+import { ChipUserComponent, type UserChipData } from '../chips/chip-user/chip-user.component';
 
 @Component({
   selector: 'app-user-selector',
@@ -38,13 +38,7 @@ import type { User } from '@users/utils/user.model';
           <div class="selected-user">
             <div class="selected-header">
               <span class="selected-label">Selected user</span>
-              <button
-                type="button"
-                class="clear-btn"
-                (click)="clearSelection()"
-              >
-                Clear
-              </button>
+              <button type="button" class="clear-btn" (click)="clearSelection()">Clear</button>
             </div>
             <div class="selected-content">
               <app-chip-user
@@ -160,7 +154,9 @@ import type { User } from '@users/utils/user.model';
       border: 1px solid var(--border);
       border-radius: 8px;
       font-size: 0.875rem;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
       background: var(--background-lighter);
       color: var(--text);
     }
@@ -366,7 +362,7 @@ import type { User } from '@users/utils/user.model';
         align-self: flex-end;
       }
     }
-  `
+  `,
 })
 export class UserSelectorComponent {
   // Dependencies
@@ -427,10 +423,11 @@ export class UserSelectorComponent {
 
     // Apply search filter
     if (searchTerm) {
-      filtered = filtered.filter(user =>
-        user.displayName.toLowerCase().includes(searchTerm) ||
-        user.email?.toLowerCase().includes(searchTerm) ||
-        user.uid.toLowerCase().includes(searchTerm)
+      filtered = filtered.filter(
+        user =>
+          user.displayName.toLowerCase().includes(searchTerm) ||
+          user.email?.toLowerCase().includes(searchTerm) ||
+          user.uid.toLowerCase().includes(searchTerm)
       );
     }
 
@@ -472,7 +469,7 @@ export class UserSelectorComponent {
     return {
       displayName: user.displayName,
       photoURL: user.photoURL || undefined,
-      email: user.email || undefined
+      email: user.email || undefined,
     };
   }
 

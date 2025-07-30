@@ -1,5 +1,7 @@
-import { EarnedBadge } from "../../badges/utils/badge.model";
-import { getUserExperienceLevel, UserExperienceLevel } from "../../shared/utils/user-progression.models";
+import {
+  getUserExperienceLevel,
+  UserExperienceLevel,
+} from '../../shared/utils/user-progression.models';
 
 export type User = {
   uid: string;
@@ -29,13 +31,13 @@ export type User = {
 
   UserExperienceLevel?: UserExperienceLevel; // TODO: Rename this, its awful
 
-  totalPoints?: number;  // ✅ Add this
+  totalPoints?: number; // ✅ Add this
 
   // ✅ Pub tracking fields
   manuallyAddedPubIds: string[]; // Pubs user manually marked as visited
-  verifiedPubCount: number;      // Pubs visited through app check-ins
-  unverifiedPubCount: number;    // Pubs manually added by user
-  totalPubCount: number;         // verifiedPubCount + unverifiedPubCount
+  verifiedPubCount: number; // Pubs visited through app check-ins
+  unverifiedPubCount: number; // Pubs manually added by user
+  totalPubCount: number; // verifiedPubCount + unverifiedPubCount
 
   // Onboarding flow
   onboardingCompleted?: boolean; // Flag to track if user has completed initial setup
@@ -44,7 +46,6 @@ export type User = {
 
   // Admin permissions
   isAdmin?: boolean; // Flag to grant admin access to management features
-
 };
 
 // ✅ Type for user badge summary updates
@@ -59,7 +60,6 @@ export type UserLandlordSummary = {
   landlordPubIds: string[];
 };
 
-
 /**
  * ✅ Factory function to create User objects with computed UserExperienceLevel
  * Perfect for AuthStore, UserStore, tests, and anywhere else
@@ -69,7 +69,7 @@ export function createUser(userData: Omit<User, 'UserExperienceLevel'>): User {
     ...userData,
     get UserExperienceLevel(): UserExperienceLevel {
       return getUserExperienceLevel(this);
-    }
+    },
   };
 }
 

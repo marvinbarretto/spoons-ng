@@ -1,4 +1,4 @@
-import { signal, computed } from '@angular/core';
+import { computed, signal } from '@angular/core';
 import type { CheckIn } from '../../check-in/utils/check-in.models';
 
 export class MockCheckInStore {
@@ -12,7 +12,7 @@ export class MockCheckInStore {
   readonly loading = this._loading.asReadonly();
   readonly error = this._error.asReadonly();
   readonly isProcessing = this._isProcessing.asReadonly();
-  
+
   readonly totalCheckins = computed(() => this._checkins().length);
   readonly totalPubsCount = computed(() => {
     const checkins = this._checkins();
@@ -23,7 +23,7 @@ export class MockCheckInStore {
 
   // Mock service for testing
   newCheckInService = {
-    getAllCheckinsForLeaderboard: jest.fn().mockResolvedValue([])
+    getAllCheckinsForLeaderboard: jest.fn().mockResolvedValue([]),
   };
 
   // Test helper methods

@@ -1,8 +1,8 @@
 // src/app/shared/ui/button/button.component.ts
-import { Component, computed, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, computed, input, output } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { ButtonVariant, ButtonSize, ButtonVariantType, ButtonSizeType } from './button.params';
+import { ButtonSize, ButtonSizeType, ButtonVariant, ButtonVariantType } from './button.params';
 @Component({
   selector: 'app-button',
   imports: [CommonModule, RouterModule],
@@ -115,8 +115,8 @@ export class ButtonComponent {
 
   // Computed properties
   readonly isDisabled = computed(() => this.disabled() || this.loading());
-  readonly isIconOnly = computed(() =>
-    !!(this.iconLeft() || this.iconRight()) && !this.hasTextContent()
+  readonly isIconOnly = computed(
+    () => !!(this.iconLeft() || this.iconRight()) && !this.hasTextContent()
   );
 
   private hasTextContent(): boolean {

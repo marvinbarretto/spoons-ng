@@ -1,5 +1,4 @@
 import { signal } from '@angular/core';
-import { IEvent } from '../../events/utils/event.model';
 
 export function createMockEventStore() {
   return {

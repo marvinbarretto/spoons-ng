@@ -1,4 +1,4 @@
-import { Component, input, computed, output } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 
 export type UserChipData = {
   displayName: string;
@@ -21,8 +21,8 @@ export type ChipVariant = 'default' | 'primary' | 'secondary';
       [attr.aria-label]="ariaLabel()"
       (click)="handleClick()"
       (keydown.enter)="handleClick()"
-      (keydown.space)="handleClick()">
-
+      (keydown.space)="handleClick()"
+    >
       <img
         class="chip-avatar"
         [src]="avatarUrl()"
@@ -35,7 +35,7 @@ export type ChipVariant = 'default' | 'primary' | 'secondary';
       }
     </div>
   `,
-  styleUrl: './chip-user.component.scss'
+  styleUrl: './chip-user.component.scss',
 })
 export class ChipUserComponent {
   readonly user = input.required<UserChipData>();
@@ -47,9 +47,7 @@ export class ChipUserComponent {
 
   readonly clicked = output<UserChipData>();
 
-  readonly displayName = computed(() =>
-    this.user().displayName || 'Unknown User'
-  );
+  readonly displayName = computed(() => this.user().displayName || 'Unknown User');
 
   readonly avatarUrl = computed(() => {
     const user = this.user();
@@ -58,8 +56,10 @@ export class ChipUserComponent {
       return user.photoURL;
     }
 
-    const isAnonymousUser = !user.email && !user.realDisplayName &&
-                           (user.displayName?.includes('-') || user.displayName?.includes('(You)'));
+    const isAnonymousUser =
+      !user.email &&
+      !user.realDisplayName &&
+      (user.displayName?.includes('-') || user.displayName?.includes('(You)'));
 
     if (isAnonymousUser) {
       return 'assets/avatars/npc.webp';

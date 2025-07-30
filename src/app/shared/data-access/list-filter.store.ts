@@ -1,5 +1,5 @@
 // src/app/shared/data-access/list-filter.store.ts
-import { Injectable, signal, computed } from '@angular/core';
+import { computed, Injectable, signal } from '@angular/core';
 
 export type SortDirection = 'asc' | 'desc';
 
@@ -113,13 +113,9 @@ export class ListFilterStore<T = any> {
   }
 
   // ✅ Helper for creating search predicates
-  static createSearchPredicate<T>(
-    searchFields: ((item: T) => string)[]
-  ): FilterPredicate<T> {
+  static createSearchPredicate<T>(searchFields: ((item: T) => string)[]): FilterPredicate<T> {
     return (item: T, query: string): boolean => {
-      return searchFields.some(getField =>
-        getField(item).toLowerCase().includes(query)
-      );
+      return searchFields.some(getField => getField(item).toLowerCase().includes(query));
     };
   }
 
@@ -130,7 +126,7 @@ export class ListFilterStore<T = any> {
       sortKey: this.sortKey(),
       sortDirection: this.sortDirection(),
       hasActiveFilters: this.hasActiveFilters(),
-      sortOptionsCount: this.sortOptions().length
+      sortOptionsCount: this.sortOptions().length,
     };
   }
 }

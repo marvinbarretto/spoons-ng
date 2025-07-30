@@ -3,7 +3,7 @@ import { Component, input } from '@angular/core';
 @Component({
   selector: 'ff-tab',
   template: `
-    <div 
+    <div
       class="tab-panel"
       [attr.role]="'tabpanel'"
       [attr.id]="getTabPanelId()"

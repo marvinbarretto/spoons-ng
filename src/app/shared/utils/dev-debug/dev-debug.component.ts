@@ -1,25 +1,29 @@
 // src/app/shared/utils/dev-debug/dev-debug.component.ts
-import { Component, computed, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { DatePipe, JsonPipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 
 // Base and Services
-import { BaseComponent } from '@shared/base/base.component';
-import { CleanupService, type CleanupResult, type UserDeletionSummary } from '@shared/utils/cleanup.service';
 import { CarpetStorageService } from '@carpets/data-access/carpet-storage.service';
+import { BaseComponent } from '@shared/base/base.component';
+import {
+  CleanupService,
+  type CleanupResult,
+  type UserDeletionSummary,
+} from '@shared/utils/cleanup.service';
 
 import { DataAggregatorService } from '@shared/data-access/data-aggregator.service';
 
 // Stores
-import { AuthStore } from '@auth/data-access/auth.store';
-import { UserStore } from '@users/data-access/user.store';
-import { PubStore } from '@pubs/data-access/pub.store';
-import { NearbyPubStore } from '@pubs/data-access/nearby-pub.store';
 import { CheckInStore } from '@/app/check-in/data-access/check-in.store';
-import { LandlordStore } from '@landlord/data-access/landlord.store';
+import { AuthStore } from '@auth/data-access/auth.store';
 import { BadgeStore } from '@badges/data-access/badge.store';
-import { LeaderboardStore } from '../../../leaderboard/data-access/leaderboard.store';
-import { FeedbackStore } from '../../../feedback/data-access/feedback.store';
 import { FirebaseMetricsService } from '@fourfold/angular-foundation';
+import { LandlordStore } from '@landlord/data-access/landlord.store';
+import { NearbyPubStore } from '@pubs/data-access/nearby-pub.store';
+import { PubStore } from '@pubs/data-access/pub.store';
+import { UserStore } from '@users/data-access/user.store';
+import { FeedbackStore } from '../../../feedback/data-access/feedback.store';
+import { LeaderboardStore } from '../../../leaderboard/data-access/leaderboard.store';
 
 // Import the carpet debug component
 import { CarpetDebugComponent } from './carpet-debug.component';
@@ -29,10 +33,9 @@ import { CarpetDebugComponent } from './carpet-debug.component';
   imports: [JsonPipe, DatePipe, CarpetDebugComponent],
   templateUrl: './dev-debug.component.html',
   styleUrl: './dev-debug.component.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DevDebugComponent extends BaseComponent {
-
   // ===================================
   // 🏪 STORE INJECTIONS
   // ===================================
@@ -71,7 +74,7 @@ export class DevDebugComponent extends BaseComponent {
     userMissionProgress: 0,
     pointsTransactions: 0,
     missions: 0,
-    feedback: 0
+    feedback: 0,
   });
 
   // Database summary
@@ -110,40 +113,60 @@ export class DevDebugComponent extends BaseComponent {
       name: 'Auth',
       status: this.authStore.ready() ? (this.authStore.user() ? 'healthy' : 'empty') : 'loading',
       indicator: this.authStore.ready() ? (this.authStore.user() ? '✅' : '👤') : '⏳',
-      count: this.authStore.user()?.uid?.slice(-4) || 'none'
+      count: this.authStore.user()?.uid?.slice(-4) || 'none',
     },
     {
       name: 'Pubs',
-      status: this.pubStore.loading() ? 'loading' : (this.pubStore.data().length > 0 ? 'healthy' : 'empty'),
-      indicator: this.pubStore.loading() ? '⏳' : (this.pubStore.data().length > 0 ? '✅' : '📭'),
-      count: this.pubStore.data().length.toString()
+      status: this.pubStore.loading()
+        ? 'loading'
+        : this.pubStore.data().length > 0
+          ? 'healthy'
+          : 'empty',
+      indicator: this.pubStore.loading() ? '⏳' : this.pubStore.data().length > 0 ? '✅' : '📭',
+      count: this.pubStore.data().length.toString(),
     },
     {
       name: 'User',
-      status: this.userStore.loading() ? 'loading' : (this.userStore.user() ? 'healthy' : 'empty'),
-      indicator: this.userStore.loading() ? '⏳' : (this.userStore.user() ? '✅' : '👤'),
-      count: this.userStore.user() ? 'loaded' : 'none'
+      status: this.userStore.loading() ? 'loading' : this.userStore.user() ? 'healthy' : 'empty',
+      indicator: this.userStore.loading() ? '⏳' : this.userStore.user() ? '✅' : '👤',
+      count: this.userStore.user() ? 'loaded' : 'none',
     },
     {
       name: 'Check-ins',
-      status: this.checkinStore.loading() ? 'loading' :
-             this.checkinStore.error() ? 'error' :
-             this.checkinStore.data().length > 0 ? 'healthy' : 'empty',
-      indicator: this.checkinStore.loading() ? '⏳' :
-                this.checkinStore.error() ? '❌' :
-                this.checkinStore.data().length > 0 ? '✅' : '📭',
-      count: this.checkinStore.data().length.toString()
+      status: this.checkinStore.loading()
+        ? 'loading'
+        : this.checkinStore.error()
+          ? 'error'
+          : this.checkinStore.data().length > 0
+            ? 'healthy'
+            : 'empty',
+      indicator: this.checkinStore.loading()
+        ? '⏳'
+        : this.checkinStore.error()
+          ? '❌'
+          : this.checkinStore.data().length > 0
+            ? '✅'
+            : '📭',
+      count: this.checkinStore.data().length.toString(),
     },
     {
       name: 'Badges',
-      status: this.badgeStore.loading() ? 'loading' :
-             this.badgeStore.error() ? 'error' :
-             this.badgeStore.hasEarnedBadges() ? 'healthy' : 'empty',
-      indicator: this.badgeStore.loading() ? '⏳' :
-                this.badgeStore.error() ? '❌' :
-                this.badgeStore.hasEarnedBadges() ? '🏆' : '📭',
-      count: `${this.badgeStore.earnedBadgeCount()}/${this.badgeStore.definitions().length}`
-    }
+      status: this.badgeStore.loading()
+        ? 'loading'
+        : this.badgeStore.error()
+          ? 'error'
+          : this.badgeStore.hasEarnedBadges()
+            ? 'healthy'
+            : 'empty',
+      indicator: this.badgeStore.loading()
+        ? '⏳'
+        : this.badgeStore.error()
+          ? '❌'
+          : this.badgeStore.hasEarnedBadges()
+            ? '🏆'
+            : '📭',
+      count: `${this.badgeStore.earnedBadgeCount()}/${this.badgeStore.definitions().length}`,
+    },
   ]);
 
   // Authentication status for display
@@ -165,9 +188,9 @@ export class DevDebugComponent extends BaseComponent {
       collections: Object.entries(counts).map(([name, count]) => ({
         name,
         count,
-        isEmpty: count === 0
+        isEmpty: count === 0,
       })),
-      lastUpdated: summary?.lastUpdated
+      lastUpdated: summary?.lastUpdated,
     };
   });
 
@@ -178,7 +201,7 @@ export class DevDebugComponent extends BaseComponent {
     return {
       totalOperations: fbMetrics.totalCalls,
       operationsPerMinute: fbMetrics.callsPerMinute,
-      topCollections: [] // Database metrics removed
+      topCollections: [], // Database metrics removed
     };
   });
 
@@ -225,8 +248,9 @@ export class DevDebugComponent extends BaseComponent {
     try {
       const results = await this.cleanupService.clearEverything();
 
-      const totalDeleted = Object.values(results).reduce((sum, result) =>
-        sum + (result.deletedCount || 0), 0
+      const totalDeleted = Object.values(results).reduce(
+        (sum, result) => sum + (result.deletedCount || 0),
+        0
       );
 
       const allSuccess = Object.values(results).every(result => result.success);
@@ -234,7 +258,7 @@ export class DevDebugComponent extends BaseComponent {
       this.lastCleanupResult.set({
         success: allSuccess,
         deletedCount: totalDeleted,
-        error: allSuccess ? undefined : 'Some nuclear cleanup operations failed'
+        error: allSuccess ? undefined : 'Some nuclear cleanup operations failed',
       });
 
       await this.refreshCounts();
@@ -248,19 +272,17 @@ export class DevDebugComponent extends BaseComponent {
       this.pubStore.reset();
 
       console.log('[DevDebugComponent] ☢️ Nuclear cleanup completed:', results);
-
     } catch (error: any) {
       console.error('[DevDebugComponent] ☢️ Nuclear cleanup failed:', error);
       this.lastCleanupResult.set({
         success: false,
         deletedCount: 0,
-        error: error?.message || 'Nuclear cleanup failed'
+        error: error?.message || 'Nuclear cleanup failed',
       });
     } finally {
       this.cleanupLoading.set(false);
     }
   }
-
 
   /**
    * Clear users and ALL their cached data (Firestore + IndexedDB) - PROTECTS REAL USERS
@@ -273,19 +295,30 @@ export class DevDebugComponent extends BaseComponent {
       const analysis = await this.cleanupService.analyzeUsers();
       this.userAnalysis.set(analysis);
 
-      const protectionMessage = analysis.realUsers > 0
-        ? `\n🛡️ PROTECTION: ${analysis.realUsers} real users will be PROTECTED and kept safe`
-        : '\n✅ No real users found - safe to proceed';
+      const protectionMessage =
+        analysis.realUsers > 0
+          ? `\n🛡️ PROTECTION: ${analysis.realUsers} real users will be PROTECTED and kept safe`
+          : '\n✅ No real users found - safe to proceed';
 
-      const deletionMessage = analysis.testUsers > 0
-        ? `\n🗑️ DELETION: ${analysis.testUsers} test users will be deleted`
-        : '\n✅ No test users to delete';
+      const deletionMessage =
+        analysis.testUsers > 0
+          ? `\n🗑️ DELETION: ${analysis.testUsers} test users will be deleted`
+          : '\n✅ No test users to delete';
 
-      if (!confirm(`🧹 Clear test data and cached images?\n\nThis will:${protectionMessage}${deletionMessage}\n• Delete: Check-ins, landlords, earned badges\n• Clear: All cached carpet images\n• Keep: Badge definitions, pub data, real users\n\nContinue?`)) return;
-
+      if (
+        !confirm(
+          `🧹 Clear test data and cached images?\n\nThis will:${protectionMessage}${deletionMessage}\n• Delete: Check-ins, landlords, earned badges\n• Clear: All cached carpet images\n• Keep: Badge definitions, pub data, real users\n\nContinue?`
+        )
+      )
+        return;
     } catch (error) {
       console.error('[DevDebugComponent] Failed to analyze users:', error);
-      if (!confirm('⚠️ Could not analyze users for protection. Proceed with caution?\n\nThis will clear test data but may not protect real users properly.')) return;
+      if (
+        !confirm(
+          '⚠️ Could not analyze users for protection. Proceed with caution?\n\nThis will clear test data but may not protect real users properly.'
+        )
+      )
+        return;
     }
 
     this.cleanupLoading.set(true);
@@ -297,7 +330,10 @@ export class DevDebugComponent extends BaseComponent {
 
       // 1. Clear Firestore data (all test data except badge definitions) - NOW PROTECTED
       const firestoreResults = await this.cleanupService.clearAllTestData();
-      console.log('[DevDebugComponent] ✅ Firestore cleanup completed (real users protected):', firestoreResults);
+      console.log(
+        '[DevDebugComponent] ✅ Firestore cleanup completed (real users protected):',
+        firestoreResults
+      );
 
       // 2. Clear IndexedDB carpet images
       let indexedDbSuccess = true;
@@ -312,11 +348,13 @@ export class DevDebugComponent extends BaseComponent {
       }
 
       // 3. Calculate results
-      const firestoreDeleted = firestoreResults.users.deletedCount +
+      const firestoreDeleted =
+        firestoreResults.users.deletedCount +
         firestoreResults.checkIns.deletedCount +
         firestoreResults.landlords.deletedCount +
         firestoreResults.earnedBadges.deletedCount;
-      const firestoreSuccess = firestoreResults.users.success &&
+      const firestoreSuccess =
+        firestoreResults.users.success &&
         firestoreResults.checkIns.success &&
         firestoreResults.landlords.success &&
         firestoreResults.earnedBadges.success;
@@ -325,8 +363,9 @@ export class DevDebugComponent extends BaseComponent {
       this.lastCleanupResult.set({
         success: overallSuccess,
         deletedCount: firestoreDeleted,
-        error: overallSuccess ? undefined :
-          `${!firestoreSuccess ? 'Firestore cleanup issues. ' : ''}${!indexedDbSuccess ? `IndexedDB error: ${indexedDbError}` : ''}`
+        error: overallSuccess
+          ? undefined
+          : `${!firestoreSuccess ? 'Firestore cleanup issues. ' : ''}${!indexedDbSuccess ? `IndexedDB error: ${indexedDbError}` : ''}`,
       });
 
       // 4. Refresh data and reset stores
@@ -347,13 +386,12 @@ export class DevDebugComponent extends BaseComponent {
       }, 100);
 
       console.log('[DevDebugComponent] ✅ Comprehensive user cleanup finished');
-
     } catch (error: any) {
       console.error('[DevDebugComponent] ❌ Comprehensive user cleanup failed:', error);
       this.lastCleanupResult.set({
         success: false,
         deletedCount: 0,
-        error: error?.message || 'Comprehensive user cleanup failed'
+        error: error?.message || 'Comprehensive user cleanup failed',
       });
     } finally {
       this.cleanupLoading.set(false);
@@ -371,16 +409,22 @@ export class DevDebugComponent extends BaseComponent {
       const analysis = await this.cleanupService.analyzeUsers();
       this.userAnalysis.set(analysis);
 
-      const protectionMessage = analysis.realUsers > 0
-        ? `🛡️ ${analysis.realUsers} real users will be PROTECTED\n`
-        : '✅ No real users to protect\n';
+      const protectionMessage =
+        analysis.realUsers > 0
+          ? `🛡️ ${analysis.realUsers} real users will be PROTECTED\n`
+          : '✅ No real users to protect\n';
 
-      const deletionMessage = analysis.testUsers > 0
-        ? `🗑️ ${analysis.testUsers} test users will be deleted\n`
-        : '✅ No test users to delete\n';
+      const deletionMessage =
+        analysis.testUsers > 0
+          ? `🗑️ ${analysis.testUsers} test users will be deleted\n`
+          : '✅ No test users to delete\n';
 
-      if (!confirm(`Delete test users only? (keeps badges, check-ins, etc.)\n\n${protectionMessage}${deletionMessage}(Keeps: badges, check-ins, etc.)\n\nContinue?`)) return;
-
+      if (
+        !confirm(
+          `Delete test users only? (keeps badges, check-ins, etc.)\n\n${protectionMessage}${deletionMessage}(Keeps: badges, check-ins, etc.)\n\nContinue?`
+        )
+      )
+        return;
     } catch (error) {
       console.error('[DevDebugComponent] Failed to analyze users:', error);
       if (!confirm('⚠️ Could not analyze users. Proceed with deletion?')) return;
@@ -418,12 +462,18 @@ export class DevDebugComponent extends BaseComponent {
 
       if (analysis.realUsers > 0) {
         const realUserDetails = await this.cleanupService.getRealUsers();
-        const usersList = realUserDetails.map(u => `• ${u.displayName} (${u.uid.slice(0, 8)})`).join('\n');
+        const usersList = realUserDetails
+          .map(u => `• ${u.displayName} (${u.uid.slice(0, 8)})`)
+          .join('\n');
 
-        if (!confirm(`⚠️ DANGER: This will delete ${analysis.realUsers} REAL USERS!\n\nReal users to be deleted:\n${usersList}\n\nThis action cannot be undone!\n\nAre you absolutely sure?`)) return;
+        if (
+          !confirm(
+            `⚠️ DANGER: This will delete ${analysis.realUsers} REAL USERS!\n\nReal users to be deleted:\n${usersList}\n\nThis action cannot be undone!\n\nAre you absolutely sure?`
+          )
+        )
+          return;
         if (!confirm('Last chance! This will permanently delete real users. Continue?')) return;
       }
-
     } catch (error) {
       console.error('[DevDebugComponent] Failed to analyze users:', error);
       if (!confirm('⚠️ Could not analyze users. This is dangerous. Really proceed?')) return;
@@ -437,7 +487,9 @@ export class DevDebugComponent extends BaseComponent {
       const result = await this.cleanupService.clearAllUsersIncludingReal();
       this.lastCleanupResult.set(result);
 
-      console.log(`[DevDebugComponent] ⚠️ COMPLETED: Deleted ${result.deletedCount} users (including real users)`);
+      console.log(
+        `[DevDebugComponent] ⚠️ COMPLETED: Deleted ${result.deletedCount} users (including real users)`
+      );
 
       await this.refreshCounts();
       this.userStore.reset();
@@ -464,15 +516,17 @@ export class DevDebugComponent extends BaseComponent {
       console.log(`Real Users: ${analysis.realUsers} (protected)`);
       console.log(`Test Users: ${analysis.testUsers} (deletable)`);
       if (realUsers.length > 0) {
-        console.log('Real User Details:', realUsers.map(u => ({
-          uid: u.uid.slice(0, 8),
-          name: u.displayName,
-          email: u.email,
-          joined: u.joinedAt
-        })));
+        console.log(
+          'Real User Details:',
+          realUsers.map(u => ({
+            uid: u.uid.slice(0, 8),
+            name: u.displayName,
+            email: u.email,
+            joined: u.joinedAt,
+          }))
+        );
       }
       console.groupEnd();
-
     } catch (error) {
       console.error('[DevDebugComponent] Failed to analyze users:', error);
     } finally {
@@ -500,7 +554,7 @@ export class DevDebugComponent extends BaseComponent {
       this.databaseSummary.set({
         totalDocuments: summary.totalDocuments,
         isEmpty: summary.isEmpty,
-        lastUpdated: Date.now()
+        lastUpdated: Date.now(),
       });
       console.log('[DevDebugComponent] 📊 Database summary:', summary);
     } catch (error: any) {
@@ -512,10 +566,7 @@ export class DevDebugComponent extends BaseComponent {
     console.log('[DevDebugComponent] 🔄 Refreshing all stores and database info...');
 
     // Refresh database info first
-    await Promise.all([
-      this.refreshCounts(),
-      this.refreshDatabaseSummary()
-    ]);
+    await Promise.all([this.refreshCounts(), this.refreshDatabaseSummary()]);
 
     // Then refresh stores
     this.pubStore.loadOnce();
@@ -555,11 +606,14 @@ export class DevDebugComponent extends BaseComponent {
     const newName = `Test Name ${Date.now()}`;
     console.log('[DevDebugComponent] 🧪 Testing display name update:', newName);
 
-    this.userStore.updateDisplayName(newName).then(() => {
-      console.log('[DevDebugComponent] Name updated successfully to:', newName);
-    }).catch(err => {
-      console.log('[DevDebugComponent] Name update failed:', err.message);
-    });
+    this.userStore
+      .updateDisplayName(newName)
+      .then(() => {
+        console.log('[DevDebugComponent] Name updated successfully to:', newName);
+      })
+      .catch(err => {
+        console.log('[DevDebugComponent] Name update failed:', err.message);
+      });
   }
 
   // ===================================
@@ -584,7 +638,7 @@ export class DevDebugComponent extends BaseComponent {
       hour12: false,
       hour: '2-digit',
       minute: '2-digit',
-      second: '2-digit'
+      second: '2-digit',
     });
   }
 

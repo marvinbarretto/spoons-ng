@@ -1,4 +1,12 @@
-import { Component, input, output, signal, computed, forwardRef, ChangeDetectionStrategy, effect } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  forwardRef,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
@@ -12,8 +20,8 @@ export type FormInputType = 'text' | 'email' | 'password' | 'tel' | 'url' | 'sea
     {
       provide: NG_VALUE_ACCESSOR,
       useExisting: forwardRef(() => FormInputComponent),
-      multi: true
-    }
+      multi: true,
+    },
   ],
   template: `
     <div class="form-input-container">
@@ -47,7 +55,9 @@ export type FormInputType = 'text' | 'email' | 'password' | 'tel' | 'url' | 'sea
           [attr.min]="min()"
           [attr.max]="max()"
           [attr.required]="required() || null"
-          [attr.aria-describedby]="hasError() ? inputId() + '-error' : (hint() ? inputId() + '-hint' : null)"
+          [attr.aria-describedby]="
+            hasError() ? inputId() + '-error' : hint() ? inputId() + '-hint' : null
+          "
           [attr.aria-invalid]="hasError()"
           (input)="onInput($event)"
           (blur)="onBlur()"
@@ -231,7 +241,6 @@ export type FormInputType = 'text' | 'email' | 'password' | 'tel' | 'url' | 'sea
       margin-top: 0.375rem;
     }
 
-
     /* Light theme adjustments */
     @media (prefers-color-scheme: light) {
       .form-label {
@@ -256,7 +265,7 @@ export type FormInputType = 'text' | 'email' | 'password' | 'tel' | 'url' | 'sea
         color: var(--text-muted, #6b7280);
       }
     }
-  `
+  `,
 })
 export class FormInputComponent implements ControlValueAccessor {
   // Input properties
@@ -316,7 +325,7 @@ export class FormInputComponent implements ControlValueAccessor {
         dirty: control.dirty,
         touched: control.touched,
         errors: control.errors,
-        hasErrorResult
+        hasErrorResult,
       });
     }
 
@@ -386,8 +395,10 @@ export class FormInputComponent implements ControlValueAccessor {
 
       if (errors['required']) return `${this.label() || 'This field'} is required`;
       if (errors['email']) return 'Please enter a valid email address';
-      if (errors['minlength']) return `Minimum ${errors['minlength'].requiredLength} characters required`;
-      if (errors['maxlength']) return `Maximum ${errors['maxlength'].requiredLength} characters allowed`;
+      if (errors['minlength'])
+        return `Minimum ${errors['minlength'].requiredLength} characters required`;
+      if (errors['maxlength'])
+        return `Maximum ${errors['maxlength'].requiredLength} characters allowed`;
       if (errors['pattern']) return 'Please enter a valid format';
       if (errors['min']) return `Minimum value is ${errors['min'].min}`;
       if (errors['max']) return `Maximum value is ${errors['max'].max}`;

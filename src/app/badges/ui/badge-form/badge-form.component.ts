@@ -1,5 +1,5 @@
-import { Component, Input, computed, inject, OnInit } from '@angular/core';
-import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Component, computed, inject, Input, OnInit } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Timestamp } from 'firebase/firestore';
 import type { Badge } from '../../utils/badge.model';
 
@@ -17,12 +17,7 @@ import type { Badge } from '../../utils/badge.model';
         <div class="modal-body">
           <div class="form-group">
             <label for="name">Name *</label>
-            <input
-              id="name"
-              formControlName="name"
-              type="text"
-              placeholder="Enter badge name"
-            />
+            <input id="name" formControlName="name" type="text" placeholder="Enter badge name" />
           </div>
 
           <div class="form-group">
@@ -65,9 +60,7 @@ import type { Badge } from '../../utils/badge.model';
         </div>
 
         <div class="modal-footer">
-          <button type="button" (click)="cancel()" class="btn-secondary">
-            Cancel
-          </button>
+          <button type="button" (click)="cancel()" class="btn-secondary">Cancel</button>
           <button type="submit" [disabled]="form.invalid" class="btn-primary">
             {{ isEditing() ? 'Update Badge' : 'Create Badge' }}
           </button>
@@ -136,7 +129,8 @@ import type { Badge } from '../../utils/badge.model';
       font-size: 14px;
     }
 
-    input, textarea {
+    input,
+    textarea {
       padding: 12px;
       border: 1px solid #d1d5db;
       border-radius: 8px;
@@ -144,7 +138,8 @@ import type { Badge } from '../../utils/badge.model';
       transition: border-color 0.2s;
     }
 
-    input:focus, textarea:focus {
+    input:focus,
+    textarea:focus {
       outline: none;
       border-color: #3b82f6;
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
@@ -231,7 +226,7 @@ import type { Badge } from '../../utils/badge.model';
       background: #9ca3af;
       cursor: not-allowed;
     }
-  `
+  `,
 })
 export class BadgeFormComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
@@ -243,7 +238,7 @@ export class BadgeFormComponent implements OnInit {
     name: ['', Validators.required],
     description: [''],
     criteria: ['', Validators.required],
-    emoji: ['🏅', Validators.required]
+    emoji: ['🏅', Validators.required],
   });
 
   readonly isEditing = computed(() => !!this.badge);
@@ -267,7 +262,7 @@ export class BadgeFormComponent implements OnInit {
     { emoji: '🚀', name: 'Rocket' },
     { emoji: '⚡', name: 'Lightning' },
     { emoji: '🌅', name: 'Sunrise' },
-    { emoji: '🍻', name: 'Clinking Beer Mugs' }
+    { emoji: '🍻', name: 'Clinking Beer Mugs' },
   ];
 
   ngOnInit(): void {
@@ -276,7 +271,7 @@ export class BadgeFormComponent implements OnInit {
         name: this.badge.name,
         description: this.badge.description,
         criteria: this.badge.criteria,
-        emoji: this.badge.emoji
+        emoji: this.badge.emoji,
       });
     }
   }
@@ -292,12 +287,12 @@ export class BadgeFormComponent implements OnInit {
     const badge: Badge = this.isEditing()
       ? {
           ...this.badge!,
-          ...formValue
+          ...formValue,
         }
       : {
           id: crypto.randomUUID(),
           ...formValue,
-          createdAt: Timestamp.now()
+          createdAt: Timestamp.now(),
         };
 
     this.closeCallback?.(badge);

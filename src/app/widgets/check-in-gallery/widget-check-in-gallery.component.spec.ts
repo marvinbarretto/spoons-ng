@@ -1,8 +1,8 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
-import { WidgetCheckInGalleryComponent } from './widget-check-in-gallery.component';
-import { CarpetStorageService } from '@carpets/data-access/carpet-storage.service';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AuthStore } from '@auth/data-access/auth.store';
+import { CarpetStorageService } from '@carpets/data-access/carpet-storage.service';
+import { WidgetCheckInGalleryComponent } from './widget-check-in-gallery.component';
 
 describe('WidgetCheckInGalleryComponent', () => {
   let component: WidgetCheckInGalleryComponent;
@@ -13,24 +13,26 @@ describe('WidgetCheckInGalleryComponent', () => {
   beforeEach(async () => {
     const carpetStorageSpy = jasmine.createSpyObj('CarpetStorageService', [
       'initialize',
-      'getUserCarpets'
+      'getUserCarpets',
     ]);
 
     const authStoreSpy = jasmine.createSpyObj('AuthStore', [], {
-      user: signal(null)
+      user: signal(null),
     });
 
     await TestBed.configureTestingModule({
       imports: [WidgetCheckInGalleryComponent],
       providers: [
         { provide: CarpetStorageService, useValue: carpetStorageSpy },
-        { provide: AuthStore, useValue: authStoreSpy }
-      ]
+        { provide: AuthStore, useValue: authStoreSpy },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(WidgetCheckInGalleryComponent);
     component = fixture.componentInstance;
-    mockCarpetStorageService = TestBed.inject(CarpetStorageService) as jasmine.SpyObj<CarpetStorageService>;
+    mockCarpetStorageService = TestBed.inject(
+      CarpetStorageService
+    ) as jasmine.SpyObj<CarpetStorageService>;
     mockAuthStore = TestBed.inject(AuthStore) as jasmine.SpyObj<AuthStore>;
   });
 
@@ -41,7 +43,7 @@ describe('WidgetCheckInGalleryComponent', () => {
   it('should show empty state when no images', () => {
     mockCarpetStorageService.getUserCarpets.and.returnValue(Promise.resolve([]));
     fixture.detectChanges();
-    
+
     const emptyElement = fixture.nativeElement.querySelector('.widget-empty');
     expect(emptyElement).toBeTruthy();
     expect(emptyElement.textContent).toContain('No check-in images yet');
@@ -59,20 +61,20 @@ describe('WidgetCheckInGalleryComponent', () => {
         size: 1000,
         type: 'image/jpeg',
         width: 100,
-        height: 100
-      }
+        height: 100,
+      },
     ];
 
     mockCarpetStorageService.initialize.and.returnValue(Promise.resolve());
     mockCarpetStorageService.getUserCarpets.and.returnValue(Promise.resolve(mockImages));
-    
+
     // Simulate user login
     const userSignal = signal({ uid: 'user1', isAnonymous: false });
     Object.defineProperty(mockAuthStore, 'user', { value: userSignal });
-    
+
     fixture.detectChanges();
     await fixture.whenStable();
-    
+
     const countElement = fixture.nativeElement.querySelector('.count');
     expect(countElement?.textContent).toContain('1 images from');
   });
@@ -80,7 +82,7 @@ describe('WidgetCheckInGalleryComponent', () => {
   it('should handle image load errors gracefully', () => {
     const imgElement = document.createElement('img');
     component.onImageError({ target: imgElement } as any);
-    
+
     expect(imgElement.style.display).toBe('none');
   });
 

@@ -1,40 +1,39 @@
 /**
  * @fileoverview UserStore - Single source of truth for ALL user data
- * 
+ *
  * RESPONSIBILITIES:
  * - User collection state management (extends BaseStore<User>)
  * - Current user profile (auth-reactive pattern)
  * - Display data for scoreboard (totalPoints, pubsVisited, badges, landlord status)
  * - User document CRUD operations in Firestore
  * - Sync with Firebase Auth profile updates
- * 
+ *
  * DATA FLOW IN:
  * - AuthStore.user() changes → triggers loadOrCreateUser() + loads all users
  * - PointsStore.awardPoints() → updates totalPoints via patchUser()
  * - CheckInStore data → computed via DataAggregatorService (no direct update needed)
  * - BadgeStore awards → updates badgeCount/badgeIds via updateBadgeSummary()
  * - LandlordStore → updates landlordCount/landlordPubIds via updateLandlordSummary()
- * 
+ *
  * DATA FLOW OUT:
  * - HomeComponent.scoreboardData → reads totalPoints, pubsVisited from here
  * - AdminComponents → reads data() for all users collection
  * - All UI components → read user profile data from here
  * - Other stores → read user context for operations
- * 
+ *
  * CRITICAL: This store must stay in sync with all user data changes
  * to ensure scoreboard and UI accuracy. Any operation that changes user
  * stats must update this store immediately.
- * 
+ *
  * @architecture Auth-Reactive + Collection Pattern - automatically loads/clears based on auth state
  */
-import { Injectable, signal, computed, inject, effect } from '@angular/core';
+import { computed, effect, inject, Injectable } from '@angular/core';
 import { getAuth, updateProfile } from 'firebase/auth';
 import { firstValueFrom } from 'rxjs';
 import { BaseStore } from '../../shared/base/base.store';
-import { UserService } from './user.service';
-import { AuthStore } from '../../auth/data-access/auth.store';
 import { CacheCoherenceService } from '../../shared/data-access/cache-coherence.service';
 import type { User, UserBadgeSummary, UserLandlordSummary } from '../utils/user.model';
+import { UserService } from './user.service';
 
 @Injectable({ providedIn: 'root' })
 export class UserStore extends BaseStore<User> {
@@ -47,7 +46,7 @@ export class UserStore extends BaseStore<User> {
     const users = this.data();
     const authUid = this.authStore.uid();
     const foundUser = authUid ? users.find(u => u.uid === authUid) || null : null;
-    
+
     // Debug logging for current user identification and isAdmin field
     console.log('[UserStore] 🔍 Current user computed - Auth UID:', authUid?.slice(0, 8));
     console.log('[UserStore] 🔍 Users in collection:', users.length);
@@ -57,16 +56,16 @@ export class UserStore extends BaseStore<User> {
       displayName: foundUser?.displayName,
       email: foundUser?.email,
       isAdmin: foundUser?.isAdmin,
-      hasIsAdminField: foundUser ? 'isAdmin' in foundUser : false
+      hasIsAdminField: foundUser ? 'isAdmin' in foundUser : false,
     });
-    
+
     return foundUser;
   });
 
   // 📡 Legacy compatibility (redirect to currentUser and collection loading)
   readonly user = this.currentUser;
   readonly userLoading = this.loading; // Use collection loading state
-  readonly userError = this.error;     // Use collection error state
+  readonly userError = this.error; // Use collection error state
   readonly isLoaded = computed(() => !this.loading() && !!this.currentUser());
 
   // ✅ User profile computeds
@@ -120,9 +119,11 @@ export class UserStore extends BaseStore<User> {
     effect(() => {
       const authUid = this.authStore.uid();
       const currentUser = this.currentUser();
-      
+
       if (authUid && !currentUser && !this.loading()) {
-        console.log(`[UserStore] Current user ${authUid.slice(0, 8)} not in collection, creating if needed`);
+        console.log(
+          `[UserStore] Current user ${authUid.slice(0, 8)} not in collection, creating if needed`
+        );
         this.ensureCurrentUserExists(authUid);
       }
     });
@@ -139,7 +140,7 @@ export class UserStore extends BaseStore<User> {
     try {
       // First check if user document exists in Firestore
       let userData = await firstValueFrom(this.userService.getUser(uid));
-      
+
       // If user document doesn't exist, create it using auth data
       if (!userData) {
         const authUser = this.authStore.user();
@@ -228,7 +229,9 @@ export class UserStore extends BaseStore<User> {
         console.log(`✅ [UserStore] Existing user profile loaded: ${userData.displayName}`);
         this.addUserToCollection(userData);
       } else {
-        console.log(`📝 [UserStore] No existing user profile found - will be created after onboarding`);
+        console.log(
+          `📝 [UserStore] No existing user profile found - will be created after onboarding`
+        );
         // Don't create document - let onboarding completion handle it
         // User not found - will be created later if needed
       }
@@ -271,7 +274,7 @@ export class UserStore extends BaseStore<User> {
     console.log('[UserStore] 🔍 Current user before update:', {
       uid: current?.uid?.slice(0, 8),
       onboardingCompleted: current?.onboardingCompleted,
-      displayName: current?.displayName
+      displayName: current?.displayName,
     });
 
     if (!current || !authUser) {
@@ -286,7 +289,7 @@ export class UserStore extends BaseStore<User> {
     console.log('[UserStore] 📝 Setting optimistic update:', {
       uid: updatedUser.uid?.slice(0, 8),
       onboardingCompleted: updatedUser.onboardingCompleted,
-      displayName: updatedUser.displayName
+      displayName: updatedUser.displayName,
     });
     this.updateUserInCollection(current.uid, updates);
 
@@ -307,26 +310,25 @@ export class UserStore extends BaseStore<User> {
             photoURL: updates.photoURL || fbUser.photoURL,
           });
           console.log('[UserStore] ✅ Firebase Auth profile updated');
-          
+
           // ✅ Tell AuthStore to refresh its user signal with fresh Firebase Auth data
           this.authStore.refreshCurrentUser();
         }
       }
 
       console.log('[UserStore] ✅ Profile update completed successfully');
-      
+
       // Verify the signal was updated
       const finalUser = this.currentUser();
       console.log('[UserStore] 🔍 Final user state:', {
         uid: finalUser?.uid?.slice(0, 8),
         onboardingCompleted: finalUser?.onboardingCompleted,
-        displayName: finalUser?.displayName
+        displayName: finalUser?.displayName,
       });
-      
+
       // ✅ NEW: Trigger cache invalidation to ensure UI consistency
       console.log('[UserStore] 🔄 Triggering cache invalidation for user profile update');
       this.cacheCoherence.invalidate('users', 'profile-update');
-      
     } catch (error: any) {
       // ❌ Rollback optimistic update
       console.log('[UserStore] ❌ Rolling back optimistic update due to error');
@@ -359,15 +361,15 @@ export class UserStore extends BaseStore<User> {
    */
   async createCompleteUserDocument(uid: string, userData: User): Promise<void> {
     console.log('[UserStore] 📝 Creating complete user document for:', uid);
-    
+
     try {
       // Create the document in Firestore
       await this.userService.createUser(uid, userData);
-      
+
       // Update local state
       this.addUserToCollection(userData);
       this._error.set(null);
-      
+
       console.log('[UserStore] ✅ Complete user document created');
     } catch (error: any) {
       console.error('[UserStore] ❌ Failed to create complete user document:', error);
@@ -379,7 +381,7 @@ export class UserStore extends BaseStore<User> {
   // ===================================
   // CACHE INVALIDATION HANDLING
   // ===================================
-  
+
   /**
    * Handle cache invalidation by reloading fresh user data
    * @param reason - Reason for the invalidation (for logging)
@@ -390,11 +392,11 @@ export class UserStore extends BaseStore<User> {
       console.log('[UserStore] ⚠️ No current user for cache invalidation');
       return;
     }
-    
+
     console.log('[UserStore] 🔄 === HANDLING CACHE INVALIDATION ===');
     console.log('[UserStore] 🔄 Reason:', reason || 'unspecified');
     console.log('[UserStore] 🔄 User ID:', currentUser.uid.slice(0, 8));
-    
+
     try {
       // Reload fresh user data from Firestore (bypasses cache)
       await this.loadOrCreateUser(currentUser.uid);
@@ -462,8 +464,9 @@ export class UserStore extends BaseStore<User> {
       }
 
       this.addUserToCollection(userData);
-      console.log(`✅ [UserStore] Firebase data loaded successfully: User profile cached for ${userData.displayName || userData.email || 'user'}`);
-
+      console.log(
+        `✅ [UserStore] Firebase data loaded successfully: User profile cached for ${userData.displayName || userData.email || 'user'}`
+      );
     } catch (error: any) {
       this._error.set(error?.message || 'Failed to load user');
       console.error('❌ [UserStore] Firebase fetch failed:', error);
@@ -508,12 +511,12 @@ export class UserStore extends BaseStore<User> {
     }
 
     const updatedManualPubs = [...currentManualPubs, pubId];
-    
+
     // Update both locally and in Firestore
-    await this.updateProfile({ 
+    await this.updateProfile({
       manuallyAddedPubIds: updatedManualPubs,
       unverifiedPubCount: updatedManualPubs.length,
-      totalPubCount: (current.verifiedPubCount || 0) + updatedManualPubs.length
+      totalPubCount: (current.verifiedPubCount || 0) + updatedManualPubs.length,
     });
 
     console.log('[UserStore] Added pub to visited list:', pubId);
@@ -530,12 +533,12 @@ export class UserStore extends BaseStore<User> {
 
     const currentManualPubs = current.manuallyAddedPubIds || [];
     const updatedManualPubs = currentManualPubs.filter(id => id !== pubId);
-    
+
     // Update both locally and in Firestore
-    await this.updateProfile({ 
+    await this.updateProfile({
       manuallyAddedPubIds: updatedManualPubs,
       unverifiedPubCount: updatedManualPubs.length,
-      totalPubCount: (current.verifiedPubCount || 0) + updatedManualPubs.length
+      totalPubCount: (current.verifiedPubCount || 0) + updatedManualPubs.length,
     });
 
     console.log('[UserStore] Removed pub from visited list:', pubId);
@@ -555,10 +558,10 @@ export class UserStore extends BaseStore<User> {
    * @description CRITICAL for scoreboard accuracy. Used by other stores
    * to immediately update user stats (points, badges, check-ins).
    * Updates both local state AND persists to Firestore for leaderboard accuracy.
-   * @example 
+   * @example
    * // PointsStore awards points
    * userStore.patchUser({ totalPoints: newTotal });
-   * 
+   *
    * // pubsVisited count now computed by DataAggregatorService
    */
   async patchUser(updates: Partial<User>): Promise<void> {
@@ -569,15 +572,15 @@ export class UserStore extends BaseStore<User> {
     }
 
     console.log('[UserStore] 🔧 Patching user with:', updates);
-    
+
     // ✅ Immediate local update for responsive UI
     this.updateUserInCollection(current.uid, updates);
-    
+
     // ✅ Persist to Firestore for leaderboard accuracy
     try {
       await this.userService.updateUser(current.uid, updates);
       console.log('[UserStore] ✅ User patch persisted to Firestore:', updates);
-      
+
       // ✅ Trigger cache invalidation to ensure UI consistency
       this.cacheCoherence.invalidate('users', 'user-patch-update');
     } catch (error: any) {
@@ -611,7 +614,17 @@ export class UserStore extends BaseStore<User> {
   /**
    * Get debug information
    */
-  override getDebugInfo(): { name: string; itemCount: number; hasLoaded: boolean; loading: boolean; error: string | null; hasData: boolean; isEmpty: boolean; userId: string | null; sampleData: User[]; } {
+  override getDebugInfo(): {
+    name: string;
+    itemCount: number;
+    hasLoaded: boolean;
+    loading: boolean;
+    error: string | null;
+    hasData: boolean;
+    isEmpty: boolean;
+    userId: string | null;
+    sampleData: User[];
+  } {
     return {
       name: this.constructor.name,
       itemCount: this.itemCount(),
@@ -621,7 +634,7 @@ export class UserStore extends BaseStore<User> {
       hasData: this.hasData(),
       isEmpty: this.isEmpty(),
       userId: this.userId(),
-      sampleData: this.data().slice(0, 3)
+      sampleData: this.data().slice(0, 3),
     };
   }
 
@@ -649,16 +662,19 @@ export class UserStore extends BaseStore<User> {
   protected async fetchData(): Promise<User[]> {
     console.log('[UserStore] 📡 Fetching all users from Firestore...');
     const users = await this.userService.getAllUsers();
-    
+
     // Debug logging for isAdmin field tracking
-    console.log('[UserStore] 🔍 Fetched users with isAdmin field processing:', users.map(u => ({
-      uid: u.uid.slice(0, 8),
-      displayName: u.displayName,
-      email: u.email,
-      isAdmin: u.isAdmin,
-      hasIsAdminField: 'isAdmin' in u
-    })));
-    
+    console.log(
+      '[UserStore] 🔍 Fetched users with isAdmin field processing:',
+      users.map(u => ({
+        uid: u.uid.slice(0, 8),
+        displayName: u.displayName,
+        email: u.email,
+        isAdmin: u.isAdmin,
+        hasIsAdminField: 'isAdmin' in u,
+      }))
+    );
+
     return users;
   }
 
@@ -713,12 +729,9 @@ export class UserStore extends BaseStore<User> {
    * Update a user in the collection
    */
   updateUserInCollection(uid: string, updates: Partial<User>): void {
-    this._data.update(users => 
-      users.map(user => 
-        user.uid === uid ? { ...user, ...updates } : user
-      )
+    this._data.update(users =>
+      users.map(user => (user.uid === uid ? { ...user, ...updates } : user))
     );
     console.log(`[UserStore] Updated user ${uid} in collection`);
   }
-
 }

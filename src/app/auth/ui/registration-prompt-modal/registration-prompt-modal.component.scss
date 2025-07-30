@@ -1,0 +1,157 @@
+@use 'styles/index' as *;
+
+.registration-prompt-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--space-4);
+}
+
+.registration-prompt-modal {
+  background: var(--surface-primary);
+  border-radius: var(--radius-2);
+  box-shadow: var(--shadow-2);
+  width: 100%;
+  max-width: 400px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  border: 1px solid var(--border-primary);
+}
+
+.close-button {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  background: none;
+  border: none;
+  font-size: var(--text-lg);
+  color: var(--text-secondary);
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-1);
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: var(--surface-secondary);
+    color: var(--text-primary);
+  }
+
+  &:focus {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+  }
+}
+
+.modal-content {
+  padding: var(--space-6);
+  text-align: center;
+}
+
+.icon-container {
+  margin-bottom: var(--space-4);
+}
+
+.prompt-icon {
+  font-size: 48px;
+  display: block;
+}
+
+.prompt-title {
+  font-size: var(--text-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-3) 0;
+  line-height: var(--leading-tight);
+}
+
+.prompt-message {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  margin: 0 0 var(--space-6) 0;
+  line-height: var(--leading-relaxed);
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.dont-show-again {
+  border-top: 1px solid var(--border-secondary);
+  padding-top: var(--space-4);
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+.checkbox-input {
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-0_5);
+  background: var(--surface-primary);
+  cursor: pointer;
+
+  &:checked {
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+  }
+
+  &:focus {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+  }
+}
+
+.checkbox-text {
+  user-select: none;
+}
+
+// Responsive adjustments
+@media (max-width: 480px) {
+  .registration-prompt-overlay {
+    padding: var(--space-3);
+    align-items: flex-end;
+  }
+
+  .registration-prompt-modal {
+    max-width: none;
+    border-radius: var(--radius-2) var(--radius-2) 0 0;
+  }
+
+  .modal-content {
+    padding: var(--space-5);
+  }
+
+  .prompt-title {
+    font-size: var(--text-lg);
+  }
+}
+
+// Dark mode considerations (if theme tokens handle this)
+@media (prefers-color-scheme: dark) {
+  .registration-prompt-overlay {
+    background-color: rgba(0, 0, 0, 0.8);
+  }
+}

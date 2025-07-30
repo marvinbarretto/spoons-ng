@@ -9,7 +9,7 @@ export type AvatarOption = {
 };
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AvatarService {
   private readonly userStore = inject(UserStore); // ✅ Use UserStore, not AuthStore
@@ -40,7 +40,7 @@ export class AvatarService {
       id: 'npc',
       name: 'Anonymous NPC',
       url: this.NPC_AVATAR_URL,
-      isDefault: true
+      isDefault: true,
     });
 
     return avatars;

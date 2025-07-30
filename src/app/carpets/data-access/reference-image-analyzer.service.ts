@@ -4,7 +4,6 @@ import type { ReferenceImageData } from './carpet-reference.types';
 
 @Injectable({ providedIn: 'root' })
 export class ReferenceImageAnalyzerService {
-
   private readonly _analyzedReferences = signal<ReferenceImageData[]>([]);
   private readonly _isAnalyzing = signal(false);
 
@@ -39,7 +38,6 @@ export class ReferenceImageAnalyzerService {
 
       console.log(`✅ Reference "${name}" analyzed and saved:`, referenceData);
       return referenceData;
-
     } finally {
       this._isAnalyzing.set(false);
     }
@@ -64,7 +62,6 @@ export class ReferenceImageAnalyzerService {
 
       console.log(`✅ Reference "${name}" analyzed and saved:`, referenceData);
       return referenceData;
-
     } finally {
       this._isAnalyzing.set(false);
     }
@@ -194,7 +191,7 @@ export const ${this.toCamelCase(reference.name)}_REFERENCE = {
       colorProfile: this.extractColorProfile(imageData),
       textureProfile: this.extractTextureProfile(imageData),
       geometricFeatures: this.extractGeometricFeatures(imageData),
-      rawImageData: canvas.toDataURL('image/jpeg', 0.8) // For debugging
+      rawImageData: canvas.toDataURL('image/jpeg', 0.8), // For debugging
     };
   }
 
@@ -204,7 +201,8 @@ export const ${this.toCamelCase(reference.name)}_REFERENCE = {
     const brightnesses: number[] = [];
 
     // Sample pixels for analysis
-    for (let i = 0; i < data.length; i += 16) { // Every 4th pixel
+    for (let i = 0; i < data.length; i += 16) {
+      // Every 4th pixel
       const r = data[i];
       const g = data[i + 1];
       const b = data[i + 2];
@@ -230,7 +228,9 @@ export const ${this.toCamelCase(reference.name)}_REFERENCE = {
 
     // Calculate variance
     const avgBrightness = brightnesses.reduce((a, b) => a + b, 0) / brightnesses.length;
-    const variance = brightnesses.reduce((sum, b) => sum + Math.pow(b - avgBrightness, 2), 0) / brightnesses.length;
+    const variance =
+      brightnesses.reduce((sum, b) => sum + Math.pow(b - avgBrightness, 2), 0) /
+      brightnesses.length;
 
     // Detect pattern type
     const pattern = this.detectPatternType(imageData);
@@ -239,7 +239,7 @@ export const ${this.toCamelCase(reference.name)}_REFERENCE = {
       dominant,
       variance: Math.round(variance),
       brightness: Math.round(avgBrightness),
-      pattern
+      pattern,
     };
   }
 
@@ -257,7 +257,7 @@ export const ${this.toCamelCase(reference.name)}_REFERENCE = {
       contrast,
       edgeDensity,
       repetitionScore,
-      patternType
+      patternType,
     };
   }
 
@@ -282,7 +282,7 @@ export const ${this.toCamelCase(reference.name)}_REFERENCE = {
       hasCircles,
       hasOrnamental,
       dominantShape,
-      repetitionScore
+      repetitionScore,
     };
   }
 
@@ -332,7 +332,7 @@ export const ${this.toCamelCase(reference.name)}_REFERENCE = {
       }
     }
 
-    return edges / ((width - 2) * (height - 2)) * 1000;
+    return (edges / ((width - 2) * (height - 2))) * 1000;
   }
 
   private calculateRepetition(gray: Uint8Array, width: number, height: number): number {
@@ -375,7 +375,7 @@ export const ${this.toCamelCase(reference.name)}_REFERENCE = {
     const hRatio = horizontalEdges / totalPixels;
     const vRatio = verticalEdges / totalPixels;
 
-    return (hRatio > 0.05 && vRatio > 0.05 && Math.abs(hRatio - vRatio) < 0.02);
+    return hRatio > 0.05 && vRatio > 0.05 && Math.abs(hRatio - vRatio) < 0.02;
   }
 
   private detectCircles(gray: Uint8Array, width: number, height: number): boolean {
@@ -389,8 +389,10 @@ export const ${this.toCamelCase(reference.name)}_REFERENCE = {
 
       const center = gray[y * width + x];
       const surrounding = [
-        gray[(y-1) * width + x], gray[(y+1) * width + x],
-        gray[y * width + (x-1)], gray[y * width + (x+1)]
+        gray[(y - 1) * width + x],
+        gray[(y + 1) * width + x],
+        gray[y * width + (x - 1)],
+        gray[y * width + (x + 1)],
       ];
 
       const avgSurrounding = surrounding.reduce((a, b) => a + b, 0) / 4;
@@ -443,7 +445,13 @@ export const ${this.toCamelCase(reference.name)}_REFERENCE = {
     return samples > 0 ? regularity / samples : 0;
   }
 
-  private getBlock(gray: Uint8Array, startX: number, startY: number, size: number, width: number): number[] {
+  private getBlock(
+    gray: Uint8Array,
+    startX: number,
+    startY: number,
+    size: number,
+    width: number
+  ): number[] {
     const block: number[] = [];
     for (let y = 0; y < size; y++) {
       for (let x = 0; x < size; x++) {
@@ -459,7 +467,7 @@ export const ${this.toCamelCase(reference.name)}_REFERENCE = {
       diff += Math.abs(block1[i] - block2[i]);
     }
     const maxDiff = block1.length * 255;
-    return 1 - (diff / maxDiff);
+    return 1 - diff / maxDiff;
   }
 
   private detectPatternType(imageData: ImageData): 'geometric' | 'ornamental' | 'plain' | 'mixed' {
@@ -474,7 +482,11 @@ export const ${this.toCamelCase(reference.name)}_REFERENCE = {
     return this.classifyPatternFromTexture(contrast, edgeDensity, repetition);
   }
 
-  private classifyPatternFromTexture(contrast: number, edgeDensity: number, repetition: number): 'geometric' | 'ornamental' | 'plain' | 'mixed' {
+  private classifyPatternFromTexture(
+    contrast: number,
+    edgeDensity: number,
+    repetition: number
+  ): 'geometric' | 'ornamental' | 'plain' | 'mixed' {
     if (edgeDensity > 25 && repetition > 0.6) return 'geometric';
     if (contrast > 0.4 && edgeDensity > 15) return 'ornamental';
     if (edgeDensity < 10 && contrast < 0.3) return 'plain';

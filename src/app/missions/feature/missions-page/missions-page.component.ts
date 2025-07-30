@@ -1,8 +1,8 @@
 import { Component, inject } from '@angular/core';
-import { MissionStore } from '../../data-access/mission.store';
 import { Router } from '@angular/router';
-import { MissionListComponent } from '../../ui/mission-list/mission-list.component';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
+import { MissionStore } from '../../data-access/mission.store';
+import { MissionListComponent } from '../../ui/mission-list/mission-list.component';
 
 @Component({
   selector: 'app-missions-page',
@@ -21,7 +21,7 @@ import { ButtonComponent } from '../../../shared/ui/button/button.component';
       }
     </div>
   `,
-  styleUrl: './missions-page.component.scss'
+  styleUrl: './missions-page.component.scss',
 })
 export class MissionsPageComponent {
   protected readonly missionStore = inject(MissionStore);

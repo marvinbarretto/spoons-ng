@@ -1,10 +1,16 @@
-import { Component, inject, signal, ChangeDetectionStrategy, OnInit, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+  signal,
+} from '@angular/core';
 
-import { BaseComponent } from '@shared/base/base.component';
-import { ButtonComponent } from '@shared/ui/button/button.component';
 import { AuthStore } from '@auth/data-access/auth.store';
+import { BaseComponent } from '@shared/base/base.component';
 import { ThemeStore } from '@shared/data-access/theme.store';
+import { ButtonComponent } from '@shared/ui/button/button.component';
 import type { ThemeType } from '@shared/utils/theme.tokens';
 
 @Component({
@@ -22,7 +28,7 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
           </div>
           <h1 class="hero-title">Keep count of the pubs you've visited</h1>
           <p class="hero-subtitle">
-            Simple pub tracking that's actually fun.<br>
+            Simple pub tracking that's actually fun.<br />
             Start counting today.
           </p>
         </div>
@@ -44,7 +50,12 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
           <div class="sign-in-section">
             <p class="sign-in-text">
               Already tracking pubs?
-              <button type="button" class="sign-in-link" (click)="navigateToLogin()" [disabled]="loading()">
+              <button
+                type="button"
+                class="sign-in-link"
+                (click)="navigateToLogin()"
+                [disabled]="loading()"
+              >
                 Sign in
               </button>
             </p>
@@ -62,7 +73,7 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
         </div-->
       </div>
     </div>
-  `
+  `,
 })
 export class SplashComponent extends BaseComponent implements OnInit, OnDestroy {
   private readonly authStore = inject(AuthStore);
@@ -78,9 +89,9 @@ export class SplashComponent extends BaseComponent implements OnInit, OnDestroy 
     console.log('[SplashComponent] 🎬 Current auth state:', {
       isAuthenticated: this.authStore.isAuthenticated(),
       userId: this.authStore.user()?.uid?.slice(0, 8),
-      isAnonymous: this.authStore.user()?.isAnonymous
+      isAnonymous: this.authStore.user()?.isAnonymous,
     });
-    
+
     // Store current theme and override with sunshine for better contrast on dark backgrounds
     this.originalTheme = this.themeStore.themeType();
     console.log('[SplashComponent] 🎨 Switching theme from', this.originalTheme, 'to sunshine');
@@ -128,12 +139,12 @@ export class SplashComponent extends BaseComponent implements OnInit, OnDestroy 
     console.log('[SplashComponent] 👻 continueAsGuest() called');
     const startTime = Date.now();
     this.guestLoading.set(true);
-    
+
     try {
       console.log('[SplashComponent] 👻 Starting guest authentication flow...');
       console.log('[SplashComponent] 👻 Auth state before guest creation:', {
         hasUser: !!this.authStore.user(),
-        isAuthenticated: this.authStore.isAuthenticated()
+        isAuthenticated: this.authStore.isAuthenticated(),
       });
 
       // Create anonymous user when user chooses guest
@@ -145,28 +156,28 @@ export class SplashComponent extends BaseComponent implements OnInit, OnDestroy 
       console.log('[SplashComponent] 👻 Waiting for user authentication...');
       await this.authStore.waitForUserAuthenticated();
       console.log('[SplashComponent] 👻 User authentication completed');
-      
+
       const authTime = Date.now() - startTime;
       console.log('[SplashComponent] 👻 Guest auth took', authTime, 'ms');
-      
+
       console.log('[SplashComponent] 👻 Final auth state:', {
         hasUser: !!this.authStore.user(),
         userId: this.authStore.user()?.uid?.slice(0, 8),
         isAuthenticated: this.authStore.isAuthenticated(),
-        isAnonymous: this.authStore.user()?.isAnonymous
+        isAnonymous: this.authStore.user()?.isAnonymous,
       });
 
       console.log('[SplashComponent] 👻 Navigating to /home...');
       const success = await this.router.navigate(['/home']);
       console.log('[SplashComponent] 👻 Navigation to /home result:', success);
-      
+
       const totalTime = Date.now() - startTime;
       console.log('[SplashComponent] ✅ Complete guest flow took', totalTime, 'ms');
     } catch (error) {
       console.error('[SplashComponent] ❌ Guest login failed:', {
         error: error,
         message: error instanceof Error ? error.message : 'Unknown error',
-        timeTaken: Date.now() - startTime + 'ms'
+        timeTaken: Date.now() - startTime + 'ms',
       });
       this.showError('Failed to continue as guest. Please try again.');
     } finally {

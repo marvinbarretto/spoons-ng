@@ -1,4 +1,4 @@
-import { Timestamp } from "firebase/firestore";
+import { Timestamp } from 'firebase/firestore';
 
 export function earliest(a?: Timestamp, b?: Date): Timestamp {
   if (!a && !b) throw new Error('Both dates are undefined');

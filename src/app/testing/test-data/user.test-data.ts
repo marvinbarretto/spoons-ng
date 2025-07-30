@@ -16,7 +16,7 @@ export function createMockUser(overrides?: Partial<User>): User {
     landlordPubIds: [],
     streaks: {},
     joinedMissionIds: [],
-    ...overrides
+    ...overrides,
   };
 }
 
@@ -26,7 +26,7 @@ export function createAnonymousUser(uid: string = 'anon-user-id'): User {
     email: null,
     displayName: `Anonymous User ${uid.slice(0, 8)}`,
     isAnonymous: true,
-    emailVerified: false
+    emailVerified: false,
   });
 }
 
@@ -40,6 +40,6 @@ export function createAuthenticatedUser(overrides?: Partial<User>): User {
     totalPoints: 100,
     badgeCount: 3,
     badgeIds: ['badge1', 'badge2', 'badge3'],
-    ...overrides
+    ...overrides,
   });
 }

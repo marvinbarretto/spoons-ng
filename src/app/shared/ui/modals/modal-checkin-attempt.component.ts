@@ -1,7 +1,7 @@
-import { Component, output, input, ChangeDetectionStrategy } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 
-import { IconComponent } from '@shared/ui/icon/icon.component';
 import { ButtonComponent } from '@shared/ui/button/button.component';
+import { IconComponent } from '@shared/ui/icon/icon.component';
 
 export type CheckinError =
   | 'no-location'
@@ -26,11 +26,7 @@ export interface CheckinErrorDetails {
     <div class="modal-content">
       <!-- Header -->
       <div class="modal-header">
-        <app-icon
-          [name]="getIconName()"
-          size="xl"
-          [customClass]="'error-icon'"
-          weight="medium" />
+        <app-icon [name]="getIconName()" size="xl" [customClass]="'error-icon'" weight="medium" />
         <h2 class="modal-title">{{ getTitle() }}</h2>
       </div>
 
@@ -43,7 +39,9 @@ export interface CheckinErrorDetails {
             <app-icon name="local_bar" size="sm" />
             <span>{{ errorDetails().pubName }}</span>
             @if (errorDetails().distance) {
-              <span class="distance">({{ (errorDetails().distance! / 1000).toFixed(1) }}km away)</span>
+              <span class="distance"
+                >({{ (errorDetails().distance! / 1000).toFixed(1) }}km away)</span
+              >
             }
           </div>
         }
@@ -63,7 +61,8 @@ export interface CheckinErrorDetails {
           [variant]="'primary'"
           [size]="'md'"
           (click)="handleRetry()"
-          class="retry-button">
+          class="retry-button"
+        >
           {{ getRetryText() }}
         </app-button>
 
@@ -71,7 +70,8 @@ export interface CheckinErrorDetails {
           [variant]="'secondary'"
           [size]="'md'"
           (click)="handleClose()"
-          class="close-button">
+          class="close-button"
+        >
           Cancel
         </app-button>
       </div>
@@ -129,7 +129,8 @@ export interface CheckinErrorDetails {
       margin: 0;
     }
 
-    .pub-info, .accuracy-info {
+    .pub-info,
+    .accuracy-info {
       display: flex;
       align-items: center;
       justify-content: center;
@@ -141,7 +142,8 @@ export interface CheckinErrorDetails {
       color: var(--text-muted);
     }
 
-    .distance, .accuracy-note {
+    .distance,
+    .accuracy-note {
       color: var(--text-muted);
       font-size: 0.8rem;
     }
@@ -158,7 +160,8 @@ export interface CheckinErrorDetails {
       }
     }
 
-    .retry-button, .close-button {
+    .retry-button,
+    .close-button {
       flex: 1;
     }
 
@@ -174,7 +177,7 @@ export interface CheckinErrorDetails {
       line-height: 1.4;
       margin: 0;
     }
-  `
+  `,
 })
 export class ModalCheckinAttemptComponent {
   readonly errorDetails = input.required<CheckinErrorDetails>();
@@ -238,7 +241,7 @@ export class ModalCheckinAttemptComponent {
       case 'poor-accuracy':
         return 'Try moving near a window or outside for better GPS signal.';
       case 'no-nearby-pubs':
-        return 'Make sure you\'re within 50km of a Wetherspoons pub.';
+        return "Make sure you're within 50km of a Wetherspoons pub.";
       case 'out-of-range':
         return 'Get within 200 meters of the pub to check in.';
       case 'not-authenticated':

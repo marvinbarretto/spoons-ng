@@ -1,6 +1,5 @@
 import { Component, input, output } from '@angular/core';
 
-
 @Component({
   selector: 'app-empty-state',
   imports: [],
@@ -13,8 +12,8 @@ import { Component, input, output } from '@angular/core';
           <p class="empty-subtitle">{{ subtitle() }}</p>
         }
         @if (showAction()) {
-          <button 
-            class="action-button" 
+          <button
+            class="action-button"
             (click)="onAction()"
             type="button"
             [attr.aria-label]="actionLabel() || actionText()"
@@ -25,7 +24,7 @@ import { Component, input, output } from '@angular/core';
       </div>
     </div>
   `,
-  styleUrl: './empty-state.component.scss'
+  styleUrl: './empty-state.component.scss',
 })
 export class EmptyStateComponent {
   readonly icon = input<string>('📭');
@@ -34,9 +33,9 @@ export class EmptyStateComponent {
   readonly showAction = input<boolean>(false);
   readonly actionText = input<string>('Get Started');
   readonly actionLabel = input<string>();
-  
+
   readonly action = output<void>();
-  
+
   onAction(): void {
     this.action.emit();
   }

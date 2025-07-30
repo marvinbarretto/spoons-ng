@@ -6,7 +6,6 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
-
 }
 
 /* ✅ NEW USER QUICK START WIDGET */
@@ -260,7 +259,6 @@
   opacity: 0.7;
 }
 
-
 /* ✅ Responsive Design */
 @media (max-width: 768px) {
   .home-container {
@@ -270,7 +268,7 @@
   .debug-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .widget-placeholder {
     padding: 1.5rem;
     min-height: 100px;

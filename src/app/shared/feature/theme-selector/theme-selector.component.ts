@@ -1,8 +1,8 @@
-import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, inject } from '@angular/core';
 import { ThemeStore } from '../../data-access/theme.store';
-import { themes, type ThemeType } from '../../utils/theme.tokens';
 import { PanelStore } from '../../ui/panel/panel.store';
+import { themes, type ThemeType } from '../../utils/theme.tokens';
 
 @Component({
   selector: 'app-theme-selector',
@@ -21,11 +21,10 @@ export class ThemeSelectorComponent {
   // ✅ Use the new themes object instead of ALL_THEME_TYPES
   protected readonly themeOptions = Object.entries(themes).map(([type, theme]) => ({
     type: type as ThemeType,
-    ...theme
+    ...theme,
   }));
 
-  protected readonly toggleLabel = () =>
-    `Switch to ${this.isDark() ? 'light' : 'dark'} theme`;
+  protected readonly toggleLabel = () => `Switch to ${this.isDark() ? 'light' : 'dark'} theme`;
 
   setTheme(type: ThemeType): void {
     this._themeStore.setTheme(type);

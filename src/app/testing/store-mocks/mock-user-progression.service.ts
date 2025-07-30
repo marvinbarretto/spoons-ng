@@ -1,4 +1,4 @@
-import { signal, computed } from '@angular/core';
+import { computed, signal } from '@angular/core';
 
 export class MockUserProgressionService {
   private _totalPoints = signal(0);
@@ -58,7 +58,7 @@ export class MockUserProgressionService {
       totalPoints: this._totalPoints(),
       totalCheckins: this._totalCheckins(),
       badgeCount: this._badgeCount(),
-      landlordCount: this._landlordCount()
+      landlordCount: this._landlordCount(),
     };
   }
 

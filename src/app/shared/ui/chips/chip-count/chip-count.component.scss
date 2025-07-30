@@ -3,67 +3,67 @@
 .chip-count {
   @include chip-base;
   font-weight: 600;
-  
+
   // Size variations
   &.size--xs {
     @include chip-size('xs');
     font-size: 0.6875rem;
   }
-  
+
   &.size--sm {
     @include chip-size('sm');
     font-size: 0.75rem;
   }
-  
+
   &.size--md {
     @include chip-size('md');
     font-size: 0.875rem;
   }
-  
+
   &.size--lg {
     @include chip-size('lg');
     font-size: 1rem;
   }
-  
+
   // Variant styles
   &.variant--default {
     @include chip-variant('default');
   }
-  
+
   &.variant--primary {
     @include chip-variant('primary');
   }
-  
+
   &.variant--secondary {
     @include chip-variant('secondary');
   }
-  
+
   &.variant--success {
     @include chip-variant('success');
   }
-  
+
   &.variant--warning {
     @include chip-variant('warning');
   }
-  
+
   &.variant--error {
     @include chip-variant('error');
   }
-  
+
   &.variant--accent {
     @include chip-variant('accent');
   }
-  
+
   // Clickable state
   &.clickable {
     @include chip-clickable;
   }
-  
+
   // Special states
   &.zero-count {
     opacity: 0.6;
   }
-  
+
   &.negative-count {
     .chip-value {
       color: var(--error);

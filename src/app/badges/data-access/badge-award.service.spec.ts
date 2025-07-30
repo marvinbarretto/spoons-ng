@@ -1,12 +1,12 @@
 // badges/data-access/badge-award.service.spec.ts
-import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
+import type { CheckIn } from '@check-in/utils/check-in.models';
+import { BadgeTestFactories } from '../testing/badge-test-factories';
+import type { EarnedBadge } from '../utils/badge.model';
 import { BadgeAwardService } from './badge-award.service';
 import { BadgeLogicService } from './badge-logic.service';
 import { BadgeStore } from './badge.store';
-import { BadgeTestFactories } from '../testing/badge-test-factories';
-import type { CheckIn } from '@check-in/utils/check-in.models';
-import type { EarnedBadge } from '../utils/badge.model';
 
 /**
  * Test suite for BadgeAwardService.
@@ -23,20 +23,20 @@ describe('BadgeAwardService', () => {
     // Create Jest mocks for dependencies
     const badgeLogicMock = {
       evaluateAllBadges: jest.fn(),
-      getDebugInfo: jest.fn()
+      getDebugInfo: jest.fn(),
     } as jest.Mocked<Partial<BadgeLogicService>>;
 
     const badgeStoreMock = {
       data: jest.fn(),
-      awardBadge: jest.fn()
+      awardBadge: jest.fn(),
     } as unknown as jest.Mocked<BadgeStore>;
 
     TestBed.configureTestingModule({
       providers: [
         BadgeAwardService,
         { provide: BadgeLogicService, useValue: badgeLogicMock },
-        { provide: BadgeStore, useValue: badgeStoreMock }
-      ]
+        { provide: BadgeStore, useValue: badgeStoreMock },
+      ],
     });
 
     service = TestBed.inject(BadgeAwardService);
@@ -68,8 +68,8 @@ describe('BadgeAwardService', () => {
           triggeredBy: 'check-in',
           checkInId: newCheckIn.id,
           pubId: newCheckIn.pubId,
-          awardedAt: expect.any(Number)
-        }
+          awardedAt: expect.any(Number),
+        },
       };
 
       mockBadgeLogic.evaluateAllBadges.mockReturnValue(['first-checkin']);
@@ -86,13 +86,13 @@ describe('BadgeAwardService', () => {
         userId,
         checkIn: newCheckIn,
         userCheckIns: allUserCheckIns,
-        userBadges: []
+        userBadges: [],
       });
       expect(mockBadgeStore.awardBadge).toHaveBeenCalledWith('first-checkin', {
         triggeredBy: 'check-in',
         checkInId: newCheckIn.id,
         pubId: newCheckIn.pubId,
-        awardedAt: expect.any(Number)
+        awardedAt: expect.any(Number),
       });
     });
 
@@ -106,7 +106,7 @@ describe('BadgeAwardService', () => {
       const pubIds = ['pub1', 'pub2', 'pub3', 'pub4', 'pub5'];
       const allUserCheckIns = [
         ...BadgeTestFactories.createMultiPubCheckIns(userId, pubIds, 9),
-        ...BadgeTestFactories.createSequentialCheckIns(userId, 5, 'pub1', 4)
+        ...BadgeTestFactories.createSequentialCheckIns(userId, 5, 'pub1', 4),
       ];
       const newCheckIn = allUserCheckIns[allUserCheckIns.length - 1];
 
@@ -119,8 +119,8 @@ describe('BadgeAwardService', () => {
           triggeredBy: 'check-in',
           checkInId: newCheckIn.id,
           pubId: newCheckIn.pubId,
-          awardedAt: expect.any(Number)
-        }
+          awardedAt: expect.any(Number),
+        },
       };
 
       const explorerBadge: EarnedBadge = {
@@ -132,8 +132,8 @@ describe('BadgeAwardService', () => {
           triggeredBy: 'check-in',
           checkInId: newCheckIn.id,
           pubId: newCheckIn.pubId,
-          awardedAt: expect.any(Number)
-        }
+          awardedAt: expect.any(Number),
+        },
       };
 
       mockBadgeLogic.evaluateAllBadges.mockReturnValue(['regular', 'explorer']);
@@ -190,7 +190,7 @@ describe('BadgeAwardService', () => {
         userId,
         badgeId: 'first-checkin',
         awardedAt: Date.now(),
-        metadata: {}
+        metadata: {},
       };
 
       mockBadgeLogic.evaluateAllBadges.mockReturnValue(['first-checkin', 'other-badge']);
@@ -217,13 +217,15 @@ describe('BadgeAwardService', () => {
       const userId = 'user123';
       const newCheckIn = BadgeTestFactories.createCheckIn(userId, 'pub1');
       const allUserCheckIns = [newCheckIn];
-      const existingBadges: EarnedBadge[] = [{
-        id: 'existing-badge-123',
-        userId,
-        badgeId: 'some-badge',
-        awardedAt: Date.now() - 86400000,
-        metadata: {}
-      }];
+      const existingBadges: EarnedBadge[] = [
+        {
+          id: 'existing-badge-123',
+          userId,
+          badgeId: 'some-badge',
+          awardedAt: Date.now() - 86400000,
+          metadata: {},
+        },
+      ];
 
       mockBadgeLogic.evaluateAllBadges.mockReturnValue([]);
       mockBadgeStore.data.mockReturnValue(signal(existingBadges)());
@@ -236,7 +238,7 @@ describe('BadgeAwardService', () => {
         userId,
         checkIn: newCheckIn,
         userCheckIns: allUserCheckIns,
-        userBadges: existingBadges
+        userBadges: existingBadges,
       });
     });
 
@@ -258,8 +260,8 @@ describe('BadgeAwardService', () => {
           triggeredBy: 'check-in',
           checkInId: newCheckIn.id,
           pubId: newCheckIn.pubId,
-          awardedAt: expect.any(Number)
-        }
+          awardedAt: expect.any(Number),
+        },
       };
 
       mockBadgeLogic.evaluateAllBadges.mockReturnValue(['first-checkin']);
@@ -274,7 +276,7 @@ describe('BadgeAwardService', () => {
         triggeredBy: 'check-in',
         checkInId: newCheckIn.id,
         pubId: newCheckIn.pubId,
-        awardedAt: expect.any(Number)
+        awardedAt: expect.any(Number),
       });
     });
   });
@@ -301,7 +303,7 @@ describe('BadgeAwardService', () => {
         userId,
         checkIn: userCheckIns[userCheckIns.length - 1], // Latest check-in as trigger
         userCheckIns,
-        userBadges: []
+        userBadges: [],
       });
     });
 
@@ -345,9 +347,9 @@ describe('BadgeAwardService', () => {
           userId,
           checkIn: userCheckIns[userCheckIns.length - 1],
           userCheckIns,
-          userBadges: []
+          userBadges: [],
         },
-        debugInfo
+        debugInfo,
       });
     });
 

@@ -1,7 +1,7 @@
 // Safe landlord utilities
 // src/app/landlord/utils/landlord.utils.ts
+import { isToday, toDate } from '../../shared/utils/timestamp.utils';
 import { Landlord } from './landlord.model';
-import { toDate, isToday } from '../../shared/utils/timestamp.utils';
 
 export function isLandlordActive(landlord: Landlord): boolean {
   if (!landlord.isActive) return false;
@@ -28,6 +28,6 @@ export function formatLandlordClaim(landlord: Landlord): string {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   });
 }

@@ -1,19 +1,19 @@
 // src/app/missions/feature/mission-form/mission-form.component.ts
-import { Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { Component, computed, inject, signal } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { ButtonComponent } from '@shared/ui/button/button.component';
 import { PubSelectorComponent } from '@shared/ui/pub-selector/pub-selector.component';
-import { MissionStore } from '../../data-access/mission.store';
 import { BaseComponent } from '../../../shared/base/base.component';
+import { MissionStore } from '../../data-access/mission.store';
 import type { Mission } from '../../utils/mission.model';
 
 @Component({
   selector: 'app-mission-form',
   imports: [CommonModule, ReactiveFormsModule, ButtonComponent, PubSelectorComponent],
   templateUrl: './mission-form.component.html',
-  styleUrl: './mission-form.component.scss'
+  styleUrl: './mission-form.component.scss',
 })
 export class MissionFormComponent extends BaseComponent {
   // ✅ Dependencies
@@ -41,14 +41,14 @@ export class MissionFormComponent extends BaseComponent {
     description: ['', [Validators.required, Validators.minLength(10)]],
     pointsReward: [25, [Validators.required, Validators.min(1), Validators.max(1000)]],
     timeLimitHours: [null as number | null],
-    badgeRewardId: ['']
+    badgeRewardId: [''],
   });
 
   // ✅ Computed properties
   readonly isEditMode = computed(() => !!this._missionId());
 
-  readonly hasFormErrors = computed(() =>
-    this.missionForm.invalid && (this.missionForm.dirty || this.missionForm.touched)
+  readonly hasFormErrors = computed(
+    () => this.missionForm.invalid && (this.missionForm.dirty || this.missionForm.touched)
   );
 
   readonly pubSelectionError = computed(() => {
@@ -70,20 +70,23 @@ export class MissionFormComponent extends BaseComponent {
     isLoading: this.isLoading(),
     isSaving: this.isSaving(),
     selectedPubCount: this.selectedPubIds().length,
-    formErrors: Object.keys(this.missionForm.controls).reduce((acc, key) => {
-      const control = this.missionForm.get(key);
-      if (control?.errors) {
-        acc[key] = control.errors;
-      }
-      return acc;
-    }, {} as Record<string, any>)
+    formErrors: Object.keys(this.missionForm.controls).reduce(
+      (acc, key) => {
+        const control = this.missionForm.get(key);
+        if (control?.errors) {
+          acc[key] = control.errors;
+        }
+        return acc;
+      },
+      {} as Record<string, any>
+    ),
   }));
 
   readonly debugMissionData = computed(() => ({
     missionId: this._missionId(),
     currentMission: this._currentMission(),
     formValue: this.missionForm.getRawValue(),
-    selectedPubIds: this.selectedPubIds()
+    selectedPubIds: this.selectedPubIds(),
   }));
 
   // ✅ Initialize component
@@ -146,7 +149,7 @@ export class MissionFormComponent extends BaseComponent {
       description: mission.description,
       pointsReward: mission.pointsReward ?? 25, // Use default if missing
       timeLimitHours: mission.timeLimitHours ?? null,
-      badgeRewardId: mission.badgeRewardId ?? ''
+      badgeRewardId: mission.badgeRewardId ?? '',
     });
 
     this._selectedPubIds.set([...mission.pubIds]);
@@ -206,7 +209,7 @@ export class MissionFormComponent extends BaseComponent {
         name: formValue.name,
         description: formValue.description,
         pubIds: [...this.selectedPubIds()],
-        pointsReward: formValue.pointsReward
+        pointsReward: formValue.pointsReward,
       };
 
       // ✅ Only include optional fields if they have actual values
@@ -232,7 +235,6 @@ export class MissionFormComponent extends BaseComponent {
 
       console.log('[MissionForm] ✅ Form submission successful');
       this.router.navigate(['/admin/missions']);
-
     } catch (error: any) {
       console.error('[MissionForm] ❌ Form submission failed:', error);
       this.showError(error?.message || 'Failed to save mission');
@@ -243,10 +245,14 @@ export class MissionFormComponent extends BaseComponent {
 
   // ✅ Generate mission ID from name
   private generateMissionId(name: string): string {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .substring(0, 50) + '-' + Date.now().toString(36);
+    return (
+      name
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .substring(0, 50) +
+      '-' +
+      Date.now().toString(36)
+    );
   }
 }

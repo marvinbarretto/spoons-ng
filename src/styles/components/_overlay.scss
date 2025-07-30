@@ -7,7 +7,7 @@
  * Uses vw/vh units for consistent spacing across devices
  */
 
- .cdk-overlay-container {
+.cdk-overlay-container {
   /* Ensure overlay container covers full viewport */
   position: fixed;
   top: 0;
@@ -147,7 +147,9 @@
   }
 
   .overlay-panel {
-    transition: transform 150ms ease, opacity 150ms ease;
+    transition:
+      transform 150ms ease,
+      opacity 150ms ease;
   }
 }
 

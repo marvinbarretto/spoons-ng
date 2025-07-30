@@ -1,10 +1,10 @@
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { NearestPubComponent } from './nearest-pub.component';
+import { Router } from '@angular/router';
 import { NearbyPubStore } from '../../pubs/data-access/nearby-pub.store';
 import { DataAggregatorService } from '../../shared/data-access/data-aggregator.service';
 import { LocationService } from '../../shared/data-access/location.service';
-import { Router } from '@angular/router';
-import { signal } from '@angular/core';
+import { NearestPubComponent } from './nearest-pub.component';
 
 describe('NearestPubComponent', () => {
   let component: NearestPubComponent;
@@ -19,21 +19,21 @@ describe('NearestPubComponent', () => {
     mockNearbyPubStore = {
       nearbyPubs: signal([]),
       hasNearbyPubs: signal(false),
-      location: signal(null)
+      location: signal(null),
     };
 
     mockDataAggregatorService = {
       hasVisitedPub: jest.fn().mockReturnValue(false),
-      getVisitCountForPub: jest.fn().mockReturnValue(0)
+      getVisitCountForPub: jest.fn().mockReturnValue(0),
     };
 
     mockLocationService = {
       loading: signal(false),
-      error: signal(null)
+      error: signal(null),
     };
 
     mockRouter = {
-      navigate: jest.fn()
+      navigate: jest.fn(),
     };
 
     await TestBed.configureTestingModule({
@@ -42,8 +42,8 @@ describe('NearestPubComponent', () => {
         { provide: NearbyPubStore, useValue: mockNearbyPubStore },
         { provide: DataAggregatorService, useValue: mockDataAggregatorService },
         { provide: LocationService, useValue: mockLocationService },
-        { provide: Router, useValue: mockRouter }
-      ]
+        { provide: Router, useValue: mockRouter },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(NearestPubComponent);
@@ -57,7 +57,7 @@ describe('NearestPubComponent', () => {
   it('should show loading state', () => {
     component.loading.set(true);
     fixture.detectChanges();
-    
+
     const element = fixture.nativeElement;
     expect(element.querySelector('.widget-loading')).toBeTruthy();
     expect(element.textContent).toContain('Finding nearby pubs...');
@@ -66,7 +66,7 @@ describe('NearestPubComponent', () => {
   it('should show error state', () => {
     component.error.set('Location access denied');
     fixture.detectChanges();
-    
+
     const element = fixture.nativeElement;
     expect(element.querySelector('.widget-error')).toBeTruthy();
     expect(element.textContent).toContain('Location access denied');
@@ -75,7 +75,7 @@ describe('NearestPubComponent', () => {
   it('should show empty state when no nearby pubs', () => {
     mockNearbyPubStore.hasNearbyPubs.set(false);
     fixture.detectChanges();
-    
+
     const element = fixture.nativeElement;
     expect(element.querySelector('.widget-empty')).toBeTruthy();
     expect(element.textContent).toContain('No pubs within 50km');
@@ -88,33 +88,35 @@ describe('NearestPubComponent', () => {
         name: 'The Red Lion',
         address: '123 Main St',
         distance: 150,
-        location: { lat: 51.5, lng: -0.1 }
+        location: { lat: 51.5, lng: -0.1 },
       },
       {
         id: '2',
         name: 'The Blue Anchor',
         address: '456 High St',
         distance: 2500,
-        location: { lat: 51.51, lng: -0.11 }
-      }
+        location: { lat: 51.51, lng: -0.11 },
+      },
     ];
 
     mockNearbyPubStore.nearbyPubs.set(mockPubs);
     mockNearbyPubStore.hasNearbyPubs.set(true);
     mockDataAggregatorService.hasVisitedPub.mockImplementation((id: string) => id === '1');
-    mockDataAggregatorService.getVisitCountForPub.mockImplementation((id: string) => id === '1' ? 3 : 0);
+    mockDataAggregatorService.getVisitCountForPub.mockImplementation((id: string) =>
+      id === '1' ? 3 : 0
+    );
 
     fixture.detectChanges();
 
     const element = fixture.nativeElement;
     const pubCards = element.querySelectorAll('.pub-card');
-    
+
     expect(pubCards.length).toBe(2);
     expect(pubCards[0].textContent).toContain('The Red Lion');
     expect(pubCards[0].textContent).toContain('150m');
     expect(pubCards[0].textContent).toContain('Visited 3x');
     expect(pubCards[0].classList.contains('visited')).toBe(true);
-    
+
     expect(pubCards[1].textContent).toContain('The Blue Anchor');
     expect(pubCards[1].textContent).toContain('2.5km');
     expect(pubCards[1].querySelector('.visited-badge')).toBeFalsy();
@@ -135,13 +137,15 @@ describe('NearestPubComponent', () => {
   });
 
   it('should show View button for all pubs', () => {
-    const mockPubs = [{
-      id: '1',
-      name: 'Test Pub',
-      address: '123 Main St',
-      distance: 50,
-      location: { lat: 51.5, lng: -0.1 }
-    }];
+    const mockPubs = [
+      {
+        id: '1',
+        name: 'Test Pub',
+        address: '123 Main St',
+        distance: 50,
+        location: { lat: 51.5, lng: -0.1 },
+      },
+    ];
 
     mockNearbyPubStore.nearbyPubs.set(mockPubs);
     mockNearbyPubStore.hasNearbyPubs.set(true);

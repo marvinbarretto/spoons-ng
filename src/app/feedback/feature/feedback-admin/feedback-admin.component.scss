@@ -94,7 +94,9 @@
   margin-bottom: 32px;
 }
 
-.loading, .error, .empty-state {
+.loading,
+.error,
+.empty-state {
   padding: 48px;
   text-align: center;
   color: var(--text-secondary);

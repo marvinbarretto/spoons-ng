@@ -1,5 +1,5 @@
 // src/app/home/ui/profile-customization-modal/widgets/theme-selection-widget/theme-selection-widget.component.ts
-import { Component, inject, ChangeDetectionStrategy, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 
 import { ThemeStore } from '@shared/data-access/theme.store';
 import type { ThemeType } from '@shared/utils/theme.tokens';
@@ -16,9 +16,18 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
       <div class="current-theme">
         <div class="theme-preview" [attr.data-theme]="currentTheme()">
           <div class="preview-colors">
-            <span class="color-swatch primary" [style.background-color]="currentThemeColors().colors.primary"></span>
-            <span class="color-swatch surface" [style.background-color]="currentThemeColors().colors.backgroundLighter"></span>
-            <span class="color-swatch accent" [style.background-color]="currentThemeColors().colors.success"></span>
+            <span
+              class="color-swatch primary"
+              [style.background-color]="currentThemeColors().colors.primary"
+            ></span>
+            <span
+              class="color-swatch surface"
+              [style.background-color]="currentThemeColors().colors.backgroundLighter"
+            ></span>
+            <span
+              class="color-swatch accent"
+              [style.background-color]="currentThemeColors().colors.success"
+            ></span>
           </div>
         </div>
         <div class="theme-info">
@@ -28,11 +37,7 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
       </div>
 
       <!-- ✅ Quick toggle -->
-      <button
-        type="button"
-        class="quick-toggle-btn"
-        (click)="toggleDarkMode()"
-      >
+      <button type="button" class="quick-toggle-btn" (click)="toggleDarkMode()">
         @if (isDark()) {
           <span class="toggle-icon">☀️</span>
           <span>Switch to Light</span>
@@ -54,9 +59,18 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
           >
             <div class="theme-preview small">
               <div class="preview-colors">
-                <span class="color-swatch" [style.background-color]="themeOption.theme.colors.primary"></span>
-                <span class="color-swatch" [style.background-color]="themeOption.theme.colors.backgroundLighter"></span>
-                <span class="color-swatch" [style.background-color]="themeOption.theme.colors.success"></span>
+                <span
+                  class="color-swatch"
+                  [style.background-color]="themeOption.theme.colors.primary"
+                ></span>
+                <span
+                  class="color-swatch"
+                  [style.background-color]="themeOption.theme.colors.backgroundLighter"
+                ></span>
+                <span
+                  class="color-swatch"
+                  [style.background-color]="themeOption.theme.colors.success"
+                ></span>
               </div>
             </div>
             <span class="theme-label">{{ themeOption.theme.name }}</span>
@@ -214,7 +228,7 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
         text-align: center;
       }
     }
-  `
+  `,
 })
 export class ThemeSelectionWidgetComponent {
   protected readonly themeStore = inject(ThemeStore);

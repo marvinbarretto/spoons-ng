@@ -6,10 +6,7 @@ import { environment } from '../../../environments/environment';
 })
 export class FeatureFlagService {
   constructor() {
-    console.log(
-      'Environment feature flags at service initialization:',
-      environment.featureFlags
-    );
+    console.log('Environment feature flags at service initialization:', environment.featureFlags);
   }
 
   isEnabled(flag: keyof typeof environment.featureFlags | string): boolean {
@@ -20,7 +17,8 @@ export class FeatureFlagService {
     // Handle nested feature flags like 'checkinGates.pointDown'
     if (flag.includes('.')) {
       const [parentKey, childKey] = flag.split('.');
-      const parentFlag = environment.featureFlags[parentKey as keyof typeof environment.featureFlags];
+      const parentFlag =
+        environment.featureFlags[parentKey as keyof typeof environment.featureFlags];
       if (parentFlag && typeof parentFlag === 'object') {
         const childFlag = (parentFlag as any)[childKey];
         return typeof childFlag === 'boolean' ? childFlag : false;

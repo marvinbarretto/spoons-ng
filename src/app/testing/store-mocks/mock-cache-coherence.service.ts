@@ -12,16 +12,16 @@ export class MockCacheCoherenceService {
   // Mock invalidation signal - always returns null for tests
   private readonly _currentInvalidation = signal<CacheInvalidation | null>(null);
   private readonly _invalidationHistory = signal<CacheInvalidation[]>([]);
-  
+
   // Public reactive signals (matches real service interface)
   readonly invalidations = this._currentInvalidation.asReadonly();
   readonly history = this._invalidationHistory.asReadonly();
-  
+
   // Mock stats
   readonly stats = signal({
     totalInvalidations: 0,
     recentInvalidations: [],
-    collectionsInvalidated: new Set()
+    collectionsInvalidated: new Set(),
   }).asReadonly();
 
   // Mock computed values
@@ -37,17 +37,17 @@ export class MockCacheCoherenceService {
    */
   invalidate(collection: string, reason?: string): void {
     console.log(`[MockCacheCoherence] Mock invalidation: ${collection} (${reason})`);
-    
+
     // Optional: Set a temporary invalidation signal for testing reactive behavior
     const invalidation: CacheInvalidation = {
       collection,
       reason,
       timestamp: Date.now(),
-      requestId: `mock-${Date.now()}`
+      requestId: `mock-${Date.now()}`,
     };
-    
+
     this._currentInvalidation.set(invalidation);
-    
+
     // Clear after a brief moment to simulate real behavior
     setTimeout(() => {
       this._currentInvalidation.set(null);

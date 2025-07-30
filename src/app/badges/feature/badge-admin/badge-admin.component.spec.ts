@@ -8,9 +8,8 @@ describe('BadgeAdminComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [BadgeAdminComponent]
-    })
-    .compileComponents();
+      imports: [BadgeAdminComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(BadgeAdminComponent);
     component = fixture.componentInstance;

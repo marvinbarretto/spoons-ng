@@ -1,13 +1,11 @@
-import { CommonModule } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { UserExperienceLevel } from '../../../shared/utils/user-progression.models';
-
 
 type LandlordStatusData = {
   isNewLandlord: boolean;
   landlordMessage?: string;
-  pub?: { id: string; name: string; };
+  pub?: { id: string; name: string };
 };
 
 @Component({
@@ -87,17 +85,9 @@ type LandlordStatusData = {
       </div>
 
       <div class="modal-footer">
-        <app-button
-          variant="secondary"
-          (onClick)="previousModal.emit()"
-        >
-          ← Back
-        </app-button>
+        <app-button variant="secondary" (onClick)="previousModal.emit()"> ← Back </app-button>
 
-        <app-button
-          variant="primary"
-          (onClick)="navigate.emit()"
-        >
+        <app-button variant="primary" (onClick)="navigate.emit()">
           View {{ data().pub?.name }}
         </app-button>
       </div>
@@ -133,7 +123,7 @@ type LandlordStatusData = {
     }
 
     /* Rest of modal styles similar to check-in status modal */
-  `
+  `,
 })
 export class LandlordStatusModalComponent {
   readonly data = input.required<LandlordStatusData>();

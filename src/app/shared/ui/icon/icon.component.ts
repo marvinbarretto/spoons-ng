@@ -1,5 +1,5 @@
 // src/app/shared/ui/icon/icon.component.ts
-import { Component, input, computed } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 
 export type IconVariant = 'outlined' | 'filled' | 'rounded' | 'sharp';
 export type IconSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
@@ -11,59 +11,84 @@ export type IconSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl';
       class="material-symbols-outlined"
       [class]="iconClasses()"
       [style.font-size]="iconSize()"
-      [attr.aria-hidden]="true">
+      [attr.aria-hidden]="true"
+    >
       {{ name() }}
     </span>
   `,
-  styles: [`
-    .material-symbols-outlined {
-      font-variation-settings:
-        'FILL' var(--icon-fill, 0),
-        'wght' var(--icon-weight, 400),
-        'GRAD' var(--icon-grade, 0),
-        'opsz' var(--icon-optical-size, 24);
+  styles: [
+    `
+      .material-symbols-outlined {
+        font-variation-settings:
+          'FILL' var(--icon-fill, 0),
+          'wght' var(--icon-weight, 400),
+          'GRAD' var(--icon-grade, 0),
+          'opsz' var(--icon-optical-size, 24);
 
-      /* ✅ Consistent baseline alignment */
-      vertical-align: text-bottom;
+        /* ✅ Consistent baseline alignment */
+        vertical-align: text-bottom;
 
-      /* ✅ Prevent text selection */
-      user-select: none;
-      -webkit-user-select: none;
+        /* ✅ Prevent text selection */
+        user-select: none;
+        -webkit-user-select: none;
 
-      /* ✅ Smooth transitions for interactive icons */
-      transition: all 0.2s ease;
-    }
-
-    /* ✅ Size variants */
-    .icon--xs { --icon-optical-size: 16; }
-    .icon--sm { --icon-optical-size: 20; }
-    .icon--md { --icon-optical-size: 24; }
-    .icon--lg { --icon-optical-size: 32; }
-    .icon--xl { --icon-optical-size: 40; }
-
-    /* ✅ Fill variants */
-    .icon--filled { --icon-fill: 1; }
-    .icon--outlined { --icon-fill: 0; }
-
-    /* ✅ Weight variants */
-    .icon--light { --icon-weight: 300; }
-    .icon--regular { --icon-weight: 400; }
-    .icon--medium { --icon-weight: 500; }
-    .icon--bold { --icon-weight: 700; }
-
-    /* ✅ Interactive states */
-    .icon--interactive {
-      cursor: pointer;
-
-      &:hover {
-        transform: scale(1.1);
+        /* ✅ Smooth transitions for interactive icons */
+        transition: all 0.2s ease;
       }
 
-      &:active {
-        transform: scale(0.95);
+      /* ✅ Size variants */
+      .icon--xs {
+        --icon-optical-size: 16;
       }
-    }
-  `]
+      .icon--sm {
+        --icon-optical-size: 20;
+      }
+      .icon--md {
+        --icon-optical-size: 24;
+      }
+      .icon--lg {
+        --icon-optical-size: 32;
+      }
+      .icon--xl {
+        --icon-optical-size: 40;
+      }
+
+      /* ✅ Fill variants */
+      .icon--filled {
+        --icon-fill: 1;
+      }
+      .icon--outlined {
+        --icon-fill: 0;
+      }
+
+      /* ✅ Weight variants */
+      .icon--light {
+        --icon-weight: 300;
+      }
+      .icon--regular {
+        --icon-weight: 400;
+      }
+      .icon--medium {
+        --icon-weight: 500;
+      }
+      .icon--bold {
+        --icon-weight: 700;
+      }
+
+      /* ✅ Interactive states */
+      .icon--interactive {
+        cursor: pointer;
+
+        &:hover {
+          transform: scale(1.1);
+        }
+
+        &:active {
+          transform: scale(0.95);
+        }
+      }
+    `,
+  ],
 })
 export class IconComponent {
   // ✅ Required icon name
@@ -110,11 +135,11 @@ export class IconComponent {
   // ✅ Computed font size for optical sizing
   readonly iconSize = computed(() => {
     const sizeMap: Record<IconSize, string> = {
-      xs: '1rem',     // 16px
-      sm: '1.25rem',  // 20px
-      md: '1.5rem',   // 24px
-      lg: '2rem',     // 32px
-      xl: '2.5rem'    // 40px
+      xs: '1rem', // 16px
+      sm: '1.25rem', // 20px
+      md: '1.5rem', // 24px
+      lg: '2rem', // 32px
+      xl: '2.5rem', // 40px
     };
     return sizeMap[this.size()];
   });

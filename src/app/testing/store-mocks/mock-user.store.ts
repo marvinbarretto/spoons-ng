@@ -1,4 +1,4 @@
-import { signal, computed } from '@angular/core';
+import { computed, signal } from '@angular/core';
 import type { User } from '../../users/utils/user.model';
 
 export class MockUserStore {
@@ -10,7 +10,7 @@ export class MockUserStore {
   readonly user = this._user.asReadonly();
   readonly loading = this._loading.asReadonly();
   readonly error = this._error.asReadonly();
-  
+
   readonly isLoaded = computed(() => !this._loading() && !!this._user());
   readonly hasUser = computed(() => !!this._user());
   readonly displayName = computed(() => this._user()?.displayName || 'Mock User');

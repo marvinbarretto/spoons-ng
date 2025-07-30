@@ -5,16 +5,16 @@ export const LEADERBOARD_ROUTES: Routes = [
   {
     path: '',
     redirectTo: 'points',
-    pathMatch: 'full'
+    pathMatch: 'full',
   },
   {
     path: 'points',
     component: LeaderboardContainerComponent,
-    title: 'Points Leaderboard'
+    title: 'Points Leaderboard',
   },
   {
     path: 'pubs',
     component: LeaderboardContainerComponent,
-    title: 'Pubs Leaderboard'
-  }
+    title: 'Pubs Leaderboard',
+  },
 ];

@@ -1,17 +1,14 @@
 // src/app/profile/ui/account-settings-widget/account-settings-widget.component.ts
-import { Component, computed, inject, ChangeDetectionStrategy, signal } from '@angular/core';
-import { BaseComponent } from '@shared/base/base.component';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { AuthStore } from '@auth/data-access/auth.store';
-import { UserStore } from '@users/data-access/user.store';
-import { Router } from '@angular/router';
+import { BaseComponent } from '@shared/base/base.component';
 import { IconComponent } from '@shared/ui/icon/icon.component';
+import { UserStore } from '@users/data-access/user.store';
 
 @Component({
   selector: 'app-account-settings-widget',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    IconComponent
-  ],
+  imports: [IconComponent],
   template: `
     <div class="account-settings-widget">
       <h2 class="widget-title">Account Settings</h2>
@@ -44,11 +41,7 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
         <h3 class="danger-title">Danger Zone</h3>
 
         <div class="danger-actions">
-          <button
-            (click)="handleLogout()"
-            class="danger-btn logout-btn"
-            type="button"
-          >
+          <button (click)="handleLogout()" class="danger-btn logout-btn" type="button">
             <app-icon name="logout" size="sm" />
             Logout
           </button>
@@ -65,8 +58,7 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
         </div>
 
         <p>
-          ⚠️ Deleting your account is permanent and cannot be undone.
-          All your data will be lost.
+          ⚠️ Deleting your account is permanent and cannot be undone. All your data will be lost.
         </p>
       </div>
     </div>
@@ -201,7 +193,7 @@ import { IconComponent } from '@shared/ui/icon/icon.component';
         flex-direction: column;
       }
     }
-  `
+  `,
 })
 export class AccountSettingsWidgetComponent extends BaseComponent {
   protected readonly authStore = inject(AuthStore);
@@ -285,7 +277,6 @@ export class AccountSettingsWidgetComponent extends BaseComponent {
       this.authStore.logout();
       console.log('[AccountSettingsWidget] 🗑️ Navigating to /splash after account deletion');
       this.router.navigate(['/splash']);
-
     } catch (error) {
       console.error('[AccountSettingsWidget] Account deletion failed:', error);
       this.showError('Failed to delete account. Please try again.');

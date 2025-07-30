@@ -6,12 +6,12 @@
 
 .errors-header {
   margin-bottom: 2rem;
-  
+
   h1 {
     margin: 0 0 0.5rem 0;
     color: var(--text);
   }
-  
+
   .errors-subtitle {
     color: var(--text-secondary);
     margin: 0 0 1.5rem 0;
@@ -31,29 +31,29 @@
   border-radius: 8px;
   padding: 1rem;
   text-align: center;
-  
+
   &.critical {
     border-color: #ff4444;
     background: rgba(255, 68, 68, 0.1);
   }
-  
+
   &.warning {
     border-color: #ff8800;
     background: rgba(255, 136, 0, 0.1);
   }
-  
+
   &.info {
     border-color: var(--info);
     background: rgba(59, 130, 246, 0.1);
   }
-  
+
   .stat-value {
     font-size: 2rem;
     font-weight: bold;
     color: var(--text);
     margin-bottom: 0.25rem;
   }
-  
+
   .stat-label {
     font-size: 0.875rem;
     color: var(--text-secondary);
@@ -62,7 +62,7 @@
 
 .error-categories {
   margin-bottom: 2rem;
-  
+
   h2 {
     margin: 0 0 1rem 0;
     color: var(--text);
@@ -85,17 +85,17 @@
   flex-direction: column;
   align-items: center;
   gap: 0.25rem;
-  
+
   .category-icon {
     font-size: 1.5rem;
   }
-  
+
   .category-name {
     font-size: 0.75rem;
     color: var(--text-secondary);
     text-transform: capitalize;
   }
-  
+
   .category-count {
     font-weight: bold;
     color: var(--text);
@@ -104,7 +104,7 @@
 
 .error-filters {
   margin-bottom: 2rem;
-  
+
   h2 {
     margin: 0 0 1rem 0;
     color: var(--text);
@@ -116,30 +116,31 @@
   gap: 1rem;
   align-items: center;
   flex-wrap: wrap;
-  
-  select, button {
+
+  select,
+  button {
     padding: 0.5rem;
     border: 1px solid var(--border);
     border-radius: 4px;
     background: var(--background-lighter);
     color: var(--text);
   }
-  
+
   button {
     background: var(--primary);
     color: var(--primary-contrast);
     cursor: pointer;
-    
+
     &:hover {
       background: var(--primary-hover);
     }
-    
+
     &:disabled {
       opacity: 0.5;
       cursor: not-allowed;
     }
   }
-  
+
   label {
     display: flex;
     align-items: center;
@@ -156,7 +157,8 @@
   }
 }
 
-.loading-state, .empty-state {
+.loading-state,
+.empty-state {
   text-align: center;
   padding: 2rem;
   color: var(--text-secondary);
@@ -176,19 +178,19 @@
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 1rem;
-  
+
   &.severity-critical {
     border-left: 4px solid #ff4444;
   }
-  
+
   &.severity-high {
     border-left: 4px solid #ff8800;
   }
-  
+
   &.severity-medium {
     border-left: 4px solid #ffaa00;
   }
-  
+
   &.severity-low {
     border-left: 4px solid var(--info);
   }
@@ -212,26 +214,77 @@
   font-size: 0.75rem;
   font-weight: 500;
   text-transform: uppercase;
-  
-  &.badge-check-in { background: rgba(139, 69, 19, 0.2); color: #8B4513; }
-  &.badge-points { background: rgba(255, 215, 0, 0.2); color: #B8860B; }
-  &.badge-badges { background: rgba(255, 165, 0, 0.2); color: #FF8C00; }
-  &.badge-landlord { background: rgba(138, 43, 226, 0.2); color: #8A2BE2; }
-  &.badge-missions { background: rgba(32, 178, 170, 0.2); color: #20B2AA; }
-  &.badge-auth { background: rgba(220, 20, 60, 0.2); color: #DC143C; }
-  &.badge-database { background: rgba(70, 130, 180, 0.2); color: #4682B4; }
-  &.badge-network { background: rgba(0, 191, 255, 0.2); color: #00BFFF; }
-  &.badge-validation { background: rgba(50, 205, 50, 0.2); color: #32CD32; }
-  &.badge-unknown { background: rgba(128, 128, 128, 0.2); color: #808080; }
-  
-  &.badge-critical { background: rgba(255, 68, 68, 0.2); color: #ff4444; }
-  &.badge-high { background: rgba(255, 136, 0, 0.2); color: #ff8800; }
-  &.badge-medium { background: rgba(255, 170, 0, 0.2); color: #ffaa00; }
-  &.badge-low { background: rgba(59, 130, 246, 0.2); color: var(--info); }
-  
-  &.badge-resolved { background: rgba(34, 197, 94, 0.2); color: #22c55e; }
-  &.badge-unresolved { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
-  &.badge-anonymous { background: rgba(156, 163, 175, 0.2); color: #9ca3af; }
+
+  &.badge-check-in {
+    background: rgba(139, 69, 19, 0.2);
+    color: #8b4513;
+  }
+  &.badge-points {
+    background: rgba(255, 215, 0, 0.2);
+    color: #b8860b;
+  }
+  &.badge-badges {
+    background: rgba(255, 165, 0, 0.2);
+    color: #ff8c00;
+  }
+  &.badge-landlord {
+    background: rgba(138, 43, 226, 0.2);
+    color: #8a2be2;
+  }
+  &.badge-missions {
+    background: rgba(32, 178, 170, 0.2);
+    color: #20b2aa;
+  }
+  &.badge-auth {
+    background: rgba(220, 20, 60, 0.2);
+    color: #dc143c;
+  }
+  &.badge-database {
+    background: rgba(70, 130, 180, 0.2);
+    color: #4682b4;
+  }
+  &.badge-network {
+    background: rgba(0, 191, 255, 0.2);
+    color: #00bfff;
+  }
+  &.badge-validation {
+    background: rgba(50, 205, 50, 0.2);
+    color: #32cd32;
+  }
+  &.badge-unknown {
+    background: rgba(128, 128, 128, 0.2);
+    color: #808080;
+  }
+
+  &.badge-critical {
+    background: rgba(255, 68, 68, 0.2);
+    color: #ff4444;
+  }
+  &.badge-high {
+    background: rgba(255, 136, 0, 0.2);
+    color: #ff8800;
+  }
+  &.badge-medium {
+    background: rgba(255, 170, 0, 0.2);
+    color: #ffaa00;
+  }
+  &.badge-low {
+    background: rgba(59, 130, 246, 0.2);
+    color: var(--info);
+  }
+
+  &.badge-resolved {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+  }
+  &.badge-unresolved {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+  }
+  &.badge-anonymous {
+    background: rgba(156, 163, 175, 0.2);
+    color: #9ca3af;
+  }
 }
 
 .error-timestamp {
@@ -263,28 +316,28 @@
 .error-actions {
   display: flex;
   gap: 0.5rem;
-  
+
   .btn-sm {
     padding: 0.375rem 0.75rem;
     font-size: 0.75rem;
     border-radius: 4px;
     border: none;
     cursor: pointer;
-    
+
     &.btn-primary {
       background: var(--primary);
       color: var(--primary-contrast);
-      
+
       &:hover {
         background: var(--primary-hover);
       }
     }
-    
+
     &.btn-secondary {
       background: var(--background-darker);
       color: var(--text);
       border: 1px solid var(--border);
-      
+
       &:hover {
         background: var(--background);
       }
@@ -300,7 +353,7 @@
 
 .error-section {
   margin-bottom: 1rem;
-  
+
   h4 {
     margin: 0 0 0.5rem 0;
     color: var(--text);
@@ -309,7 +362,8 @@
   }
 }
 
-.stack-trace, .context-data {
+.stack-trace,
+.context-data {
   background: var(--background-darker);
   border: 1px solid var(--border);
   border-radius: 4px;
@@ -328,7 +382,7 @@
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 0.5rem;
   font-size: 0.875rem;
-  
+
   div {
     color: var(--text-secondary);
     word-break: break-all;
@@ -339,30 +393,30 @@
   .admin-errors {
     padding: 0.5rem;
   }
-  
+
   .error-stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .categories-grid {
     grid-template-columns: repeat(3, 1fr);
   }
-  
+
   .filter-controls {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .error-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.25rem;
   }
-  
+
   .error-actions {
     flex-direction: column;
   }
-  
+
   .context-grid {
     grid-template-columns: 1fr;
   }

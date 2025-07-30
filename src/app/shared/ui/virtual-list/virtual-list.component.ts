@@ -1,22 +1,22 @@
 // src/app/shared/ui/virtual-list/virtual-list.component.ts
+import { CommonModule } from '@angular/common';
 import {
+  ChangeDetectionStrategy,
   Component,
-  input,
-  output,
   computed,
-  signal,
   effect,
   ElementRef,
+  input,
+  output,
+  signal,
   ViewChild,
-  ChangeDetectionStrategy
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 
 export type VirtualListConfig = {
-  itemHeight: number;          // Fixed height per item (px)
-  containerHeight: number;     // Visible container height (px)
-  overscan?: number;          // Extra items to render outside viewport (default: 5)
-  threshold?: number;         // Items to render before considering virtual scrolling (default: 100)
+  itemHeight: number; // Fixed height per item (px)
+  containerHeight: number; // Visible container height (px)
+  overscan?: number; // Extra items to render outside viewport (default: 5)
+  threshold?: number; // Items to render before considering virtual scrolling (default: 100)
 };
 
 @Component({
@@ -31,36 +31,30 @@ export type VirtualListConfig = {
       #scrollContainer
     >
       <!-- Spacer for items above viewport -->
-      <div
-        class="virtual-spacer-top"
-        [style.height.px]="topSpacerHeight()"
-      ></div>
+      <div class="virtual-spacer-top" [style.height.px]="topSpacerHeight()"></div>
 
       <!-- Visible items -->
       <div class="virtual-items">
         @for (item of visibleItems(); track trackingFn()(item, $index)) {
-          <div
-            class="virtual-item"
-            [style.height.px]="config().itemHeight"
-          >
-            <ng-content [ngTemplateOutlet]="itemTemplate()" [ngTemplateOutletContext]="{ $implicit: item, index: getItemIndex(item) }"></ng-content>
+          <div class="virtual-item" [style.height.px]="config().itemHeight">
+            <ng-content
+              [ngTemplateOutlet]="itemTemplate()"
+              [ngTemplateOutletContext]="{ $implicit: item, index: getItemIndex(item) }"
+            ></ng-content>
           </div>
         }
       </div>
 
       <!-- Spacer for items below viewport -->
-      <div
-        class="virtual-spacer-bottom"
-        [style.height.px]="bottomSpacerHeight()"
-      ></div>
+      <div class="virtual-spacer-bottom" [style.height.px]="bottomSpacerHeight()"></div>
     </div>
 
     <!-- Performance info (development only) -->
     @if (showDebugInfo()) {
       <div class="virtual-debug">
         <small>
-          Rendering {{ visibleItems().length }} of {{ items().length }} items
-          ({{ startIndex() }} - {{ endIndex() }})
+          Rendering {{ visibleItems().length }} of {{ items().length }} items ({{ startIndex() }} -
+          {{ endIndex() }})
         </small>
       </div>
     }
@@ -123,7 +117,7 @@ export type VirtualListConfig = {
     .virtual-list::-webkit-scrollbar-thumb:hover {
       background: var(--text-secondary);
     }
-  `
+  `,
 })
 export class VirtualListComponent<T = any> {
   @ViewChild('scrollContainer') scrollContainer!: ElementRef<HTMLDivElement>;
@@ -132,7 +126,9 @@ export class VirtualListComponent<T = any> {
   readonly items = input.required<T[]>();
   readonly config = input.required<VirtualListConfig>();
   readonly itemTemplate = input.required<any>(); // TemplateRef
-  readonly trackingFn = input<(item: T, index: number) => any>(() => (item: T, index: number) => index);
+  readonly trackingFn = input<(item: T, index: number) => any>(
+    () => (item: T, index: number) => index
+  );
   readonly showDebugInfo = input<boolean>(false);
 
   // ✅ Scroll state
@@ -158,7 +154,7 @@ export class VirtualListComponent<T = any> {
 
     const { itemHeight, containerHeight, overscan = 5 } = this.config();
     const visibleCount = Math.ceil(containerHeight / itemHeight);
-    const calculatedEnd = this.startIndex() + visibleCount + (overscan * 2);
+    const calculatedEnd = this.startIndex() + visibleCount + overscan * 2;
     return Math.min(this.items().length - 1, calculatedEnd);
   });
 
@@ -209,9 +205,8 @@ export class VirtualListComponent<T = any> {
 
     this._scrollTop.set(scrollTop);
 
-    const scrollPercent = scrollHeight > clientHeight
-      ? (scrollTop / (scrollHeight - clientHeight)) * 100
-      : 0;
+    const scrollPercent =
+      scrollHeight > clientHeight ? (scrollTop / (scrollHeight - clientHeight)) * 100 : 0;
 
     this.scrolled.emit({ scrollTop, scrollPercent });
   }

@@ -1,19 +1,19 @@
 export * from './mock-auth.store';
-export * from './mock-user.store';
 export * from './mock-checkin.store';
+export * from './mock-user.store';
 
 // Service mocks (Firebase best practices - mock at service level)
+export * from './mock-cache-coherence.service';
+export * from './mock-earned-badge.service';
 export * from './mock-landlord.service';
 export * from './mock-user.service';
-export * from './mock-earned-badge.service';
-export * from './mock-cache-coherence.service';
 
 // Factory functions for quick creation with defaults
-import { MockAuthStore } from './mock-auth.store';
-import { MockUserStore } from './mock-user.store';
-import { MockCheckInStore } from './mock-checkin.store';
-import type { User } from '../../users/utils/user.model';
 import type { CheckIn } from '../../check-in/utils/check-in.models';
+import type { User } from '../../users/utils/user.model';
+import { MockAuthStore } from './mock-auth.store';
+import { MockCheckInStore } from './mock-checkin.store';
+import { MockUserStore } from './mock-user.store';
 
 export function createMockAuthStore(user?: Partial<User>): MockAuthStore {
   const store = new MockAuthStore();

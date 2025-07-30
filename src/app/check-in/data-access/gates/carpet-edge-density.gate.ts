@@ -1,6 +1,6 @@
 import { Injectable, computed, signal } from '@angular/core';
-import { CheckinGate } from './gate.interface';
 import { CHECKIN_GATE_THRESHOLDS } from './checkin-thresholds.config';
+import { CheckinGate } from './gate.interface';
 
 @Injectable({ providedIn: 'root' })
 export class CarpetEdgeDensityGate implements CheckinGate {
@@ -12,17 +12,17 @@ export class CarpetEdgeDensityGate implements CheckinGate {
 
   readonly edgeDensity = this._edgeDensity.asReadonly();
   readonly currentValue = computed(() => this._edgeDensity());
-  
+
   readonly passed = computed(() => {
     const value = this._edgeDensity();
     const isPassed = value > this.threshold;
-    
+
     console.log('[CarpetEdgeDensityGate] Check:', {
       edgeDensity: value,
       threshold: this.threshold,
-      passed: isPassed
+      passed: isPassed,
     });
-    
+
     return isPassed;
   });
 

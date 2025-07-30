@@ -2,12 +2,11 @@
 
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import { signal } from '@angular/core';
-import { CheckinOrchestrator } from './checkin-orchestrator.service';
-import { CheckInStore } from './check-in.store';
 import { LLMService } from '@shared/data-access/llm.service';
-import { CarpetStorageService } from '../../carpets/data-access/carpet-storage.service';
 import { environment } from '../../../environments/environment';
+import { CarpetStorageService } from '../../carpets/data-access/carpet-storage.service';
+import { CheckInStore } from './check-in.store';
+import { CheckinOrchestrator } from './checkin-orchestrator.service';
 
 // Mock types for browser APIs
 interface MockMediaStreamTrack {
@@ -76,19 +75,19 @@ describe('CheckinOrchestrator', () => {
 
     // Create service mocks
     mockRouter = {
-      navigate: jest.fn()
+      navigate: jest.fn(),
     };
 
     mockCheckinStore = {
-      checkinToPub: jest.fn().mockResolvedValue(undefined)
+      checkinToPub: jest.fn().mockResolvedValue(undefined),
     };
 
     mockLLMService = {
-      detectCarpet: jest.fn()
+      detectCarpet: jest.fn(),
     };
 
     mockCarpetStorageService = {
-      saveCarpetImage: jest.fn().mockResolvedValue('mock-key')
+      saveCarpetImage: jest.fn().mockResolvedValue('mock-key'),
     };
 
     await TestBed.configureTestingModule({
@@ -97,8 +96,8 @@ describe('CheckinOrchestrator', () => {
         { provide: Router, useValue: mockRouter },
         { provide: CheckInStore, useValue: mockCheckinStore },
         { provide: LLMService, useValue: mockLLMService },
-        { provide: CarpetStorageService, useValue: mockCarpetStorageService }
-      ]
+        { provide: CarpetStorageService, useValue: mockCarpetStorageService },
+      ],
     }).compileComponents();
 
     service = TestBed.inject(CheckinOrchestrator);
@@ -134,7 +133,7 @@ describe('CheckinOrchestrator', () => {
       stop: jest.fn(),
       kind: 'video',
       label: 'mock-camera',
-      readyState: 'live'
+      readyState: 'live',
     };
 
     // Mock MediaStream
@@ -142,18 +141,18 @@ describe('CheckinOrchestrator', () => {
       id: 'mock-stream-id',
       getTracks: jest.fn().mockReturnValue([mockMediaStreamTrack]),
       getVideoTracks: jest.fn().mockReturnValue([mockMediaStreamTrack]),
-      getAudioTracks: jest.fn().mockReturnValue([])
+      getAudioTracks: jest.fn().mockReturnValue([]),
     };
 
     // Mock MediaDevices
     mockMediaDevices = {
-      getUserMedia: jest.fn().mockResolvedValue(mockMediaStream)
+      getUserMedia: jest.fn().mockResolvedValue(mockMediaStream),
     };
 
     // Mock global navigator
     Object.defineProperty(global.navigator, 'mediaDevices', {
       value: mockMediaDevices,
-      writable: true
+      writable: true,
     });
 
     // Mock HTMLVideoElement
@@ -162,12 +161,12 @@ describe('CheckinOrchestrator', () => {
       videoWidth: 1280,
       videoHeight: 720,
       pause: jest.fn(),
-      load: jest.fn()
+      load: jest.fn(),
     };
 
     // Mock Canvas and Context
     mockCanvasContext = {
-      drawImage: jest.fn()
+      drawImage: jest.fn(),
     };
 
     mockCanvas = {
@@ -175,7 +174,7 @@ describe('CheckinOrchestrator', () => {
       height: 0,
       getContext: jest.fn().mockReturnValue(mockCanvasContext),
       toDataURL: jest.fn().mockReturnValue('data:image/jpeg;base64,mock-data'),
-      toBlob: jest.fn()
+      toBlob: jest.fn(),
     };
 
     // Store original createElement before mocking
@@ -193,13 +192,13 @@ describe('CheckinOrchestrator', () => {
     mockDeviceOrientationEvent = {
       beta: 45,
       gamma: 10,
-      alpha: 0
+      alpha: 0,
     };
 
     // Mock DeviceOrientationEvent support
     Object.defineProperty(window, 'DeviceOrientationEvent', {
       value: function DeviceOrientationEvent() {},
-      writable: true
+      writable: true,
     });
 
     // Mock window.addEventListener/removeEventListener
@@ -267,8 +266,8 @@ describe('CheckinOrchestrator', () => {
           video: {
             facingMode: { ideal: 'environment' },
             width: { ideal: 1280 },
-            height: { ideal: 720 }
-          }
+            height: { ideal: 720 },
+          },
         });
       });
 
@@ -373,8 +372,8 @@ describe('CheckinOrchestrator', () => {
           video: {
             facingMode: { ideal: 'environment' },
             width: { ideal: 1280 },
-            height: { ideal: 720 }
-          }
+            height: { ideal: 720 },
+          },
         });
       });
 
@@ -666,7 +665,7 @@ describe('CheckinOrchestrator', () => {
       it('should check photo with LLM when enabled', async () => {
         mockLLMService.detectCarpet.mockResolvedValue({
           success: true,
-          data: { isCarpet: true }
+          data: { isCarpet: true },
         });
 
         triggerDeviceOrientation(20, 0);
@@ -677,14 +676,16 @@ describe('CheckinOrchestrator', () => {
 
         await jest.runOnlyPendingTimers();
 
-        expect(mockLLMService.detectCarpet).toHaveBeenCalledWith('data:image/jpeg;base64,mock-data');
+        expect(mockLLMService.detectCarpet).toHaveBeenCalledWith(
+          'data:image/jpeg;base64,mock-data'
+        );
         expect(service.stage()).toBe('PROCESSING');
       });
 
       it('should handle LLM rejection with auto-retry', async () => {
         mockLLMService.detectCarpet.mockResolvedValue({
           success: false,
-          error: 'Not a carpet'
+          error: 'Not a carpet',
         });
 
         triggerDeviceOrientation(20, 0);
@@ -788,7 +789,7 @@ describe('CheckinOrchestrator', () => {
       environment.LLM_CHECK = true;
       mockLLMService.detectCarpet.mockResolvedValue({
         success: false,
-        error: 'This is a shoe'
+        error: 'This is a shoe',
       });
 
       await service.startCheckin('test-pub-123');
@@ -808,7 +809,7 @@ describe('CheckinOrchestrator', () => {
       // Should auto-retry after 3 seconds
       mockLLMService.detectCarpet.mockResolvedValue({
         success: true,
-        data: { isCarpet: true }
+        data: { isCarpet: true },
       });
 
       jest.advanceTimersByTime(3000);
@@ -821,7 +822,7 @@ describe('CheckinOrchestrator', () => {
       environment.LLM_CHECK = true;
       mockLLMService.detectCarpet.mockResolvedValue({
         success: false,
-        error: 'Not a carpet'
+        error: 'Not a carpet',
       });
 
       await service.startCheckin('test-pub-123');
@@ -943,7 +944,7 @@ describe('CheckinOrchestrator', () => {
           { stage: 'CAPTURING', expected: 'Capturing photo...' },
           { stage: 'LLM_CHECKING', expected: 'Analyzing image...' },
           { stage: 'PROCESSING', expected: 'Processing check-in...' },
-          { stage: 'SUCCESS', expected: 'Success!' }
+          { stage: 'SUCCESS', expected: 'Success!' },
         ];
 
         messages.forEach(({ stage, expected }) => {
@@ -1105,7 +1106,7 @@ describe('CheckinOrchestrator', () => {
         environment.LLM_CHECK = true;
         mockLLMService.detectCarpet.mockResolvedValue({
           success: true,
-          data: { isCarpet: true }
+          data: { isCarpet: true },
         });
 
         await service.startCheckin('test-pub-123');

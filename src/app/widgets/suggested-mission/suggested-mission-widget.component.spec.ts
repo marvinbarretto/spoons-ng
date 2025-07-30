@@ -1,6 +1,6 @@
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
-import { signal } from '@angular/core';
 import { SuggestedMissionWidgetComponent } from './suggested-mission-widget.component';
 
 // Mock Classes
@@ -77,7 +77,7 @@ describe('SuggestedMissionWidgetComponent', () => {
   it('should show loading state when stores are loading', () => {
     mockMissionStore.loading.set(true);
     fixture.detectChanges();
-    
+
     const loadingElement = fixture.nativeElement.querySelector('app-loading-state');
     expect(loadingElement).toBeTruthy();
   });
@@ -85,14 +85,14 @@ describe('SuggestedMissionWidgetComponent', () => {
   it('should show error state when stores have errors', () => {
     mockMissionStore.error.set('Failed to load missions');
     fixture.detectChanges();
-    
+
     const errorElement = fixture.nativeElement.querySelector('app-error-state');
     expect(errorElement).toBeTruthy();
   });
 
   it('should show empty state when no suggestions are available', () => {
     fixture.detectChanges();
-    
+
     const emptyElement = fixture.nativeElement.querySelector('app-empty-state');
     expect(emptyElement).toBeTruthy();
   });

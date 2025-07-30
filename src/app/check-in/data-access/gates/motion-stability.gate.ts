@@ -1,6 +1,6 @@
 import { Injectable, computed, signal } from '@angular/core';
-import { CheckinGate } from './gate.interface';
 import { CHECKIN_GATE_THRESHOLDS } from './checkin-thresholds.config';
+import { CheckinGate } from './gate.interface';
 
 @Injectable({ providedIn: 'root' })
 export class MotionStabilityGate implements CheckinGate {
@@ -26,7 +26,7 @@ export class MotionStabilityGate implements CheckinGate {
       motionLevel: motion,
       threshold: this.threshold,
       isStable: stable,
-      passed: motion < this.threshold && stable
+      passed: motion < this.threshold && stable,
     });
 
     return motion < this.threshold && stable;

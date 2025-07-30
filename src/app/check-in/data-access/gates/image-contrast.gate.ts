@@ -1,6 +1,6 @@
 import { Injectable, computed, signal } from '@angular/core';
-import { CheckinGate } from './gate.interface';
 import { CHECKIN_GATE_THRESHOLDS } from './checkin-thresholds.config';
+import { CheckinGate } from './gate.interface';
 
 @Injectable({ providedIn: 'root' })
 export class ImageContrastGate implements CheckinGate {
@@ -12,17 +12,17 @@ export class ImageContrastGate implements CheckinGate {
 
   readonly contrast = this._contrast.asReadonly();
   readonly currentValue = computed(() => this._contrast());
-  
+
   readonly passed = computed(() => {
     const value = this._contrast();
     const isPassed = value > this.threshold;
-    
+
     console.log('[ImageContrastGate] Check:', {
       contrast: value,
       threshold: this.threshold,
-      passed: isPassed
+      passed: isPassed,
     });
-    
+
     return isPassed;
   });
 

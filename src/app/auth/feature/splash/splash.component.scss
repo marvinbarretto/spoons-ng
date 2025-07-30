@@ -3,12 +3,8 @@
 
 .splash-container {
   /* Use semantic theme colors with subtle gradient */
-  background: linear-gradient(
-    135deg,
-    var(--background) 0%,
-    var(--background-lighter) 100%
-  );
-  
+  background: linear-gradient(135deg, var(--background) 0%, var(--background-lighter) 100%);
+
   /* Full height to work with shell layout */
   height: 100%;
   display: flex;
@@ -67,7 +63,7 @@
 .splash-actions {
   flex-shrink: 0; /* Never shrink */
   padding: 1.5rem;
-  
+
   /* Clean styling using theme colors */
   background: var(--background-lighter);
   border-top: 1px solid var(--border);

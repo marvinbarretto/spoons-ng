@@ -1,9 +1,9 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { computed, Injectable, signal } from '@angular/core';
 import {
   getCarpetByPubId,
   getCarpetsByLocation,
   type CarpetData,
-  type CarpetSignature
+  type CarpetSignature,
 } from '../utils/carpet-database.utils';
 import { CHECKIN_GATE_THRESHOLDS } from './gates/checkin-thresholds.config';
 
@@ -66,9 +66,9 @@ export class LocationAwareThresholdService {
         sharpness: thresholds.sharpness,
         contrast: thresholds.contrast,
         edgeDensity: thresholds.edgeDensity,
-        textureComplexity: thresholds.textureComplexity
+        textureComplexity: thresholds.textureComplexity,
       },
-      carpetInfo: thresholds.carpetInfo
+      carpetInfo: thresholds.carpetInfo,
     });
   }
 
@@ -125,8 +125,8 @@ export class LocationAwareThresholdService {
       carpetInfo: {
         patternType: signature.pattern,
         description: carpet.description,
-        expectedColors: signature.colors
-      }
+        expectedColors: signature.colors,
+      },
     };
   }
 
@@ -136,19 +136,27 @@ export class LocationAwareThresholdService {
   private createLocationBasedThresholds(nearbyCarpets: CarpetData[]): AdaptiveThresholds {
     // Calculate average signature values from nearby carpets
     const avgSignature = {
-      textureScore: nearbyCarpets.reduce((sum, c) => sum + c.signature.textureScore, 0) / nearbyCarpets.length,
-      contrast: nearbyCarpets.reduce((sum, c) => sum + c.signature.contrast, 0) / nearbyCarpets.length,
-      complexity: nearbyCarpets.reduce((sum, c) => sum + c.signature.complexity, 0) / nearbyCarpets.length
+      textureScore:
+        nearbyCarpets.reduce((sum, c) => sum + c.signature.textureScore, 0) / nearbyCarpets.length,
+      contrast:
+        nearbyCarpets.reduce((sum, c) => sum + c.signature.contrast, 0) / nearbyCarpets.length,
+      complexity:
+        nearbyCarpets.reduce((sum, c) => sum + c.signature.complexity, 0) / nearbyCarpets.length,
     };
 
     // Find most common pattern type
-    const patternCounts = nearbyCarpets.reduce((counts, carpet) => {
-      counts[carpet.signature.pattern] = (counts[carpet.signature.pattern] || 0) + 1;
-      return counts;
-    }, {} as Record<string, number>);
+    const patternCounts = nearbyCarpets.reduce(
+      (counts, carpet) => {
+        counts[carpet.signature.pattern] = (counts[carpet.signature.pattern] || 0) + 1;
+        return counts;
+      },
+      {} as Record<string, number>
+    );
 
-    const mostCommonPattern = Object.entries(patternCounts)
-      .sort(([,a], [,b]) => b - a)[0]?.[0] as CarpetSignature['pattern'] || 'mixed';
+    const mostCommonPattern =
+      (Object.entries(patternCounts).sort(
+        ([, a], [, b]) => b - a
+      )[0]?.[0] as CarpetSignature['pattern']) || 'mixed';
 
     return {
       sharpness: Math.round(avgSignature.textureScore * 25),
@@ -161,8 +169,8 @@ export class LocationAwareThresholdService {
       carpetInfo: {
         patternType: mostCommonPattern,
         description: `Area typical pattern: ${mostCommonPattern} (${nearbyCarpets.length} nearby carpets)`,
-        expectedColors: []
-      }
+        expectedColors: [],
+      },
     };
   }
 
@@ -173,35 +181,35 @@ export class LocationAwareThresholdService {
     switch (pattern) {
       case 'geometric':
         return {
-          sharpness: 5,      // Geometric patterns have sharp edges
-          contrast: 10,      // High contrast
-          edgeDensity: 8,    // Clear edges
-          textureComplexity: 0 // Usually simpler textures
+          sharpness: 5, // Geometric patterns have sharp edges
+          contrast: 10, // High contrast
+          edgeDensity: 8, // Clear edges
+          textureComplexity: 0, // Usually simpler textures
         };
 
       case 'ornamental':
         return {
-          sharpness: -2,     // Softer edges
-          contrast: -5,      // Lower contrast
-          edgeDensity: 2,    // Some edge definition
-          textureComplexity: 8 // Complex textures
+          sharpness: -2, // Softer edges
+          contrast: -5, // Lower contrast
+          edgeDensity: 2, // Some edge definition
+          textureComplexity: 8, // Complex textures
         };
 
       case 'plain':
         return {
-          sharpness: -5,     // Very soft
-          contrast: -10,     // Low contrast
-          edgeDensity: -5,   // Few edges
-          textureComplexity: -3 // Simple texture
+          sharpness: -5, // Very soft
+          contrast: -10, // Low contrast
+          edgeDensity: -5, // Few edges
+          textureComplexity: -3, // Simple texture
         };
 
       case 'mixed':
       default:
         return {
-          sharpness: 0,      // Balanced
+          sharpness: 0, // Balanced
           contrast: 0,
           edgeDensity: 0,
-          textureComplexity: 0
+          textureComplexity: 0,
         };
     }
   }
@@ -217,7 +225,7 @@ export class LocationAwareThresholdService {
       textureComplexity: CHECKIN_GATE_THRESHOLDS.textureComplexity.min,
       motionLevel: CHECKIN_GATE_THRESHOLDS.deviceStability.maxMovement,
       source: 'default',
-      confidence: 0.5
+      confidence: 0.5,
     };
   }
 

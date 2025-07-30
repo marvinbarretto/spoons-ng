@@ -24,14 +24,14 @@
  *
  * @architecture Operations store that coordinates with UserStore for display consistency
  */
-import { Injectable, signal, computed, inject, effect } from '@angular/core';
-import { AuthStore } from '../../auth/data-access/auth.store';
-import { PointsService } from './points.service';
+import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { PubStore } from '@pubs/data-access/pub.store';
-import type { PointsTransaction, PointsBreakdown, CheckInPointsData } from '../utils/points.models';
-import { UserStore } from '../../users/data-access/user.store';
+import { AuthStore } from '../../auth/data-access/auth.store';
 import { CacheCoherenceService } from '../../shared/data-access/cache-coherence.service';
 import { ErrorLoggingService } from '../../shared/data-access/error-logging.service';
+import { UserStore } from '../../users/data-access/user.store';
+import type { CheckInPointsData, PointsBreakdown, PointsTransaction } from '../utils/points.models';
+import { PointsService } from './points.service';
 @Injectable({ providedIn: 'root' })
 export class PointsStore {
   protected readonly authStore = inject(AuthStore);
@@ -54,7 +54,9 @@ export class PointsStore {
   readonly error = this._error.asReadonly();
 
   // ✅ Computed signals
-  readonly isLoaded = computed(() => this.totalPoints() > 0 || this.recentTransactions().length > 0);
+  readonly isLoaded = computed(
+    () => this.totalPoints() > 0 || this.recentTransactions().length > 0
+  );
   readonly todaysPoints = computed(() => {
     const today = new Date().toDateString();
     return this.recentTransactions()
@@ -80,7 +82,7 @@ export class PointsStore {
         isAnonymous: user?.isAnonymous,
         previousUserId: lastUserId,
         userChanged: currentUserId !== lastUserId,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
 
       if (user) {
@@ -95,7 +97,11 @@ export class PointsStore {
       } else {
         // ✅ Only reset if user becomes null (true logout)
         if (lastUserId !== null) {
-          console.log('[PointsStore] 🧹 User logged out, resetting (previous user was:', lastUserId, ')');
+          console.log(
+            '[PointsStore] 🧹 User logged out, resetting (previous user was:',
+            lastUserId,
+            ')'
+          );
           this.reset();
           lastUserId = null;
         } else {
@@ -120,7 +126,7 @@ export class PointsStore {
           transactionCount: transactions.length,
           loading,
           timestamp: Date.now(),
-          stackTrace: new Error().stack?.split('\n').slice(1, 4)
+          stackTrace: new Error().stack?.split('\n').slice(1, 4),
         });
 
         // 🚨 Alert for suspicious changes
@@ -128,7 +134,7 @@ export class PointsStore {
           console.error('🚨 [PointsStore] LARGE POINTS CHANGE DETECTED!', {
             from: lastPointsValue,
             to: points,
-            difference: points - lastPointsValue
+            difference: points - lastPointsValue,
           });
         }
 
@@ -143,7 +149,7 @@ export class PointsStore {
           points: latest.points,
           type: latest.type,
           action: latest.action,
-          createdAt: latest.createdAt
+          createdAt: latest.createdAt,
         });
       }
     });
@@ -159,7 +165,7 @@ export class PointsStore {
           from: lastTransactionCount,
           to: transactions.length,
           transactionIds: transactions.map(t => t.id),
-          timestamp: Date.now()
+          timestamp: Date.now(),
         });
         lastTransactionCount = transactions.length;
       }
@@ -207,18 +213,17 @@ export class PointsStore {
       // Load total points and recent transactions in parallel
       const [totalPoints, transactions] = await Promise.all([
         this.pointsService.getUserTotalPoints(user.uid),
-        this.pointsService.getUserTransactions(user.uid, 20)
+        this.pointsService.getUserTransactions(user.uid, 20),
       ]);
 
       console.log('[PointsStore] ✅ Points data loaded:', {
         totalPoints,
         transactionCount: transactions.length,
-        userId: user.uid
+        userId: user.uid,
       });
 
       this._totalPoints.set(totalPoints);
       this._recentTransactions.set(transactions);
-
     } catch (error: any) {
       this._error.set(error?.message || 'Failed to load points');
       console.error('[PointsStore] ❌ Load error:', error);
@@ -249,7 +254,7 @@ export class PointsStore {
   async awardCheckInPoints(pointsData: CheckInPointsData): Promise<PointsBreakdown> {
     const callId = Date.now();
     console.log(`[PointsStore] 🎯 === AWARD CHECK-IN POINTS STARTED (${callId}) ===`);
-    
+
     const user = this.authStore.user();
     if (!user) {
       console.error(`[PointsStore] ❌ User not authenticated (${callId})`);
@@ -274,12 +279,14 @@ export class PointsStore {
       console.log(`[PointsStore] 🎯 Getting pub data from stores (${callId})`);
       const checkInPub = this.pubStore.data().find(p => p.id === pointsData.pubId);
       const currentUser = this.userStore.user();
-      const homePub = currentUser?.homePubId ? this.pubStore.data().find(p => p.id === currentUser.homePubId) : null;
-      
+      const homePub = currentUser?.homePubId
+        ? this.pubStore.data().find(p => p.id === currentUser.homePubId)
+        : null;
+
       console.log(`[PointsStore] 🎯 Pub data retrieved (${callId}):`, {
         checkInPub: checkInPub?.name || 'Not found',
         homePub: homePub?.name || 'None set',
-        userHomePubId: currentUser?.homePubId || 'None'
+        userHomePubId: currentUser?.homePubId || 'None',
       });
 
       // 2. Calculate points using service with pub objects
@@ -296,7 +303,7 @@ export class PointsStore {
         points: breakdown.total,
         breakdown,
         pubId: pointsData.pubId,
-        createdAt: new Date()
+        createdAt: new Date(),
       });
 
       console.log(`[PointsStore] 💾 Transaction saved (${callId}):`, transaction.id);
@@ -304,7 +311,9 @@ export class PointsStore {
       // 3. Update local state optimistically
       const currentTotal = this.totalPoints();
       const newTotal = currentTotal + breakdown.total;
-      console.log(`[PointsStore] 🎯 Updating points (${callId}): ${currentTotal} + ${breakdown.total} = ${newTotal}`);
+      console.log(
+        `[PointsStore] 🎯 Updating points (${callId}): ${currentTotal} + ${breakdown.total} = ${newTotal}`
+      );
       this._totalPoints.set(newTotal);
 
       // 4. ✅ CRITICAL: Update UserStore immediately for real-time scoreboard
@@ -312,14 +321,16 @@ export class PointsStore {
       try {
         await this.userStore.patchUser({ totalPoints: newTotal });
       } catch (error) {
-        console.log('[PointsStore] ⚠️ UserStore patch failed, but Firebase update will still occur');
+        console.log(
+          '[PointsStore] ⚠️ UserStore patch failed, but Firebase update will still occur'
+        );
       }
 
       console.log(`[PointsStore] 📈 Points updated everywhere (${callId}):`, {
         from: currentTotal,
         to: newTotal,
         added: breakdown.total,
-        userStoreUpdated: true
+        userStoreUpdated: true,
       });
 
       // 5. Update user's total in Firebase
@@ -339,34 +350,32 @@ export class PointsStore {
       console.log(`[PointsStore] ✅ Final result (${callId}):`, {
         pointsAwarded: breakdown.total,
         newTotal: newTotal,
-        breakdown
+        breakdown,
       });
 
       return breakdown;
-
     } catch (error: any) {
       this._error.set(error?.message || 'Failed to award points');
       console.error(`[PointsStore] ❌ === AWARD CHECK-IN POINTS FAILED (${callId}) ===`);
       console.error(`[PointsStore] ❌ Error (${callId}):`, error);
-      console.error(`[PointsStore] ❌ Error stack (${callId}):`, error instanceof Error ? error.stack : 'No stack trace');
-      
+      console.error(
+        `[PointsStore] ❌ Error stack (${callId}):`,
+        error instanceof Error ? error.stack : 'No stack trace'
+      );
+
       // Log the points awarding failure for admin review
       try {
-        await this.errorLoggingService.logPointsError(
-          'award-checkin-points-failure',
-          error,
-          {
-            userId: user.uid,
-            pubId: pointsData.pubId,
-            pointsData,
-            breakdown: pointsData,
-            severity: 'critical' // Points awarding failures are critical
-          }
-        );
+        await this.errorLoggingService.logPointsError('award-checkin-points-failure', error, {
+          userId: user.uid,
+          pubId: pointsData.pubId,
+          pointsData,
+          breakdown: pointsData,
+          severity: 'critical', // Points awarding failures are critical
+        });
       } catch (loggingError) {
         console.error('[PointsStore] Failed to log points awarding error:', loggingError);
       }
-      
+
       throw error;
     } finally {
       console.log(`[PointsStore] 🎯 Setting loading to false (${callId})`);
@@ -398,7 +407,7 @@ export class PointsStore {
         points: breakdown.total,
         breakdown,
         pubId,
-        createdAt: new Date()
+        createdAt: new Date(),
       });
 
       // Update local state and UserStore immediately
@@ -407,7 +416,9 @@ export class PointsStore {
       try {
         await this.userStore.patchUser({ totalPoints: newTotal }); // ✅ Real-time scoreboard update
       } catch (error) {
-        console.log('[PointsStore] ⚠️ UserStore patch failed for social points, but Firebase update will still occur');
+        console.log(
+          '[PointsStore] ⚠️ UserStore patch failed for social points, but Firebase update will still occur'
+        );
       }
       await this.pointsService.updateUserTotalPoints(user.uid, newTotal);
 
@@ -418,7 +429,6 @@ export class PointsStore {
 
       console.log('[PointsStore] ✅ Social points awarded:', breakdown.total);
       return breakdown;
-
     } catch (error: any) {
       this._error.set(error?.message || 'Failed to award social points');
       console.error('[PointsStore] ❌ Social points error:', error);
@@ -445,7 +455,7 @@ export class PointsStore {
 
       const [firebaseTotal, transactions] = await Promise.all([
         this.pointsService.getUserTotalPoints(user.uid),
-        this.pointsService.getUserTransactions(user.uid, 20)
+        this.pointsService.getUserTransactions(user.uid, 20),
       ]);
 
       // Verify data integrity
@@ -454,7 +464,7 @@ export class PointsStore {
         console.warn('[PointsStore] ⚠️ Points discrepancy detected:', {
           firebaseTotal,
           calculatedTotal,
-          difference: firebaseTotal - calculatedTotal
+          difference: firebaseTotal - calculatedTotal,
         });
       }
 
@@ -463,7 +473,6 @@ export class PointsStore {
       this._recentTransactions.set(transactions);
 
       console.log('[PointsStore] ✅ Sync completed:', firebaseTotal);
-
     } catch (error: any) {
       console.error('[PointsStore] ❌ Sync failed:', error);
       this._error.set('Failed to sync points');
@@ -494,7 +503,7 @@ export class PointsStore {
       todaysPoints: this.todaysPoints(),
       isLoaded: this.isLoaded(),
       lastTransaction: transactions[0] || null,
-      userId: this.authStore.uid() || null
+      userId: this.authStore.uid() || null,
     };
   }
 
@@ -522,7 +531,7 @@ export class PointsStore {
         bonus: 0,
         multiplier: 1,
         total: points,
-        reason
+        reason,
       };
 
       await this.pointsService.createTransaction({
@@ -531,7 +540,7 @@ export class PointsStore {
         action: actionType,
         points,
         breakdown,
-        createdAt: new Date()
+        createdAt: new Date(),
       });
 
       const newTotal = this.totalPoints() + points;
@@ -540,7 +549,6 @@ export class PointsStore {
       await this.load(); // Refresh to get the new transaction
 
       console.log('[PointsStore] ✅ Manual points awarded');
-
     } catch (error: any) {
       console.error('[PointsStore] ❌ Manual points error:', error);
       throw error;
@@ -566,12 +574,15 @@ export class PointsStore {
     this._error.set(null);
 
     // Update UserStore to clear points (fire and forget)
-    this.userStore.patchUser({ totalPoints: 0 })
+    this.userStore
+      .patchUser({ totalPoints: 0 })
       .then(() => {
         console.log('[PointsStore] ✅ UserStore updated during reset');
       })
       .catch(() => {
-        console.log('[PointsStore] ⚠️ Could not update UserStore during reset (normal during logout)');
+        console.log(
+          '[PointsStore] ⚠️ Could not update UserStore during reset (normal during logout)'
+        );
       });
   }
 

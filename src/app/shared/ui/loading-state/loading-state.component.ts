@@ -1,6 +1,5 @@
 import { Component, input } from '@angular/core';
 
-
 @Component({
   selector: 'app-loading-state',
   imports: [],
@@ -10,7 +9,7 @@ import { Component, input } from '@angular/core';
       <span class="loading-text">{{ text() }}</span>
     </div>
   `,
-  styleUrl: './loading-state.component.scss'
+  styleUrl: './loading-state.component.scss',
 })
 export class LoadingStateComponent {
   readonly text = input<string>('Loading...');

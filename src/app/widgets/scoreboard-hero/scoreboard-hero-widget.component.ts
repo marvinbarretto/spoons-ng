@@ -21,15 +21,23 @@
  * @architecture Widget component - extends BaseWidgetComponent, self-contained data loading
  */
 
-import { Component, computed, effect, signal, ChangeDetectionStrategy, OnDestroy, inject, ElementRef, ViewChild } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnDestroy,
+  computed,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 
-import { BaseWidgetComponent } from '../base/base-widget.component';
-import { DataAggregatorService } from '../../shared/data-access/data-aggregator.service';
-import { DebugService } from '../../shared/utils/debug.service';
-import { CheckInStore } from '../../check-in/data-access/check-in.store';
 import { BadgeStore } from '../../badges/data-access/badge.store';
+import { CheckInStore } from '../../check-in/data-access/check-in.store';
 import { LeaderboardStore } from '../../leaderboard/data-access/leaderboard.store';
+import { DataAggregatorService } from '../../shared/data-access/data-aggregator.service';
 import { BadgeCrestComponent } from '../../shared/ui/badge-crest/badge-crest.component';
+import { DebugService } from '../../shared/utils/debug.service';
+import { BaseWidgetComponent } from '../base/base-widget.component';
 
 export type ScoreboardData = {
   totalPoints: number;
@@ -124,10 +132,15 @@ export type EnhancedScoreboardData = ScoreboardData & {
                           size="tiny"
                           [showEarnedIndicator]="false"
                           [showBanner]="false"
-                          [compact]="true" />
+                          [compact]="true"
+                        />
                       }
                       @if (enhancedData().badgeCount > enhancedData().recentBadges.length) {
-                        <span class="more-badges">+{{ enhancedData().badgeCount - enhancedData().recentBadges.length }}</span>
+                        <span class="more-badges"
+                          >+{{
+                            enhancedData().badgeCount - enhancedData().recentBadges.length
+                          }}</span
+                        >
                       }
                     </div>
                   }
@@ -149,319 +162,332 @@ export type EnhancedScoreboardData = ScoreboardData & {
       </div>
     </div>
   `,
-  styles: [`
-    .scoreboard-hero-widget {
-      padding: 1rem;
-      background: var(--background-lighter);
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 0.5rem;
-      box-shadow: var(--shadow);
-    }
-
-    .widget-title {
-      margin: 0 0 1rem 0;
-      font-size: 1.125rem;
-      font-weight: 600;
-      color: var(--text);
-    }
-
-    .today-badge {
-      font-size: 0.875rem;
-      color: var(--primary);
-      font-weight: 600;
-      margin-top: 0.25rem;
-      opacity: 0.9;
-    }
-
-    .scoreboard-hero {
-      background: var(--background-darkest);
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.5rem;
-      box-shadow: 0 2px 8px var(--shadow);
-      transition: all 0.3s ease;
-    }
-
-    .scoreboard-content {
-      text-align: center;
-    }
-
-    /* Points Section */
-    .points-section {
-      margin-bottom: 1.5rem;
-    }
-
-    .points-value {
-      font-size: 3rem;
-      font-weight: 800;
-      line-height: 1;
-      margin-bottom: 0.5rem;
-      color: var(--text);
-      font-variant-numeric: tabular-nums;
-      transition: all 0.3s ease, transform 0.8s ease-out;
-    }
-
-    .points-label {
-      font-size: 1rem;
-      font-weight: 600;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    /* Stats Row */
-    .stats-row {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 2rem;
-    }
-
-    .stat-item {
-      text-align: center;
-    }
-
-    .stat-label {
-      font-size: 0.875rem;
-      font-weight: 600;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 0.25rem;
-    }
-
-    .stat-value {
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--text);
-      font-variant-numeric: tabular-nums;
-      transition: all 0.3s ease, transform 0.8s ease-out;
-    }
-
-    .stat-divider {
-      font-size: 1.5rem;
-      color: var(--textMuted);
-      font-weight: 300;
-    }
-
-    /* Loading state */
-    .loading .points-value,
-    .loading .stat-value {
-      background: var(--background-darkestElevated);
-      border-radius: 4px;
-      color: transparent;
-      animation: pulse 1.5s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 0.6; }
-      50% { opacity: 1; }
-    }
-
-    /* Enhanced Metrics Section */
-    .enhanced-metrics {
-      display: flex;
-      gap: 0.75rem;
-      margin-top: 1.5rem;
-      flex-wrap: wrap;
-      justify-content: center;
-    }
-
-    .metric-card {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.75rem;
-      background: var(--background-darkestElevated);
-      border: 1px solid var(--borderLight);
-      border-radius: 8px;
-      min-width: 100px;
-      flex: 1;
-      max-width: 140px;
-      transition: all 0.3s ease;
-    }
-
-    .metric-card:hover {
-      background: var(--primary);
-      color: var(--onPrimary);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px var(--shadow);
-    }
-
-    .metric-icon {
-      font-size: 1.25rem;
-      line-height: 1;
-    }
-
-    .metric-content {
-      display: flex;
-      flex-direction: column;
-      gap: 0.125rem;
-      flex: 1;
-      min-width: 0;
-    }
-
-    .metric-value {
-      font-size: 0.875rem;
-      font-weight: 700;
-      color: var(--text);
-      line-height: 1;
-      transition: all 0.3s ease, transform 0.6s ease-out;
-    }
-
-    .metric-card:hover .metric-value {
-      color: var(--onPrimary);
-    }
-
-    .metric-label {
-      font-size: 0.6875rem;
-      font-weight: 500;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      line-height: 1;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .metric-card:hover .metric-label {
-      color: var(--onPrimary);
-      opacity: 0.9;
-    }
-
-    /* Badge Crests Display */
-    .badge-crests {
-      display: flex;
-      gap: 0.25rem;
-      margin-top: 0.5rem;
-      flex-wrap: wrap;
-      justify-content: center;
-      align-items: flex-end;
-    }
-
-    .more-badges {
-      font-size: 0.625rem;
-      font-weight: bold;
-      color: var(--text-secondary);
-      background: var(--background-darkestElevated);
-      border: 1px solid var(--borderLight);
-      border-radius: 50%;
-      width: 1.5rem;
-      height: 1.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-left: 0.125rem;
-    }
-
-    .metric-card:hover .more-badges {
-      background: var(--onPrimary);
-      border-color: var(--onPrimary);
-      color: var(--primary);
-    }
-
-    /* Specific metric card colors */
-    .metric-card.streak {
-      border-color: #ff6b35;
-    }
-
-    .metric-card.streak:hover {
-      background: #ff6b35;
-    }
-
-    .metric-card.landlord {
-      border-color: #ffd700;
-    }
-
-    .metric-card.landlord:hover {
-      background: #ffd700;
-      color: #333;
-    }
-
-    .metric-card.badges {
-      border-color: #4caf50;
-    }
-
-    .metric-card.badges:hover {
-      background: #4caf50;
-    }
-
-    .metric-card.rank {
-      border-color: #2196f3;
-    }
-
-    .metric-card.rank:hover {
-      background: #2196f3;
-    }
-
-    /* Responsive design */
-    @media (max-width: 480px) {
-      .scoreboard-hero {
-        padding: 1.25rem;
+  styles: [
+    `
+      .scoreboard-hero-widget {
+        padding: 1rem;
+        background: var(--background-lighter);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 0.5rem;
+        box-shadow: var(--shadow);
       }
 
-      .points-value {
-        font-size: 2.5rem;
-      }
-
-      .points-label {
-        font-size: 0.875rem;
-      }
-
-      .stats-row {
-        gap: 1.5rem;
-      }
-
-      .stat-value {
-        font-size: 1.25rem;
-      }
-
-      .stat-label {
-        font-size: 0.75rem;
-      }
-
-      .enhanced-metrics {
-        gap: 0.5rem;
-        margin-top: 1rem;
-      }
-
-      .metric-card {
-        padding: 0.5rem;
-        min-width: 80px;
-        max-width: 120px;
-      }
-
-      .metric-icon {
-        font-size: 1rem;
-      }
-
-      .metric-value {
-        font-size: 0.75rem;
-      }
-
-      .metric-label {
-        font-size: 0.625rem;
+      .widget-title {
+        margin: 0 0 1rem 0;
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--text);
       }
 
       .today-badge {
-        font-size: 0.75rem;
+        font-size: 0.875rem;
+        color: var(--primary);
+        font-weight: 600;
+        margin-top: 0.25rem;
+        opacity: 0.9;
       }
 
+      .scoreboard-hero {
+        background: var(--background-darkest);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px var(--shadow);
+        transition: all 0.3s ease;
+      }
+
+      .scoreboard-content {
+        text-align: center;
+      }
+
+      /* Points Section */
+      .points-section {
+        margin-bottom: 1.5rem;
+      }
+
+      .points-value {
+        font-size: 3rem;
+        font-weight: 800;
+        line-height: 1;
+        margin-bottom: 0.5rem;
+        color: var(--text);
+        font-variant-numeric: tabular-nums;
+        transition:
+          all 0.3s ease,
+          transform 0.8s ease-out;
+      }
+
+      .points-label {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      /* Stats Row */
+      .stats-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 2rem;
+      }
+
+      .stat-item {
+        text-align: center;
+      }
+
+      .stat-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.25rem;
+      }
+
+      .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text);
+        font-variant-numeric: tabular-nums;
+        transition:
+          all 0.3s ease,
+          transform 0.8s ease-out;
+      }
+
+      .stat-divider {
+        font-size: 1.5rem;
+        color: var(--textMuted);
+        font-weight: 300;
+      }
+
+      /* Loading state */
+      .loading .points-value,
+      .loading .stat-value {
+        background: var(--background-darkestElevated);
+        border-radius: 4px;
+        color: transparent;
+        animation: pulse 1.5s ease-in-out infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 0.6;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+
+      /* Enhanced Metrics Section */
+      .enhanced-metrics {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 1.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .metric-card {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem;
+        background: var(--background-darkestElevated);
+        border: 1px solid var(--borderLight);
+        border-radius: 8px;
+        min-width: 100px;
+        flex: 1;
+        max-width: 140px;
+        transition: all 0.3s ease;
+      }
+
+      .metric-card:hover {
+        background: var(--primary);
+        color: var(--onPrimary);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px var(--shadow);
+      }
+
+      .metric-icon {
+        font-size: 1.25rem;
+        line-height: 1;
+      }
+
+      .metric-content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.125rem;
+        flex: 1;
+        min-width: 0;
+      }
+
+      .metric-value {
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: var(--text);
+        line-height: 1;
+        transition:
+          all 0.3s ease,
+          transform 0.6s ease-out;
+      }
+
+      .metric-card:hover .metric-value {
+        color: var(--onPrimary);
+      }
+
+      .metric-label {
+        font-size: 0.6875rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        line-height: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .metric-card:hover .metric-label {
+        color: var(--onPrimary);
+        opacity: 0.9;
+      }
+
+      /* Badge Crests Display */
       .badge-crests {
-        gap: 0.1875rem;
-        margin-top: 0.375rem;
+        display: flex;
+        gap: 0.25rem;
+        margin-top: 0.5rem;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: flex-end;
       }
 
       .more-badges {
-        font-size: 0.5rem;
-        width: 1.25rem;
-        height: 1.25rem;
+        font-size: 0.625rem;
+        font-weight: bold;
+        color: var(--text-secondary);
+        background: var(--background-darkestElevated);
+        border: 1px solid var(--borderLight);
+        border-radius: 50%;
+        width: 1.5rem;
+        height: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 0.125rem;
       }
-    }
-  `]
+
+      .metric-card:hover .more-badges {
+        background: var(--onPrimary);
+        border-color: var(--onPrimary);
+        color: var(--primary);
+      }
+
+      /* Specific metric card colors */
+      .metric-card.streak {
+        border-color: #ff6b35;
+      }
+
+      .metric-card.streak:hover {
+        background: #ff6b35;
+      }
+
+      .metric-card.landlord {
+        border-color: #ffd700;
+      }
+
+      .metric-card.landlord:hover {
+        background: #ffd700;
+        color: #333;
+      }
+
+      .metric-card.badges {
+        border-color: #4caf50;
+      }
+
+      .metric-card.badges:hover {
+        background: #4caf50;
+      }
+
+      .metric-card.rank {
+        border-color: #2196f3;
+      }
+
+      .metric-card.rank:hover {
+        background: #2196f3;
+      }
+
+      /* Responsive design */
+      @media (max-width: 480px) {
+        .scoreboard-hero {
+          padding: 1.25rem;
+        }
+
+        .points-value {
+          font-size: 2.5rem;
+        }
+
+        .points-label {
+          font-size: 0.875rem;
+        }
+
+        .stats-row {
+          gap: 1.5rem;
+        }
+
+        .stat-value {
+          font-size: 1.25rem;
+        }
+
+        .stat-label {
+          font-size: 0.75rem;
+        }
+
+        .enhanced-metrics {
+          gap: 0.5rem;
+          margin-top: 1rem;
+        }
+
+        .metric-card {
+          padding: 0.5rem;
+          min-width: 80px;
+          max-width: 120px;
+        }
+
+        .metric-icon {
+          font-size: 1rem;
+        }
+
+        .metric-value {
+          font-size: 0.75rem;
+        }
+
+        .metric-label {
+          font-size: 0.625rem;
+        }
+
+        .today-badge {
+          font-size: 0.75rem;
+        }
+
+        .badge-crests {
+          gap: 0.1875rem;
+          margin-top: 0.375rem;
+        }
+
+        .more-badges {
+          font-size: 0.5rem;
+          width: 1.25rem;
+          height: 1.25rem;
+        }
+      }
+    `,
+  ],
 })
 export class ScoreboardHeroWidgetComponent extends BaseWidgetComponent implements OnDestroy {
   // ✅ Self-contained data loading via DataAggregatorService
@@ -492,19 +518,18 @@ export class ScoreboardHeroWidgetComponent extends BaseWidgetComponent implement
       .filter(item => item.badge) // Only include badges with valid definitions
       .map(item => ({
         badge: item.badge!,
-        isEarned: true
+        isEarned: true,
       }));
-
 
     const enhanced: EnhancedScoreboardData = {
       ...baseData,
       currentStreak,
-      recentBadges
+      recentBadges,
     };
 
     this.debug.extreme('[ScoreboardHeroWidget] Enhanced data computed:', {
       ...enhanced,
-      recentBadgesCount: recentBadges.length
+      recentBadgesCount: recentBadges.length,
     });
     return enhanced;
   });
@@ -549,7 +574,7 @@ export class ScoreboardHeroWidgetComponent extends BaseWidgetComponent implement
 
   ngOnDestroy() {
     // ✅ Clean up all active animations
-    this.animationTimeouts.forEach((timeoutId) => {
+    this.animationTimeouts.forEach(timeoutId => {
       clearTimeout(timeoutId);
     });
     this.animationTimeouts.clear();
@@ -583,7 +608,7 @@ export class ScoreboardHeroWidgetComponent extends BaseWidgetComponent implement
       console.error(`[Scoreboard] ❌ NEGATIVE TARGET VALUE DETECTED!`, {
         key,
         targetValue,
-        currentValue
+        currentValue,
       });
       return;
     }
@@ -619,7 +644,7 @@ export class ScoreboardHeroWidgetComponent extends BaseWidgetComponent implement
 
         // ✅ Ease-out cubic for natural feel
         const easedProgress = 1 - Math.pow(1 - progress, 3);
-        const currentStepValue = Math.round(startValue + (valueDifference * easedProgress));
+        const currentStepValue = Math.round(startValue + valueDifference * easedProgress);
 
         // ✅ Ensure value is never negative
         const safeValue = Math.max(0, currentStepValue);
@@ -653,13 +678,20 @@ export class ScoreboardHeroWidgetComponent extends BaseWidgetComponent implement
    */
   private getSignalForKey(key: string): any {
     switch (key) {
-      case 'points': return this.displayPointsValue;
-      case 'pubs': return this.displayPubsValue;
-      case 'checkins': return this.displayCheckinsValue;
-      case 'todaysPoints': return this.displayTodaysPointsValue;
-      case 'streak': return this.displayStreakValue;
-      case 'landlords': return this.displayLandlordsValue;
-      default: return null;
+      case 'points':
+        return this.displayPointsValue;
+      case 'pubs':
+        return this.displayPubsValue;
+      case 'checkins':
+        return this.displayCheckinsValue;
+      case 'todaysPoints':
+        return this.displayTodaysPointsValue;
+      case 'streak':
+        return this.displayStreakValue;
+      case 'landlords':
+        return this.displayLandlordsValue;
+      default:
+        return null;
     }
   }
 }

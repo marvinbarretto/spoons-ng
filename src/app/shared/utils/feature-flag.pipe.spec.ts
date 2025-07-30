@@ -1,5 +1,5 @@
-import { FeatureFlagPipe } from './feature-flag.pipe';
 import { FeatureFlagService } from '../data-access/feature-flag.service';
+import { FeatureFlagPipe } from './feature-flag.pipe';
 
 describe('FeatureFlagPipe', () => {
   let pipe: FeatureFlagPipe;
@@ -20,9 +20,7 @@ describe('FeatureFlagPipe', () => {
     const result = pipe.transform('accessibility');
 
     expect(result).toBe(true);
-    expect(mockFeatureFlagService.isEnabled).toHaveBeenCalledWith(
-      'accessibility'
-    );
+    expect(mockFeatureFlagService.isEnabled).toHaveBeenCalledWith('accessibility');
   });
 
   it('should return false when the feature is disabled', () => {
@@ -31,8 +29,6 @@ describe('FeatureFlagPipe', () => {
     const result = pipe.transform('accessibility');
 
     expect(result).toBe(false);
-    expect(mockFeatureFlagService.isEnabled).toHaveBeenCalledWith(
-      'accessibility'
-    );
+    expect(mockFeatureFlagService.isEnabled).toHaveBeenCalledWith('accessibility');
   });
 });

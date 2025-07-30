@@ -1,15 +1,15 @@
 // src/app/check-in/ui/modal-checkin-landlord/modal-checkin-landlord.component.ts
-import { Component, inject, input, output, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ButtonComponent } from '../../../shared/ui/button/button.component';
-import { LandlordStore } from '../../../landlord/data-access/landlord.store';
-import { AuthStore } from '../../../auth/data-access/auth.store';
-import { UserStore } from '../../../users/data-access/user.store';
-import { UserProgressionService } from '../../../shared/data-access/user-progression.service';
-import { formatLandlordClaim } from '../../../landlord/utils/landlord.utils';
-import { toDate } from '../../../shared/utils/timestamp.utils';
-import { ButtonVariant } from '../../../shared/ui/button/button.params';
+import { Component, computed, inject, input, output } from '@angular/core';
 import { environment } from '../../../../environments/environment';
+import { AuthStore } from '../../../auth/data-access/auth.store';
+import { LandlordStore } from '../../../landlord/data-access/landlord.store';
+import { formatLandlordClaim } from '../../../landlord/utils/landlord.utils';
+import { UserProgressionService } from '../../../shared/data-access/user-progression.service';
+import { ButtonComponent } from '../../../shared/ui/button/button.component';
+import { ButtonVariant } from '../../../shared/ui/button/button.params';
+import { toDate } from '../../../shared/utils/timestamp.utils';
+import { UserStore } from '../../../users/data-access/user.store';
 
 type LandlordModalData = {
   isNewLandlord: boolean;
@@ -55,7 +55,10 @@ type LandlordModalData = {
             <div class="landlord-card-compact">
               <div class="landlord-avatar-small">
                 @if (currentLandlordUser()?.photoURL) {
-                  <img [src]="currentLandlordUser()!.photoURL" [alt]="currentLandlordDisplayName()" />
+                  <img
+                    [src]="currentLandlordUser()!.photoURL"
+                    [alt]="currentLandlordDisplayName()"
+                  />
                 } @else {
                   <div class="avatar-placeholder-small">
                     {{ getInitials(currentLandlordDisplayName()) }}
@@ -84,7 +87,9 @@ type LandlordModalData = {
             <div class="status-content celebration">
               <div class="main-icon">👑</div>
               <h3>Congratulations!</h3>
-              <p><strong>You're the new landlord of {{ data().pub?.name }}!</strong></p>
+              <p>
+                <strong>You're the new landlord of {{ data().pub?.name }}!</strong>
+              </p>
               <div class="achievement-highlight">
                 <p>🎉 You were the first to check in today!</p>
               </div>
@@ -94,7 +99,9 @@ type LandlordModalData = {
             <div class="status-content renewal">
               <div class="main-icon">🔄</div>
               <h3>Landlord Status Renewed!</h3>
-              <p><strong>You're still the landlord of {{ data().pub?.name }}</strong></p>
+              <p>
+                <strong>You're still the landlord of {{ data().pub?.name }}</strong>
+              </p>
               <div class="achievement-highlight">
                 <p>👑 Another day, another reign!</p>
               </div>
@@ -126,7 +133,10 @@ type LandlordModalData = {
         @if (wasPreviouslyLandlordHere() && previousLandlordDays() > 0) {
           <div class="history-section">
             <p class="history-note">
-              📅 You were landlord here {{ previousLandlordDays() }} day{{ previousLandlordDays() > 1 ? 's' : '' }} ago
+              📅 You were landlord here {{ previousLandlordDays() }} day{{
+                previousLandlordDays() > 1 ? 's' : ''
+              }}
+              ago
             </p>
           </div>
         }
@@ -142,324 +152,317 @@ type LandlordModalData = {
 
       <div class="checkin-modal-footer">
         <div class="button-group">
-          <app-button
-            variant="secondary"
-            (onClick)="handleDismiss()"
-          >
-            Back to Home
-          </app-button>
+          <app-button variant="secondary" (onClick)="handleDismiss()"> Back to Home </app-button>
 
-          <app-button
-            [variant]="ButtonVariant.PRIMARY"
-            (onClick)="handleNavigate()"
-          >
+          <app-button [variant]="ButtonVariant.PRIMARY" (onClick)="handleNavigate()">
             View {{ data().pub?.name }}
           </app-button>
         </div>
       </div>
     </div>
   `,
-  styles: [`
-    @import 'styles/components/check-in-modals';
-    .checkin-modal-container.new-landlord .checkin-modal-header {
-      border-bottom-color: rgba(0, 0, 0, 0.2);
-    }
+  styles: [
+    `
+      @import 'styles/components/check-in-modals';
+      .checkin-modal-container.new-landlord .checkin-modal-header {
+        border-bottom-color: rgba(0, 0, 0, 0.2);
+      }
 
-    .checkin-modal-header h2 {
-      margin: 0;
-      color: var(--textPrimary);
-      font-size: 1.25rem;
-    }
+      .checkin-modal-header h2 {
+        margin: 0;
+        color: var(--textPrimary);
+        font-size: 1.25rem;
+      }
 
-    .checkin-modal-container.new-landlord .checkin-modal-header h2 {
-      color: #000;
-    }
+      .checkin-modal-container.new-landlord .checkin-modal-header h2 {
+        color: #000;
+      }
 
-    .checkin-modal-container.new-landlord .checkin-modal-footer {
-      border-top-color: rgba(0, 0, 0, 0.2);
-    }
+      .checkin-modal-container.new-landlord .checkin-modal-footer {
+        border-top-color: rgba(0, 0, 0, 0.2);
+      }
 
-    /* Section Headers */
-    h3 {
-      margin: 0 0 0.75rem 0;
-      font-size: 1rem;
-      color: var(--textPrimary);
-    }
+      /* Section Headers */
+      h3 {
+        margin: 0 0 0.75rem 0;
+        font-size: 1rem;
+        color: var(--textPrimary);
+      }
 
-    .modal-container.new-landlord h3 {
-      color: #000;
-    }
+      .modal-container.new-landlord h3 {
+        color: #000;
+      }
 
-    /* Explanation Section */
-    .explanation-section {
-      background: var(--background-lighter);
-      border-radius: 6px;
-      padding: 1rem;
-      margin-bottom: 1rem;
-    }
+      /* Explanation Section */
+      .explanation-section {
+        background: var(--background-lighter);
+        border-radius: 6px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+      }
 
-    .modal-container.new-landlord .explanation-section {
-      background: rgba(0, 0, 0, 0.1);
-    }
+      .modal-container.new-landlord .explanation-section {
+        background: rgba(0, 0, 0, 0.1);
+      }
 
-    .explanation-content ul.landlord-rules {
-      margin: 0;
-      padding-left: 1.2rem;
-      list-style: none;
-    }
+      .explanation-content ul.landlord-rules {
+        margin: 0;
+        padding-left: 1.2rem;
+        list-style: none;
+      }
 
-    .landlord-rules li {
-      margin: 0.4rem 0;
-      font-size: 0.85rem;
-      line-height: 1.3;
-      position: relative;
-    }
+      .landlord-rules li {
+        margin: 0.4rem 0;
+        font-size: 0.85rem;
+        line-height: 1.3;
+        position: relative;
+      }
 
-    .landlord-rules li::before {
-      content: '•';
-      color: #28a745;
-      font-weight: bold;
-      position: absolute;
-      left: -1rem;
-    }
+      .landlord-rules li::before {
+        content: '•';
+        color: #28a745;
+        font-weight: bold;
+        position: absolute;
+        left: -1rem;
+      }
 
-    /* Current Landlord Section - Compact */
-    .current-landlord-section {
-      margin-bottom: 1rem;
-    }
-
-    .landlord-card-compact {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem;
-      background: var(--background-lighter);
-      border-radius: 4px;
-      border: 1px solid var(--background-darker);
-    }
-
-    .modal-container.new-landlord .landlord-card-compact {
-      background: rgba(0, 0, 0, 0.1);
-      border-color: rgba(0, 0, 0, 0.2);
-    }
-
-    .landlord-avatar-small {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      overflow: hidden;
-      flex-shrink: 0;
-    }
-
-    .landlord-avatar-small img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    .avatar-placeholder-small {
-      width: 100%;
-      height: 100%;
-      background: #28a745;
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      font-size: 0.75rem;
-    }
-
-    .landlord-details {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .landlord-name-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 0.125rem;
-    }
-
-    .landlord-name-compact {
-      font-weight: bold;
-      font-size: 0.85rem;
-      color: var(--textPrimary);
-    }
-
-    .modal-container.new-landlord .landlord-name-compact {
-      color: #000;
-    }
-
-    .crown-badge-small {
-      font-size: 1rem;
-      flex-shrink: 0;
-    }
-
-    .landlord-meta {
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
-      font-size: 0.7rem;
-      color: var(--text-secondary);
-    }
-
-    .modal-container.new-landlord .landlord-meta {
-      color: rgba(0, 0, 0, 0.7);
-    }
-
-    .divider {
-      opacity: 0.6;
-    }
-
-    /* Status Section */
-    .status-section {
-      margin: 1rem 0;
-    }
-
-    .status-content {
-      text-align: center;
-      padding: 1rem;
-      border-radius: 6px;
-    }
-
-    .status-content.celebration {
-      background: rgba(40, 167, 69, 0.1);
-      border: 1px solid #28a745;
-    }
-
-    .modal-container.new-landlord .status-content.celebration {
-      background: rgba(0, 0, 0, 0.1);
-      border-color: rgba(0, 0, 0, 0.2);
-    }
-
-    .status-content.renewal {
-      background: rgba(255, 193, 7, 0.1);
-      border: 1px solid #ffc107;
-    }
-
-    .status-content.lost-status {
-      background: rgba(220, 53, 69, 0.1);
-      border: 1px solid #dc3545;
-    }
-
-    .status-content.regular-checkin {
-      background: var(--background-lighter);
-      border: 1px solid var(--background-darker);
-    }
-
-    .main-icon {
-      font-size: 2.5rem;
-      margin-bottom: 0.75rem;
-    }
-
-    .status-content h3 {
-      margin-bottom: 0.5rem;
-      font-size: 1.1rem;
-    }
-
-    .status-content p {
-      margin: 0.25rem 0;
-      font-size: 0.9rem;
-    }
-
-    .achievement-highlight,
-    .consolation,
-    .encouragement {
-      background: rgba(255, 255, 255, 0.3);
-      padding: 0.5rem;
-      border-radius: 4px;
-      margin: 0.75rem 0 0 0;
-    }
-
-    .modal-container.new-landlord .achievement-highlight,
-    .modal-container.new-landlord .consolation,
-    .modal-container.new-landlord .encouragement {
-      background: rgba(0, 0, 0, 0.1);
-    }
-
-    .achievement-highlight p,
-    .consolation p,
-    .encouragement p {
-      margin: 0;
-      font-size: 0.85rem;
-      line-height: 1.3;
-    }
-
-    /* History Section */
-    .history-section {
-      margin: 0.75rem 0;
-      text-align: center;
-    }
-
-    .history-note {
-      margin: 0;
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-      font-style: italic;
-    }
-
-    .modal-container.new-landlord .history-note {
-      color: rgba(0, 0, 0, 0.7);
-    }
-
-    /* Button Group */
-    .button-group {
-      display: flex;
-      gap: 0.75rem;
-      justify-content: center;
-    }
-
-    /* Debug Info */
-    .debug-info {
-      background: rgba(248, 249, 250, 0.9);
-      padding: 0.75rem;
-      border-radius: 4px;
-      margin-top: 1rem;
-      font-size: 0.7rem;
-      text-align: left;
-    }
-
-    .modal-container.new-landlord .debug-info {
-      background: rgba(0, 0, 0, 0.1);
-      color: #000;
-    }
-
-    .debug-info pre {
-      margin: 0.25rem 0 0 0;
-      white-space: pre-wrap;
-    }
-
-    @media (max-width: 480px) {
-
-      .button-group {
-        flex-direction: column;
-        gap: 0.5rem;
+      /* Current Landlord Section - Compact */
+      .current-landlord-section {
+        margin-bottom: 1rem;
       }
 
       .landlord-card-compact {
-        flex-direction: row;
-        text-align: left;
+        display: flex;
+        align-items: center;
         gap: 0.5rem;
         padding: 0.5rem;
+        background: var(--background-lighter);
+        border-radius: 4px;
+        border: 1px solid var(--background-darker);
+      }
+
+      .modal-container.new-landlord .landlord-card-compact {
+        background: rgba(0, 0, 0, 0.1);
+        border-color: rgba(0, 0, 0, 0.2);
+      }
+
+      .landlord-avatar-small {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        overflow: hidden;
+        flex-shrink: 0;
+      }
+
+      .landlord-avatar-small img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .avatar-placeholder-small {
+        width: 100%;
+        height: 100%;
+        background: #28a745;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 0.75rem;
+      }
+
+      .landlord-details {
+        flex: 1;
+        min-width: 0;
       }
 
       .landlord-name-row {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.125rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.125rem;
+      }
+
+      .landlord-name-compact {
+        font-weight: bold;
+        font-size: 0.85rem;
+        color: var(--textPrimary);
+      }
+
+      .modal-container.new-landlord .landlord-name-compact {
+        color: #000;
       }
 
       .crown-badge-small {
-        align-self: flex-end;
+        font-size: 1rem;
+        flex-shrink: 0;
+      }
+
+      .landlord-meta {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.7rem;
+        color: var(--text-secondary);
+      }
+
+      .modal-container.new-landlord .landlord-meta {
+        color: rgba(0, 0, 0, 0.7);
+      }
+
+      .divider {
+        opacity: 0.6;
+      }
+
+      /* Status Section */
+      .status-section {
+        margin: 1rem 0;
+      }
+
+      .status-content {
+        text-align: center;
+        padding: 1rem;
+        border-radius: 6px;
+      }
+
+      .status-content.celebration {
+        background: rgba(40, 167, 69, 0.1);
+        border: 1px solid #28a745;
+      }
+
+      .modal-container.new-landlord .status-content.celebration {
+        background: rgba(0, 0, 0, 0.1);
+        border-color: rgba(0, 0, 0, 0.2);
+      }
+
+      .status-content.renewal {
+        background: rgba(255, 193, 7, 0.1);
+        border: 1px solid #ffc107;
+      }
+
+      .status-content.lost-status {
+        background: rgba(220, 53, 69, 0.1);
+        border: 1px solid #dc3545;
+      }
+
+      .status-content.regular-checkin {
+        background: var(--background-lighter);
+        border: 1px solid var(--background-darker);
       }
 
       .main-icon {
-        font-size: 2rem;
-        margin-bottom: 0.5rem;
+        font-size: 2.5rem;
+        margin-bottom: 0.75rem;
       }
-    }
-  `]
+
+      .status-content h3 {
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+      }
+
+      .status-content p {
+        margin: 0.25rem 0;
+        font-size: 0.9rem;
+      }
+
+      .achievement-highlight,
+      .consolation,
+      .encouragement {
+        background: rgba(255, 255, 255, 0.3);
+        padding: 0.5rem;
+        border-radius: 4px;
+        margin: 0.75rem 0 0 0;
+      }
+
+      .modal-container.new-landlord .achievement-highlight,
+      .modal-container.new-landlord .consolation,
+      .modal-container.new-landlord .encouragement {
+        background: rgba(0, 0, 0, 0.1);
+      }
+
+      .achievement-highlight p,
+      .consolation p,
+      .encouragement p {
+        margin: 0;
+        font-size: 0.85rem;
+        line-height: 1.3;
+      }
+
+      /* History Section */
+      .history-section {
+        margin: 0.75rem 0;
+        text-align: center;
+      }
+
+      .history-note {
+        margin: 0;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        font-style: italic;
+      }
+
+      .modal-container.new-landlord .history-note {
+        color: rgba(0, 0, 0, 0.7);
+      }
+
+      /* Button Group */
+      .button-group {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: center;
+      }
+
+      /* Debug Info */
+      .debug-info {
+        background: rgba(248, 249, 250, 0.9);
+        padding: 0.75rem;
+        border-radius: 4px;
+        margin-top: 1rem;
+        font-size: 0.7rem;
+        text-align: left;
+      }
+
+      .modal-container.new-landlord .debug-info {
+        background: rgba(0, 0, 0, 0.1);
+        color: #000;
+      }
+
+      .debug-info pre {
+        margin: 0.25rem 0 0 0;
+        white-space: pre-wrap;
+      }
+
+      @media (max-width: 480px) {
+        .button-group {
+          flex-direction: column;
+          gap: 0.5rem;
+        }
+
+        .landlord-card-compact {
+          flex-direction: row;
+          text-align: left;
+          gap: 0.5rem;
+          padding: 0.5rem;
+        }
+
+        .landlord-name-row {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 0.125rem;
+        }
+
+        .crown-badge-small {
+          align-self: flex-end;
+        }
+
+        .main-icon {
+          font-size: 2rem;
+          margin-bottom: 0.5rem;
+        }
+      }
+    `,
+  ],
 })
 export class ModalCheckinLandlordComponent {
   protected readonly ButtonVariant = ButtonVariant;
@@ -495,7 +498,7 @@ export class ModalCheckinLandlordComponent {
     return {
       uid: landlord.userId,
       displayName: `User ${landlord.userId.substring(0, 8)}`,
-      photoURL: undefined // Would come from actual user lookup
+      photoURL: undefined, // Would come from actual user lookup
     };
   });
 
@@ -515,16 +518,16 @@ export class ModalCheckinLandlordComponent {
 
   // User status computations
   readonly shouldExplainLandlordSystem = computed(() => {
-    return this.userProgressionService.isBrandNewUser() ||
-           this.userProgressionService.isFirstTimeUser();
+    return (
+      this.userProgressionService.isBrandNewUser() || this.userProgressionService.isFirstTimeUser()
+    );
   });
 
   readonly isNewLandlordToday = computed(() => {
     const currentUser = this.authStore.user();
     const landlord = this.currentLandlord();
 
-    return this.data().isNewLandlord &&
-           landlord?.userId === currentUser?.uid;
+    return this.data().isNewLandlord && landlord?.userId === currentUser?.uid;
   });
 
   readonly isExistingLandlordRenewal = computed(() => {
@@ -532,8 +535,7 @@ export class ModalCheckinLandlordComponent {
     const landlord = this.currentLandlord();
 
     // They're still landlord but checked in again today
-    return !this.data().isNewLandlord &&
-           landlord?.userId === currentUser?.uid;
+    return !this.data().isNewLandlord && landlord?.userId === currentUser?.uid;
   });
 
   readonly wasPreviouslyLandlordHere = computed(() => {
@@ -551,9 +553,11 @@ export class ModalCheckinLandlordComponent {
   });
 
   readonly neverLandlordBefore = computed(() => {
-    return !this.isNewLandlordToday() &&
-           !this.isExistingLandlordRenewal() &&
-           !this.wasPreviouslyLandlordHere();
+    return (
+      !this.isNewLandlordToday() &&
+      !this.isExistingLandlordRenewal() &&
+      !this.wasPreviouslyLandlordHere()
+    );
   });
 
   readonly previousLandlordDays = computed(() => {
@@ -574,8 +578,8 @@ export class ModalCheckinLandlordComponent {
     if (previousEntries.length === 0) return 0;
 
     // Calculate days since most recent
-    const mostRecent = previousEntries.sort((a: any, b: any) =>
-      new Date(b.dateKey).getTime() - new Date(a.dateKey).getTime()
+    const mostRecent = previousEntries.sort(
+      (a: any, b: any) => new Date(b.dateKey).getTime() - new Date(a.dateKey).getTime()
     )[0];
 
     const daysDiff = Math.floor(
@@ -627,8 +631,8 @@ export class ModalCheckinLandlordComponent {
 
     try {
       const date = landlord.claimedAt;
-      const claimDate = date && typeof date === 'object' && 'toDate' in date ?
-        date.toDate() : toDate(date);
+      const claimDate =
+        date && typeof date === 'object' && 'toDate' in date ? date.toDate() : toDate(date);
 
       if (!claimDate) return '';
 
@@ -653,14 +657,19 @@ export class ModalCheckinLandlordComponent {
     try {
       // Calculate consecutive days from landlord history
       const landlordHistory = pub.landlordHistory || [];
-      const consecutiveDays = this.calculateConsecutiveLandlordDays(landlord.userId, landlordHistory);
+      const consecutiveDays = this.calculateConsecutiveLandlordDays(
+        landlord.userId,
+        landlordHistory
+      );
 
       // If multiple days, show that primarily
       if (consecutiveDays > 1) {
         // Add today's time for extra dynamism
         const claimTime = landlord.claimedAt;
-        const claimDate = claimTime && typeof claimTime === 'object' && 'toDate' in claimTime ?
-          claimTime.toDate() : toDate(claimTime);
+        const claimDate =
+          claimTime && typeof claimTime === 'object' && 'toDate' in claimTime
+            ? claimTime.toDate()
+            : toDate(claimTime);
 
         if (!claimDate) return '';
 
@@ -681,8 +690,10 @@ export class ModalCheckinLandlordComponent {
 
       // Single day - show dynamic time
       const claimTime = landlord.claimedAt;
-      const claimDate = claimTime && typeof claimTime === 'object' && 'toDate' in claimTime ?
-        claimTime.toDate() : toDate(claimTime);
+      const claimDate =
+        claimTime && typeof claimTime === 'object' && 'toDate' in claimTime
+          ? claimTime.toDate()
+          : toDate(claimTime);
 
       if (!claimDate) return '';
 
@@ -764,7 +775,7 @@ export class ModalCheckinLandlordComponent {
       landlordStoreState: {
         loading: this.landlordStore.loading(),
         error: this.landlordStore.error(),
-      }
+      },
     };
   }
 }

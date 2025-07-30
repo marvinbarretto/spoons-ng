@@ -17,12 +17,12 @@ export class MockCheckinCameraService {
 
   async startCamera(videoElement: HTMLVideoElement): Promise<void> {
     console.log('[MockCheckinCamera] startCamera called');
-    
+
     // Simulate successful camera start
     this._videoElement.set(videoElement);
     this._isReady.set(true);
     this._error.set(null);
-    
+
     // Simulate async operation
     await new Promise(resolve => setTimeout(resolve, 10));
   }

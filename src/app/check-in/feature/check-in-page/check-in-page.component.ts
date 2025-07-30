@@ -4,8 +4,6 @@ import { CheckinComponent } from '../checkin/checkin.component';
 @Component({
   selector: 'app-check-in-page',
   imports: [CheckinComponent],
-  template: `
-    <app-checkin />
-  `
+  template: ` <app-checkin /> `,
 })
 export class CheckInPageComponent {}

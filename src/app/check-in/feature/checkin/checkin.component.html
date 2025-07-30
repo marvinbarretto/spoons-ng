@@ -1,15 +1,15 @@
 <!-- src/app/check-in/feature/checkin/checkin.component.html -->
 
 <div class="checkin-container">
-
   <!-- Live Camera Video Stream -->
-  <video #cameraVideo
-         class="camera-video"
-         [class.visible]="orchestrator.showCameraPreview()"
-         autoplay
-         playsinline
-         muted>
-  </video>
+  <video
+    #cameraVideo
+    class="camera-video"
+    [class.visible]="orchestrator.showCameraPreview()"
+    autoplay
+    playsinline
+    muted
+  ></video>
 
   <!-- Camera Framing Guides -->
   @if (orchestrator.showCameraPreview()) {
@@ -30,9 +30,11 @@
 
       @if (orchestrator.showCaptureButton()) {
         <div class="camera-controls">
-          <button class="capture-btn"
-                  (click)="onCaptureClick()"
-                  [disabled]="orchestrator.isCapturingPhoto()">
+          <button
+            class="capture-btn"
+            (click)="onCaptureClick()"
+            [disabled]="orchestrator.isCapturingPhoto()"
+          >
             @if (orchestrator.isCapturingPhoto()) {
               <div class="capturing-icon">⏳</div>
               <span>Capturing...</span>
@@ -49,7 +51,7 @@
   <!-- Photo Preview with Static Background -->
   @if (orchestrator.showPhotoPreview()) {
     <div class="photo-preview">
-      <img [src]="orchestrator.photoDataUrl()!" alt="Captured image" class="static-photo">
+      <img [src]="orchestrator.photoDataUrl()!" alt="Captured image" class="static-photo" />
 
       <div class="photo-overlay">
         @if (orchestrator.stage() === 'LLM_CHECKING') {
@@ -58,15 +60,10 @@
             <h3>Analyzing image..</h3>
             <p>This may take a moment</p>
             <div class="loading-spinner"></div>
-          </div>
-        } @else if (orchestrator.showConfirmButton()) {
-          <div class="photo-actions">
-            <button class="confirm-btn" (click)="onConfirmPhotoClick()">
-              Use This Photo
-            </button>
-            <button class="retake-btn" (click)="onRetakePhotoClick()">
-              Retake Photo
-            </button>
+            
+            @if (orchestrator.showRetakeButton()) {
+              <button class="retake-btn analyzing-retake-btn" (click)="onRetakePhotoClick()">Cancel & Retake Photo</button>
+            }
           </div>
         }
       </div>
@@ -81,16 +78,11 @@
         <h2>Check-in Failed</h2>
         <p>{{ orchestrator.error() }}</p>
 
-        <button class="retry-btn" (click)="onRetryClick()">
-          Try Again
-        </button>
+        <button class="retry-btn" (click)="onRetryClick()">Try Again</button>
       </div>
     </div>
   }
 
   <!-- Exit button (always available) -->
-  <button class="exit-btn" (click)="onExitClick()">
-    ✕
-  </button>
-
+  <button class="exit-btn" (click)="onExitClick()">✕</button>
 </div>

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ChipBadgeComponent } from './chip-badge.component';
 import type { Badge } from '@badges/utils/badge.model';
+import { ChipBadgeComponent } from './chip-badge.component';
 
 describe('ChipBadgeComponent', () => {
   let component: ChipBadgeComponent;
@@ -10,17 +10,17 @@ describe('ChipBadgeComponent', () => {
     id: 'first-checkin',
     name: 'First Check-in',
     description: 'Complete your first pub check-in',
-    emoji: '🌟'
+    emoji: '🌟',
   };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ChipBadgeComponent]
+      imports: [ChipBadgeComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ChipBadgeComponent);
     component = fixture.componentInstance;
-    
+
     // Set required input
     fixture.componentRef.setInput('badge', mockBadge);
     fixture.detectChanges();
@@ -39,7 +39,7 @@ describe('ChipBadgeComponent', () => {
   it('should display badge short name when showName is true', () => {
     fixture.componentRef.setInput('showName', true);
     fixture.detectChanges();
-    
+
     const compiled = fixture.nativeElement;
     expect(compiled.textContent).toContain('FIRST');
   });
@@ -47,7 +47,7 @@ describe('ChipBadgeComponent', () => {
   it('should hide badge name when showName is false', () => {
     fixture.componentRef.setInput('showName', false);
     fixture.detectChanges();
-    
+
     const nameElement = fixture.nativeElement.querySelector('.chip-text');
     expect(nameElement).toBeFalsy();
   });
@@ -55,7 +55,7 @@ describe('ChipBadgeComponent', () => {
   it('should show earned indicator when earned is true', () => {
     fixture.componentRef.setInput('earned', true);
     fixture.detectChanges();
-    
+
     const earnedIndicator = fixture.nativeElement.querySelector('.earned-indicator');
     expect(earnedIndicator).toBeTruthy();
     expect(earnedIndicator.textContent).toContain('✓');
@@ -64,7 +64,7 @@ describe('ChipBadgeComponent', () => {
   it('should not show earned indicator when earned is false', () => {
     fixture.componentRef.setInput('earned', false);
     fixture.detectChanges();
-    
+
     const earnedIndicator = fixture.nativeElement.querySelector('.earned-indicator');
     expect(earnedIndicator).toBeFalsy();
   });
@@ -72,7 +72,7 @@ describe('ChipBadgeComponent', () => {
   it('should apply earned class when earned is true', () => {
     fixture.componentRef.setInput('earned', true);
     fixture.detectChanges();
-    
+
     const chipElement = fixture.nativeElement.querySelector('.chip-badge');
     expect(chipElement.classList).toContain('earned');
   });
@@ -80,7 +80,7 @@ describe('ChipBadgeComponent', () => {
   it('should apply unearned class when earned is false', () => {
     fixture.componentRef.setInput('earned', false);
     fixture.detectChanges();
-    
+
     const chipElement = fixture.nativeElement.querySelector('.chip-badge');
     expect(chipElement.classList).toContain('unearned');
   });
@@ -88,13 +88,13 @@ describe('ChipBadgeComponent', () => {
   it('should emit clicked event when clicked and clickable', () => {
     fixture.componentRef.setInput('clickable', true);
     fixture.detectChanges();
-    
+
     const clickedSpy = jest.fn();
     component.clicked.subscribe(clickedSpy);
-    
+
     const chipElement = fixture.nativeElement.querySelector('.chip-badge');
     chipElement.click();
-    
+
     expect(clickedSpy).toHaveBeenCalledWith(mockBadge);
   });
 
@@ -102,12 +102,12 @@ describe('ChipBadgeComponent', () => {
     const badgeWithoutEmoji: Badge = {
       id: 'early-riser',
       name: 'Early Riser',
-      description: 'Check in before 9 AM'
+      description: 'Check in before 9 AM',
     };
-    
+
     fixture.componentRef.setInput('badge', badgeWithoutEmoji);
     fixture.detectChanges();
-    
+
     const iconText = component.badgeIcon();
     expect(iconText).toBe('🌞'); // Should map to early-riser icon
   });
@@ -115,7 +115,7 @@ describe('ChipBadgeComponent', () => {
   it('should generate correct tooltip text for earned badge', () => {
     fixture.componentRef.setInput('earned', true);
     fixture.detectChanges();
-    
+
     const tooltipText = component.tooltipText();
     expect(tooltipText).toBe('First Check-in - Earned!');
   });
@@ -123,7 +123,7 @@ describe('ChipBadgeComponent', () => {
   it('should generate correct tooltip text for unearned badge', () => {
     fixture.componentRef.setInput('earned', false);
     fixture.detectChanges();
-    
+
     const tooltipText = component.tooltipText();
     expect(tooltipText).toBe('First Check-in - Complete your first pub check-in');
   });

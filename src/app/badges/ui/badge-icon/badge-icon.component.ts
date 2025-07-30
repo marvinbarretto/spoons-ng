@@ -27,7 +27,7 @@ import type { Badge } from '../../utils/badge.model';
       vertical-align: middle;
     }
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BadgeIconComponent {
   readonly badge = input<Badge>();

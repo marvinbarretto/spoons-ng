@@ -1,5 +1,5 @@
-import { Component, input, computed, ChangeDetectionStrategy } from '@angular/core';
-import type { EarnedBadge, Badge } from '../../utils/badge.model';
+import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import type { Badge, EarnedBadge } from '../../utils/badge.model';
 
 // ✅ Type for combined earned badge + definition
 type EarnedBadgeWithDefinition = {
@@ -248,7 +248,7 @@ type EarnedBadgeWithDefinition = {
       }
     }
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class EarnedBadgeListComponent {
   // ✅ Support both input formats for backward compatibility
@@ -273,12 +273,13 @@ export class EarnedBadgeListComponent {
     }
 
     // Use earnedBadgesWithDefinitions if provided, otherwise convert recentBadges
-    const badges = withDefinitions.length > 0
-      ? withDefinitions.filter(item => item.badge) // ✅ Filter out undefined badges early
-      : rawBadges.map(earnedBadge => ({
-          earnedBadge,
-          badge: undefined // Will show "Unknown Badge"
-        }));
+    const badges =
+      withDefinitions.length > 0
+        ? withDefinitions.filter(item => item.badge) // ✅ Filter out undefined badges early
+        : rawBadges.map(earnedBadge => ({
+            earnedBadge,
+            badge: undefined, // Will show "Unknown Badge"
+          }));
 
     return badges.slice(0, max);
   });
@@ -302,7 +303,7 @@ export class EarnedBadgeListComponent {
     } else {
       return date.toLocaleDateString('en-US', {
         month: 'short',
-        day: 'numeric'
+        day: 'numeric',
       });
     }
   }

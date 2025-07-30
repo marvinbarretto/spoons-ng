@@ -3,6 +3,7 @@ export type LeaderboardPeriod = 'monthly' | 'all-time';
 export type LeaderboardEntry = {
   userId: string;
   displayName: string;
+  email?: string;
   // All-time stats
   totalPoints: number;
   uniquePubs: number;

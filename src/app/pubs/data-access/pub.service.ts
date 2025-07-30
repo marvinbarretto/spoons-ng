@@ -1,13 +1,21 @@
 import { Injectable } from '@angular/core';
-import { FirestoreService } from '@fourfold/angular-foundation';
-import { Observable, firstValueFrom } from 'rxjs';
-import type { Pub } from '../utils/pub.models';
 import type { CheckIn } from '@check-in/utils/check-in.models';
-import { FirestoreDataConverter, collection, getDocs, arrayUnion, increment, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { FirestoreService } from '@fourfold/angular-foundation';
+import {
+  FirestoreDataConverter,
+  Timestamp,
+  arrayUnion,
+  collection,
+  getDocs,
+  increment,
+  serverTimestamp,
+} from 'firebase/firestore';
+import { Observable, firstValueFrom } from 'rxjs';
 import { earliest, latest } from '../../shared/utils/date-utils';
+import type { Pub } from '../utils/pub.models';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class PubService extends FirestoreService {
   protected path = 'pubs';
@@ -35,7 +43,7 @@ export class PubService extends FirestoreService {
           id: pub.id,
           name: pub.name,
           hasCarpet: pub.hasCarpet,
-          carpetUrl: pub.carpetUrl ? 'present' : 'empty'
+          carpetUrl: pub.carpetUrl ? 'present' : 'empty',
         });
       }
       return pub;
@@ -47,14 +55,12 @@ export class PubService extends FirestoreService {
 
   getAllPubs(): Promise<Pub[]> {
     const pubConverter: FirestoreDataConverter<Pub> = {
-      toFirestore: (pub) => pub,
-      fromFirestore: (snap) => snap.data() as Pub,
+      toFirestore: pub => pub,
+      fromFirestore: snap => snap.data() as Pub,
     };
 
     const pubsRef = collection(this.firestore, 'pubs').withConverter(pubConverter);
-    return getDocs(pubsRef).then(snapshot =>
-      snapshot.docs.map(doc => doc.data())
-    );
+    return getDocs(pubsRef).then(snapshot => snapshot.docs.map(doc => doc.data()));
   }
 
   // ✅ Pub Statistics Update Methods
@@ -66,7 +72,13 @@ export class PubService extends FirestoreService {
    * - Updates earliest/latest check-in records
    * - Adds entry to check-in history
    */
-  async updatePubStats(pubId: string, checkin: Omit<CheckIn, 'id'>, checkinId: string, currentPub: Pub, userId: string): Promise<void> {
+  async updatePubStats(
+    pubId: string,
+    checkin: Omit<CheckIn, 'id'>,
+    checkinId: string,
+    currentPub: Pub,
+    userId: string
+  ): Promise<void> {
     console.log('[PubService] Updating pub stats for:', pubId);
 
     const checkinDate = this.normalizeDate(checkin.timestamp);
@@ -119,12 +131,18 @@ export class PubService extends FirestoreService {
    * 🏷️ Update pub carpet status - Used by CarpetStrategyService
    */
   async updatePubHasCarpet(pubId: string, hasCarpet: boolean, carpetUrl?: string): Promise<void> {
-    console.log('[PubService] 🏷️ Updating pub carpet status:', pubId, '→', hasCarpet, carpetUrl ? 'with URL' : 'no URL');
+    console.log(
+      '[PubService] 🏷️ Updating pub carpet status:',
+      pubId,
+      '→',
+      hasCarpet,
+      carpetUrl ? 'with URL' : 'no URL'
+    );
 
     try {
       const updateData: Partial<Pub> = {
         hasCarpet,
-        carpetUpdatedAt: serverTimestamp() as any
+        carpetUpdatedAt: serverTimestamp() as any,
       };
 
       // Only update carpetUrl if provided
@@ -137,7 +155,6 @@ export class PubService extends FirestoreService {
       console.log('[PubService] ✅ Pub carpet status updated');
 
       // Firebase automatically handles cache invalidation on writes
-
     } catch (error) {
       console.error('[PubService] ❌ Failed to update pub carpet status:', error);
       throw error;
@@ -155,7 +172,7 @@ export class PubService extends FirestoreService {
       const updateData: Partial<Pub> = {
         carpetUrl,
         hasCarpet: true, // Set hasCarpet to true when we have a URL
-        carpetUpdatedAt: serverTimestamp() as any
+        carpetUpdatedAt: serverTimestamp() as any,
       };
 
       console.log('[PubService] 🔄 Updating Firestore document...');
@@ -168,14 +185,13 @@ export class PubService extends FirestoreService {
       // PubStore now handles signal updates directly for instant UI reactivity
       // No need to invalidate service-level cache since PubStore manages reactivity
       console.log('[PubService] 🎯 Skipping cache invalidation - PubStore handles signal updates');
-
     } catch (error) {
       console.error('[PubService] ❌ Failed to update pub carpet URL:', error);
       console.log('[PubService] 📋 Error details:', {
         pubId,
         carpetUrl,
         errorType: error?.constructor?.name,
-        errorMessage: error instanceof Error ? error.message : String(error)
+        errorMessage: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }

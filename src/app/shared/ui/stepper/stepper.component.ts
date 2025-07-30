@@ -1,5 +1,4 @@
-import { Component, input, ChangeDetectionStrategy } from '@angular/core';
-
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 export interface StepConfig {
   id: string;
@@ -16,8 +15,8 @@ export interface StepConfig {
       <!-- Progress Dots -->
       <div class="progress-dots">
         @for (step of steps(); track step.id; let i = $index) {
-          <div 
-            class="progress-dot" 
+          <div
+            class="progress-dot"
             [class.active]="i === currentStepIndex()"
             [class.completed]="i < currentStepIndex()"
             [attr.aria-label]="step.label || 'Step ' + (i + 1)"
@@ -27,11 +26,14 @@ export interface StepConfig {
 
       <!-- Progress Bar -->
       @if (showProgressBar()) {
-        <div class="progress-bar" role="progressbar" [attr.aria-valuenow]="progressPercentage()" aria-valuemin="0" aria-valuemax="100">
-          <div 
-            class="progress-fill" 
-            [style.width.%]="progressPercentage()"
-          ></div>
+        <div
+          class="progress-bar"
+          role="progressbar"
+          [attr.aria-valuenow]="progressPercentage()"
+          aria-valuemin="0"
+          aria-valuemax="100"
+        >
+          <div class="progress-fill" [style.width.%]="progressPercentage()"></div>
         </div>
       }
 
@@ -43,7 +45,7 @@ export interface StepConfig {
       }
     </div>
   `,
-  styleUrl: './stepper.component.scss'
+  styleUrl: './stepper.component.scss',
 })
 export class StepperComponent {
   // Input signals

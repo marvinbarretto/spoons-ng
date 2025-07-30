@@ -7,7 +7,7 @@ describe('LeaderboardContainerComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [LeaderboardContainerComponent]
+      imports: [LeaderboardContainerComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(LeaderboardContainerComponent);

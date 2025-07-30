@@ -1,4 +1,4 @@
-import { Component, input, computed, output } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 import { IconComponent } from '../../icon/icon.component';
 
 export type ChipSize = 'xs' | 'sm' | 'md' | 'lg';
@@ -17,8 +17,8 @@ export type ChipVariant = 'default' | 'primary' | 'secondary' | 'success' | 'war
       [attr.title]="tooltip()"
       (click)="handleClick()"
       (keydown.enter)="handleClick()"
-      (keydown.space)="handleClick()">
-
+      (keydown.space)="handleClick()"
+    >
       <app-icon
         [name]="icon()"
         [size]="iconSize()"
@@ -38,7 +38,7 @@ export type ChipVariant = 'default' | 'primary' | 'secondary' | 'success' | 'war
       }
     </div>
   `,
-  styleUrl: './chip-icon.component.scss'
+  styleUrl: './chip-icon.component.scss',
 })
 export class ChipIconComponent {
   readonly icon = input.required<string>();
@@ -60,7 +60,7 @@ export class ChipIconComponent {
       xs: 'xs' as const,
       sm: 'sm' as const,
       md: 'sm' as const, // Icon slightly smaller than chip
-      lg: 'md' as const
+      lg: 'md' as const,
     };
     return sizeMap[size];
   });

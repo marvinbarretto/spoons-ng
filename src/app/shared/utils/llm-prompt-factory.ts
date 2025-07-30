@@ -5,7 +5,6 @@ import { AnalysisTheme, PhotoQualityMetrics } from './llm-types';
  * Supports photo quality assessment and flexible theme-based detection
  */
 export class LLMPromptFactory {
-  
   /**
    * Build a comprehensive analysis prompt for a given theme
    */
@@ -94,14 +93,17 @@ export class LLMPromptFactory {
    */
   static calculateQualityBonus(quality: PhotoQualityMetrics, theme: AnalysisTheme): number {
     const baseBonus = quality.overall * theme.qualityWeight;
-    
+
     // Additional bonus for exceptional photos (90%+ overall quality)
     const exceptionalBonus = quality.overall >= 90 ? 10 : 0;
-    
+
     // Bonus for balanced quality (all factors above 70)
-    const balancedBonus = [quality.focus, quality.lighting, quality.composition]
-      .every(factor => factor >= 70) ? 5 : 0;
-    
+    const balancedBonus = [quality.focus, quality.lighting, quality.composition].every(
+      factor => factor >= 70
+    )
+      ? 5
+      : 0;
+
     return Math.round(Math.min(baseBonus + exceptionalBonus + balancedBonus, 100));
   }
 
@@ -110,26 +112,26 @@ export class LLMPromptFactory {
    */
   static validateTheme(theme: AnalysisTheme): { valid: boolean; errors: string[] } {
     const errors: string[] = [];
-    
+
     if (!theme.id || theme.id.trim() === '') {
       errors.push('Theme ID is required');
     }
-    
+
     if (!theme.targetElements || theme.targetElements.length === 0) {
       errors.push('At least one target element is required');
     }
-    
+
     if (theme.qualityWeight < 0 || theme.qualityWeight > 1) {
       errors.push('Quality weight must be between 0 and 1');
     }
-    
+
     if (theme.minimumConfidence < 0 || theme.minimumConfidence > 100) {
       errors.push('Minimum confidence must be between 0 and 100');
     }
-    
+
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     };
   }
 }

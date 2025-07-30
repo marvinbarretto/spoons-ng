@@ -11,7 +11,7 @@
 
   // ✅ User's personal branding
   background: var(--user-color-light, rgba(139, 69, 19, 0.15));
-  border: 2px solid var(--user-color, #8B4513);
+  border: 2px solid var(--user-color, #8b4513);
 
   // ✅ Smooth transitions
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -60,7 +60,7 @@
     }
 
     &:focus-visible {
-      outline: 2px solid var(--primary, #8B4513);
+      outline: 2px solid var(--primary, #8b4513);
       outline-offset: 2px;
     }
   }
@@ -97,10 +97,9 @@
   transition: opacity 0.2s ease;
 }
 
-
 // ✅ Dark mode adjustments
 .dark .user-avatar {
-  border-color: var(--user-color, #8B4513);
+  border-color: var(--user-color, #8b4513);
 
   .avatar-ring {
     border-color: rgba(var(--text-rgb, 255, 255, 255), 0.1);
@@ -177,7 +176,7 @@
     // Add touch feedback
     &:active {
       background: var(--user-color-light, rgba(139, 69, 19, 0.25));
-      border-color: var(--user-color, #8B4513);
+      border-color: var(--user-color, #8b4513);
     }
   }
 }

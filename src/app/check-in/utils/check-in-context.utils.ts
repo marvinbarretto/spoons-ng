@@ -1,6 +1,6 @@
 // src/app/check-in/utils/check-in-context.utils.ts
-import { getDistanceKm } from '@shared/utils/location.utils';
 import type { Pub } from '@pubs/utils/pub.models';
+import { getDistanceKm } from '@shared/utils/location.utils';
 import type { User } from '@users/utils/user.model';
 
 export type CheckInContextData = {
@@ -53,7 +53,7 @@ export function isHomePub(pubId: string, user: User | null): boolean {
  */
 export function calculateDistanceFromHome(homePub: Pub | null, checkInPub: Pub | null): number {
   console.log('🔄 [CheckInContext] Calculating distance from home...');
-  
+
   if (!homePub) {
     console.log('🔄 [CheckInContext] No home pub set - distance: 0km');
     return 0;
@@ -103,7 +103,7 @@ export function calculateCheckInContext(input: CheckInContextInput): CheckInCont
     userTotalCheckins: input.userTotalCheckins,
     pubSpecificCheckins: input.pubSpecificCheckins,
     checkInPubName: input.checkInPub?.name || 'Unknown',
-    homePubName: input.homePub?.name || 'None set'
+    homePubName: input.homePub?.name || 'None set',
   });
 
   console.group(`🔄 Context Analysis (${callId})`);
@@ -111,17 +111,17 @@ export function calculateCheckInContext(input: CheckInContextInput): CheckInCont
   // Distance calculation
   console.log('🔄 [CheckInContext] Step 1: Distance from home');
   const distanceFromHome = calculateDistanceFromHome(input.homePub, input.checkInPub);
-  
+
   // First-time checks
   console.log('🔄 [CheckInContext] Step 2: First-time checks');
   const isFirstEver = isFirstEverCheckIn(input.userTotalCheckins);
   console.log(`🔄   Total user check-ins: ${input.userTotalCheckins}`);
   console.log(`🔄   Is first ever check-in: ${isFirstEver}`);
-  
+
   const isFirstVisit = isFirstVisitToPub(input.pubSpecificCheckins);
   console.log(`🔄   Check-ins to this pub: ${input.pubSpecificCheckins}`);
   console.log(`🔄   Is first visit to pub: ${isFirstVisit}`);
-  
+
   // Home pub check
   console.log('🔄 [CheckInContext] Step 3: Home pub analysis');
   const isUserHomePub = isHomePub(input.pubId, input.user);
@@ -137,12 +137,12 @@ export function calculateCheckInContext(input: CheckInContextInput): CheckInCont
     currentStreak: input.currentStreak || 0,
     carpetConfirmed: input.carpetConfirmed || false,
     sharedSocial: input.sharedSocial || false,
-    isHomePub: isUserHomePub
+    isHomePub: isUserHomePub,
   };
 
   console.groupEnd();
   console.log(`🔄 [CheckInContext] === CONTEXT GATHERING COMPLETE (${callId}) ===`);
   console.log(`🔄 Final context:`, context);
-  
+
   return context;
 }

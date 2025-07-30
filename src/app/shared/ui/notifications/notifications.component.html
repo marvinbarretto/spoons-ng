@@ -1,13 +1,8 @@
 <section class="notifications" role="alert" aria-live="assertive">
   @for (message of messages(); track trackById($index, message)) {
-    <div
-      class="notification"
-      [ngClass]="message.type"
-      >
+    <div class="notification" [ngClass]="message.type">
       <p class="message">{{ message.message }}</p>
-      <button aria-label="Dismiss notification" (click)="dismiss(message.id)">
-        Dismiss
-      </button>
+      <button aria-label="Dismiss notification" (click)="dismiss(message.id)">Dismiss</button>
     </div>
   }
 </section>

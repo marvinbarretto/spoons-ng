@@ -24,7 +24,7 @@ body {
   // ✅ SIMPLIFIED: Clean theme tokens without fallbacks
   background-color: var(--background);
   color: var(--text);
-  
+
   // ✅ Dynamic viewport height for mobile browser toolbar handling
   min-height: 100vh; /* Fallback for older browsers */
   min-height: 100svh; /* Small viewport height (when toolbar is visible) */
@@ -37,7 +37,9 @@ body {
   text-rendering: optimizeLegibility;
 
   // ✅ Smooth theme transitions
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 
   // ✅ Simple background texture using new variables
   background-image:
@@ -111,7 +113,9 @@ html {
   overflow: auto;
 
   // ✅ Enhanced interactions
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
 
   // ✅ Theme-aware scrollbars
   &::-webkit-scrollbar {

@@ -1,6 +1,5 @@
 import { Component, input, output } from '@angular/core';
 
-
 @Component({
   selector: 'app-error-state',
   imports: [],
@@ -9,8 +8,8 @@ import { Component, input, output } from '@angular/core';
       <span class="error-icon" aria-hidden="true">{{ icon() }}</span>
       <span class="error-message">{{ message() }}</span>
       @if (showRetry()) {
-        <button 
-          class="retry-button" 
+        <button
+          class="retry-button"
           (click)="onRetry()"
           type="button"
           [attr.aria-label]="'Retry ' + (retryLabel() || 'loading')"
@@ -20,7 +19,7 @@ import { Component, input, output } from '@angular/core';
       }
     </div>
   `,
-  styleUrl: './error-state.component.scss'
+  styleUrl: './error-state.component.scss',
 })
 export class ErrorStateComponent {
   readonly icon = input<string>('⚠️');
@@ -28,9 +27,9 @@ export class ErrorStateComponent {
   readonly showRetry = input<boolean>(false);
   readonly retryText = input<string>('Retry');
   readonly retryLabel = input<string>();
-  
+
   readonly retry = output<void>();
-  
+
   onRetry(): void {
     this.retry.emit();
   }

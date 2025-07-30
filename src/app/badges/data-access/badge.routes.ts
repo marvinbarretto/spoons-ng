@@ -6,5 +6,5 @@ export const BADGE_ROUTES: Routes = [
     path: '',
     title: 'All Badges',
     component: BadgeAdminComponent,
-  }
+  },
 ];

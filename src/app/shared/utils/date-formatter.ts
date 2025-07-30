@@ -14,7 +14,7 @@ export function formatShortDate(dateString: string, locale: string = 'en-GB'): s
     return date.toLocaleDateString(locale, {
       day: 'numeric',
       month: 'short',
-      year: '2-digit'
+      year: '2-digit',
     });
   } catch {
     return dateString;
@@ -32,12 +32,12 @@ export function formatRelativeDate(dateString: string): string {
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays === 0) return 'Today';
     if (diffDays === 1) return 'Yesterday';
     if (diffDays < 7) return `${diffDays} days ago`;
     if (diffDays < 30) return `${Math.floor(diffDays / 7)} weeks ago`;
-    
+
     return formatShortDate(dateString);
   } catch {
     return dateString;

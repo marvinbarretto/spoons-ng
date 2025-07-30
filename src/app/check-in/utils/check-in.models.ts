@@ -1,6 +1,6 @@
 // src/app/check-in/utils/check-in.models.ts
 
-import { Timestamp } from "firebase/firestore";
+import { Timestamp } from 'firebase/firestore';
 
 export type PointsBreakdown = {
   base: number;

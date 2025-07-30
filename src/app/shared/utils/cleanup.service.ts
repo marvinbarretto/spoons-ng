@@ -1,14 +1,14 @@
 // src/app/shared/utils/cleanup.service.ts
 import { Injectable } from '@angular/core';
-import { FirestoreService } from '@fourfold/angular-foundation';
 import {
   collection,
-  getDocs,
-  writeBatch,
-  query,
   limit as firestoreLimit,
-  where
+  getDocs,
+  query,
+  where,
+  writeBatch,
 } from '@angular/fire/firestore';
+import { FirestoreService } from '@fourfold/angular-foundation';
 import type { User } from '@users/utils/user.model';
 
 export type CleanupResult = {
@@ -27,10 +27,9 @@ export type UserDeletionSummary = {
 };
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CleanupService extends FirestoreService {
-
   /**
    * Batch delete all documents from a collection
    * Firestore limit: 500 operations per batch
@@ -71,15 +70,14 @@ export class CleanupService extends FirestoreService {
 
       return {
         success: true,
-        deletedCount: totalDeleted
+        deletedCount: totalDeleted,
       };
-
     } catch (error: any) {
       console.error(`[CleanupService] Error clearing ${collectionName}:`, error);
       return {
         success: false,
         deletedCount: 0,
-        error: error?.message || 'Unknown error'
+        error: error?.message || 'Unknown error',
       };
     }
   }
@@ -114,7 +112,17 @@ export class CleanupService extends FirestoreService {
     missions: number;
     feedback: number;
   }> {
-    const [users, checkIns, landlords, earnedBadges, pubs, userMissionProgress, pointsTransactions, missions, feedback] = await Promise.all([
+    const [
+      users,
+      checkIns,
+      landlords,
+      earnedBadges,
+      pubs,
+      userMissionProgress,
+      pointsTransactions,
+      missions,
+      feedback,
+    ] = await Promise.all([
       this.getCollectionCount('users'),
       this.getCollectionCount('checkins'),
       this.getCollectionCount('landlords'),
@@ -123,10 +131,20 @@ export class CleanupService extends FirestoreService {
       this.getCollectionCount('userMissionProgress'),
       this.getCollectionCount('pointsTransactions'),
       this.getCollectionCount('missions'),
-      this.getCollectionCount('feedback')
+      this.getCollectionCount('feedback'),
     ]);
 
-    return { users, checkIns, landlords, earnedBadges, pubs, userMissionProgress, pointsTransactions, missions, feedback };
+    return {
+      users,
+      checkIns,
+      landlords,
+      earnedBadges,
+      pubs,
+      userMissionProgress,
+      pointsTransactions,
+      missions,
+      feedback,
+    };
   }
 
   // ===================================
@@ -150,14 +168,14 @@ export class CleanupService extends FirestoreService {
         realUsers: realUsers.length,
         testUsers: testUsers.length,
         realUserIds: realUsers.map(u => u.uid),
-        testUserIds: testUsers.map(u => u.uid)
+        testUserIds: testUsers.map(u => u.uid),
       };
 
       console.log('[CleanupService] 📊 User Analysis Results:', {
         total: summary.totalUsers,
         real: summary.realUsers,
         test: summary.testUsers,
-        realUserDisplayNames: realUsers.map(u => ({ uid: u.uid.slice(0, 8), name: u.displayName }))
+        realUserDisplayNames: realUsers.map(u => ({ uid: u.uid.slice(0, 8), name: u.displayName })),
       });
 
       return summary;
@@ -176,12 +194,13 @@ export class CleanupService extends FirestoreService {
     try {
       const realUsers = await this.getDocsWhere<User>('users', where('realUser', '==', true));
 
-      console.log('[CleanupService] 👥 Found real users:',
+      console.log(
+        '[CleanupService] 👥 Found real users:',
         realUsers.map(u => ({
           uid: u.uid.slice(0, 8),
           displayName: u.displayName,
           email: u.email,
-          joinedAt: u.joinedAt
+          joinedAt: u.joinedAt,
         }))
       );
 
@@ -215,7 +234,8 @@ export class CleanupService extends FirestoreService {
       const summary = await this.analyzeUsers();
 
       if (summary.realUsers > 0) {
-        console.log(`[CleanupService] 🛡️ PROTECTING ${summary.realUsers} real users:`,
+        console.log(
+          `[CleanupService] 🛡️ PROTECTING ${summary.realUsers} real users:`,
           summary.realUserIds.map(uid => uid.slice(0, 8))
         );
       }
@@ -225,11 +245,12 @@ export class CleanupService extends FirestoreService {
         return {
           success: true,
           deletedCount: 0,
-          protectedCount: summary.realUsers
+          protectedCount: summary.realUsers,
         };
       }
 
-      console.log(`[CleanupService] 🗑️ Deleting ${summary.testUsers} test users:`,
+      console.log(
+        `[CleanupService] 🗑️ Deleting ${summary.testUsers} test users:`,
         summary.testUserIds.map(uid => uid.slice(0, 8))
       );
 
@@ -238,16 +259,15 @@ export class CleanupService extends FirestoreService {
 
       return {
         ...result,
-        protectedCount: summary.realUsers
+        protectedCount: summary.realUsers,
       };
-
     } catch (error: any) {
       console.error('[CleanupService] ❌ Error clearing test users:', error);
       return {
         success: false,
         deletedCount: 0,
         protectedCount: 0,
-        error: error?.message || 'Failed to clear test users'
+        error: error?.message || 'Failed to clear test users',
       };
     }
   }
@@ -260,7 +280,9 @@ export class CleanupService extends FirestoreService {
 
     const summary = await this.analyzeUsers();
     if (summary.realUsers > 0) {
-      console.warn(`[CleanupService] ⚠️ WARNING: This will delete ${summary.realUsers} REAL users!`);
+      console.warn(
+        `[CleanupService] ⚠️ WARNING: This will delete ${summary.realUsers} REAL users!`
+      );
     }
 
     return this.clearCollection('users');
@@ -277,11 +299,7 @@ export class CleanupService extends FirestoreService {
       while (hasMore) {
         // Get batch of documents with where condition
         const snapshot = await getDocs(
-          query(
-            collection(this.firestore, 'users'),
-            whereCondition,
-            firestoreLimit(500)
-          )
+          query(collection(this.firestore, 'users'), whereCondition, firestoreLimit(500))
         );
 
         if (snapshot.empty) {
@@ -309,15 +327,14 @@ export class CleanupService extends FirestoreService {
 
       return {
         success: true,
-        deletedCount: totalDeleted
+        deletedCount: totalDeleted,
       };
-
     } catch (error: any) {
       console.error('[CleanupService] Error clearing users with condition:', error);
       return {
         success: false,
         deletedCount: 0,
-        error: error?.message || 'Unknown error'
+        error: error?.message || 'Unknown error',
       };
     }
   }
@@ -375,11 +392,14 @@ export class CleanupService extends FirestoreService {
       this.clearUsers(),
       this.clearCheckIns(),
       this.clearLandlords(),
-      this.clearEarnedBadges()
+      this.clearEarnedBadges(),
     ]);
 
-    const totalDeleted = users.deletedCount + checkIns.deletedCount +
-                        landlords.deletedCount + earnedBadges.deletedCount;
+    const totalDeleted =
+      users.deletedCount +
+      checkIns.deletedCount +
+      landlords.deletedCount +
+      earnedBadges.deletedCount;
 
     console.log(`[CleanupService] ✅ Cleanup complete. Total deleted: ${totalDeleted} documents`);
     console.log('[CleanupService] Results:', { users, checkIns, landlords, earnedBadges });
@@ -397,13 +417,12 @@ export class CleanupService extends FirestoreService {
   }> {
     console.log('[CleanupService] 🧽 Clearing user data (users + earned badges)...');
 
-    const [users, earnedBadges] = await Promise.all([
-      this.clearUsers(),
-      this.clearEarnedBadges()
-    ]);
+    const [users, earnedBadges] = await Promise.all([this.clearUsers(), this.clearEarnedBadges()]);
 
     const totalDeleted = users.deletedCount + earnedBadges.deletedCount;
-    console.log(`[CleanupService] ✅ User data cleanup complete. Deleted: ${totalDeleted} documents`);
+    console.log(
+      `[CleanupService] ✅ User data cleanup complete. Deleted: ${totalDeleted} documents`
+    );
 
     return { users, earnedBadges };
   }
@@ -441,7 +460,18 @@ export class CleanupService extends FirestoreService {
     console.log('[CleanupService] 🚀 Starting parallel deletion of ALL collections...');
 
     // Clear ALL collections in parallel - including the missing ones
-    const [users, checkIns, landlords, earnedBadges, badges, pubs, userMissionProgress, pointsTransactions, missions, feedback] = await Promise.all([
+    const [
+      users,
+      checkIns,
+      landlords,
+      earnedBadges,
+      badges,
+      pubs,
+      userMissionProgress,
+      pointsTransactions,
+      missions,
+      feedback,
+    ] = await Promise.all([
       this.clearAllUsersIncludingReal(), // Use dangerous version for true nuclear reset
       this.clearCheckIns(),
       this.clearLandlords(),
@@ -451,18 +481,34 @@ export class CleanupService extends FirestoreService {
       this.clearCollection('userMissionProgress'),
       this.clearCollection('pointsTransactions'),
       this.clearCollection('missions'),
-      this.clearCollection('feedback')
+      this.clearCollection('feedback'),
     ]);
 
     // Calculate total deleted
-    const results = { users, checkIns, landlords, earnedBadges, badges, pubs, userMissionProgress, pointsTransactions, missions, feedback };
-    const totalDeleted = Object.values(results).reduce((sum, result) => sum + result.deletedCount, 0);
+    const results = {
+      users,
+      checkIns,
+      landlords,
+      earnedBadges,
+      badges,
+      pubs,
+      userMissionProgress,
+      pointsTransactions,
+      missions,
+      feedback,
+    };
+    const totalDeleted = Object.values(results).reduce(
+      (sum, result) => sum + result.deletedCount,
+      0
+    );
 
     // Log detailed results
     console.log('[CleanupService] 📊 NUCLEAR RESET RESULTS:');
     Object.entries(results).forEach(([collection, result]) => {
       const status = result.success ? '✅' : '❌';
-      console.log(`[CleanupService]   ${status} ${collection}: deleted ${result.deletedCount} docs ${result.error ? `(Error: ${result.error})` : ''}`);
+      console.log(
+        `[CleanupService]   ${status} ${collection}: deleted ${result.deletedCount} docs ${result.error ? `(Error: ${result.error})` : ''}`
+      );
     });
 
     console.log(`[CleanupService] 🔥 TOTAL DELETED: ${totalDeleted} documents`);
@@ -515,7 +561,7 @@ export class CleanupService extends FirestoreService {
     return {
       collections: counts,
       totalDocuments,
-      isEmpty: totalDocuments === 0
+      isEmpty: totalDocuments === 0,
     };
   }
 }

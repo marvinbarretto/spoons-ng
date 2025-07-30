@@ -1,5 +1,4 @@
-import { Component, input, output, signal, computed, contentChildren } from '@angular/core';
-import { TabComponent } from './tab.component';
+import { Component, computed, input, output, signal } from '@angular/core';
 
 export interface Tab {
   id: string;
@@ -188,9 +187,9 @@ export class TabGroupComponent {
   onTabKeydown(event: KeyboardEvent, tabId: string): void {
     const tabs = this.tabs().filter(t => !t.disabled);
     const currentIndex = tabs.findIndex(t => t.id === tabId);
-    
+
     let newIndex = currentIndex;
-    
+
     switch (event.key) {
       case 'ArrowLeft':
         event.preventDefault();

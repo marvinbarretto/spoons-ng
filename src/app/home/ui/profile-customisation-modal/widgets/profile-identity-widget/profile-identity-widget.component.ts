@@ -1,13 +1,22 @@
 // src/app/home/ui/profile-customisation-modal/widgets/profile-identity-widget/profile-identity-widget.component.ts
-import { Component, input, output, signal, computed, inject, ChangeDetectionStrategy, effect } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
-import { TooltipComponent } from '@shared/ui/tooltip/tooltip.component';
-import { generateRandomName } from '../../../../../shared/utils/anonymous-names';
+import type { AvatarOption } from '@shared/data-access/avatar.service';
 import { AvatarService } from '@shared/data-access/avatar.service';
+import { TooltipComponent } from '@shared/ui/tooltip/tooltip.component';
 import { UserStore } from '@users/data-access/user.store';
 import type { User } from '@users/utils/user.model';
-import type { AvatarOption } from '@shared/data-access/avatar.service';
+import { generateRandomName } from '../../../../../shared/utils/anonymous-names';
 
 @Component({
   selector: 'app-profile-identity-widget',
@@ -65,8 +74,6 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
               <span class="error-message">{{ errorMessage() }}</span>
             }
           </div>
-
-
         </div>
       </div>
 
@@ -95,7 +102,7 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
   styles: `
     .profile-identity-widget {
       padding: 1.5rem;
-      background-color: rgba(0,0,0,.5);
+      background-color: rgba(0, 0, 0, 0.5);
       // background: var(--background);
       border: 1px solid var(--border);
       border-radius: 12px;
@@ -165,7 +172,9 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
     .name-input:focus {
       outline: none;
       border-color: var(--primary, #4ade80);
-      box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.2), 0 4px 8px rgba(0, 0, 0, 0.15);
+      box-shadow:
+        0 0 0 3px rgba(74, 222, 128, 0.2),
+        0 4px 8px rgba(0, 0, 0, 0.15);
     }
 
     .name-input.error {
@@ -308,7 +317,7 @@ import type { AvatarOption } from '@shared/data-access/avatar.service';
         height: 50px;
       }
     }
-  `
+  `,
 })
 export class ProfileIdentityWidgetComponent {
   // Services

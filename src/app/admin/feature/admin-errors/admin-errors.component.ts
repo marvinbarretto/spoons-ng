@@ -1,9 +1,13 @@
 // src/app/admin/feature/admin-errors/admin-errors.component.ts
-import { Component, inject, computed, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, computed, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { ErrorLoggingService, type SystemError, type ErrorCategory, type ErrorSeverity } from '../../../shared/data-access/error-logging.service';
+import {
+  ErrorLoggingService,
+  type ErrorCategory,
+  type SystemError,
+} from '../../../shared/data-access/error-logging.service';
 
 @Component({
   selector: 'app-admin-errors',
@@ -14,7 +18,7 @@ import { ErrorLoggingService, type SystemError, type ErrorCategory, type ErrorSe
       <header class="errors-header">
         <h1>System Error Logs</h1>
         <p class="errors-subtitle">Monitor and resolve system errors and failures</p>
-        
+
         <div class="error-stats-grid">
           <div class="stat-card">
             <div class="stat-value">{{ errorStats().totalErrors }}</div>
@@ -66,7 +70,7 @@ import { ErrorLoggingService, type SystemError, type ErrorCategory, type ErrorSe
             <option value="validation">Validation</option>
             <option value="unknown">Unknown</option>
           </select>
-          
+
           <select [(ngModel)]="selectedSeverity" (change)="onFilterChange()">
             <option value="">All Severities</option>
             <option value="critical">Critical</option>
@@ -74,12 +78,12 @@ import { ErrorLoggingService, type SystemError, type ErrorCategory, type ErrorSe
             <option value="medium">Medium</option>
             <option value="low">Low</option>
           </select>
-          
+
           <label>
-            <input type="checkbox" [(ngModel)]="showOnlyUnresolved" (change)="onFilterChange()">
+            <input type="checkbox" [(ngModel)]="showOnlyUnresolved" (change)="onFilterChange()" />
             Show only unresolved
           </label>
-          
+
           <button (click)="refreshErrors()" [disabled]="loading()">
             {{ loading() ? 'Loading...' : 'Refresh' }}
           </button>
@@ -116,39 +120,39 @@ import { ErrorLoggingService, type SystemError, type ErrorCategory, type ErrorSe
                       <span class="error-status badge badge-unresolved">🔴 Unresolved</span>
                     }
                   </div>
-                  
+
                   <div class="error-operation">
                     <strong>{{ error.operation }}</strong>
                   </div>
-                  
+
                   <div class="error-message">
                     {{ error.message }}
                   </div>
-                  
+
                   @if (error.userId) {
                     <div class="error-user">
-                      User: {{ error.userDisplayName || 'Unknown' }} ({{ error.userId.slice(0, 8) }})
+                      User: {{ error.userDisplayName || 'Unknown' }} ({{
+                        error.userId.slice(0, 8)
+                      }})
                       @if (error.isAnonymous) {
                         <span class="badge badge-anonymous">Anonymous</span>
                       }
                     </div>
                   }
                 </div>
-                
+
                 <div class="error-actions">
-                  <button (click)="toggleErrorDetails(error.id)" 
-                          class="btn-secondary btn-sm">
+                  <button (click)="toggleErrorDetails(error.id)" class="btn-secondary btn-sm">
                     {{ expandedErrors.has(error.id) ? 'Hide' : 'Show' }} Details
                   </button>
-                  
+
                   @if (!error.resolved) {
-                    <button (click)="resolveError(error)" 
-                            class="btn-primary btn-sm">
+                    <button (click)="resolveError(error)" class="btn-primary btn-sm">
                       Mark Resolved
                     </button>
                   }
                 </div>
-                
+
                 @if (expandedErrors.has(error.id)) {
                   <div class="error-details">
                     @if (error.stackTrace) {
@@ -157,30 +161,35 @@ import { ErrorLoggingService, type SystemError, type ErrorCategory, type ErrorSe
                         <pre class="stack-trace">{{ error.stackTrace }}</pre>
                       </div>
                     }
-                    
+
                     @if (error.operationContext) {
                       <div class="error-section">
                         <h4>Operation Context</h4>
                         <pre class="context-data">{{ formatJSON(error.operationContext) }}</pre>
                       </div>
                     }
-                    
+
                     <div class="error-section">
                       <h4>System Context</h4>
                       <div class="context-grid">
                         <div><strong>URL:</strong> {{ error.url || 'N/A' }}</div>
                         <div><strong>User Agent:</strong> {{ error.userAgent || 'N/A' }}</div>
                         <div><strong>Error ID:</strong> {{ error.id }}</div>
-                        <div><strong>Timestamp:</strong> {{ error.timestamp.toDate().toISOString() }}</div>
+                        <div>
+                          <strong>Timestamp:</strong> {{ error.timestamp.toDate().toISOString() }}
+                        </div>
                       </div>
                     </div>
-                    
+
                     @if (error.resolved && error.resolution) {
                       <div class="error-section">
                         <h4>Resolution</h4>
                         <p><strong>Resolved by:</strong> {{ error.resolvedBy }}</p>
                         <p><strong>Resolution:</strong> {{ error.resolution }}</p>
-                        <p><strong>Resolved at:</strong> {{ error.resolvedAt?.toDate()?.toISOString() }}</p>
+                        <p>
+                          <strong>Resolved at:</strong>
+                          {{ error.resolvedAt?.toDate()?.toISOString() }}
+                        </p>
                       </div>
                     }
                   </div>
@@ -192,46 +201,46 @@ import { ErrorLoggingService, type SystemError, type ErrorCategory, type ErrorSe
       </section>
     </div>
   `,
-  styleUrl: './admin-errors.component.scss'
+  styleUrl: './admin-errors.component.scss',
 })
 export class AdminErrorsComponent implements OnInit {
   private readonly errorLoggingService = inject(ErrorLoggingService);
-  
+
   // Filter state
   selectedCategory = '';
   selectedSeverity = '';
   showOnlyUnresolved = false;
-  
+
   // UI state
   expandedErrors = new Set<string>();
-  
+
   // Data from service
   readonly errors = this.errorLoggingService.recentErrors;
   readonly loading = this.errorLoggingService.loading;
-  
+
   // Computed properties
   readonly errorStats = computed(() => this.errorLoggingService.getErrorStats());
-  
+
   readonly topCategories = computed(() => {
     const stats = this.errorStats();
     return stats.topCategories;
   });
-  
+
   readonly filteredErrors = computed(() => {
     let filtered = this.errors();
-    
+
     if (this.selectedCategory) {
       filtered = filtered.filter(error => error.category === this.selectedCategory);
     }
-    
+
     if (this.selectedSeverity) {
       filtered = filtered.filter(error => error.severity === this.selectedSeverity);
     }
-    
+
     if (this.showOnlyUnresolved) {
       filtered = filtered.filter(error => !error.resolved);
     }
-    
+
     return filtered;
   });
 
@@ -252,7 +261,7 @@ export class AdminErrorsComponent implements OnInit {
     console.log('[AdminErrorsComponent] Filters changed:', {
       category: this.selectedCategory,
       severity: this.selectedSeverity,
-      unresolved: this.showOnlyUnresolved
+      unresolved: this.showOnlyUnresolved,
     });
   }
 
@@ -280,15 +289,15 @@ export class AdminErrorsComponent implements OnInit {
   getCategoryIcon(category: ErrorCategory): string {
     const icons: Record<ErrorCategory, string> = {
       'check-in': '🍺',
-      'points': '🎯',
-      'badges': '🏆',
-      'landlord': '👑',
-      'missions': '🎯',
-      'auth': '🔐',
-      'database': '💾',
-      'network': '🌐',
-      'validation': '✅',
-      'unknown': '❓'
+      points: '🎯',
+      badges: '🏆',
+      landlord: '👑',
+      missions: '🎯',
+      auth: '🔐',
+      database: '💾',
+      network: '🌐',
+      validation: '✅',
+      unknown: '❓',
     };
     return icons[category] || '❓';
   }

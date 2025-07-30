@@ -1,16 +1,16 @@
 // src/app/shared/ui/list-filter-controls/list-filter-controls.component.ts
 import {
+  ChangeDetectionStrategy,
   Component,
+  computed,
+  inject,
   input,
   output,
-  computed,
-  ChangeDetectionStrategy,
-  inject,
-  signal
+  signal,
 } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
-import { ListFilterStore, type SortOption } from '../../data-access/list-filter.store';
+import { ListFilterStore } from '../../data-access/list-filter.store';
 
 @Component({
   selector: 'app-list-filter-controls',
@@ -81,11 +81,7 @@ import { ListFilterStore, type SortOption } from '../../data-access/list-filter.
             {{ resultsCount() }} {{ resultsCount() === 1 ? 'result' : 'results' }}
           </span>
 
-          <button
-            type="button"
-            class="clear-filters-btn"
-            (click)="clearAllFilters()"
-          >
+          <button type="button" class="clear-filters-btn" (click)="clearAllFilters()">
             Clear filters
           </button>
         </div>
@@ -409,7 +405,7 @@ import { ListFilterStore, type SortOption } from '../../data-access/list-filter.
         min-width: 2.75rem;
       }
     }
-  `
+  `,
 })
 export class ListFilterControlsComponent {
   readonly filterStore = inject(ListFilterStore);

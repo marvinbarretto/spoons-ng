@@ -91,7 +91,7 @@ export interface CrudMethods<T> {
 
   // Update
   update(id: string, updates: Partial<T>): Promise<void>;
-  updateMany(updates: Array<{id: string; changes: Partial<T>}>): Promise<void>;
+  updateMany(updates: Array<{ id: string; changes: Partial<T> }>): Promise<void>;
 
   // Delete
   remove(id: string): Promise<void>;
@@ -164,11 +164,10 @@ export interface UtilityMethods {
  */
 export interface CollectionStore<T>
   extends CollectionStoreSignals<T>,
-          LoadingMethods,
-          CrudMethods<T>,
-          StateMethods,
-          UtilityMethods {
-
+    LoadingMethods,
+    CrudMethods<T>,
+    StateMethods,
+    UtilityMethods {
   // Note: fetchData() is a protected abstract method that child classes implement
   // It's not part of the public API, so we don't include it in the interface
 }
@@ -177,12 +176,7 @@ export interface CollectionStore<T>
  * Full contract for single entity stores
  * Stores single pieces of data like User, Theme, Settings
  */
-export interface EntityStore<T>
-  extends BaseSignals,
-          LoadingMethods,
-          StateMethods,
-          UtilityMethods {
-
+export interface EntityStore<T> extends BaseSignals, LoadingMethods, StateMethods, UtilityMethods {
   /**
    * Computed signal indicating if entity is loaded
    */
@@ -208,7 +202,6 @@ export interface ComputedStore<T> {
   // readonly nearbyPubs: Signal<Pub[]>;
   // readonly closestPub: Signal<Pub | null>;
   // These are store-specific and can't be generically defined
-
   // Only utility methods, no loading or state management
   // These stores are pure transformations
 }
@@ -219,11 +212,10 @@ export interface ComputedStore<T> {
  */
 export interface MapStore<T>
   extends BaseSignals,
-          ContextualLoadingMethods,
-          KeyValueMethods<T>,
-          StateMethods,
-          UtilityMethods {
-
+    ContextualLoadingMethods,
+    KeyValueMethods<T>,
+    StateMethods,
+    UtilityMethods {
   /**
    * Check if a key has been loaded
    */
@@ -283,12 +275,10 @@ export interface AntiPatterns {
   // items: Signal<T[]>;           // Use 'data'
   // isLoading: Signal<boolean>;   // Use 'loading'
   // errorMessage: Signal<string>; // Use 'error'
-
   // ❌ Inconsistent method names
   // refresh(): Promise<void>;     // Use 'load()'
   // fetch(): Promise<void>;       // Use 'load()'
   // destroy(): void;              // Use 'reset()'
-
   // ❌ Wrong store type usage
   // computed stores with loading states
   // collection stores for single entities
@@ -303,58 +293,64 @@ export interface AntiPatterns {
  * Type guard to check if a store is a collection store
  */
 export function isCollectionStore<T>(store: any): store is CollectionStore<T> {
-  return store &&
-         'data' in store &&
-         'loadOnce' in store &&
-         'add' in store &&
-         typeof store.data === 'function' &&
-         typeof store.loadOnce === 'function' &&
-         typeof store.add === 'function';
+  return (
+    store &&
+    'data' in store &&
+    'loadOnce' in store &&
+    'add' in store &&
+    typeof store.data === 'function' &&
+    typeof store.loadOnce === 'function' &&
+    typeof store.add === 'function'
+  );
 }
 
 /**
  * Type guard to check if a store is an entity store
  */
 export function isEntityStore<T>(store: any): store is EntityStore<T> {
-  return store &&
-         'loading' in store &&
-         'set' in store &&
-         'patch' in store &&
-         !('data' in store) &&
-         typeof store.loading === 'function' &&
-         typeof store.set === 'function' &&
-         typeof store.patch === 'function';
+  return (
+    store &&
+    'loading' in store &&
+    'set' in store &&
+    'patch' in store &&
+    !('data' in store) &&
+    typeof store.loading === 'function' &&
+    typeof store.set === 'function' &&
+    typeof store.patch === 'function'
+  );
 }
 
 /**
  * Type guard to check if a store is computed
  */
 export function isComputedStore<T>(store: any): store is ComputedStore<T> {
-  return store &&
-         !('loading' in store) &&
-         !('error' in store) &&
-         !('loadOnce' in store);
+  return store && !('loading' in store) && !('error' in store) && !('loadOnce' in store);
 }
 
 /**
  * Type guard to check if a store is map-based
  */
 export function isMapStore<T>(store: any): store is MapStore<T> {
-  return store &&
-         'loading' in store &&
-         'get' in store &&
-         'set' in store &&
-         'clear' in store &&
-         'hasLoaded' in store &&
-         typeof store.get === 'function' &&
-         typeof store.set === 'function' &&
-         typeof store.hasLoaded === 'function';
+  return (
+    store &&
+    'loading' in store &&
+    'get' in store &&
+    'set' in store &&
+    'clear' in store &&
+    'hasLoaded' in store &&
+    typeof store.get === 'function' &&
+    typeof store.set === 'function' &&
+    typeof store.hasLoaded === 'function'
+  );
 }
 
 /**
  * Validate that a store implements the expected contract
  */
-export function validateStoreContract(store: any, expectedType: 'collection' | 'entity' | 'computed' | 'map'): boolean {
+export function validateStoreContract(
+  store: any,
+  expectedType: 'collection' | 'entity' | 'computed' | 'map'
+): boolean {
   if (!store) return false;
 
   switch (expectedType) {
@@ -392,7 +388,7 @@ export function createStoreDebugInfo(
   return {
     name: storeName,
     timestamp: new Date().toISOString(),
-    ...additionalInfo
+    ...additionalInfo,
   };
 }
 
@@ -401,16 +397,13 @@ export function createStoreDebugInfo(
  */
 export function addDebugInfoToStore(store: any, customInfo: Record<string, unknown> = {}): void {
   if (!store.getDebugInfo) {
-    store.getDebugInfo = function() {
-      return createStoreDebugInfo(
-        this.constructor?.name || 'Unknown Store',
-        {
-          ...customInfo,
-          hasLoadingState: 'loading' in this && typeof this.loading === 'function',
-          hasErrorState: 'error' in this && typeof this.error === 'function',
-          hasDataState: 'data' in this && typeof this.data === 'function',
-        }
-      );
+    store.getDebugInfo = function () {
+      return createStoreDebugInfo(this.constructor?.name || 'Unknown Store', {
+        ...customInfo,
+        hasLoadingState: 'loading' in this && typeof this.loading === 'function',
+        hasErrorState: 'error' in this && typeof this.error === 'function',
+        hasDataState: 'data' in this && typeof this.data === 'function',
+      });
     };
   }
 }

@@ -1,4 +1,4 @@
-import { Component, input, computed, output } from '@angular/core';
+import { Component, computed, input, output } from '@angular/core';
 import type { Badge } from '@badges/utils/badge.model';
 
 export type ChipSize = 'xs' | 'sm' | 'md' | 'lg';
@@ -15,8 +15,8 @@ export type ChipSize = 'xs' | 'sm' | 'md' | 'lg';
       [attr.title]="tooltipText()"
       (click)="handleClick()"
       (keydown.enter)="handleClick()"
-      (keydown.space)="handleClick()">
-
+      (keydown.space)="handleClick()"
+    >
       <span class="chip-icon">{{ badgeIcon() }}</span>
 
       @if (showName()) {
@@ -28,7 +28,7 @@ export type ChipSize = 'xs' | 'sm' | 'md' | 'lg';
       }
     </div>
   `,
-  styleUrl: './chip-badge.component.scss'
+  styleUrl: './chip-badge.component.scss',
 })
 export class ChipBadgeComponent {
   readonly badge = input.required<Badge>();

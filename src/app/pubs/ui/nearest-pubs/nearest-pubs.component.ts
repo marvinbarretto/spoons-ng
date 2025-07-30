@@ -1,9 +1,8 @@
-import { Component, inject, input } from '@angular/core';
-import { Pub } from '../../utils/pub.models';
+import { Component, computed, inject, input } from '@angular/core';
 import { CheckInStore } from '../../../check-in/data-access/check-in.store';
-import { computed } from '@angular/core';
-import { NearestPubsItemComponent } from "../nearest-pubs-item/nearest-pubs-item.component";
 import { BaseComponent } from '../../../shared/base/base.component';
+import { Pub } from '../../utils/pub.models';
+import { NearestPubsItemComponent } from '../nearest-pubs-item/nearest-pubs-item.component';
 
 @Component({
   selector: 'app-nearest-pubs',

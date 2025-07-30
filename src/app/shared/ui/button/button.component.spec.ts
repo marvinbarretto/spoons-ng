@@ -1,9 +1,8 @@
 // src/app/shared/ui/button/button.component.spec.ts
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ButtonComponent } from './button.component';
 import { By } from '@angular/platform-browser';
-import { DebugElement } from '@angular/core';
 import { watchSignal } from '../../testing/signal-test-utils.spec';
+import { ButtonComponent } from './button.component';
 
 describe('ButtonComponent', () => {
   let component: ButtonComponent;

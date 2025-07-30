@@ -7,7 +7,7 @@ describe('ErrorStateComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ErrorStateComponent]
+      imports: [ErrorStateComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ErrorStateComponent);
@@ -29,7 +29,7 @@ describe('ErrorStateComponent', () => {
     fixture.componentRef.setInput('icon', '🚨');
     fixture.componentRef.setInput('message', 'Custom error message');
     fixture.detectChanges();
-    
+
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('.error-icon')?.textContent).toContain('🚨');
     expect(compiled.querySelector('.error-message')?.textContent).toContain('Custom error message');
@@ -38,7 +38,7 @@ describe('ErrorStateComponent', () => {
   it('should show retry button when showRetry is true', () => {
     fixture.componentRef.setInput('showRetry', true);
     fixture.detectChanges();
-    
+
     const compiled = fixture.nativeElement as HTMLElement;
     const retryButton = compiled.querySelector('.retry-button');
     expect(retryButton).toBeTruthy();
@@ -54,16 +54,16 @@ describe('ErrorStateComponent', () => {
   it('should emit retry event when retry button is clicked', () => {
     fixture.componentRef.setInput('showRetry', true);
     fixture.detectChanges();
-    
+
     let retryEmitted = false;
     component.retry.subscribe(() => {
       retryEmitted = true;
     });
-    
+
     const compiled = fixture.nativeElement as HTMLElement;
     const retryButton = compiled.querySelector('.retry-button') as HTMLButtonElement;
     retryButton.click();
-    
+
     expect(retryEmitted).toBe(true);
   });
 
@@ -71,7 +71,7 @@ describe('ErrorStateComponent', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     const errorDiv = compiled.querySelector('.widget-error');
     expect(errorDiv?.getAttribute('aria-live')).toBe('assertive');
-    
+
     const icon = compiled.querySelector('.error-icon');
     expect(icon?.getAttribute('aria-hidden')).toBe('true');
   });

@@ -47,14 +47,10 @@
 }
 
 @mixin blank-widget {
-  background-color: color-mix(
-    in srgb,
-    var(--background) 85%,
-    var(--secondary) 15%
-  );
+  background-color: color-mix(in srgb, var(--background) 85%, var(--secondary) 15%);
   border-radius: 0.5rem;
   min-height: 150px;
-  padding: .5rem;
+  padding: 0.5rem;
   display: flex;
   align-items: center;
   justify-content: center;

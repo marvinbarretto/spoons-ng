@@ -8,9 +8,8 @@ describe('CarpetGridComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CarpetGridComponent]
-    })
-    .compileComponents();
+      imports: [CarpetGridComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(CarpetGridComponent);
     component = fixture.componentInstance;

@@ -15,6 +15,6 @@ export * from './checkin.constants';
 export * from '../utils';
 
 // Existing exports
+export * from './check-in-modal.service';
 export * from './check-in.service';
 export * from './check-in.store';
-export * from './check-in-modal.service';

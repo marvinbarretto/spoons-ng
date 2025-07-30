@@ -1,20 +1,20 @@
 // src/app/auth/data-access/auth.service.ts
-import { Injectable, inject, signal, computed } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import {
   Auth,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
   GoogleAuthProvider,
-  signInWithPopup,
-  User,
-  onAuthStateChanged,
   Unsubscribe,
-  signInAnonymously,
-  updateProfile,
-  setPersistence,
+  User,
   browserLocalPersistence,
   browserSessionPersistence,
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  setPersistence,
+  signInAnonymously,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  signOut,
+  updateProfile,
 } from '@angular/fire/auth';
 
 @Injectable({ providedIn: 'root' })
@@ -38,10 +38,10 @@ export class AuthService {
   private initAuthListener() {
     console.log('[AuthService] 🔊 Initializing auth state listener...');
 
-    const unsubscribe: Unsubscribe = onAuthStateChanged(this.auth, async (firebaseUser) => {
+    const unsubscribe: Unsubscribe = onAuthStateChanged(this.auth, async firebaseUser => {
       const timestamp = new Date().toISOString();
       console.log('[AuthService] 🔄 onAuthStateChanged triggered at', timestamp);
-      
+
       try {
         if (firebaseUser) {
           console.log('[AuthService] 👤 Firebase user detected:', {
@@ -50,12 +50,14 @@ export class AuthService {
             email: firebaseUser.email || 'none',
             displayName: firebaseUser.displayName || 'none',
             emailVerified: firebaseUser.emailVerified,
-            settingUpAnonymousUser: this.settingUpAnonymousUser
+            settingUpAnonymousUser: this.settingUpAnonymousUser,
           });
 
           // ✅ For anonymous users, skip document creation until onboarding completion
           if (firebaseUser.isAnonymous && !this.settingUpAnonymousUser) {
-            console.log('[AuthService] 👻 Anonymous user detected, skipping document creation until onboarding');
+            console.log(
+              '[AuthService] 👻 Anonymous user detected, skipping document creation until onboarding'
+            );
           }
 
           // Now it's safe to set the user - document is guaranteed to exist
@@ -64,7 +66,9 @@ export class AuthService {
           this.loading.set(false);
           console.log('[AuthService] ✅ User set successfully, loading=false');
         } else {
-          console.log('[AuthService] 🚫 No Firebase user found - user signed out or never signed in');
+          console.log(
+            '[AuthService] 🚫 No Firebase user found - user signed out or never signed in'
+          );
           this.userInternal.set(null);
           this.loading.set(false);
           console.log('[AuthService] 🗑️ Internal user cleared, loading=false');
@@ -73,18 +77,18 @@ export class AuthService {
         console.error('[AuthService] ❌ Error in auth state handler:', {
           error: error,
           message: error instanceof Error ? error.message : 'Unknown error',
-          timestamp
+          timestamp,
         });
         this.loading.set(false);
       }
     });
-    
+
     console.log('[AuthService] ✅ Auth state listener initialized');
   }
 
   async continueAsGuest(): Promise<void> {
     console.log('[AuthService] 👻 continueAsGuest() called');
-    
+
     try {
       console.log('[AuthService] 👻 Setting loading=true and settingUpAnonymousUser=true');
       this.loading.set(true);
@@ -96,16 +100,17 @@ export class AuthService {
       console.log('[AuthService] ✅ Anonymous authentication successful:', {
         uid: result.user.uid.slice(0, 8),
         isAnonymous: result.user.isAnonymous,
-        providerId: result.providerId || 'none'
+        providerId: result.providerId || 'none',
       });
 
       // Note: onAuthStateChanged will handle user document creation and setting the user
-      console.log('[AuthService] 🔄 Waiting for onAuthStateChanged to process new anonymous user...');
-
+      console.log(
+        '[AuthService] 🔄 Waiting for onAuthStateChanged to process new anonymous user...'
+      );
     } catch (error) {
       console.error('[AuthService] ❌ Anonymous login failed:', {
         error: error,
-        message: error instanceof Error ? error.message : 'Unknown error'
+        message: error instanceof Error ? error.message : 'Unknown error',
       });
       this.loading.set(false);
       this.settingUpAnonymousUser = false;
@@ -113,16 +118,15 @@ export class AuthService {
     }
   }
 
-
   async loginWithEmail(email: string, password: string, rememberMe = false): Promise<User> {
     try {
       this.loading.set(true);
-      
+
       // Set persistence based on rememberMe choice
       const persistence = rememberMe ? browserLocalPersistence : browserSessionPersistence;
       await setPersistence(this.auth, persistence);
       console.log('[AuthService] ✅ Auth persistence set to:', rememberMe ? 'LOCAL' : 'SESSION');
-      
+
       const cred = await signInWithEmailAndPassword(this.auth, email, password);
       console.log('[AuthService] ✅ Email login successful:', cred.user.uid);
 
@@ -134,7 +138,9 @@ export class AuthService {
 
       // For registered users, document creation is deferred until onboarding
       if (!cred.user.isAnonymous) {
-        console.log('[AuthService] Registered user login, document creation deferred until onboarding');
+        console.log(
+          '[AuthService] Registered user login, document creation deferred until onboarding'
+        );
       }
 
       return cred.user;
@@ -146,23 +152,25 @@ export class AuthService {
 
   async loginWithGoogle(): Promise<User> {
     console.log('[AuthService] 🔄 loginWithGoogle() called');
-    
+
     try {
       console.log('[AuthService] 🔄 Setting loading=true');
       this.loading.set(true);
       const provider = new GoogleAuthProvider();
-      
+
       console.log('[AuthService] 🔄 Opening Google authentication popup...');
       const cred = await signInWithPopup(this.auth, provider);
       console.log('[AuthService] ✅ Google popup authentication successful:', {
         uid: cred.user.uid.slice(0, 8),
         email: cred.user.email || 'none',
         displayName: cred.user.displayName || 'none',
-        isAnonymous: cred.user.isAnonymous
+        isAnonymous: cred.user.isAnonymous,
       });
 
       // User document will be created after onboarding completion
-      console.log('[AuthService] 🔄 Google user authenticated, skipping document creation until onboarding');
+      console.log(
+        '[AuthService] 🔄 Google user authenticated, skipping document creation until onboarding'
+      );
 
       // Wait for onAuthStateChanged to complete and auth state to be ready
       console.log('[AuthService] ⏳ Waiting for auth state to be ready...');
@@ -173,14 +181,14 @@ export class AuthService {
     } catch (error: any) {
       console.log('[AuthService] ❌ Setting loading=false due to error');
       this.loading.set(false);
-      
+
       // Enhance error with context for better debugging
       const errorInfo = {
         code: error?.code || 'unknown',
         message: error?.message || 'Unknown error',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
-      
+
       if (error?.code === 'auth/popup-closed-by-user') {
         console.log('[AuthService] 💭 User cancelled Google authentication');
       } else if (error?.code === 'auth/popup-blocked') {
@@ -190,7 +198,7 @@ export class AuthService {
       } else {
         console.error('[AuthService] ❌ Unexpected Google authentication error:', errorInfo);
       }
-      
+
       throw error;
     }
   }
@@ -198,10 +206,10 @@ export class AuthService {
   async registerWithEmail(email: string, password: string, displayName?: string): Promise<User> {
     try {
       this.loading.set(true);
-      
+
       console.log('[AuthService] Starting email registration for:', email);
       const cred = await createUserWithEmailAndPassword(this.auth, email, password);
-      
+
       // Update the user's display name if provided
       if (displayName && displayName.trim()) {
         try {
@@ -216,7 +224,9 @@ export class AuthService {
       console.log('[AuthService] ✅ Email registration successful:', cred.user.uid);
 
       // User document will be created after onboarding completion
-      console.log('[AuthService] Registered user created, skipping document creation until onboarding');
+      console.log(
+        '[AuthService] Registered user created, skipping document creation until onboarding'
+      );
 
       return cred.user;
     } catch (error) {
@@ -226,23 +236,22 @@ export class AuthService {
     }
   }
 
-
   async logout(): Promise<void> {
     const currentUser = this.userInternal();
     console.log('[AuthService] 🚪 logout() called for user:', {
       hasUser: !!currentUser,
       uid: currentUser?.uid?.slice(0, 8),
-      isAnonymous: currentUser?.isAnonymous
+      isAnonymous: currentUser?.isAnonymous,
     });
-    
+
     try {
       console.log('[AuthService] 🚪 Calling Firebase signOut()...');
       await signOut(this.auth);
       console.log('[AuthService] ✅ Firebase signOut() completed');
-      
+
       // Clear remember me preference on logout
       this.clearRememberMePreference();
-      
+
       console.log('[AuthService] 🗑️ Clearing internal user state');
       this.userInternal.set(null);
       console.log('[AuthService] ✅ User signed out successfully');
@@ -252,8 +261,8 @@ export class AuthService {
         message: error instanceof Error ? error.message : 'Unknown error',
         currentUser: {
           hasUser: !!currentUser,
-          uid: currentUser?.uid?.slice(0, 8)
-        }
+          uid: currentUser?.uid?.slice(0, 8),
+        },
       });
       throw error;
     }
@@ -261,11 +270,11 @@ export class AuthService {
 
   onAuthChange(callback: (user: User | null) => void): () => void {
     console.log('[AuthService] 🔄 External onAuthChange listener registered');
-    return onAuthStateChanged(this.auth, (user) => {
+    return onAuthStateChanged(this.auth, user => {
       console.log('[AuthService] 🔄 External auth change callback triggered:', {
         hasUser: !!user,
         uid: user?.uid?.slice(0, 8),
-        isAnonymous: user?.isAnonymous
+        isAnonymous: user?.isAnonymous,
       });
       callback(user);
     });
@@ -276,29 +285,29 @@ export class AuthService {
    * This ensures onAuthStateChanged has completed and user is fully set up
    */
   private async waitForAuthStateReady(): Promise<void> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const maxAttempts = 50; // 5 seconds max for mobile
       let attempts = 0;
-      
+
       const checkAuthState = () => {
         attempts++;
         const user = this.userInternal();
         const isLoading = this.loading();
-        
+
         console.log('[AuthService] waitForAuthStateReady check:', {
           attempt: attempts,
           hasUser: !!user,
           isLoading,
-          uid: user?.uid?.slice(0, 8)
+          uid: user?.uid?.slice(0, 8),
         });
-        
+
         // Auth state is ready when we have a user and are not loading
         if (user && !isLoading) {
           console.log('[AuthService] ✅ Auth state ready');
           resolve();
           return;
         }
-        
+
         // Timeout after max attempts
         if (attempts >= maxAttempts) {
           console.warn('[AuthService] ⚠️ Auth state readiness timeout after', attempts, 'attempts');
@@ -306,16 +315,16 @@ export class AuthService {
           console.log('[AuthService] Final state:', {
             hasUser: !!user,
             isLoading,
-            uid: user?.uid?.slice(0, 8)
+            uid: user?.uid?.slice(0, 8),
           });
           resolve(); // Resolve anyway to prevent hanging
           return;
         }
-        
+
         // Check again in 100ms
         setTimeout(checkAuthState, 100);
       };
-      
+
       checkAuthState();
     });
   }
@@ -329,7 +338,7 @@ export class AuthService {
    */
   getRememberMePreference(): boolean {
     if (typeof localStorage === 'undefined') return false;
-    
+
     const stored = localStorage.getItem('rememberMe');
     return stored === 'true';
   }

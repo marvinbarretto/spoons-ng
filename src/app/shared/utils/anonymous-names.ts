@@ -3,19 +3,59 @@
  */
 
 const ADJECTIVES = [
-  'Tipsy', 'Wobbly', 'Merry', 'Jolly', 'Cheeky',
-  'Crafty', 'Sneaky', 'Dodgy', 'Shifty', 'Slippery',
-  'Bouncy', 'Giggly', 'Dizzy', 'Wonky', 'Squiffy',
-  'Pickled', 'Sloshed', 'Legless', 'Hammered', 'Steaming',
-  'Bladdered', 'Trollied', 'Gazeboed', 'Paralytic', 'Catatonic'
+  'Tipsy',
+  'Wobbly',
+  'Merry',
+  'Jolly',
+  'Cheeky',
+  'Crafty',
+  'Sneaky',
+  'Dodgy',
+  'Shifty',
+  'Slippery',
+  'Bouncy',
+  'Giggly',
+  'Dizzy',
+  'Wonky',
+  'Squiffy',
+  'Pickled',
+  'Sloshed',
+  'Legless',
+  'Hammered',
+  'Steaming',
+  'Bladdered',
+  'Trollied',
+  'Gazeboed',
+  'Paralytic',
+  'Catatonic',
 ];
 
 const NOUNS = [
-  'Landlord', 'Publican', 'Barkeep', 'Tapmaster', 'Brewmeister',
-  'Punter', 'Regular', 'Local', 'Patron', 'Customer',
-  'Boozer', 'Tippler', 'Sipper', 'Quaffer', 'Guzzler',
-  'Toper', 'Reveler', 'Carouser', 'Merrymaker', 'Wassailer',
-  'Drunkard', 'Soak', 'Lush', 'Dipso', 'Barfly'
+  'Landlord',
+  'Publican',
+  'Barkeep',
+  'Tapmaster',
+  'Brewmeister',
+  'Punter',
+  'Regular',
+  'Local',
+  'Patron',
+  'Customer',
+  'Boozer',
+  'Tippler',
+  'Sipper',
+  'Quaffer',
+  'Guzzler',
+  'Toper',
+  'Reveler',
+  'Carouser',
+  'Merrymaker',
+  'Wassailer',
+  'Drunkard',
+  'Soak',
+  'Lush',
+  'Dipso',
+  'Barfly',
 ];
 
 /**
@@ -30,7 +70,7 @@ function simpleHash(str: string): number {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash;
   }
   return Math.abs(hash);

@@ -1,11 +1,21 @@
 import { Injectable, signal } from '@angular/core';
-import { environment } from '../../../environments/environment';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { LLMResponse, CarpetDetectionResult, LLMRequest, LLMStreamResponse, LLMStreamChunk, PhotoAnalysisResult, AnalysisTheme, PhotoQualityMetrics, ANALYSIS_THEMES } from '../utils/llm-types';
+import { environment } from '../../../environments/environment';
 import { LLMPromptFactory } from '../utils/llm-prompt-factory';
+import {
+  ANALYSIS_THEMES,
+  AnalysisTheme,
+  CarpetDetectionResult,
+  LLMRequest,
+  LLMResponse,
+  LLMStreamChunk,
+  LLMStreamResponse,
+  PhotoAnalysisResult,
+  PhotoQualityMetrics,
+} from '../utils/llm-types';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class LLMService {
   private readonly _genAI = new GoogleGenerativeAI(environment.llm?.gemini || '');
@@ -26,7 +36,7 @@ export class LLMService {
   /**
    * Test method - simple text prompt
    */
-  async testConnection(prompt: string = "Hello, are you working?"): Promise<LLMResponse<string>> {
+  async testConnection(prompt: string = 'Hello, are you working?'): Promise<LLMResponse<string>> {
     console.log('[LLMService] Testing connection with prompt:', prompt);
 
     this._isProcessing.set(true);
@@ -42,9 +52,8 @@ export class LLMService {
       return {
         success: true,
         data: response,
-        cached: false
+        cached: false,
       };
-
     } catch (error: any) {
       console.error('[LLMService] ❌ Connection test failed:', error);
 
@@ -52,7 +61,7 @@ export class LLMService {
         success: false,
         data: '',
         error: error?.message || 'Connection failed',
-        cached: false
+        cached: false,
       };
     } finally {
       this._isProcessing.set(false);
@@ -107,9 +116,8 @@ export class LLMService {
       return {
         success: true,
         data: carpetResult,
-        cached: false
+        cached: false,
       };
-
     } catch (error: any) {
       console.error('[LLMService] ❌ Carpet detection failed:', error);
 
@@ -119,10 +127,10 @@ export class LLMService {
           isCarpet: false,
           confidence: 0,
           reasoning: `Analysis failed: ${error?.message}`,
-          visualElements: []
+          visualElements: [],
         },
         error: error?.message || 'Detection failed',
-        cached: false
+        cached: false,
       };
     } finally {
       this._isProcessing.set(false);
@@ -139,7 +147,9 @@ export class LLMService {
       const result = await this.detectCarpet(imageData);
       const isCarpet = result.success && result.data.isCarpet;
 
-      console.log(`[LLMService] Carpet detection result: ${isCarpet} (confidence: ${result.data.confidence}%)`);
+      console.log(
+        `[LLMService] Carpet detection result: ${isCarpet} (confidence: ${result.data.confidence}%)`
+      );
 
       return isCarpet;
     } catch (error) {
@@ -151,7 +161,10 @@ export class LLMService {
   /**
    * 🎯 New themed analysis system - supports any analysis theme with quality assessment
    */
-  async analyzePhotoWithTheme(imageData: string, theme: AnalysisTheme): Promise<LLMResponse<PhotoAnalysisResult>> {
+  async analyzePhotoWithTheme(
+    imageData: string,
+    theme: AnalysisTheme
+  ): Promise<LLMResponse<PhotoAnalysisResult>> {
     console.log(`[LLMService] 🎯 Analyzing photo with theme: ${theme.name}`);
 
     // Validate theme first
@@ -162,7 +175,7 @@ export class LLMService {
         success: false,
         data: this.createFailedAnalysisResult(theme, validation.errors.join(', ')),
         error: `Invalid theme: ${validation.errors.join(', ')}`,
-        cached: false
+        cached: false,
       };
     }
 
@@ -183,7 +196,7 @@ export class LLMService {
 
       // Parse the enhanced response
       const analysisResult = this.parseThemedAnalysisResponse(responseText, theme);
-      
+
       this._requestCount.update(count => count + 1);
 
       console.log('[LLMService] ✅ Themed analysis complete:', analysisResult);
@@ -191,9 +204,8 @@ export class LLMService {
       return {
         success: true,
         data: analysisResult,
-        cached: false
+        cached: false,
       };
-
     } catch (error: any) {
       console.error('[LLMService] ❌ Themed analysis failed:', error);
 
@@ -201,7 +213,7 @@ export class LLMService {
         success: false,
         data: this.createFailedAnalysisResult(theme, error?.message || 'Analysis failed'),
         error: error?.message || 'Themed analysis failed',
-        cached: false
+        cached: false,
       };
     } finally {
       this._isProcessing.set(false);
@@ -217,18 +229,19 @@ export class LLMService {
 
     try {
       const result = await this.analyzePhotoWithTheme(imageData, ANALYSIS_THEMES.CARPET);
-      
+
       if (result.success) {
-        console.log(`[LLMService] ✅ Carpet analysis complete - detected: ${result.data.detected}, confidence: ${result.data.confidence}%`);
+        console.log(
+          `[LLMService] ✅ Carpet analysis complete - detected: ${result.data.detected}, confidence: ${result.data.confidence}%`
+        );
         return {
           isCarpet: result.data.detected,
-          confidence: result.data.confidence
+          confidence: result.data.confidence,
         };
       } else {
         console.error('[LLMService] ❌ Carpet analysis failed:', result.error);
         return { isCarpet: false, confidence: 0 };
       }
-      
     } catch (error) {
       console.error('[LLMService] ❌ Carpet analysis error:', error);
       return { isCarpet: false, confidence: 0 };
@@ -261,9 +274,8 @@ export class LLMService {
       return {
         success: true,
         data: qualityMetrics,
-        cached: false
+        cached: false,
       };
-
     } catch (error: any) {
       console.error('[LLMService] ❌ Quality assessment failed:', error);
 
@@ -274,10 +286,10 @@ export class LLMService {
           focus: 50,
           lighting: 50,
           composition: 50,
-          factors: ['Assessment failed']
+          factors: ['Assessment failed'],
         },
         error: error?.message || 'Quality assessment failed',
-        cached: false
+        cached: false,
       };
     } finally {
       this._isProcessing.set(false);
@@ -304,7 +316,7 @@ export class LLMService {
       return {
         success: true,
         stream: this.createCachedStream(cachedResult),
-        cached: true
+        cached: true,
       };
     }
 
@@ -320,9 +332,8 @@ export class LLMService {
       return {
         success: true,
         stream: await this.processCarpetStream(streamResult, cacheKey),
-        cached: false
+        cached: false,
       };
-
     } catch (error: any) {
       console.error('[LLMService] ❌ Streaming carpet detection failed:', error);
       this._isProcessing.set(false);
@@ -331,7 +342,7 @@ export class LLMService {
         success: false,
         stream: this.createErrorStream(error?.message || 'Streaming detection failed'),
         error: error?.message || 'Streaming detection failed',
-        cached: false
+        cached: false,
       };
     }
   }
@@ -339,7 +350,10 @@ export class LLMService {
   /**
    * Process streaming response for carpet detection
    */
-  private async* processInternalStream(streamResult: any, cacheKey: string): AsyncGenerator<LLMStreamChunk> {
+  private async *processInternalStream(
+    streamResult: any,
+    cacheKey: string
+  ): AsyncGenerator<LLMStreamChunk> {
     let chunkIndex = 0;
     let fullText = '';
 
@@ -351,7 +365,7 @@ export class LLMService {
         yield {
           text: chunkText,
           isComplete: false,
-          chunkIndex: chunkIndex++
+          chunkIndex: chunkIndex++,
         };
       }
 
@@ -359,7 +373,7 @@ export class LLMService {
       yield {
         text: '',
         isComplete: true,
-        chunkIndex: chunkIndex
+        chunkIndex: chunkIndex,
       };
 
       // Parse and cache the complete result
@@ -368,48 +382,55 @@ export class LLMService {
       this._requestCount.update(count => count + 1);
 
       console.log('[LLMService] ✅ Streaming carpet detection complete:', carpetResult);
-
     } catch (error) {
       console.error('[LLMService] Error in stream processing:', error);
       yield {
         text: `Error: ${error}`,
         isComplete: true,
-        chunkIndex: chunkIndex
+        chunkIndex: chunkIndex,
       };
     } finally {
       this._isProcessing.set(false);
     }
   }
 
-  private async processInternalStreamWrapper(streamResult: any, cacheKey: string): Promise<AsyncIterable<LLMStreamChunk>> {
+  private async processInternalStreamWrapper(
+    streamResult: any,
+    cacheKey: string
+  ): Promise<AsyncIterable<LLMStreamChunk>> {
     return this.processInternalStream(streamResult, cacheKey);
   }
 
-  private async processCarpetStream(streamResult: any, cacheKey: string): Promise<AsyncIterable<LLMStreamChunk>> {
+  private async processCarpetStream(
+    streamResult: any,
+    cacheKey: string
+  ): Promise<AsyncIterable<LLMStreamChunk>> {
     return this.processInternalStreamWrapper(streamResult, cacheKey);
   }
 
   /**
    * Create a stream from cached result
    */
-  private async* createCachedStream(cachedResult: CarpetDetectionResult): AsyncGenerator<LLMStreamChunk> {
+  private async *createCachedStream(
+    cachedResult: CarpetDetectionResult
+  ): AsyncGenerator<LLMStreamChunk> {
     const reasoningText = `Is Carpet: ${cachedResult.isCarpet ? 'Yes' : 'No'}\nConfidence: ${cachedResult.confidence}%\nReasoning: ${cachedResult.reasoning}`;
 
     yield {
       text: reasoningText,
       isComplete: true,
-      chunkIndex: 0
+      chunkIndex: 0,
     };
   }
 
   /**
    * Create an error stream
    */
-  private async* createErrorStream(errorMessage: string): AsyncGenerator<LLMStreamChunk> {
+  private async *createErrorStream(errorMessage: string): AsyncGenerator<LLMStreamChunk> {
     yield {
       text: `Error: ${errorMessage}`,
       isComplete: true,
-      chunkIndex: 0
+      chunkIndex: 0,
     };
   }
 
@@ -438,9 +459,8 @@ export class LLMService {
       return {
         success: true,
         data: response,
-        cached: false
+        cached: false,
       };
-
     } catch (error: any) {
       console.error('[LLMService] ❌ Request failed:', error);
 
@@ -448,7 +468,7 @@ export class LLMService {
         success: false,
         data: null,
         error: error?.message || 'Request failed',
-        cached: false
+        cached: false,
       };
     } finally {
       this._isProcessing.set(false);
@@ -484,7 +504,9 @@ export class LLMService {
         const optimizedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
 
         console.log(`[LLMService] Optimized to: ${targetWidth}x${targetHeight}`);
-        console.log(`[LLMService] Size reduction: ~${Math.round((1 - optimizedDataUrl.length / imageData.length) * 100)}%`);
+        console.log(
+          `[LLMService] Size reduction: ~${Math.round((1 - optimizedDataUrl.length / imageData.length) * 100)}%`
+        );
 
         resolve(optimizedDataUrl);
       };
@@ -510,8 +532,8 @@ export class LLMService {
     return {
       inlineData: {
         mimeType: 'image/jpeg',
-        data: base64Data
-      }
+        data: base64Data,
+      },
     };
   }
 
@@ -526,17 +548,17 @@ export class LLMService {
       const jsonMatch = text.match(/\{[\s\S]*\}/s);
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]);
-        
+
         const photoQuality: PhotoQualityMetrics = parsed.photoQuality || {
           overall: 75,
           focus: 75,
           lighting: 75,
           composition: 75,
-          factors: ['Standard quality']
+          factors: ['Standard quality'],
         };
-        
+
         const qualityBonus = LLMPromptFactory.calculateQualityBonus(photoQuality, theme);
-        
+
         return {
           detected: parsed.detected || false,
           confidence: parsed.confidence || 50,
@@ -547,18 +569,17 @@ export class LLMService {
           themeElements: parsed.themeElements || {
             found: [],
             missing: theme.targetElements,
-            bonus: []
+            bonus: [],
           },
           visualElements: parsed.visualElements || [],
           story: parsed.story || [],
           // Legacy compatibility
-          isCarpet: theme.id === 'carpet' ? parsed.detected : undefined
+          isCarpet: theme.id === 'carpet' ? parsed.detected : undefined,
         };
       }
 
       // Fallback parsing for non-JSON responses
       return this.createFallbackAnalysisResult(text, theme);
-
     } catch (error) {
       console.warn('[LLMService] Failed to parse themed response, using fallback');
       return this.createFallbackAnalysisResult(text, theme);
@@ -580,7 +601,7 @@ export class LLMService {
           focus: parsed.focus || 75,
           lighting: parsed.lighting || 75,
           composition: parsed.composition || 75,
-          factors: parsed.factors || ['Standard quality']
+          factors: parsed.factors || ['Standard quality'],
         };
       }
     } catch (error) {
@@ -593,7 +614,7 @@ export class LLMService {
       focus: 75,
       lighting: 75,
       composition: 75,
-      factors: ['Analysis complete']
+      factors: ['Analysis complete'],
     };
   }
 
@@ -601,18 +622,16 @@ export class LLMService {
    * Create fallback analysis result when parsing fails
    */
   private createFallbackAnalysisResult(text: string, theme: AnalysisTheme): PhotoAnalysisResult {
-    const detected = theme.targetElements.some(element => 
-      new RegExp(element, 'i').test(text)
-    );
-    
+    const detected = theme.targetElements.some(element => new RegExp(element, 'i').test(text));
+
     const photoQuality: PhotoQualityMetrics = {
       overall: 75,
       focus: 75,
       lighting: 75,
       composition: 75,
-      factors: ['Standard quality (fallback)']
+      factors: ['Standard quality (fallback)'],
     };
-    
+
     return {
       detected,
       confidence: detected ? 60 : 40,
@@ -623,18 +642,21 @@ export class LLMService {
       themeElements: {
         found: detected ? [theme.targetElements[0]] : [],
         missing: detected ? [] : theme.targetElements,
-        bonus: []
+        bonus: [],
       },
       visualElements: [],
       story: [],
-      isCarpet: theme.id === 'carpet' ? detected : undefined
+      isCarpet: theme.id === 'carpet' ? detected : undefined,
     };
   }
 
   /**
    * Create failed analysis result for errors
    */
-  private createFailedAnalysisResult(theme: AnalysisTheme, errorMessage: string): PhotoAnalysisResult {
+  private createFailedAnalysisResult(
+    theme: AnalysisTheme,
+    errorMessage: string
+  ): PhotoAnalysisResult {
     return {
       detected: false,
       confidence: 0,
@@ -644,18 +666,18 @@ export class LLMService {
         focus: 0,
         lighting: 0,
         composition: 0,
-        factors: ['Analysis failed']
+        factors: ['Analysis failed'],
       },
       qualityBonus: 0,
       themeId: theme.id,
       themeElements: {
         found: [],
         missing: theme.targetElements,
-        bonus: []
+        bonus: [],
       },
       visualElements: [],
       story: [],
-      isCarpet: theme.id === 'carpet' ? false : undefined
+      isCarpet: theme.id === 'carpet' ? false : undefined,
     };
   }
 
@@ -672,7 +694,7 @@ export class LLMService {
           confidence: parsed.confidence || 75,
           reasoning: parsed.isCarpet ? 'Carpet detected' : 'No carpet found',
           visualElements: [],
-          photoQuality: parsed.photoQuality || 75 // Default to 75 if not provided
+          photoQuality: parsed.photoQuality || 75, // Default to 75 if not provided
         };
       }
 
@@ -685,9 +707,8 @@ export class LLMService {
         confidence,
         reasoning: isCarpet ? 'Carpet detected' : 'No carpet found',
         visualElements: [],
-        photoQuality: 75 // Default fallback value
+        photoQuality: 75, // Default fallback value
       };
-
     } catch (error) {
       console.warn('[LLMService] Failed to parse response, using fallback');
 
@@ -696,7 +717,7 @@ export class LLMService {
         confidence: 50,
         reasoning: 'Analysis complete',
         visualElements: [],
-        photoQuality: 50 // Lower default for failed parsing
+        photoQuality: 50, // Lower default for failed parsing
       };
     }
   }
@@ -705,7 +726,7 @@ export class LLMService {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash;
     }
     return Math.abs(hash).toString(36);
@@ -717,7 +738,7 @@ export class LLMService {
     return {
       requestCount: this._requestCount(),
       cacheSize: this._cache.size,
-      isProcessing: this._isProcessing()
+      isProcessing: this._isProcessing(),
     };
   }
 
@@ -749,8 +770,8 @@ export class LLMService {
       optimized: { width: 512, height: 384, size: optimizedSize },
       savings: {
         sizeReduction: `${sizeReduction}%`,
-        estimatedCostSaving: `~${estimatedCostSaving}%`
-      }
+        estimatedCostSaving: `~${estimatedCostSaving}%`,
+      },
     };
   }
 }

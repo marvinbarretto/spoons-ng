@@ -1,6 +1,6 @@
+import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ChipStatusComponent } from './chip-status.component';
-import { Component } from '@angular/core';
 
 describe('ChipStatusComponent', () => {
   let component: ChipStatusComponent;
@@ -8,7 +8,7 @@ describe('ChipStatusComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ChipStatusComponent]
+      imports: [ChipStatusComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ChipStatusComponent);
@@ -28,10 +28,10 @@ describe('ChipStatusComponent', () => {
     it('should use default icon based on type', () => {
       fixture.componentRef.setInput('type', 'success');
       expect(component.statusIcon()).toBe('✅');
-      
+
       fixture.componentRef.setInput('type', 'error');
       expect(component.statusIcon()).toBe('❌');
-      
+
       fixture.componentRef.setInput('type', 'loading');
       expect(component.statusIcon()).toBe('⏱️');
     });
@@ -81,14 +81,14 @@ describe('ChipStatusComponent', () => {
   selector: 'app-test-host',
   imports: [ChipStatusComponent],
   template: `
-    <app-chip-status 
+    <app-chip-status
       [type]="type"
       [text]="text"
       [size]="size"
       [showIcon]="showIcon"
       [animated]="animated"
     />
-  `
+  `,
 })
 class TestHostComponent {
   type = 'success';
@@ -104,7 +104,7 @@ describe('ChipStatusComponent (with host)', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TestHostComponent]
+      imports: [TestHostComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TestHostComponent);
@@ -113,7 +113,7 @@ describe('ChipStatusComponent (with host)', () => {
 
   it('should render status chip with correct content', () => {
     fixture.detectChanges();
-    
+
     const chipElement = fixture.nativeElement.querySelector('.chip-status');
     expect(chipElement).toBeTruthy();
     expect(chipElement.classList).toContain('type--success');
@@ -123,11 +123,11 @@ describe('ChipStatusComponent (with host)', () => {
 
   it('should update when inputs change', () => {
     fixture.detectChanges();
-    
+
     hostComponent.type = 'error';
     hostComponent.text = 'Error occurred';
     fixture.detectChanges();
-    
+
     const chipElement = fixture.nativeElement.querySelector('.chip-status');
     expect(chipElement.classList).toContain('type--error');
     expect(chipElement.textContent).toContain('❌');

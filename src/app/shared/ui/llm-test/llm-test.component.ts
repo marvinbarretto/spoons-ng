@@ -5,7 +5,7 @@ import { LLMService } from '../../data-access/llm.service';
   selector: 'app-llm-test',
   imports: [],
   template: `
-   <div class="llm-test">
+    <div class="llm-test">
       <h2>🤖 LLM Service Test</h2>
 
       <!-- Connection Test -->
@@ -35,14 +35,11 @@ import { LLMService } from '../../data-access/llm.service';
       <section class="test-section">
         <h3>Carpet Detection Test</h3>
 
-        <input type="file"
-               accept="image/*"
-               (change)="onImageSelected($event)"
-               #fileInput>
+        <input type="file" accept="image/*" (change)="onImageSelected($event)" #fileInput />
 
         @if (selectedImage()) {
           <div class="image-preview">
-            <img [src]="selectedImage()" alt="Selected image" style="max-width: 200px;">
+            <img [src]="selectedImage()" alt="Selected image" style="max-width: 200px;" />
           </div>
 
           <button (click)="testCarpetDetection()" [disabled]="llmService.isProcessing()">
@@ -59,11 +56,16 @@ import { LLMService } from '../../data-access/llm.service';
             @if (carpetResult()!.success) {
               <div class="carpet-analysis">
                 <h4>Analysis Result:</h4>
-                <p><strong>Is Carpet:</strong> {{ carpetResult()!.data.isCarpet ? 'Yes' : 'No' }}</p>
+                <p>
+                  <strong>Is Carpet:</strong> {{ carpetResult()!.data.isCarpet ? 'Yes' : 'No' }}
+                </p>
                 <p><strong>Confidence:</strong> {{ carpetResult()!.data.confidence }}%</p>
                 <p><strong>Reasoning:</strong> {{ carpetResult()!.data.reasoning }}</p>
                 @if (carpetResult()!.data.visualElements.length > 0) {
-                  <p><strong>Visual Elements:</strong> {{ carpetResult()!.data.visualElements.join(', ') }}</p>
+                  <p>
+                    <strong>Visual Elements:</strong>
+                    {{ carpetResult()!.data.visualElements.join(', ') }}
+                  </p>
                 }
                 <p><strong>Cached:</strong> {{ carpetResult()!.cached ? 'Yes' : 'No' }}</p>
               </div>
@@ -86,7 +88,7 @@ import { LLMService } from '../../data-access/llm.service';
     </div>
   `,
   styles: `
-     .llm-test {
+    .llm-test {
       padding: 1rem;
       max-width: 600px;
       margin: 0 auto;
@@ -160,9 +162,8 @@ import { LLMService } from '../../data-access/llm.service';
     .stats p {
       margin: 0.5rem 0;
     }
-
   `,
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LLMTestComponent {
   protected readonly llmService = inject(LLMService);
@@ -172,7 +173,9 @@ export class LLMTestComponent {
   protected readonly selectedImage = signal<string | null>(null);
 
   protected async testConnection(): Promise<void> {
-    const result = await this.llmService.testConnection("Hello! Can you respond with a simple confirmation that you're working?");
+    const result = await this.llmService.testConnection(
+      "Hello! Can you respond with a simple confirmation that you're working?"
+    );
     this.connectionResult.set(result);
   }
 
@@ -182,7 +185,7 @@ export class LLMTestComponent {
 
     if (file) {
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = e => {
         this.selectedImage.set(e.target?.result as string);
       };
       reader.readAsDataURL(file);

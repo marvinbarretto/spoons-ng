@@ -1,4 +1,4 @@
-import { range, pluck } from './utils';
+import { pluck, range } from './utils';
 
 describe('utils', () => {
   describe('range', () => {

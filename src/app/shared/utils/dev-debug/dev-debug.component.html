@@ -1,6 +1,5 @@
 <!-- src/app/shared/utils/dev-debug/dev-debug.component.html -->
 <div class="dev-debug" [class.expanded]="isExpanded()">
-
   <!-- Header with toggle and quick status -->
   <div class="debug-header" (click)="toggleExpanded()">
     <span class="debug-title">🛠️ Dev Debug</span>
@@ -17,7 +16,6 @@
   <!-- Expanded Content -->
   @if (isExpanded()) {
     <div class="debug-content">
-
       <!-- Database Summary -->
       <div class="section">
         <div class="section-header">
@@ -44,7 +42,7 @@
             @if (summary.lastUpdated) {
               <div class="summary-stat">
                 <span class="stat-label">Updated:</span>
-                <span class="stat-value">{{ summary.lastUpdated | date:'HH:mm:ss' }}</span>
+                <span class="stat-value">{{ summary.lastUpdated | date: 'HH:mm:ss' }}</span>
               </div>
             }
           </div>
@@ -122,7 +120,6 @@
               🗑️ Clear Cache
             </button>
           </div>
-
         </div>
       }
 
@@ -140,7 +137,8 @@
               class="btn danger nuclear"
               (click)="clearEverything()"
               [disabled]="cleanupLoading()"
-              title="Delete ALL data from ALL collections - complete fresh start">
+              title="Delete ALL data from ALL collections - complete fresh start"
+            >
               ☢️ Nuclear Reset (Everything)
             </button>
 
@@ -148,7 +146,8 @@
               class="btn warning"
               (click)="clearAllUsers()"
               [disabled]="cleanupLoading()"
-              title="Clear test data but keep pubs and system data">
+              title="Clear test data but keep pubs and system data"
+            >
               🧹 Clear Test Data Only
             </button>
 
@@ -156,7 +155,8 @@
               class="btn primary"
               (click)="refreshAllStores()"
               [disabled]="cleanupLoading()"
-              title="Refresh data display without deleting anything">
+              title="Refresh data display without deleting anything"
+            >
               🔄 Refresh Data
             </button>
           </div>
@@ -168,7 +168,8 @@
               class="btn danger nuclear"
               (click)="clearAllUsersIncludingReal()"
               [disabled]="cleanupLoading()"
-              title="DANGER: Delete ALL users including real users - cannot be undone">
+              title="DANGER: Delete ALL users including real users - cannot be undone"
+            >
               ⚠️ Delete ALL Users (Including Real)
             </button>
           </div>
@@ -205,21 +206,11 @@
         <div class="action-group">
           <div class="group-label">🔐 Auth Actions</div>
 
-          <button
-            class="btn primary"
-            (click)="onLoginGoogle()">
-            🔐 Login Google
-          </button>
+          <button class="btn primary" (click)="onLoginGoogle()">🔐 Login Google</button>
 
-          <button
-            class="btn secondary"
-            (click)="onLogout()">
-            🚪 Logout
-          </button>
+          <button class="btn secondary" (click)="onLogout()">🚪 Logout</button>
 
-          <button
-            class="btn secondary"
-            (click)="testUpdateDisplayName()">
+          <button class="btn secondary" (click)="testUpdateDisplayName()">
             ✏️ Test Name Update
           </button>
         </div>
@@ -228,10 +219,11 @@
       <!-- Cleanup Status -->
       @if (lastCleanupResult()) {
         <div class="section">
-          <div class="cleanup-result"
-               [class.success]="lastCleanupResult()!.success"
-               [class.error]="!lastCleanupResult()!.success">
-
+          <div
+            class="cleanup-result"
+            [class.success]="lastCleanupResult()!.success"
+            [class.error]="!lastCleanupResult()!.success"
+          >
             @if (lastCleanupResult()!.success) {
               <span class="result-icon">✅</span>
               <span class="result-text">
@@ -239,9 +231,7 @@
               </span>
             } @else {
               <span class="result-icon">❌</span>
-              <span class="result-text">
-                Cleanup failed: {{ lastCleanupResult()!.error }}
-              </span>
+              <span class="result-text"> Cleanup failed: {{ lastCleanupResult()!.error }} </span>
             }
           </div>
         </div>
@@ -290,7 +280,6 @@
 
             <!-- Cache effectiveness removed - Firebase handles this -->
 
-
             <details class="debug-details">
               <summary>Scoreboard Data</summary>
               <pre>{{ scoreboardData() | json }}</pre>
@@ -298,14 +287,16 @@
 
             <details class="debug-details">
               <summary>Firebase Store Status</summary>
-              <pre>{{ formatJSON({
-                feedback: {
-                  loading: feedbackStore.loading(),
-                  error: feedbackStore.error(),
-                  dataCount: feedbackStore.data().length,
-                  pendingCount: pendingFeedback().length
-                }
-              }) }}</pre>
+              <pre>{{
+                formatJSON({
+                  feedback: {
+                    loading: feedbackStore.loading(),
+                    error: feedbackStore.error(),
+                    dataCount: feedbackStore.data().length,
+                    pendingCount: pendingFeedback().length,
+                  },
+                })
+              }}</pre>
             </details>
           </div>
         </div>
@@ -313,7 +304,6 @@
 
       <!-- Carpet Storage Debug -->
       <app-carpet-debug></app-carpet-debug>
-
     </div>
   }
 </div>

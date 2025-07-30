@@ -1,13 +1,7 @@
 <section class="user-info">
   @if (isAnonymous()) {
     <div class="user-info__anon">
-      <img
-        class="anon-avatar"
-        [src]="avatarUrl()"
-        alt="Anonymous NPC"
-        width="48"
-        height="48"
-      />
+      <img class="anon-avatar" [src]="avatarUrl()" alt="Anonymous NPC" width="48" height="48" />
       <div class="user-details">
         <p class="user-name">{{ displayName() }}</p>
       </div>
@@ -16,10 +10,7 @@
   } @else {
     <div class="user-info__user">
       @if (currentUser()) {
-        <img
-          [src]="avatarUrl()"
-          [alt]="displayName() + ' Photo'"
-        />
+        <img [src]="avatarUrl()" [alt]="displayName() + ' Photo'" />
         <div class="user-details">
           <p class="user-name">{{ displayName() }}</p>
           <small class="user-type">Signed In</small>

@@ -1,7 +1,7 @@
 // src/app/badges/utils/badge.model.ts
 
-import { Timestamp } from "firebase/firestore";
-import { CheckIn } from "../../check-in/utils/check-in.models";
+import { Timestamp } from 'firebase/firestore';
+import { CheckIn } from '../../check-in/utils/check-in.models';
 
 export type Badge = {
   id: string;
@@ -25,10 +25,10 @@ export type BadgeTriggerContext = {
 };
 
 export type EarnedBadge = {
-  id: string;           // Unique ID for this earned badge record
-  userId: string;       // Who earned it
-  badgeId: string;      // Which badge was earned (references Badge.id)
-  awardedAt: number;    // When it was earned (timestamp)
+  id: string; // Unique ID for this earned badge record
+  userId: string; // Who earned it
+  badgeId: string; // Which badge was earned (references Badge.id)
+  awardedAt: number; // When it was earned (timestamp)
   metadata?: Record<string, any>; // Optional context data
 };
 

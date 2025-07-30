@@ -1,7 +1,18 @@
 // src/app/admin/data-access/collection-browser.service.ts
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
+import {
+  DocumentData,
+  QueryConstraint,
+  QueryDocumentSnapshot,
+  collection,
+  limit as firestoreLimit,
+  getDocs,
+  orderBy,
+  query,
+  startAfter,
+  where,
+} from '@angular/fire/firestore';
 import { FirestoreService } from '@fourfold/angular-foundation';
-import { collection, getDocs, query, where, orderBy, limit as firestoreLimit, startAfter, QueryConstraint, QueryDocumentSnapshot, DocumentData } from '@angular/fire/firestore';
 
 export type CollectionRecord = {
   id: string;
@@ -19,7 +30,17 @@ export type CollectionBrowserResult = {
 
 export type CollectionFilter = {
   field: string;
-  operator: '==' | '!=' | '<' | '<=' | '>' | '>=' | 'in' | 'not-in' | 'array-contains' | 'array-contains-any';
+  operator:
+    | '=='
+    | '!='
+    | '<'
+    | '<='
+    | '>'
+    | '>='
+    | 'in'
+    | 'not-in'
+    | 'array-contains'
+    | 'array-contains-any';
   value: any;
 };
 
@@ -51,10 +72,9 @@ export type UserDataAcrossCollections = {
 };
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class CollectionBrowserService extends FirestoreService {
-
   /**
    * Browse any collection with pagination, filtering, and search
    */
@@ -67,11 +87,14 @@ export class CollectionBrowserService extends FirestoreService {
       orderByField = 'id',
       orderDirection = 'asc',
       searchField,
-      searchValue
+      searchValue,
     } = options;
 
     try {
-      console.log(`[CollectionBrowserService] 🔍 Browsing ${collectionName} with options:`, options);
+      console.log(
+        `[CollectionBrowserService] 🔍 Browsing ${collectionName} with options:`,
+        options
+      );
 
       // Build query constraints
       const constraints: QueryConstraint[] = [];
@@ -100,7 +123,9 @@ export class CollectionBrowserService extends FirestoreService {
         constraints.push(orderBy(orderByField, orderDirection));
       } catch (error) {
         // If ordering fails, fall back to document ID ordering
-        console.warn(`[CollectionBrowserService] Failed to order by ${orderByField}, using document ID`);
+        console.warn(
+          `[CollectionBrowserService] Failed to order by ${orderByField}, using document ID`
+        );
         constraints.push(orderBy('__name__', orderDirection));
       }
 
@@ -126,20 +151,21 @@ export class CollectionBrowserService extends FirestoreService {
           id: doc.id,
           data: doc.data(),
           collection: collectionName,
-          lastModified: doc.data()?.['updatedAt']?.toDate() || doc.data()?.['createdAt']?.toDate()
+          lastModified: doc.data()?.['updatedAt']?.toDate() || doc.data()?.['createdAt']?.toDate(),
         })),
         hasMore,
-        lastDocument: hasMore ? records[records.length - 1] : undefined
+        lastDocument: hasMore ? records[records.length - 1] : undefined,
       };
 
-      console.log(`[CollectionBrowserService] ✅ Found ${result.records.length} records in ${collectionName}, hasMore: ${hasMore}`);
+      console.log(
+        `[CollectionBrowserService] ✅ Found ${result.records.length} records in ${collectionName}, hasMore: ${hasMore}`
+      );
       return result;
-
     } catch (error: any) {
       console.error(`[CollectionBrowserService] ❌ Error browsing ${collectionName}:`, error);
       return {
         records: [],
-        hasMore: false
+        hasMore: false,
       };
     }
   }
@@ -152,11 +178,11 @@ export class CollectionBrowserService extends FirestoreService {
 
     const collectionsToCheck = [
       'pointsTransactions',
-      'checkins', 
+      'checkins',
       'earnedBadges',
       'userMissionProgress',
       'landlords',
-      'user-events'
+      'user-events',
     ];
 
     const collections: { [collectionName: string]: CollectionRecord[] } = {};
@@ -169,7 +195,7 @@ export class CollectionBrowserService extends FirestoreService {
       earnedBadges: { count: 0 },
       userMissionProgress: { count: 0 },
       landlords: { count: 0 },
-      userEvents: { count: 0 }
+      userEvents: { count: 0 },
     };
 
     // Check each collection for user data
@@ -178,7 +204,7 @@ export class CollectionBrowserService extends FirestoreService {
         const result = await this.browseCollection({
           collectionName,
           filters: [{ field: 'userId', operator: '==', value: userId }],
-          pageSize: 1000 // Get all records for this user
+          pageSize: 1000, // Get all records for this user
         });
 
         collections[collectionName] = result.records;
@@ -216,9 +242,11 @@ export class CollectionBrowserService extends FirestoreService {
             summary.userEvents.count = result.records.length;
             break;
         }
-
       } catch (error) {
-        console.warn(`[CollectionBrowserService] Failed to get data from ${collectionName} for user ${userId}:`, error);
+        console.warn(
+          `[CollectionBrowserService] Failed to get data from ${collectionName} for user ${userId}:`,
+          error
+        );
         collections[collectionName] = [];
       }
     }
@@ -227,13 +255,15 @@ export class CollectionBrowserService extends FirestoreService {
       userId,
       collections,
       totalRecords,
-      summary
+      summary,
     };
 
     console.log(`[CollectionBrowserService] ✅ User ${userId} data summary:`, {
       totalRecords,
       summary,
-      collectionsWithData: Object.entries(collections).filter(([_, records]) => records.length > 0).map(([name]) => name)
+      collectionsWithData: Object.entries(collections)
+        .filter(([_, records]) => records.length > 0)
+        .map(([name]) => name),
     });
 
     return result;
@@ -256,21 +286,23 @@ export class CollectionBrowserService extends FirestoreService {
     const collectionsToCheck = [
       'pointsTransactions',
       'checkins',
-      'earnedBadges', 
+      'earnedBadges',
       'userMissionProgress',
       'landlords',
-      'user-events'
+      'user-events',
     ];
 
     const orphanedRecords: { [collectionName: string]: CollectionRecord[] } = {};
 
     for (const collectionName of collectionsToCheck) {
       try {
-        console.log(`[CollectionBrowserService] Checking ${collectionName} for orphaned records...`);
-        
+        console.log(
+          `[CollectionBrowserService] Checking ${collectionName} for orphaned records...`
+        );
+
         const result = await this.browseCollection({
           collectionName,
-          pageSize: 1000 // Check all records
+          pageSize: 1000, // Check all records
         });
 
         // Filter for orphaned records
@@ -281,16 +313,25 @@ export class CollectionBrowserService extends FirestoreService {
 
         if (orphaned.length > 0) {
           orphanedRecords[collectionName] = orphaned;
-          console.log(`[CollectionBrowserService] Found ${orphaned.length} orphaned records in ${collectionName}`);
+          console.log(
+            `[CollectionBrowserService] Found ${orphaned.length} orphaned records in ${collectionName}`
+          );
         }
-
       } catch (error) {
-        console.warn(`[CollectionBrowserService] Failed to check ${collectionName} for orphaned records:`, error);
+        console.warn(
+          `[CollectionBrowserService] Failed to check ${collectionName} for orphaned records:`,
+          error
+        );
       }
     }
 
-    const totalOrphaned = Object.values(orphanedRecords).reduce((sum, records) => sum + records.length, 0);
-    console.log(`[CollectionBrowserService] ✅ Found ${totalOrphaned} total orphaned records across ${Object.keys(orphanedRecords).length} collections`);
+    const totalOrphaned = Object.values(orphanedRecords).reduce(
+      (sum, records) => sum + records.length,
+      0
+    );
+    console.log(
+      `[CollectionBrowserService] ✅ Found ${totalOrphaned} total orphaned records across ${Object.keys(orphanedRecords).length} collections`
+    );
 
     return orphanedRecords;
   }
@@ -298,14 +339,24 @@ export class CollectionBrowserService extends FirestoreService {
   /**
    * Delete a specific record from a collection
    */
-  async deleteRecord(collectionName: string, recordId: string): Promise<{ success: boolean; error?: string }> {
+  async deleteRecord(
+    collectionName: string,
+    recordId: string
+  ): Promise<{ success: boolean; error?: string }> {
     try {
-      console.log(`[CollectionBrowserService] 🗑️ Deleting record ${recordId} from ${collectionName}`);
+      console.log(
+        `[CollectionBrowserService] 🗑️ Deleting record ${recordId} from ${collectionName}`
+      );
       await this.deleteDoc(`${collectionName}/${recordId}`);
-      console.log(`[CollectionBrowserService] ✅ Successfully deleted record ${recordId} from ${collectionName}`);
+      console.log(
+        `[CollectionBrowserService] ✅ Successfully deleted record ${recordId} from ${collectionName}`
+      );
       return { success: true };
     } catch (error: any) {
-      console.error(`[CollectionBrowserService] ❌ Failed to delete record ${recordId} from ${collectionName}:`, error);
+      console.error(
+        `[CollectionBrowserService] ❌ Failed to delete record ${recordId} from ${collectionName}:`,
+        error
+      );
       return { success: false, error: error?.message || 'Unknown error' };
     }
   }
@@ -313,12 +364,17 @@ export class CollectionBrowserService extends FirestoreService {
   /**
    * Delete multiple records from a collection
    */
-  async deleteRecords(collectionName: string, recordIds: string[]): Promise<{
+  async deleteRecords(
+    collectionName: string,
+    recordIds: string[]
+  ): Promise<{
     successCount: number;
     failureCount: number;
     errors: string[];
   }> {
-    console.log(`[CollectionBrowserService] 🗑️ Bulk deleting ${recordIds.length} records from ${collectionName}`);
+    console.log(
+      `[CollectionBrowserService] 🗑️ Bulk deleting ${recordIds.length} records from ${collectionName}`
+    );
 
     let successCount = 0;
     let failureCount = 0;
@@ -336,7 +392,9 @@ export class CollectionBrowserService extends FirestoreService {
       }
     }
 
-    console.log(`[CollectionBrowserService] ✅ Bulk delete completed: ${successCount} success, ${failureCount} failures`);
+    console.log(
+      `[CollectionBrowserService] ✅ Bulk delete completed: ${successCount} success, ${failureCount} failures`
+    );
     return { successCount, failureCount, errors };
   }
 
@@ -354,7 +412,7 @@ export class CollectionBrowserService extends FirestoreService {
 
     const collectionsToCheck = [
       'users',
-      'pointsTransactions', 
+      'pointsTransactions',
       'checkins',
       'earnedBadges',
       'userMissionProgress',
@@ -365,37 +423,42 @@ export class CollectionBrowserService extends FirestoreService {
       'missions',
       'feedback',
       'systemErrors',
-      'function-errors'
+      'function-errors',
     ];
 
-    const summary: { [collectionName: string]: { count: number; hasUserData: boolean; sampleRecord?: any } } = {};
+    const summary: {
+      [collectionName: string]: { count: number; hasUserData: boolean; sampleRecord?: any };
+    } = {};
 
     for (const collectionName of collectionsToCheck) {
       try {
         const result = await this.browseCollection({
           collectionName,
-          pageSize: 1
+          pageSize: 1,
         });
 
-        const hasUserData = result.records.length > 0 && result.records[0].data.userId !== undefined;
-        
+        const hasUserData =
+          result.records.length > 0 && result.records[0].data.userId !== undefined;
+
         // Get approximate count by trying to fetch more
         const countResult = await this.browseCollection({
           collectionName,
-          pageSize: 1000
+          pageSize: 1000,
         });
 
         summary[collectionName] = {
           count: countResult.records.length + (countResult.hasMore ? 999 : 0), // Rough estimate
           hasUserData,
-          sampleRecord: result.records.length > 0 ? result.records[0].data : null
+          sampleRecord: result.records.length > 0 ? result.records[0].data : null,
         };
-
       } catch (error) {
-        console.warn(`[CollectionBrowserService] Failed to get summary for ${collectionName}:`, error);
+        console.warn(
+          `[CollectionBrowserService] Failed to get summary for ${collectionName}:`,
+          error
+        );
         summary[collectionName] = {
           count: 0,
-          hasUserData: false
+          hasUserData: false,
         };
       }
     }

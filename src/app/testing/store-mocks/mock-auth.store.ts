@@ -1,4 +1,4 @@
-import { signal, computed, Signal } from '@angular/core';
+import { computed, signal } from '@angular/core';
 import type { User } from '../../users/utils/user.model';
 
 export class MockAuthStore {
@@ -10,7 +10,7 @@ export class MockAuthStore {
   readonly user = this._user.asReadonly();
   readonly token = this._token.asReadonly();
   readonly ready = this._ready.asReadonly();
-  
+
   readonly isAuthenticated = computed(() => !!this._user());
   readonly isAnonymous = computed(() => this._user()?.isAnonymous ?? false);
   readonly uid = computed(() => this._user()?.uid ?? null);

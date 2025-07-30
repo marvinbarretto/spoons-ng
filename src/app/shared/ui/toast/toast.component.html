@@ -2,19 +2,21 @@
 <div class="toast-container toast-container--corner">
   @for (toast of cornerToasts(); track toast.id) {
     <div [ngClass]="toastClass(toast)" class="toast">
-      <app-icon 
+      <app-icon
         [name]="getIconName(toast.type)"
         size="sm"
         [filled]="true"
         weight="medium"
-        customClass="toast-icon" />
+        customClass="toast-icon"
+      />
       <div class="toast-message">{{ toast.message }}</div>
-      <app-icon 
+      <app-icon
         name="close"
         size="sm"
         [interactive]="true"
         customClass="toast-dismiss-icon"
-        (click)="dismiss(toast.id)" />
+        (click)="dismiss(toast.id)"
+      />
     </div>
   }
 </div>
@@ -23,19 +25,21 @@
 <div class="toast-container toast-container--center">
   @for (toast of centerToasts(); track toast.id) {
     <div [ngClass]="toastClass(toast)" class="toast toast--center">
-      <app-icon 
+      <app-icon
         [name]="getIconName(toast.type)"
         size="md"
         [filled]="true"
         weight="medium"
-        customClass="toast-icon" />
+        customClass="toast-icon"
+      />
       <div class="toast-message">{{ toast.message }}</div>
-      <app-icon 
+      <app-icon
         name="close"
         size="md"
         [interactive]="true"
         customClass="toast-dismiss-icon"
-        (click)="dismiss(toast.id)" />
+        (click)="dismiss(toast.id)"
+      />
     </div>
   }
 </div>

@@ -1,8 +1,8 @@
 // src/app/widgets/user-avatar/user-avatar.component.ts
+import { CommonModule } from '@angular/common';
 import { Component, computed, inject, input, output } from '@angular/core';
 import { AvatarService } from '../../shared/data-access/avatar.service';
 import type { User } from '../../users/utils/user.model';
-import { CommonModule } from '@angular/common';
 
 export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg';
 
@@ -21,20 +21,21 @@ export type AvatarSize = 'xs' | 'sm' | 'md' | 'lg';
       [attr.aria-label]="ariaLabel()"
       (click)="handleClick()"
       (keydown.enter)="handleClick()"
-      (keydown.space)="handleClick()">
-
+      (keydown.space)="handleClick()"
+    >
       <img
         class="avatar-image"
         [src]="avatarUrl()"
         [alt]="user()?.displayName || 'User'"
         onerror="this.src='assets/avatars/npc.webp'"
-        loading="lazy" />
+        loading="lazy"
+      />
 
       <!-- Subtle ring overlay for depth -->
       <div class="avatar-ring"></div>
     </div>
   `,
-  styleUrl: './user-avatar.component.scss'
+  styleUrl: './user-avatar.component.scss',
 })
 export class UserAvatarComponent {
   private readonly avatarService = inject(AvatarService);

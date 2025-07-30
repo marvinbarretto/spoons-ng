@@ -1,17 +1,25 @@
-import { Component, ViewChild, ElementRef, AfterViewInit, OnDestroy, computed, inject, effect } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  OnDestroy,
+  ViewChild,
+  computed,
+  inject,
+} from '@angular/core';
 
 import { BaseComponent } from '@shared/base/base.component';
-import { CheckinOrchestrator } from '../../data-access/checkin-orchestrator.service';
+import { environment } from '../../../../environments/environment';
+import { NearbyPubStore } from '../../../pubs/data-access/nearby-pub.store';
 import { PubStore } from '../../../pubs/data-access/pub.store';
 import { CheckInStore } from '../../data-access/check-in.store';
-import { NearbyPubStore } from '../../../pubs/data-access/nearby-pub.store';
-import { environment } from '../../../../environments/environment';
+import { CheckinOrchestrator } from '../../data-access/checkin-orchestrator.service';
 
 @Component({
   selector: 'app-checkin',
   imports: [],
   templateUrl: './checkin.component.html',
-  styleUrl: './checkin.component.scss'
+  styleUrl: './checkin.component.scss',
 })
 export class CheckinComponent extends BaseComponent implements AfterViewInit, OnDestroy {
   @ViewChild('cameraVideo', { static: false }) cameraVideo!: ElementRef<HTMLVideoElement>;
@@ -19,11 +27,11 @@ export class CheckinComponent extends BaseComponent implements AfterViewInit, On
   // ===================================
   // 🏗️ DEPENDENCIES
   // ===================================
-  
+
   private readonly pubStore = inject(PubStore);
   private readonly checkinStore = inject(CheckInStore);
   private readonly nearbyPubStore = inject(NearbyPubStore);
-  
+
   // Main orchestrator
   protected readonly orchestrator = inject(CheckinOrchestrator);
 
@@ -34,19 +42,19 @@ export class CheckinComponent extends BaseComponent implements AfterViewInit, On
   protected readonly pubName = computed(() => {
     const pubId = this.orchestrator.pubId();
     if (!pubId) return 'Unknown Pub';
-    
+
     const pub = this.pubStore.get(pubId);
     return pub?.name || 'Unknown Pub';
   });
 
   protected readonly pointsEarned = computed(() => {
     const result = this.checkinStore.checkinResults();
-    return result?.success ? (result.points?.total || 0) : 0;
+    return result?.success ? result.points?.total || 0 : 0;
   });
 
   protected readonly badgesEarned = computed(() => {
     const result = this.checkinStore.checkinResults();
-    return result?.success ? (result.badges || []) : [];
+    return result?.success ? result.badges || [] : [];
   });
 
   protected readonly isDevelopment = computed(() => environment.ACTIVE_DEVELOPMENT_MODE);
@@ -62,10 +70,10 @@ export class CheckinComponent extends BaseComponent implements AfterViewInit, On
 
   override ngOnInit(): void {
     super.ngOnInit();
-    
+
     // Get pub from location services
     const pub = this.nearbyPubStore.closestPub();
-    
+
     if (!pub) {
       console.error('[CheckinComponent] ❌ No nearby pub available');
       this.orchestrator.stopCheckin();
@@ -73,18 +81,18 @@ export class CheckinComponent extends BaseComponent implements AfterViewInit, On
     }
 
     console.log('[CheckinComponent] 🚀 Check-in will start for pub:', pub.name);
-    
+
     // Store pub ID for later use
     this.orchestrator.setPubId(pub.id);
   }
 
   ngAfterViewInit(): void {
     console.log('[CheckinComponent] 📹 View initialized');
-    
+
     // Connect video element to orchestrator when available
     if (this.cameraVideo?.nativeElement) {
       this.orchestrator.setVideoElement(this.cameraVideo.nativeElement);
-      
+
       // Now start the check-in process since video element is ready
       const pubId = this.orchestrator.pubId();
       if (pubId) {
@@ -113,11 +121,10 @@ export class CheckinComponent extends BaseComponent implements AfterViewInit, On
     this.orchestrator.retryCheckin();
   }
 
-
   protected async onCaptureClick(): Promise<void> {
     console.log('[CheckinComponent] 📸 User clicked capture button');
     console.log('[CheckinComponent] 📊 Current stage before capture:', this.orchestrator.stage());
-    
+
     try {
       await this.orchestrator.capturePhoto();
       console.log('[CheckinComponent] ✅ Photo capture completed successfully');
@@ -127,21 +134,17 @@ export class CheckinComponent extends BaseComponent implements AfterViewInit, On
     }
   }
 
-  protected onConfirmPhotoClick(): void {
-    console.log('[CheckinComponent] ✅ User confirmed photo');
-    this.orchestrator.confirmPhoto();
-  }
 
   protected onRetakePhotoClick(): void {
     console.log('[CheckinComponent] 🔄 User clicked retake button - initiating photo reset');
     console.log('[CheckinComponent] 📊 Current stage before retake:', this.orchestrator.stage());
     console.log('[CheckinComponent] 📸 Current photo data before reset:', {
       hasDataUrl: !!this.orchestrator.photoDataUrl(),
-      hasBlob: !!this.orchestrator.photoBlob()
+      hasBlob: !!this.orchestrator.photoBlob(),
     });
-    
+
     this.orchestrator.retakePhoto();
-    
+
     // Log state after retake call
     setTimeout(() => {
       console.log('[CheckinComponent] 📊 Stage after retake:', this.orchestrator.stage());
@@ -149,7 +152,7 @@ export class CheckinComponent extends BaseComponent implements AfterViewInit, On
         hasDataUrl: !!this.orchestrator.photoDataUrl(),
         hasBlob: !!this.orchestrator.photoBlob(),
         showCameraPreview: this.orchestrator.showCameraPreview(),
-        showPhotoPreview: this.orchestrator.showPhotoPreview()
+        showPhotoPreview: this.orchestrator.showPhotoPreview(),
       });
     }, 50);
   }

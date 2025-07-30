@@ -7,7 +7,7 @@ describe('LoadingStateComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [LoadingStateComponent]
+      imports: [LoadingStateComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(LoadingStateComponent);
@@ -27,16 +27,18 @@ describe('LoadingStateComponent', () => {
   it('should display custom loading text', () => {
     fixture.componentRef.setInput('text', 'Loading custom data...');
     fixture.detectChanges();
-    
+
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('.loading-text')?.textContent).toContain('Loading custom data...');
+    expect(compiled.querySelector('.loading-text')?.textContent).toContain(
+      'Loading custom data...'
+    );
   });
 
   it('should have proper accessibility attributes', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     const loadingDiv = compiled.querySelector('.widget-loading');
     expect(loadingDiv?.getAttribute('aria-live')).toBe('polite');
-    
+
     const spinner = compiled.querySelector('.loading-spinner');
     expect(spinner?.getAttribute('aria-hidden')).toBe('true');
   });

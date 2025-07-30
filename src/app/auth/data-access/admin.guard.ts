@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { AuthStore } from './auth.store';
 import { UserStore } from '../../users/data-access/user.store';
+import { AuthStore } from './auth.store';
 
 export const adminGuard: CanActivateFn = async (route, state) => {
   const authStore = inject(AuthStore);
@@ -30,13 +30,13 @@ export const adminGuard: CanActivateFn = async (route, state) => {
   }
 
   const currentUser = userStore.currentUser();
-  
+
   // Check if user has admin privileges
   if (!currentUser?.isAdmin) {
     console.log('[AdminGuard] User lacks admin privileges, redirecting to home', {
       hasUser: !!currentUser,
       uid: currentUser?.uid?.slice(0, 8),
-      isAdmin: currentUser?.isAdmin
+      isAdmin: currentUser?.isAdmin,
     });
     router.navigate(['/']);
     return false;
@@ -44,7 +44,7 @@ export const adminGuard: CanActivateFn = async (route, state) => {
 
   console.log('[AdminGuard] Admin access granted', {
     uid: currentUser.uid.slice(0, 8),
-    isAdmin: currentUser.isAdmin
+    isAdmin: currentUser.isAdmin,
   });
   return true;
 };

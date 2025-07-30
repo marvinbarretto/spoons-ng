@@ -9,8 +9,7 @@ export class ViewportService {
 
   constructor() {
     if (this.platform.isServer) return;
-    const check = () =>
-      this.isMobile.set(window.innerWidth < BREAKPOINTS.DESKTOP_MIN);
+    const check = () => this.isMobile.set(window.innerWidth < BREAKPOINTS.DESKTOP_MIN);
     window.addEventListener('resize', check);
     check(); // initial
   }

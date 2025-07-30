@@ -7,7 +7,7 @@ describe('ChipProgressComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ChipProgressComponent]
+      imports: [ChipProgressComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ChipProgressComponent);
@@ -27,10 +27,10 @@ describe('ChipProgressComponent', () => {
     it('should use default icon based on state', () => {
       fixture.componentRef.setInput('state', 'completed');
       expect(component.stateIcon()).toBe('✅');
-      
+
       fixture.componentRef.setInput('state', 'failed');
       expect(component.stateIcon()).toBe('❌');
-      
+
       fixture.componentRef.setInput('state', 'in-progress');
       expect(component.stateIcon()).toBe('🔄');
     });
@@ -45,7 +45,7 @@ describe('ChipProgressComponent', () => {
     it('should return empty string when value is null or undefined', () => {
       fixture.componentRef.setInput('value', null);
       expect(component.displayValue()).toBe('');
-      
+
       fixture.componentRef.setInput('value', undefined);
       expect(component.displayValue()).toBe('');
     });
@@ -79,7 +79,7 @@ describe('ChipProgressComponent', () => {
     it('should include state and size classes', () => {
       fixture.componentRef.setInput('state', 'completed');
       fixture.componentRef.setInput('size', 'lg');
-      
+
       const classes = component.chipClasses();
       expect(classes).toContain('state--completed');
       expect(classes).toContain('size--lg');
@@ -112,7 +112,7 @@ describe('ChipProgressComponent', () => {
     it('should include label and state', () => {
       fixture.componentRef.setInput('label', 'Upload');
       fixture.componentRef.setInput('state', 'in-progress');
-      
+
       const ariaLabel = component.ariaLabel();
       expect(ariaLabel).toContain('Upload');
       expect(ariaLabel).toContain('in-progress');
@@ -122,7 +122,7 @@ describe('ChipProgressComponent', () => {
       fixture.componentRef.setInput('label', 'Progress');
       fixture.componentRef.setInput('value', 75);
       fixture.componentRef.setInput('showValue', true);
-      
+
       expect(component.ariaLabel()).toContain('value: 75');
     });
 

@@ -13,11 +13,7 @@
     </div>
 
     <div class="header-actions">
-      <app-button
-        (onClick)="handleCancel()"
-      >
-        Cancel
-      </app-button>
+      <app-button (onClick)="handleCancel()"> Cancel </app-button>
     </div>
   </header>
 
@@ -32,12 +28,8 @@
       <h2>Failed to load mission</h2>
       <p class="error-message">{{ loadError() }}</p>
       <div class="error-actions">
-        <app-button (onClick)="handleRetry()" variant="primary">
-          Try Again
-        </app-button>
-        <app-button (onClick)="handleCancel()">
-          Back to List
-        </app-button>
+        <app-button (onClick)="handleRetry()" variant="primary"> Try Again </app-button>
+        <app-button (onClick)="handleCancel()"> Back to List </app-button>
       </div>
     </div>
   } @else {
@@ -131,15 +123,11 @@
               @if (hasFieldError('pointsReward')) {
                 <div class="field-error">Points reward must be between 1 and 1000</div>
               }
-              <div class="field-hint">
-                Points awarded to users when they complete this mission
-              </div>
+              <div class="field-hint">Points awarded to users when they complete this mission</div>
             </div>
 
             <div class="form-group">
-              <label for="timeLimitHours" class="form-label">
-                Time Limit (Hours)
-              </label>
+              <label for="timeLimitHours" class="form-label"> Time Limit (Hours) </label>
               <input
                 id="timeLimitHours"
                 type="number"
@@ -157,9 +145,7 @@
 
           <div class="form-row">
             <div class="form-group">
-              <label for="badgeRewardId" class="form-label">
-                Badge Reward ID
-              </label>
+              <label for="badgeRewardId" class="form-label"> Badge Reward ID </label>
               <input
                 id="badgeRewardId"
                 type="text"
@@ -168,8 +154,8 @@
                 placeholder="e.g. mission-explorer, local-hero"
               />
               <div class="field-hint">
-                Enter the ID of a badge to award when users complete this mission.
-                Leave empty if no badge reward.
+                Enter the ID of a badge to award when users complete this mission. Leave empty if no
+                badge reward.
               </div>
             </div>
           </div>
@@ -179,19 +165,9 @@
       <!-- Form Actions -->
       <div class="form-actions">
         <div class="action-group">
-          <app-button
-            type="button"
-            (onClick)="handleCancel()"
+          <app-button type="button" (onClick)="handleCancel()"> Cancel </app-button>
 
-          >
-            Cancel
-          </app-button>
-
-          <app-button
-            type="submit"
-            [disabled]="!missionForm.valid || isSaving()"
-            variant="primary"
-          >
+          <app-button type="submit" [disabled]="!missionForm.valid || isSaving()" variant="primary">
             @if (isSaving()) {
               <span class="saving-indicator">
                 <span class="spinner"></span>

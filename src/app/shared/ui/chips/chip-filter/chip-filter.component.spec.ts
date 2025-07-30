@@ -7,7 +7,7 @@ describe('ChipFilterComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ChipFilterComponent]
+      imports: [ChipFilterComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ChipFilterComponent);
@@ -35,7 +35,7 @@ describe('ChipFilterComponent', () => {
     it('should handle null and undefined counts', () => {
       fixture.componentRef.setInput('count', null);
       expect(component.formattedCount()).toBe('');
-      
+
       fixture.componentRef.setInput('count', undefined);
       expect(component.formattedCount()).toBe('');
     });
@@ -94,19 +94,19 @@ describe('ChipFilterComponent', () => {
     it('should emit clicked event when not disabled', () => {
       const clickedSpy = jest.fn();
       component.clicked.subscribe(clickedSpy);
-      
+
       component.handleClick();
-      
+
       expect(clickedSpy).toHaveBeenCalled();
     });
 
     it('should not emit when disabled', () => {
       const clickedSpy = jest.fn();
       component.clicked.subscribe(clickedSpy);
-      
+
       fixture.componentRef.setInput('disabled', true);
       component.handleClick();
-      
+
       expect(clickedSpy).not.toHaveBeenCalled();
     });
   });
@@ -116,9 +116,9 @@ describe('ChipFilterComponent', () => {
       const removedSpy = jest.fn();
       const event = { stopPropagation: jest.fn() } as any;
       component.removed.subscribe(removedSpy);
-      
+
       component.handleRemove(event);
-      
+
       expect(removedSpy).toHaveBeenCalled();
       expect(event.stopPropagation).toHaveBeenCalled();
     });
@@ -127,10 +127,10 @@ describe('ChipFilterComponent', () => {
       const removedSpy = jest.fn();
       const event = { stopPropagation: jest.fn() } as any;
       component.removed.subscribe(removedSpy);
-      
+
       fixture.componentRef.setInput('disabled', true);
       component.handleRemove(event);
-      
+
       expect(removedSpy).not.toHaveBeenCalled();
       expect(event.stopPropagation).toHaveBeenCalled();
     });

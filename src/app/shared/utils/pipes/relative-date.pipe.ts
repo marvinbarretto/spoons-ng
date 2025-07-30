@@ -15,8 +15,7 @@ export class RelativeDatePipe implements PipeTransform {
     if (days < 0) return 'In the past';
     if (days === 0) return 'Today';
     if (days === 1) return 'Tomorrow';
-    if (days < 7)
-      return target.toLocaleDateString(undefined, { weekday: 'long' });
+    if (days < 7) return target.toLocaleDateString(undefined, { weekday: 'long' });
     return target.toLocaleDateString(undefined, {
       month: 'short',
       day: 'numeric',

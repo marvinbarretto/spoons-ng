@@ -1,4 +1,4 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { computed, Injectable, signal } from '@angular/core';
 
 // State machine phases
 export type CheckinPhase =
@@ -41,12 +41,12 @@ export class CheckinStateMachineService {
   readonly showVideo = computed(() => {
     const phase = this.phase();
     const shouldShow = phase === 'CAMERA_STARTING' || phase === 'WAITING_FOR_GATES';
-    
+
     console.log('[CheckinState] Video visibility check:', {
       phase,
-      shouldShow
+      shouldShow,
     });
-    
+
     return shouldShow;
   });
 
@@ -55,22 +55,22 @@ export class CheckinStateMachineService {
    */
   transitionTo(newPhase: CheckinPhase): void {
     const currentPhase = this._phase();
-    
+
     console.log('[CheckinState] 🔄 === PHASE TRANSITION ===');
     console.log(`[CheckinState] 🔄 From: ${currentPhase} → To: ${newPhase}`);
-    
+
     // Validate transition is allowed
     if (!this.isTransitionAllowed(currentPhase, newPhase)) {
       console.error(`[CheckinState] ❌ Invalid transition: ${currentPhase} → ${newPhase}`);
       return;
     }
-    
+
     // Update history
     this._history.update(h => [...h, currentPhase]);
-    
+
     // Set new phase
     this._phase.set(newPhase);
-    
+
     // Clear error on successful transitions
     if (newPhase !== 'NOT_CARPET_DETECTED') {
       this._error.set(null);
@@ -101,13 +101,13 @@ export class CheckinStateMachineService {
   private isTransitionAllowed(from: CheckinPhase, to: CheckinPhase): boolean {
     // Define allowed transitions
     const allowedTransitions: Record<CheckinPhase, CheckinPhase[]> = {
-      'CAMERA_STARTING': ['WAITING_FOR_GATES'],
-      'WAITING_FOR_GATES': ['PHOTO_CAPTURED', 'CAMERA_STARTING'],
-      'PHOTO_CAPTURED': ['LLM_THINKING'],
-      'LLM_THINKING': ['NOT_CARPET_DETECTED', 'CHECK_IN_PROCESSING'],
-      'NOT_CARPET_DETECTED': ['WAITING_FOR_GATES', 'CAMERA_STARTING'],
-      'CHECK_IN_PROCESSING': ['SUCCESS_MODAL', 'WAITING_FOR_GATES'],
-      'SUCCESS_MODAL': ['CAMERA_STARTING']
+      CAMERA_STARTING: ['WAITING_FOR_GATES'],
+      WAITING_FOR_GATES: ['PHOTO_CAPTURED', 'CAMERA_STARTING'],
+      PHOTO_CAPTURED: ['LLM_THINKING'],
+      LLM_THINKING: ['NOT_CARPET_DETECTED', 'CHECK_IN_PROCESSING'],
+      NOT_CARPET_DETECTED: ['WAITING_FOR_GATES', 'CAMERA_STARTING'],
+      CHECK_IN_PROCESSING: ['SUCCESS_MODAL', 'WAITING_FOR_GATES'],
+      SUCCESS_MODAL: ['CAMERA_STARTING'],
     };
 
     return allowedTransitions[from]?.includes(to) ?? false;

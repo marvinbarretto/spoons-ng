@@ -1,11 +1,11 @@
 // src/app/profile/ui/profile-header-widget/profile-header-widget.component.ts
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { OverlayService } from '@fourfold/angular-foundation';
 import { ProfileCustomisationModalComponent } from '@home/ui/profile-customisation-modal/profile-customisation-modal.component';
 import { BaseComponent } from '@shared/base/base.component';
 import { UserAvatarComponent } from '@shared/ui/user-avatar/user-avatar.component';
-import { UserStore } from '@users/data-access/user.store';
+import type { User } from '@users/utils/user.model';
 
 @Component({
   selector: 'app-profile-header-widget',
@@ -18,9 +18,11 @@ import { UserStore } from '@users/data-access/user.store';
           @if (user()) {
             <app-user-avatar [user]="user()!" size="large" class="profile-avatar" />
           }
-          <button (click)="handleEditProfile()" class="edit-profile-btn" type="button">
-            Edit Profile
-          </button>
+          @if (isOwnProfile()) {
+            <button (click)="handleEditProfile()" class="edit-profile-btn" type="button">
+              Edit Profile
+            </button>
+          }
         </div>
 
         <div class="profile-info-section">
@@ -145,17 +147,17 @@ import { UserStore } from '@users/data-access/user.store';
   `,
 })
 export class ProfileHeaderWidgetComponent extends BaseComponent {
-  protected readonly userStore = inject(UserStore);
   protected readonly authStore = inject(AuthStore);
   protected readonly overlayService = inject(OverlayService);
 
-  // Data signals
-  readonly user = this.userStore.user;
+  // Input signals
+  readonly user = input<User | null>();
+  readonly isOwnProfile = input<boolean>(false);
 
   // Computed properties
   readonly joinedMissionsCount = computed(() => {
-    const user = this.user();
-    return user?.joinedMissionIds?.length || 0;
+    const userData = this.user();
+    return userData?.joinedMissionIds?.length || 0;
   });
 
   constructor() {

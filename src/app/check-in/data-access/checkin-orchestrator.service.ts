@@ -17,7 +17,6 @@ type CheckinStage =
   | 'CAMERA_ACTIVE'
   | 'CAPTURING_PHOTO'
   | 'PHOTO_TAKEN'
-  | 'PHOTO_REVIEW'
   | 'LLM_CHECKING'
   | 'RESULT';
 
@@ -75,21 +74,16 @@ export class CheckinOrchestrator {
 
   readonly showPhotoPreview = computed(() => {
     const stage = this.stage();
-    const shouldShow =
-      stage === 'PHOTO_TAKEN' || stage === 'PHOTO_REVIEW' || stage === 'LLM_CHECKING';
+    const shouldShow = stage === 'PHOTO_TAKEN' || stage === 'LLM_CHECKING';
     console.log('[CheckinOrchestrator] 🖼️ showPhotoPreview computed:', { stage, shouldShow });
     return shouldShow;
   });
 
   readonly showRetakeButton = computed(() => {
     const stage = this.stage();
-    return stage === 'PHOTO_REVIEW';
+    return stage === 'LLM_CHECKING';
   });
 
-  readonly showConfirmButton = computed(() => {
-    const stage = this.stage();
-    return stage === 'PHOTO_REVIEW';
-  });
 
   readonly isCapturingPhoto = computed(() => {
     const stage = this.stage();
@@ -109,8 +103,6 @@ export class CheckinOrchestrator {
         return 'Capturing...';
       case 'PHOTO_TAKEN':
         return 'Photo captured';
-      case 'PHOTO_REVIEW':
-        return 'Review your photo';
       case 'LLM_CHECKING':
         return 'Processing...';
       case 'RESULT':
@@ -244,9 +236,9 @@ export class CheckinOrchestrator {
       this._stage.set('PHOTO_TAKEN');
       console.log('[CheckinOrchestrator] ✅ Photo captured successfully');
 
-      // Move to review stage - wait for user confirmation
-      this._stage.set('PHOTO_REVIEW');
-      console.log('[CheckinOrchestrator] 📋 Photo ready for review - waiting for user decision');
+      // Automatically proceed to confirmation (no user review step)
+      console.log('[CheckinOrchestrator] 🚀 Auto-proceeding to photo confirmation');
+      await this.confirmPhoto();
     } catch (error: any) {
       console.error('[CheckinOrchestrator] ❌ Photo capture failed:', error);
       this.handleError('Failed to capture photo');
@@ -257,7 +249,7 @@ export class CheckinOrchestrator {
   // 🔄 RETAKE FUNCTIONALITY
   // ===================================
 
-  confirmPhoto(): void {
+  async confirmPhoto(): Promise<void> {
     console.log('[CheckinOrchestrator] ✅ User confirmed photo - proceeding with LLM check');
 
     const dataUrl = this._photoDataUrl();
@@ -269,35 +261,49 @@ export class CheckinOrchestrator {
       return;
     }
 
-    // Start LLM check or direct processing
-    if (environment.LLM_CHECK) {
-      console.log('[CheckinOrchestrator] 🤖 Starting LLM analysis after user confirmation');
-      this.checkWithLLM(dataUrl);
-    } else {
-      console.log('[CheckinOrchestrator] 🧪 DEV MODE: Skipping LLM, processing directly');
-      this.processCheckin(blob);
+    try {
+      // Start LLM check or direct processing
+      if (environment.LLM_CHECK) {
+        console.log('[CheckinOrchestrator] 🤖 Starting LLM analysis after user confirmation');
+        await this.checkWithLLM(dataUrl);
+      } else {
+        console.log('[CheckinOrchestrator] 🧪 DEV MODE: Skipping LLM, processing directly');
+        await this.processCheckin(blob);
+      }
+    } catch (error: any) {
+      console.error('[CheckinOrchestrator] ❌ Photo confirmation failed:', error);
+      this.handleError(error?.message || 'Failed to process photo');
     }
   }
 
   retakePhoto(): void {
+    const currentStage = this._stage();
     console.log(
-      '[CheckinOrchestrator] 🔄 User chose to retake photo - starting complete reset process'
+      '[CheckinOrchestrator] 🔄 User chose to retake photo - starting complete reset process',
+      { currentStage }
     );
 
-    // Step 1: Clear all photo data immediately
+    // Step 1: Cancel any ongoing LLM processing
+    if (currentStage === 'LLM_CHECKING') {
+      console.log('[CheckinOrchestrator] 🛑 Canceling ongoing LLM processing');
+      // Note: We can't actually cancel the LLM request, but we can prevent its results from being processed
+      // by clearing the stage and photo data immediately
+    }
+
+    // Step 2: Clear all photo data immediately
     console.log('[CheckinOrchestrator] 📸 Clearing saved photo data (blob & dataUrl)');
     this._photoBlob.set(null);
     this._photoDataUrl.set(null);
 
-    // Step 2: Clear any error state
+    // Step 3: Clear any error state
     console.log('[CheckinOrchestrator] ❌ Clearing error state');
     this._error.set(null);
 
-    // Step 3: Reset stage to remove photo preview and show camera again
-    console.log('[CheckinOrchestrator] 🎬 Changing stage from PHOTO_REVIEW to CAMERA_ACTIVE');
+    // Step 4: Reset stage to remove photo preview and show camera again
+    console.log('[CheckinOrchestrator] 🎬 Changing stage from', currentStage, 'to CAMERA_ACTIVE');
     this._stage.set('CAMERA_ACTIVE');
 
-    // Step 4: Verify camera is still running
+    // Step 5: Verify camera is still running
     if (this.videoElement && this.cameraService.isCameraReadyForCapture(this.videoElement)) {
       console.log('[CheckinOrchestrator] ✅ Camera verified - ready for new capture');
     } else {
@@ -321,6 +327,12 @@ export class CheckinOrchestrator {
     try {
       const result = await this.llmService.detectCarpet(photoDataUrl);
 
+      // Check if user canceled the operation while LLM was processing
+      if (this._stage() !== 'LLM_CHECKING') {
+        console.log('[CheckinOrchestrator] 🛑 LLM processing canceled by user - aborting');
+        return;
+      }
+
       // Always proceed to result stage regardless of LLM result
       console.log('[CheckinOrchestrator] 📝 LLM analysis complete:', result);
 
@@ -332,8 +344,13 @@ export class CheckinOrchestrator {
         throw new Error('No photo blob available');
       }
     } catch (error: any) {
-      console.error('[CheckinOrchestrator] ❌ LLM analysis failed:', error);
-      this.handleError('Failed to verify carpet');
+      // Only handle error if we're still in LLM checking stage
+      if (this._stage() === 'LLM_CHECKING') {
+        console.error('[CheckinOrchestrator] ❌ LLM analysis failed:', error);
+        this.handleError('Failed to verify carpet');
+      } else {
+        console.log('[CheckinOrchestrator] 🛑 LLM error ignored - operation was canceled');
+      }
     }
   }
 

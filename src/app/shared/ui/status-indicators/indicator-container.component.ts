@@ -16,6 +16,6 @@ import { Component } from '@angular/core';
       min-height: 40px;
       flex-shrink: 0;
     }
-  `
+  `,
 })
 export class IndicatorContainerComponent {}

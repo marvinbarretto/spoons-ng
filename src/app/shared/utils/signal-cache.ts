@@ -1,5 +1,5 @@
 // utils/signal-cache.ts
-import { signal, computed, Signal } from '@angular/core';
+import { computed, signal, Signal } from '@angular/core';
 
 export function signalCache<K, V>(label = 'SignalCache') {
   const cache = new Map<K, { writable: ReturnType<typeof signal>; readonly: Signal<V> }>();
