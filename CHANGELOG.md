@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.116](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.115...v0.0.116) (2025-07-31)
+
+
+### Features
+
+* [Capacitor] Install capacitor ([1f4aa93](https://github.com/marvinbarretto/spoons-ng/commit/1f4aa93007a3de86f42b4923aea455f608b897bd))
+* [Capacitor] Service ([f9e99de](https://github.com/marvinbarretto/spoons-ng/commit/f9e99deec35575a365f4c19da479d9aa484cc5e3))
+* [FooterNav] Restore link to missions ([c6860ec](https://github.com/marvinbarretto/spoons-ng/commit/c6860ec4a6d7cb9b2918fa1828a9097e50664bd2))
+
+
+### Bug Fixes
+
+* [PubList] cards link to detail page ([05b391a](https://github.com/marvinbarretto/spoons-ng/commit/05b391a1ed76e383832c501e079496f11d49a50b))
+
 ### [0.0.115](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.114...v0.0.115) (2025-07-28)
 
 
