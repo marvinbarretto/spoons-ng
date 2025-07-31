@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "650443293688",
+    "project_id": "spoons-15e03",
+    "storage_bucket": "spoons-15e03.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:650443293688:android:330a253a176aa001458c0d",
+        "android_client_info": {
+          "package_name": "com.spoons.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "650443293688-k5ghag3t76tc7ekdsjvecpn6gbogc2k0.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.spoons.app",
+            "certificate_hash": "c90a903a7c8c77567abdcd446e456fb41e7c1047"
+          }
+        },
+        {
+          "client_id": "650443293688-iigphf4duda76nnt9dtjju2rp4svl4sk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDyklRsbXGTrsG2x4OVKLRiOvz5KIfJZOk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "650443293688-iigphf4duda76nnt9dtjju2rp4svl4sk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
