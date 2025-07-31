@@ -11,6 +11,7 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
 import { SsrPlatformService, ToastService } from '@fourfold/angular-foundation';
 import { filter, map } from 'rxjs/operators';
+import { CapacitorPlatformService } from '@shared/data-access/capacitor-platform.service';
 
 @Component({
   template: '',
@@ -20,6 +21,7 @@ export abstract class BaseComponent implements OnInit {
   // 🔧 Universal services
   protected readonly destroyRef = inject(DestroyRef);
   protected readonly platform = inject(SsrPlatformService);
+  protected readonly capacitor = inject(CapacitorPlatformService);
   protected readonly toastService = inject(ToastService);
   protected readonly router = inject(Router);
 
@@ -37,6 +39,24 @@ export abstract class BaseComponent implements OnInit {
   protected readonly currentRoute = toSignal(this.currentRoute$, {
     initialValue: this.router.url,
   });
+
+  // 🚀 Unified platform information
+  protected readonly platformInfo = computed(() => ({
+    isServer: this.platform.isServer,
+    isBrowser: this.platform.isBrowser,
+    isNative: this.capacitor.isNative(),
+    isIOS: this.capacitor.isIOS(),
+    isAndroid: this.capacitor.isAndroid(),
+    isWeb: this.capacitor.isWeb(),
+    capabilities: {
+      hasCamera: this.capacitor.hasCamera(),
+      hasGeolocation: this.capacitor.hasGeolocation(),
+      hasPushNotifications: this.capacitor.hasPushNotifications(),
+      hasAppBadge: this.capacitor.hasAppBadge(),
+      hasStatusBar: this.capacitor.hasStatusBar(),
+      hasHaptics: this.capacitor.hasHaptics(),
+    },
+  }));
 
   // ✅ Common routing computeds
   protected readonly isHomepage = computed(() => this.currentRoute() === '/');
@@ -67,6 +87,48 @@ export abstract class BaseComponent implements OnInit {
    */
   protected onlyOnBrowser<T>(callback: () => T): T | undefined {
     return this.platform.onlyOnBrowser(callback);
+  }
+
+  /**
+   * Native-safe execution helper
+   */
+  protected onlyOnNative<T>(callback: () => Promise<T>): Promise<T | null> {
+    return this.capacitor.onlyOnNative(callback);
+  }
+
+  /**
+   * iOS-safe execution helper
+   */
+  protected onlyOnIOS<T>(callback: () => Promise<T>): Promise<T | null> {
+    return this.capacitor.onlyOnIOS(callback);
+  }
+
+  /**
+   * Android-safe execution helper
+   */
+  protected onlyOnAndroid<T>(callback: () => Promise<T>): Promise<T | null> {
+    return this.capacitor.onlyOnAndroid(callback);
+  }
+
+  /**
+   * Platform-aware execution with native/web fallback
+   */
+  protected withPlatformFallback<T>(
+    nativeCallback: () => Promise<T>,
+    webCallback: () => T | Promise<T>
+  ): Promise<T> {
+    return this.capacitor.withPlatformFallback(nativeCallback, webCallback);
+  }
+
+  /**
+   * Mobile-aware execution with iOS/Android/web fallbacks
+   */
+  protected withMobileFallback<T>(
+    iosCallback: () => Promise<T>,
+    androidCallback: () => Promise<T>,
+    webCallback: () => T | Promise<T>
+  ): Promise<T> {
+    return this.capacitor.withMobileFallback(iosCallback, androidCallback, webCallback);
   }
 
   /**
