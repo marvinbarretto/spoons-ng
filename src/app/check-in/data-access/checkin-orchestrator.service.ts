@@ -2,17 +2,21 @@
 
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { CameraService } from '@fourfold/angular-foundation';
+import { CameraService, SsrPlatformService } from '@fourfold/angular-foundation';
+import { CapacitorPlatformService } from '@shared/data-access/capacitor-platform.service';
 import { DataAggregatorService } from '@shared/data-access/data-aggregator.service';
 import { LLMService } from '@shared/data-access/llm.service';
 import { environment } from '../../../environments/environment';
 import { CarpetStorageService } from '../../carpets/data-access/carpet-storage.service';
 import { CarpetStrategyService } from '../../carpets/data-access/carpet-strategy.service';
+import { CameraPermissionState, CapacitorCameraService } from './capacitor-camera.service';
 import { CheckInModalService } from './check-in-modal.service';
 import { CheckInStore } from './check-in.store';
 
 type CheckinStage =
   | 'INITIALIZING'
+  | 'CHECKING_PERMISSIONS'
+  | 'PERMISSION_DENIED'
   | 'CAMERA_STARTING'
   | 'CAMERA_ACTIVE'
   | 'CAPTURING_PHOTO'
@@ -23,12 +27,15 @@ type CheckinStage =
 @Injectable({ providedIn: 'root' })
 export class CheckinOrchestrator {
   protected readonly router = inject(Router);
+  protected readonly platform = inject(SsrPlatformService);
+  protected readonly capacitor = inject(CapacitorPlatformService);
   protected readonly checkinStore = inject(CheckInStore);
   protected readonly checkInModalService = inject(CheckInModalService);
   protected readonly llmService = inject(LLMService);
   protected readonly carpetStorageService = inject(CarpetStorageService);
   protected readonly carpetStrategy = inject(CarpetStrategyService);
   protected readonly cameraService = inject(CameraService);
+  protected readonly capacitorCamera = inject(CapacitorCameraService);
   protected readonly dataAggregator = inject(DataAggregatorService);
 
   // ===================================
@@ -40,8 +47,10 @@ export class CheckinOrchestrator {
   private readonly _error = signal<string | null>(null);
   private readonly _photoDataUrl = signal<string | null>(null);
   private readonly _photoBlob = signal<Blob | null>(null);
+  private readonly _permissionState = signal<CameraPermissionState>({ camera: 'unknown' });
+  private readonly _recoveryAction = signal<'RETRY' | 'OPEN_SETTINGS' | 'NONE'>('NONE');
 
-  // Video element tracking for live camera
+  // Video element tracking for web camera
   private videoElement: HTMLVideoElement | null = null;
 
   // ===================================
@@ -53,6 +62,8 @@ export class CheckinOrchestrator {
   readonly error = this._error.asReadonly();
   readonly photoDataUrl = this._photoDataUrl.asReadonly();
   readonly photoBlob = this._photoBlob.asReadonly();
+  readonly permissionState = this._permissionState.asReadonly();
+  readonly recoveryAction = this._recoveryAction.asReadonly();
 
   // ===================================
   // 🧮 COMPUTED CONDITIONS
@@ -60,13 +71,41 @@ export class CheckinOrchestrator {
 
   readonly showCameraPreview = computed(() => {
     const stage = this.stage();
+    // On native, we don't show live camera preview
+    if (this.capacitor.isNative()) {
+      return false;
+    }
     const shouldShow = stage === 'CAMERA_STARTING' || stage === 'CAMERA_ACTIVE';
-    console.log('[CheckinOrchestrator] 📹 showCameraPreview computed:', { stage, shouldShow });
+    console.log('[CheckinOrchestrator] 📹 showCameraPreview computed:', {
+      stage,
+      shouldShow,
+      isNative: this.capacitor.isNative(),
+    });
     return shouldShow;
+  });
+
+  readonly showNativeCameraButton = computed(() => {
+    const stage = this.stage();
+    // Only show native camera button on native platforms
+    if (!this.capacitor.isNative()) {
+      return false;
+    }
+    const shouldShow = stage === 'CAMERA_ACTIVE';
+    console.log('[CheckinOrchestrator] 📱 showNativeCameraButton computed:', { stage, shouldShow });
+    return shouldShow;
+  });
+
+  readonly showPermissionGuidance = computed(() => {
+    const stage = this.stage();
+    return stage === 'PERMISSION_DENIED';
   });
 
   readonly showCaptureButton = computed(() => {
     const stage = this.stage();
+    // Only show web capture button on web platforms
+    if (this.capacitor.isNative()) {
+      return false;
+    }
     const shouldShow = stage === 'CAMERA_ACTIVE';
     console.log('[CheckinOrchestrator] 📸 showCaptureButton computed:', { stage, shouldShow });
     return shouldShow;
@@ -84,7 +123,6 @@ export class CheckinOrchestrator {
     return stage === 'LLM_CHECKING';
   });
 
-
   readonly isCapturingPhoto = computed(() => {
     const stage = this.stage();
     return stage === 'CAPTURING_PHOTO';
@@ -95,10 +133,14 @@ export class CheckinOrchestrator {
     switch (stage) {
       case 'INITIALIZING':
         return 'Getting ready...';
+      case 'CHECKING_PERMISSIONS':
+        return 'Checking camera permissions...';
+      case 'PERMISSION_DENIED':
+        return 'Camera permission required';
       case 'CAMERA_STARTING':
         return 'Starting camera...';
       case 'CAMERA_ACTIVE':
-        return 'Ready to capture';
+        return this.capacitor.isNative() ? 'Ready to capture' : 'Ready to capture';
       case 'CAPTURING_PHOTO':
         return 'Capturing...';
       case 'PHOTO_TAKEN':
@@ -133,8 +175,12 @@ export class CheckinOrchestrator {
       this._error.set(null);
       this._stage.set('INITIALIZING');
 
-      // Start camera instead of file input
-      await this.startCamera();
+      // Platform-aware camera initialization
+      if (this.capacitor.isNative()) {
+        await this.initializeNativeCamera();
+      } else {
+        await this.initializeWebCamera();
+      }
     } catch (error: any) {
       console.error('[CheckinOrchestrator] ❌ Failed to start:', error);
       this.handleError(error.message || 'Failed to initialize camera');
@@ -154,13 +200,18 @@ export class CheckinOrchestrator {
       // Clear error state
       this._error.set(null);
       this._stage.set('INITIALIZING');
+      this._recoveryAction.set('NONE');
 
       // Reset photo data
       this._photoBlob.set(null);
       this._photoDataUrl.set(null);
 
-      // Restart camera
-      await this.startCamera();
+      // Platform-aware camera restart
+      if (this.capacitor.isNative()) {
+        await this.initializeNativeCamera();
+      } else {
+        await this.initializeWebCamera();
+      }
 
       console.log('[CheckinOrchestrator] ✅ Retry successful - camera ready');
     } catch (error: any) {
@@ -178,8 +229,57 @@ export class CheckinOrchestrator {
     console.log('[CheckinOrchestrator] 📹 Video element set');
   }
 
-  private async startCamera(): Promise<void> {
-    console.log('[CheckinOrchestrator] 📹 Starting camera');
+  /**
+   * Initialize native camera with permission handling
+   */
+  private async initializeNativeCamera(): Promise<void> {
+    console.log('[CheckinOrchestrator] 📱 Initializing native camera');
+    this._stage.set('CHECKING_PERMISSIONS');
+
+    try {
+      // Check permissions first
+      const permissions = await this.capacitorCamera.checkPermissions();
+      this._permissionState.set(permissions);
+
+      if (permissions.camera === 'denied') {
+        console.warn('[CheckinOrchestrator] 📱 Camera permission denied');
+        this._stage.set('PERMISSION_DENIED');
+        this._recoveryAction.set('OPEN_SETTINGS');
+        this.handleError(
+          'Camera permission denied. Please enable camera access in device settings.'
+        );
+        return;
+      }
+
+      if (permissions.camera === 'prompt') {
+        console.log('[CheckinOrchestrator] 📱 Requesting camera permissions');
+        const requestResult = await this.capacitorCamera.requestPermissions();
+        this._permissionState.set(requestResult);
+
+        if (requestResult.camera === 'denied') {
+          this._stage.set('PERMISSION_DENIED');
+          this._recoveryAction.set('OPEN_SETTINGS');
+          this.handleError(
+            'Camera permission denied. Please enable camera access in device settings.'
+          );
+          return;
+        }
+      }
+
+      // Permissions granted, camera is ready
+      console.log('[CheckinOrchestrator] 📱 Native camera ready');
+      this._stage.set('CAMERA_ACTIVE');
+    } catch (error: any) {
+      console.error('[CheckinOrchestrator] 📱 Native camera initialization failed:', error);
+      this.handleError('Failed to initialize camera');
+    }
+  }
+
+  /**
+   * Initialize web camera (existing logic)
+   */
+  private async initializeWebCamera(): Promise<void> {
+    console.log('[CheckinOrchestrator] 🌐 Initializing web camera');
 
     if (!this.videoElement) {
       throw new Error('Video element not set');
@@ -201,23 +301,70 @@ export class CheckinOrchestrator {
       await this.cameraService.waitForVideoReady(this.videoElement);
 
       this._stage.set('CAMERA_ACTIVE');
-      console.log('[CheckinOrchestrator] ✅ Camera ready for capture');
+      console.log('[CheckinOrchestrator] ✅ Web camera ready for capture');
     } catch (error: any) {
-      console.error('[CheckinOrchestrator] ❌ Camera start failed:', error);
+      console.error('[CheckinOrchestrator] ❌ Web camera start failed:', error);
       throw error;
     }
   }
 
   async capturePhoto(): Promise<void> {
-    console.log('[CheckinOrchestrator] 📸 Capturing photo from video stream');
+    console.log('[CheckinOrchestrator] 📸 Platform-aware photo capture');
+    this._stage.set('CAPTURING_PHOTO');
+
+    try {
+      if (this.capacitor.isNative()) {
+        await this.captureNativePhoto();
+      } else {
+        await this.captureWebPhoto();
+      }
+
+      this._stage.set('PHOTO_TAKEN');
+      console.log('[CheckinOrchestrator] ✅ Photo captured successfully');
+
+      // Continue with LLM processing
+      await this.confirmPhoto();
+    } catch (error: any) {
+      console.error('[CheckinOrchestrator] ❌ Photo capture failed:', error);
+      this.handleError(error.message || 'Failed to capture photo');
+    }
+  }
+
+  /**
+   * Capture photo using native camera
+   */
+  private async captureNativePhoto(): Promise<void> {
+    console.log('[CheckinOrchestrator] 📱 Capturing photo with native camera');
+
+    try {
+      const capturedPhoto = await this.capacitorCamera.capturePhoto();
+
+      // Store the captured photo
+      this._photoDataUrl.set(capturedPhoto.dataUrl);
+      this._photoBlob.set(capturedPhoto.blob || null);
+
+      console.log('[CheckinOrchestrator] 📱 Native photo captured:', {
+        format: capturedPhoto.format,
+        width: capturedPhoto.width,
+        height: capturedPhoto.height,
+      });
+    } catch (error: any) {
+      console.error('[CheckinOrchestrator] 📱 Native photo capture failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Capture photo from web video stream
+   */
+  private async captureWebPhoto(): Promise<void> {
+    console.log('[CheckinOrchestrator] 🌐 Capturing photo from video stream');
 
     if (!this.videoElement) {
       throw new Error('Video element not available');
     }
 
     try {
-      this._stage.set('CAPTURING_PHOTO');
-
       // Check if camera is ready for capture
       if (!this.cameraService.isCameraReadyForCapture(this.videoElement)) {
         throw new Error('Camera is not ready for capture');
@@ -232,16 +379,10 @@ export class CheckinOrchestrator {
       // Store the captured photo
       this._photoDataUrl.set(dataUrl);
       this._photoBlob.set(blob);
-
-      this._stage.set('PHOTO_TAKEN');
-      console.log('[CheckinOrchestrator] ✅ Photo captured successfully');
-
-      // Automatically proceed to confirmation (no user review step)
-      console.log('[CheckinOrchestrator] 🚀 Auto-proceeding to photo confirmation');
-      await this.confirmPhoto();
+      console.log('[CheckinOrchestrator] 🌐 Web photo captured successfully');
     } catch (error: any) {
-      console.error('[CheckinOrchestrator] ❌ Photo capture failed:', error);
-      this.handleError('Failed to capture photo');
+      console.error('[CheckinOrchestrator] 🌐 Web photo capture failed:', error);
+      throw error;
     }
   }
 
@@ -431,22 +572,85 @@ export class CheckinOrchestrator {
   }
 
   // ===================================
+  // 🔐 PERMISSION MANAGEMENT
+  // ===================================
+
+  /**
+   * Open device settings for camera permissions (native only)
+   */
+  async openDeviceSettings(): Promise<void> {
+    console.log('[CheckinOrchestrator] ⚙️ Opening device settings');
+
+    if (!this.capacitor.isNative()) {
+      console.warn('[CheckinOrchestrator] ⚙️ Device settings only available on native platforms');
+      return;
+    }
+
+    try {
+      await this.capacitorCamera.openDeviceSettings();
+    } catch (error: any) {
+      console.error('[CheckinOrchestrator] ⚙️ Failed to open device settings:', error);
+      this.handleError('Could not open device settings');
+    }
+  }
+
+  /**
+   * Retry camera permissions (native only)
+   */
+  async retryPermissions(): Promise<void> {
+    console.log('[CheckinOrchestrator] 🔐 Retrying camera permissions');
+
+    if (!this.capacitor.isNative()) {
+      console.warn('[CheckinOrchestrator] 🔐 Permission retry only available on native platforms');
+      return;
+    }
+
+    try {
+      this._stage.set('CHECKING_PERMISSIONS');
+      this._error.set(null);
+      this._recoveryAction.set('NONE');
+
+      const permissions = await this.capacitorCamera.requestPermissions();
+      this._permissionState.set(permissions);
+
+      if (permissions.camera === 'granted') {
+        this._stage.set('CAMERA_ACTIVE');
+        console.log('[CheckinOrchestrator] 🔐 Permissions granted - camera ready');
+      } else {
+        this._stage.set('PERMISSION_DENIED');
+        this._recoveryAction.set('OPEN_SETTINGS');
+        this.handleError('Camera permission still denied');
+      }
+    } catch (error: any) {
+      console.error('[CheckinOrchestrator] 🔐 Permission retry failed:', error);
+      this.handleError('Failed to request camera permissions');
+    }
+  }
+
+  // ===================================
   // 🧹 CLEANUP
   // ===================================
 
   cleanup(): void {
-    console.log('[CheckinOrchestrator] 🧹 Cleaning up');
+    console.log('[CheckinOrchestrator] 🧹 Platform-aware cleanup');
 
-    // Release camera resources
-    this.cameraService.releaseCamera();
+    // Platform-specific cleanup
+    if (this.capacitor.isNative()) {
+      // Native cleanup - reset capacitor camera service
+      this.capacitorCamera.reset();
+    } else {
+      // Web cleanup - release camera resources
+      this.cameraService.releaseCamera();
+      this.videoElement = null;
+    }
 
-    // Reset state
+    // Common cleanup - reset all state
     this._stage.set('INITIALIZING');
     this._pubId.set(null);
     this._error.set(null);
     this._photoDataUrl.set(null);
     this._photoBlob.set(null);
-
-    this.videoElement = null;
+    this._permissionState.set({ camera: 'unknown' });
+    this._recoveryAction.set('NONE');
   }
 }

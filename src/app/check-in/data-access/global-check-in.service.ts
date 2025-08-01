@@ -6,18 +6,18 @@ import type { CheckIn } from '../utils/check-in.models';
 
 /**
  * GlobalCheckInService - Handles app-wide check-in data
- * 
+ *
  * PURPOSE:
  * - Loads ALL users' check-ins for leaderboards, admin panels, and global stats
  * - Maintains reactive signals for global check-in data
  * - Used by SessionService for fresh app-wide data loading
  * - Clear separation from user-scoped check-in operations
- * 
+ *
  * SCOPE: GLOBAL (All Users)
  * - Loads check-ins for ALL users, not just current user
  * - Used for leaderboards, rankings, and app-wide statistics
  * - Never filtered by current user
- * 
+ *
  * USAGE:
  * - SessionService: Load fresh global data on session start
  * - LeaderboardStore: Calculate rankings across all users
@@ -44,16 +44,19 @@ export class GlobalCheckInService {
     this._loading.set(true);
     try {
       console.log('[GlobalCheckInService] 🌐 Loading ALL users check-ins for app-wide data...');
-      
+
       // Force server fetch to ensure fresh data (no filters = all documents)
       const allCheckIns = await this.firestoreService.getDocsWhereFromServer<CheckIn>('checkins');
 
-      console.log(`[GlobalCheckInService] ✅ Loaded ${allCheckIns.length} check-ins from ALL users`);
-      console.log(`[GlobalCheckInService] 🔍 Unique users: ${new Set(allCheckIns.map((c: CheckIn) => c.userId)).size}`);
-      
+      console.log(
+        `[GlobalCheckInService] ✅ Loaded ${allCheckIns.length} check-ins from ALL users`
+      );
+      console.log(
+        `[GlobalCheckInService] 🔍 Unique users: ${new Set(allCheckIns.map((c: CheckIn) => c.userId)).size}`
+      );
+
       // Update signal with fresh global data
       this._allCheckIns.set(allCheckIns);
-      
     } catch (error) {
       console.error('[GlobalCheckInService] ❌ Failed to load global check-ins:', error);
       throw error;

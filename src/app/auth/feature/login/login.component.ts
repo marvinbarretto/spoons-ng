@@ -10,7 +10,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { BaseComponent } from '@shared/base/base.component';
 import { ThemeStore } from '@shared/data-access/theme.store';
-import { ButtonComponent } from '@shared/ui/button/button.component';
+import { ButtonComponent } from '@fourfold/angular-foundation';
 import { FormInputComponent } from '@shared/ui/form-input/form-input.component';
 import { IconComponent } from '@shared/ui/icon/icon.component';
 import { FormValidators } from '@shared/utils/form-validators';
@@ -76,20 +76,20 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
             }
 
             <!-- Submit Button -->
-            <app-button
+            <ff-button
               type="submit"
-              variant="primary"
               size="lg"
               [fullWidth]="true"
               [loading]="loading()"
-              class="submit-button"
+              class="submit-button glass-button"
+              ariaLabel="Sign in to your account"
             >
               @if (loading()) {
                 Signing In...
               } @else {
                 Sign In
               }
-            </app-button>
+            </ff-button>
           </form>
 
           <!-- Alternative Login Methods -->
@@ -98,17 +98,17 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
               <span class="divider-text">or</span>
             </div>
 
-            <app-button
-              variant="secondary"
+            <ff-button
               size="lg"
               [fullWidth]="true"
-              iconLeft="login"
+              iconLeft="google"
               [loading]="googleLoading()"
               (onClick)="loginWithGoogle()"
-              class="google-button"
+              class="google-button glass-button-secondary"
+              ariaLabel="Sign in with Google account"
             >
               Continue with Google
-            </app-button>
+            </ff-button>
           </div>
         </div>
       </div>
@@ -245,42 +245,67 @@ export class LoginComponent extends BaseComponent implements OnInit, OnDestroy {
 
   private handleLoginError(error: any): void {
     let errorMessage = 'Login failed. Please try again.';
+    let showForgotPassword = false;
+    let showAlternativeAuth = false;
 
     if (error?.code) {
       switch (error.code) {
         case 'auth/user-not-found':
-          errorMessage = 'No account found with this email address.';
+          errorMessage = 'No account found with this email address. Try creating a new account or check your email.';
+          showAlternativeAuth = true;
           break;
         case 'auth/wrong-password':
-          errorMessage = 'Incorrect password. Please try again.';
+          errorMessage = 'Incorrect password. Double-check your password or reset it.';
+          showForgotPassword = true;
           break;
         case 'auth/invalid-email':
           errorMessage = 'Please enter a valid email address.';
+          // Focus back to email field
+          setTimeout(() => {
+            const emailInput = document.querySelector('input[type="email"]') as HTMLInputElement;
+            emailInput?.focus();
+          }, 100);
           break;
         case 'auth/user-disabled':
-          errorMessage = 'This account has been disabled.';
+          errorMessage = 'This account has been disabled. Contact support for help.';
           break;
         case 'auth/too-many-requests':
-          errorMessage = 'Too many failed attempts. Please try again later.';
+          errorMessage = 'Too many failed attempts. Please wait a few minutes or reset your password.';
+          showForgotPassword = true;
           break;
         case 'auth/popup-closed-by-user':
-          errorMessage = 'Sign-in was cancelled.';
+          errorMessage = 'Sign-in was cancelled. Try again when ready.';
+          showAlternativeAuth = true;
           break;
         case 'auth/popup-blocked':
-          errorMessage = 'Popup was blocked by your browser. Please allow popups and try again.';
+          errorMessage = 'Popup was blocked. Please allow popups and try again, or use email sign-in.';
+          showAlternativeAuth = true;
           break;
         case 'auth/invalid-credential':
           errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+          showForgotPassword = true;
+          break;
+        case 'auth/network-request-failed':
+          errorMessage = 'Network error. Please check your connection and try again.';
           break;
         default:
           if (error.message) {
             errorMessage = error.message;
           }
+          showAlternativeAuth = true;
       }
     }
 
-    // Show error like registration flow
+    // Enhanced error display with contextual help
     this.error.set(errorMessage);
-    this.toastService.centerError(errorMessage);
+    
+    // Show contextual toast with action if helpful
+    if (showForgotPassword) {
+      this.toastService.centerError(`${errorMessage}\n\nTap "Forgot password?" below for help.`);
+    } else if (showAlternativeAuth) {
+      this.toastService.centerError(`${errorMessage}\n\nTry signing in with Google instead.`);
+    } else {
+      this.toastService.centerError(errorMessage);
+    }
   }
 }

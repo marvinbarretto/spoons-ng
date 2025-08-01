@@ -10,7 +10,7 @@ import {
 import { AuthStore } from '@auth/data-access/auth.store';
 import { BaseComponent } from '@shared/base/base.component';
 import { ThemeStore } from '@shared/data-access/theme.store';
-import { ButtonComponent } from '@shared/ui/button/button.component';
+import { ButtonComponent } from '@fourfold/angular-foundation';
 import type { ThemeType } from '@shared/utils/theme.tokens';
 
 @Component({
@@ -23,54 +23,158 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
       <!-- Content Area -->
       <div class="splash-content">
         <div class="hero-section">
-          <div class="logo-container">
-            <div class="beer-icon">🍺</div>
+          <!-- Animated Pub Glass -->
+          <div class="glass-container">
+            <svg 
+              class="pub-glass" 
+              viewBox="0 0 200 300" 
+              xmlns="http://www.w3.org/2000/svg"
+              role="img"
+              aria-label="Animated pub glass filling with beer"
+            >
+              <!-- Glass outline -->
+              <path 
+                class="glass-outline"
+                d="M50 50 Q50 45 55 45 L145 45 Q150 45 150 50 L160 280 Q160 290 150 290 L50 290 Q40 290 40 280 Z"
+                fill="none"
+                stroke="var(--glass-border, rgba(255,255,255,0.3))"
+                stroke-width="3"
+              />
+              
+              <!-- Beer fill -->
+              <clipPath id="glassClip">
+                <path d="M50 50 Q50 45 55 45 L145 45 Q150 45 150 50 L160 280 Q160 290 150 290 L50 290 Q40 290 40 280 Z"/>
+              </clipPath>
+              
+              <rect 
+                class="beer-fill"
+                x="40" 
+                y="290" 
+                width="120" 
+                height="240"
+                clip-path="url(#glassClip)"
+                fill="url(#beerGradient)"
+              />
+              
+              <!-- Foam/bubbles -->
+              <g class="foam-bubbles" clip-path="url(#glassClip)">
+                <circle cx="80" cy="60" r="8" fill="var(--foam-color, rgba(255,248,220,0.9))" class="bubble bubble-1"/>
+                <circle cx="120" cy="70" r="6" fill="var(--foam-color, rgba(255,248,220,0.8))" class="bubble bubble-2"/>
+                <circle cx="95" cy="65" r="4" fill="var(--foam-color, rgba(255,248,220,0.7))" class="bubble bubble-3"/>
+              </g>
+              
+              <!-- Glass highlight -->
+              <ellipse 
+                cx="80" 
+                cy="120" 
+                rx="15" 
+                ry="40" 
+                fill="url(#glassHighlight)" 
+                opacity="0.6"
+              />
+              
+              <!-- Gradient definitions -->
+              <defs>
+                <linearGradient id="beerGradient" x1="0%" y1="100%" x2="0%" y2="0%">
+                  <stop offset="0%" style="stop-color:var(--beer-dark, #D2691E);stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:var(--beer-light, #F4A460);stop-opacity:1" />
+                </linearGradient>
+                <linearGradient id="glassHighlight" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:rgba(255,255,255,0.4);stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:rgba(255,255,255,0.1);stop-opacity:1" />
+                </linearGradient>
+              </defs>
+            </svg>
           </div>
-          <h1 class="hero-title">Keep count of the pubs you've visited</h1>
-          <p class="hero-subtitle">
-            Simple pub tracking that's actually fun.<br />
-            Start counting today.
-          </p>
+
+          <!-- Value Proposition -->
+          <div class="value-proposition">
+            <h1 class="hero-title">Start Your Pub Journey</h1>
+            <p class="hero-subtitle">
+              Track pubs you visit, earn badges, and discover new favorites in your area
+            </p>
+            
+            <!-- Trust indicators -->
+            <div class="trust-indicators">
+              <span class="trust-indicator">🔒 Privacy First</span>
+              <span class="trust-indicator">📍 Local Discoveries</span>
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- Actions Area - Anchored to Bottom -->
       <div class="splash-actions">
         <div class="auth-buttons">
-          <app-button
-            variant="primary"
+          <!-- Primary CTA -->
+          <ff-button
+            size="lg"
+            [fullWidth]="true"
+            [loading]="googleLoading()"
+            (onClick)="signInWithGoogle()"
+            iconLeft="google"
+            class="google-signin-btn"
+            ariaLabel="Sign in with Google account"
+          >
+            Continue with Google
+          </ff-button>
+
+          <!-- Secondary CTA -->
+          <ff-button
             size="lg"
             [fullWidth]="true"
             [loading]="guestLoading()"
             (onClick)="continueAsGuest()"
+            iconLeft="explore"
+            class="guest-access-btn"
+            ariaLabel="Explore the app without creating an account"
           >
-            Start Counting
-          </app-button>
+            Explore as Guest
+          </ff-button>
 
-          <div class="sign-in-section">
-            <p class="sign-in-text">
-              Already tracking pubs?
+          <!-- More options -->
+          <div class="more-options">
+            <button 
+              type="button" 
+              class="expand-options-btn"
+              (click)="toggleMoreOptions()"
+              [attr.aria-expanded]="showMoreOptions()"
+              aria-controls="additional-auth-options"
+              aria-label="Show more sign-in options"
+            >
+              More sign-in options
+              <span class="expand-icon" [class.expanded]="showMoreOptions()">▼</span>
+            </button>
+            
+            <div 
+              id="additional-auth-options"
+              class="additional-options"
+              [class.visible]="showMoreOptions()"
+              [attr.aria-hidden]="!showMoreOptions()"
+            >
               <button
                 type="button"
-                class="sign-in-link"
+                class="auth-option-btn"
                 (click)="navigateToLogin()"
                 [disabled]="loading()"
+                aria-label="Sign in with email address"
               >
-                Sign in
+                📧 Sign in with Email
               </button>
-            </p>
+              
+              <button
+                type="button"
+                class="auth-option-btn existing-user-btn"
+                (click)="navigateToLogin()"
+                [disabled]="loading()"
+                aria-label="Sign in to existing account"
+              >
+                👋 I have an account
+              </button>
+            </div>
           </div>
         </div>
 
-        <!-- Terms and Privacy -->
-        <!-- TODO: Move these ? -->
-        <!--div class="legal-links">
-          <p class="legal-text">
-            By continuing, you agree to our
-            <a href="/terms" class="legal-link">Terms of Service</a> and
-            <a href="/privacy" class="legal-link">Privacy Policy</a>
-          </p>
-        </div-->
       </div>
     </div>
   `,
@@ -83,6 +187,8 @@ export class SplashComponent extends BaseComponent implements OnInit, OnDestroy 
   private originalTheme: ThemeType | null = null;
 
   readonly guestLoading = signal(false);
+  readonly googleLoading = signal(false);
+  readonly showMoreOptions = signal(false);
 
   override ngOnInit(): void {
     console.log('[SplashComponent] 🎬 Component initializing...');
@@ -133,6 +239,25 @@ export class SplashComponent extends BaseComponent implements OnInit, OnDestroy 
     } finally {
       this.loading.set(false);
     }
+  }
+
+  async signInWithGoogle(): Promise<void> {
+    console.log('[SplashComponent] 🚀 signInWithGoogle() called');
+    this.googleLoading.set(true);
+
+    try {
+      await this.authStore.loginWithGoogle();
+      await this.router.navigate(['/home']);
+    } catch (error: any) {
+      console.error('[SplashComponent] ❌ Google sign-in failed:', error);
+      this.showError(error.message || 'Google sign-in failed');
+    } finally {
+      this.googleLoading.set(false);
+    }
+  }
+
+  toggleMoreOptions(): void {
+    this.showMoreOptions.update(current => !current);
   }
 
   async continueAsGuest(): Promise<void> {

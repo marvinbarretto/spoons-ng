@@ -50,6 +50,7 @@ export class AuthStore {
 
   constructor() {
     this.platform.onlyOnBrowser(() => {
+      // Primary auth listener - Firebase onAuthStateChanged (works for web/Android)
       this.authService.onAuthChange(async firebaseUser => {
         const timestamp = new Date().toISOString();
         const currentState = {
@@ -59,7 +60,7 @@ export class AuthStore {
           isReady: this._ready(),
         };
 
-        console.log('[AuthStore] 🔄 Auth state change received at', timestamp, ':', {
+        console.log('[AuthStore] 🔄 Firebase auth state change received at', timestamp, ':', {
           hasUser: !!firebaseUser,
           uid: firebaseUser?.uid?.slice(0, 8),
           isAnonymous: firebaseUser?.isAnonymous,
@@ -67,7 +68,7 @@ export class AuthStore {
         });
 
         if (firebaseUser) {
-          console.log('[AuthStore] 👤 Processing user sign-in...');
+          console.log('[AuthStore] 👤 Processing user sign-in via Firebase callback...');
           await this.handleUserSignIn(firebaseUser);
         } else {
           console.log('[AuthStore] 🚪 Processing user sign-out (no Firebase user)...');
@@ -77,10 +78,112 @@ export class AuthStore {
         console.log('[AuthStore] 🏁 Setting auth ready to true');
         this._ready.set(true);
       });
+
+      // Backup auth listener - AuthService user signal (iOS native fallback)
+      // This catches cases where Firebase onAuthStateChanged doesn't fire (iOS native auth)
+      let lastAuthServiceUser: any = null;
+      const checkAuthServiceUser = () => {
+        const currentAuthServiceUser = this.authService.user$$();
+        const currentAuthStoreUser = this._user();
+        
+        // Only act if AuthService has a user but AuthStore doesn't, and it's different from last check
+        if (currentAuthServiceUser && !currentAuthStoreUser && currentAuthServiceUser !== lastAuthServiceUser) {
+          console.log('[AuthStore] 🍎 iOS backup: AuthService has user but AuthStore does not, syncing...', {
+            authServiceUid: currentAuthServiceUser.uid?.slice(0, 8),
+            authStoreUid: 'none'
+          });
+          
+          // Handle iOS native auth sync directly (get real Firebase token)
+          this.handleiOSNativeAuth(currentAuthServiceUser).then(() => {
+            this._ready.set(true);
+          }).catch(error => {
+            console.error('[AuthStore] 🍎 iOS native auth sync failed:', error);
+            this._ready.set(true);
+          });
+        }
+        
+        lastAuthServiceUser = currentAuthServiceUser;
+      };
+      
+      // Check periodically for iOS native auth sync issues
+      setInterval(checkAuthServiceUser, 1000); // Check every second
+      
+      // Also check immediately after a short delay
+      setTimeout(checkAuthServiceUser, 500);
     });
 
     if (this.platform.isServer) {
       this._ready.set(true);
+    }
+  }
+
+  /**
+   * Handle iOS native authentication sync - get the REAL Firebase ID token
+   */
+  private async handleiOSNativeAuth(authServiceUser: any): Promise<void> {
+    try {
+      console.log('[AuthStore] 🍎 handleiOSNativeAuth called:', {
+        uid: authServiceUser.uid?.slice(0, 8),
+        email: authServiceUser.email,
+        displayName: authServiceUser.displayName
+      });
+
+      // CRITICAL: Get the real Firebase ID token from the Capacitor plugin
+      console.log('[AuthStore] 🍎 Getting real Firebase ID token from native plugin...');
+      const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
+      const idTokenResult = await FirebaseAuthentication.getIdToken();
+      const realToken = idTokenResult.token;
+      
+      console.log('[AuthStore] 🍎 Got real Firebase ID token:', !!realToken);
+
+      // Create basic user object from AuthService data
+      const appUser: User = {
+        uid: authServiceUser.uid,
+        email: authServiceUser.email ?? null,
+        photoURL: authServiceUser.photoURL ?? null,
+        displayName: authServiceUser.displayName || 'User',
+        isAnonymous: authServiceUser.isAnonymous || false,
+        emailVerified: authServiceUser.emailVerified || true,
+        streaks: {},
+        joinedAt: new Date().toISOString(),
+        badgeCount: 0,
+        badgeIds: [],
+        landlordCount: 0,
+        landlordPubIds: [],
+        joinedMissionIds: [],
+        manuallyAddedPubIds: [],
+        verifiedPubCount: 0,
+        unverifiedPubCount: 0,
+        totalPubCount: 0,
+        onboardingCompleted: false,
+      };
+
+      // Update auth state with REAL token
+      this._user.set(appUser);
+      this._token.set(realToken);
+      this._userChangeCounter.update(c => c + 1);
+
+      console.log('[AuthStore] 🍎 iOS native auth sync successful:', {
+        uid: appUser.uid.slice(0, 8),
+        hasRealToken: !!realToken,
+        isAuthenticated: true,
+        displayName: appUser.displayName,
+      });
+
+      // Save to localStorage
+      this.platform.onlyOnBrowser(() => {
+        try {
+          localStorage.setItem('user', JSON.stringify(appUser));
+          localStorage.setItem('token', realToken);
+          console.log('[AuthStore] 💾 Saved iOS native auth data with real token to localStorage');
+        } catch (error) {
+          console.warn('[AuthStore] ⚠️ Failed to save iOS native auth data to localStorage:', error);
+        }
+      });
+
+    } catch (error) {
+      console.error('[AuthStore] ❌ iOS native auth sync failed:', error);
+      this.handleUserSignOut();
     }
   }
 

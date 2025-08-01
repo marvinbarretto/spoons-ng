@@ -237,7 +237,7 @@ export class DataAggregatorService {
       userId,
       hasUserData: !!userData,
     });
-    
+
     // Log the actual user data being passed in
     if (userData) {
       this.debug.standard('[DataAggregator] User data details', {
@@ -248,7 +248,7 @@ export class DataAggregatorService {
         unverifiedPubCount: userData.unverifiedPubCount,
         totalPubCount: userData.totalPubCount,
         manuallyAddedPubIds: userData.manuallyAddedPubIds?.length || 0,
-        hasManualPubIds: !!userData.manuallyAddedPubIds
+        hasManualPubIds: !!userData.manuallyAddedPubIds,
       });
     }
 
@@ -256,13 +256,15 @@ export class DataAggregatorService {
 
     this.debug.standard('[DataAggregator] User pub count computed', {
       userId: userId.slice(0, 8),
-      totalCheckins: this.globalCheckInStore.allCheckIns().filter((c: CheckIn) => c.userId === userId).length,
+      totalCheckins: this.globalCheckInStore
+        .allCheckIns()
+        .filter((c: CheckIn) => c.userId === userId).length,
       verifiedPubs: pubCountData.verified,
       manualPubs: pubCountData.manual,
       duplicatesRemoved: pubCountData.duplicates,
       totalUniquePubs: pubCountData.total,
       hasUserData: !!userData,
-      ISSUE_DETECTED: (userData?.totalPoints || 0) > 0 && pubCountData.total === 0
+      ISSUE_DETECTED: (userData?.totalPoints || 0) > 0 && pubCountData.total === 0,
     });
 
     return pubCountData.total;

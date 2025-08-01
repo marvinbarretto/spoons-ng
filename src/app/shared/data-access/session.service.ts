@@ -36,10 +36,10 @@
  * - Fixes data inconsistency issues between leaderboard and scoreboard
  */
 
-import { Injectable, inject, effect } from '@angular/core';
+import { Injectable, effect, inject } from '@angular/core';
 import { AuthStore } from '../../auth/data-access/auth.store';
-import { UserService } from '../../users/data-access/user.service';
 import { GlobalCheckInService } from '../../check-in/data-access/global-check-in.service';
+import { UserService } from '../../users/data-access/user.service';
 import { DebugService } from '../utils/debug.service';
 
 @Injectable({ providedIn: 'root' })
@@ -53,7 +53,9 @@ export class SessionService {
   private isLoadingSessionData = false;
 
   constructor() {
-    this.debug.standard('[SessionService] Service initialized - monitoring auth state for session management');
+    this.debug.standard(
+      '[SessionService] Service initialized - monitoring auth state for session management'
+    );
 
     // Listen for user authentication changes
     effect(() => {
@@ -64,9 +66,9 @@ export class SessionService {
         this.debug.standard('[SessionService] User authenticated, initializing session data', {
           uid: user.uid.slice(0, 8),
           isAnonymous: user.isAnonymous,
-          displayName: user.displayName
+          displayName: user.displayName,
         });
-        
+
         // Load fresh data for entire app
         this.initializeSessionData();
       } else if (!user && !isAuthenticated) {
@@ -100,12 +102,12 @@ export class SessionService {
         totalUsers: users.length,
         realUsers: users.filter(u => !u.isAnonymous).length,
         usersWithPoints: users.filter(u => u.totalPoints && u.totalPoints > 0).length,
-        userSample: users.slice(0, 3).map(u => ({ 
-          uid: u.uid.slice(0, 8), 
-          displayName: u.displayName, 
+        userSample: users.slice(0, 3).map(u => ({
+          uid: u.uid.slice(0, 8),
+          displayName: u.displayName,
           totalPoints: u.totalPoints || 0,
-          isAnonymous: u.isAnonymous 
-        }))
+          isAnonymous: u.isAnonymous,
+        })),
       });
 
       this.debug.standard('[SessionService] 📡 Loading check-ins from server...');
@@ -120,8 +122,8 @@ export class SessionService {
           userId: c.userId.slice(0, 8),
           pubId: c.pubId?.slice(0, 8) || 'NO_PUB',
           pointsEarned: c.pointsEarned || 0,
-          timestamp: c.timestamp
-        }))
+          timestamp: c.timestamp,
+        })),
       });
 
       // Cross-reference users with points vs check-ins
@@ -138,9 +140,12 @@ export class SessionService {
             checkinCount: userCheckins.length,
             uniquePubsFromCheckins: uniquePubs,
             manualPubCount: user.unverifiedPubCount || 0,
-            hasPointsButNoPubs: (user.totalPoints || 0) > 0 && uniquePubs === 0 && (user.unverifiedPubCount || 0) === 0
+            hasPointsButNoPubs:
+              (user.totalPoints || 0) > 0 &&
+              uniquePubs === 0 &&
+              (user.unverifiedPubCount || 0) === 0,
           };
-        })
+        }),
       });
 
       const duration = Date.now() - startTime;
@@ -152,11 +157,11 @@ export class SessionService {
           const userCheckins = checkins.filter(c => c.userId === u.uid);
           const uniquePubs = new Set(userCheckins.filter(c => c.pubId).map(c => c.pubId)).size;
           return (u.totalPoints || 0) > 0 && uniquePubs === 0 && (u.unverifiedPubCount || 0) === 0;
-        }).length
+        }).length,
       });
 
       // Global services maintain their own reactive signals - no manual store updates needed
-      
+
       // Verify that services have fresh data
       this.debug.standard('[SessionService] 🔍 Verifying service data after loading...', {
         userServiceUsers: this.userService.allUsers().length,
@@ -164,8 +169,9 @@ export class SessionService {
       });
 
       // Now all stores have fresh data and components can make consistent calculations
-      this.debug.standard('[SessionService] 📊 All stores now have fresh data - pub counts should be consistent');
-
+      this.debug.standard(
+        '[SessionService] 📊 All stores now have fresh data - pub counts should be consistent'
+      );
     } catch (error) {
       this.debug.standard('[SessionService] ❌ Session data initialization failed', { error });
       console.error('[SessionService] Failed to initialize session data:', error);

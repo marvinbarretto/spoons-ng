@@ -1,4 +1,5 @@
 @use 'styles/index' as *;
+@use 'styles/base/animation-mixins' as *;
 
 // ===== REGISTRATION FLOW COMPONENT - Content Only =====
 // Layout handled by FullScreenShell, this component focuses on content styling
@@ -59,6 +60,15 @@
   color: rgba(255, 255, 255, 0.8);
   font-size: 1rem;
   line-height: 1.5;
+  
+  .value-highlight {
+    color: var(--accent);
+    font-weight: 600;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--primary) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 }
 
 // Auth Methods
@@ -331,12 +341,101 @@ label {
   }
 }
 
-// Location Content
+// ===== ENHANCED LOCATION CONTENT =====
 .location-content {
   text-align: center;
 }
 
-.location-prompt,
+.location-prompt {
+  padding: 2rem;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: var(--background-lighter);
+  backdrop-filter: blur(12px);
+  
+  @include slide-up($duration: var(--animation-duration-normal), $delay: 0.2s);
+}
+
+// Location benefits display
+.location-benefits {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  text-align: left;
+}
+
+.benefit-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+  
+  &:hover {
+    background: var(--background-lightest);
+    border-color: var(--primary);
+    transform: translateX(4px);
+  }
+}
+
+.benefit-icon {
+  font-size: 1.25rem;
+  min-width: 1.5rem;
+  text-align: center;
+}
+
+.benefit-text {
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.location-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+}
+
+.location-primary-btn {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%) !important;
+  border: none !important;
+  color: white !important;
+  font-weight: 600;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.skip-location-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+  min-height: 44px; // Accessibility
+  
+  &:hover:not(:disabled) {
+    background: var(--background-lightest);
+    color: var(--text);
+    text-decoration: underline;
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
 .location-error,
 .nearest-pub {
   padding: 2rem;
@@ -416,6 +515,42 @@ label {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+}
+
+.confirm-pub-btn {
+  background: linear-gradient(135deg, var(--success) 0%, var(--primary) 100%) !important;
+  border: none !important;
+  color: white !important;
+  font-weight: 600;
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  }
+}
+
+.browse-different-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  cursor: pointer;
+  padding: 0.75rem 1rem;
+  transition: all 0.2s ease;
+  min-height: 44px; // Accessibility
+  
+  &:hover:not(:disabled) {
+    background: var(--background-lightest);
+    border-color: var(--primary);
+    color: var(--text);
+    transform: translateY(-1px);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 }
 
 .browse-pubs-button {

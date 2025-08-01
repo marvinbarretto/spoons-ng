@@ -4,6 +4,82 @@
   display: block;
 }
 
+// ===== iOS SAFE AREA SUPPORT =====
+// CSS custom properties for safe area insets
+:root {
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+  
+  // Header height including safe area
+  --header-height-base: 60px;
+  --header-height-total: calc(var(--header-height-base) + var(--safe-area-inset-top));
+}
+
+// ===== SITE HEADER STYLES =====
+.site-header {
+  display: block;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+  
+  // Default styling for web/Android
+  background-color: var(--background-darkest);
+  border-bottom: 1px solid var(--border);
+  
+  // Smooth transitions
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
+    
+  // Platform-specific data attributes for debugging
+  &[data-platform="web"] {
+    /* Web-specific styles if needed */
+  }
+  
+  &[data-platform="android"] {
+    /* Android-specific styles if needed */
+  }
+}
+
+// ===== iOS-SPECIFIC HEADER STYLES =====
+.site-header--ios {
+  // Extend from base site-header
+  @extend .site-header;
+  
+  // iOS-specific safe area handling
+  background-color: var(--primary);
+  
+  // Ensure header content doesn't get cut off by Dynamic Island/notch
+  .header-safe-area {
+    padding-top: var(--safe-area-inset-top);
+    padding-left: var(--safe-area-inset-left);
+    padding-right: var(--safe-area-inset-right);
+    min-height: var(--header-height-total);
+    
+    // Prevent content from jumping when safe areas change
+    transition: padding 0.3s ease;
+  }
+  
+  // Adjust title positioning for iOS
+  .header__title {
+    // Account for safe area in title positioning
+    margin-top: 0;
+    
+    // Ensure clickable area doesn't interfere with iOS gestures
+    touch-action: manipulation;
+  }
+  
+  // iOS-specific navigation adjustments
+  .main-nav {
+    // Ensure navigation doesn't interfere with iOS system UI
+    position: relative;
+    z-index: 1;
+  }
+}
+
 .header {
   text-align: center;
   display: flex;

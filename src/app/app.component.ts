@@ -46,7 +46,7 @@ export class AppComponent {
   protected readonly landlordStore = inject(LandlordStore);
   protected readonly checkInModalService = inject(CheckInModalService);
   protected readonly checkinStore = inject(CheckInStore);
-  
+
   // Initialize SessionService to handle app-wide session data management
   private readonly sessionService = inject(SessionService);
 

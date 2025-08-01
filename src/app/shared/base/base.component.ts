@@ -10,8 +10,8 @@ import {
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router } from '@angular/router';
 import { SsrPlatformService, ToastService } from '@fourfold/angular-foundation';
-import { filter, map } from 'rxjs/operators';
 import { CapacitorPlatformService } from '@shared/data-access/capacitor-platform.service';
+import { filter, map } from 'rxjs/operators';
 
 @Component({
   template: '',

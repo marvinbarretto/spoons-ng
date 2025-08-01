@@ -42,6 +42,27 @@ export const appConfig: ApplicationConfig = {
         inject(DevCacheBuster).setupDevConsoleShortcuts();
       }
     }),
+    provideAppInitializer(async () => {
+      // CRITICAL: Initialize Firebase for Capacitor plugins
+      const { Capacitor } = await import('@capacitor/core');
+      console.log('[AppConfig] [CRITICAL] App initializer called');
+      console.log('[AppConfig] [CRITICAL] Platform info:', {
+        isNativePlatform: Capacitor.isNativePlatform(),
+        platform: Capacitor.getPlatform(),
+        isPluginAvailable: Capacitor.isPluginAvailable('FirebaseAuthentication')
+      });
+      
+      if (Capacitor.isNativePlatform()) {
+        try {
+          console.log('[AppConfig] [CRITICAL] Checking if Capacitor Firebase App is available...');
+          // Just check if we can access the plugin - don't initialize manually
+          // The plugin should auto-initialize from GoogleService-Info.plist
+          console.log('[AppConfig] [CRITICAL] Native platform detected - Firebase should auto-initialize from config files');
+        } catch (error) {
+          console.error('[AppConfig] [CRITICAL] Error checking Capacitor Firebase availability:', error);
+        }
+      }
+    }),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(appRoutes, withPreloading(OnboardingAwarePreloadingStrategy)),
     provideHttpClient(withFetch()),

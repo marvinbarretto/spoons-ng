@@ -7,6 +7,7 @@ import {
   computed,
   inject,
 } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 import { BaseComponent } from '@shared/base/base.component';
 import { environment } from '../../../../environments/environment';
@@ -17,7 +18,7 @@ import { CheckinOrchestrator } from '../../data-access/checkin-orchestrator.serv
 
 @Component({
   selector: 'app-checkin',
-  imports: [],
+  imports: [CommonModule],
   templateUrl: './checkin.component.html',
   styleUrl: './checkin.component.scss',
 })
@@ -134,7 +135,6 @@ export class CheckinComponent extends BaseComponent implements AfterViewInit, On
     }
   }
 
-
   protected onRetakePhotoClick(): void {
     console.log('[CheckinComponent] 🔄 User clicked retake button - initiating photo reset');
     console.log('[CheckinComponent] 📊 Current stage before retake:', this.orchestrator.stage());
@@ -155,5 +155,15 @@ export class CheckinComponent extends BaseComponent implements AfterViewInit, On
         showPhotoPreview: this.orchestrator.showPhotoPreview(),
       });
     }, 50);
+  }
+
+  protected async onOpenSettingsClick(): Promise<void> {
+    console.log('[CheckinComponent] ⚙️ User clicked open settings button');
+    await this.orchestrator.openDeviceSettings();
+  }
+
+  protected async onRetryPermissionsClick(): Promise<void> {
+    console.log('[CheckinComponent] 🔐 User clicked retry permissions button');
+    await this.orchestrator.retryPermissions();
   }
 }

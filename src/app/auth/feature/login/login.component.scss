@@ -1,14 +1,36 @@
-// ===== LOGIN COMPONENT - Content Only =====
-// Layout handled by FullScreenShell, this component focuses on content styling
+// ===== LOGIN COMPONENT - Glass-Themed Authentication =====
+// Enhanced login experience with glass-themed validation and animations
+
+@use 'styles/base/animation-mixins' as *;
 
 .login-container {
-  /* Use semantic theme colors with darker gradient for auth contrast */
-  background: linear-gradient(135deg, var(--background-darker) 0%, var(--background-darkest) 100%);
+  /* Enhanced gradient background with glass atmosphere */
+  background: linear-gradient(135deg, 
+    var(--background-darker) 0%, 
+    var(--background-darkest) 70%, 
+    var(--background-darker) 100%);
+  
+  /* Add subtle texture overlay */
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 20% 30%, rgba(255, 248, 220, 0.02) 0%, transparent 60%),
+                radial-gradient(circle at 80% 70%, rgba(210, 105, 30, 0.03) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
 
   /* Full height to work with shell layout */
   height: 100%;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .login-header {
@@ -91,14 +113,77 @@
   }
 }
 
+// ===== GLASS-THEMED BUTTONS =====
+.glass-button {
+  position: relative;
+  backdrop-filter: blur(12px);
+  background: var(--background-lighter) !important;
+  border: 1px solid var(--border) !important;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+    transition: left 0.6s ease;
+    z-index: 1;
+  }
+  
+  &:hover::before {
+    left: 100%;
+  }
+  
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  }
+}
+
+.glass-button-secondary {
+  @extend .glass-button;
+  opacity: 0.9;
+  
+  &:hover {
+    opacity: 1;
+  }
+}
+
+// ===== ENHANCED FORM VALIDATION =====
+.form-error--global {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  color: var(--error, #ef4444);
+  font-size: 0.875rem;
+  backdrop-filter: blur(8px);
+  animation: shake 0.5s ease-in-out, slideInDown 0.3s ease-out;
+  
+  &::before {
+    content: '⚠️';
+    margin-right: 0.5rem;
+  }
+}
+
 .login-title {
   font-size: 2rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
-  background: linear-gradient(135deg, #ffffff, #e5e7eb);
+  background: linear-gradient(135deg, var(--text) 0%, var(--text-secondary) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  animation: text-shimmer 3s ease-in-out infinite;
+}
+
+@keyframes text-shimmer {
+  0%, 100% { filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.1)); }
+  50% { filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.2)); }
 }
 
 .login-subtitle {
@@ -228,22 +313,23 @@
   }
 }
 
-/* Animation for smooth entrance */
+// ===== ENTRANCE ANIMATIONS =====
+// Using existing animation system
+
 .login-header {
-  animation: fadeInUp 0.6s ease-out;
+  @include slide-up($duration: var(--animation-duration-normal));
+  position: relative;
+  z-index: 1;
 }
 
 .login-form-section {
-  animation: fadeInUp 0.6s ease-out 0.2s both;
+  @include slide-up($duration: var(--animation-duration-normal), $delay: 0.2s);
+  position: relative;
+  z-index: 1;
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.login-actions {
+  @include slide-up($duration: var(--animation-duration-normal), $delay: 0.4s);
+  position: relative;
+  z-index: 1;
 }

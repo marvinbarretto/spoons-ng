@@ -1,26 +1,26 @@
 // src/app/check-in/data-access/global-check-in.store.ts
 
-import { Injectable, computed, inject, signal } from '@angular/core';
-import { GlobalCheckInService } from './global-check-in.service';
+import { Injectable, computed, inject } from '@angular/core';
 import type { CheckIn } from '../utils/check-in.models';
+import { GlobalCheckInService } from './global-check-in.service';
 
 /**
  * GlobalCheckInStore - Reactive store for app-wide check-in data
- * 
+ *
  * PURPOSE:
  * - Provides reactive signals for global check-in data
  * - Computed signals for cross-user statistics
  * - Used by DataAggregator for leaderboard calculations
  * - Clear separation from user-scoped check-in stores
- * 
+ *
  * SCOPE: GLOBAL (All Users)
  * - Contains check-ins from ALL users
  * - Never filters by current user
  * - Used for leaderboards, rankings, app-wide stats
- * 
+ *
  * USAGE:
  * - DataAggregator: Cross-user pub count calculations
- * - LeaderboardStore: User rankings and comparisons  
+ * - LeaderboardStore: User rankings and comparisons
  * - AdminComponents: Global activity monitoring
  * - SessionService: Initialize with fresh global data
  */
@@ -34,18 +34,12 @@ export class GlobalCheckInStore {
 
   // Computed signals for global statistics
   readonly totalCheckInCount = computed(() => this.allCheckIns().length);
-  
-  readonly uniqueUserCount = computed(() => 
-    new Set(this.allCheckIns().map(c => c.userId)).size
-  );
 
-  readonly uniquePubCount = computed(() => 
-    new Set(this.allCheckIns().map(c => c.pubId)).size
-  );
+  readonly uniqueUserCount = computed(() => new Set(this.allCheckIns().map(c => c.userId)).size);
 
-  readonly checkInsWithPubs = computed(() => 
-    this.allCheckIns().filter(c => c.pubId)
-  );
+  readonly uniquePubCount = computed(() => new Set(this.allCheckIns().map(c => c.pubId)).size);
+
+  readonly checkInsWithPubs = computed(() => this.allCheckIns().filter(c => c.pubId));
 
   readonly averageCheckInsPerUser = computed(() => {
     const uniqueUsers = this.uniqueUserCount();

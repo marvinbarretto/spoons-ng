@@ -1,8 +1,58 @@
-<!-- Updated HeaderComponent template -->
-<div class="site-header" #headerRef>
-  @if (!isHomepage()) {
-    <a routerLink="/" class="header__title">
-      <h1>
+<!-- Platform-aware HeaderComponent template -->
+@if (isIOS()) {
+  <!-- iOS-specific header with safe area padding -->
+  <div class="site-header site-header--ios" #headerRef [attr.data-platform]="platformName()">
+    <div class="header-safe-area">
+      @if (!isHomepage()) {
+        <a routerLink="/" class="header__title">
+          <h1>
+            Spoonscount
+            <small
+              >{{ version }}
+              <span class="env-badge env-badge--{{ environmentName().toLowerCase() }}">{{
+                environmentName()
+              }}</span></small
+            >
+          </h1>
+        </a>
+      } @else {
+        <h1 class="header__title">
+          Spoonscount
+          <small
+            >{{ version }}
+            <span class="env-badge env-badge--{{ environmentName().toLowerCase() }}">{{
+              environmentName()
+            }}</span></small
+          >
+        </h1>
+      }
+
+      <!-- ✅ SIMPLIFIED NAVIGATION -->
+      <nav class="main-nav">
+        <app-nav />
+      </nav>
+
+      <!-- Admin Sub-Navigation -->
+      <app-admin-nav />
+    </div>
+  </div>
+} @else {
+  <!-- Web/Android header (existing behavior) -->
+  <div class="site-header" #headerRef [attr.data-platform]="platformName()">
+    @if (!isHomepage()) {
+      <a routerLink="/" class="header__title">
+        <h1>
+          Spoonscount
+          <small
+            >{{ version }}
+            <span class="env-badge env-badge--{{ environmentName().toLowerCase() }}">{{
+              environmentName()
+            }}</span></small
+          >
+        </h1>
+      </a>
+    } @else {
+      <h1 class="header__title">
         Spoonscount
         <small
           >{{ version }}
@@ -11,31 +61,14 @@
           }}</span></small
         >
       </h1>
-    </a>
-  } @else {
-    <h1 class="header__title">
-      Spoonscount
-      <small
-        >{{ version }}
-        <span class="env-badge env-badge--{{ environmentName().toLowerCase() }}">{{
-          environmentName()
-        }}</span></small
-      >
-    </h1>
-  }
+    }
 
-  <!-- ✅ SIMPLIFIED NAVIGATION:
-  Nav component handles its own responsive behavior
-  Desktop: Shows full nav menu, Mobile: Shows only user/actions (footer-nav handles mobile navigation)
-  -->
-  <nav class="main-nav">
-    <app-nav />
-    <!-- <app-user-profile-widget
-    [user]="dataAggregatorService.user()"
-    (openProfile)="onOpenProfile()"
-    class="profile-widget" /> -->
-  </nav>
+    <!-- ✅ SIMPLIFIED NAVIGATION -->
+    <nav class="main-nav">
+      <app-nav />
+    </nav>
 
-  <!-- Admin Sub-Navigation -->
-  <app-admin-nav />
-</div>
+    <!-- Admin Sub-Navigation -->
+    <app-admin-nav />
+  </div>
+}

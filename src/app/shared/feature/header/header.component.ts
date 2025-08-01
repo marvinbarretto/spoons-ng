@@ -15,6 +15,7 @@ import { AdminNavComponent } from '../../../admin/ui/admin-nav/admin-nav.compone
 import { AuthStore } from '../../../auth/data-access/auth.store';
 import { ProfileCustomisationModalComponent } from '../../../home/ui/profile-customisation-modal/profile-customisation-modal.component';
 import { BaseComponent } from '../../base/base.component';
+import { CapacitorPlatformService } from '../../data-access/capacitor-platform.service';
 import { DataAggregatorService } from '../../data-access/data-aggregator.service';
 import { NavComponent } from '../nav/nav.component';
 
@@ -41,6 +42,7 @@ export class HeaderComponent extends BaseComponent {
   protected readonly authStore = inject(AuthStore);
   protected readonly overlayService = inject(OverlayService);
   protected readonly dataAggregatorService = inject(DataAggregatorService);
+  protected readonly capacitorPlatform = inject(CapacitorPlatformService);
 
   readonly version = APP_VERSION;
 
@@ -54,6 +56,11 @@ export class HeaderComponent extends BaseComponent {
     }
     return 'LOCAL';
   });
+
+  // ✅ Platform detection for iOS-specific header handling
+  readonly isIOS = this.capacitorPlatform.isIOS;
+  readonly isNative = this.capacitorPlatform.isNative;
+  readonly platformName = this.capacitorPlatform.platformName;
 
   // ✅ Auth signals
   readonly user = this.authStore.user;

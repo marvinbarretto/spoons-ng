@@ -1,88 +1,193 @@
 <!-- src/app/check-in/feature/checkin/checkin.component.html -->
 
 <div class="checkin-container">
-  <!-- Live Camera Video Stream -->
-  <video
-    #cameraVideo
-    class="camera-video"
-    [class.visible]="orchestrator.showCameraPreview()"
-    autoplay
-    playsinline
-    muted
-  ></video>
-
-  <!-- Camera Framing Guides -->
+  <!-- Web Camera Section -->
   @if (orchestrator.showCameraPreview()) {
-    <div class="camera-frame">
-      <div class="frame-corner frame-corner--top-left"></div>
-      <div class="frame-corner frame-corner--top-right"></div>
-      <div class="frame-corner frame-corner--bottom-left"></div>
-      <div class="frame-corner frame-corner--bottom-right"></div>
-    </div>
+    <ng-container [ngTemplateOutlet]="webCameraPreview"></ng-container>
+    <ng-container [ngTemplateOutlet]="webCameraOverlay"></ng-container>
   }
+  
+  <!-- Native Camera Section -->
+  @if (orchestrator.showNativeCameraButton()) {
+    <ng-container [ngTemplateOutlet]="nativeCameraPlaceholder"></ng-container>
+    <ng-container [ngTemplateOutlet]="nativeCameraControls"></ng-container>
+  }
+  
+  <!-- Photo Preview Section -->
+  @if (orchestrator.showPhotoPreview()) {
+    <ng-container [ngTemplateOutlet]="photoPreview"></ng-container>
+  }
+  
+  <!-- Error States -->
+  @if (orchestrator.showPermissionGuidance()) {
+    <ng-container [ngTemplateOutlet]="permissionGuidance"></ng-container>
+  }
+  
+  @if (orchestrator.error() && !orchestrator.showPermissionGuidance()) {
+    <ng-container [ngTemplateOutlet]="errorState"></ng-container>
+  }
+  
+  <!-- Always show exit button -->
+  <ng-container [ngTemplateOutlet]="exitButton"></ng-container>
+</div>
 
-  <!-- Camera Overlay UI -->
-  @if (orchestrator.showCameraPreview()) {
-    <div class="camera-overlay">
-      <div class="camera-header">
-        <h2>Capture carpet to check in</h2>
+<!-- ======================================= -->
+<!-- WEB CAMERA TEMPLATES -->
+<!-- ======================================= -->
+
+<!-- Web: Live Camera Video Stream -->
+<ng-template #webCameraPreview>
+  <video #cameraVideo class="camera-video visible" autoplay playsinline muted></video>
+  
+  <!-- Camera Framing Guides -->
+  <div class="camera-frame">
+    <div class="frame-corner frame-corner--top-left"></div>
+    <div class="frame-corner frame-corner--top-right"></div>
+    <div class="frame-corner frame-corner--bottom-left"></div>
+    <div class="frame-corner frame-corner--bottom-right"></div>
+  </div>
+</ng-template>
+
+<!-- Web: Camera Overlay UI -->
+<ng-template #webCameraOverlay>
+  <div class="camera-overlay">
+    <div class="camera-header">
+      <h2>Capture carpet to check in</h2>
+    </div>
+
+    @if (orchestrator.showCaptureButton()) {
+      <div class="camera-controls">
+        <ng-container [ngTemplateOutlet]="captureButton" [ngTemplateOutletContext]="{
+          buttonClass: 'capture-btn',
+          iconText: '📸',
+          buttonText: 'Capture'
+        }"></ng-container>
       </div>
+    }
+  </div>
+</ng-template>
 
-      @if (orchestrator.showCaptureButton()) {
-        <div class="camera-controls">
-          <button
-            class="capture-btn"
-            (click)="onCaptureClick()"
-            [disabled]="orchestrator.isCapturingPhoto()"
-          >
-            @if (orchestrator.isCapturingPhoto()) {
-              <div class="capturing-icon">⏳</div>
-              <span>Capturing...</span>
-            } @else {
-              <div class="camera-icon">📸</div>
-              <span>Capture</span>
-            }
-          </button>
-        </div>
+<!-- ======================================= -->
+<!-- NATIVE CAMERA TEMPLATES -->
+<!-- ======================================= -->
+
+<!-- Native: Camera Preview Placeholder -->
+<ng-template #nativeCameraPlaceholder>
+  <div class="native-camera-container">
+    <div class="camera-placeholder">
+      <div class="camera-icon">📱</div>
+      <h3>Ready to capture carpet</h3>
+      <p>Tap the button below to open your camera</p>
+    </div>
+  </div>
+</ng-template>
+
+<!-- Native: Camera Controls -->
+<ng-template #nativeCameraControls>
+  <div class="native-camera-controls">
+    <ng-container [ngTemplateOutlet]="captureButton" [ngTemplateOutletContext]="{
+      buttonClass: 'native-capture-btn',
+      iconText: '📸',
+      buttonText: 'Open Camera'
+    }"></ng-container>
+  </div>
+</ng-template>
+
+<!-- ======================================= -->
+<!-- PHOTO PROCESSING TEMPLATES -->
+<!-- ======================================= -->
+
+<!-- Photo Preview with Analysis Overlay -->
+<ng-template #photoPreview>
+  <div class="photo-preview">
+    <img [src]="orchestrator.photoDataUrl()!" alt="Captured image" class="static-photo" />
+    
+    <div class="photo-overlay">
+      @if (orchestrator.stage() === 'LLM_CHECKING') {
+        <ng-container [ngTemplateOutlet]="llmAnalyzing"></ng-container>
       }
     </div>
-  }
+  </div>
+</ng-template>
 
-  <!-- Photo Preview with Static Background -->
-  @if (orchestrator.showPhotoPreview()) {
-    <div class="photo-preview">
-      <img [src]="orchestrator.photoDataUrl()!" alt="Captured image" class="static-photo" />
+<!-- LLM Analysis State -->
+<ng-template #llmAnalyzing>
+  <div class="analyzing-container">
+    <div class="analyzing-icon">🔍</div>
+    <h3>Analyzing image..</h3>
+    <p>This may take a moment</p>
+    <div class="loading-spinner"></div>
 
-      <div class="photo-overlay">
-        @if (orchestrator.stage() === 'LLM_CHECKING') {
-          <div class="analyzing-container">
-            <div class="analyzing-icon">🔍</div>
-            <h3>Analyzing image..</h3>
-            <p>This may take a moment</p>
-            <div class="loading-spinner"></div>
-            
-            @if (orchestrator.showRetakeButton()) {
-              <button class="retake-btn analyzing-retake-btn" (click)="onRetakePhotoClick()">Cancel & Retake Photo</button>
-            }
-          </div>
+    @if (orchestrator.showRetakeButton()) {
+      <button class="retake-btn analyzing-retake-btn" (click)="onRetakePhotoClick()">
+        Cancel & Retake Photo
+      </button>
+    }
+  </div>
+</ng-template>
+
+<!-- ======================================= -->
+<!-- ERROR STATE TEMPLATES -->
+<!-- ======================================= -->
+
+<!-- Native: Permission Guidance -->
+<ng-template #permissionGuidance>
+  <div class="permission-guidance">
+    <div class="permission-container">
+      <div class="permission-icon">🔒</div>
+      <h2>Camera Permission Required</h2>
+      <p>{{ orchestrator.error() }}</p>
+
+      <div class="permission-actions">
+        @if (orchestrator.recoveryAction() === 'OPEN_SETTINGS') {
+          <button class="settings-btn" (click)="onOpenSettingsClick()">
+            <span>Open Device Settings</span>
+          </button>
         }
+
+        <button class="retry-permission-btn" (click)="onRetryPermissionsClick()">
+          <span>Try Again</span>
+        </button>
       </div>
     </div>
-  }
+  </div>
+</ng-template>
 
-  <!-- Error State -->
-  @if (orchestrator.error()) {
-    <div class="error-state">
-      <div class="error-container">
-        <div class="error-icon">❌</div>
-        <h2>Check-in Failed</h2>
-        <p>{{ orchestrator.error() }}</p>
+<!-- General Error State -->
+<ng-template #errorState>
+  <div class="error-state">
+    <div class="error-container">
+      <div class="error-icon">❌</div>
+      <h2>Check-in Failed</h2>
+      <p>{{ orchestrator.error() }}</p>
 
-        <button class="retry-btn" (click)="onRetryClick()">Try Again</button>
-      </div>
+      <button class="retry-btn" (click)="onRetryClick()">Try Again</button>
     </div>
-  }
+  </div>
+</ng-template>
 
-  <!-- Exit button (always available) -->
+<!-- ======================================= -->
+<!-- SHARED TEMPLATES -->
+<!-- ======================================= -->
+
+<!-- Reusable Capture Button -->
+<ng-template #captureButton let-buttonClass="buttonClass" let-iconText="iconText" let-buttonText="buttonText">
+  <button
+    [class]="buttonClass"
+    (click)="onCaptureClick()"
+    [disabled]="orchestrator.isCapturingPhoto()"
+  >
+    @if (orchestrator.isCapturingPhoto()) {
+      <div class="capturing-icon">⏳</div>
+      <span>Capturing...</span>
+    } @else {
+      <div class="camera-icon">{{ iconText }}</div>
+      <span>{{ buttonText }}</span>
+    }
+  </button>
+</ng-template>
+
+<!-- Exit Button -->
+<ng-template #exitButton>
   <button class="exit-btn" (click)="onExitClick()">✕</button>
-</div>
+</ng-template>

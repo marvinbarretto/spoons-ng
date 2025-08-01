@@ -1,101 +1,145 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { computed, Injectable, signal, inject, effect } from '@angular/core';
+import { SsrPlatformService } from '@fourfold/angular-foundation';
+
+interface PluginCache {
+  [key: string]: any | null;
+}
 
 @Injectable({ providedIn: 'root' })
 export class CapacitorPlatformService {
-  // Core platform detection signals
-  readonly isNative = signal(false);
-  readonly isIOS = signal(false);
-  readonly isAndroid = signal(false);
+  private readonly ssrPlatform = inject(SsrPlatformService);
+  
+  // Core state signals
+  private readonly _capacitor = signal<any>(null);
+  private readonly _initialized = signal(false);
+  private readonly _pluginCache = signal<PluginCache>({});
+  
+  // Computed properties following Angular 20 patterns
+  readonly initialized = computed(() => this._initialized());
+  readonly isNative = computed(() => 
+    this._capacitor()?.isNativePlatform() ?? false
+  );
+  readonly isIOS = computed(() => 
+    this._capacitor()?.getPlatform() === 'ios'
+  );
+  readonly isAndroid = computed(() => 
+    this._capacitor()?.getPlatform() === 'android'
+  );
   readonly isWeb = computed(() => !this.isNative());
-
-  // Capacitor capability signals
-  readonly hasCamera = signal(false);
-  readonly hasGeolocation = signal(false);
-  readonly hasPushNotifications = signal(false);
-  readonly hasAppBadge = signal(false);
-  readonly hasStatusBar = signal(false);
-  readonly hasHaptics = signal(false);
+  readonly platformName = computed(() => 
+    this._capacitor()?.getPlatform() ?? 'web'
+  );
+  
+  // Capability detection signals
+  readonly hasCamera = computed(() => this.isPluginAvailable('Camera'));
+  readonly hasGeolocation = signal(true); // Available on both web and native
+  readonly hasPushNotifications = computed(() => 
+    this.isNative() && this.isPluginAvailable('PushNotifications')
+  );
+  readonly hasAppBadge = computed(() => 
+    this.isNative() && this.isPluginAvailable('App')
+  );
+  readonly hasStatusBar = computed(() => 
+    this.isNative() && this.isPluginAvailable('StatusBar')
+  );
+  readonly hasHaptics = computed(() => 
+    this.isNative() && this.isPluginAvailable('Haptics')
+  );
 
   constructor() {
-    this.initializeCapacitor();
+    this.initialize();
+    
+    // Debug logging in development
+    effect(() => {
+      if (this.initialized()) {
+        console.debug('[CapacitorPlatform] Platform detected:', {
+          initialized: this.initialized(),
+          isNative: this.isNative(),
+          platform: this.platformName(),
+          capabilities: {
+            hasCamera: this.hasCamera(),
+            hasGeolocation: this.hasGeolocation(),
+            hasPushNotifications: this.hasPushNotifications(),
+            hasAppBadge: this.hasAppBadge(),
+            hasStatusBar: this.hasStatusBar(),
+            hasHaptics: this.hasHaptics(),
+          }
+        });
+      }
+    });
   }
 
   /**
-   * Initialize Capacitor platform detection and capabilities
+   * Initialize Capacitor platform detection
    */
-  private async initializeCapacitor(): Promise<void> {
-    try {
-      // Check if Capacitor is available
-      const { Capacitor } = await import('@capacitor/core');
-      
-      if (Capacitor.isNativePlatform()) {
-        this.isNative.set(true);
-        
-        // Detect specific platforms
-        if (Capacitor.getPlatform() === 'ios') {
-          this.isIOS.set(true);
-        } else if (Capacitor.getPlatform() === 'android') {
-          this.isAndroid.set(true);
-        }
+  private async initialize(): Promise<void> {
+    // SSR-safe initialization
+    const isBrowser = this.ssrPlatform.onlyOnBrowser(() => true);
+    if (!isBrowser) {
+      this._initialized.set(true);
+      return;
+    }
 
-        // Initialize capability detection
-        await this.detectCapabilities();
-      }
+    try {
+      const capacitorModule = await this.attemptCapacitorImport();
+      this._capacitor.set(capacitorModule?.Capacitor ?? null);
     } catch (error) {
-      // Capacitor not available - running on web
-      console.debug('[CapacitorPlatform] Running on web platform');
+      console.debug('[CapacitorPlatform] Capacitor unavailable, using web fallbacks');
+    } finally {
+      this._initialized.set(true);
     }
   }
 
   /**
-   * Detect available Capacitor capabilities
+   * Attempt to import Capacitor core module
    */
-  private async detectCapabilities(): Promise<void> {
+  private async attemptCapacitorImport() {
     try {
-      // Camera detection
-      try {
-        const { Camera } = await import('@capacitor/camera');
-        this.hasCamera.set(true);
-      } catch {
-        // Camera plugin not available
-      }
-
-      // Geolocation (available on web too)
-      this.hasGeolocation.set(true);
-
-      // Native-only capabilities
-      if (this.isNative()) {
-        try {
-          const { PushNotifications } = await import('@capacitor/push-notifications');
-          this.hasPushNotifications.set(true);
-        } catch {
-          // Push notifications not available
-        }
-
-        try {
-          const { App } = await import('@capacitor/app');
-          this.hasAppBadge.set(true);
-        } catch {
-          // App plugin not available
-        }
-
-        try {
-          const { StatusBar } = await import('@capacitor/status-bar');
-          this.hasStatusBar.set(true);
-        } catch {
-          // Status bar not available
-        }
-
-        try {
-          const { Haptics } = await import('@capacitor/haptics');
-          this.hasHaptics.set(true);
-        } catch {
-          // Haptics not available
-        }
-      }
-    } catch (error) {
-      console.warn('[CapacitorPlatform] Error detecting capabilities:', error);
+      return await import('@capacitor/core');
+    } catch {
+      return null;
     }
+  }
+
+  /**
+   * Get a Capacitor plugin with caching
+   */
+  async getPlugin<T>(pluginPackage: string): Promise<T | null> {
+    const cached = this._pluginCache()[pluginPackage];
+    if (cached !== undefined) return cached;
+
+    if (!this.isNative()) {
+      this.cachePlugin(pluginPackage, null);
+      return null;
+    }
+
+    try {
+      const pluginModule = await import(pluginPackage);
+      const plugin = pluginModule.default ?? pluginModule;
+      this.cachePlugin(pluginPackage, plugin);
+      return plugin;
+    } catch {
+      console.debug(`[CapacitorPlatform] Plugin ${pluginPackage} not available`);
+      this.cachePlugin(pluginPackage, null);
+      return null;
+    }
+  }
+
+  /**
+   * Check if a plugin is available
+   */
+  isPluginAvailable(pluginName: string): boolean {
+    return this._capacitor()?.isPluginAvailable?.(pluginName) ?? false;
+  }
+
+  /**
+   * Cache a plugin result
+   */
+  private cachePlugin(pluginName: string, plugin: any): void {
+    this._pluginCache.update(cache => ({
+      ...cache,
+      [pluginName]: plugin
+    }));
   }
 
   /**

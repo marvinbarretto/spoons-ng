@@ -20,38 +20,34 @@ export function provideCapacitor(): EnvironmentProviders {
         },
       }),
     },
-    {
-      provide: 'PLATFORM_FEATURES',
-      useFactory: (capacitorPlatform: CapacitorPlatformService) => ({
-        // Platform feature flags
-        hasCamera: capacitorPlatform.hasCamera(),
-        hasGeolocation: capacitorPlatform.hasGeolocation(),
-        hasPushNotifications: capacitorPlatform.hasPushNotifications(),
-        hasAppBadge: capacitorPlatform.hasAppBadge(),
-        hasStatusBar: capacitorPlatform.hasStatusBar(),
-        hasHaptics: capacitorPlatform.hasHaptics(),
-        
-        // Platform detection flags
-        isNative: capacitorPlatform.isNative(),
-        isIOS: capacitorPlatform.isIOS(),
-        isAndroid: capacitorPlatform.isAndroid(),
-        isWeb: capacitorPlatform.isWeb(),
-      }),
-      deps: [CapacitorPlatformService],
-    },
   ]);
 }
 
 /**
- * Capacitor feature detection utilities
+ * Capacitor plugin package names for dynamic imports
  */
-export const CAPACITOR_FEATURES = {
-  CAMERA: 'camera',
-  GEOLOCATION: 'geolocation', 
-  PUSH_NOTIFICATIONS: 'push-notifications',
-  APP_BADGE: 'app-badge',
-  STATUS_BAR: 'status-bar',
-  HAPTICS: 'haptics',
+export const CAPACITOR_PLUGINS = {
+  CORE: '@capacitor/core',
+  CAMERA: '@capacitor/camera',
+  APP: '@capacitor/app',
+  PUSH_NOTIFICATIONS: '@capacitor/push-notifications',
+  STATUS_BAR: '@capacitor/status-bar',
+  HAPTICS: '@capacitor/haptics',
+  GEOLOCATION: '@capacitor/geolocation',
 } as const;
 
-export type CapacitorFeature = typeof CAPACITOR_FEATURES[keyof typeof CAPACITOR_FEATURES];
+export type CapacitorPlugin = (typeof CAPACITOR_PLUGINS)[keyof typeof CAPACITOR_PLUGINS];
+
+/**
+ * Platform feature detection utilities
+ */
+export const PLATFORM_FEATURES = {
+  CAMERA: 'Camera',
+  GEOLOCATION: 'Geolocation',
+  PUSH_NOTIFICATIONS: 'PushNotifications',
+  APP_BADGE: 'App',
+  STATUS_BAR: 'StatusBar',
+  HAPTICS: 'Haptics',
+} as const;
+
+export type PlatformFeature = (typeof PLATFORM_FEATURES)[keyof typeof PLATFORM_FEATURES];

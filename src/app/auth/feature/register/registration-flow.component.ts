@@ -13,7 +13,7 @@ import { AvatarSelectionWidgetComponent } from '@home/ui/profile-customisation-m
 import { BaseComponent } from '@shared/base/base.component';
 import { AvatarService } from '@shared/data-access/avatar.service';
 import { ThemeStore } from '@shared/data-access/theme.store';
-import { ButtonComponent } from '@shared/ui/button/button.component';
+import { ButtonComponent } from '@fourfold/angular-foundation';
 import { FormInputComponent } from '@shared/ui/form-input/form-input.component';
 import { StepperComponent, type StepConfig } from '@shared/ui/stepper/stepper.component';
 import type { ThemeType } from '@shared/utils/theme.tokens';
@@ -63,39 +63,41 @@ import { RegistrationFlowService } from './registration-flow.service';
 
               <div class="auth-methods">
                 @if (!showEmailForm()) {
-                  <app-button
-                    variant="secondary"
+                  <ff-button
                     size="lg"
                     [fullWidth]="true"
-                    iconLeft="login"
+                    iconLeft="google"
                     [loading]="googleLoading()"
                     (onClick)="handleGoogleAuth()"
+                    class="primary-auth-btn"
+                    ariaLabel="Create account with Google"
                   >
                     Continue with Google
-                  </app-button>
+                  </ff-button>
 
-                  <app-button
-                    variant="secondary"
+                  <ff-button
                     size="lg"
                     [fullWidth]="true"
                     iconLeft="email"
                     [loading]="emailLoading()"
                     (onClick)="handleEmailAuth()"
+                    class="secondary-auth-btn"
+                    ariaLabel="Create account with email"
                   >
                     Continue with Email
-                  </app-button>
+                  </ff-button>
                 } @else {
-                  <app-button
-                    variant="secondary"
+                  <ff-button
                     size="md"
                     [fullWidth]="true"
-                    iconLeft="login"
+                    iconLeft="google"
                     [loading]="googleLoading()"
                     (onClick)="handleGoogleAuth()"
                     class="alternate-auth-button"
+                    ariaLabel="Alternative: Create account with Google"
                   >
                     Continue with Google
-                  </app-button>
+                  </ff-button>
                 }
               </div>
 
@@ -163,16 +165,16 @@ import { RegistrationFlowService } from './registration-flow.service';
                       }
                     </div>
 
-                    <app-button
+                    <ff-button
                       type="submit"
-                      variant="primary"
                       size="lg"
                       [fullWidth]="true"
                       [loading]="emailSubmitLoading()"
                       class="email-submit-button"
+                      ariaLabel="Create your account with email"
                     >
                       Create Account
-                    </app-button>
+                    </ff-button>
                   </form>
                 </div>
               }
@@ -239,29 +241,59 @@ import { RegistrationFlowService } from './registration-flow.service';
           @case ('location') {
             <div class="step-content">
               <div class="step-header">
-                <h1 class="step-title">Find Your Local Pub</h1>
-                <p class="step-subtitle">We'll help you earn bonus points at your nearest pub</p>
+                <h1 class="step-title">Discover Your Local</h1>
+                <p class="step-subtitle">
+                  Find nearby pubs for bonus points and personalized recommendations. 
+                  <span class="value-highlight">This helps you earn 2x points at your favorite spots!</span>
+                </p>
               </div>
 
               <div class="location-content">
                 @if (locationService.permissionStatus() === 'pending') {
                   <div class="location-prompt">
-                    <div class="location-icon">📍</div>
-                    <p class="location-description">
-                      {{ locationService.getPermissionStatusMessage() }}
-                    </p>
-                    <button
-                      type="button"
-                      class="location-button"
-                      (click)="requestLocation()"
-                      [disabled]="loading() || locationService.isRequestingLocation()"
-                    >
-                      @if (locationService.isRequestingLocation()) {
-                        Getting Location...
-                      } @else {
-                        Allow Location Access
-                      }
-                    </button>
+                    <div class="location-benefits">
+                      <div class="benefit-item">
+                        <span class="benefit-icon">🏆</span>
+                        <span class="benefit-text">Earn 2x points at nearby pubs</span>
+                      </div>
+                      <div class="benefit-item">
+                        <span class="benefit-icon">🗺️</span>
+                        <span class="benefit-text">Get personalized pub recommendations</span>
+                      </div>
+                      <div class="benefit-item">
+                        <span class="benefit-icon">🎯</span>
+                        <span class="benefit-text">Track your local pub journey</span>
+                      </div>
+                    </div>
+                    
+                    <div class="location-actions">
+                      <ff-button
+                        size="lg"
+                        [fullWidth]="true"
+                        iconLeft="location_on"
+                        [loading]="locationService.isRequestingLocation()"
+                        (onClick)="requestLocation()"
+                        [disabled]="loading()"
+                        class="location-primary-btn"
+                        ariaLabel="Allow location access to find nearby pubs"
+                      >
+                        @if (locationService.isRequestingLocation()) {
+                          Finding Nearby Pubs...
+                        } @else {
+                          Find My Local Pubs
+                        }
+                      </ff-button>
+                      
+                      <button
+                        type="button"
+                        class="skip-location-btn"
+                        (click)="skipLocationStep()"
+                        [disabled]="loading()"
+                        aria-label="Skip location and browse pubs manually"
+                      >
+                        I'll browse pubs manually
+                      </button>
+                    </div>
                   </div>
                 }
 
@@ -297,22 +329,24 @@ import { RegistrationFlowService } from './registration-flow.service';
                       <h3 class="pub-name">{{ nearestPub()?.name }}</h3>
                     </div>
                     <div class="pub-actions">
-                      <app-button
-                        variant="primary"
+                      <ff-button
                         size="md"
                         (onClick)="confirmLocalPub()"
                         [disabled]="loading()"
+                        class="confirm-pub-btn"
+                        ariaLabel="Confirm this as my local pub"
                       >
-                        Confirm
-                      </app-button>
-                      <app-button
-                        variant="secondary"
-                        size="md"
-                        (onClick)="showPubBrowser.set(true)"
+                        ✓ Perfect, this is my local!
+                      </ff-button>
+                      <button
+                        type="button"
+                        class="browse-different-btn"
+                        (click)="showPubBrowser.set(true)"
                         [disabled]="loading()"
+                        aria-label="Browse different pubs"
                       >
-                        This isn't my local
-                      </app-button>
+                        Find a different pub
+                      </button>
                     </div>
                   </div>
                 }
@@ -376,28 +410,29 @@ import { RegistrationFlowService } from './registration-flow.service';
       @if (flowService.currentStep() !== 'auth') {
         <div class="step-navigation">
           @if (flowService.canGoBack()) {
-            <app-button
-              variant="ghost"
+            <ff-button
               size="md"
               iconLeft="arrow_back"
               (onClick)="flowService.previousStep()"
               [disabled]="loading()"
+              class="back-button"
+              ariaLabel="Go back to previous step"
             >
               Back
-            </app-button>
+            </ff-button>
           }
 
           @if (flowService.currentStep() !== 'complete') {
-            <app-button
-              variant="primary"
+            <ff-button
               size="md"
               iconRight="arrow_forward"
               (onClick)="flowService.nextStep()"
               [disabled]="loading() || !flowService.canGoNext()"
               class="next-button"
+              ariaLabel="Continue to next step"
             >
-              Next
-            </app-button>
+              Continue
+            </ff-button>
           }
         </div>
       }
