@@ -8,6 +8,12 @@ const config: CapacitorConfig = {
     FirebaseAuthentication: {
       skipNativeAuth: false,
       providers: ["google.com"]
+    },
+    Camera: {
+      permissions: ["camera"]
+    },
+    Geolocation: {
+      permissions: ["location"]
     }
   }
 };

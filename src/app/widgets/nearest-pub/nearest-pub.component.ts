@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { LocationService } from '@fourfold/angular-foundation';
 import { CheckInStore } from '../../check-in/data-access/check-in.store';
+import { AbstractLocationService } from '../../shared/data-access/abstract-location.service';
 import { NearbyPubStore } from '../../pubs/data-access/nearby-pub.store';
 import { DataAggregatorService } from '../../shared/data-access/data-aggregator.service';
 import { UserStore } from '../../users/data-access/user.store';
@@ -73,7 +73,7 @@ import { LocationStateComponent } from '../../shared/ui/location-state/location-
 export class NearestPubComponent extends BaseWidgetComponent {
   // Direct store access for widget-specific location data
   private readonly nearbyPubStore = inject(NearbyPubStore);
-  private readonly locationService = inject(LocationService);
+  private readonly locationService = inject(AbstractLocationService);
   private readonly userStore = inject(UserStore);
   private readonly checkinStore = inject(CheckInStore);
 
@@ -132,7 +132,10 @@ export class NearestPubComponent extends BaseWidgetComponent {
       '[NearestPubComponent] 📍 User clicked "Grant Location Access" - requesting location...'
     );
     this.error.set(null);
-    this.locationService.getCurrentLocation();
+    this.locationService.getCurrentLocation().catch(error => {
+      console.error('[NearestPubComponent] Location request failed:', error);
+      this.error.set(error.message || 'Failed to get location');
+    });
   }
 
   // Visit status helpers (same pattern as pub-list component)

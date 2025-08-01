@@ -37,6 +37,8 @@
 	<string>This app uses location to help you find nearby pubs and check in when you visit them.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>This app uses location to help you find nearby pubs and check in when you visit them.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>This app uses the camera to take photos when checking in to pubs.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

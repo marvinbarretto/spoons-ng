@@ -57,6 +57,7 @@
     "@capacitor/camera": "7.0.1",
     "@capacitor/cli": "7.4.2",
     "@capacitor/core": "7.4.2",
+    "@capacitor/geolocation": "7.1.4",
     "@capacitor/ios": "7.4.2",
     "@fourfold/angular-foundation": "0.1.11",
     "@google/generative-ai": "0.24.1",

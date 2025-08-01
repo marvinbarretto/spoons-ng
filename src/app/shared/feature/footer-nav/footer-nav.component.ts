@@ -4,8 +4,9 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { CheckInStore } from '@/app/check-in/data-access/check-in.store';
 import { RouterModule } from '@angular/router';
 import { AuthStore } from '@auth/data-access/auth.store';
-import { LocationService, OverlayService } from '@fourfold/angular-foundation';
+import { OverlayService } from '@fourfold/angular-foundation';
 import { NearbyPubStore } from '@pubs/data-access/nearby-pub.store';
+import { AbstractLocationService } from '@shared/data-access/abstract-location.service';
 import { BaseComponent } from '@shared/base/base.component';
 import { ViewportService } from '@shared/data-access/viewport.service';
 import { IconComponent } from '@shared/ui/icon/icon.component';
@@ -278,7 +279,7 @@ export class FooterNavComponent extends BaseComponent {
   protected readonly authStore = inject(AuthStore);
   protected readonly checkinStore = inject(CheckInStore);
   private readonly overlayService = inject(OverlayService);
-  private readonly locationService = inject(LocationService);
+  private readonly locationService = inject(AbstractLocationService);
 
   // ✅ Local state for check-in process
   private readonly _isCheckingIn = signal(false);
@@ -448,15 +449,21 @@ export class FooterNavComponent extends BaseComponent {
             console.log(
               '[FooterNav] 🔄 Retry clicked for location issue, calling refreshLocation()'
             );
-            this.locationService.refreshLocation();
+            this.locationService.refreshLocation().catch(error => {
+              console.error('[FooterNav] Location refresh failed:', error);
+            });
             break;
           case 'no-nearby-pubs':
             console.log('[FooterNav] 🔄 Retry clicked for no nearby pubs, refreshing location');
-            this.locationService.refreshLocation();
+            this.locationService.refreshLocation().catch(error => {
+              console.error('[FooterNav] Location refresh failed:', error);
+            });
             break;
           case 'out-of-range':
             console.log('[FooterNav] 🔄 Retry clicked for out of range, refreshing location');
-            this.locationService.refreshLocation();
+            this.locationService.refreshLocation().catch(error => {
+              console.error('[FooterNav] Location refresh failed:', error);
+            });
             break;
           case 'not-authenticated':
             console.log('[FooterNav] 🔄 Retry clicked for auth issue, navigating to auth');

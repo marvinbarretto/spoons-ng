@@ -4,6 +4,7 @@ import {
   isDevMode,
   provideAppInitializer,
   provideZoneChangeDetection,
+  APP_INITIALIZER,
 } from '@angular/core';
 import { provideRouter, TitleStrategy, withPreloading } from '@angular/router';
 import { TELEGRAM_CONFIG } from '@fourfold/angular-foundation';
@@ -17,13 +18,34 @@ import { firebaseProviders } from '../../firebase.config';
 import { environment } from '../environments/environment';
 import { USER_THEME_TOKEN } from '../libs/tokens/user-theme.token';
 import { appRoutes } from './app.routes';
+import { AbstractLocationService } from './shared/data-access/abstract-location.service';
+import { CapacitorLocationService } from './shared/data-access/capacitor-location.service';
+import { PlatformServiceFactory } from './shared/data-access/platform-service-factory';
 import { ThemeStore } from './shared/data-access/theme.store';
+import { WebLocationService } from './shared/data-access/web-location.service';
 import { DevCacheBuster } from './shared/utils/dev-cache-buster';
 import { TemplatePageTitleStrategy } from './TemplatePageTitleStrategy';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     ...firebaseProviders,
+    
+    // Platform Services
+    PlatformServiceFactory,
+    WebLocationService,
+    CapacitorLocationService,
+    {
+      provide: AbstractLocationService,
+      useFactory: (factory: PlatformServiceFactory) => factory.getLocationService(),
+      deps: [PlatformServiceFactory]
+    },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: (factory: PlatformServiceFactory) => () => factory.initialize(),
+      deps: [PlatformServiceFactory],
+      multi: true
+    },
+    
     { provide: USER_THEME_TOKEN, useValue: 'light' },
     {
       provide: TELEGRAM_CONFIG,
