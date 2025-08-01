@@ -1,7 +1,17 @@
 <!-- Platform-aware HeaderComponent template -->
+<!-- DEBUG: Force show platform info -->
+<div style="position: fixed; top: 0; left: 0; z-index: 99999; background: yellow; color: black; padding: 4px; font-size: 10px;">
+  Platform: {{ platformName() }} | iOS: {{ isIOS() }} | Native: {{ isNative() }}
+</div>
+
 @if (isIOS()) {
   <!-- iOS-specific header with safe area padding -->
   <div class="site-header site-header--ios" #headerRef [attr.data-platform]="platformName()">
+    <!-- DEBUG: Platform detection info -->
+    <div class="debug-info">
+      <small>Platform: {{ platformName() }} | Native: {{ isNative() ? 'Yes' : 'No' }}</small>
+    </div>
+    
     <div class="header-safe-area">
       @if (!isHomepage()) {
         <a routerLink="/" class="header__title">
@@ -39,6 +49,14 @@
 } @else {
   <!-- Web/Android header (existing behavior) -->
   <div class="site-header" #headerRef [attr.data-platform]="platformName()">
+    <!-- DEBUG: Add debug button to web/Android header -->
+    <button 
+      style="position: absolute; top: 10px; right: 10px; z-index: 9999; background: red; color: white; padding: 4px 8px; font-size: 10px; border: none; border-radius: 4px;"
+      (click)="debugPlatformDetection()"
+    >
+      DEBUG iOS
+    </button>
+    
     @if (!isHomepage()) {
       <a routerLink="/" class="header__title">
         <h1>

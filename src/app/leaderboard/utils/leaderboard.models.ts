@@ -1,5 +1,7 @@
 export type LeaderboardPeriod = 'monthly' | 'all-time';
 
+export type LeaderboardScope = 'friends' | 'global' | 'regional';
+
 export type LeaderboardEntry = {
   userId: string;
   displayName: string;
@@ -19,12 +21,18 @@ export type LeaderboardEntry = {
   joinedDate: string;
   lastActive?: string;
   currentStreak?: number;
+  // Regional data
+  region?: string;
+  country?: string;
+  isFriend?: boolean;
 };
 
 export type LeaderboardSortBy = 'points' | 'pubs' | 'checkins';
 
 export type LeaderboardFilters = {
+  scope: LeaderboardScope;
   sortBy: LeaderboardSortBy;
   period: LeaderboardPeriod;
   showRealUsersOnly: boolean;
+  selectedRegion?: string;
 };

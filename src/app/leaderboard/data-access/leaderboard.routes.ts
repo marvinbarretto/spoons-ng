@@ -4,17 +4,22 @@ import { LeaderboardContainerComponent } from '../feature/leaderboard-container/
 export const LEADERBOARD_ROUTES: Routes = [
   {
     path: '',
-    redirectTo: 'points',
+    redirectTo: 'global',
     pathMatch: 'full',
   },
   {
-    path: 'points',
+    path: 'friends',
     component: LeaderboardContainerComponent,
-    title: 'Points Leaderboard',
+    title: 'Friends Leaderboard',
   },
   {
-    path: 'pubs',
+    path: 'global',
     component: LeaderboardContainerComponent,
-    title: 'Pubs Leaderboard',
+    title: 'Global Leaderboard',
+  },
+  {
+    path: 'regional',
+    component: LeaderboardContainerComponent,
+    title: 'Regional Leaderboard',
   },
 ];

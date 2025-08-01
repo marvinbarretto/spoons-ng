@@ -3,6 +3,9 @@ import { CapacitorPlatformService } from './capacitor-platform.service';
 import { AbstractLocationService } from './abstract-location.service';
 import { WebLocationService } from './web-location.service';
 import { CapacitorLocationService } from './capacitor-location.service';
+import { AbstractCameraService } from './abstract-camera.service';
+import { WebCameraService } from './web-camera.service';
+import { CapacitorCameraService } from '../../check-in/data-access/capacitor-camera.service';
 
 /**
  * Platform Service Factory
@@ -89,8 +92,16 @@ export class PlatformServiceFactory {
       this.serviceCache.set('LocationService', capacitorLocationService);
       console.log('[PlatformServiceFactory] 📱 Registered CapacitorLocationService:', !!capacitorLocationService);
       
+      const capacitorCameraService = this.injector.get(CapacitorCameraService);
+      this.serviceCache.set('CameraService', capacitorCameraService);
+      console.log('[PlatformServiceFactory] 📱 Registered CapacitorCameraService:', {
+        serviceExists: !!capacitorCameraService,
+        hasPermissionStatus: !!capacitorCameraService.permissionStatus,
+        hasIsCapturing: !!capacitorCameraService.isCapturing,
+        hasError: !!capacitorCameraService.error
+      });
+      
       // Future native services can be added here
-      // this.serviceCache.set('CameraService', this.injector.get(CapacitorCameraService));
       // this.serviceCache.set('PushNotificationService', this.injector.get(CapacitorPushService));
       
     } else {
@@ -101,8 +112,16 @@ export class PlatformServiceFactory {
       this.serviceCache.set('LocationService', webLocationService);
       console.log('[PlatformServiceFactory] 🌐 Registered WebLocationService:', !!webLocationService);
       
+      const webCameraService = this.injector.get(WebCameraService);
+      this.serviceCache.set('CameraService', webCameraService);
+      console.log('[PlatformServiceFactory] 🌐 Registered WebCameraService:', {
+        serviceExists: !!webCameraService,
+        hasPermissionStatus: !!webCameraService.permissionStatus, 
+        hasIsCapturing: !!webCameraService.isCapturing,
+        hasError: !!webCameraService.error
+      });
+      
       // Future web services can be added here
-      // this.serviceCache.set('CameraService', this.injector.get(WebCameraService));
       // this.serviceCache.set('PushNotificationService', this.injector.get(WebPushService));
     }
   }
@@ -127,7 +146,16 @@ export class PlatformServiceFactory {
    * Get location service (convenience method)
    */
   getLocationService(): AbstractLocationService {
+    console.log('[PlatformServiceFactory] 📍 Getting location service...');
     return this.getService<AbstractLocationService>('LocationService');
+  }
+  
+  /**
+   * Get camera service (convenience method)
+   */
+  getCameraService(): AbstractCameraService {
+    console.log('[PlatformServiceFactory] 📸 Getting camera service...');
+    return this.getService<AbstractCameraService>('CameraService');
   }
   
   /**

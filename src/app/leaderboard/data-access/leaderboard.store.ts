@@ -8,6 +8,7 @@ import { UserService } from '../../users/data-access/user.service';
 import {
   LeaderboardEntry,
   LeaderboardPeriod,
+  LeaderboardScope,
   LeaderboardSortBy,
 } from '../utils/leaderboard.models';
 
@@ -25,16 +26,20 @@ export class LeaderboardStore {
   // State signals
   private readonly _loading = signal(false);
   private readonly _error = signal<string | null>(null);
+  private readonly _scope = signal<LeaderboardScope>('global');
   private readonly _sortBy = signal<LeaderboardSortBy>('points');
   private readonly _period = signal<LeaderboardPeriod>('all-time');
   private readonly _showRealUsersOnly = signal(false); // 🔧 Changed to false to include guest users by default
+  private readonly _selectedRegion = signal<string | null>(null);
 
   // Public readonly signals
   readonly loading = this._loading.asReadonly();
   readonly error = this._error.asReadonly();
+  readonly scope = this._scope.asReadonly();
   readonly sortBy = this._sortBy.asReadonly();
   readonly period = this._period.asReadonly();
   readonly showRealUsersOnly = this._showRealUsersOnly.asReadonly();
+  readonly selectedRegion = this._selectedRegion.asReadonly();
 
   constructor() {
     console.log('[Leaderboard] ✅ Store initialized - data loading handled by SessionService');
@@ -221,6 +226,11 @@ export class LeaderboardStore {
           joinedDate: user.joinedAt || new Date().toISOString(),
           lastActive,
           currentStreak,
+          // Regional data - TODO: implement proper region detection
+          region: user.region || undefined,
+          country: user.country || undefined,
+          // Friends data - TODO: implement friendship detection
+          isFriend: false, // TODO: check friendship with current user
         };
 
         return entry;
@@ -243,25 +253,66 @@ export class LeaderboardStore {
     return sortedEntries;
   });
 
-  // Top 100 entries for display
-  readonly topEntries = computed(() => this.leaderboardEntries().slice(0, 100));
+  // Scope-filtered entries
+  readonly scopedEntries = computed(() => {
+    const allEntries = this.leaderboardEntries();
+    const currentScope = this.scope();
+    const selectedRegion = this.selectedRegion();
 
-  // Current user position
+    switch (currentScope) {
+      case 'friends':
+        return allEntries.filter(entry => entry.isFriend === true);
+      case 'regional':
+        if (selectedRegion) {
+          return allEntries.filter(entry => 
+            entry.region === selectedRegion || entry.country === selectedRegion
+          );
+        }
+        return allEntries.filter(entry => entry.region || entry.country);
+      case 'global':
+      default:
+        return allEntries;
+    }
+  });
+
+  // Top 100 entries for display
+  readonly topEntries = computed(() => this.scopedEntries().slice(0, 100));
+
+  // Friends-specific entries
+  readonly friendsEntries = computed(() => 
+    this.leaderboardEntries().filter(entry => entry.isFriend === true)
+  );
+
+  // Regional entries
+  readonly regionalEntries = computed(() => {
+    const selectedRegion = this.selectedRegion();
+    if (selectedRegion) {
+      return this.leaderboardEntries().filter(entry => 
+        entry.region === selectedRegion || entry.country === selectedRegion
+      );
+    }
+    return this.leaderboardEntries().filter(entry => entry.region || entry.country);
+  });
+
+  // Global entries (all entries)
+  readonly globalEntries = computed(() => this.leaderboardEntries());
+
+  // Current user position (scope-aware)
   readonly currentUserPosition = computed(() => {
     const currentUser = this.authStore.user();
     if (!currentUser) return null;
 
-    const entries = this.leaderboardEntries();
+    const entries = this.scopedEntries();
     const userEntry = entries.find(e => e.userId === currentUser.uid);
     return userEntry ? userEntry.rank : null;
   });
 
-  // Current user entry
+  // Current user entry (scope-aware)
   readonly currentUserEntry = computed(() => {
     const currentUser = this.authStore.user();
     if (!currentUser) return null;
 
-    const entries = this.leaderboardEntries();
+    const entries = this.scopedEntries();
     return entries.find(e => e.userId === currentUser.uid) || null;
   });
 
@@ -341,6 +392,11 @@ export class LeaderboardStore {
   });
 
   // Public methods
+  setScope(scope: LeaderboardScope): void {
+    console.log('[Leaderboard] Setting scope:', scope);
+    this._scope.set(scope);
+  }
+
   setSortBy(sortBy: LeaderboardSortBy): void {
     console.log('[Leaderboard] Setting sort by:', sortBy);
     this._sortBy.set(sortBy);
@@ -354,6 +410,11 @@ export class LeaderboardStore {
   setShowRealUsersOnly(show: boolean): void {
     console.log('[Leaderboard] Setting show real users only:', show);
     this._showRealUsersOnly.set(show);
+  }
+
+  setSelectedRegion(region: string | null): void {
+    console.log('[Leaderboard] Setting selected region:', region);
+    this._selectedRegion.set(region);
   }
 
   async refresh(): Promise<void> {

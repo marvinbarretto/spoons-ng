@@ -2,14 +2,14 @@
 
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { CameraService, SsrPlatformService } from '@fourfold/angular-foundation';
+import { SsrPlatformService } from '@fourfold/angular-foundation';
 import { CapacitorPlatformService } from '@shared/data-access/capacitor-platform.service';
 import { DataAggregatorService } from '@shared/data-access/data-aggregator.service';
 import { LLMService } from '@shared/data-access/llm.service';
+import { AbstractCameraService, CameraPermissionState } from '@shared/data-access/abstract-camera.service';
 import { environment } from '../../../environments/environment';
 import { CarpetStorageService } from '../../carpets/data-access/carpet-storage.service';
 import { CarpetStrategyService } from '../../carpets/data-access/carpet-strategy.service';
-import { CameraPermissionState, CapacitorCameraService } from './capacitor-camera.service';
 import { CheckInModalService } from './check-in-modal.service';
 import { CheckInStore } from './check-in.store';
 
@@ -34,9 +34,27 @@ export class CheckinOrchestrator {
   protected readonly llmService = inject(LLMService);
   protected readonly carpetStorageService = inject(CarpetStorageService);
   protected readonly carpetStrategy = inject(CarpetStrategyService);
-  protected readonly cameraService = inject(CameraService);
-  protected readonly capacitorCamera = inject(CapacitorCameraService);
+  protected readonly cameraService = inject(AbstractCameraService);
   protected readonly dataAggregator = inject(DataAggregatorService);
+  
+  // Service name for logging
+  private readonly SERVICE_NAME = 'CheckinOrchestrator';
+  
+  constructor() {
+    console.log(`[${this.SERVICE_NAME}] 🎬 Checkin orchestrator initialized`);
+    console.log(`[${this.SERVICE_NAME}] 📱 Platform info:`, {
+      isNative: this.capacitor.isNative(),
+      platform: this.capacitor.platformName(),
+      isIOS: this.capacitor.isIOS(),
+      isAndroid: this.capacitor.isAndroid()
+    });
+    console.log(`[${this.SERVICE_NAME}] 📸 Camera service injected:`, {
+      serviceType: this.cameraService.constructor.name,
+      hasPermissionStatus: !!this.cameraService.permissionStatus,
+      hasIsCapturing: !!this.cameraService.isCapturing,
+      hasError: !!this.cameraService.error
+    });
+  }
 
   // ===================================
   // 🏗️ STATE SIGNALS
@@ -154,9 +172,6 @@ export class CheckinOrchestrator {
     }
   });
 
-  constructor() {
-    // No auto-capture logic needed
-  }
 
   // ===================================
   // 🚀 MAIN ORCHESTRATION
@@ -233,16 +248,20 @@ export class CheckinOrchestrator {
    * Initialize native camera with permission handling
    */
   private async initializeNativeCamera(): Promise<void> {
-    console.log('[CheckinOrchestrator] 📱 Initializing native camera');
+    console.log(`[${this.SERVICE_NAME}] 📱 Initializing native camera via AbstractCameraService...`);
+    console.log(`[${this.SERVICE_NAME}] 📱 Camera service type:`, this.cameraService.constructor.name);
+    
     this._stage.set('CHECKING_PERMISSIONS');
 
     try {
-      // Check permissions first
-      const permissions = await this.capacitorCamera.checkPermissions();
+      // Check permissions first using abstract service
+      console.log(`[${this.SERVICE_NAME}] 📱 Checking camera permissions...`);
+      const permissions = await this.cameraService.checkPermissions();
+      console.log(`[${this.SERVICE_NAME}] 📱 Current permissions:`, permissions);
       this._permissionState.set(permissions);
 
       if (permissions.camera === 'denied') {
-        console.warn('[CheckinOrchestrator] 📱 Camera permission denied');
+        console.warn(`[${this.SERVICE_NAME}] 📱 Camera permission denied`);
         this._stage.set('PERMISSION_DENIED');
         this._recoveryAction.set('OPEN_SETTINGS');
         this.handleError(
@@ -252,11 +271,13 @@ export class CheckinOrchestrator {
       }
 
       if (permissions.camera === 'prompt') {
-        console.log('[CheckinOrchestrator] 📱 Requesting camera permissions');
-        const requestResult = await this.capacitorCamera.requestPermissions();
+        console.log(`[${this.SERVICE_NAME}] 📱 Requesting camera permissions...`);
+        const requestResult = await this.cameraService.requestPermissions();
+        console.log(`[${this.SERVICE_NAME}] 📱 Permission request result:`, requestResult);
         this._permissionState.set(requestResult);
 
         if (requestResult.camera === 'denied') {
+          console.error(`[${this.SERVICE_NAME}] 📱 Camera permission denied after request`);
           this._stage.set('PERMISSION_DENIED');
           this._recoveryAction.set('OPEN_SETTINGS');
           this.handleError(
@@ -266,11 +287,25 @@ export class CheckinOrchestrator {
         }
       }
 
+      // Verify camera is ready for capture
+      console.log(`[${this.SERVICE_NAME}] 📱 Checking if camera is ready for capture...`);
+      const isCameraReady = await this.cameraService.isCameraReady();
+      console.log(`[${this.SERVICE_NAME}] 📱 Camera ready status:`, isCameraReady);
+
+      if (!isCameraReady) {
+        throw new Error('Camera is not ready for capture');
+      }
+
       // Permissions granted, camera is ready
-      console.log('[CheckinOrchestrator] 📱 Native camera ready');
+      console.log(`[${this.SERVICE_NAME}] ✅ Native camera ready for capture`);
       this._stage.set('CAMERA_ACTIVE');
     } catch (error: any) {
-      console.error('[CheckinOrchestrator] 📱 Native camera initialization failed:', error);
+      console.error(`[${this.SERVICE_NAME}] ❌ Native camera initialization failed:`, {
+        error: error.message,
+        stage: this._stage(),
+        permissionState: this._permissionState(),
+        cameraServiceType: this.cameraService.constructor.name
+      });
       this.handleError('Failed to initialize camera');
     }
   }
@@ -294,6 +329,10 @@ export class CheckinOrchestrator {
         audio: false,
       });
 
+      if (!stream) {
+        throw new Error('No camera stream received');
+      }
+
       // Attach stream to video element
       this.cameraService.attachToVideoElement(this.videoElement, stream);
 
@@ -309,23 +348,36 @@ export class CheckinOrchestrator {
   }
 
   async capturePhoto(): Promise<void> {
-    console.log('[CheckinOrchestrator] 📸 Platform-aware photo capture');
+    console.log(`[${this.SERVICE_NAME}] 📸 Platform-aware photo capture starting...`);
+    console.log(`[${this.SERVICE_NAME}] 📸 Camera service type:`, this.cameraService.constructor.name);
+    console.log(`[${this.SERVICE_NAME}] 📸 Platform info:`, {
+      isNative: this.capacitor.isNative(),
+      platform: this.capacitor.platformName()
+    });
+    
     this._stage.set('CAPTURING_PHOTO');
 
     try {
       if (this.capacitor.isNative()) {
+        console.log(`[${this.SERVICE_NAME}] 📸 Using native photo capture...`);
         await this.captureNativePhoto();
       } else {
+        console.log(`[${this.SERVICE_NAME}] 📸 Using web photo capture...`);
         await this.captureWebPhoto();
       }
 
       this._stage.set('PHOTO_TAKEN');
-      console.log('[CheckinOrchestrator] ✅ Photo captured successfully');
+      console.log(`[${this.SERVICE_NAME}] ✅ Photo captured successfully, proceeding to confirmation`);
 
       // Continue with LLM processing
       await this.confirmPhoto();
     } catch (error: any) {
-      console.error('[CheckinOrchestrator] ❌ Photo capture failed:', error);
+      console.error(`[${this.SERVICE_NAME}] ❌ Photo capture failed:`, {
+        error: error.message,
+        stage: this._stage(),
+        platform: this.capacitor.platformName(),
+        cameraServiceType: this.cameraService.constructor.name
+      });
       this.handleError(error.message || 'Failed to capture photo');
     }
   }
@@ -334,22 +386,33 @@ export class CheckinOrchestrator {
    * Capture photo using native camera
    */
   private async captureNativePhoto(): Promise<void> {
-    console.log('[CheckinOrchestrator] 📱 Capturing photo with native camera');
+    console.log(`[${this.SERVICE_NAME}] 📱 Capturing photo with native camera via AbstractCameraService...`);
 
     try {
-      const capturedPhoto = await this.capacitorCamera.capturePhoto();
+      console.log(`[${this.SERVICE_NAME}] 📱 Calling cameraService.capturePhoto()...`);
+      const capturedPhoto = await this.cameraService.capturePhoto();
 
+      console.log(`[${this.SERVICE_NAME}] 📱 Photo capture successful, storing data...`);
+      
       // Store the captured photo
       this._photoDataUrl.set(capturedPhoto.dataUrl);
       this._photoBlob.set(capturedPhoto.blob || null);
 
-      console.log('[CheckinOrchestrator] 📱 Native photo captured:', {
+      console.log(`[${this.SERVICE_NAME}] 📱 Native photo captured and stored:`, {
         format: capturedPhoto.format,
-        width: capturedPhoto.width,
-        height: capturedPhoto.height,
+        dimensions: `${capturedPhoto.width}x${capturedPhoto.height}`,
+        dataUrlLength: capturedPhoto.dataUrl.length,
+        blobSize: capturedPhoto.blob?.size || 0,
+        hasDataUrl: !!capturedPhoto.dataUrl,
+        hasBlob: !!capturedPhoto.blob
       });
     } catch (error: any) {
-      console.error('[CheckinOrchestrator] 📱 Native photo capture failed:', error);
+      console.error(`[${this.SERVICE_NAME}] 📱 Native photo capture failed:`, {
+        error: error.message,
+        cameraServiceType: this.cameraService.constructor.name,
+        errorCode: error.code,
+        errorName: error.name
+      });
       throw error;
     }
   }
@@ -358,30 +421,48 @@ export class CheckinOrchestrator {
    * Capture photo from web video stream
    */
   private async captureWebPhoto(): Promise<void> {
-    console.log('[CheckinOrchestrator] 🌐 Capturing photo from video stream');
+    console.log(`[${this.SERVICE_NAME}] 🌐 Capturing photo from video stream via AbstractCameraService...`);
 
     if (!this.videoElement) {
+      console.error(`[${this.SERVICE_NAME}] 🌐 Video element not available for web capture`);
       throw new Error('Video element not available');
     }
 
     try {
       // Check if camera is ready for capture
-      if (!this.cameraService.isCameraReadyForCapture(this.videoElement)) {
+      console.log(`[${this.SERVICE_NAME}] 🌐 Checking if camera is ready for capture...`);
+      const isReady = this.cameraService.isCameraReadyForCapture(this.videoElement);
+      console.log(`[${this.SERVICE_NAME}] 🌐 Camera ready for capture:`, isReady);
+      
+      if (!isReady) {
         throw new Error('Camera is not ready for capture');
       }
 
-      // Capture photo from video stream
-      const { dataUrl, blob } = await this.cameraService.capturePhotoToCanvas(
-        this.videoElement,
-        0.95
-      );
+      // Capture photo from video stream using abstract service
+      console.log(`[${this.SERVICE_NAME}] 🌐 Calling cameraService.captureFromVideoElement()...`);
+      const capturedPhoto = await this.cameraService.captureFromVideoElement(this.videoElement);
 
+      console.log(`[${this.SERVICE_NAME}] 🌐 Web photo capture successful, storing data...`);
+      
       // Store the captured photo
-      this._photoDataUrl.set(dataUrl);
-      this._photoBlob.set(blob);
-      console.log('[CheckinOrchestrator] 🌐 Web photo captured successfully');
+      this._photoDataUrl.set(capturedPhoto.dataUrl);
+      this._photoBlob.set(capturedPhoto.blob || null);
+      
+      console.log(`[${this.SERVICE_NAME}] 🌐 Web photo captured and stored:`, {
+        format: capturedPhoto.format,
+        dimensions: `${capturedPhoto.width}x${capturedPhoto.height}`,
+        dataUrlLength: capturedPhoto.dataUrl.length,
+        blobSize: capturedPhoto.blob?.size || 0,
+        hasDataUrl: !!capturedPhoto.dataUrl,
+        hasBlob: !!capturedPhoto.blob
+      });
     } catch (error: any) {
-      console.error('[CheckinOrchestrator] 🌐 Web photo capture failed:', error);
+      console.error(`[${this.SERVICE_NAME}] 🌐 Web photo capture failed:`, {
+        error: error.message,
+        cameraServiceType: this.cameraService.constructor.name,
+        videoElementReady: !!this.videoElement,
+        videoElementDimensions: this.videoElement ? `${this.videoElement.videoWidth}x${this.videoElement.videoHeight}` : 'N/A'
+      });
       throw error;
     }
   }
@@ -579,17 +660,28 @@ export class CheckinOrchestrator {
    * Open device settings for camera permissions (native only)
    */
   async openDeviceSettings(): Promise<void> {
-    console.log('[CheckinOrchestrator] ⚙️ Opening device settings');
+    console.log(`[${this.SERVICE_NAME}] ⚙️ Opening device settings via AbstractCameraService...`);
+    console.log(`[${this.SERVICE_NAME}] ⚙️ Camera service type:`, this.cameraService.constructor.name);
+    console.log(`[${this.SERVICE_NAME}] ⚙️ Platform info:`, {
+      isNative: this.capacitor.isNative(),
+      platform: this.capacitor.platformName()
+    });
 
     if (!this.capacitor.isNative()) {
-      console.warn('[CheckinOrchestrator] ⚙️ Device settings only available on native platforms');
+      console.warn(`[${this.SERVICE_NAME}] ⚙️ Device settings only available on native platforms`);
       return;
     }
 
     try {
-      await this.capacitorCamera.openDeviceSettings();
+      console.log(`[${this.SERVICE_NAME}] ⚙️ Calling cameraService.openDeviceSettings()...`);
+      await this.cameraService.openDeviceSettings();
+      console.log(`[${this.SERVICE_NAME}] ⚙️ Device settings opened successfully`);
     } catch (error: any) {
-      console.error('[CheckinOrchestrator] ⚙️ Failed to open device settings:', error);
+      console.error(`[${this.SERVICE_NAME}] ⚙️ Failed to open device settings:`, {
+        error: error.message,
+        cameraServiceType: this.cameraService.constructor.name,
+        platform: this.capacitor.platformName()
+      });
       this.handleError('Could not open device settings');
     }
   }
@@ -598,10 +690,15 @@ export class CheckinOrchestrator {
    * Retry camera permissions (native only)
    */
   async retryPermissions(): Promise<void> {
-    console.log('[CheckinOrchestrator] 🔐 Retrying camera permissions');
+    console.log(`[${this.SERVICE_NAME}] 🔐 Retrying camera permissions via AbstractCameraService...`);
+    console.log(`[${this.SERVICE_NAME}] 🔐 Camera service type:`, this.cameraService.constructor.name);
+    console.log(`[${this.SERVICE_NAME}] 🔐 Platform info:`, {
+      isNative: this.capacitor.isNative(),
+      platform: this.capacitor.platformName()
+    });
 
     if (!this.capacitor.isNative()) {
-      console.warn('[CheckinOrchestrator] 🔐 Permission retry only available on native platforms');
+      console.warn(`[${this.SERVICE_NAME}] 🔐 Permission retry only available on native platforms`);
       return;
     }
 
@@ -610,19 +707,28 @@ export class CheckinOrchestrator {
       this._error.set(null);
       this._recoveryAction.set('NONE');
 
-      const permissions = await this.capacitorCamera.requestPermissions();
+      console.log(`[${this.SERVICE_NAME}] 🔐 Calling cameraService.requestPermissions()...`);
+      const permissions = await this.cameraService.requestPermissions();
+      console.log(`[${this.SERVICE_NAME}] 🔐 Permission retry result:`, permissions);
+      
       this._permissionState.set(permissions);
 
       if (permissions.camera === 'granted') {
         this._stage.set('CAMERA_ACTIVE');
-        console.log('[CheckinOrchestrator] 🔐 Permissions granted - camera ready');
+        console.log(`[${this.SERVICE_NAME}] 🔐 Permissions granted - camera ready`);
       } else {
         this._stage.set('PERMISSION_DENIED');
         this._recoveryAction.set('OPEN_SETTINGS');
+        console.error(`[${this.SERVICE_NAME}] 🔐 Permissions still denied after retry:`, permissions);
         this.handleError('Camera permission still denied');
       }
     } catch (error: any) {
-      console.error('[CheckinOrchestrator] 🔐 Permission retry failed:', error);
+      console.error(`[${this.SERVICE_NAME}] 🔐 Permission retry failed:`, {
+        error: error.message,
+        cameraServiceType: this.cameraService.constructor.name,
+        stage: this._stage(),
+        permissionState: this._permissionState()
+      });
       this.handleError('Failed to request camera permissions');
     }
   }
@@ -632,19 +738,33 @@ export class CheckinOrchestrator {
   // ===================================
 
   cleanup(): void {
-    console.log('[CheckinOrchestrator] 🧹 Platform-aware cleanup');
+    console.log(`[${this.SERVICE_NAME}] 🧹 Platform-aware cleanup via AbstractCameraService...`);
+    console.log(`[${this.SERVICE_NAME}] 🧹 Camera service type:`, this.cameraService.constructor.name);
+    console.log(`[${this.SERVICE_NAME}] 🧹 Platform info:`, {
+      isNative: this.capacitor.isNative(),
+      platform: this.capacitor.platformName()
+    });
 
-    // Platform-specific cleanup
-    if (this.capacitor.isNative()) {
-      // Native cleanup - reset capacitor camera service
-      this.capacitorCamera.reset();
-    } else {
-      // Web cleanup - release camera resources
-      this.cameraService.releaseCamera();
-      this.videoElement = null;
+    // Platform-agnostic cleanup using abstract service
+    try {
+      console.log(`[${this.SERVICE_NAME}] 🧹 Calling cameraService.reset()...`);
+      this.cameraService.reset();
+      console.log(`[${this.SERVICE_NAME}] 🧹 Camera service reset complete`);
+      
+      if (!this.capacitor.isNative()) {
+        // Web-specific cleanup
+        console.log(`[${this.SERVICE_NAME}] 🧹 Web platform - clearing video element reference`);
+        this.videoElement = null;
+      }
+    } catch (error: any) {
+      console.error(`[${this.SERVICE_NAME}] 🧹 Camera service cleanup failed:`, {
+        error: error.message,
+        cameraServiceType: this.cameraService.constructor.name
+      });
     }
 
-    // Common cleanup - reset all state
+    // Common cleanup - reset all orchestrator state
+    console.log(`[${this.SERVICE_NAME}] 🧹 Resetting orchestrator state...`);
     this._stage.set('INITIALIZING');
     this._pubId.set(null);
     this._error.set(null);
@@ -652,5 +772,7 @@ export class CheckinOrchestrator {
     this._photoBlob.set(null);
     this._permissionState.set({ camera: 'unknown' });
     this._recoveryAction.set('NONE');
+    
+    console.log(`[${this.SERVICE_NAME}] 🧹 Cleanup complete`);
   }
 }

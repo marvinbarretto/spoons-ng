@@ -46,6 +46,11 @@ export type User = {
 
   // Admin permissions
   isAdmin?: boolean; // Flag to grant admin access to management features
+
+  // Regional/Location data
+  region?: string; // User's region (e.g., "London", "Manchester", "Scotland")
+  country?: string; // User's country (e.g., "United Kingdom", "Ireland")
+  timezone?: string; // User's timezone for local time calculations
 };
 
 // ✅ Type for user badge summary updates

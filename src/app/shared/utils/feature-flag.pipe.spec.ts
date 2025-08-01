@@ -1,15 +1,16 @@
 import { FeatureFlagService } from '../data-access/feature-flag.service';
 import { FeatureFlagPipe } from './feature-flag.pipe';
+import { vi } from 'vitest';
 
 describe('FeatureFlagPipe', () => {
   let pipe: FeatureFlagPipe;
-  let mockFeatureFlagService: jest.Mocked<FeatureFlagService>;
+  let mockFeatureFlagService: vi.Mocked<FeatureFlagService>;
 
   beforeEach(() => {
     // TODO: Centralise mocked services
     mockFeatureFlagService = {
-      isEnabled: jest.fn(),
-    } as unknown as jest.Mocked<FeatureFlagService>;
+      isEnabled: vi.fn(),
+    } as unknown as vi.Mocked<FeatureFlagService>;
 
     pipe = new FeatureFlagPipe(mockFeatureFlagService);
   });

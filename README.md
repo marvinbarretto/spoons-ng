@@ -32,21 +32,21 @@ Gamified pub check-in app built with Angular + Firebase
     
 
 ## Stack
-- Angular
+- Angular 20 with Signals
 - Firestore
 - Firebase Hosting?
 - Docker
 - Redis
 - Node
 - Express
-- Jest, Supertest
+- Vitest (Modern Testing)
 - Standard-version
 - Playwright soon...
 
 ## Workflow
 `build:ssr` will build the project and start the server
 `ng serve` will start the client for HMR development
-`npm run test:watch` will run jest in watch mode
+`npm run test:watch` will run vitest in watch mode
 `release` will run standard-version and set the tags
 `gpt` will push it up
 
@@ -143,6 +143,42 @@ events:v1
 - ✅ **Consistent UX** - Standardized loading states across all components
 - ✅ **Accessibility** - All state components include proper ARIA attributes
 - ✅ **Design tokens** - Full theme support (dark/light mode compatibility)
+
+## 🧪 Testing Architecture
+
+### Modern Test Suite (2025)
+
+We've migrated from Jest to **Vitest** with a business-value-focused testing philosophy:
+
+**✅ What We Test:**
+- **Business Logic**: Core algorithms, calculations, and data processing
+- **Service Integration**: Cross-service coordination and workflows  
+- **Store Patterns**: BaseStore reactive patterns and auth-reactive behavior
+- **Data Consistency**: Points, badges, leaderboard calculations
+
+**❌ What We Don't Test:**
+- Angular framework functionality ("should create" tests)
+- Simple template bindings and UI display
+- Component instantiation without business logic
+
+### Test Commands
+```bash
+npm test              # Run all tests (fast, parallel)
+npm run test:watch    # Watch mode for development  
+npm run test:ci       # CI mode (sequential, verbose)
+```
+
+### Test Utilities
+- **Firebase Mocking**: `@shared/testing/firebase.mocks.ts` 
+- **Store Testing**: `@shared/testing/store-test-utils.ts`
+- **Foundation Mocks**: `@shared/testing/foundation.mocks.ts`
+
+### Current Test Status
+- **11 passing test files** with solid business logic coverage
+- **Modern signal-based patterns** with comprehensive mocking
+- **Focus on value**: Tests protect real business functionality
+
+See `CLAUDE.md` for detailed testing guidelines and patterns.
 
 ### TODOs
 - Map component with custom theming

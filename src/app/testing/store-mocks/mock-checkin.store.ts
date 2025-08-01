@@ -1,4 +1,5 @@
 import { computed, signal } from '@angular/core';
+import { vi } from 'vitest';
 import type { CheckIn } from '../../check-in/utils/check-in.models';
 
 export class MockCheckInStore {
@@ -23,7 +24,7 @@ export class MockCheckInStore {
 
   // Mock service for testing
   newCheckInService = {
-    getAllCheckinsForLeaderboard: jest.fn().mockResolvedValue([]),
+    getAllCheckinsForLeaderboard: vi.fn().mockResolvedValue([]),
   };
 
   // Test helper methods

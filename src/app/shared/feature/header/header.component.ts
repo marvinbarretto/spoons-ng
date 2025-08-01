@@ -71,21 +71,94 @@ export class HeaderComponent extends BaseComponent {
   handleLogin = () => this.authStore.loginWithGoogle();
   handleLogout = () => this.authStore.logout();
 
+  // ✅ Debug method for platform detection
+  debugPlatformDetection() {
+    console.log('[HeaderComponent] 🐛 DEBUG PLATFORM DETECTION:');
+    console.log('  capacitorPlatform service:', this.capacitorPlatform);
+    console.log('  initialized():', this.capacitorPlatform.initialized());
+    console.log('  platformName():', this.platformName());
+    console.log('  isIOS():', this.isIOS());
+    console.log('  isNative():', this.isNative());
+    console.log('  isWeb():', this.capacitorPlatform.isWeb());
+    console.log('  isAndroid():', this.capacitorPlatform.isAndroid());
+    console.log('  User agent:', navigator.userAgent);
+    console.log('  Window location:', window.location.href);
+    
+    // Force template re-evaluation
+    console.log('  Template condition isIOS():', this.isIOS());
+  }
+
   @ViewChild('headerRef', { static: false }) headerRef!: ElementRef;
   @ViewChild('panelTrigger', { static: false }) panelTriggerRef!: ElementRef;
 
   constructor() {
     super();
+    
+    // CRITICAL: Basic component instantiation check
+    console.log('[HeaderComponent] 🚀 CONSTRUCTOR CALLED - Component is being created');
+    console.log('[HeaderComponent] 🔍 Platform service available:', !!this.capacitorPlatform);
+    console.log('[HeaderComponent] 🔍 Immediate platform check:', {
+      isIOS: this.capacitorPlatform?.isIOS(),
+      platformName: this.capacitorPlatform?.platformName(),
+      initialized: this.capacitorPlatform?.initialized()
+    });
+    
+    // Enhanced logging for route info
     effect(() => {
       console.log('[HeaderComponent] Current route:', this.currentRoute());
       console.log('[HeaderComponent] Is homepage:', this.isHomepage());
       console.log('[HeaderComponent] Display name:', this.displayName());
     });
+
+    // Critical: Platform detection logging
+    effect(() => {
+      console.log('[HeaderComponent] 🔍 Platform Detection:', {
+        initialized: this.capacitorPlatform.initialized(),
+        platformName: this.platformName(),
+        isIOS: this.isIOS(),
+        isNative: this.isNative(),
+        isWeb: this.capacitorPlatform.isWeb(),
+        isAndroid: this.capacitorPlatform.isAndroid(),
+        capacitorAvailable: !!this.capacitorPlatform,
+      });
+    });
+
+    // Template rendering decision logging
+    effect(() => {
+      const templateChoice = this.isIOS() ? 'iOS-SPECIFIC' : 'WEB/ANDROID';
+      console.log(`[HeaderComponent] 🎨 Template Choice: ${templateChoice}`, {
+        isIOS: this.isIOS(),
+        shouldShowiOSHeader: this.isIOS(),
+        platformName: this.platformName(),
+      });
+    });
+
+    // Call debug method after a short delay to ensure initialization
+    setTimeout(() => {
+      this.debugPlatformDetection();
+    }, 1000);
   }
 
   @HostBinding('class.is-homepage')
   get isHomepageClass(): boolean {
     return this.isHomepage();
+  }
+
+  override ngOnInit(): void {
+    super.ngOnInit();
+    console.log('[HeaderComponent] 🎬 ngOnInit called');
+    console.log('[HeaderComponent] 🔍 Platform detection in ngOnInit:', {
+      capacitorPlatformExists: !!this.capacitorPlatform,
+      isIOS: this.isIOS(),
+      isNative: this.isNative(),
+      platformName: this.platformName(),
+      initialized: this.capacitorPlatform.initialized()
+    });
+    
+    // Force template condition check
+    const templateCondition = this.isIOS();
+    console.log('[HeaderComponent] 🎨 Template condition isIOS():', templateCondition);
+    console.log('[HeaderComponent] 🎨 Should show iOS header:', templateCondition);
   }
 
   // ✅ Handle user profile actions

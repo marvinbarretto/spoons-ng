@@ -1,4 +1,5 @@
 @use 'styles/index' as *;
+@use 'styles/base/animation-mixins' as *;
 
 :host {
   display: block;
@@ -49,8 +50,46 @@
   // Extend from base site-header
   @extend .site-header;
   
-  // iOS-specific safe area handling
-  background-color: var(--primary);
+  // TEMPORARY: Bright color for iOS verification - REMOVE AFTER TESTING
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%) !important;
+  border: 3px solid #ff1744 !important;
+  position: relative;
+  
+  // Visual "iOS MODE" indicator
+  &::before {
+    content: "🍎 iOS MODE";
+    position: absolute;
+    top: calc(var(--safe-area-inset-top) + 5px);
+    right: 10px;
+    background: #ff1744;
+    color: white;
+    padding: 4px 8px;
+    font-size: 10px;
+    font-weight: bold;
+    border-radius: 12px;
+    z-index: 1001;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    @include pulse(2s, 1.05);
+  }
+  
+  // Debug info styling
+  .debug-info {
+    position: absolute;
+    top: calc(var(--safe-area-inset-top) + 25px);
+    left: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #00ff00;
+    padding: 4px 8px;
+    font-family: monospace;
+    font-size: 10px;
+    border-radius: 4px;
+    z-index: 1000;
+    
+    small {
+      color: #00ff00;
+      font-weight: normal;
+    }
+  }
   
   // Ensure header content doesn't get cut off by Dynamic Island/notch
   .header-safe-area {
@@ -61,6 +100,10 @@
     
     // Prevent content from jumping when safe areas change
     transition: padding 0.3s ease;
+    
+    // Make it obvious this is the iOS safe area
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 0 0 8px 8px;
   }
   
   // Adjust title positioning for iOS
@@ -79,6 +122,8 @@
     z-index: 1;
   }
 }
+
+// Using existing animation mixins from the design system
 
 .header {
   text-align: center;
