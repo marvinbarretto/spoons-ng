@@ -6,6 +6,8 @@ import { IndexedDbService } from '@fourfold/angular-foundation';
 import { PubStore } from '@pubs/data-access/pub.store';
 import { Pub } from '@pubs/utils/pub.models';
 import { CarpetPhotoData, PhotoStats } from '@shared/utils/carpet-photo.models';
+import { DebugService } from '@shared/utils/debug.service';
+import { canvasToBlob, loadImageFromBlob, resizeImageToSquare } from '@shared/utils/image-processing.helpers';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { environment } from '../../../environments/environment';
 
@@ -30,6 +32,7 @@ export class CarpetStorageService {
   protected readonly authStore = inject(AuthStore);
   protected readonly storage = inject(Storage);
   protected readonly pubStore = inject(PubStore);
+  private readonly debug = inject(DebugService);
 
   // Signals for reactive state
   private readonly _carpetCount = signal(0);
@@ -68,7 +71,7 @@ export class CarpetStorageService {
     }
 
     this.initializing = true;
-    console.log('[CarpetStorage] Initializing IndexedDB...');
+    this.debug.standard('[CarpetStorage] Initializing IndexedDB...');
 
     try {
       const dbConfig = this.getDatabaseConfig();
@@ -94,10 +97,10 @@ export class CarpetStorageService {
       this.initializing = false;
 
       await this.updateStats();
-      console.log('[CarpetStorage] Initialization complete');
+      this.debug.standard('[CarpetStorage] Initialization complete');
     } catch (error) {
       this.initializing = false;
-      console.error('[CarpetStorage] Initialization failed:', error);
+      this.debug.error('[CarpetStorage] Initialization failed:', error);
       throw error;
     }
   }
@@ -106,14 +109,13 @@ export class CarpetStorageService {
    * Detect which modern image formats are supported with comprehensive testing
    */
   private async detectSupportedFormats(): Promise<void> {
-    console.log('[CarpetStorage] 🚀 === FORMAT DETECTION STARTED ===');
-    console.log('[CarpetStorage] 🔍 Testing browser support for modern image formats...');
+    this.debug.standard('[CarpetStorage] Starting image format detection...');
 
     // Clear any existing formats
     this.supportedFormats.clear();
 
     // Test AVIF support
-    console.log('[CarpetStorage] 🧪 Testing AVIF support...');
+    this.debug.extreme('[CarpetStorage] Testing AVIF support...');
     try {
       const canvas = document.createElement('canvas');
       canvas.width = canvas.height = 10; // Slightly larger for better testing
@@ -126,28 +128,24 @@ export class CarpetStorageService {
       );
 
       if (blob) {
-        console.log('[CarpetStorage] 📋 AVIF blob created:', {
-          size: blob.size,
-          type: blob.type,
-          expectedType: 'image/avif',
-        });
+        this.debug.extreme('[CarpetStorage] AVIF blob created', { size: blob.size, type: blob.type });
 
         // Verify the blob type matches what we requested
         if (blob.type === 'image/avif') {
           this.supportedFormats.add('avif');
-          console.log('[CarpetStorage] ✅ AVIF: SUPPORTED (blob type matches)');
+          this.debug.extreme('[CarpetStorage] AVIF: SUPPORTED');
         } else {
-          console.log('[CarpetStorage] ❌ AVIF: FAILED (wrong blob type:', blob.type, ')');
+          this.debug.extreme('[CarpetStorage] AVIF: FAILED - wrong blob type:', blob.type);
         }
       } else {
-        console.log('[CarpetStorage] ❌ AVIF: FAILED (no blob created)');
+        this.debug.extreme('[CarpetStorage] AVIF: FAILED - no blob created');
       }
     } catch (error) {
-      console.log('[CarpetStorage] ❌ AVIF: FAILED (exception:', error, ')');
+      this.debug.extreme('[CarpetStorage] AVIF: FAILED - exception:', error);
     }
 
     // Test WebP support
-    console.log('[CarpetStorage] 🧪 Testing WebP support...');
+    this.debug.extreme('[CarpetStorage] Testing WebP support...');
     try {
       const canvas = document.createElement('canvas');
       canvas.width = canvas.height = 10;
@@ -160,28 +158,24 @@ export class CarpetStorageService {
       );
 
       if (blob) {
-        console.log('[CarpetStorage] 📋 WebP blob created:', {
-          size: blob.size,
-          type: blob.type,
-          expectedType: 'image/webp',
-        });
+        this.debug.extreme('[CarpetStorage] WebP blob created', { size: blob.size, type: blob.type });
 
         // Verify the blob type matches what we requested
         if (blob.type === 'image/webp') {
           this.supportedFormats.add('webp');
-          console.log('[CarpetStorage] ✅ WebP: SUPPORTED (blob type matches)');
+          this.debug.extreme('[CarpetStorage] WebP: SUPPORTED');
         } else {
-          console.log('[CarpetStorage] ❌ WebP: FAILED (wrong blob type:', blob.type, ')');
+          this.debug.extreme('[CarpetStorage] WebP: FAILED - wrong blob type:', blob.type);
         }
       } else {
-        console.log('[CarpetStorage] ❌ WebP: FAILED (no blob created)');
+        this.debug.extreme('[CarpetStorage] WebP: FAILED - no blob created');
       }
     } catch (error) {
-      console.log('[CarpetStorage] ❌ WebP: FAILED (exception:', error, ')');
+      this.debug.extreme('[CarpetStorage] WebP: FAILED - exception:', error);
     }
 
     // Test JPEG support (should always work)
-    console.log('[CarpetStorage] 🧪 Testing JPEG support...');
+    this.debug.extreme('[CarpetStorage] Testing JPEG support...');
     try {
       const canvas = document.createElement('canvas');
       canvas.width = canvas.height = 10;
@@ -195,23 +189,21 @@ export class CarpetStorageService {
 
       if (blob && blob.type === 'image/jpeg') {
         this.supportedFormats.add('jpeg');
-        console.log('[CarpetStorage] ✅ JPEG: SUPPORTED (as expected)');
+        this.debug.extreme('[CarpetStorage] JPEG: SUPPORTED');
       } else {
-        console.log('[CarpetStorage] ⚠️ JPEG: Unexpected failure, adding anyway');
+        this.debug.extreme('[CarpetStorage] JPEG: Unexpected failure, adding anyway');
         this.supportedFormats.add('jpeg'); // Fallback
       }
     } catch (error) {
-      console.log('[CarpetStorage] ⚠️ JPEG: Exception occurred, adding anyway:', error);
+      this.debug.extreme('[CarpetStorage] JPEG: Exception occurred, adding anyway:', error);
       this.supportedFormats.add('jpeg'); // Fallback
     }
 
     const finalFormats = Array.from(this.supportedFormats);
-    console.log('[CarpetStorage] 🎯 === FORMAT DETECTION COMPLETE ===');
-    console.log('[CarpetStorage] 📋 Final supported formats:', finalFormats);
-    console.log('[CarpetStorage] 📊 Format count:', finalFormats.length);
+    this.debug.standard('[CarpetStorage] Format detection complete', { supportedFormats: finalFormats, count: finalFormats.length });
 
     if (finalFormats.length === 0) {
-      console.log('[CarpetStorage] ⚠️ WARNING: No formats detected, something is wrong!');
+      this.debug.warn('[CarpetStorage] No formats detected, something is wrong!');
     }
   }
 
@@ -220,16 +212,11 @@ export class CarpetStorageService {
    * Now properly resizes images to 400x400 like saveCarpetImage()
    */
   async savePhotoFromCarpetData(photoData: CarpetPhotoData, pub: Pub): Promise<void> {
-    console.log('📸 [CarpetStorage] === SAVE PHOTO FROM CARPET DATA ===');
-    console.log('📸 [CarpetStorage] Input data:', {
+    this.debug.standard('[CarpetStorage] Saving photo from carpet data', {
       filename: photoData.filename,
       format: photoData.format,
       sizeKB: photoData.sizeKB,
-      blobActualSize: photoData.blob.size,
-      blobType: photoData.blob.type,
-      pubId: pub.id,
-      pubName: pub.name,
-      hasMetadata: !!photoData.metadata,
+      pubName: pub.name
     });
 
     try {
@@ -242,71 +229,18 @@ export class CarpetStorageService {
 
       this._loading.set(true);
 
-      // ✅ FIXED: Actually resize the image to 400x400 instead of just storing original blob
-      console.log('📸 [CarpetStorage] Resizing image from blob to 400x400...');
-
-      // Create image from blob to get original dimensions
-      const img = new Image();
-      const imageLoadPromise = new Promise<HTMLImageElement>((resolve, reject) => {
-        img.onload = () => resolve(img);
-        img.onerror = () => reject(new Error('Failed to load image from blob'));
-        img.src = URL.createObjectURL(photoData.blob);
-      });
-
-      const loadedImg = await imageLoadPromise;
-      console.log('📸 [CarpetStorage] Original image dimensions:', {
-        width: loadedImg.width,
-        height: loadedImg.height,
-      });
-
-      // TODO: Revisit this
-      // Create 400x400 square crop canvas (same logic as saveCarpetImage)
-      const resizeCanvas = document.createElement('canvas');
-      resizeCanvas.width = resizeCanvas.height = 400;
-      const ctx = resizeCanvas.getContext('2d')!;
-
-      // Draw centered square crop - scaled to fit
-      const sourceSize = Math.min(loadedImg.width, loadedImg.height);
-      const sx = (loadedImg.width - sourceSize) / 2;
-      const sy = (loadedImg.height - sourceSize) / 2;
-
-      ctx.drawImage(
-        loadedImg,
-        sx,
-        sy,
-        sourceSize,
-        sourceSize, // Source rectangle (square crop from center)
-        0,
-        0,
-        400,
-        400 // Destination rectangle (400x400)
-      );
-
-      // Clean up the object URL
-      URL.revokeObjectURL(img.src);
-
-      // Convert to blob with best supported format (same logic as saveCarpetImage)
+      // ✅ Resize image to 400x400 using helper function
+      this.debug.standard('[CarpetStorage] Resizing image to 400x400...');
+      
       const { format, mimeType, quality } = this.getBestFormat();
-      console.log('📸 [CarpetStorage] Using format:', format, 'quality:', quality);
+      this.debug.extreme('[CarpetStorage] Using format and quality', { format, quality });
+      
+      const resizedBlob = await resizeImageToSquare(photoData.blob, 400, mimeType, quality);
 
-      const resizedBlob = await new Promise<Blob>((resolve, reject) => {
-        resizeCanvas.toBlob(
-          blob => {
-            if (blob) {
-              resolve(blob);
-            } else {
-              reject(new Error('Failed to create resized blob'));
-            }
-          },
-          mimeType,
-          quality
-        );
-      });
-
-      console.log('📸 [CarpetStorage] Resized image:', {
-        originalSize: `${(photoData.blob.size / 1024).toFixed(1)}KB`,
-        resizedSize: `${(resizedBlob.size / 1024).toFixed(1)}KB`,
-        reduction: `${(((photoData.blob.size - resizedBlob.size) / photoData.blob.size) * 100).toFixed(1)}%`,
+      this.debug.extreme('[CarpetStorage] Image resized', {
+        originalKB: (photoData.blob.size / 1024).toFixed(1),
+        resizedKB: (resizedBlob.size / 1024).toFixed(1),
+        reductionPercent: (((photoData.blob.size - resizedBlob.size) / photoData.blob.size) * 100).toFixed(1)
       });
 
       // Create carpet data with properly resized blob
@@ -329,9 +263,9 @@ export class CarpetStorageService {
       const dbConfig = this.getDatabaseConfig();
       await this.indexedDb.put(dbConfig.name, dbConfig.stores.carpets, carpetData, key);
       await this.updateStats();
-      console.log('✅ [CarpetStorage] Photo saved successfully with proper 400x400 resize');
+      this.debug.success('[CarpetStorage] Photo saved successfully with 400x400 resize');
     } catch (error) {
-      console.error('❌ [CarpetStorage] Save photo failed:', error);
+      this.debug.error('[CarpetStorage] Save photo failed:', error);
       throw error;
     } finally {
       this._loading.set(false);
@@ -342,7 +276,7 @@ export class CarpetStorageService {
    * ✅ Get storage statistics (replaces PhotoStorageService method)
    */
   async getStorageStats(): Promise<PhotoStats> {
-    console.log('📊 [CarpetStorage] Getting storage stats...');
+    this.debug.standard('[CarpetStorage] Getting storage stats...');
 
     try {
       await this.ensureInitialized();
@@ -378,10 +312,10 @@ export class CarpetStorageService {
           userCarpets.length > 0 ? Math.round(totalSize / 1024 / userCarpets.length) : 0,
       };
 
-      console.log('📊 [CarpetStorage] Stats:', stats);
+      this.debug.standard('[CarpetStorage] Storage stats retrieved', stats);
       return stats;
     } catch (error) {
-      console.error('❌ [CarpetStorage] Failed to get stats:', error);
+      this.debug.error('[CarpetStorage] Failed to get stats:', error);
       return {
         count: 0,
         totalSizeKB: 0,
@@ -396,14 +330,11 @@ export class CarpetStorageService {
    * ✅ Get photo as displayable URL (replaces PhotoStorageService method)
    */
   async getPhotoUrl(filename: string): Promise<string | null> {
-    console.log(`🖼️ [CarpetStorage] Getting photo URL for: ${filename}`);
+    this.debug.standard('[CarpetStorage] Getting photo URL for:', filename);
 
     // Type validation - ensure filename is a string
     if (typeof filename !== 'string' || !filename) {
-      console.error(
-        `❌ [CarpetStorage] Invalid filename type: ${typeof filename}, value:`,
-        filename
-      );
+      this.debug.error('[CarpetStorage] Invalid filename type', { type: typeof filename, value: filename });
       return null;
     }
 
@@ -415,15 +346,15 @@ export class CarpetStorageService {
       );
 
       if (!carpet) {
-        console.log(`❌ [CarpetStorage] Photo not found: ${filename}`);
+        this.debug.standard('[CarpetStorage] Photo not found:', filename);
         return null;
       }
 
       const url = URL.createObjectURL(carpet.blob);
-      console.log(`✅ [CarpetStorage] Created display URL for: ${filename}`);
+      this.debug.standard('[CarpetStorage] Created display URL for:', filename);
       return url;
     } catch (error) {
-      console.error('❌ [CarpetStorage] Failed to get photo URL:', error);
+      this.debug.error('[CarpetStorage] Failed to get photo URL:', error);
       return null;
     }
   }
@@ -432,8 +363,10 @@ export class CarpetStorageService {
    * 💾 Store local version (600x600 AVIF for UI) - Used by CarpetStrategyService
    */
   async storeLocalVersion(blob: Blob, pubId: string, pubName: string): Promise<string> {
-    console.log('[CarpetStorage] 💾 Storing local version for:', pubName);
-    console.log('[CarpetStorage] 📊 Blob size:', (blob.size / 1024).toFixed(1) + 'KB');
+    this.debug.standard('[CarpetStorage] Storing local version', {
+      pubName,
+      blobSizeKB: (blob.size / 1024).toFixed(1)
+    });
 
     const userId = this.authStore.uid();
     if (!userId) {
@@ -514,11 +447,8 @@ export class CarpetStorageService {
     }
 
     // Fallback to JPEG (always supported)
-    console.log('[CarpetStorage] 🔄 Using JPEG fallback - SELECTED');
-    console.log(
-      '[CarpetStorage] 📋 Returning: { format: jpeg, mimeType: image/jpeg, quality: 0.95 }'
-    );
-    console.log('[CarpetStorage] 🎯 === FORMAT SELECTION COMPLETE ===');
+    this.debug.extreme('[CarpetStorage] JPEG selected (fallback - universal support)');
+    this.debug.standard('[CarpetStorage] Format selection complete');
     return { format: 'jpeg', mimeType: 'image/jpeg', quality: 0.95 };
   }
 
@@ -572,19 +502,7 @@ export class CarpetStorageService {
 
       // Convert to blob with best supported format
       const { format, mimeType, quality } = this.getBestFormat();
-      const blob = await new Promise<Blob>((resolve, reject) => {
-        captureCanvas.toBlob(
-          blob => {
-            if (blob) {
-              resolve(blob);
-            } else {
-              reject(new Error('Failed to create blob'));
-            }
-          },
-          mimeType,
-          quality
-        );
-      });
+      const blob = await canvasToBlob(captureCanvas, mimeType, quality);
 
       // Generate unique key with timestamp (never overwrites)
       const timestamp = Date.now();
@@ -622,10 +540,7 @@ export class CarpetStorageService {
 
       // Fire-and-forget Firebase upload - don't await or block check-in
       this.handleFirebaseUpload(blob, pubId).catch(error => {
-        console.warn(
-          '[CarpetStorage] Firebase upload failed, but check-in completed successfully:',
-          error
-        );
+        this.debug.warn('[CarpetStorage] Firebase upload failed, but check-in completed successfully:', error);
       });
 
       return key;
@@ -637,7 +552,7 @@ export class CarpetStorageService {
    * Get a carpet image by key
    */
   async getCarpetImage(key: string): Promise<Blob | undefined> {
-    console.log('[CarpetStorage] Retrieving carpet image:', key);
+    this.debug.standard('[CarpetStorage] Retrieving carpet image:', key);
 
     await this.ensureInitialized();
 
@@ -656,7 +571,7 @@ export class CarpetStorageService {
   async getUserCarpets(): Promise<CarpetImageData[]> {
     const userId = this.authStore.uid();
     if (!userId) {
-      console.warn('[CarpetStorage] No authenticated user, returning empty array');
+      this.debug.warn('[CarpetStorage] No authenticated user, returning empty array');
       return [];
     }
 
@@ -842,7 +757,7 @@ export class CarpetStorageService {
       console.log('[CarpetStorage] Firebase upload successful:', downloadURL);
       return downloadURL;
     } catch (error) {
-      console.error('[CarpetStorage] Firebase Storage upload failed:', error);
+      this.debug.error('[CarpetStorage] Firebase Storage upload failed:', error);
       return null;
     }
   }
@@ -880,14 +795,14 @@ export class CarpetStorageService {
       const carpetUrl = await this.uploadToFirebaseStorage(blob, pubId);
 
       if (!carpetUrl) {
-        console.log('[CarpetStorage] Firebase upload failed, but check-in continues');
+        this.debug.standard('[CarpetStorage] Firebase upload failed, but check-in continues');
         return;
       }
 
       await this.updatePubWithCarpetUrl(pubId, carpetUrl);
       console.log('[CarpetStorage] Firebase upload workflow completed successfully');
     } catch (error) {
-      console.error('[CarpetStorage] Firebase upload process failed:', error);
+      this.debug.error('[CarpetStorage] Firebase upload process failed:', error);
       throw error; // Let the caller handle it
     }
   }
@@ -906,7 +821,7 @@ export class CarpetStorageService {
       const hasCarpetUrl = pub?.carpetUrl && pub.carpetUrl.trim() !== '';
       return !hasCarpetUrl;
     } catch (error) {
-      console.error('[CarpetStorage] Error checking pub carpet status:', error);
+      this.debug.error('[CarpetStorage] Error checking pub carpet status:', error);
       return true;
     }
   }
@@ -919,7 +834,7 @@ export class CarpetStorageService {
       await this.pubStore.updatePubCarpetUrl(pubId, carpetUrl);
       console.log('[CarpetStorage] Pub carpet URL updated successfully');
     } catch (error) {
-      console.error('[CarpetStorage] Failed to update pub carpet URL:', error);
+      this.debug.error('[CarpetStorage] Failed to update pub carpet URL:', error);
     }
   }
 }
