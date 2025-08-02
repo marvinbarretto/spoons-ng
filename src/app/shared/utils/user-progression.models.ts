@@ -3,7 +3,7 @@
 import { User } from '@users/utils/user.model';
 
 /**
- * User experience stages based on check-in activity and engagement
+ * User experience stages based on check-in activity
  */
 export type UserExperienceLevel =
   | 'guest' // Not logged in
@@ -11,8 +11,7 @@ export type UserExperienceLevel =
   | 'firstTime' // 1-2 check-ins - learning the app
   | 'earlyUser' // 3-9 check-ins - getting familiar with features
   | 'regularUser' // 10-24 check-ins - comfortable with core functionality
-  | 'explorer' // 25-49 check-ins OR 10+ unique pubs - engaged user
-  | 'powerUser'; // 50+ check-ins - expert level user
+  | 'powerUser'; // 25+ check-ins - expert level user
 
 export const USER_STAGES: UserExperienceLevel[] = [
   'guest',
@@ -20,7 +19,6 @@ export const USER_STAGES: UserExperienceLevel[] = [
   'firstTime',
   'earlyUser',
   'regularUser',
-  'explorer',
   'powerUser',
 ];
 
@@ -40,20 +38,14 @@ export type MilestoneType =
   | 'first-checkin' // First ever check-in
   | 'early-user' // 3 check-ins milestone
   | 'regular' // 10 check-ins milestone
-  | 'explorer' // 25 check-ins milestone
-  | 'power-user' // 50 check-ins milestone
-  | 'pub-explorer' // 10 unique pubs milestone
-  | 'pub-master' // 25 unique pubs milestone
-  | 'milestone'; // General milestone (25, 50, 75, 100, etc.)
+  | 'power-user' // 25 check-ins milestone
+  | 'milestone'; // General milestone (50, 75, 100, etc.)
 
 export const MILESTONES: MilestoneType[] = [
   'first-checkin',
   'early-user',
   'regular',
-  'explorer',
   'power-user',
-  'pub-explorer',
-  'pub-master',
   'milestone',
 ];
 
@@ -61,11 +53,8 @@ export const MILESTONE_TARGETS: Record<MilestoneType, number> = {
   'first-checkin': 1,
   'early-user': 3,
   regular: 10,
-  explorer: 25,
-  'power-user': 50,
-  'pub-explorer': 10,
-  'pub-master': 25,
-  milestone: 25,
+  'power-user': 25,
+  milestone: 50,
 };
 
 /**
@@ -139,8 +128,8 @@ export function getUserExperienceLevelUIFlags(
   return {
     shouldShowWelcomeFlow: stage === 'brandNew' || stage === 'firstTime',
     shouldShowBadges: stage !== 'guest' && stage !== 'brandNew',
-    shouldShowProgressFeatures: ['regularUser', 'explorer', 'powerUser'].includes(stage),
-    shouldShowAdvancedFeatures: stage === 'explorer' || stage === 'powerUser',
+    shouldShowProgressFeatures: ['regularUser', 'powerUser'].includes(stage),
+    shouldShowAdvancedFeatures: stage === 'powerUser',
   };
 }
 
@@ -176,20 +165,12 @@ function getNextMilestone(totalCheckins: number, uniquePubs: number): UserMilest
   if (totalCheckins < 25) {
     return {
       target: 25,
-      type: 'explorer',
-      description: 'Check in to 25 pubs to become an Explorer',
-    };
-  }
-
-  if (totalCheckins < 50) {
-    return {
-      target: 50,
       type: 'power-user',
-      description: 'Check in to 50 pubs to become a Power User',
+      description: 'Check in to 25 pubs to become a Power User',
     };
   }
 
-  // For power users, focus on next milestone (75, 100, etc.)
+  // For power users, focus on next milestone (50, 75, 100, etc.)
   const nextMilestoneTarget = Math.ceil(totalCheckins / 25) * 25;
   return {
     target: nextMilestoneTarget,
@@ -217,8 +198,6 @@ function getStageMessage(
       return `Getting the hang of it! ${totalCheckins} check-ins and counting`;
     case 'regularUser':
       return `Solid progress! ${totalCheckins} check-ins across ${uniquePubs} pubs`;
-    case 'explorer':
-      return `Impressive exploration! ${totalCheckins} check-ins across ${uniquePubs} unique pubs`;
     case 'powerUser':
       return `Pub crawling master! ${totalCheckins} check-ins across ${uniquePubs} pubs`;
     default:

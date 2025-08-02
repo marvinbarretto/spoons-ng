@@ -34,7 +34,7 @@ export interface TestScenarioConfig {
   includeHolidays?: boolean;
   userTypes?: Array<'casual' | 'regular' | 'power' | 'champion'>;
   pubTypes?: Array<'local' | 'chain' | 'tourist' | 'premium'>;
-  challenges?: Array<'first_timer' | 'streak' | 'explorer' | 'social'>;
+  challenges?: Array<'first_timer' | 'streak' | 'social'>;
 }
 
 export interface RelatedDataSet {
@@ -281,7 +281,7 @@ export class TestScenarioBuilder {
     const badgeTemplates = [
       { name: 'First Timer', description: 'First pub check-in', category: 'milestone', rarity: 'common' },
       { name: 'Regular', description: '10 check-ins', category: 'milestone', rarity: 'common' },
-      { name: 'Explorer', description: 'Visit 5 different pubs', category: 'exploration', rarity: 'uncommon' },
+      { name: 'Power User', description: '25 check-ins', category: 'milestone', rarity: 'uncommon' },
       { name: 'Weekender', description: 'Check-in on weekends', category: 'social', rarity: 'uncommon' },
       { name: 'Streak Master', description: '7 days in a row', category: 'dedication', rarity: 'rare' },
       { name: 'Local Legend', description: '50 check-ins', category: 'milestone', rarity: 'rare' },
@@ -321,7 +321,7 @@ export class TestScenarioBuilder {
 
   private generateMissions(scenario: TestScenarioConfig): any[] {
     const missionTemplates = [
-      { title: 'Daily Explorer', description: 'Visit 3 pubs today', type: 'daily', target: 3, points: 50 },
+      { title: 'Daily Adventurer', description: 'Check-in 3 times today', type: 'daily', target: 3, points: 50 },
       { title: 'Weekend Warrior', description: 'Check-in 5 times this weekend', type: 'weekend', target: 5, points: 100 },
       { title: 'New Discoveries', description: 'Visit 2 new pubs this week', type: 'weekly', target: 2, points: 75 },
       { title: 'Social Butterfly', description: 'Check-in with friends 3 times', type: 'social', target: 3, points: 80 }
@@ -492,14 +492,8 @@ export class TestScenarioBuilder {
         case 'Regular':
           if (checkIns.length >= 10) earnedAt = new Date(checkIns[9].timestamp);
           break;
-        case 'Explorer':
-          if (uniquePubs.size >= 5) {
-            const fifthPubCheckIn = checkIns.find((c, i) => {
-              const pubsSoFar = new Set(checkIns.slice(0, i + 1).map(ci => ci.pubId));
-              return pubsSoFar.size >= 5;
-            });
-            if (fifthPubCheckIn) earnedAt = new Date(fifthPubCheckIn.timestamp);
-          }
+        case 'Power User':
+          if (checkIns.length >= 25) earnedAt = new Date(checkIns[24].timestamp);
           break;
         case 'Local Legend':
           if (checkIns.length >= 50) earnedAt = new Date(checkIns[49].timestamp);

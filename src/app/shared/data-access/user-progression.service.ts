@@ -23,7 +23,7 @@ export class UserProgressionService {
     return allCheckins.filter(c => c.userId === user.uid).length;
   });
 
-  // ✅ Helper: Get unique pubs visited count
+  // ✅ Helper: Get unique pubs visited count (for display purposes only)
   readonly uniquePubsVisited = computed(() => {
     const user = this.userStore.user();
     if (!user) return 0;
@@ -34,10 +34,9 @@ export class UserProgressionService {
     return uniquePubIds.size;
   });
 
-  // ✅ User Experience Stage Classification
+  // ✅ User Experience Stage Classification (simplified)
   readonly userExperienceLevel = computed(() => {
     const checkinCount = this.totalCheckinsCount();
-    const uniquePubs = this.uniquePubsVisited();
     const user = this.userStore.user();
 
     if (!user) return 'guest';
@@ -54,10 +53,7 @@ export class UserProgressionService {
     // Regular user (10-24 check-ins)
     if (checkinCount <= 24) return 'regularUser';
 
-    // Explorer (25-49 check-ins OR 10+ unique pubs)
-    if (checkinCount <= 49 || uniquePubs >= 10) return 'explorer';
-
-    // Power user (50+ check-ins)
+    // Power user (25+ check-ins)
     return 'powerUser';
   }) as Signal<UserExperienceLevel>;
 
@@ -66,7 +62,6 @@ export class UserProgressionService {
   readonly isFirstTimeUser = computed(() => this.userExperienceLevel() === 'firstTime');
   readonly isEarlyUser = computed(() => this.userExperienceLevel() === 'earlyUser');
   readonly isRegularUser = computed(() => this.userExperienceLevel() === 'regularUser');
-  readonly isExplorer = computed(() => this.userExperienceLevel() === 'explorer');
   readonly isPowerUser = computed(() => this.userExperienceLevel() === 'powerUser');
 
   // ✅ UI-specific computed signals
@@ -76,9 +71,7 @@ export class UserProgressionService {
 
   readonly shouldShowProgressFeatures = computed(() => !this.isBrandNewUser());
 
-  readonly shouldShowAdvancedFeatures = computed(
-    () => this.isRegularUser() || this.isExplorer() || this.isPowerUser()
-  );
+  readonly shouldShowAdvancedFeatures = computed(() => this.isPowerUser());
 
   // ✅ Contextual messaging
   readonly stageMessage = computed(() => {
@@ -95,8 +88,6 @@ export class UserProgressionService {
         return `You're getting the hang of this! ${checkins} check-ins and counting`;
       case 'regularUser':
         return `Pub regular! ${uniquePubs} different pubs discovered`;
-      case 'explorer':
-        return `True explorer! ${uniquePubs} pubs conquered across your adventures`;
       case 'powerUser':
         return `Pub legend! ${checkins} check-ins at ${uniquePubs} different locations`;
       default:
@@ -104,24 +95,17 @@ export class UserProgressionService {
     }
   });
 
-  // ✅ Next milestone logic
+  // ✅ Next milestone logic (simplified)
   readonly nextMilestone = computed((): UserMilestone => {
     const checkins = this.totalCheckinsCount();
-    const uniquePubs = this.uniquePubsVisited();
 
     if (checkins === 0)
       return { target: 1, type: 'first-checkin', description: 'your first check-in' };
     if (checkins < 3) return { target: 3, type: 'early-user', description: 'early adopter status' };
     if (checkins < 10) return { target: 10, type: 'regular', description: 'regular user badge' };
-    if (checkins < 25) return { target: 25, type: 'explorer', description: 'explorer status' };
-    if (checkins < 50)
-      return { target: 50, type: 'power-user', description: 'power user achievement' };
+    if (checkins < 25) return { target: 25, type: 'power-user', description: 'power user achievement' };
 
-    if (uniquePubs < 10)
-      return { target: 10, type: 'pub-explorer', description: '10 different pubs' };
-    if (uniquePubs < 25)
-      return { target: 25, type: 'pub-master', description: '25 different pubs' };
-
+    // For power users, focus on next milestone (50, 75, 100, etc.)
     const nextRoundNumber = Math.ceil(checkins / 25) * 25;
     return {
       target: nextRoundNumber,
@@ -132,10 +116,7 @@ export class UserProgressionService {
 
   readonly checkinsToNextMilestone = computed(() => {
     const milestone = this.nextMilestone();
-    const current =
-      milestone.type === 'pub-explorer' || milestone.type === 'pub-master'
-        ? this.uniquePubsVisited()
-        : this.totalCheckinsCount();
+    const current = this.totalCheckinsCount();
 
     return Math.max(0, milestone.target - current);
   });

@@ -174,7 +174,7 @@ describe('UserProgressionService', () => {
       expect(service.totalCheckinsCount()).toBe(15);
     });
 
-    it('should classify explorers by check-in count (25-49 check-ins)', () => {
+    it('should classify power users (25+ check-ins)', () => {
       // Given: User with 30 check-ins
       const { user, checkIns } = createUserWithCheckIns(30);
       
@@ -184,44 +184,10 @@ describe('UserProgressionService', () => {
       // When: Getting experience level
       const level = service.userExperienceLevel();
       
-      // Then: Should be explorer
-      expect(level).toBe('explorer');
-      expect(service.isExplorer()).toBe(true);
-      expect(service.totalCheckinsCount()).toBe(30);
-    });
-
-    it('should classify explorers by unique pub count (10+ unique pubs)', () => {
-      // Given: User with only 15 check-ins but 12 unique pubs
-      const { user, checkIns } = createUserWithCheckIns(15, 12);
-      
-      userStore.user.set(user);
-      checkinStore.checkins.set(checkIns);
-      
-      // When: Getting experience level and unique pubs
-      const level = service.userExperienceLevel();
-      const uniquePubs = service.uniquePubsVisited();
-      
-      // Then: Should be regular user (15 check-ins falls in 10-24 range, unique pubs don't override)
-      // NOTE: The current logic has a bug - it should be explorer with 12 unique pubs
-      expect(level).toBe('regularUser');
-      expect(uniquePubs).toBe(12);
-      expect(service.totalCheckinsCount()).toBe(15);
-    });
-
-    it('should classify power users (50+ check-ins)', () => {
-      // Given: User with 75 check-ins but less than 10 unique pubs to avoid explorer classification
-      const { user, checkIns } = createUserWithCheckIns(75, 8); // Only 8 unique pubs
-      
-      userStore.user.set(user);
-      checkinStore.checkins.set(checkIns);
-      
-      // When: Getting experience level
-      const level = service.userExperienceLevel();
-      
-      // Then: Should be power user (75 > 49 and < 10 unique pubs)
+      // Then: Should be power user
       expect(level).toBe('powerUser');
       expect(service.isPowerUser()).toBe(true);
-      expect(service.totalCheckinsCount()).toBe(75);
+      expect(service.totalCheckinsCount()).toBe(30);
     });
   });
 
@@ -287,7 +253,7 @@ describe('UserProgressionService', () => {
       expect(checkinsToNext).toBe(3); // 10 - 7 = 3
     });
 
-    it('should provide explorer milestone for regular users', () => {
+    it('should provide power user milestone for regular users', () => {
       // Given: User with 18 check-ins
       const { user, checkIns } = createUserWithCheckIns(18);
       
@@ -298,16 +264,16 @@ describe('UserProgressionService', () => {
       const milestone = service.nextMilestone();
       const checkinsToNext = service.checkinsToNextMilestone();
       
-      // Then: Should be explorer milestone
-      expect(milestone.type).toBe('explorer');
+      // Then: Should be power user milestone
+      expect(milestone.type).toBe('power-user');
       expect(milestone.target).toBe(25);
-      expect(milestone.description).toBe('explorer status');
+      expect(milestone.description).toBe('power user achievement');
       expect(checkinsToNext).toBe(7); // 25 - 18 = 7
     });
 
-    it('should provide power user milestone for explorers', () => {
-      // Given: User with 35 check-ins
-      const { user, checkIns } = createUserWithCheckIns(35);
+    it('should provide round number milestones for power users', () => {
+      // Given: Power user with 67 check-ins
+      const { user, checkIns } = createUserWithCheckIns(67);
       
       userStore.user.set(user);
       checkinStore.checkins.set(checkIns);
@@ -316,49 +282,11 @@ describe('UserProgressionService', () => {
       const milestone = service.nextMilestone();
       const checkinsToNext = service.checkinsToNextMilestone();
       
-      // Then: Should be power user milestone
-      expect(milestone.type).toBe('power-user');
-      expect(milestone.target).toBe(50);
-      expect(milestone.description).toBe('power user achievement');
-      expect(checkinsToNext).toBe(15); // 50 - 35 = 15
-    });
-
-    it('should provide pub explorer milestone for power users with few unique pubs', () => {
-      // Given: Power user with 60 check-ins but only 8 unique pubs
-      const { user, checkIns } = createUserWithCheckIns(60, 8);
-      
-      userStore.user.set(user);
-      checkinStore.checkins.set(checkIns);
-      
-      // When: Getting next milestone
-      const milestone = service.nextMilestone();
-      const checkinsToNext = service.checkinsToNextMilestone();
-      const uniquePubs = service.uniquePubsVisited();
-      
-      // Then: Should be pub explorer milestone
-      expect(milestone.type).toBe('pub-explorer');
-      expect(milestone.target).toBe(10);
-      expect(milestone.description).toBe('10 different pubs');
-      expect(checkinsToNext).toBe(2); // 10 - 8 = 2
-      expect(uniquePubs).toBe(8);
-    });
-
-    it('should provide round number milestones for advanced power users', () => {
-      // Given: Power user with 67 check-ins and already has 25+ unique pubs, so will get pub-master milestone first
-      const { user, checkIns } = createUserWithCheckIns(67, 15);
-      
-      userStore.user.set(user);
-      checkinStore.checkins.set(checkIns);
-      
-      // When: Getting next milestone
-      const milestone = service.nextMilestone();
-      const checkinsToNext = service.checkinsToNextMilestone();
-      
-      // Then: Should be pub-master milestone since user has 15 unique pubs (< 25)
-      expect(milestone.type).toBe('pub-master');
-      expect(milestone.target).toBe(25);
-      expect(milestone.description).toBe('25 different pubs');
-      expect(checkinsToNext).toBe(10); // 25 - 15 = 10 (counting unique pubs, not check-ins)
+      // Then: Should be next round number (75 = ceil(67/25) * 25)
+      expect(milestone.type).toBe('milestone');
+      expect(milestone.target).toBe(75);
+      expect(milestone.description).toBe('75 total check-ins');
+      expect(checkinsToNext).toBe(8); // 75 - 67 = 8
     });
   });
 
@@ -452,17 +380,16 @@ describe('UserProgressionService', () => {
       expect(shouldShow).toBe(true);
     });
 
-    it('should show advanced features for regular, explorer, and power users', () => {
+    it('should show advanced features only for power users', () => {
       const testCases = [
-        { checkIns: 15, uniquePubs: 8, expectAdvanced: true, level: 'regular' },
-        { checkIns: 30, uniquePubs: 12, expectAdvanced: true, level: 'explorer' },
-        { checkIns: 60, uniquePubs: 8, expectAdvanced: true, level: 'power' },
-        { checkIns: 5, uniquePubs: 3, expectAdvanced: false, level: 'early' }
+        { checkIns: 15, expectAdvanced: false, level: 'regular' },
+        { checkIns: 30, expectAdvanced: true, level: 'power' },
+        { checkIns: 5, expectAdvanced: false, level: 'early' }
       ];
       
       for (const testCase of testCases) {
         // Given: User at specific experience level
-        const { user, checkIns } = createUserWithCheckIns(testCase.checkIns, testCase.uniquePubs);
+        const { user, checkIns } = createUserWithCheckIns(testCase.checkIns);
         
         userStore.user.set(user);
         checkinStore.checkins.set(checkIns);
@@ -523,18 +450,9 @@ describe('UserProgressionService', () => {
           expectedMessageContains: 'Pub regular!'
         },
         {
-          level: 'explorer',
-          setupFn: () => {
-            const { user, checkIns } = createUserWithCheckIns(30);
-            userStore.user.set(user);
-            checkinStore.checkins.set(checkIns);
-          },
-          expectedMessageContains: 'True explorer!'
-        },
-        {
           level: 'powerUser',
           setupFn: () => {
-            const { user, checkIns } = createUserWithCheckIns(60, 8); // Less than 10 unique pubs
+            const { user, checkIns } = createUserWithCheckIns(30);
             userStore.user.set(user);
             checkinStore.checkins.set(checkIns);
           },
@@ -572,14 +490,14 @@ describe('UserProgressionService', () => {
       expect(stats.stage).toBe('regularUser');
       expect(stats.totalCheckins).toBe(18);
       expect(stats.uniquePubs).toBeGreaterThan(0);
-      expect(stats.nextMilestone.type).toBe('explorer');
+      expect(stats.nextMilestone.type).toBe('power-user');
       expect(stats.nextMilestone.target).toBe(25);
       expect(stats.checkinsToNextMilestone).toBe(7); // 25 - 18 = 7
       expect(stats.stageMessage).toContain('Pub regular!');
     });
 
     it('should provide complete UI flags', () => {
-      // Given: Explorer user
+      // Given: Power user
       const { user, checkIns } = createUserWithCheckIns(30);
       
       userStore.user.set(user);
@@ -589,7 +507,7 @@ describe('UserProgressionService', () => {
       // When: Getting UI flags
       const flags = service.uiFlags();
       
-      // Then: Should have appropriate flags for explorer
+      // Then: Should have appropriate flags for power user
       expect(flags.shouldShowWelcomeFlow).toBe(false);
       expect(flags.shouldShowBadges).toBe(true);
       expect(flags.shouldShowProgressFeatures).toBe(true);
@@ -793,11 +711,11 @@ describe('UserProgressionService', () => {
       
       const executionTime = Date.now() - startTime;
       
-      // Then: Should handle efficiently and correctly (will be explorer due to many unique pubs)
-      expect(level).toBe('explorer'); // Many unique pubs triggers explorer classification
+      // Then: Should handle efficiently and correctly
+      expect(level).toBe('powerUser'); // 1000 check-ins = power user
       expect(totalCheckins).toBe(1000);
       expect(uniquePubs).toBeLessThanOrEqual(testData.pubs.length);
-      expect(milestone.type).toBe('pub-master'); // Will be pub-master since there are many unique pubs
+      expect(milestone.type).toBe('milestone'); // Will be next milestone for power user
       expect(executionTime).toBeLessThan(1000); // Should complete within 1 second
     });
 
@@ -831,7 +749,7 @@ describe('UserProgressionService', () => {
         { checkIns: 5, uniquePubs: 4 },
         { checkIns: 15, uniquePubs: 8 },
         { checkIns: 30, uniquePubs: 12 },
-        { checkIns: 60, uniquePubs: 8 } // Power user with few unique pubs
+        { checkIns: 60, uniquePubs: 15 }
       ];
       
       for (const scenario of scenarios) {
@@ -860,12 +778,8 @@ describe('UserProgressionService', () => {
         const expectedFlags = service.uiFlags();
         expect(flags).toEqual(expectedFlags);
         
-        // Milestone calculation should be logical
-        if (milestone.type === 'pub-explorer' || milestone.type === 'pub-master') {
-          expect(checkinsToNext).toBe(Math.max(0, milestone.target - uniquePubs));
-        } else {
-          expect(checkinsToNext).toBe(Math.max(0, milestone.target - totalCheckins));
-        }
+        // Milestone calculation should be logical - only check-in based milestones now
+        expect(checkinsToNext).toBe(Math.max(0, milestone.target - totalCheckins));
       }
     });
   });

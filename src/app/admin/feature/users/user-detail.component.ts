@@ -1665,8 +1665,6 @@ export class AdminUserDetailComponent extends BaseComponent implements OnInit {
         return 'Getting familiar with features';
       case 'regularUser':
         return 'Comfortable with core functionality';
-      case 'explorer':
-        return 'Engaged user exploring many pubs';
       case 'powerUser':
         return 'Expert level user with extensive activity';
       default:
