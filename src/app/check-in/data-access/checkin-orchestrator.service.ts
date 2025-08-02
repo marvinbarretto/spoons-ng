@@ -8,7 +8,6 @@ import { DataAggregatorService } from '@shared/data-access/data-aggregator.servi
 import { LLMService } from '@shared/data-access/llm.service';
 import { AbstractCameraService, CameraPermissionState } from '@shared/data-access/abstract-camera.service';
 import { environment } from '../../../environments/environment';
-import { CarpetStorageService } from '../../carpets/data-access/carpet-storage.service';
 import { CarpetStrategyService } from '../../carpets/data-access/carpet-strategy.service';
 import { CheckInModalService } from './check-in-modal.service';
 import { CheckInStore } from './check-in.store';
@@ -32,7 +31,6 @@ export class CheckinOrchestrator {
   protected readonly checkinStore = inject(CheckInStore);
   protected readonly checkInModalService = inject(CheckInModalService);
   protected readonly llmService = inject(LLMService);
-  protected readonly carpetStorageService = inject(CarpetStorageService);
   protected readonly carpetStrategy = inject(CarpetStrategyService);
   protected readonly cameraService = inject(AbstractCameraService);
   protected readonly dataAggregator = inject(DataAggregatorService);
@@ -65,7 +63,6 @@ export class CheckinOrchestrator {
   private readonly _error = signal<string | null>(null);
   private readonly _photoDataUrl = signal<string | null>(null);
   private readonly _photoBlob = signal<Blob | null>(null);
-  private readonly _permissionState = signal<CameraPermissionState>({ camera: 'unknown' });
   private readonly _recoveryAction = signal<'RETRY' | 'OPEN_SETTINGS' | 'NONE'>('NONE');
 
   // Video element tracking for web camera
@@ -80,7 +77,6 @@ export class CheckinOrchestrator {
   readonly error = this._error.asReadonly();
   readonly photoDataUrl = this._photoDataUrl.asReadonly();
   readonly photoBlob = this._photoBlob.asReadonly();
-  readonly permissionState = this._permissionState.asReadonly();
   readonly recoveryAction = this._recoveryAction.asReadonly();
 
   // ===================================
@@ -146,31 +142,6 @@ export class CheckinOrchestrator {
     return stage === 'CAPTURING_PHOTO';
   });
 
-  readonly statusMessage = computed(() => {
-    const stage = this.stage();
-    switch (stage) {
-      case 'INITIALIZING':
-        return 'Getting ready...';
-      case 'CHECKING_PERMISSIONS':
-        return 'Checking camera permissions...';
-      case 'PERMISSION_DENIED':
-        return 'Camera permission required';
-      case 'CAMERA_STARTING':
-        return 'Starting camera...';
-      case 'CAMERA_ACTIVE':
-        return this.capacitor.isNative() ? 'Ready to capture' : 'Ready to capture';
-      case 'CAPTURING_PHOTO':
-        return 'Capturing...';
-      case 'PHOTO_TAKEN':
-        return 'Photo captured';
-      case 'LLM_CHECKING':
-        return 'Processing...';
-      case 'RESULT':
-        return 'Check-in complete!';
-      default:
-        return '';
-    }
-  });
 
 
   // ===================================
@@ -258,7 +229,6 @@ export class CheckinOrchestrator {
       console.log(`[${this.SERVICE_NAME}] 📱 Checking camera permissions...`);
       const permissions = await this.cameraService.checkPermissions();
       console.log(`[${this.SERVICE_NAME}] 📱 Current permissions:`, permissions);
-      this._permissionState.set(permissions);
 
       if (permissions.camera === 'denied') {
         console.warn(`[${this.SERVICE_NAME}] 📱 Camera permission denied`);
@@ -274,7 +244,6 @@ export class CheckinOrchestrator {
         console.log(`[${this.SERVICE_NAME}] 📱 Requesting camera permissions...`);
         const requestResult = await this.cameraService.requestPermissions();
         console.log(`[${this.SERVICE_NAME}] 📱 Permission request result:`, requestResult);
-        this._permissionState.set(requestResult);
 
         if (requestResult.camera === 'denied') {
           console.error(`[${this.SERVICE_NAME}] 📱 Camera permission denied after request`);
@@ -303,7 +272,6 @@ export class CheckinOrchestrator {
       console.error(`[${this.SERVICE_NAME}] ❌ Native camera initialization failed:`, {
         error: error.message,
         stage: this._stage(),
-        permissionState: this._permissionState(),
         cameraServiceType: this.cameraService.constructor.name
       });
       this.handleError('Failed to initialize camera');
@@ -370,7 +338,25 @@ export class CheckinOrchestrator {
       console.log(`[${this.SERVICE_NAME}] ✅ Photo captured successfully, proceeding to confirmation`);
 
       // Continue with LLM processing
-      await this.confirmPhoto();
+      console.log('[CheckinOrchestrator] ✅ Photo captured - proceeding with LLM check');
+
+      const dataUrl = this._photoDataUrl();
+      const blob = this._photoBlob();
+
+      if (!dataUrl || !blob) {
+        console.error('[CheckinOrchestrator] ❌ No photo data available for processing');
+        this.handleError('No photo data available');
+        return;
+      }
+
+      // Start LLM check or direct processing
+      if (environment.LLM_CHECK) {
+        console.log('[CheckinOrchestrator] 🤖 Starting LLM analysis');
+        await this.checkWithLLM(dataUrl);
+      } else {
+        console.log('[CheckinOrchestrator] 🧪 DEV MODE: Skipping LLM, processing directly');
+        await this.processCheckin(blob);
+      }
     } catch (error: any) {
       console.error(`[${this.SERVICE_NAME}] ❌ Photo capture failed:`, {
         error: error.message,
@@ -471,32 +457,6 @@ export class CheckinOrchestrator {
   // 🔄 RETAKE FUNCTIONALITY
   // ===================================
 
-  async confirmPhoto(): Promise<void> {
-    console.log('[CheckinOrchestrator] ✅ User confirmed photo - proceeding with LLM check');
-
-    const dataUrl = this._photoDataUrl();
-    const blob = this._photoBlob();
-
-    if (!dataUrl || !blob) {
-      console.error('[CheckinOrchestrator] ❌ No photo data available for confirmation');
-      this.handleError('No photo data available');
-      return;
-    }
-
-    try {
-      // Start LLM check or direct processing
-      if (environment.LLM_CHECK) {
-        console.log('[CheckinOrchestrator] 🤖 Starting LLM analysis after user confirmation');
-        await this.checkWithLLM(dataUrl);
-      } else {
-        console.log('[CheckinOrchestrator] 🧪 DEV MODE: Skipping LLM, processing directly');
-        await this.processCheckin(blob);
-      }
-    } catch (error: any) {
-      console.error('[CheckinOrchestrator] ❌ Photo confirmation failed:', error);
-      this.handleError(error?.message || 'Failed to process photo');
-    }
-  }
 
   retakePhoto(): void {
     const currentStage = this._stage();
@@ -711,7 +671,6 @@ export class CheckinOrchestrator {
       const permissions = await this.cameraService.requestPermissions();
       console.log(`[${this.SERVICE_NAME}] 🔐 Permission retry result:`, permissions);
       
-      this._permissionState.set(permissions);
 
       if (permissions.camera === 'granted') {
         this._stage.set('CAMERA_ACTIVE');
@@ -727,7 +686,6 @@ export class CheckinOrchestrator {
         error: error.message,
         cameraServiceType: this.cameraService.constructor.name,
         stage: this._stage(),
-        permissionState: this._permissionState()
       });
       this.handleError('Failed to request camera permissions');
     }
@@ -770,7 +728,6 @@ export class CheckinOrchestrator {
     this._error.set(null);
     this._photoDataUrl.set(null);
     this._photoBlob.set(null);
-    this._permissionState.set({ camera: 'unknown' });
     this._recoveryAction.set('NONE');
     
     console.log(`[${this.SERVICE_NAME}] 🧹 Cleanup complete`);
