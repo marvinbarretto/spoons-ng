@@ -7,6 +7,7 @@ import { PubStore } from '@pubs/data-access/pub.store';
 import { Pub } from '@pubs/utils/pub.models';
 import { CarpetPhotoData, PhotoStats } from '@shared/utils/carpet-photo.models';
 import { DebugService } from '@shared/utils/debug.service';
+import { ImageFormatDetectionService } from '@shared/utils/image-format-detection.service';
 import { canvasToBlob, loadImageFromBlob, resizeImageToSquare } from '@shared/utils/image-processing.helpers';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { environment } from '../../../environments/environment';
@@ -24,7 +25,6 @@ type CarpetImageData = {
   height: number;
 };
 
-type ImageFormat = 'avif' | 'webp' | 'jpeg';
 
 @Injectable({ providedIn: 'root' })
 export class CarpetStorageService {
@@ -33,6 +33,7 @@ export class CarpetStorageService {
   protected readonly storage = inject(Storage);
   protected readonly pubStore = inject(PubStore);
   private readonly debug = inject(DebugService);
+  private readonly formatDetection = inject(ImageFormatDetectionService);
 
   // Signals for reactive state
   private readonly _carpetCount = signal(0);
@@ -45,7 +46,6 @@ export class CarpetStorageService {
 
   private initialized = false;
   private initializing = false; // ✅ Guard against multiple simultaneous initializations
-  private supportedFormats: Set<ImageFormat> = new Set();
 
   private getDatabaseConfig() {
     if (!environment.database) {
@@ -92,7 +92,8 @@ export class CarpetStorageService {
         ],
       });
 
-      await this.detectSupportedFormats();
+      // Trigger format detection (cached after first call)
+      await this.formatDetection.getSupportedFormats();
       this.initialized = true;
       this.initializing = false;
 
@@ -105,107 +106,6 @@ export class CarpetStorageService {
     }
   }
 
-  /**
-   * Detect which modern image formats are supported with comprehensive testing
-   */
-  private async detectSupportedFormats(): Promise<void> {
-    this.debug.standard('[CarpetStorage] Starting image format detection...');
-
-    // Clear any existing formats
-    this.supportedFormats.clear();
-
-    // Test AVIF support
-    this.debug.extreme('[CarpetStorage] Testing AVIF support...');
-    try {
-      const canvas = document.createElement('canvas');
-      canvas.width = canvas.height = 10; // Slightly larger for better testing
-      const ctx = canvas.getContext('2d')!;
-      ctx.fillStyle = '#FF0000'; // Red square for testing
-      ctx.fillRect(0, 0, 10, 10);
-
-      const blob = await new Promise<Blob | null>(resolve =>
-        canvas.toBlob(resolve, 'image/avif', 0.8)
-      );
-
-      if (blob) {
-        this.debug.extreme('[CarpetStorage] AVIF blob created', { size: blob.size, type: blob.type });
-
-        // Verify the blob type matches what we requested
-        if (blob.type === 'image/avif') {
-          this.supportedFormats.add('avif');
-          this.debug.extreme('[CarpetStorage] AVIF: SUPPORTED');
-        } else {
-          this.debug.extreme('[CarpetStorage] AVIF: FAILED - wrong blob type:', blob.type);
-        }
-      } else {
-        this.debug.extreme('[CarpetStorage] AVIF: FAILED - no blob created');
-      }
-    } catch (error) {
-      this.debug.extreme('[CarpetStorage] AVIF: FAILED - exception:', error);
-    }
-
-    // Test WebP support
-    this.debug.extreme('[CarpetStorage] Testing WebP support...');
-    try {
-      const canvas = document.createElement('canvas');
-      canvas.width = canvas.height = 10;
-      const ctx = canvas.getContext('2d')!;
-      ctx.fillStyle = '#00FF00'; // Green square for testing
-      ctx.fillRect(0, 0, 10, 10);
-
-      const blob = await new Promise<Blob | null>(resolve =>
-        canvas.toBlob(resolve, 'image/webp', 0.8)
-      );
-
-      if (blob) {
-        this.debug.extreme('[CarpetStorage] WebP blob created', { size: blob.size, type: blob.type });
-
-        // Verify the blob type matches what we requested
-        if (blob.type === 'image/webp') {
-          this.supportedFormats.add('webp');
-          this.debug.extreme('[CarpetStorage] WebP: SUPPORTED');
-        } else {
-          this.debug.extreme('[CarpetStorage] WebP: FAILED - wrong blob type:', blob.type);
-        }
-      } else {
-        this.debug.extreme('[CarpetStorage] WebP: FAILED - no blob created');
-      }
-    } catch (error) {
-      this.debug.extreme('[CarpetStorage] WebP: FAILED - exception:', error);
-    }
-
-    // Test JPEG support (should always work)
-    this.debug.extreme('[CarpetStorage] Testing JPEG support...');
-    try {
-      const canvas = document.createElement('canvas');
-      canvas.width = canvas.height = 10;
-      const ctx = canvas.getContext('2d')!;
-      ctx.fillStyle = '#0000FF'; // Blue square for testing
-      ctx.fillRect(0, 0, 10, 10);
-
-      const blob = await new Promise<Blob | null>(resolve =>
-        canvas.toBlob(resolve, 'image/jpeg', 0.8)
-      );
-
-      if (blob && blob.type === 'image/jpeg') {
-        this.supportedFormats.add('jpeg');
-        this.debug.extreme('[CarpetStorage] JPEG: SUPPORTED');
-      } else {
-        this.debug.extreme('[CarpetStorage] JPEG: Unexpected failure, adding anyway');
-        this.supportedFormats.add('jpeg'); // Fallback
-      }
-    } catch (error) {
-      this.debug.extreme('[CarpetStorage] JPEG: Exception occurred, adding anyway:', error);
-      this.supportedFormats.add('jpeg'); // Fallback
-    }
-
-    const finalFormats = Array.from(this.supportedFormats);
-    this.debug.standard('[CarpetStorage] Format detection complete', { supportedFormats: finalFormats, count: finalFormats.length });
-
-    if (finalFormats.length === 0) {
-      this.debug.warn('[CarpetStorage] No formats detected, something is wrong!');
-    }
-  }
 
   /**
    * ✅ Save photo from carpet data (replaces PhotoStorageService method)
@@ -232,7 +132,7 @@ export class CarpetStorageService {
       // ✅ Resize image to 400x400 using helper function
       this.debug.standard('[CarpetStorage] Resizing image to 400x400...');
       
-      const { format, mimeType, quality } = this.getBestFormat();
+      const { format, mimeType, quality } = await this.formatDetection.getBestFormat();
       this.debug.extreme('[CarpetStorage] Using format and quality', { format, quality });
       
       const resizedBlob = await resizeImageToSquare(photoData.blob, 400, mimeType, quality);
@@ -408,49 +308,6 @@ export class CarpetStorageService {
     URL.revokeObjectURL(url);
   }
 
-  /**
-   * Get best available image format with higher quality for storage
-   */
-  private getBestFormat(): { format: ImageFormat; mimeType: string; quality: number } {
-    console.log('[CarpetStorage] 🎯 === FORMAT SELECTION PROCESS ===');
-    console.log('[CarpetStorage] 📋 Available formats:', Array.from(this.supportedFormats));
-    console.log('[CarpetStorage] 📊 Format count:', this.supportedFormats.size);
-
-    // Check if we even have formats detected
-    if (this.supportedFormats.size === 0) {
-      console.log('[CarpetStorage] ⚠️ WARNING: No supported formats detected, defaulting to JPEG');
-      return { format: 'jpeg', mimeType: 'image/jpeg', quality: 0.95 };
-    }
-
-    // Test AVIF first (best compression)
-    console.log('[CarpetStorage] 🔍 Checking for AVIF support...');
-    if (this.supportedFormats.has('avif')) {
-      console.log('[CarpetStorage] ✅ AVIF is available - SELECTED');
-      console.log(
-        '[CarpetStorage] 📋 Returning: { format: avif, mimeType: image/avif, quality: 0.95 }'
-      );
-      return { format: 'avif', mimeType: 'image/avif', quality: 0.95 };
-    } else {
-      console.log('[CarpetStorage] ❌ AVIF not available, checking WebP...');
-    }
-
-    // Test WebP second (good compression)
-    console.log('[CarpetStorage] 🔍 Checking for WebP support...');
-    if (this.supportedFormats.has('webp')) {
-      console.log('[CarpetStorage] ✅ WebP is available - SELECTED');
-      console.log(
-        '[CarpetStorage] 📋 Returning: { format: webp, mimeType: image/webp, quality: 0.95 }'
-      );
-      return { format: 'webp', mimeType: 'image/webp', quality: 0.95 };
-    } else {
-      console.log('[CarpetStorage] ❌ WebP not available, falling back to JPEG...');
-    }
-
-    // Fallback to JPEG (always supported)
-    this.debug.extreme('[CarpetStorage] JPEG selected (fallback - universal support)');
-    this.debug.standard('[CarpetStorage] Format selection complete');
-    return { format: 'jpeg', mimeType: 'image/jpeg', quality: 0.95 };
-  }
 
   /**
    * Save carpet image with user association
@@ -501,7 +358,7 @@ export class CarpetStorageService {
       );
 
       // Convert to blob with best supported format
-      const { format, mimeType, quality } = this.getBestFormat();
+      const { format, mimeType, quality } = await this.formatDetection.getBestFormat();
       const blob = await canvasToBlob(captureCanvas, mimeType, quality);
 
       // Generate unique key with timestamp (never overwrites)
