@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.117](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.116...v0.0.117) (2025-08-02)
+
+
+### Features
+
+* [iOS Login] Core login enabled ([cefb539](https://github.com/marvinbarretto/spoons-ng/commit/cefb5390737a69940997260c548b282c33a495d8))
+* [Location] Create AbstractLocationService which can work on all mediums ([1beb7c3](https://github.com/marvinbarretto/spoons-ng/commit/1beb7c31aa1086dc4581eeef5d520f54e31f3cc4))
+
 ### [0.0.116](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.115...v0.0.116) (2025-07-31)
 
 
