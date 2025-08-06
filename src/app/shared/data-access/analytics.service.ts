@@ -11,6 +11,8 @@ export interface UserBehaviorMetrics {
   timeOfDayUsage: Record<string, number>;
   dayOfWeekUsage: Record<string, number>;
   locationPatterns: Record<string, number>;
+  movementPatterns: Record<string, number>; // stationary vs mobile usage
+  tapHeatmap: Record<string, number>; // UI interaction patterns
 }
 
 export interface UsageInsights {
@@ -38,12 +40,34 @@ export interface UsageInsights {
 })
 export class AnalyticsService {
   private analytics = inject(Analytics, { optional: true });
+  private sessionStartTime = Date.now();
+  private lastLocationUpdate = Date.now();
+  private isUserMoving = false;
 
   constructor() {
     console.log('[AnalyticsService] Initialized', {
       analyticsEnabled: !!this.analytics,
       production: environment.production
     });
+    
+    this.initializeSessionTracking();
+  }
+
+  private initializeSessionTracking() {
+    if (typeof window !== 'undefined') {
+      // Track page visibility changes for session analysis
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          this.trackSessionPause();
+        } else {
+          this.trackSessionResume();
+        }
+      });
+
+      // Track app going to background/foreground
+      window.addEventListener('blur', () => this.trackSessionPause());
+      window.addEventListener('focus', () => this.trackSessionResume());
+    }
   }
 
   // Deep user behavior tracking
@@ -159,7 +183,22 @@ export class AnalyticsService {
   }
 
   // Error and friction tracking
-  trackUserFriction(frictionType: 'location_denied' | 'camera_failed' | 'slow_loading' | 'network_error', screen: string) {
+  trackUserFriction(
+    frictionType: 
+      | 'location_denied' 
+      | 'camera_failed' 
+      | 'slow_loading' 
+      | 'network_error'
+      | 'check_in_modal_error'
+      | 'daily_limit_exceeded'
+      | 'proximity_check_failed'
+      | 'leaderboard_load_failed'
+      | 'check_in_failed'
+      | 'location_not_native'
+      | 'location_permission_denied'
+      | 'location_permission_error', 
+    screen: string
+  ) {
     if (!this.analytics) return;
     
     logEvent(this.analytics, 'user_friction', {
@@ -167,5 +206,146 @@ export class AnalyticsService {
       screen,
       timestamp: Date.now()
     });
+  }
+
+  // LOCATION & MOVEMENT TRACKING - Key for "on the move" insights
+  trackLocationContext(context: 'stationary' | 'walking' | 'transport' | 'unknown', accuracy?: number) {
+    if (!this.analytics) return;
+    
+    this.isUserMoving = context !== 'stationary';
+    
+    logEvent(this.analytics, 'location_context', {
+      movement_type: context,
+      location_accuracy: accuracy || 0,
+      session_duration: this.getSessionDuration(),
+      timestamp: Date.now()
+    });
+  }
+
+  trackLocationUpdate(latitude: number, longitude: number, accuracy?: number, speed?: number) {
+    if (!this.analytics) return;
+    
+    const timeSinceLastUpdate = Date.now() - this.lastLocationUpdate;
+    this.lastLocationUpdate = Date.now();
+    
+    // Determine movement context from speed/time
+    let movementContext: 'stationary' | 'walking' | 'transport' | 'unknown' = 'unknown';
+    if (speed !== undefined) {
+      if (speed < 0.5) movementContext = 'stationary';
+      else if (speed < 5) movementContext = 'walking';  
+      else movementContext = 'transport';
+    }
+    
+    logEvent(this.analytics, 'location_update', {
+      accuracy,
+      speed: speed || 0,
+      movement_context: movementContext,
+      time_since_last: timeSinceLastUpdate,
+      is_moving: this.isUserMoving,
+      timestamp: Date.now()
+    });
+  }
+
+  // TAP & INTERACTION HEATMAP
+  trackTapEvent(elementId: string, elementType: 'button' | 'link' | 'card' | 'input' | 'icon', screen: string, coordinates?: {x: number, y: number}) {
+    if (!this.analytics) return;
+    
+    logEvent(this.analytics, 'tap_interaction', {
+      element_id: elementId,
+      element_type: elementType,
+      screen,
+      tap_x: coordinates?.x || 0,
+      tap_y: coordinates?.y || 0,
+      session_duration: this.getSessionDuration(),
+      is_moving: this.isUserMoving,
+      timestamp: Date.now()
+    });
+  }
+
+  // DETAILED SESSION ANALYTICS
+  trackSessionPause() {
+    if (!this.analytics) return;
+    
+    logEvent(this.analytics, 'session_pause', {
+      session_duration: this.getSessionDuration(),
+      hour_of_day: new Date().getHours(),
+      timestamp: Date.now()
+    });
+  }
+
+  trackSessionResume() {
+    if (!this.analytics) return;
+    
+    logEvent(this.analytics, 'session_resume', {
+      session_duration: this.getSessionDuration(),
+      hour_of_day: new Date().getHours(),
+      timestamp: Date.now()
+    });
+  }
+
+  // SCREEN TIME & ENGAGEMENT DEPTH
+  trackScreenTime(screen: string, timeSpent: number, interactions: number, scrollDepth?: number) {
+    if (!this.analytics) return;
+    
+    logEvent(this.analytics, 'screen_engagement', {
+      screen,
+      time_spent_seconds: timeSpent,
+      interaction_count: interactions,
+      scroll_depth_percent: scrollDepth || 0,
+      engagement_rate: interactions / Math.max(timeSpent / 60, 1), // interactions per minute
+      is_moving: this.isUserMoving,
+      timestamp: Date.now()
+    });
+  }
+
+  // USER FLOW & JOURNEY MAPPING
+  trackUserFlow(flowStep: string, flowName: string, stepDuration: number, success: boolean) {
+    if (!this.analytics) return;
+    
+    logEvent(this.analytics, 'user_flow', {
+      flow_name: flowName,
+      flow_step: flowStep,
+      step_duration: stepDuration,
+      flow_success: success,
+      is_moving: this.isUserMoving,
+      timestamp: Date.now()
+    });
+  }
+
+  // FEATURE INTEREST TRACKING (what users explore vs ignore)
+  trackFeatureInterest(feature: string, interestLevel: 'high' | 'medium' | 'low', timeToEngage?: number) {
+    if (!this.analytics) return;
+    
+    logEvent(this.analytics, 'feature_interest', {
+      feature,
+      interest_level: interestLevel,
+      time_to_engage: timeToEngage || 0,
+      session_duration: this.getSessionDuration(),
+      timestamp: Date.now()
+    });
+  }
+
+  // PERFORMANCE & FRUSTRATION TRACKING
+  trackPerformanceIssue(issueType: 'slow_load' | 'app_crash' | 'ui_lag' | 'data_sync', screen: string, severity: 'low' | 'medium' | 'high') {
+    if (!this.analytics) return;
+    
+    logEvent(this.analytics, 'performance_issue', {
+      issue_type: issueType,
+      screen,
+      severity,
+      session_duration: this.getSessionDuration(),
+      timestamp: Date.now()
+    });
+  }
+
+  private getSessionDuration(): number {
+    return Math.floor((Date.now() - this.sessionStartTime) / 1000);
+  }
+
+  // Reset session tracking (call when user starts new session)
+  resetSession() {
+    this.sessionStartTime = Date.now();
+    this.lastLocationUpdate = Date.now();
+    this.isUserMoving = false;
   }
 }

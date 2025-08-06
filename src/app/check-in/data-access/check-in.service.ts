@@ -9,6 +9,7 @@ import { Timestamp, where } from 'firebase/firestore';
 import { environment } from '../../../environments/environment';
 import { AuthStore } from '../../auth/data-access/auth.store';
 import { NearbyPubStore } from '../../pubs/data-access/nearby-pub.store';
+import { AnalyticsService } from '@shared/data-access/analytics.service';
 import type { CheckIn } from '../utils/check-in.models';
 
 @Injectable({ providedIn: 'root' })
@@ -28,6 +29,7 @@ export class CheckInService extends FirestoreService {
   // Clean dependencies - no underscores for services
   protected readonly authStore = inject(AuthStore);
   protected readonly nearbyPubStore = inject(NearbyPubStore);
+  private readonly analytics = inject(AnalyticsService);
 
   /**
    * Check if user can check in to this pub
@@ -37,6 +39,9 @@ export class CheckInService extends FirestoreService {
    */
   async canCheckIn(pubId: string): Promise<{ allowed: boolean; reason?: string }> {
     console.log('[CheckInService] 🔍 Running check-in validations for pub:', pubId);
+    
+    // Track validation attempt
+    this.analytics.trackFeatureUsage('check_in_validation_start', 'check_in_flow');
 
     // Gate 1: Daily limit check
     if (environment.ACTIVE_DEVELOPMENT_MODE) {
@@ -48,6 +53,7 @@ export class CheckInService extends FirestoreService {
       const dailyCheck = await this.dailyLimitCheck(pubId);
       if (!dailyCheck.passed) {
         console.log('[CheckInService] ❌ Failed daily limit check:', dailyCheck.reason);
+        this.analytics.trackUserFriction('daily_limit_exceeded', 'check_in_flow');
         return { allowed: false, reason: dailyCheck.reason };
       }
       console.log('[CheckInService] ✅ Daily limit check passed');
@@ -61,6 +67,7 @@ export class CheckInService extends FirestoreService {
       const proximityCheck = await this.proximityCheck(pubId);
       if (!proximityCheck.passed) {
         console.log('[CheckInService] ❌ Failed proximity check:', proximityCheck.reason);
+        this.analytics.trackUserFriction('proximity_check_failed', 'check_in_flow');
         return { allowed: false, reason: proximityCheck.reason };
       }
       console.log('[CheckInService] ✅ Proximity check passed');
@@ -68,6 +75,7 @@ export class CheckInService extends FirestoreService {
 
     // All gates passed
     console.log('[CheckInService] ✅ All validations passed - check-in allowed');
+    this.analytics.trackFeatureUsage('check_in_validation_success', 'check_in_flow');
     return { allowed: true };
   }
 
@@ -250,6 +258,15 @@ export class CheckInService extends FirestoreService {
 
     const docRef = await this.addDocToCollection('checkins', completeCheckinData);
     const docId = docRef.id;
+    
+    // Track successful check-in creation with detailed analytics
+    const isFirstTime = await this.isFirstEverCheckIn(userId, pubId);
+    this.analytics.trackCheckIn(
+      pubId,
+      isFirstTime,
+      !!carpetImageKey,
+      undefined // timeSpent will be calculated elsewhere
+    );
 
     console.log('[CheckInService] ✅ Check-in created successfully with complete data!');
     console.log('[CheckInService] ✅ Firestore document ID:', docId);
@@ -260,6 +277,17 @@ export class CheckInService extends FirestoreService {
       '[CheckInService] ✅ Made landlord:',
       completeCheckinData.madeUserLandlord || false
     );
+    
+    // Track check-in success metrics
+    this.analytics.trackFeatureUsage('check_in_create_success', 'check_in_flow');
+    
+    if (completeCheckinData.badgeName) {
+      this.analytics.trackFeatureUsage('badge_earned', 'badges', 0);
+    }
+    
+    if (completeCheckinData.madeUserLandlord) {
+      this.analytics.trackFeatureUsage('became_landlord', 'landlord', 0);
+    }
 
     if (carpetImageKey) {
       console.log('[CheckInService] 🎨 Carpet image linked to check-in:', carpetImageKey);
@@ -477,6 +505,8 @@ export class CheckInService extends FirestoreService {
    */
   async loadAllCheckIns(): Promise<void> {
     this._loadingAllCheckIns.set(true);
+    const startTime = Date.now();
+    
     try {
       console.log(
         '[CheckInService] 🏆 Loading all check-ins for leaderboard (fresh server data)...'
@@ -485,8 +515,17 @@ export class CheckInService extends FirestoreService {
       const checkIns = await this.getAllCheckInsFromServer();
       console.log(`[CheckInService] ✅ Loaded ${checkIns.length} fresh check-ins for leaderboard`);
       this._allCheckIns.set(checkIns);
+      
+      // Track data loading performance
+      const loadTime = Date.now() - startTime;
+      this.analytics.trackFeatureUsage('leaderboard_data_load', 'leaderboard', loadTime);
+      
+      if (loadTime > 3000) {
+        this.analytics.trackPerformanceIssue('slow_load', 'leaderboard', 'high');
+      }
     } catch (error) {
       console.error('[CheckInService] ❌ Failed to load all check-ins from server:', error);
+      this.analytics.trackUserFriction('leaderboard_load_failed', 'leaderboard');
       throw error;
     } finally {
       this._loadingAllCheckIns.set(false);

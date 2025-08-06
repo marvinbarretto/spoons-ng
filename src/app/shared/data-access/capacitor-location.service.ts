@@ -2,6 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { Geolocation } from '@capacitor/geolocation';
 import { PlatformDetectionService } from './platform-detection.service';
 import { AbstractLocationService, LocationPermissionStatus, LocationPosition } from './abstract-location.service';
+import { AnalyticsService } from './analytics.service';
 
 /**
  * Native implementation of AbstractLocationService
@@ -10,6 +11,7 @@ import { AbstractLocationService, LocationPermissionStatus, LocationPosition } f
 @Injectable({ providedIn: 'root' })
 export class CapacitorLocationService extends AbstractLocationService {
   private readonly platformService = inject(PlatformDetectionService);
+  private readonly analytics = inject(AnalyticsService);
   
   // State signals
   readonly permissionStatus = signal<LocationPermissionStatus>('unknown');
@@ -63,6 +65,14 @@ export class CapacitorLocationService extends AbstractLocationService {
       this.currentPosition.set(position);
       this.permissionStatus.set('granted');
       
+      // Track location acquisition with movement context
+      this.analytics.trackLocationUpdate(
+        position.lat,
+        position.lng,
+        position.accuracy || undefined,
+        result.coords.speed || undefined
+      );
+      
       console.log('[CapacitorLocationService] 📍 Location acquired:', position);
       return position;
     } catch (error: any) {
@@ -98,8 +108,12 @@ export class CapacitorLocationService extends AbstractLocationService {
   async requestPermission(): Promise<LocationPermissionStatus> {
     console.log('[CapacitorLocationService] 🔐 Requesting location permission...');
     
+    // Track permission request attempt
+    this.analytics.trackFeatureUsage('location_permission_request', 'location_service');
+    
     if (!this.platformService.isNative) {
       console.warn('[CapacitorLocationService] Permission request only available on native platforms');
+      this.analytics.trackUserFriction('location_not_native', 'location_service');
       return 'denied';
     }
     
@@ -110,10 +124,18 @@ export class CapacitorLocationService extends AbstractLocationService {
       this.permissionStatus.set(status);
       console.log('[CapacitorLocationService] 🔐 Permission status:', status);
       
+      // Track permission result
+      if (status === 'granted') {
+        this.analytics.trackFeatureUsage('location_permission_granted', 'location_service');
+      } else {
+        this.analytics.trackUserFriction('location_permission_denied', 'location_service');
+      }
+      
       return status;
     } catch (error) {
       console.error('[CapacitorLocationService] 🔐 Permission request failed:', error);
       this.permissionStatus.set('denied');
+      this.analytics.trackUserFriction('location_permission_error', 'location_service');
       return 'denied';
     }
   }
@@ -353,6 +375,14 @@ export class CapacitorLocationService extends AbstractLocationService {
       // Cache the warmed location
       this.currentPosition.set(position);
       
+      // Track background location warming with movement context
+      this.analytics.trackLocationUpdate(
+        position.lat,
+        position.lng,
+        position.accuracy || undefined,
+        result.coords.speed || undefined
+      );
+      
       console.log('[CapacitorLocationService] 🔥 Location warmed successfully:', {
         lat: position.lat.toFixed(4),
         lng: position.lng.toFixed(4),
@@ -439,6 +469,14 @@ export class CapacitorLocationService extends AbstractLocationService {
 
       this.currentPosition.set(position);
       this.permissionStatus.set('granted');
+
+      // Track enhanced location with movement context
+      this.analytics.trackLocationUpdate(
+        position.lat,
+        position.lng,
+        position.accuracy || undefined,
+        result.coords.speed || undefined
+      );
 
       console.log('[CapacitorLocationService] 📍 Enhanced location acquired:', {
         lat: position.lat.toFixed(4),

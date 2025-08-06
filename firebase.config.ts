@@ -82,19 +82,12 @@ export const firebaseProviders = [
   provideAnalytics(() => {
     // Only initialize analytics in production and if supported
     if (environment.production) {
-      return isSupported().then(supported => {
-        if (supported) {
-          const analytics = getAnalytics();
-          console.log('🔥 Firebase Analytics initialized');
-          return analytics;
-        } else {
-          console.log('🔥 Firebase Analytics not supported on this platform');
-          return null;
-        }
-      });
+      const app = getApp();
+      return getAnalytics(app);
     } else {
       console.log('🔥 Firebase Analytics disabled in development');
-      return Promise.resolve(null);
+      // Return null for development, but Angular Fire will handle this gracefully
+      return null as any;
     }
   }),
 ]

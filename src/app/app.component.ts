@@ -7,6 +7,7 @@ import { CheckInModalService } from './check-in/data-access/check-in-modal.servi
 import { CheckInStore } from './check-in/data-access/check-in.store';
 import { LandlordStore } from './landlord/data-access/landlord.store';
 import { PubStore } from './pubs/data-access/pub.store';
+import { AnalyticsInterceptorService } from './shared/data-access/analytics-interceptor.service';
 import { PageTitleService } from './shared/data-access/page-title.service';
 import { SessionService } from './shared/data-access/session.service';
 import { DashboardShell } from './shared/feature/shells/dashboard.shell';
@@ -49,6 +50,9 @@ export class AppComponent {
 
   // Initialize SessionService to handle app-wide session data management
   private readonly sessionService = inject(SessionService);
+  
+  // Initialize global analytics tracking
+  private readonly analyticsInterceptor = inject(AnalyticsInterceptorService);
 
   // Track current shell based on route data
   private readonly navigationEnd$ = this.router.events.pipe(
@@ -87,6 +91,12 @@ export class AppComponent {
   constructor() {
     console.log('[AppComponent] 🚀 Booted at', new Date().toISOString());
     console.time('[SSR] AppComponent init');
+    
+    // Initialize global analytics tracking (browser only)
+    this.platform.onlyOnBrowser(() => {
+      console.log('[AppComponent] 📊 Initializing global analytics tracking...');
+      this.analyticsInterceptor.initializeGlobalTracking();
+    });
 
     // Auto-load critical data
     this.pubStore.loadOnce();

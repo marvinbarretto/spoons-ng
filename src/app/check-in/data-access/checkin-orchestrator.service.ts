@@ -7,6 +7,7 @@ import { CapacitorPlatformService } from '@shared/data-access/capacitor-platform
 import { DataAggregatorService } from '@shared/data-access/data-aggregator.service';
 import { LLMService } from '@shared/data-access/llm.service';
 import { AbstractCameraService, CameraPermissionState } from '@shared/data-access/abstract-camera.service';
+import { AnalyticsService } from '@shared/data-access/analytics.service';
 import { environment } from '../../../environments/environment';
 import { CarpetStrategyService } from '../../carpets/data-access/carpet-strategy.service';
 import { CheckInModalService } from './check-in-modal.service';
@@ -34,6 +35,7 @@ export class CheckinOrchestrator {
   protected readonly carpetStrategy = inject(CarpetStrategyService);
   protected readonly cameraService = inject(AbstractCameraService);
   protected readonly dataAggregator = inject(DataAggregatorService);
+  private readonly analytics = inject(AnalyticsService);
   
   // Service name for logging
   private readonly SERVICE_NAME = 'CheckinOrchestrator';
