@@ -4,9 +4,11 @@ import { provideFirebaseApp } from "@angular/fire/app";
 import { provideFirestore } from "@angular/fire/firestore";
 import { provideAuth } from "@angular/fire/auth";
 import { provideStorage } from "@angular/fire/storage";
+import { provideAnalytics } from "@angular/fire/analytics";
 import { getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from "firebase/firestore";
 import { getAuth, initializeAuth, indexedDBLocalPersistence } from "firebase/auth";
 import { getStorage } from "firebase/storage";
+import { getAnalytics, isSupported } from "firebase/analytics";
 import { Capacitor } from "@capacitor/core";
 
 export const firebaseProviders = [
@@ -77,4 +79,22 @@ export const firebaseProviders = [
     }
   }),
   provideStorage(() => getStorage()),
+  provideAnalytics(() => {
+    // Only initialize analytics in production and if supported
+    if (environment.production) {
+      return isSupported().then(supported => {
+        if (supported) {
+          const analytics = getAnalytics();
+          console.log('🔥 Firebase Analytics initialized');
+          return analytics;
+        } else {
+          console.log('🔥 Firebase Analytics not supported on this platform');
+          return null;
+        }
+      });
+    } else {
+      console.log('🔥 Firebase Analytics disabled in development');
+      return Promise.resolve(null);
+    }
+  }),
 ]

@@ -1,13 +1,10 @@
-// src/app/admin/feature/admin-dashboard/admin-dashboard.component.ts
-import { Component, computed, inject, isDevMode, signal } from '@angular/core';
-
+import { Component, computed, inject, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
-// DatabaseMetricsService removed - was over-engineered premature optimization
-import { FirebaseMetricsService } from '@fourfold/angular-foundation';
 import { FeedbackStore } from '../../../feedback/data-access/feedback.store';
 import { LeaderboardStore } from '../../../leaderboard/data-access/leaderboard.store';
 import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
 import { ErrorLoggingService } from '../../../shared/data-access/error-logging.service';
+import { AnalyticsService } from '../../../shared/data-access/analytics.service';
 
 type AdminSection = {
   id: string;
@@ -126,21 +123,23 @@ type StatData = {
         </div>
       </section>
 
-      <!-- Future Admin Tools -->
-      <section class="admin-sections future-sections">
-        <h2>Coming Soon</h2>
-        <p class="section-subtitle">These tools are planned for future releases</p>
+      <!-- Business Intelligence Tools -->
+      <section class="admin-sections priority-section">
+        <h2>💰 Business Intelligence & Monetization</h2>
+        <p class="section-subtitle">
+          Track user behavior and identify revenue opportunities
+        </p>
         <div class="sections-grid">
-          @for (section of futureSections; track section.id) {
-            <div class="admin-card coming-soon">
-              <div class="card-content">
+          @for (section of businessIntelligence; track section.id) {
+            <div class="admin-card active priority">
+              <a [routerLink]="section.route" class="card-link">
                 <div class="card-icon">{{ section.icon }}</div>
                 <h3>{{ section.title }}</h3>
                 <p>{{ section.description }}</p>
                 @if (section.stats) {
                   <div class="card-stats">{{ section.stats }}</div>
                 }
-              </div>
+              </a>
             </div>
           }
         </div>
@@ -164,15 +163,11 @@ type StatData = {
   styleUrl: './admin-dashboard.component.scss',
 })
 export class AdminDashboardComponent {
-  // Database metrics service removed - focus on core functionality first
-  private readonly firebaseMetricsService = inject(FirebaseMetricsService);
   protected readonly leaderboardStore = inject(LeaderboardStore);
   protected readonly feedbackStore = inject(FeedbackStore);
   protected readonly dataAggregatorService = inject(DataAggregatorService);
   private readonly errorLoggingService = inject(ErrorLoggingService);
-
-  // Firebase operations state
-  readonly showFirebaseWidget = signal(true);
+  private readonly analyticsService = inject(AnalyticsService);
 
   // Database metrics removed - focus on core business metrics instead
 
@@ -191,107 +186,70 @@ export class AdminDashboardComponent {
     const siteData = this.siteStats();
     const globalData = this.globalDataStats();
     const pendingCount = this.pendingFeedback().length;
-    const allFeedback = this.feedbackStore.data();
     const scoreboardData = this.scoreboardData();
 
-    const stats: StatData[] = [
-      // Business Metrics (Real Data)
+    return [
+      // Core Business Metrics
       {
         value: siteData.allTime.users,
         label: 'Total Users',
         sourceType: siteData.allTime.users > 0 ? 'real' : 'placeholder',
-        sourceDetail: `✅ REAL DATA: LeaderboardStore.siteStats.allTime.users | Raw siteData: ${JSON.stringify(siteData.allTime)}`,
-        icon: siteData.allTime.users > 0 ? '✅' : '🔶',
+        sourceDetail: `Active user base`,
+        icon: '👥',
       },
       {
         value: siteData.allTime.checkins,
         label: 'Total Check-ins',
         sourceType: siteData.allTime.checkins > 0 ? 'real' : 'placeholder',
-        sourceDetail: `✅ REAL DATA: LeaderboardStore.siteStats.allTime.checkins | Monthly: ${siteData.thisMonth.checkins}`,
-        icon: siteData.allTime.checkins > 0 ? '✅' : '🔶',
+        sourceDetail: `User engagement events`,
+        icon: '🍺',
       },
       {
-        value: siteData.allTime.pubsConquered,
-        label: 'Pubs Visited',
-        sourceType: siteData.allTime.pubsConquered > 0 ? 'real' : 'placeholder',
-        sourceDetail: `✅ REAL DATA: LeaderboardStore.siteStats.allTime.pubsConquered | Total pubs in system: ${siteData.allTime.totalPubsInSystem}`,
-        icon: siteData.allTime.pubsConquered > 0 ? '✅' : '🔶',
+        value: siteData.thisMonth.activeUsers,
+        label: 'Monthly Active Users',
+        sourceType: siteData.thisMonth.activeUsers > 0 ? 'real' : 'placeholder',
+        sourceDetail: `Users active in current month`,
+        icon: '📈',
+      },
+      {
+        value: siteData.thisMonth.checkins,
+        label: 'Monthly Check-ins',
+        sourceType: siteData.thisMonth.checkins > 0 ? 'real' : 'placeholder',
+        sourceDetail: `Check-ins this month`,
+        icon: '📊',
+      },
+      // Business Health Indicators
+      {
+        value: this.getEngagementRate(),
+        label: 'Engagement Rate',
+        sourceType: 'calculated',
+        sourceDetail: `Check-ins per active user`,
+        icon: '🎯',
+      },
+      {
+        value: this.getGrowthRate(),
+        label: 'Monthly Growth',
+        sourceType: 'calculated',
+        sourceDetail: `New users this month vs last month`,
+        icon: '📈',
       },
       {
         value: pendingCount,
         label: 'Pending Feedback',
-        sourceType: allFeedback.length > 0 ? 'real' : 'placeholder',
-        sourceDetail: `FeedbackStore.pendingFeedback.length | Total feedback: ${allFeedback.length}, Loading: ${this.feedbackStore.loading()}, Error: ${this.feedbackStore.error()}`,
-        icon: allFeedback.length > 0 ? '✅' : '🔶',
-      },
-      // Activity Metrics (Real Data)
-      {
-        value: siteData.thisMonth.activeUsers,
-        label: 'Active This Month',
-        sourceType: siteData.thisMonth.activeUsers > 0 ? 'real' : 'placeholder',
-        sourceDetail: `✅ REAL DATA: LeaderboardStore.siteStats.thisMonth.activeUsers | New users: ${siteData.thisMonth.newUsers}`,
-        icon: siteData.thisMonth.activeUsers > 0 ? '✅' : '🔶',
-      },
-      {
-        value: siteData.thisMonth.checkins,
-        label: 'Check-ins This Month',
-        sourceType: siteData.thisMonth.checkins > 0 ? 'real' : 'placeholder',
-        sourceDetail: `✅ REAL DATA: LeaderboardStore.siteStats.thisMonth.checkins | Raw monthly data: ${JSON.stringify(siteData.thisMonth)}`,
-        icon: siteData.thisMonth.checkins > 0 ? '✅' : '🔶',
-      },
-      // Global Data Debug
-      {
-        value: globalData.totalUsers,
-        label: 'Global Users',
-        sourceType: globalData.totalUsers > 0 ? 'real' : 'placeholder',
-        sourceDetail: `✅ REAL DATA: LeaderboardStore.globalDataStats.totalUsers | CheckIns: ${globalData.totalCheckIns}, Active: ${globalData.activeUsers}`,
-        icon: globalData.totalUsers > 0 ? '✅' : '🔶',
+        sourceType: 'real',
+        sourceDetail: `User feedback requiring attention`,
+        icon: '💬',
       },
       {
         value: scoreboardData.totalPubs || 0,
         label: 'Total Pubs',
         sourceType: (scoreboardData.totalPubs || 0) > 0 ? 'real' : 'placeholder',
-        sourceDetail: `dataAggregatorService.scoreboardData.totalPubs | Loading: ${scoreboardData.isLoading}, Pubs visited: ${scoreboardData.pubsVisited}`,
-        icon: (scoreboardData.totalPubs || 0) > 0 ? '✅' : '🔶',
-      },
-      // Engagement Metrics
-      {
-        value: this.getCarpetPhotoRate(),
-        label: 'Carpet Photo Rate',
-        sourceType: 'calculated',
-        sourceDetail: `Percentage of photos identified as carpet photos - indicates engagement with the fun aspect`,
-        icon: '🏠',
-      },
-      {
-        value: this.getFirstCheckInRate(),
-        label: 'First Check-in Rate',
-        sourceType: 'calculated',
-        sourceDetail: `New users completing first check-in within 24hrs - interesting behavioral metric`,
-        icon: '📊',
+        sourceDetail: `Available pub locations`,
+        icon: '🏛️',
       },
     ];
-
-    console.log('🔍 [AdminDashboard] FULL DEBUG DATA:', {
-      siteData,
-      globalData,
-      scoreboardData,
-      pendingCount,
-      allFeedback: allFeedback.length,
-      feedbackStore: {
-        loading: this.feedbackStore.loading(),
-        error: this.feedbackStore.error(),
-        data: allFeedback,
-      },
-      leaderboardStore: {
-        loading: this.leaderboardStore.loading(),
-        error: this.leaderboardStore.error(),
-      },
-      stats,
-    });
-    return stats;
   });
 
-  readonly isDevMode = isDevMode;
 
   // Data Analysis & Investigation Tools (Priority section)
   readonly dataAnalysisTools: AdminSection[] = [
@@ -404,144 +362,52 @@ export class AdminDashboardComponent {
     },
   ];
 
-  // Future admin tools - planned features
-  readonly futureSections: AdminSection[] = [
+  // Business Intelligence Tools (replacing "coming soon")
+  readonly businessIntelligence: AdminSection[] = [
     {
-      id: 'analytics',
-      title: 'Analytics Hub',
-      description: 'Business intelligence and user engagement metrics',
-      route: '/admin/analytics',
-      icon: '📈',
-      status: 'coming-soon',
-      stats: `${this.globalDataStats().totalUsers} users, ${this.globalDataStats().totalCheckIns} check-ins - Real data ready`,
+      id: 'retention-analysis',
+      title: '🔄 User Retention Analysis',
+      description: 'Track user return patterns and identify churn risks',
+      route: '/admin/retention',
+      icon: '🔄',
+      status: 'active',
+      stats: 'Critical for monetization strategy',
     },
     {
-      id: 'pubs',
-      title: 'Pub Management',
-      description: 'Add, edit, and manage pub locations and details',
-      route: '/admin/pubs',
-      icon: '🍺',
-      status: 'coming-soon',
-      stats: 'PubStore integration needed',
-    },
-    {
-      id: 'content',
-      title: 'Content Moderation',
-      description: 'Moderate user-generated content and photos',
-      route: '/admin/content',
-      icon: '🛡️',
-      status: 'coming-soon',
-      stats: 'Automated moderation system',
-    },
-    {
-      id: 'settings',
-      title: 'System Settings',
-      description: 'Configure global app settings and feature flags',
-      route: '/admin/settings',
-      icon: '⚙️',
-      status: 'coming-soon',
-      stats: 'Feature flag system',
-    },
-    {
-      id: 'reports',
-      title: 'Reports & Exports',
-      description: 'Generate reports and export system data',
-      route: '/admin/reports',
-      icon: '📋',
-      status: 'coming-soon',
-      stats: 'CSV/PDF export capabilities',
-    },
-    {
-      id: 'audit',
-      title: 'Audit Logs',
-      description: 'Track admin actions and system changes',
-      route: '/admin/audit',
-      icon: '🔍',
-      status: 'coming-soon',
-      stats: 'Action tracking system',
+      id: 'engagement-funnel',
+      title: '🎯 Engagement Funnel',
+      description: 'Conversion rates from install → first check-in → regular user',
+      route: '/admin/funnel',
+      icon: '🎯',
+      status: 'active', 
+      stats: 'Key monetization metric',
     },
   ];
 
-  // Complex cache analytics removed - Firebase handles caching automatically
-
-  // Placeholder computed properties for removed analytics (to prevent template errors)
-  readonly realTimeCacheAnalytics = computed(() => ({
-    liveHitRatio: 0,
-    operationsPerSecond: 0,
-    cacheLatencyVsNetwork: {
-      speedImprovement: 0,
-      cacheAvg: 0,
-      networkAvg: 0,
-    },
-    costSavingsReal: {
-      costSavedToday: 0,
-      projectedMonthlySavings: 0,
-      operationsSaved: 0,
-    },
-  }));
-
-  readonly cacheHealthStatus = computed(() => ({
-    insights: [],
-  }));
-
-  readonly optimizationRecommendations = computed(() => []);
-
-  readonly tierPerformance = computed(() => ({
-    tierBreakdown: [],
-    tierRecommendations: [],
-  }));
-
-  clearFirebaseCache(): void {
-    // This will be implemented when we integrate the CachedFirestoreService
-    this.firebaseMetricsService.resetSession('Manual cache clear from dashboard');
-    console.log('🗑️ [AdminDashboard] Firebase cache cleared');
-  }
-
-  formatTime(timestamp: number): string {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString('en-US', {
-      hour12: false,
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-    });
-  }
-
-  formatJSON(data: any): string {
-    try {
-      return JSON.stringify(data, null, 2);
-    } catch (error) {
-      return `[Error formatting JSON: ${error}]`;
-    }
-  }
-
-  // Real engagement metric calculations (DB-light approach)
-  getCarpetPhotoRate(): string {
+  // Real business calculations for monetization insights
+  getEngagementRate(): string {
     const siteData = this.siteStats();
-    const totalCheckIns = siteData.allTime.checkins;
-
-    if (totalCheckIns === 0) return '0%';
-
-    // TODO: Count check-ins with carpet bonus points from existing aggregated data
-    // This would come from the same data source that feeds siteStats
-    // For now, we need to add carpet bonus tracking to the leaderboard aggregation
-
-    // Placeholder until we add carpet bonus counting to LeaderboardStore
-    return 'TBD';
+    const activeUsers = siteData.thisMonth.activeUsers;
+    const checkIns = siteData.thisMonth.checkins;
+    
+    if (activeUsers === 0) return '0';
+    
+    const rate = (checkIns / activeUsers).toFixed(1);
+    return `${rate}/user`;
   }
 
-  getFirstCheckInRate(): string {
+  getGrowthRate(): string {
     const siteData = this.siteStats();
+    const newUsers = siteData.thisMonth.newUsers;
     const totalUsers = siteData.allTime.users;
-    const totalCheckIns = siteData.allTime.checkins;
-
+    
     if (totalUsers === 0) return '0%';
-
-    // Calculate users who have completed at least one check-in
-    // This assumes each user has roughly equal check-in distribution
-    const usersWithCheckIns = Math.min(totalCheckIns, totalUsers);
-    const rate = Math.round((usersWithCheckIns / totalUsers) * 100);
-
-    return `${rate}%`;
+    
+    // Estimate previous month users (rough calculation)
+    const estimatedPrevious = totalUsers - newUsers;
+    if (estimatedPrevious === 0) return '100%';
+    
+    const growthRate = Math.round((newUsers / estimatedPrevious) * 100);
+    return `${growthRate}%`;
   }
 }
