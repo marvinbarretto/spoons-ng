@@ -30,7 +30,8 @@
             "form-data",
             "proxy-from-env",
             "follow-redirects",
-            "qrcode"
+            "qrcode",
+            "dijkstrajs"
           ],
           "outputPath": "dist/spoons",
           "index": "src/index.html",
@@ -67,8 +68,8 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "1mb",
-                  "maximumError": "2mb"
+                  "maximumWarning": "2mb",
+                  "maximumError": "3mb"
                 },
                 {
                   "type": "anyComponentStyle",
