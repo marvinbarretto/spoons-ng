@@ -45,10 +45,9 @@ Thumbs.db
 .env.local
 .env.production
 
-# Angular environment files
+# Angular environment files (keep templates, ignore actual configs)
 src/environments/environment.ts
 src/environments/environment.local.ts
-src/environments/environment.prod.ts
 
 PROJECT_CONTEXT.md
 FEATURES.md
