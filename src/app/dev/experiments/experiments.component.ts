@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 
 import { RouterModule } from '@angular/router';
 import { BaseComponent } from '../../shared/base/base.component';
-import { BeerLoadingComponent } from './beer-loading/beer-loading.component';
+// BeerLoadingComponent removed - not needed
 import { WaveSquaresCanvasComponent } from './wave-squares-canvas/wave-squares-canvas.component';
 import { WaveSquaresDomComponent } from './wave-squares-dom/wave-squares-dom.component';
 
@@ -11,7 +11,6 @@ import { WaveSquaresDomComponent } from './wave-squares-dom/wave-squares-dom.com
   standalone: true,
   imports: [
     RouterModule,
-    BeerLoadingComponent,
     WaveSquaresDomComponent,
     WaveSquaresCanvasComponent,
   ],
@@ -23,13 +22,7 @@ import { WaveSquaresDomComponent } from './wave-squares-dom/wave-squares-dom.com
       </header>
 
       <div class="experiments-grid">
-        <div class="experiment-card">
-          <h2>🍺 Beer Loading Animation</h2>
-          <p>Lottie-powered loading animations with beer theme</p>
-          <div class="experiment-demo">
-            <app-beer-loading></app-beer-loading>
-          </div>
-        </div>
+        <!-- Beer Loading Animation removed - not needed for MVP -->
 
         <div class="experiment-card">
           <h2>🌊 Wave Squares - DOM</h2>

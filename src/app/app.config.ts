@@ -12,8 +12,7 @@ import { OnboardingAwarePreloadingStrategy } from './shared/strategies/onboardin
 
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import { provideServiceWorker } from '@angular/service-worker';
-import player from 'lottie-web';
-import { provideCacheableAnimationLoader, provideLottieOptions } from 'ngx-lottie';
+// Lottie removed - not used in production yet
 import { firebaseProviders } from '../../firebase.config';
 import { environment } from '../environments/environment';
 import { USER_THEME_TOKEN } from '../libs/tokens/user-theme.token';
@@ -78,8 +77,7 @@ export const appConfig: ApplicationConfig = {
         chatId: environment.telegram?.chatId,
       },
     },
-    provideLottieOptions({ player: () => player }),
-    provideCacheableAnimationLoader(),
+    // Lottie providers removed - not needed for production
     provideAppInitializer(() => {
       inject(ThemeStore);
 
