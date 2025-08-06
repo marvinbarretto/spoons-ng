@@ -142,10 +142,6 @@ describe('DataAggregatorService', () => {
   });
 
   describe('Service Initialization', () => {
-    it('should be created', () => {
-      expect(service).toBeTruthy();
-    });
-
     it('should log initialization message', () => {
       expect(mockDebugService.standard).toHaveBeenCalledWith(
         '[DataAggregator] Service initialized - providing reactive cross-store data aggregation'

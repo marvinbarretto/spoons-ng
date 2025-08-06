@@ -1,6 +1,6 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
-import { CapacitorPlatformService } from '@shared/data-access/capacitor-platform.service';
+import { PlatformDetectionService } from '@shared/data-access/platform-detection.service';
 import { 
   AbstractCameraService, 
   CameraPermissionState, 
@@ -12,7 +12,7 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class CapacitorCameraService extends AbstractCameraService {
-  private readonly platformService = inject(CapacitorPlatformService);
+  private readonly platformService = inject(PlatformDetectionService);
   
   // Service name for logging
   private readonly SERVICE_NAME = 'CapacitorCameraService';
@@ -28,12 +28,12 @@ export class CapacitorCameraService extends AbstractCameraService {
     super();
     this.logServiceInitialization(this.SERVICE_NAME, 'native');
     console.log(`[${this.SERVICE_NAME}] 📱 Platform service info:`, {
-      isNative: this.platformService.isNative(),
-      isIOS: this.platformService.isIOS(),
-      isAndroid: this.platformService.isAndroid(),
-      platformName: this.platformService.platformName(),
-      hasCamera: this.platformService.hasCamera(),
-      initialized: this.platformService.initialized()
+      isNative: this.platformService.isNative,
+      isIOS: this.platformService.isIOS,
+      isAndroid: this.platformService.isAndroid,
+      platformName: this.platformService.platform,
+      hasCamera: this.platformService.hasCamera,
+      initialized: true // PlatformDetectionService is always initialized
     });
   }
 
@@ -43,7 +43,7 @@ export class CapacitorCameraService extends AbstractCameraService {
   async checkPermissions(): Promise<CameraPermissionState> {
     console.log(`[${this.SERVICE_NAME}] 🔍 Checking camera permissions...`);
     
-    if (!this.platformService.isNative()) {
+    if (!this.platformService.isNative) {
       console.log(`[${this.SERVICE_NAME}] 🌐 Non-native platform detected, returning granted`);
       return { camera: 'granted' }; // Web doesn't use this permission model
     }
@@ -79,7 +79,7 @@ export class CapacitorCameraService extends AbstractCameraService {
   async requestPermissions(): Promise<CameraPermissionState> {
     console.log(`[${this.SERVICE_NAME}] 🔐 Requesting camera permissions...`);
     
-    if (!this.platformService.isNative()) {
+    if (!this.platformService.isNative) {
       console.log(`[${this.SERVICE_NAME}] 🌐 Non-native platform, returning granted`);
       return { camera: 'granted' }; // Web handles permissions differently
     }
@@ -117,7 +117,7 @@ export class CapacitorCameraService extends AbstractCameraService {
   async capturePhoto(): Promise<CapturedPhoto> {
     console.log(`[${this.SERVICE_NAME}] 📸 Starting native camera photo capture...`);
     
-    if (!this.platformService.isNative()) {
+    if (!this.platformService.isNative) {
       const error = 'Native camera capture only available on mobile platforms';
       this.logError(this.SERVICE_NAME, 'capture validation', error);
       throw new Error(error);
@@ -227,14 +227,14 @@ export class CapacitorCameraService extends AbstractCameraService {
   async isCameraReady(): Promise<boolean> {
     console.log(`[${this.SERVICE_NAME}] 🔍 Checking if camera is ready...`);
     
-    if (!this.platformService.isNative()) {
+    if (!this.platformService.isNative) {
       console.log(`[${this.SERVICE_NAME}] 🔍 Non-native platform, camera not ready`);
       return false; // Web uses different camera system
     }
 
     try {
       const permissions = await this.checkPermissions();
-      const hasCamera = this.platformService.hasCamera();
+      const hasCamera = this.platformService.hasCamera;
       const isReady = permissions.camera === 'granted' && hasCamera;
       
       console.log(`[${this.SERVICE_NAME}] 🔍 Camera readiness check:`, {
@@ -284,7 +284,7 @@ export class CapacitorCameraService extends AbstractCameraService {
   async openDeviceSettings(): Promise<void> {
     console.log(`[${this.SERVICE_NAME}] ⚙️  Opening device settings for camera permissions...`);
     
-    if (!this.platformService.isNative()) {
+    if (!this.platformService.isNative) {
       console.warn(`[${this.SERVICE_NAME}] ⚙️  Device settings only available on native platforms`);
       return;
     }
@@ -329,11 +329,11 @@ export class CapacitorCameraService extends AbstractCameraService {
    * Check if device has camera capability
    */
   hasCamera(): boolean {
-    const hasCamera = this.platformService.hasCamera();
+    const hasCamera = this.platformService.hasCamera;
     console.log(`[${this.SERVICE_NAME}] 🔍 Camera capability check:`, {
       hasCamera,
-      isNative: this.platformService.isNative(),
-      platform: this.platformService.platformName()
+      isNative: this.platformService.isNative,
+      platform: this.platformService.platform
     });
     
     return hasCamera;

@@ -26,6 +26,10 @@
     ],
     "runtime": "nodejs18"
   },
+  "appDistribution": {
+    "app": "1:650443293688:android:330a253a176aa001458c0d",
+    "releaseNotesFile": "RELEASE_NOTES.md"
+  },
   "emulators": {
     "auth": {
       "port": 9099

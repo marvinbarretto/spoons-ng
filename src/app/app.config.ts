@@ -28,6 +28,9 @@ import { WebCameraService } from './shared/data-access/web-camera.service';
 import { CapacitorCameraService } from './check-in/data-access/capacitor-camera.service';
 import { DevCacheBuster } from './shared/utils/dev-cache-buster';
 import { TemplatePageTitleStrategy } from './TemplatePageTitleStrategy';
+import { MobileInitializationService } from './shared/data-access/mobile/mobile-initialization.service';
+import { MobileLocationOptimizer } from './shared/data-access/mobile/mobile-location-optimizer.service';
+import { MobileCameraOptimizer } from './shared/data-access/mobile/mobile-camera-optimizer.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -39,6 +42,11 @@ export const appConfig: ApplicationConfig = {
     CapacitorLocationService,
     WebCameraService,
     CapacitorCameraService,
+    
+    // Mobile Optimization Services
+    MobileInitializationService,
+    MobileLocationOptimizer,
+    MobileCameraOptimizer,
     {
       provide: AbstractLocationService,
       useFactory: (factory: PlatformServiceFactory) => {
@@ -78,6 +86,29 @@ export const appConfig: ApplicationConfig = {
       // Setup development cache busting tools
       if (isDevMode() || !environment.production) {
         inject(DevCacheBuster).setupDevConsoleShortcuts();
+      }
+    }),
+    provideAppInitializer(async () => {
+      // MOBILE OPTIMIZATION: Initialize mobile-specific optimizations
+      // Only runs on native platforms (Android/iOS), graceful on web
+      console.log('[AppConfig] 📱 Starting mobile initialization...');
+      
+      const mobileInit = inject(MobileInitializationService);
+      console.log('[AppConfig] 📱 MobileInitializationService injected:', !!mobileInit);
+      
+      try {
+        console.log('[AppConfig] 📱 Calling initializeMobileOptimizations...');
+        const result = await mobileInit.initializeMobileOptimizations();
+        console.log('[AppConfig] 📱 Mobile optimization result:', result);
+        
+        // Enable debug commands in development
+        if (isDevMode() || !environment.production) {
+          console.log('[AppConfig] 📱 Enabling mobile debug commands...');
+          mobileInit.enableMobileDebugCommands();
+          console.log('[AppConfig] 📱 Mobile debug commands enabled');
+        }
+      } catch (error) {
+        console.error('[AppConfig] 📱 Mobile optimization failed (non-critical):', error);
       }
     }),
     provideAppInitializer(async () => {

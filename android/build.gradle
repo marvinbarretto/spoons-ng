@@ -24,14 +24,20 @@ allprojects {
     }
 }
 
-task clean(type: Delete) {
-    delete rootProject.buildDir
+// Java compatibility for all projects
+subprojects {
+    afterEvaluate { project ->
+        if (project.hasProperty("android")) {
+            android {
+                compileOptions {
+                    sourceCompatibility JavaVersion.VERSION_21
+                    targetCompatibility JavaVersion.VERSION_21
+                }
+            }
+        }
+    }
 }
 
-plugins {
-  // ...
-
-  // Add the dependency for the Google services Gradle plugin
-  id 'com.google.gms.google-services' version '4.4.3' apply false
-
+task clean(type: Delete) {
+    delete rootProject.buildDir
 }

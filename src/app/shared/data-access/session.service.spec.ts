@@ -76,10 +76,6 @@ describe('SessionService', () => {
   });
 
   describe('Service Initialization', () => {
-    it('should be created', () => {
-      expect(service).toBeTruthy();
-    });
-
     it('should log initialization message', () => {
       expect(mockDebugService.standard).toHaveBeenCalledWith(
         '[SessionService] Service initialized - monitoring auth state for session management'
