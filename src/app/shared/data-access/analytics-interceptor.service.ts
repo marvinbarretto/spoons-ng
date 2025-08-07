@@ -1,6 +1,7 @@
 import { Injectable, inject, Renderer2, RendererFactory2 } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs';
+import { DebugService } from '@shared/utils/debug.service';
 import { AnalyticsService } from './analytics.service';
 
 /**
@@ -15,6 +16,7 @@ export class AnalyticsInterceptorService {
   private router = inject(Router);
   private rendererFactory = inject(RendererFactory2);
   private renderer = this.rendererFactory.createRenderer(null, null);
+  private debug = inject(DebugService);
   
   private currentScreen = '';
   private screenStartTime = Date.now();
@@ -25,7 +27,7 @@ export class AnalyticsInterceptorService {
     if (this.isSetup) return;
     this.isSetup = true;
 
-    console.log('[AnalyticsInterceptor] 📊 Initializing global user behavior tracking');
+    this.debug.standard('[AnalyticsInterceptor] 📊 Initializing global user behavior tracking');
 
     // Track navigation between screens
     this.router.events.pipe(
@@ -64,7 +66,7 @@ export class AnalyticsInterceptorService {
       this.analytics.trackNavigation(previousScreen, this.currentScreen, 'tap');
     }
 
-    console.log(`[AnalyticsInterceptor] 📱 Screen change: ${previousScreen} → ${this.currentScreen}`);
+    this.debug.standard(`[AnalyticsInterceptor] 📱 Screen change: ${previousScreen} → ${this.currentScreen}`);
   }
 
   private getScreenName(url: string): string {
@@ -103,6 +105,8 @@ export class AnalyticsInterceptorService {
   private handleTapEvent(event: MouseEvent) {
     const target = event.target as Element;
     const elementInfo = this.getElementInfo(target);
+    
+    this.debug.extreme(`[AnalyticsInterceptor] 👆 Tap detected:`, elementInfo);
     
     this.screenInteractions++;
     

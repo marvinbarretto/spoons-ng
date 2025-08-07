@@ -1,5 +1,7 @@
 import { Injectable, inject } from '@angular/core';
-import { Analytics, logEvent, getAnalytics } from '@angular/fire/analytics';
+import { Analytics, logEvent } from '@angular/fire/analytics';
+import { SsrPlatformService } from '@fourfold/angular-foundation';
+import { DebugService } from '@shared/utils/debug.service';
 import { environment } from '../../../environments/environment';
 
 export interface UserBehaviorMetrics {
@@ -39,45 +41,62 @@ export interface UsageInsights {
   providedIn: 'root'
 })
 export class AnalyticsService {
+  private readonly platform = inject(SsrPlatformService);
+  private readonly debug = inject(DebugService);
   private analytics = inject(Analytics, { optional: true });
   private sessionStartTime = Date.now();
   private lastLocationUpdate = Date.now();
   private isUserMoving = false;
 
   constructor() {
-    console.log('[AnalyticsService] Initialized', {
+    this.debug.standard('[AnalyticsService] Initialized', {
       analyticsEnabled: !!this.analytics,
+      isBrowser: this.platform.isBrowser,
       production: environment.production
     });
     
-    this.initializeSessionTracking();
+    this.platform.onlyOnBrowser(() => {
+      this.initializeSessionTracking();
+    });
   }
 
   private logEventSafely(eventName: string, parameters?: Record<string, any>) {
-    if (!this.analytics || this.analytics === null) return;
+    if (!this.platform.isBrowser) return;
     
-    try {
-      logEvent(this.analytics, eventName, parameters);
-    } catch (error) {
-      console.warn(`[AnalyticsService] Failed to log event '${eventName}':`, error);
-    }
+    this.platform.onlyOnBrowser(() => {
+      // Double-check analytics is available and properly initialized
+      if (!this.analytics || !this.analytics.app) {
+        this.debug.extreme(`[AnalyticsService] Analytics not available for event '${eventName}'`);
+        return;
+      }
+
+      try {
+        logEvent(this.analytics, eventName, parameters);
+        this.debug.extreme(`[AnalyticsService] ✅ Event logged: ${eventName}`, parameters);
+      } catch (error) {
+        this.debug.warn(`[AnalyticsService] Failed to log event '${eventName}':`, error);
+      }
+    });
   }
 
   private initializeSessionTracking() {
-    if (typeof window !== 'undefined') {
-      // Track page visibility changes for session analysis
-      document.addEventListener('visibilitychange', () => {
-        if (document.hidden) {
-          this.trackSessionPause();
-        } else {
-          this.trackSessionResume();
-        }
-      });
+    const window = this.platform.getWindow();
+    const document = this.platform.getDocument();
+    
+    if (!window || !document) return;
+    
+    // Track page visibility changes for session analysis
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        this.trackSessionPause();
+      } else {
+        this.trackSessionResume();
+      }
+    });
 
-      // Track app going to background/foreground
-      window.addEventListener('blur', () => this.trackSessionPause());
-      window.addEventListener('focus', () => this.trackSessionResume());
-    }
+    // Track app going to background/foreground
+    window.addEventListener('blur', () => this.trackSessionPause());
+    window.addEventListener('focus', () => this.trackSessionResume());
   }
 
   // Deep user behavior tracking
