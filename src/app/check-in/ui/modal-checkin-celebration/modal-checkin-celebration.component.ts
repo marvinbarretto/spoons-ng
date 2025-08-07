@@ -161,7 +161,7 @@ import { CheckInResultData } from '../../utils/check-in.models';
   `,
   styles: [
     `
-      @import 'styles/components/check-in-modals';
+      @use 'styles/components/check-in-modals';
       .checkin-modal-header {
         background: linear-gradient(135deg, var(--success) 0%, var(--accent) 100%);
         color: white;

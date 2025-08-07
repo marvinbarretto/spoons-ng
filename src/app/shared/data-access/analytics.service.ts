@@ -53,6 +53,16 @@ export class AnalyticsService {
     this.initializeSessionTracking();
   }
 
+  private logEventSafely(eventName: string, parameters?: Record<string, any>) {
+    if (!this.analytics || this.analytics === null) return;
+    
+    try {
+      logEvent(this.analytics, eventName, parameters);
+    } catch (error) {
+      console.warn(`[AnalyticsService] Failed to log event '${eventName}':`, error);
+    }
+  }
+
   private initializeSessionTracking() {
     if (typeof window !== 'undefined') {
       // Track page visibility changes for session analysis
@@ -72,9 +82,7 @@ export class AnalyticsService {
 
   // Deep user behavior tracking
   trackCheckIn(pubId: string, isFirstTime: boolean, carpetVerified: boolean, timeSpent?: number) {
-    if (!this.analytics) return;
-    
-    logEvent(this.analytics, 'check_in_completed', {
+    this.logEventSafely('check_in_completed', {
       pub_id: pubId,
       is_first_time: isFirstTime,
       carpet_verified: carpetVerified,
@@ -86,9 +94,7 @@ export class AnalyticsService {
   }
 
   trackUserJourney(step: 'app_open' | 'first_checkin' | 'second_checkin' | 'regular_user' | 'power_user') {
-    if (!this.analytics) return;
-    
-    logEvent(this.analytics, 'user_journey', {
+    this.logEventSafely('user_journey', {
       step,
       timestamp: Date.now()
     });
@@ -96,9 +102,7 @@ export class AnalyticsService {
 
   // Feature usage with context
   trackFeatureUsage(feature: string, context?: string, timeSpent?: number) {
-    if (!this.analytics) return;
-    
-    logEvent(this.analytics, 'feature_engagement', {
+    this.logEventSafely('feature_engagement', {
       feature_name: feature,
       context: context || 'unknown',
       time_spent_seconds: timeSpent || 0,
@@ -108,9 +112,7 @@ export class AnalyticsService {
 
   // Navigation and user flow tracking
   trackNavigation(from: string, to: string, method: 'tap' | 'swipe' | 'back' | 'link') {
-    if (!this.analytics) return;
-    
-    logEvent(this.analytics, 'navigation', {
+    this.logEventSafely('navigation', {
       from_screen: from,
       to_screen: to,
       navigation_method: method,
@@ -120,9 +122,7 @@ export class AnalyticsService {
 
   // Discovery behavior insights
   trackPubDiscovery(pubId: string, discoveryMethod: 'search' | 'nearby' | 'map' | 'random' | 'friend_share') {
-    if (!this.analytics) return;
-    
-    logEvent(this.analytics, 'pub_discovery', {
+    this.logEventSafely('pub_discovery', {
       pub_id: pubId,
       discovery_method: discoveryMethod,
       timestamp: Date.now()
@@ -131,17 +131,13 @@ export class AnalyticsService {
 
   // Session tracking for engagement analysis
   trackSessionStart() {
-    if (!this.analytics) return;
-    
-    logEvent(this.analytics, 'session_start', {
+    this.logEventSafely('session_start', {
       timestamp: Date.now()
     });
   }
 
   trackSessionEnd(duration: number) {
-    if (!this.analytics) return;
-    
-    logEvent(this.analytics, 'session_end', {
+    this.logEventSafely('session_end', {
       duration_seconds: duration,
       timestamp: Date.now()
     });
@@ -149,9 +145,7 @@ export class AnalyticsService {
 
   // Social and sharing behavior
   trackSocialAction(action: 'share_checkin' | 'share_badge' | 'view_leaderboard' | 'compare_stats', context?: string) {
-    if (!this.analytics) return;
-    
-    logEvent(this.analytics, 'social_action', {
+    this.logEventSafely('social_action', {
       action,
       context: context || 'unknown',
       timestamp: Date.now()
@@ -160,9 +154,7 @@ export class AnalyticsService {
 
   // Habit formation tracking
   trackUsagePattern(pattern: 'daily_streak' | 'weekend_warrior' | 'lunch_checker' | 'evening_crawler', streak?: number) {
-    if (!this.analytics) return;
-    
-    logEvent(this.analytics, 'usage_pattern', {
+    this.logEventSafely('usage_pattern', {
       pattern,
       streak_count: streak || 0,
       timestamp: Date.now()
@@ -171,9 +163,7 @@ export class AnalyticsService {
 
   // Time-based behavior analysis
   trackSessionType(type: 'quick_checkin' | 'exploration' | 'social_browsing' | 'data_analysis', duration: number) {
-    if (!this.analytics) return;
-    
-    logEvent(this.analytics, 'session_type', {
+    this.logEventSafely('session_type', {
       session_type: type,
       duration_seconds: duration,
       hour_of_day: new Date().getHours(),
@@ -199,9 +189,7 @@ export class AnalyticsService {
       | 'location_permission_error', 
     screen: string
   ) {
-    if (!this.analytics) return;
-    
-    logEvent(this.analytics, 'user_friction', {
+    this.logEventSafely('user_friction', {
       friction_type: frictionType,
       screen,
       timestamp: Date.now()
@@ -210,11 +198,9 @@ export class AnalyticsService {
 
   // LOCATION & MOVEMENT TRACKING - Key for "on the move" insights
   trackLocationContext(context: 'stationary' | 'walking' | 'transport' | 'unknown', accuracy?: number) {
-    if (!this.analytics) return;
-    
     this.isUserMoving = context !== 'stationary';
     
-    logEvent(this.analytics, 'location_context', {
+    this.logEventSafely('location_context', {
       movement_type: context,
       location_accuracy: accuracy || 0,
       session_duration: this.getSessionDuration(),
@@ -223,8 +209,6 @@ export class AnalyticsService {
   }
 
   trackLocationUpdate(latitude: number, longitude: number, accuracy?: number, speed?: number) {
-    if (!this.analytics) return;
-    
     const timeSinceLastUpdate = Date.now() - this.lastLocationUpdate;
     this.lastLocationUpdate = Date.now();
     
@@ -236,7 +220,7 @@ export class AnalyticsService {
       else movementContext = 'transport';
     }
     
-    logEvent(this.analytics, 'location_update', {
+    this.logEventSafely('location_update', {
       accuracy,
       speed: speed || 0,
       movement_context: movementContext,
@@ -248,9 +232,7 @@ export class AnalyticsService {
 
   // TAP & INTERACTION HEATMAP
   trackTapEvent(elementId: string, elementType: 'button' | 'link' | 'card' | 'input' | 'icon', screen: string, coordinates?: {x: number, y: number}) {
-    if (!this.analytics) return;
-    
-    logEvent(this.analytics, 'tap_interaction', {
+    this.logEventSafely('tap_interaction', {
       element_id: elementId,
       element_type: elementType,
       screen,
@@ -264,9 +246,7 @@ export class AnalyticsService {
 
   // DETAILED SESSION ANALYTICS
   trackSessionPause() {
-    if (!this.analytics) return;
-    
-    logEvent(this.analytics, 'session_pause', {
+    this.logEventSafely('session_pause', {
       session_duration: this.getSessionDuration(),
       hour_of_day: new Date().getHours(),
       timestamp: Date.now()
@@ -274,9 +254,7 @@ export class AnalyticsService {
   }
 
   trackSessionResume() {
-    if (!this.analytics) return;
-    
-    logEvent(this.analytics, 'session_resume', {
+    this.logEventSafely('session_resume', {
       session_duration: this.getSessionDuration(),
       hour_of_day: new Date().getHours(),
       timestamp: Date.now()
@@ -285,9 +263,7 @@ export class AnalyticsService {
 
   // SCREEN TIME & ENGAGEMENT DEPTH
   trackScreenTime(screen: string, timeSpent: number, interactions: number, scrollDepth?: number) {
-    if (!this.analytics) return;
-    
-    logEvent(this.analytics, 'screen_engagement', {
+    this.logEventSafely('screen_engagement', {
       screen,
       time_spent_seconds: timeSpent,
       interaction_count: interactions,
@@ -300,9 +276,7 @@ export class AnalyticsService {
 
   // USER FLOW & JOURNEY MAPPING
   trackUserFlow(flowStep: string, flowName: string, stepDuration: number, success: boolean) {
-    if (!this.analytics) return;
-    
-    logEvent(this.analytics, 'user_flow', {
+    this.logEventSafely('user_flow', {
       flow_name: flowName,
       flow_step: flowStep,
       step_duration: stepDuration,
@@ -314,9 +288,7 @@ export class AnalyticsService {
 
   // FEATURE INTEREST TRACKING (what users explore vs ignore)
   trackFeatureInterest(feature: string, interestLevel: 'high' | 'medium' | 'low', timeToEngage?: number) {
-    if (!this.analytics) return;
-    
-    logEvent(this.analytics, 'feature_interest', {
+    this.logEventSafely('feature_interest', {
       feature,
       interest_level: interestLevel,
       time_to_engage: timeToEngage || 0,
@@ -327,9 +299,7 @@ export class AnalyticsService {
 
   // PERFORMANCE & FRUSTRATION TRACKING
   trackPerformanceIssue(issueType: 'slow_load' | 'app_crash' | 'ui_lag' | 'data_sync', screen: string, severity: 'low' | 'medium' | 'high') {
-    if (!this.analytics) return;
-    
-    logEvent(this.analytics, 'performance_issue', {
+    this.logEventSafely('performance_issue', {
       issue_type: issueType,
       screen,
       severity,

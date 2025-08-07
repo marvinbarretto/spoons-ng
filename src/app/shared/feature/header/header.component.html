@@ -1,17 +1,8 @@
 <!-- Platform-aware HeaderComponent template -->
-<!-- DEBUG: Force show platform info -->
-<div style="position: fixed; top: 0; left: 0; z-index: 99999; background: yellow; color: black; padding: 4px; font-size: 10px;">
-  Platform: {{ platformName() }} | iOS: {{ isIOS() }} | Native: {{ isNative() }}
-</div>
 
 @if (isIOS()) {
   <!-- iOS-specific header with safe area padding -->
-  <div class="site-header site-header--ios" #headerRef [attr.data-platform]="platformName()">
-    <!-- DEBUG: Platform detection info -->
-    <div class="debug-info">
-      <small>Platform: {{ platformName() }} | Native: {{ isNative() ? 'Yes' : 'No' }}</small>
-    </div>
-    
+  <div class="site-header site-header--ios site-header--compact" #headerRef [attr.data-platform]="platformName()">
     <div class="header-safe-area">
       @if (!isHomepage()) {
         <a routerLink="/" class="header__title">

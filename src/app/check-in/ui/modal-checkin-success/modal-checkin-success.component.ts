@@ -85,7 +85,7 @@ type PointsBreakdownItem = {
   styles: [
     `
       @use 'styles/index' as *;
-      @import 'styles/components/check-in-modals';
+      @use 'styles/components/check-in-modals';
 
       // ===================================
       // ⏱️ POINTS ANIMATION TIMING CONFIG

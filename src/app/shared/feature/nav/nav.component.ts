@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 
 import { Router, RouterModule } from '@angular/router';
 import { LocationService, ToastService } from '@fourfold/angular-foundation';
@@ -42,6 +42,9 @@ export class NavComponent {
 
   // Admin check using UserStore (not AuthStore)
   readonly isAdmin = computed(() => this.userStore.currentUser()?.isAdmin === true);
+  
+  // User menu state
+  readonly showUserMenu = signal(false);
 
   // User chip data for display
   readonly userChipData = computed((): UserChipData | null => {
@@ -84,6 +87,10 @@ export class NavComponent {
     // ViewportService handles mobile detection
   }
 
+  toggleUserMenu() {
+    this.showUserMenu.update(current => !current);
+  }
+
   async logout() {
     console.log('[NavComponent] 🚪 logout() called by user action');
     console.log('[NavComponent] 🚪 Current auth state before logout:', {
@@ -91,6 +98,9 @@ export class NavComponent {
       userId: this.authStore.user()?.uid?.slice(0, 8),
       isAuthenticated: this.authStore.isAuthenticated(),
     });
+    
+    // Close user menu
+    this.showUserMenu.set(false);
 
     this.authStore.logout();
     console.log('[NavComponent] 🚪 AuthStore.logout() called');

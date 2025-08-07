@@ -75,7 +75,7 @@
       </div>
     }
 
-    <!-- Location Status & Auth Actions -->
+    <!-- Location Status Only -->
     <div class="nav-actions">
       <!-- Simple Location Status Indicator -->
       <div
@@ -84,15 +84,20 @@
       >
         <span class="location-dot" [class.has-location]="hasLocation()"></span>
       </div>
-
+      
       @if (isAuthenticated()) {
-        <app-button
-          [variant]="ButtonVariant.DANGER"
-          [size]="isMobile() ? ButtonSize.SMALL : ButtonSize.MEDIUM"
-          (onClick)="logout()"
-        >
-          Logout
-        </app-button>
+        <!-- User Menu Dropdown -->
+        <div class="user-menu" (click)="toggleUserMenu()">
+          <span class="menu-trigger">⚙️</span>
+          @if (showUserMenu()) {
+            <div class="dropdown-menu">
+              <button class="menu-item" (click)="logout()">
+                <span class="menu-icon">🚪</span>
+                Logout
+              </button>
+            </div>
+          }
+        </div>
       }
     </div>
   </div>

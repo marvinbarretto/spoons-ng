@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   OnDestroy,
   OnInit,
@@ -10,7 +11,8 @@ import {
 import { AuthStore } from '@auth/data-access/auth.store';
 import { BaseComponent } from '@shared/base/base.component';
 import { ThemeStore } from '@shared/data-access/theme.store';
-import { ButtonComponent } from '@fourfold/angular-foundation';
+import { ButtonComponent } from '@shared/ui/button/button.component';
+import { UserStore } from '@users/data-access/user.store';
 import type { ThemeType } from '@shared/utils/theme.tokens';
 
 @Component({
@@ -89,10 +91,18 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
 
           <!-- Value Proposition -->
           <div class="value-proposition">
-            <h1 class="hero-title">Start Your Pub Journey</h1>
-            <p class="hero-subtitle">
-              Track pubs you visit, earn badges, and discover new favorites in your area
-            </p>
+            @if (isFirstTimeUser()) {
+              <h1 class="hero-title">Welcome to Spoonscount</h1>
+              <p class="hero-subtitle">
+                Track your Wetherspoons pub visits, collect badges, and discover new locations in your area. 
+                Join thousands of pub enthusiasts on their Spoons journey!
+              </p>
+            } @else {
+              <h1 class="hero-title">Welcome Back</h1>
+              <p class="hero-subtitle">
+                Continue your pub journey where you left off
+              </p>
+            }
             
             <!-- Trust indicators -->
             <div class="trust-indicators">
@@ -107,7 +117,7 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
       <div class="splash-actions">
         <div class="auth-buttons">
           <!-- Primary CTA -->
-          <ff-button
+          <app-button
             size="lg"
             [fullWidth]="true"
             [loading]="googleLoading()"
@@ -117,10 +127,10 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
             ariaLabel="Sign in with Google account"
           >
             Continue with Google
-          </ff-button>
+          </app-button>
 
           <!-- Secondary CTA -->
-          <ff-button
+          <app-button
             size="lg"
             [fullWidth]="true"
             [loading]="guestLoading()"
@@ -130,49 +140,51 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
             ariaLabel="Explore the app without creating an account"
           >
             Explore as Guest
-          </ff-button>
+          </app-button>
 
-          <!-- More options -->
-          <div class="more-options">
-            <button 
-              type="button" 
-              class="expand-options-btn"
-              (click)="toggleMoreOptions()"
-              [attr.aria-expanded]="showMoreOptions()"
-              aria-controls="additional-auth-options"
-              aria-label="Show more sign-in options"
-            >
-              More sign-in options
-              <span class="expand-icon" [class.expanded]="showMoreOptions()">▼</span>
-            </button>
-            
-            <div 
-              id="additional-auth-options"
-              class="additional-options"
-              [class.visible]="showMoreOptions()"
-              [attr.aria-hidden]="!showMoreOptions()"
-            >
-              <button
-                type="button"
-                class="auth-option-btn"
-                (click)="navigateToLogin()"
-                [disabled]="loading()"
-                aria-label="Sign in with email address"
+          <!-- More options - Only show for returning users -->
+          @if (!isFirstTimeUser()) {
+            <div class="more-options">
+              <button 
+                type="button" 
+                class="expand-options-btn"
+                (click)="toggleMoreOptions()"
+                [attr.aria-expanded]="showMoreOptions()"
+                aria-controls="additional-auth-options"
+                aria-label="Show more sign-in options"
               >
-                📧 Sign in with Email
+                More sign-in options
+                <span class="expand-icon" [class.expanded]="showMoreOptions()">▼</span>
               </button>
               
-              <button
-                type="button"
-                class="auth-option-btn existing-user-btn"
-                (click)="navigateToLogin()"
-                [disabled]="loading()"
-                aria-label="Sign in to existing account"
+              <div 
+                id="additional-auth-options"
+                class="additional-options"
+                [class.visible]="showMoreOptions()"
+                [attr.aria-hidden]="!showMoreOptions()"
               >
-                👋 I have an account
-              </button>
+                <button
+                  type="button"
+                  class="auth-option-btn"
+                  (click)="navigateToLogin()"
+                  [disabled]="loading()"
+                  aria-label="Sign in with email address"
+                >
+                  📧 Sign in with Email
+                </button>
+                
+                <button
+                  type="button"
+                  class="auth-option-btn existing-user-btn"
+                  (click)="navigateToLogin()"
+                  [disabled]="loading()"
+                  aria-label="Sign in to existing account"
+                >
+                  👋 I have an account
+                </button>
+              </div>
             </div>
-          </div>
+          }
         </div>
 
       </div>
@@ -182,6 +194,7 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
 export class SplashComponent extends BaseComponent implements OnInit, OnDestroy {
   private readonly authStore = inject(AuthStore);
   private readonly themeStore = inject(ThemeStore);
+  private readonly userStore = inject(UserStore);
 
   // Store original theme to restore on destroy
   private originalTheme: ThemeType | null = null;
@@ -189,6 +202,14 @@ export class SplashComponent extends BaseComponent implements OnInit, OnDestroy 
   readonly guestLoading = signal(false);
   readonly googleLoading = signal(false);
   readonly showMoreOptions = signal(false);
+  
+  // Detect if this is a first-time user (no previous session)
+  readonly isFirstTimeUser = computed(() => {
+    // Check if there's any stored auth data or previous usage
+    const hasStoredAuthData = localStorage.getItem('firebase:authUser:' + 'your-app-key') !== null;
+    const hasVisitHistory = localStorage.getItem('spoons-last-visit') !== null;
+    return !hasStoredAuthData && !hasVisitHistory;
+  });
 
   override ngOnInit(): void {
     console.log('[SplashComponent] 🎬 Component initializing...');
@@ -247,7 +268,29 @@ export class SplashComponent extends BaseComponent implements OnInit, OnDestroy 
 
     try {
       await this.authStore.loginWithGoogle();
-      await this.router.navigate(['/home']);
+      
+      // Check if user already has completed onboarding
+      const user = this.authStore.user();
+      console.log('[SplashComponent] 🔍 Google sign-in completed, checking user status');
+      
+      if (user?.uid) {
+        try {
+          // Check if user document exists in Firestore and has completed onboarding
+          const existingUserDoc = await this.userStore.checkUserExists(user.uid);
+          
+          if (existingUserDoc && existingUserDoc.onboardingCompleted) {
+            console.log('[SplashComponent] ✅ Existing user with completed onboarding, redirecting to home');
+            await this.router.navigate(['/home']);
+            return;
+          }
+        } catch (error) {
+          console.log('[SplashComponent] 🆕 New user or error checking user status, proceeding to onboarding');
+        }
+      }
+      
+      // New user or incomplete onboarding - redirect to onboarding flow
+      console.log('[SplashComponent] 📝 Redirecting to onboarding for setup');
+      await this.router.navigate(['/onboarding']);
     } catch (error: any) {
       console.error('[SplashComponent] ❌ Google sign-in failed:', error);
       this.showError(error.message || 'Google sign-in failed');
@@ -292,9 +335,9 @@ export class SplashComponent extends BaseComponent implements OnInit, OnDestroy 
         isAnonymous: this.authStore.user()?.isAnonymous,
       });
 
-      console.log('[SplashComponent] 👻 Navigating to /home...');
-      const success = await this.router.navigate(['/home']);
-      console.log('[SplashComponent] 👻 Navigation to /home result:', success);
+      console.log('[SplashComponent] 👻 Navigating to location permission step...');
+      const success = await this.router.navigate(['/location-permission']);
+      console.log('[SplashComponent] 👻 Navigation to /location-permission result:', success);
 
       const totalTime = Date.now() - startTime;
       console.log('[SplashComponent] ✅ Complete guest flow took', totalTime, 'ms');

@@ -1,6 +1,7 @@
 import { Route, Routes, UrlMatchResult, UrlSegment, UrlSegmentGroup } from '@angular/router';
 import { adminGuard } from './auth/data-access/admin.guard';
 import { authGuard } from './auth/data-access/auth.guard';
+import { onboardingGuard } from './auth/data-access/onboarding.guard';
 
 export const appRoutes: Routes = [
   {
@@ -31,15 +32,31 @@ export const appRoutes: Routes = [
     data: { shell: 'fullscreen' },
   },
   {
+    path: 'onboarding',
+    title: 'Complete Your Setup',
+    loadComponent: () =>
+      import('./onboarding/onboarding.component').then(m => m.OnboardingComponent),
+    data: { shell: 'fullscreen' },
+  },
+  {
+    path: 'location-permission',
+    title: 'Enable Location Access',
+    loadComponent: () =>
+      import('./auth/feature/location-permission/location-permission.component').then(
+        m => m.LocationPermissionComponent
+      ),
+    data: { shell: 'fullscreen' },
+  },
+  {
     path: 'home',
-    canActivate: [authGuard],
+    canActivate: [authGuard, onboardingGuard],
     loadComponent: () => import('./home/feature/home/home.component').then(m => m.HomeComponent),
     data: { shell: 'dashboard', preload: true },
   },
   {
     path: 'pubs',
     title: 'Pubs',
-    canActivate: [authGuard],
+    canActivate: [authGuard, onboardingGuard],
     loadChildren: () => import('./pubs/data-access/pub.routes').then(m => m.PUBS_ROUTES),
     data: { shell: 'feature' },
   },

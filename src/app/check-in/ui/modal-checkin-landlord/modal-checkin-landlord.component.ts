@@ -163,7 +163,7 @@ type LandlordModalData = {
   `,
   styles: [
     `
-      @import 'styles/components/check-in-modals';
+      @use 'styles/components/check-in-modals';
       .checkin-modal-container.new-landlord .checkin-modal-header {
         border-bottom-color: rgba(0, 0, 0, 0.2);
       }

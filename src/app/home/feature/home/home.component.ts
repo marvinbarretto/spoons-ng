@@ -180,6 +180,12 @@ export class HomeComponent extends BaseComponent {
     return null; // Not on leaderboard yet
   });
 
+  // Location permission state
+  readonly hasLocationPermission = computed(() => {
+    // Simple check for now - location service doesn't have this method yet
+    return !!this.locationService.location();
+  });
+
   // ✅ Development helper
   readonly isDevelopment = computed(() => {
     return true; // Always show debug in development
@@ -202,9 +208,30 @@ export class HomeComponent extends BaseComponent {
     this.router.navigate(['/simplified-checkin']);
   }
 
+  requestLocationPermission(): void {
+    console.log('[Home] Requesting location permission...');
+    // Foundation LocationService.getCurrentLocation() returns void and updates the signal
+    this.locationService.getCurrentLocation();
+    
+    // Check if location becomes available after a short delay
+    setTimeout(() => {
+      if (!this.locationService.location()) {
+        console.error('[Home] Location permission may have been denied');
+        this.showError('Location access is needed to find nearby pubs. Please check your browser settings.');
+      }
+    }, 2000);
+  }
+
   managePubCount(): void {
     console.log('[Home] Navigating to pub list in management mode');
     this.router.navigate(['/pubs'], { queryParams: { manage: 'true' } });
+  }
+
+  handleAddPreviousVisits(): void {
+    console.log('[Home] Starting Add Previous Visits flow');
+    // Navigate to a dedicated flow for adding previous pub visits
+    // This could be a modal or a separate page
+    this.router.navigate(['/pubs'], { queryParams: { mode: 'add-history' } });
   }
 
   getRecentActivityText(): string {
