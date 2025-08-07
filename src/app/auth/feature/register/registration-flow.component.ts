@@ -18,7 +18,7 @@ import { FormInputComponent } from '@shared/ui/form-input/form-input.component';
 import { StepperComponent, type StepConfig } from '@shared/ui/stepper/stepper.component';
 import type { ThemeType } from '@shared/utils/theme.tokens';
 import { UserStore } from '@users/data-access/user.store';
-import { PubSelectionWidgetComponent } from '../../../widgets/pub-selection/pub-selection-widget.component';
+import { PubSingleSelectorComponent } from '@shared/ui/pub-single-selector/pub-single-selector.component';
 import { LocationService } from './location.service';
 import { RegistrationFlowService } from './registration-flow.service';
 
@@ -31,7 +31,7 @@ import { RegistrationFlowService } from './registration-flow.service';
     ButtonComponent,
     FormInputComponent,
     AvatarSelectionWidgetComponent,
-    PubSelectionWidgetComponent,
+    PubSingleSelectorComponent,
   ],
   template: `
     <div class="registration-flow-container">
@@ -353,7 +353,7 @@ import { RegistrationFlowService } from './registration-flow.service';
 
                 @if (showPubBrowser()) {
                   <div class="pub-browser">
-                    <app-pub-selection-widget (pubSelected)="onPubSelected($event)" />
+                    <app-pub-single-selector (pubSelected)="onPubSelected($event)" />
                   </div>
                 }
               </div>

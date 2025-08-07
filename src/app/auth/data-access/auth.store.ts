@@ -438,16 +438,7 @@ export class AuthStore {
   }
 
   openAvatarSelector(): void {
-    this.platform.onlyOnBrowser(async () => {
-      const { AvatarSelectorComponent } = await import(
-        '../../shared/ui/avatar-selector/avatar-selector.component'
-      );
-      const { componentRef, close } = this.overlayService.open(
-        AvatarSelectorComponent,
-        {},
-        { currentUser: this.user() }
-      );
-      componentRef.instance.closeModal = close;
-    });
+    // TODO: Replace with proper avatar selection modal using avatar-selection-widget
+    console.warn('[AuthStore] Avatar selector removed - use ProfileCustomisationModalComponent instead');
   }
 }

@@ -366,11 +366,11 @@ export class UserStore extends BaseStore<User> {
       // Create the document in Firestore
       await this.userService.createUser(uid, userData);
 
-      // Update local state
-      this.addUserToCollection(userData);
+      // Update local state - use setUser to handle both add/update cases
+      this.setUser(userData);
       this._error.set(null);
 
-      console.log('[UserStore] ✅ Complete user document created');
+      console.log('[UserStore] ✅ Complete user document created and local state updated');
     } catch (error: any) {
       console.error('[UserStore] ❌ Failed to create complete user document:', error);
       this._error.set(error?.message || 'Failed to create user document');
@@ -595,7 +595,7 @@ export class UserStore extends BaseStore<User> {
   setUser(user: User | null): void {
     console.log('[UserStore] 📝 Setting user:', user?.uid || 'null');
     if (user) {
-      this.updateUserInCollection(user.uid, user);
+      this.upsertUserInCollection(user);
     }
   }
 
@@ -733,5 +733,25 @@ export class UserStore extends BaseStore<User> {
       users.map(user => (user.uid === uid ? { ...user, ...updates } : user))
     );
     console.log(`[UserStore] Updated user ${uid} in collection`);
+  }
+
+  /**
+   * Upsert user in collection (add if doesn't exist, update if exists)
+   */
+  upsertUserInCollection(user: User): void {
+    this._data.update(users => {
+      const existingIndex = users.findIndex(u => u.uid === user.uid);
+      if (existingIndex >= 0) {
+        // Update existing user
+        console.log(`[UserStore] Updating existing user ${user.uid} in collection`);
+        const updated = [...users];
+        updated[existingIndex] = user;
+        return updated;
+      } else {
+        // Add new user
+        console.log(`[UserStore] Adding new user ${user.uid} to collection`);
+        return [...users, user];
+      }
+    });
   }
 }

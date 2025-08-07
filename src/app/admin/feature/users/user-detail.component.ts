@@ -15,7 +15,7 @@ import { BaseComponent } from '../../../shared/base/base.component';
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { DataTableComponent } from '../../../shared/ui/data-table/data-table.component';
 import type { TableColumn } from '../../../shared/ui/data-table/data-table.model';
-import { PubSelectorComponent } from '../../../shared/ui/pub-selector/pub-selector.component';
+import { PubMultiSelectorComponent } from '../../../shared/ui/pub-multi-selector/pub-multi-selector.component';
 import { UserService } from '../../../users/data-access/user.service';
 import { UserStore } from '../../../users/data-access/user.store';
 import {
@@ -40,7 +40,7 @@ type CheckInWithDetails = CheckIn & {
     EmptyStateComponent,
     ButtonComponent,
     DataTableComponent,
-    PubSelectorComponent,
+    PubMultiSelectorComponent,
   ],
   template: `
     <div class="user-detail">
@@ -162,7 +162,7 @@ type CheckInWithDetails = CheckIn & {
                     </div>
                   } @else {
                     <div class="home-pub-edit">
-                      <app-pub-selector
+                      <app-pub-multi-selector
                         label=""
                         searchPlaceholder="Search for home pub..."
                         [selectedPubIds]="editHomePubId() ? [editHomePubId()!] : []"

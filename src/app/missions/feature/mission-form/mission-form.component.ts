@@ -4,14 +4,14 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { ButtonComponent } from '@shared/ui/button/button.component';
-import { PubSelectorComponent } from '@shared/ui/pub-selector/pub-selector.component';
+import { PubMultiSelectorComponent } from '@shared/ui/pub-multi-selector/pub-multi-selector.component';
 import { BaseComponent } from '../../../shared/base/base.component';
 import { MissionStore } from '../../data-access/mission.store';
 import type { Mission } from '../../utils/mission.model';
 
 @Component({
   selector: 'app-mission-form',
-  imports: [CommonModule, ReactiveFormsModule, ButtonComponent, PubSelectorComponent],
+  imports: [CommonModule, ReactiveFormsModule, ButtonComponent, PubMultiSelectorComponent],
   templateUrl: './mission-form.component.html',
   styleUrl: './mission-form.component.scss',
 })

@@ -1,15 +1,24 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
+import { UserAvatarComponent } from '@app/widgets/user-avatar/user-avatar.component';
 import { AuthStore } from '@auth/data-access/auth.store';
-import { BaseComponent } from '@shared/base/base.component';
 import { LocationService, OverlayService } from '@fourfold/angular-foundation';
+import { AvatarSelectionWidgetComponent } from '@home/ui/profile-customisation-modal/widgets/avatar-selection-widget/avatar-selection-widget.component';
+import { PubStore } from '@pubs/data-access/pub.store';
+import { BaseComponent } from '@shared/base/base.component';
 import { AvatarService } from '@shared/data-access/avatar.service';
 import { ButtonComponent } from '@shared/ui/button/button.component';
-import { AvatarSelectorComponent } from '@shared/ui/avatar-selector/avatar-selector.component';
-import { PubSelectorComponent } from '@shared/ui/pub-selector/pub-selector.component';
+import { PubSingleSelectorComponent } from '@shared/ui/pub-single-selector/pub-single-selector.component';
+import { DebugService } from '@shared/utils/debug.service';
 import { UserStore } from '@users/data-access/user.store';
-import { PubStore } from '@pubs/data-access/pub.store';
 
 @Component({
   selector: 'app-onboarding',
@@ -17,31 +26,46 @@ import { PubStore } from '@pubs/data-access/pub.store';
   imports: [
     ReactiveFormsModule,
     ButtonComponent,
-    PubSelectorComponent,
+    UserAvatarComponent,
+    AvatarSelectionWidgetComponent,
+    PubSingleSelectorComponent,
   ],
   template: `
     <div class="onboarding-container">
       <div class="onboarding-content">
-        
-        <!-- Header -->
-        <div class="onboarding-header">
-          <h1 class="welcome-title">Welcome to Spoonscount!</h1>
-          <p class="welcome-subtitle">
-            Let's set up your profile to get the most out of your pub journey
-          </p>
-        </div>
+        <!-- Header - Only show on first step -->
+        @if (currentStep() === 'location') {
+          <div class="onboarding-header">
+            <h1 class="welcome-title">Welcome to Spoonscount!</h1>
+            <p class="welcome-subtitle">
+              Let's set up your profile to get the most out of your pub journey
+            </p>
+          </div>
+        }
 
         <!-- Progress Steps -->
         <div class="progress-steps">
-          <div class="step" [class.active]="currentStep() === 'location'" [class.complete]="isStepComplete('location')">
+          <div
+            class="step"
+            [class.active]="currentStep() === 'location'"
+            [class.complete]="isStepComplete('location')"
+          >
             <span class="step-number">1</span>
             <span class="step-label">Location</span>
           </div>
-          <div class="step" [class.active]="currentStep() === 'profile'" [class.complete]="isStepComplete('profile')">
+          <div
+            class="step"
+            [class.active]="currentStep() === 'profile'"
+            [class.complete]="isStepComplete('profile')"
+          >
             <span class="step-number">2</span>
             <span class="step-label">Profile</span>
           </div>
-          <div class="step" [class.active]="currentStep() === 'homePub'" [class.complete]="isStepComplete('homePub')">
+          <div
+            class="step"
+            [class.active]="currentStep() === 'homePub'"
+            [class.complete]="isStepComplete('homePub')"
+          >
             <span class="step-number">3</span>
             <span class="step-label">Home Pub</span>
           </div>
@@ -49,16 +73,16 @@ import { PubStore } from '@pubs/data-access/pub.store';
 
         <!-- Step Content -->
         <div class="step-content">
-          
           <!-- Step 1: Location Permission -->
           @if (currentStep() === 'location') {
             <div class="location-step">
               <div class="step-icon">📍</div>
               <h2>Find Nearby Pubs</h2>
               <p class="step-description">
-                Allow location access to discover Wetherspoons near you and earn bonus points at local pubs.
+                Allow location access to discover Wetherspoons near you and earn bonus points at
+                local pubs.
               </p>
-              
+
               <div class="location-benefits">
                 <div class="benefit">
                   <span class="benefit-icon">🏆</span>
@@ -70,30 +94,7 @@ import { PubStore } from '@pubs/data-access/pub.store';
                 </div>
               </div>
 
-              <div class="location-actions">
-                <app-button
-                  size="lg"
-                  [fullWidth]="true"
-                  (onClick)="requestLocation()"
-                  [loading]="requestingLocation()"
-                  iconLeft="location_on"
-                >
-                  @if (requestingLocation()) {
-                    Finding Your Location...
-                  } @else {
-                    Allow Location Access
-                  }
-                </app-button>
-                
-                <button 
-                  type="button" 
-                  class="skip-button"
-                  (click)="skipLocation()"
-                  [disabled]="loading()"
-                >
-                  I'll browse pubs manually
-                </button>
-              </div>
+              <!-- Location action button is now in the footer navigation -->
 
               @if (locationError()) {
                 <div class="error-message">
@@ -107,11 +108,11 @@ import { PubStore } from '@pubs/data-access/pub.store';
           <!-- Step 2: Profile Setup -->
           @if (currentStep() === 'profile') {
             <div class="profile-step">
-              <div class="step-icon">👤</div>
+              <div class="step-icon-avatar">
+                <app-user-avatar [user]="previewUser()" size="lg" [clickable]="false" />
+              </div>
               <h2>Choose Your Display Name</h2>
-              <p class="step-description">
-                How would you like other pub crawlers to see you?
-              </p>
+              <p class="step-description">How would you like other pub crawlers to see you?</p>
 
               <form [formGroup]="profileForm" class="profile-form">
                 <div class="form-group">
@@ -133,8 +134,11 @@ import { PubStore } from '@pubs/data-access/pub.store';
                       🎲
                     </button>
                   </div>
-                  
-                  @if (profileForm.get('displayName')?.errors?.['required'] && profileForm.get('displayName')?.touched) {
+
+                  @if (
+                    profileForm.get('displayName')?.errors?.['required'] &&
+                    profileForm.get('displayName')?.touched
+                  ) {
                     <div class="form-error">Display name is required</div>
                   }
                   @if (profileForm.get('displayName')?.errors?.['minlength']) {
@@ -145,15 +149,13 @@ import { PubStore } from '@pubs/data-access/pub.store';
                 <!-- Avatar Selection -->
                 <div class="avatar-section">
                   <h3>Choose Your Avatar</h3>
-                  <div class="avatar-preview" (click)="openAvatarSelector()">
-                    <div class="avatar-display">
-                      <span class="avatar-emoji">{{ getSelectedAvatarEmoji() }}</span>
-                      <span class="avatar-name">{{ getSelectedAvatarName() }}</span>
-                    </div>
-                    <button type="button" class="change-avatar-btn">
-                      Change Avatar
-                    </button>
-                  </div>
+                  <p class="avatar-label">Select from the options below</p>
+
+                  <app-avatar-selection-widget
+                    [showCurrentAvatar]="false"
+                    [selectedAvatarId]="selectedAvatar()"
+                    (avatarSelected)="onAvatarSelected($event)"
+                  />
                 </div>
               </form>
             </div>
@@ -163,33 +165,19 @@ import { PubStore } from '@pubs/data-access/pub.store';
           @if (currentStep() === 'homePub') {
             <div class="pub-step">
               <div class="step-icon">🏠</div>
-              <h2>Choose Your Home Pub</h2>
+              <h2>{{ getPersonalizedHomePubTitle() }}</h2>
               <p class="step-description">
                 Select your regular Wetherspoons to earn extra points when you visit.
               </p>
 
-              <app-pub-selector
-                label="Search for your home pub"
-                searchPlaceholder="Search by pub name or location..."
-                helperText="This helps us calculate distance bonuses and personalize your experience"
-                [selectedPubIds]="selectedHomePub() ? [selectedHomePub()!] : []"
-                (selectionChange)="onHomePubSelected($event)"
-              />
-
-              <button 
-                type="button" 
-                class="skip-button"
-                (click)="skipHomePub()"
-                [disabled]="loading()"
-              >
-                I'll set this up later
-              </button>
+              <app-pub-single-selector (pubSelected)="onHomePubSelectedFromWidget($event)" />
             </div>
           }
-
         </div>
+      </div>
 
-        <!-- Navigation -->
+      <!-- Sticky Navigation Footer -->
+      <div class="navigation-footer">
         <div class="navigation">
           @if (currentStep() !== 'location') {
             <app-button
@@ -202,7 +190,16 @@ import { PubStore } from '@pubs/data-access/pub.store';
             </app-button>
           }
 
-          @if (currentStep() !== 'homePub') {
+          @if (currentStep() === 'location') {
+            <app-button
+              (onClick)="requestLocation()"
+              [loading]="requestingLocation()"
+              [disabled]="requestingLocation()"
+              iconLeft="location_on"
+            >
+              Allow Location Access
+            </app-button>
+          } @else if (currentStep() === 'profile') {
             <app-button
               (onClick)="goNext()"
               [disabled]="loading() || !canProceed()"
@@ -210,30 +207,30 @@ import { PubStore } from '@pubs/data-access/pub.store';
             >
               Continue
             </app-button>
-          } @else {
+          } @else if (currentStep() === 'homePub') {
             <app-button
               (onClick)="finishOnboarding()"
               [loading]="loading()"
-              [disabled]="loading()"
+              [disabled]="loading() || !canProceed()"
             >
               Complete Setup
             </app-button>
           }
         </div>
-
       </div>
     </div>
   `,
-  styleUrl: './onboarding.component.scss'
+  styleUrl: './onboarding.component.scss',
 })
 export class OnboardingComponent extends BaseComponent {
   private readonly fb = inject(FormBuilder);
-  private readonly authStore = inject(AuthStore);
+  protected readonly authStore = inject(AuthStore);
   private readonly userStore = inject(UserStore);
   private readonly locationService = inject(LocationService);
   private readonly avatarService = inject(AvatarService);
   private readonly pubStore = inject(PubStore);
   private readonly overlayService = inject(OverlayService);
+  private readonly debug = inject(DebugService);
 
   // Step management
   readonly currentStep = signal<'location' | 'profile' | 'homePub'>('location');
@@ -250,6 +247,27 @@ export class OnboardingComponent extends BaseComponent {
   readonly selectedAvatar = signal('npc'); // Default avatar
   readonly selectedHomePub = signal<string | null>(null);
 
+  // Preview user for displaying the selected avatar
+  readonly previewUser = computed(() => {
+    const user = this.authStore.user();
+    if (!user) return null;
+
+    // Create a preview user with the selected avatar
+    const avatars = this.avatarService.generateAvatarOptions(user.uid);
+    const selectedAvatarData = avatars.find(a => a.id === this.selectedAvatar());
+    const avatarUrl =
+      selectedAvatarData?.url ||
+      avatars.find(a => a.id === 'npc')?.url ||
+      'assets/avatars/npc.webp';
+
+    return {
+      ...user,
+      photoURL: avatarUrl,
+      displayName:
+        this.profileForm.get('displayName')?.value || user.displayName || 'Anonymous NPC',
+    };
+  });
+
   constructor() {
     super();
 
@@ -264,7 +282,9 @@ export class OnboardingComponent extends BaseComponent {
       this.pubStore.loadOnce();
     });
 
-    console.log('[Onboarding] Component initialized for user:', user?.uid?.slice(0, 8));
+    this.debug.standard('[Onboarding] Component initialized for user', {
+      uid: user?.uid?.slice(0, 8),
+    });
   }
 
   // Step management
@@ -279,7 +299,7 @@ export class OnboardingComponent extends BaseComponent {
       case 'profile':
         return this.profileForm.valid;
       case 'homePub':
-        return true; // Can always proceed (home pub is optional)
+        return !!this.selectedHomePub(); // Require pub selection for completion
       default:
         return false;
     }
@@ -291,86 +311,78 @@ export class OnboardingComponent extends BaseComponent {
     this.locationError.set(null);
 
     try {
-      console.log('[Onboarding] Requesting location permission...');
+      this.debug.standard('[Onboarding] Requesting location permission');
       // Use foundation LocationService
       this.locationService.getCurrentLocation();
-      
+
       // Wait a moment to see if location is obtained
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
+
       const location = this.locationService.location();
       if (location) {
-        console.log('[Onboarding] Location obtained:', location);
-        this.showSuccess('Location access granted! You can now find nearby pubs.');
+        this.debug.success('[Onboarding] Location obtained', { location });
         this.markStepComplete('location');
+        // Auto-advance to next step
+        this.currentStep.set('profile');
       } else {
-        this.locationError.set('Unable to access location. You can continue without it.');
+        this.locationError.set(
+          'Unable to access location. Please check your browser settings and try again.'
+        );
       }
     } catch (error) {
-      console.error('[Onboarding] Location request failed:', error);
-      this.locationError.set('Location access failed. You can continue without it.');
+      this.debug.error('[Onboarding] Location request failed', error);
+      this.locationError.set(
+        'Location access failed. Please check your browser settings and try again.'
+      );
     } finally {
       this.requestingLocation.set(false);
     }
   }
 
   skipLocation(): void {
-    console.log('[Onboarding] User skipped location step');
+    this.debug.standard('[Onboarding] User skipped location step');
     this.markStepComplete('location');
   }
 
   // Profile step
   generateRandomName(): void {
     const randomNames = [
-      'PubCrawler', 'SpoonsMaster', 'BeerExplorer', 'WeatherspoonsFan',
-      'PubHopper', 'CarpetConnoisseur', 'BreakfastChampion', 'LocalHero'
+      'PubCrawler',
+      'SpoonsMaster',
+      'BeerExplorer',
+      'WeatherspoonsFan',
+      'PubHopper',
+      'CarpetConnoisseur',
+      'BreakfastChampion',
+      'LocalHero',
     ];
     const randomNumber = Math.floor(Math.random() * 999) + 1;
     const randomName = `${randomNames[Math.floor(Math.random() * randomNames.length)]}${randomNumber}`;
-    
+
     this.profileForm.patchValue({ displayName: randomName });
   }
 
-  openAvatarSelector(): void {
-    console.log('[Onboarding] Opening avatar selector modal');
-    const { componentRef, close } = this.overlayService.open(AvatarSelectorComponent, {
-      maxWidth: '600px',
-      maxHeight: '90vh',
-    });
-
-    // Set the close callback
-    componentRef.instance.closeModal = close;
-  }
-
-  getSelectedAvatarEmoji(): string {
-    return this.getAvatarData().emoji;
-  }
-
-  getSelectedAvatarName(): string {
-    return this.getAvatarData().name;
-  }
-
-  private getAvatarData(): { emoji: string; name: string } {
-    const avatarOptions = [
-      { id: 'landlord', name: 'The Landlord', emoji: '👨‍💼' },
-      { id: 'regular', name: 'The Regular', emoji: '🍺' },
-      { id: 'npc', name: 'Pub Explorer', emoji: '🧑‍💻' },
-    ];
-    
-    const selected = avatarOptions.find(a => a.id === this.selectedAvatar());
-    return selected || { emoji: '🧑‍💻', name: 'Pub Explorer' };
+  onAvatarSelected(avatarId: string): void {
+    this.debug.standard('[Onboarding] Avatar selected for preview', { avatarId });
+    // Just update the preview - don't save to database until onboarding completes
+    this.selectedAvatar.set(avatarId);
   }
 
   // Home pub step
-  onHomePubSelected(pubIds: string[]): void {
-    const pubId = pubIds[0] || null;
-    this.selectedHomePub.set(pubId);
-    console.log('[Onboarding] Home pub selected:', pubId);
+  onHomePubSelectedFromWidget(pub: any): void {
+    this.debug.standard('[Onboarding] Home pub selected from widget', {
+      pubName: pub.name,
+      pubId: pub.id,
+    });
+    this.selectedHomePub.set(pub.id);
   }
 
-  skipHomePub(): void {
-    console.log('[Onboarding] User skipped home pub selection');
-    this.markStepComplete('homePub');
+  getPersonalizedHomePubTitle(): string {
+    const displayName = this.profileForm.get('displayName')?.value;
+    if (displayName) {
+      return `${displayName}, Choose Your Home Pub`;
+    }
+    return 'Choose Your Home Pub';
   }
 
   // Navigation
@@ -408,23 +420,48 @@ export class OnboardingComponent extends BaseComponent {
 
   // Complete onboarding
   async finishOnboarding(): Promise<void> {
+    this.debug.group('[Onboarding] Starting onboarding completion process', 'STANDARD');
     this.loading.set(true);
 
     try {
+      // Step 1: Validate all required data
+      this.debug.standard('[Onboarding] Step 1: Validating required data');
+
       const user = this.authStore.user();
       if (!user) {
+        this.debug.error('[Onboarding] No authenticated user found');
         throw new Error('No authenticated user found');
       }
 
-      const displayName = this.profileForm.get('displayName')?.value || user.displayName || 'Pub Explorer';
+      const displayName =
+        this.profileForm.get('displayName')?.value || user.displayName || 'Pub Explorer';
       const homePubId = this.selectedHomePub();
 
-      // Get avatar URL
+      // Validate that a home pub has been selected
+      if (!homePubId) {
+        this.debug.error('[Onboarding] No home pub selected - blocking completion');
+        throw new Error('Please select a home pub before completing setup');
+      }
+
+      this.debug.success('[Onboarding] Validation passed', {
+        userUid: user.uid.slice(0, 8),
+        displayName,
+        homePubId: homePubId.slice(0, 8),
+        avatarId: this.selectedAvatar(),
+      });
+
+      // Step 2: Prepare user data with onboardingCompleted = true
+      this.debug.standard('[Onboarding] Step 2: Preparing user data');
+
+      // Get selected avatar URL for final save
       const avatars = this.avatarService.generateAvatarOptions(user.uid);
       const selectedAvatarData = avatars.find(a => a.id === this.selectedAvatar());
-      const avatarUrl = selectedAvatarData?.url || this.avatarService.generateSingleAvatar('npc');
+      const avatarUrl =
+        selectedAvatarData?.url ||
+        avatars.find(a => a.id === 'npc')?.url ||
+        'assets/avatars/npc.webp';
 
-      // Create complete user data
+      // Create complete user data with onboardingCompleted = true
       const userData = {
         uid: user.uid,
         email: user.email,
@@ -442,32 +479,58 @@ export class OnboardingComponent extends BaseComponent {
         verifiedPubCount: 0,
         unverifiedPubCount: 0,
         totalPubCount: 0,
-        homePubId,
-        onboardingCompleted: true,
+        homePubId, // Keep as string, not undefined
+        onboardingCompleted: true, // CRITICAL: Mark onboarding as completed
         streaks: {},
       };
 
-      console.log('[Onboarding] Creating user document with data:', userData);
+      this.debug.standard('[Onboarding] User data prepared', {
+        uid: userData.uid.slice(0, 8),
+        displayName: userData.displayName,
+        homePubId: userData.homePubId?.slice(0, 8),
+        onboardingCompleted: userData.onboardingCompleted,
+      });
 
-      // Save user data - handle homePubId null conversion
-      const finalUserData = {
-        ...userData,
-        homePubId: homePubId || undefined, // Convert null to undefined for User type
-      };
-      
-      await this.userStore.createCompleteUserDocument(user.uid, finalUserData);
+      // Step 3: Save to database
+      this.debug.standard('[Onboarding] Step 3: Saving user document to database');
 
-      console.log('[Onboarding] Onboarding completed successfully');
-      this.showSuccess('Welcome to Spoonscount! Your account is ready.');
+      await this.userStore.createCompleteUserDocument(user.uid, userData);
 
-      // Navigate to home
+      this.debug.success('[Onboarding] User document saved to database');
+
+      // Step 4: Verify the save was successful
+      this.debug.standard('[Onboarding] Step 4: Verifying user document was saved correctly');
+
+      // Give the UserStore a moment to update its cache
+      await new Promise(resolve => setTimeout(resolve, 250));
+
+      const verificationUser = this.userStore.currentUser();
+      if (verificationUser?.onboardingCompleted) {
+        this.debug.success(
+          '[Onboarding] Verification passed - user shows onboardingCompleted = true',
+          {
+            uid: verificationUser.uid.slice(0, 8),
+            onboardingCompleted: verificationUser.onboardingCompleted,
+          }
+        );
+      } else {
+        this.debug.warn('[Onboarding] Verification warning - user may not have updated yet', {
+          userExists: !!verificationUser,
+          onboardingCompleted: verificationUser?.onboardingCompleted,
+        });
+      }
+
+      // Step 5: Navigate to home
+      this.debug.standard('[Onboarding] Step 5: Navigating to home page');
       await this.router.navigate(['/home']);
 
+      this.debug.success('[Onboarding] Onboarding completion process finished successfully');
     } catch (error) {
-      console.error('[Onboarding] Failed to complete onboarding:', error);
-      this.showError('Failed to complete setup. Please try again.');
+      this.debug.error('[Onboarding] Failed to complete onboarding', error);
+      // Don't show toast, let user try again
     } finally {
       this.loading.set(false);
+      this.debug.groupEnd('STANDARD');
     }
   }
 }

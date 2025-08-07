@@ -1,4 +1,4 @@
-// src/app/shared/ui/pub-selector/pub-selector.component.ts
+// src/app/shared/ui/pub-multi-selector/pub-multi-selector.component.ts
 import { CommonModule } from '@angular/common';
 import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -8,10 +8,10 @@ import { PubCardLightComponent } from '../../../pubs/ui/pub-card-light/pub-card-
 import { DataAggregatorService } from '../../data-access/data-aggregator.service';
 
 @Component({
-  selector: 'app-pub-selector',
+  selector: 'app-pub-multi-selector',
   imports: [CommonModule, FormsModule, PubCardLightComponent],
   template: `
-    <div class="pub-selector">
+    <div class="pub-multi-selector">
       <label class="selector-label">
         {{ label() }}
         @if (required()) {
@@ -124,7 +124,7 @@ import { DataAggregatorService } from '../../data-access/data-aggregator.service
     </div>
   `,
   styles: `
-    .pub-selector {
+    .pub-multi-selector {
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
@@ -412,7 +412,7 @@ import { DataAggregatorService } from '../../data-access/data-aggregator.service
     }
   `,
 })
-export class PubSelectorComponent {
+export class PubMultiSelectorComponent {
   // ✅ Dependencies
   private readonly pubStore = inject(PubStore);
   protected readonly dataAggregatorService = inject(DataAggregatorService);
@@ -486,7 +486,7 @@ export class PubSelectorComponent {
       if (typeof document !== 'undefined') {
         const handleClickOutside = (event: MouseEvent) => {
           const target = event.target as HTMLElement;
-          if (!target.closest('.pub-selector')) {
+          if (!target.closest('.pub-multi-selector')) {
             this.setDropdownOpen(false);
           }
         };

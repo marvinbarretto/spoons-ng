@@ -12,7 +12,7 @@ import { BaseComponent } from '@shared/base/base.component';
 import { ButtonComponent } from '@shared/ui/button/button.component';
 import { DataTableComponent } from '@shared/ui/data-table/data-table.component';
 import type { TableColumn } from '@shared/ui/data-table/data-table.model';
-import { PubSelectorComponent } from '@shared/ui/pub-selector/pub-selector.component';
+import { PubMultiSelectorComponent } from '@shared/ui/pub-multi-selector/pub-multi-selector.component';
 import { UserSelectorComponent } from '@shared/ui/user-selector/user-selector.component';
 import { UserStore } from '@users/data-access/user.store';
 import { CheckInStore } from '../../../check-in/data-access/check-in.store';
@@ -40,7 +40,7 @@ type CheckInWithDetails = CheckIn & {
     DataTableComponent,
     ButtonComponent,
     UserSelectorComponent,
-    PubSelectorComponent,
+    PubMultiSelectorComponent,
   ],
   template: `
     <div class="admin-checkins">
@@ -109,7 +109,7 @@ type CheckInWithDetails = CheckIn & {
               </div>
 
               <div class="form-field">
-                <app-pub-selector
+                <app-pub-multi-selector
                   label="Pub"
                   [required]="true"
                   searchPlaceholder="Search pubs by name or location..."

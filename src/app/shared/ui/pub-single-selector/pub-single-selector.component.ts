@@ -10,14 +10,14 @@ import {
 import { FormsModule } from '@angular/forms';
 
 import { LocationService } from '@fourfold/angular-foundation';
-import { NearbyPubStore } from '../../pubs/data-access/nearby-pub.store';
-import { PubStore } from '../../pubs/data-access/pub.store';
-import { PubCardLightComponent } from '../../pubs/ui/pub-card-light/pub-card-light.component';
-import type { Pub } from '../../pubs/utils/pub.models';
-import { DataAggregatorService } from '../../shared/data-access/data-aggregator.service';
+import { NearbyPubStore } from '@pubs/data-access/nearby-pub.store';
+import { PubStore } from '@pubs/data-access/pub.store';
+import { PubCardLightComponent } from '@pubs/ui/pub-card-light/pub-card-light.component';
+import type { Pub } from '@pubs/utils/pub.models';
+import { DataAggregatorService } from '@shared/data-access/data-aggregator.service';
 
 @Component({
-  selector: 'app-pub-selection-widget',
+  selector: 'app-pub-single-selector',
   imports: [FormsModule, PubCardLightComponent],
   template: `
     <div class="pub-selection-widget">
@@ -125,7 +125,7 @@ import { DataAggregatorService } from '../../shared/data-access/data-aggregator.
     </div>
   `,
   styles: `
-    .pub-selection-widget {
+    .pub-single-selector {
       width: 100%;
       max-width: 500px;
       margin: 0 auto;
@@ -402,7 +402,7 @@ import { DataAggregatorService } from '../../shared/data-access/data-aggregator.
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PubSelectionWidgetComponent implements OnInit {
+export class PubSingleSelectorComponent implements OnInit {
   // Injected services
   private readonly pubStore = inject(PubStore);
   private readonly nearbyPubStore = inject(NearbyPubStore);
@@ -486,7 +486,7 @@ export class PubSelectionWidgetComponent implements OnInit {
     this._searchTerm.set('');
     this.setDropdownOpen(false);
     this.pubSelected.emit(pub);
-    console.log('[PubSelectionWidget] Pub selected:', pub.name);
+    console.log('[PubSingleSelector] Pub selected:', pub.name);
   }
 
   protected selectPubFromNearby(nearbyPub: {
@@ -522,6 +522,6 @@ export class PubSelectionWidgetComponent implements OnInit {
 
   protected clearSelection(): void {
     this._selectedPub.set(null);
-    console.log('[PubSelectionWidget] Selection cleared');
+    console.log('[PubSingleSelector] Selection cleared');
   }
 }

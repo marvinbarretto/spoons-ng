@@ -1,20 +1,40 @@
 .onboarding-container {
-  min-height: 100vh;
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height for mobile */
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
+  flex-direction: column;
+  padding: 1rem 1rem max(1rem, env(safe-area-inset-bottom)) 1rem;
   background: linear-gradient(135deg, var(--background) 0%, var(--background-darker) 100%);
+  overflow: hidden; /* Prevent scrolling at container level */
 }
 
 .onboarding-content {
   background: var(--background);
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  padding: 2rem;
+  padding: 2rem 2rem 0 2rem;
   width: 100%;
   max-width: 600px;
   border: 1px solid var(--border);
+  margin: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  /* Ensure content doesn't push footer off screen */
+  min-height: 0;
+}
+
+.navigation-footer {
+  background: var(--background);
+  border-radius: 0 0 16px 16px;
+  border: 1px solid var(--border);
+  border-top: none;
+  padding: 1.5rem 2rem;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.05);
 }
 
 /* Header */
@@ -102,12 +122,23 @@
 
 /* Step Content */
 .step-content {
-  margin-bottom: 2.5rem;
+  margin-bottom: 1rem;
+  /* Allow content to scroll if needed */
+  flex: 1;
+  overflow-y: auto;
+  /* Ensure minimum space for content */
+  min-height: 0;
 }
 
 .step-icon {
   font-size: 3rem;
   text-align: center;
+  margin-bottom: 1rem;
+}
+
+.step-icon-avatar {
+  display: flex;
+  justify-content: center;
   margin-bottom: 1rem;
 }
 
@@ -280,54 +311,12 @@
   margin: 0 0 1rem 0;
 }
 
-.avatar-preview {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem;
-  background: var(--background-lighter);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.avatar-preview:hover {
-  border-color: var(--border-strong);
-  background: var(--background-darker);
-}
-
-.avatar-display {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.avatar-emoji {
-  font-size: 2rem;
-  line-height: 1;
-}
-
-.avatar-name {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--text);
-}
-
-.change-avatar-btn {
-  background: none;
-  border: 1px solid var(--border);
-  color: var(--primary);
-  font-size: 0.8rem;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.change-avatar-btn:hover {
-  background: var(--primary);
-  color: var(--primary-contrast);
+.avatar-label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin: 0 0 1rem 0;
+  text-align: center;
+  line-height: 1.4;
 }
 
 /* Pub Step */
@@ -341,15 +330,24 @@
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--border);
+  /* Ensure buttons stay on one row on mobile */
+  flex-wrap: nowrap;
 }
 
 /* Responsive Design */
 @media (max-width: 640px) {
+  .onboarding-container {
+    padding: 0.5rem 0.5rem max(0.5rem, env(safe-area-inset-bottom)) 0.5rem;
+  }
+
   .onboarding-content {
-    padding: 1.5rem;
+    padding: 1.5rem 1.5rem 0 1.5rem;
     border-radius: 12px;
+  }
+
+  .navigation-footer {
+    padding: 1rem 1.5rem;
+    border-radius: 0 0 12px 12px;
   }
 
   .welcome-title {
@@ -386,21 +384,28 @@
   }
 
   .navigation {
-    flex-direction: column-reverse;
+    /* Keep buttons on one row even on mobile */
+    flex-direction: row;
     gap: 0.75rem;
   }
 
   .navigation > * {
-    width: 100%;
+    /* Don't make buttons full width on mobile */
+    flex: 1;
+    min-width: 0;
   }
 }
 
 @media (max-width: 480px) {
   .onboarding-container {
-    padding: 0.5rem;
+    padding: 0.5rem 0.5rem max(0.5rem, env(safe-area-inset-bottom)) 0.5rem;
   }
 
   .onboarding-content {
+    padding: 1rem 1rem 0 1rem;
+  }
+
+  .navigation-footer {
     padding: 1rem;
   }
 
@@ -410,5 +415,14 @@
 
   .welcome-subtitle {
     font-size: 0.9rem;
+  }
+
+  .navigation {
+    gap: 0.5rem;
+  }
+
+  .navigation > * {
+    font-size: 0.875rem;
+    padding: 0.75rem 1rem;
   }
 }
