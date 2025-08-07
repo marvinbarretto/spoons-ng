@@ -829,7 +829,10 @@ export class CheckInStore extends BaseStore<CheckIn> {
 
       // Use PointsStore to calculate AND persist points
       console.log(`[CheckInStore] 🎯 Calling PointsStore.awardCheckInPoints (${callId})`);
-      const pointsBreakdown = await this.pointsStore.awardCheckInPoints(pointsData);
+      const currentUser = this.userStore.user();
+      const userHomePubId = currentUser?.homePubId;
+      console.log(`[CheckInStore] 🎯 Passing user home pub ID: ${userHomePubId || 'None'} (${callId})`);
+      const pointsBreakdown = await this.pointsStore.awardCheckInPoints(pointsData, userHomePubId);
 
       console.log(`[CheckInStore] 🎯 PointsStore returned breakdown (${callId}):`, pointsBreakdown);
 

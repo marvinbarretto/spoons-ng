@@ -29,14 +29,14 @@ import { PubStore } from '@pubs/data-access/pub.store';
 import { AuthStore } from '../../auth/data-access/auth.store';
 import { CacheCoherenceService } from '../../shared/data-access/cache-coherence.service';
 import { ErrorLoggingService } from '../../shared/data-access/error-logging.service';
-import { UserStore } from '../../users/data-access/user.store';
+// UserStore removed to prevent circular dependency - UserStore → DataAggregatorService → PointsStore → UserStore
 import type { CheckInPointsData, PointsBreakdown, PointsTransaction } from '../utils/points.models';
 import { PointsService } from './points.service';
 @Injectable({ providedIn: 'root' })
 export class PointsStore {
   protected readonly authStore = inject(AuthStore);
   protected readonly pointsService = inject(PointsService);
-  protected readonly userStore = inject(UserStore);
+  // UserStore removed to prevent circular dependency - user data will be passed as parameters
   protected readonly pubStore = inject(PubStore);
   private readonly cacheCoherence = inject(CacheCoherenceService);
   protected readonly errorLoggingService = inject(ErrorLoggingService);
@@ -239,19 +239,20 @@ export class PointsStore {
   /**
    * Award points for a check-in (CRITICAL for scoreboard accuracy)
    * @param pointsData - Check-in context data for points calculation
+   * @param userHomePubId - User's home pub ID for pilgrimage bonus calculation (optional)
    * @returns Promise<PointsBreakdown> - Detailed breakdown of awarded points
-   * @description CRITICAL PATH for real-time scoreboard updates:
+   * @description SIMPLIFIED reactive architecture:
    * 1. Calculates points based on distance, bonuses, streaks
    * 2. Creates transaction record in Firestore
    * 3. Updates local PointsStore state
-   * 4. ✅ IMMEDIATELY updates UserStore.totalPoints (for scoreboard)
+   * 4. ✅ UserStore.totalPoints computed reactively from check-ins (no sync needed)
    * 5. Updates user document in Firestore
    * 6. Adds transaction to local history
    *
    * @throws Error if user not authenticated or points award already in progress
-   * @sideEffects Updates UserStore.totalPoints immediately for real-time UI
+   * @sideEffects UserStore automatically updates via reactive computed signals
    */
-  async awardCheckInPoints(pointsData: CheckInPointsData): Promise<PointsBreakdown> {
+  async awardCheckInPoints(pointsData: CheckInPointsData, userHomePubId?: string): Promise<PointsBreakdown> {
     const callId = Date.now();
     console.log(`[PointsStore] 🎯 === AWARD CHECK-IN POINTS STARTED (${callId}) ===`);
 
@@ -278,15 +279,14 @@ export class PointsStore {
       // 1. Get pub data from stores for points calculation
       console.log(`[PointsStore] 🎯 Getting pub data from stores (${callId})`);
       const checkInPub = this.pubStore.data().find(p => p.id === pointsData.pubId);
-      const currentUser = this.userStore.user();
-      const homePub = currentUser?.homePubId
-        ? this.pubStore.data().find(p => p.id === currentUser.homePubId)
+      const homePub = userHomePubId
+        ? this.pubStore.data().find(p => p.id === userHomePubId)
         : null;
 
       console.log(`[PointsStore] 🎯 Pub data retrieved (${callId}):`, {
         checkInPub: checkInPub?.name || 'Not found',
         homePub: homePub?.name || 'None set',
-        userHomePubId: currentUser?.homePubId || 'None',
+        userHomePubId: userHomePubId || 'None',
       });
 
       // 2. Calculate points using service with pub objects
@@ -316,21 +316,14 @@ export class PointsStore {
       );
       this._totalPoints.set(newTotal);
 
-      // 4. ✅ CRITICAL: Update UserStore immediately for real-time scoreboard
-      console.log(`[PointsStore] 🎯 Updating UserStore with new total (${callId}): ${newTotal}`);
-      try {
-        await this.userStore.patchUser({ totalPoints: newTotal });
-      } catch (error) {
-        console.log(
-          '[PointsStore] ⚠️ UserStore patch failed, but Firebase update will still occur'
-        );
-      }
+      // 4. ✅ UserStore.totalPoints computed reactively from check-ins (no sync needed)
+      console.log(`[PointsStore] 🎯 UserStore will update automatically via reactive signals (${callId})`);
 
-      console.log(`[PointsStore] 📈 Points updated everywhere (${callId}):`, {
+      console.log(`[PointsStore] 📈 Points updated in PointsStore (${callId}):`, {
         from: currentTotal,
         to: newTotal,
         added: breakdown.total,
-        userStoreUpdated: true,
+        userStoreAutoUpdated: 'reactive-computed',
       });
 
       // 5. Update user's total in Firebase
@@ -410,16 +403,10 @@ export class PointsStore {
         createdAt: new Date(),
       });
 
-      // Update local state and UserStore immediately
+      // Update local state - UserStore updates automatically via reactive computed
       const newTotal = this.totalPoints() + breakdown.total;
       this._totalPoints.set(newTotal);
-      try {
-        await this.userStore.patchUser({ totalPoints: newTotal }); // ✅ Real-time scoreboard update
-      } catch (error) {
-        console.log(
-          '[PointsStore] ⚠️ UserStore patch failed for social points, but Firebase update will still occur'
-        );
-      }
+      console.log('[PointsStore] UserStore will update automatically via reactive computed signals');
       await this.pointsService.updateUserTotalPoints(user.uid, newTotal);
 
       // ✅ CRITICAL: Invalidate cache to trigger leaderboard refresh
@@ -573,17 +560,8 @@ export class PointsStore {
     this._loading.set(false);
     this._error.set(null);
 
-    // Update UserStore to clear points (fire and forget)
-    this.userStore
-      .patchUser({ totalPoints: 0 })
-      .then(() => {
-        console.log('[PointsStore] ✅ UserStore updated during reset');
-      })
-      .catch(() => {
-        console.log(
-          '[PointsStore] ⚠️ Could not update UserStore during reset (normal during logout)'
-        );
-      });
+    // UserStore will reset automatically via reactive computed signals
+    console.log('[PointsStore] UserStore will reset automatically via reactive computed signals');
   }
 
   /**

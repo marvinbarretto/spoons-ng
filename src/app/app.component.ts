@@ -10,6 +10,7 @@ import { PubStore } from './pubs/data-access/pub.store';
 import { AnalyticsInterceptorService } from './shared/data-access/analytics-interceptor.service';
 import { PageTitleService } from './shared/data-access/page-title.service';
 import { SessionService } from './shared/data-access/session.service';
+import { CacheDebugService } from './shared/utils/cache-debug.service';
 import { DashboardShell } from './shared/feature/shells/dashboard.shell';
 import { FeatureShell } from './shared/feature/shells/feature.shell';
 import { FullScreenShell } from './shared/feature/shells/full-screen.shell';
@@ -53,6 +54,9 @@ export class AppComponent {
   
   // Initialize global analytics tracking
   private readonly analyticsInterceptor = inject(AnalyticsInterceptorService);
+  
+  // Initialize CacheDebugService for console access
+  private readonly cacheDebugService = inject(CacheDebugService);
 
   // Track current shell based on route data
   private readonly navigationEnd$ = this.router.events.pipe(

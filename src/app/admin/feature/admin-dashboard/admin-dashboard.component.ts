@@ -2,7 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { FeedbackStore } from '../../../feedback/data-access/feedback.store';
 import { LeaderboardStore } from '../../../leaderboard/data-access/leaderboard.store';
-import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
+import { UserStore } from '../../../users/data-access/user.store';
 import { ErrorLoggingService } from '../../../shared/data-access/error-logging.service';
 import { AnalyticsService } from '../../../shared/data-access/analytics.service';
 
@@ -165,7 +165,7 @@ type StatData = {
 export class AdminDashboardComponent {
   protected readonly leaderboardStore = inject(LeaderboardStore);
   protected readonly feedbackStore = inject(FeedbackStore);
-  protected readonly dataAggregatorService = inject(DataAggregatorService);
+  protected readonly userStore = inject(UserStore);
   private readonly errorLoggingService = inject(ErrorLoggingService);
   private readonly analyticsService = inject(AnalyticsService);
 
@@ -175,7 +175,7 @@ export class AdminDashboardComponent {
   readonly siteStats = this.leaderboardStore.siteStats;
   readonly globalDataStats = this.leaderboardStore.globalDataStats;
   readonly pendingFeedback = this.feedbackStore.pendingFeedback;
-  readonly scoreboardData = this.dataAggregatorService.scoreboardData;
+  readonly scoreboardData = this.userStore.scoreboardData;
 
   // Error stats for dashboard
   readonly errorStats = computed(() => this.errorLoggingService.getErrorStats());

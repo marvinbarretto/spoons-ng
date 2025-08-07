@@ -11,7 +11,7 @@ import {
   type UserDeletionSummary,
 } from '@shared/utils/cleanup.service';
 
-import { DataAggregatorService } from '@shared/data-access/data-aggregator.service';
+// DataAggregatorService removed - using UserStore reactive patterns instead
 
 // Stores
 import { CheckInStore } from '@/app/check-in/data-access/check-in.store';
@@ -54,7 +54,7 @@ export class DevDebugComponent extends BaseComponent {
   private readonly carpetStorageService = inject(CarpetStorageService);
   // Database metrics service removed - focus on core functionality
   private readonly firebaseMetricsService = inject(FirebaseMetricsService);
-  protected readonly dataAggregatorService = inject(DataAggregatorService);
+  // DataAggregatorService removed - using UserStore reactive patterns instead
 
   // ===================================
   // 📊 STATE MANAGEMENT
@@ -101,7 +101,7 @@ export class DevDebugComponent extends BaseComponent {
 
   // Real business data from stores
   readonly pendingFeedback = this.feedbackStore.pendingFeedback;
-  readonly scoreboardData = this.dataAggregatorService.scoreboardData;
+  readonly scoreboardData = this.userStore.scoreboardData;
 
   // ===================================
   // 🔍 COMPUTED DATA FOR DISPLAY

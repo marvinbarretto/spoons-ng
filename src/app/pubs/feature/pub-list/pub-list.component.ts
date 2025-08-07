@@ -14,7 +14,7 @@ import { UserStore } from '@users/data-access/user.store';
 import { environment } from '../../../../environments/environment';
 import { CheckInStore } from '../../../check-in/data-access/check-in.store';
 import { BaseComponent } from '../../../shared/base/base.component';
-import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
+// DataAggregatorService removed - using UserStore reactive patterns
 import { ButtonComponent } from '../../../shared/ui/button/button.component';
 import { IconComponent } from '../../../shared/ui/icon/icon.component';
 import { PubStore } from '../../data-access/pub.store';
@@ -42,7 +42,7 @@ export class PubListComponent extends BaseComponent implements OnInit {
   protected readonly pubStore = inject(PubStore);
   private readonly checkinStore = inject(CheckInStore);
   private readonly userStore = inject(UserStore);
-  protected readonly dataAggregatorService = inject(DataAggregatorService);
+  // DataAggregatorService removed - using UserStore reactive patterns
   private readonly locationService = inject(LocationService);
   private readonly firestoreCrudService = inject(FirestoreCrudService);
   private readonly activatedRoute = inject(ActivatedRoute);
@@ -87,11 +87,22 @@ export class PubListComponent extends BaseComponent implements OnInit {
     return [...new Set(userCheckins.map((checkin: CheckIn) => checkin.pubId))];
   });
 
+  // ✅ Helper methods to replace DataAggregatorService functionality
+  protected readonly verifiedPubsCount = computed(() => {
+    return this.userCheckedInPubIds().length;
+  });
+
+  protected readonly unverifiedPubsCount = computed(() => {
+    const user = this.userStore.user();
+    if (!user) return 0;
+    return (user.manuallyAddedPubIds || []).length;
+  });
+
   // ✅ New computed properties for visit status
   protected readonly managementStats = computed(() => ({
-    verified: this.dataAggregatorService.verifiedPubsCount(),
-    unverified: this.dataAggregatorService.unverifiedPubsCount(),
-    total: this.dataAggregatorService.pubsVisited(),
+    verified: this.verifiedPubsCount(),
+    unverified: this.unverifiedPubsCount(),
+    total: this.userStore.pubsVisited(),
   }));
 
   protected readonly selectedCount = computed(() => this.selectedForAddition().size);
@@ -102,7 +113,7 @@ export class PubListComponent extends BaseComponent implements OnInit {
   });
 
   protected readonly shouldShowFilterPills = computed(() => {
-    const visitedCount = this.dataAggregatorService.pubsVisited();
+    const visitedCount = this.userStore.pubsVisited();
     return visitedCount > 0;
   });
 
@@ -174,14 +185,14 @@ export class PubListComponent extends BaseComponent implements OnInit {
         // For visited count, use DataAggregator's global count if we're showing all pubs
         // Otherwise fall back to local filtering for search results
         if (!hasSearchTerm) {
-          return this.dataAggregatorService.pubsVisited();
+          return this.userStore.pubsVisited();
         }
         return pubs.filter(pub => this.hasAnyVisit(pub.id)).length;
       case 'unvisited':
         // For unvisited, subtract visited from total available pubs
         const visitedCount = hasSearchTerm
           ? pubs.filter(pub => this.hasAnyVisit(pub.id)).length
-          : this.dataAggregatorService.pubsVisited();
+          : this.userStore.pubsVisited();
         return pubs.length - visitedCount;
       default:
         return pubs.length;
@@ -202,8 +213,34 @@ export class PubListComponent extends BaseComponent implements OnInit {
     return this.userStore.hasVisitedPub(pubId);
   }
 
+  hasVisitedPub(pubId: string): boolean {
+    // Check verified visits (check-ins)
+    const hasVerifiedVisit = this.userCheckedInPubIds().includes(pubId);
+    
+    // Check manual visits
+    const user = this.userStore.user();
+    const hasManualVisit = user?.manuallyAddedPubIds?.includes(pubId) || false;
+    
+    return hasVerifiedVisit || hasManualVisit;
+  }
+
   hasAnyVisit(pubId: string): boolean {
-    return this.dataAggregatorService.hasVisitedPub(pubId);
+    return this.hasVisitedPub(pubId);
+  }
+
+  getVisitCountForPub(pubId: string): number {
+    const checkins = this.checkinStore.checkins();
+    const user = this.user();
+    if (!user) return 0;
+    
+    return checkins.filter(checkin => checkin.userId === user.uid && checkin.pubId === pubId).length;
+  }
+
+  isLocalPub(pubId: string): boolean {
+    const user = this.userStore.user();
+    if (!user) return false;
+    
+    return user.homePubId === pubId;
   }
 
   // ✅ Development helper

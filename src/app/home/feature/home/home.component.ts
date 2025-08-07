@@ -11,7 +11,7 @@ import { UserStore } from '@users/data-access/user.store';
 import { CheckInStore } from '../../../check-in/data-access/check-in.store';
 import { LeaderboardStore } from '../../../leaderboard/data-access/leaderboard.store';
 import { PubStore } from '../../../pubs/data-access/pub.store';
-import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
+// DataAggregatorService removed - using UserStore reactive computed signals instead
 
 // ✅ Critical components loaded immediately
 import { ScoreboardHeroWidgetComponent } from '@app/widgets/scoreboard-hero/scoreboard-hero-widget.component';
@@ -84,7 +84,7 @@ export class HomeComponent extends BaseComponent {
   protected readonly missionStore = inject(MissionStore, { optional: true });
   protected readonly pointsStore = inject(PointsStore);
   protected readonly checkinStore = inject(CheckInStore);
-  protected readonly dataAggregatorService = inject(DataAggregatorService);
+  // DataAggregatorService removed - using UserStore reactive patterns
   protected readonly pubStore = inject(PubStore);
   protected readonly locationService = inject(LocationService);
   protected readonly leaderboardStore = inject(LeaderboardStore, { optional: true });
@@ -97,16 +97,15 @@ export class HomeComponent extends BaseComponent {
   readonly user = this.userStore.user;
 
   /**
-   * Scoreboard data aggregated via DataAggregatorService
-   * @description Clean, dependency-free aggregation from multiple stores.
-   * DataAggregatorService eliminates circular dependencies and provides
-   * reactive computed signals for complex cross-store data.
+   * Scoreboard data from UserStore reactive computed signal
+   * @description Beautiful reactive pattern using UserStore.scoreboardData() computed signal
+   * Eliminates circular dependencies with pure computation architecture.
    */
-  readonly scoreboardData = this.dataAggregatorService.scoreboardData;
+  readonly scoreboardData = this.userStore.scoreboardData;
 
   readonly userState = computed(() => {
     const user = this.user();
-    const scoreboardData = this.dataAggregatorService.scoreboardData();
+    const scoreboardData = this.scoreboardData(); // Use our reactive computed signal
     const checkInCount = scoreboardData.totalCheckins || 0;
     const pubsVisited = scoreboardData.pubsVisited || 0;
 
@@ -169,7 +168,7 @@ export class HomeComponent extends BaseComponent {
     const user = this.user();
     if (!user) return null;
 
-    const pubs = this.dataAggregatorService.pubsVisited();
+    const pubs = this.userStore.pubsVisited();
     const badges = user.badgeCount || 0;
 
     // Fake calculation for demo - higher activity = better position
@@ -276,7 +275,7 @@ export class HomeComponent extends BaseComponent {
       uid: user.uid,
       displayName: user.displayName,
       isAnonymous: user.isAnonymous,
-      pubsVisited: this.dataAggregatorService.pubsVisited(),
+      pubsVisited: this.userStore.pubsVisited(),
       badges: user.badgeCount || 0,
       missions: user.joinedMissionIds?.length || 0,
     };

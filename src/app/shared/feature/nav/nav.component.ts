@@ -5,7 +5,6 @@ import { LocationService, ToastService } from '@fourfold/angular-foundation';
 import { AuthStore } from '../../../auth/data-access/auth.store';
 import { LeaderboardStore } from '../../../leaderboard/data-access/leaderboard.store';
 import { UserStore } from '../../../users/data-access/user.store';
-import { DataAggregatorService } from '../../data-access/data-aggregator.service';
 import { ViewportService } from '../../data-access/viewport.service';
 import { ButtonComponent } from '../../ui/button/button.component';
 import { ButtonSize, ButtonVariant } from '../../ui/button/button.params';
@@ -23,7 +22,6 @@ export class NavComponent {
   private readonly locationService = inject(LocationService);
   protected readonly authStore = inject(AuthStore);
   protected readonly userStore = inject(UserStore);
-  private readonly dataAggregator = inject(DataAggregatorService);
   private readonly viewportService = inject(ViewportService);
   private readonly toastService = inject(ToastService);
   protected readonly leaderboardStore = inject(LeaderboardStore);
@@ -31,9 +29,9 @@ export class NavComponent {
   // Use viewport service for responsive behavior
   readonly isMobile = this.viewportService.isMobile;
 
-  // Reactive user data
-  readonly user = this.dataAggregator.user;
-  readonly displayName = this.dataAggregator.displayName;
+  // Reactive user data from UserStore
+  readonly user = this.userStore.user;
+  readonly displayName = this.userStore.displayName;
   readonly isAuthenticated = this.authStore.isAuthenticated;
   readonly isAnonymous = this.authStore.isAnonymous;
 
@@ -58,8 +56,8 @@ export class NavComponent {
     };
   });
 
-  // Points data for nav display
-  readonly scoreboardData = this.dataAggregator.scoreboardData;
+  // Points data for nav display from UserStore reactive computed
+  readonly scoreboardData = this.userStore.scoreboardData;
 
   // Pub ranking computed signal - get current user's rank when sorted by pubs
   readonly currentUserPubRank = computed(() => {

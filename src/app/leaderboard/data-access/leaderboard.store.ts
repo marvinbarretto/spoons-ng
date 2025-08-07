@@ -139,14 +139,17 @@ export class LeaderboardStore {
 
         // Use DataAggregatorService for consistent pub count calculation (with deduplication)
         // Pass user data to include manually added pubs
-        const totalUniquePubs = this.dataAggregator.getPubsVisitedForUser(user.uid, user);
+        const totalUniquePubs = this.dataAggregator.getPubsVisitedForUser(user.uid, user.manuallyAddedPubIds || []);
 
+        // ✅ FIXED: Use reactive points calculation from check-ins (like scoreboard)
+        const totalPointsFromCheckins = this.dataAggregator.calculateUserPointsFromCheckins(user.uid);
+        
         // 🔍 DEBUGGING: Log users with potential data issues
-        if ((user.totalPoints || 0) > 0 && totalUniquePubs === 0) {
+        if (totalPointsFromCheckins > 0 && totalUniquePubs === 0) {
           console.warn(`[Leaderboard] 🚨 USER WITH POINTS BUT NO PUBS:`, {
             uid: user.uid?.slice(0, 8),
             displayName: user.displayName,
-            totalPoints: user.totalPoints,
+            calculatedPoints: totalPointsFromCheckins,
             calculatedPubs: totalUniquePubs,
             checkins: userCheckIns.length,
             manuallyAddedPubIds: user.manuallyAddedPubIds,
@@ -154,8 +157,8 @@ export class LeaderboardStore {
           });
         }
 
-        // Calculate monthly stats (current month)
-        const monthlyStats = this.calculateMonthlyStats(userCheckIns, user);
+        // Calculate monthly stats (current month) - ✅ FIXED: Using reactive calculation
+        const monthlyStats = this.calculateMonthlyStats(userCheckIns, totalPointsFromCheckins);
 
         // Get last activity
         const lastCheckin = userCheckIns.sort(
@@ -166,53 +169,23 @@ export class LeaderboardStore {
         // Calculate current streak
         const currentStreak = this.calculateStreak(userCheckIns);
 
-        // 🔍 DEBUGGING: Log points data mismatch issues
-        const pointsFromCheckins = userCheckIns.reduce(
-          (sum, checkin) => sum + (checkin.pointsEarned || 0),
-          0
-        );
-        const pointsFromUser = user.totalPoints || 0;
-
-        if (pointsFromUser !== pointsFromCheckins && userCheckIns.length > 0) {
-          console.warn(
-            `[Leaderboard] 🚨 POINTS MISMATCH for ${user.displayName || user.uid?.slice(0, 8)}:`,
-            {
-              userDocPoints: pointsFromUser,
-              calculatedFromCheckins: pointsFromCheckins,
-              checkinsCount: userCheckIns.length,
-              checkinPoints: userCheckIns.map(c => ({ id: c.id, points: c.pointsEarned })),
-              userId: user.uid?.slice(0, 8),
-            }
-          );
-
-          // 🔍 Log this as an error for admin review
-          try {
-            this.errorLoggingService.logError(
-              'points',
-              'leaderboard-points-mismatch',
-              `Points mismatch: User doc shows ${pointsFromUser} but check-ins total ${pointsFromCheckins}`,
-              {
-                severity: 'medium',
-                operationContext: {
-                  userId: user.uid,
-                  userDisplayName: user.displayName,
-                  userDocPoints: pointsFromUser,
-                  calculatedFromCheckins: pointsFromCheckins,
-                  checkinsCount: userCheckIns.length,
-                  checkinPoints: userCheckIns.map(c => ({ id: c.id, points: c.pointsEarned })),
-                },
-              }
-            );
-          } catch (logError) {
-            console.error('[Leaderboard] Failed to log points mismatch error:', logError);
+        // ✅ SIMPLIFIED: Now using reactive calculation consistently
+        console.log(
+          `[Leaderboard] ✅ Points calculation for ${user.displayName || user.uid?.slice(0, 8)}:`,
+          {
+            reactiveCalculation: totalPointsFromCheckins,
+            userDocPoints: user.totalPoints || 0,
+            checkinsCount: userCheckIns.length,
+            userId: user.uid?.slice(0, 8),
+            consistent: 'Using reactive calculation like scoreboard',
           }
-        }
+        );
 
         const entry: LeaderboardEntry = {
           userId: user.uid,
           displayName: this.getUserDisplayName(user),
-          // All-time stats
-          totalPoints: user.totalPoints || 0, // 🔍 This comes from user document, not calculated!
+          // All-time stats - ✅ FIXED: Using reactive calculation from check-ins
+          totalPoints: totalPointsFromCheckins, // Now consistent with scoreboard
           uniquePubs: totalUniquePubs,
           totalCheckins: userCheckIns.length,
           // Monthly stats
@@ -605,7 +578,7 @@ export class LeaderboardStore {
 
   private calculateMonthlyStats(
     userCheckins: any[],
-    user: any
+    totalReactivePoints: number
   ): { points: number; pubs: number; checkins: number } {
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -616,20 +589,20 @@ export class LeaderboardStore {
     // Calculate monthly unique pubs
     const monthlyUniquePubs = new Set(monthlyCheckins.map(c => c.pubId)).size;
 
-    // For monthly points, we'll use a simplified calculation
-    // In a real app, you might want to recalculate based on monthly check-ins
-    // For now, we'll estimate based on proportion of monthly vs total check-ins
-    const totalCheckins = userCheckins.length;
-    const monthlyCheckinsCount = monthlyCheckins.length;
-    const totalPoints = user.totalPoints || 0;
+    // ✅ FIXED: Calculate monthly points directly from monthly check-ins
+    const monthlyPoints = monthlyCheckins.reduce((sum, checkin) => {
+      const points = checkin.pointsEarned ?? checkin.pointsBreakdown?.total ?? 0;
+      return sum + points;
+    }, 0);
 
-    const estimatedMonthlyPoints =
-      totalCheckins > 0 ? Math.round((monthlyCheckinsCount / totalCheckins) * totalPoints) : 0;
+    // Fallback: estimate if direct calculation returns 0 but we have check-ins
+    const estimatedMonthlyPoints = monthlyPoints > 0 ? monthlyPoints : 
+      userCheckins.length > 0 ? Math.round((monthlyCheckins.length / userCheckins.length) * totalReactivePoints) : 0;
 
     return {
       points: estimatedMonthlyPoints,
       pubs: monthlyUniquePubs,
-      checkins: monthlyCheckinsCount,
+      checkins: monthlyCheckins.length,
     };
   }
 

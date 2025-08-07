@@ -92,9 +92,9 @@
                 [hasCheckedIn]="hasAnyVisit(pub.id)"
                 [hasVerifiedVisit]="hasVerifiedCheckIn(pub.id)"
                 [hasUnverifiedVisit]="hasUnverifiedVisit(pub.id)"
-                [checkinCount]="dataAggregatorService.getVisitCountForPub(pub.id)"
+                [checkinCount]="getVisitCountForPub(pub.id)"
                 [showCheckinCount]="hasAnyVisit(pub.id)"
-                [isLocalPub]="dataAggregatorService.isLocalPub(pub.id)"
+                [isLocalPub]="isLocalPub(pub.id)"
                 [selectable]="true"
                 [isSelected]="selectedForAddition().has(pub.id)"
                 [checkInDistanceThreshold]="checkInDistanceThreshold"
@@ -114,9 +114,9 @@
                 [hasCheckedIn]="hasAnyVisit(pub.id)"
                 [hasVerifiedVisit]="hasVerifiedCheckIn(pub.id)"
                 [hasUnverifiedVisit]="hasUnverifiedVisit(pub.id)"
-                [checkinCount]="dataAggregatorService.getVisitCountForPub(pub.id)"
+                [checkinCount]="getVisitCountForPub(pub.id)"
                 [showCheckinCount]="hasAnyVisit(pub.id)"
-                [isLocalPub]="dataAggregatorService.isLocalPub(pub.id)"
+                [isLocalPub]="isLocalPub(pub.id)"
                 [checkInDistanceThreshold]="checkInDistanceThreshold"
               />
             </a>

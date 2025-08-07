@@ -3,7 +3,7 @@ import { Component, computed, inject, input, OnDestroy, output, signal } from '@
 
 import { AuthStore } from '@auth/data-access/auth.store';
 import { BadgeIconComponent } from '@badges/ui/badge-icon/badge-icon.component';
-import { DataAggregatorService } from '@shared/data-access/data-aggregator.service';
+import { UserStore } from '@users/data-access/user.store';
 import { ButtonComponent } from '@shared/ui/button/button.component';
 import { CheckInStore } from '../../../check-in/data-access/check-in.store';
 // TODO: Re-enable LeaderboardStore when available
@@ -448,7 +448,7 @@ export class ModalCheckinCelebrationComponent implements OnDestroy {
   // Store injections
   protected readonly checkinStore = inject(CheckInStore);
   protected readonly authStore = inject(AuthStore);
-  protected readonly dataAggregatorService = inject(DataAggregatorService);
+  protected readonly userStore = inject(UserStore);
   // TODO: Re-enable LeaderboardStore when available
   // protected readonly leaderboardStore = inject(LeaderboardStore);
 
@@ -467,7 +467,7 @@ export class ModalCheckinCelebrationComponent implements OnDestroy {
 
   // Optimized celebration data using existing reactive stores
   readonly celebrationData = computed(() => {
-    const scoreboard = this.dataAggregatorService.scoreboardData();
+    const scoreboard = this.userStore.scoreboardData();
     // TODO: Re-enable when LeaderboardStore is available
     // const userRank = this.leaderboardStore.userRankByPoints() || null;
     // const leaderboardData = this.leaderboardStore.data() || [];

@@ -34,7 +34,7 @@ import {
 import { BadgeStore } from '../../badges/data-access/badge.store';
 import { CheckInStore } from '../../check-in/data-access/check-in.store';
 import { LeaderboardStore } from '../../leaderboard/data-access/leaderboard.store';
-import { DataAggregatorService } from '../../shared/data-access/data-aggregator.service';
+import { UserStore } from '../../users/data-access/user.store';
 import { BadgeCrestComponent } from '../../shared/ui/badge-crest/badge-crest.component';
 import { DebugService } from '../../shared/utils/debug.service';
 import { BaseWidgetComponent } from '../base/base-widget.component';
@@ -490,16 +490,39 @@ export type EnhancedScoreboardData = ScoreboardData & {
   ],
 })
 export class ScoreboardHeroWidgetComponent extends BaseWidgetComponent implements OnDestroy {
-  // ✅ Self-contained data loading via DataAggregatorService
-  protected readonly dataAggregatorService = inject(DataAggregatorService);
+  // ✅ Beautiful reactive data from UserStore
+  private readonly userStore = inject(UserStore);
   private readonly debug = inject(DebugService);
   private readonly checkinStore = inject(CheckInStore);
   private readonly badgeStore = inject(BadgeStore);
   private readonly leaderboardStore = inject(LeaderboardStore);
 
-  // ✅ Widget loads its own data
+  // ✅ Beautiful reactive data from UserStore computed signals
   readonly data = computed((): ScoreboardData => {
-    const scoreboardData = this.dataAggregatorService.scoreboardData();
+    console.log('📈 [ScoreboardHeroWidget] === COMPUTING WIDGET DATA ===');
+    console.log('📈 [ScoreboardHeroWidget] Timestamp:', new Date().toISOString());
+    
+    // Use beautiful reactive UserStore computed signal - no circular dependencies!
+    const scoreboardData = this.userStore.scoreboardData();
+    
+    console.log('📈 [ScoreboardHeroWidget] Data received from UserStore reactive computed:', {
+      totalPoints: scoreboardData.totalPoints,
+      todaysPoints: scoreboardData.todaysPoints,
+      pubsVisited: scoreboardData.pubsVisited,
+      totalPubs: scoreboardData.totalPubs,
+      badgeCount: scoreboardData.badgeCount,
+      landlordCount: scoreboardData.landlordCount,
+      totalCheckins: scoreboardData.totalCheckins,
+      isLoading: scoreboardData.isLoading,
+    });
+    
+    console.log('📈 [ScoreboardHeroWidget] Widget will display:', {
+      pointsDisplay: scoreboardData.totalPoints,
+      pubsDisplay: scoreboardData.pubsVisited,
+      checkinsDisplay: scoreboardData.totalCheckins,
+      dataSource: 'UserStore.scoreboardData() - Beautiful Reactive Pattern!',
+    });
+    
     this.debug.extreme('[ScoreboardHeroWidget] Data computed:', scoreboardData);
     return scoreboardData;
   });

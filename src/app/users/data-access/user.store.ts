@@ -30,8 +30,10 @@
 import { computed, effect, inject, Injectable } from '@angular/core';
 import { getAuth, updateProfile } from 'firebase/auth';
 import { firstValueFrom } from 'rxjs';
+import { GlobalCheckInStore } from '../../check-in/data-access/global-check-in.store';
 import { BaseStore } from '../../shared/base/base.store';
 import { CacheCoherenceService } from '../../shared/data-access/cache-coherence.service';
+import { DataAggregatorService } from '../../shared/data-access/data-aggregator.service';
 import type { User, UserBadgeSummary, UserLandlordSummary } from '../utils/user.model';
 import { UserService } from './user.service';
 
@@ -40,6 +42,8 @@ export class UserStore extends BaseStore<User> {
   // 🔧 Dependencies
   protected readonly userService = inject(UserService);
   private readonly cacheCoherence = inject(CacheCoherenceService);
+  private readonly dataAggregator = inject(DataAggregatorService);
+  private readonly globalCheckInStore = inject(GlobalCheckInStore);
 
   // 📡 Current user computed from collection using Firebase Auth uid
   readonly currentUser = computed(() => {
@@ -95,10 +99,68 @@ export class UserStore extends BaseStore<User> {
    */
 
   /**
-   * User's total points (for scoreboard display)
-   * @description Updated by PointsStore when points are awarded
+   * User's total points calculated from check-ins via DataAggregatorService
+   * @description Uses DataAggregatorService to calculate points from check-ins, eliminating circular dependencies
    */
-  readonly totalPoints = computed(() => this.user()?.totalPoints || 0);
+  readonly totalPoints = computed(() => {
+    const currentUser = this.authStore.user();
+    if (!currentUser) {
+      return 0;
+    }
+
+    // Use DataAggregatorService to calculate points from check-ins (no circular dependency)
+    return this.dataAggregator.calculateUserPointsFromCheckins(currentUser.uid);
+  });
+
+  /**
+   * Total pubs visited (verified + manual, deduplicated)
+   * @description Pure computation using DataAggregatorService with user data as parameters
+   */
+  readonly pubsVisited = computed(() => {
+    const user = this.currentUser();
+    const authUser = this.authStore.user();
+    
+    if (!user || !authUser) {
+      return 0;
+    }
+
+    // Use DataAggregatorService pure method with user data as parameters
+    return this.dataAggregator.getPubsVisitedForUser(authUser.uid, user.manuallyAddedPubIds || []);
+  });
+
+  /**
+   * Complete scoreboard data for this user
+   * @description Reactive scoreboard data using pure DataAggregatorService computation
+   */
+  readonly scoreboardData = computed(() => {
+    const user = this.currentUser();
+    const authUser = this.authStore.user();
+    
+    if (!user || !authUser) {
+      return {
+        totalPoints: 0,
+        todaysPoints: 0,
+        pubsVisited: 0,
+        totalPubs: 0,
+        badgeCount: 0,
+        landlordCount: 0,
+        totalCheckins: 0,
+        isLoading: false,
+      };
+    }
+
+    // Get user's check-ins from GlobalCheckInStore for scoreboard calculation
+    const allCheckIns = this.globalCheckInStore.allCheckIns();
+    const userCheckIns = allCheckIns.filter(c => c.userId === authUser.uid);
+    const isLoading = this.globalCheckInStore.loading();
+    
+    // Use DataAggregatorService pure method with all required parameters
+    return this.dataAggregator.getScoreboardDataForUser(authUser.uid, {
+      manuallyAddedPubIds: user.manuallyAddedPubIds || [],
+      badgeCount: user.badgeCount || 0,
+      landlordCount: user.landlordCount || 0,
+    }, userCheckIns, isLoading);
+  });
 
   // 🔄 Track auth user changes
   private lastLoadedUserId: string | null = null;
@@ -115,11 +177,51 @@ export class UserStore extends BaseStore<User> {
       }
     });
 
-    // ✅ When auth changes and current user not in collection, ensure they're loaded
+    // ✅ Auth change detection with comprehensive cache clearing
     effect(() => {
       const authUid = this.authStore.uid();
       const currentUser = this.currentUser();
 
+      console.log('🔍 [UserStore] === AUTH CHANGE DETECTION ===');
+      console.log('🔍 [UserStore] Auth state:', {
+        currentAuthUid: authUid?.slice(0, 8),
+        lastLoadedUserId: this.lastLoadedUserId?.slice(0, 8),
+        hasCurrentUser: !!currentUser,
+        currentUserUid: currentUser?.uid?.slice(0, 8),
+        isLoading: this.loading(),
+        authChanged: authUid !== this.lastLoadedUserId,
+      });
+
+      // Detect auth user changes (login, logout, account switch)
+      if (authUid !== this.lastLoadedUserId) {
+        console.log('🔄 [UserStore] === AUTH USER CHANGED ===');
+        console.log('🔄 [UserStore] Previous user:', this.lastLoadedUserId?.slice(0, 8) || 'none');
+        console.log('🔄 [UserStore] New user:', authUid?.slice(0, 8) || 'none');
+
+        // Clear potentially stale cached data from previous user
+        if (this.lastLoadedUserId && authUid) {
+          console.log('🗋 [UserStore] User account switched - triggering comprehensive cache invalidation');
+          this.cacheCoherence.invalidateMultiple(
+            ['users', 'checkins', 'points', 'user-profiles'], 
+            'auth-user-switched'
+          );
+        } else if (!this.lastLoadedUserId && authUid) {
+          console.log('🔑 [UserStore] User logged in - triggering cache refresh for new session');
+          this.cacheCoherence.invalidate('users', 'auth-user-login');
+        } else if (this.lastLoadedUserId && !authUid) {
+          console.log('🚪 [UserStore] User logged out - clearing all cached data');
+          this.cacheCoherence.invalidateMultiple(
+            ['users', 'checkins', 'points', 'user-profiles', 'leaderboards'], 
+            'auth-user-logout'
+          );
+          // Clear local state immediately on logout
+          this.reset();
+        }
+
+        this.lastLoadedUserId = authUid;
+      }
+
+      // Ensure current user exists in collection if auth is present but user not loaded
       if (authUid && !currentUser && !this.loading()) {
         console.log(
           `[UserStore] Current user ${authUid.slice(0, 8)} not in collection, creating if needed`
