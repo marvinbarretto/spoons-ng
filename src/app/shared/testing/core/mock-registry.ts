@@ -337,6 +337,19 @@ class MockRegistry {
         authState.set('unauthenticated');
       }),
 
+      signInWithEmailAndPassword: vi.fn().mockImplementation(async (email: string, password: string) => {
+        if (config.errorScenarios && email === 'error@test.com') {
+          throw new Error('auth/user-not-found');
+        }
+        
+        const mockUser = { uid: 'test-uid-email', email, displayName: 'Test User' };
+        user.set(mockUser);
+        uid.set(mockUser.uid);
+        isAuthenticated.set(true);
+        authState.set('authenticated');
+        return { user: mockUser };
+      }),
+
       refreshCurrentUser: vi.fn(),
 
       // Test utilities
@@ -792,7 +805,7 @@ export function useTestSuite(suiteType: string, options: TestSuiteOptions = {}) 
       store: (name: string) => new StoreScenarioBuilder(name, registry)
     },
 
-    // Verification helpers (to be implemented in separate file)
+    // Verification helpers (lazy-loaded to avoid circular imports)
     verify: {
       user: (userData: any) => new UserVerificationBuilder(userData),
       dataConsistency: new DataConsistencyVerifier(),
@@ -813,38 +826,25 @@ export function useTestSuite(suiteType: string, options: TestSuiteOptions = {}) 
 export const mockRegistry = MockRegistry.getInstance();
 
 // ===================================
-// PLACEHOLDER CLASSES (TO BE IMPLEMENTED)
+// IMPORT SCENARIO BUILDERS
 // ===================================
 
-// These will be implemented in separate files
-export class UserScenarioBuilder {
-  constructor(private type: string, private registry: MockRegistry) {}
-  
-  withCheckIns(count: number): this { return this; }
-  withBadges(badges: string[]): this { return this; }
-  atUniquePubs(): this { return this; }
-  build(): Promise<TestScenario> { return Promise.resolve({}); }
-}
+// Import the full implementations from separate file
+import {
+  UserScenarioBuilder,
+  ServiceScenarioBuilder, 
+  StoreScenarioBuilder,
+  UserVerificationBuilder,
+  DataConsistencyVerifier,
+  PerformanceVerifier
+} from './scenario-builders';
 
-export class ServiceScenarioBuilder {
-  constructor(private name: string, private registry: MockRegistry) {}
-}
-
-export class StoreScenarioBuilder {
-  constructor(private name: string, private registry: MockRegistry) {}
-}
-
-export class UserVerificationBuilder {
-  constructor(private userData: any) {}
-  
-  hasCorrectPoints(): this { return this; }
-  hasCorrectPubCount(): this { return this; }
-}
-
-export class DataConsistencyVerifier {
-  acrossAllStores(): void {}
-}
-
-export class PerformanceVerifier {
-  meetsPerformanceRequirements(): void {}
-}
+// Re-export for external use
+export {
+  UserScenarioBuilder,
+  ServiceScenarioBuilder, 
+  StoreScenarioBuilder,
+  UserVerificationBuilder,
+  DataConsistencyVerifier,
+  PerformanceVerifier
+};

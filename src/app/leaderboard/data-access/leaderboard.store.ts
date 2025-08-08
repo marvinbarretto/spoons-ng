@@ -1,6 +1,7 @@
 import { Injectable, computed, effect, inject, signal } from '@angular/core';
 import { AuthStore } from '../../auth/data-access/auth.store';
 import { CheckInService } from '../../check-in/data-access/check-in.service';
+import { PubStore } from '../../pubs/data-access/pub.store';
 import { CacheCoherenceService } from '../../shared/data-access/cache-coherence.service';
 import { DataAggregatorService } from '../../shared/data-access/data-aggregator.service';
 import { ErrorLoggingService } from '../../shared/data-access/error-logging.service';
@@ -18,6 +19,7 @@ import {
 export class LeaderboardStore {
   private readonly authStore = inject(AuthStore);
   private readonly dataAggregator = inject(DataAggregatorService);
+  private readonly pubStore = inject(PubStore);
   private readonly cacheCoherence = inject(CacheCoherenceService);
   private readonly userService = inject(UserService);
   private readonly checkinService = inject(CheckInService);
@@ -322,9 +324,8 @@ export class LeaderboardStore {
     // Total unique pubs visited across all users
     const allPubIds = new Set(allCheckIns.map(c => c.pubId));
 
-    // Get total pubs in system from pub store if available
-    // This will be populated by the DataAggregatorService
-    const totalPubsInSystem = 0; // TODO: Connect to PubStore when admin needs it
+    // Get total pubs in system from pub store - now using accurate count
+    const totalPubsInSystem = this.pubStore.totalCount();
 
     const siteStats = {
       allTime: {
@@ -354,13 +355,32 @@ export class LeaderboardStore {
     const recentCheckIns = allCheckIns.filter(c => c.timestamp.toDate() >= thirtyDaysAgo);
     const activeUserIds = new Set(recentCheckIns.map(c => c.userId));
 
+    // Enhanced stats using DataAggregatorService for accuracy
+    const totalSystemPoints = allUsers.reduce((sum, user) => {
+      return sum + this.dataAggregator.calculateUserPointsFromCheckins(user.uid);
+    }, 0);
+
+    const totalPubsVisited = new Set(allCheckIns.filter(c => c.pubId).map(c => c.pubId)).size;
+    
+    const averagePointsPerUser = allUsers.length > 0 ? Math.round(totalSystemPoints / allUsers.length) : 0;
+    const averagePubsPerUser = allUsers.length > 0 ? Math.round(
+      allUsers.reduce((sum, user) => {
+        return sum + this.dataAggregator.getPubsVisitedForUser(user.uid, user.manuallyAddedPubIds || []);
+      }, 0) / allUsers.length
+    ) : 0;
+
     const globalStats = {
       totalUsers: allUsers.length,
       totalCheckIns: allCheckIns.length,
       activeUsers: activeUserIds.size,
+      totalSystemPoints,
+      totalPubsVisited,
+      averagePointsPerUser,
+      averagePubsPerUser,
+      totalPubsInSystem: this.pubStore.totalCount(),
     };
 
-    console.log('[Leaderboard] 🌍 Global data stats computed:', globalStats);
+    console.log('[Leaderboard] 🌍 Enhanced global data stats computed:', globalStats);
     return globalStats;
   });
 

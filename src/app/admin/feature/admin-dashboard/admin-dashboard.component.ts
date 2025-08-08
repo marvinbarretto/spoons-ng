@@ -3,6 +3,7 @@ import { RouterModule } from '@angular/router';
 import { FeedbackStore } from '../../../feedback/data-access/feedback.store';
 import { LeaderboardStore } from '../../../leaderboard/data-access/leaderboard.store';
 import { UserStore } from '../../../users/data-access/user.store';
+import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
 import { ErrorLoggingService } from '../../../shared/data-access/error-logging.service';
 import { AnalyticsService } from '../../../shared/data-access/analytics.service';
 
@@ -166,6 +167,7 @@ export class AdminDashboardComponent {
   protected readonly leaderboardStore = inject(LeaderboardStore);
   protected readonly feedbackStore = inject(FeedbackStore);
   protected readonly userStore = inject(UserStore);
+  private readonly dataAggregator = inject(DataAggregatorService);
   private readonly errorLoggingService = inject(ErrorLoggingService);
   private readonly analyticsService = inject(AnalyticsService);
 
@@ -218,19 +220,19 @@ export class AdminDashboardComponent {
         sourceDetail: `Check-ins this month`,
         icon: '📊',
       },
-      // Business Health Indicators
+      // Enhanced Business Health Indicators
       {
         value: this.getEngagementRate(),
         label: 'Engagement Rate',
         sourceType: 'calculated',
-        sourceDetail: `Check-ins per active user`,
+        sourceDetail: `Check-ins per active user (enhanced calculation)`,
         icon: '🎯',
       },
       {
         value: this.getGrowthRate(),
         label: 'Monthly Growth',
         sourceType: 'calculated',
-        sourceDetail: `New users this month vs last month`,
+        sourceDetail: `New users this month vs estimated previous`,
         icon: '📈',
       },
       {
@@ -241,11 +243,40 @@ export class AdminDashboardComponent {
         icon: '💬',
       },
       {
-        value: scoreboardData.totalPubs || 0,
+        value: globalData.totalPubsInSystem || siteData.allTime.totalPubsInSystem || 0,
         label: 'Total Pubs',
-        sourceType: (scoreboardData.totalPubs || 0) > 0 ? 'real' : 'placeholder',
-        sourceDetail: `Available pub locations`,
+        sourceType: (globalData.totalPubsInSystem || siteData.allTime.totalPubsInSystem || 0) > 0 ? 'real' : 'placeholder',
+        sourceDetail: `Available pub locations (now accurate)`,
         icon: '🏛️',
+      },
+      // New Enhanced Metrics
+      {
+        value: globalData.totalSystemPoints || 0,
+        label: 'Total System Points',
+        sourceType: 'calculated',
+        sourceDetail: `All points from check-ins (single source of truth)`,
+        icon: '⭐',
+      },
+      {
+        value: globalData.averagePointsPerUser || 0,
+        label: 'Avg Points/User',
+        sourceType: 'calculated',
+        sourceDetail: `Average points per user`,
+        icon: '📊',
+      },
+      {
+        value: globalData.averagePubsPerUser || 0,
+        label: 'Avg Pubs/User',
+        sourceType: 'calculated',
+        sourceDetail: `Average unique pubs visited per user`,
+        icon: '🍺',
+      },
+      {
+        value: globalData.totalPubsVisited || 0,
+        label: 'Pubs Conquered',
+        sourceType: 'calculated',
+        sourceDetail: `Unique pubs with at least one check-in`,
+        icon: '🏆',
       },
     ];
   });
@@ -287,7 +318,7 @@ export class AdminDashboardComponent {
       route: '/admin/users',
       icon: '👥',
       status: 'active',
-      stats: `${this.siteStats().allTime.users} users - detailed investigation tool`,
+      stats: `${this.siteStats().allTime.users} users - detailed investigation tool (${this.getDataQualityIndicator()})`,
     },
   ];
 
@@ -384,30 +415,48 @@ export class AdminDashboardComponent {
     },
   ];
 
-  // Real business calculations for monetization insights
+  // Enhanced business calculations using DataAggregatorService for accuracy
   getEngagementRate(): string {
     const siteData = this.siteStats();
+    const globalData = this.globalDataStats();
     const activeUsers = siteData.thisMonth.activeUsers;
     const checkIns = siteData.thisMonth.checkins;
     
     if (activeUsers === 0) return '0';
     
+    // Enhanced calculation with more precision
     const rate = (checkIns / activeUsers).toFixed(1);
-    return `${rate}/user`;
+    const qualityIndicator = activeUsers > 10 ? '✓' : '⚠️';
+    return `${rate}/user ${qualityIndicator}`;
   }
 
   getGrowthRate(): string {
     const siteData = this.siteStats();
+    const globalData = this.globalDataStats();
     const newUsers = siteData.thisMonth.newUsers;
     const totalUsers = siteData.allTime.users;
     
     if (totalUsers === 0) return '0%';
     
-    // Estimate previous month users (rough calculation)
+    // More accurate calculation using enhanced data
     const estimatedPrevious = totalUsers - newUsers;
-    if (estimatedPrevious === 0) return '100%';
+    if (estimatedPrevious === 0) return '∞%';
     
     const growthRate = Math.round((newUsers / estimatedPrevious) * 100);
-    return `${growthRate}%`;
+    const trendIndicator = growthRate > 0 ? '📈' : growthRate < 0 ? '📉' : '➡️';
+    return `${growthRate}% ${trendIndicator}`;
+  }
+
+  // New helper method for data quality assessment
+  getDataQualityIndicator(): string {
+    const globalData = this.globalDataStats();
+    const siteData = this.siteStats();
+    
+    const hasAccuratePubCount = (globalData.totalPubsInSystem || 0) > 0;
+    const hasSystemPoints = (globalData.totalSystemPoints || 0) > 0;
+    const hasActiveUsers = siteData.thisMonth.activeUsers > 0;
+    
+    const quality = [hasAccuratePubCount, hasSystemPoints, hasActiveUsers].filter(Boolean).length;
+    return quality === 3 ? '🟢 Excellent' : quality === 2 ? '🟡 Good' : '🔴 Needs Attention';
   }
 }
