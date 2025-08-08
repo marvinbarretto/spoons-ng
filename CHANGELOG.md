@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.119](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.118...v0.0.119) (2025-08-08)
+
+
+### Features
+
+* [Guest] streamline guest start ([f0fdf0b](https://github.com/marvinbarretto/spoons-ng/commit/f0fdf0b6e868c23a7e25130a1c630d7ebfdf1816))
+
 ### [0.0.118](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.117...v0.0.118) (2025-08-08)
 
 
