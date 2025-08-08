@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Analytics, logEvent } from '@angular/fire/analytics';
 import { SsrPlatformService } from '@fourfold/angular-foundation';
 import { DebugService } from '@shared/utils/debug.service';
-import { environment } from '../../../environments/environment';
+import { environment } from '@environments/environment';
 
 export interface UserBehaviorMetrics {
   sessionDuration: number;
