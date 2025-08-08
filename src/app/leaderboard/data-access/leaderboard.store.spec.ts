@@ -9,6 +9,8 @@ import { CheckInService } from '../../check-in/data-access/check-in.service';
 import { CacheCoherenceService } from '../../shared/data-access/cache-coherence.service';
 import { ErrorLoggingService } from '../../shared/data-access/error-logging.service';
 import { createTestUser, createTestCheckIn } from '../../shared/testing/test-data';
+import { Firestore } from '@angular/fire/firestore';
+import { of } from 'rxjs';
 
 describe('LeaderboardStore - Consistency with UserStore Architecture', () => {
   let store: LeaderboardStore;
@@ -169,6 +171,16 @@ describe('LeaderboardStore - Consistency with UserStore Architecture', () => {
       logError: vi.fn().mockResolvedValue(undefined),
     };
 
+    const firestoreMock = {
+      collection: vi.fn(() => ({
+        valueChanges: () => of([]),
+      })),
+      doc: vi.fn(() => ({
+        valueChanges: () => of({}),
+      })),
+      updateDoc: vi.fn(() => Promise.resolve()),
+    };
+
     await TestBed.configureTestingModule({
       providers: [
         LeaderboardStore,
@@ -178,6 +190,7 @@ describe('LeaderboardStore - Consistency with UserStore Architecture', () => {
         { provide: CheckInService, useValue: mockCheckInService },
         { provide: CacheCoherenceService, useValue: mockCacheCoherence },
         { provide: ErrorLoggingService, useValue: mockErrorLoggingService },
+        { provide: Firestore, useValue: firestoreMock },
       ]
     }).compileComponents();
 

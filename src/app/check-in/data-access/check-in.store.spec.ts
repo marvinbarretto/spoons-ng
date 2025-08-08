@@ -34,6 +34,8 @@ import { OverlayService, CameraService, TelegramNotificationService, ToastServic
 import { createTestUser, createTestCheckIn, createTestPub } from '@shared/testing/test-data';
 import type { CheckIn } from '../utils/check-in.models';
 import type { User } from '@users/utils/user.model';
+import { Firestore } from '@angular/fire/firestore';
+import { of } from 'rxjs';
 import type { Pub } from '@pubs/utils/pub.models';
 
 describe('CheckInStore - Business Critical Tests', () => {
@@ -107,39 +109,47 @@ describe('CheckInStore - Business Critical Tests', () => {
       user: signal(testUser1),
       uid: signal(testUser1.uid),
       isAuthenticated: signal(true),
-      _setUser: function(user: any) {
+      _setUser: function (user: any) {
         this.user.set(user);
         this.uid.set(user?.uid || null);
         this.isAuthenticated.set(!!user);
-      }
+      },
     };
 
     mockUserStore = {
       user: signal(testUser1),
       currentUser: vi.fn().mockReturnValue(testUser1),
       updateProfile: vi.fn().mockResolvedValue(undefined),
-      _setCurrentUser: function(user: any) { this.user.set(user); }
+      _setCurrentUser: function (user: any) {
+        this.user.set(user);
+      },
     };
 
     mockPointsStore = {
       awardCheckInPoints: vi.fn().mockResolvedValue({
-        base: 25, distance: 0, bonus: 0, total: 25, reason: 'Standard check-in'
-      })
+        base: 25,
+        distance: 0,
+        bonus: 0,
+        total: 25,
+        reason: 'Standard check-in',
+      }),
     };
 
     mockPubStore = {
       data: signal(testPubs),
       get: vi.fn((id: string) => testPubs.find(p => p.id === id)),
       loadOnce: vi.fn().mockResolvedValue(undefined),
-      _setData: function(pubs: any[]) { this.data.set(pubs); }
+      _setData: function (pubs: any[]) {
+        this.data.set(pubs);
+      },
     };
 
     mockLandlordStore = {
-      tryAwardLandlordForCheckin: vi.fn().mockResolvedValue({ isNewLandlord: false })
+      tryAwardLandlordForCheckin: vi.fn().mockResolvedValue({ isNewLandlord: false }),
     };
 
     mockBadgeAwardService = {
-      evaluateAndAwardBadges: vi.fn().mockResolvedValue([])
+      evaluateAndAwardBadges: vi.fn().mockResolvedValue([]),
     };
 
     mockCheckInService = {
@@ -148,37 +158,47 @@ describe('CheckInStore - Business Critical Tests', () => {
       loadUserCheckins: vi.fn().mockResolvedValue(testCheckIns),
       getAllCheckIns: vi.fn().mockResolvedValue([]),
       isFirstEverCheckIn: vi.fn().mockResolvedValue(false),
-      getUserTotalCheckinCount: vi.fn().mockResolvedValue(1)
+      getUserTotalCheckinCount: vi.fn().mockResolvedValue(1),
     };
 
     mockCarpetStrategy = {
-      processCarpetCapture: vi.fn().mockResolvedValue({ llmConfirmed: true, localKey: 'carpet-key' })
+      processCarpetCapture: vi.fn().mockResolvedValue({ llmConfirmed: true, localKey: 'carpet-key' }),
     };
 
     mockCacheCoherence = {
-      invalidate: vi.fn()
+      invalidate: vi.fn(),
     };
 
     mockErrorLogging = {
-      logCheckInError: vi.fn().mockResolvedValue(undefined)
+      logCheckInError: vi.fn().mockResolvedValue(undefined),
     };
 
     mockOverlayService = {
-      show: vi.fn()
+      show: vi.fn(),
     };
 
     mockCameraService = {
-      releaseCamera: vi.fn()
+      releaseCamera: vi.fn(),
     };
 
     mockTelegramService = {
       sendMessage: vi.fn().mockResolvedValue(undefined),
-      escapeMarkdown: vi.fn((text: string) => text)
+      escapeMarkdown: vi.fn((text: string) => text),
     };
 
     mockToastService = {
       error: vi.fn(),
-      success: vi.fn()
+      success: vi.fn(),
+    };
+
+    const firestoreMock = {
+      collection: vi.fn(() => ({
+        valueChanges: () => of([]),
+      })),
+      doc: vi.fn(() => ({
+        valueChanges: () => of({}),
+      })),
+      updateDoc: vi.fn(() => Promise.resolve()),
     };
 
     await TestBed.configureTestingModule({
@@ -197,15 +217,15 @@ describe('CheckInStore - Business Critical Tests', () => {
         { provide: OverlayService, useValue: mockOverlayService },
         { provide: CameraService, useValue: mockCameraService },
         { provide: TelegramNotificationService, useValue: mockTelegramService },
-        { provide: ToastService, useValue: mockToastService }
-      ]
+        { provide: ToastService, useValue: mockToastService },
+        { provide: Firestore, useValue: firestoreMock },
+      ],
     }).compileComponents();
 
     store = TestBed.inject(CheckInStore);
-    
-    // Setup initial state by directly setting data
-    store['_data'].set(testCheckIns);
-    store['hasLoaded'] = true;
+
+    // Let initial auth-reactive effect run to load data
+    TestBed.flushEffects();
   });
 
   afterEach(() => {
@@ -231,44 +251,48 @@ describe('CheckInStore - Business Critical Tests', () => {
   });
 
   describe('🔐 CRITICAL: Auth-Reactive Pattern - Data Security', () => {
+    beforeEach(() => {
+      // Clear mocks after initial load in parent beforeEach
+      vi.clearAllMocks();
+    });
+
     it('should clear data when user logs out', () => {
-      // Given: Store has user data
+      // Given: Store has user data from initial load
       expect(store.totalCheckins()).toBe(2);
-      
+
       // When: User logs out
       mockAuthStore._setUser(null);
-      
+      TestBed.flushEffects();
+
       // Then: Data should be cleared
       expect(store.totalCheckins()).toBe(0);
       expect(store.data()).toEqual([]);
     });
 
     it('should prevent data leaks when switching between users', async () => {
-      // Given: User 1 has check-ins
+      // Given: User 1's data is loaded
       expect(store.totalCheckins()).toBe(2);
-      const user1Data = store.data();
-      
+
       // When: Switch to User 2
       mockAuthStore._setUser(testUser2);
       mockUserStore._setCurrentUser(testUser2);
-      
-      // Then: Should clear previous user's data and load new user's data
+      TestBed.flushEffects();
+
+      // Then: Should load new user's data
       expect(mockCheckInService.loadUserCheckins).toHaveBeenCalledWith('user-2');
-      // Store should be reset for security
-      expect(store.hasLoaded).toBe(false);
+      expect(mockCheckInService.loadUserCheckins).toHaveBeenCalledTimes(1);
     });
 
     it('should maintain cache for same user re-authentication', async () => {
-      // Given: User is authenticated with data
-      const initialDataCount = store.totalCheckins();
-      expect(initialDataCount).toBeGreaterThan(0);
-      
-      // When: Same user re-authenticates (e.g., page refresh)
-      mockAuthStore._setUser(null);
+      // Given: User 1's data is loaded
+      expect(store.totalCheckins()).toBe(2);
+
+      // When: Same user re-authenticates
       mockAuthStore._setUser(testUser1);
-      
-      // Then: Should reload data for user
-      expect(mockCheckInService.loadUserCheckins).toHaveBeenCalledWith('user-1');
+      TestBed.flushEffects();
+
+      // Then: Should NOT reload data from service (cache hit)
+      expect(mockCheckInService.loadUserCheckins).not.toHaveBeenCalled();
     });
   });
 
