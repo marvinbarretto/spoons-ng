@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.118](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.117...v0.0.118) (2025-08-08)
+
+
+### Features
+
+* [DataAggregator] Fix issue with single source of truth, now all derived from Checkins ([db04fb6](https://github.com/marvinbarretto/spoons-ng/commit/db04fb651a419724bb3e4bc9295b4483308b92a0))
+* [Onboarding] Flow complete ([105e439](https://github.com/marvinbarretto/spoons-ng/commit/105e4397f446763a7db5001b7aeb07d025ce168e))
+* Add comprehensive Firebase Analytics for user behavior insights ([ea6b356](https://github.com/marvinbarretto/spoons-ng/commit/ea6b3569b5ec622db9cdf2880dfcfb63af8b9fcf))
+* Add environment configuration template ([dffb07e](https://github.com/marvinbarretto/spoons-ng/commit/dffb07ef17ed260ab4bbe44bc5be7cf5d3c6ee03))
+* Complete bundle size optimization ([56b5a17](https://github.com/marvinbarretto/spoons-ng/commit/56b5a171d831a49ac57846e0e8d819869c9d6ce2))
+* comprehensive Firebase Analytics integration ([b1449e2](https://github.com/marvinbarretto/spoons-ng/commit/b1449e2c3f487a670ede1064f3994dc40693fc47))
+* Configure Android release signing ([6b3bed2](https://github.com/marvinbarretto/spoons-ng/commit/6b3bed209c8318194ef798e3fde7994a78cd8545))
+* Generate Android release keystore ([7f97ddd](https://github.com/marvinbarretto/spoons-ng/commit/7f97ddde0ba3e05ce1a1ee3759d35d04600f6b1d))
+* Remove lottie-web to optimize bundle size ([a850f5a](https://github.com/marvinbarretto/spoons-ng/commit/a850f5afe042dc56d9b70830a70dbd586fe8c3da))
+
+
+### Bug Fixes
+
+* [Analytics] Ensure we are recording Firebase analytics ([99017e3](https://github.com/marvinbarretto/spoons-ng/commit/99017e333fb610784a5f3246da68d9194b96e49f))
+* [Checkin] Restore checkin ability ([493579b](https://github.com/marvinbarretto/spoons-ng/commit/493579bf78683fa650bd4c35cbf6a16f00c71c06))
+
 ### [0.0.117](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.116...v0.0.117) (2025-08-02)
 
 
