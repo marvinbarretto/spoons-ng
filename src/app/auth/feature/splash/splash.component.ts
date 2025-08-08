@@ -335,9 +335,9 @@ export class SplashComponent extends BaseComponent implements OnInit, OnDestroy 
         isAnonymous: this.authStore.user()?.isAnonymous,
       });
 
-      console.log('[SplashComponent] 👻 Navigating to location permission step...');
-      const success = await this.router.navigate(['/location-permission']);
-      console.log('[SplashComponent] 👻 Navigation to /location-permission result:', success);
+      console.log('[SplashComponent] 👻 Navigating directly to home...');
+      const success = await this.router.navigate(['/home']);
+      console.log('[SplashComponent] 👻 Navigation to /home result:', success);
 
       const totalTime = Date.now() - startTime;
       console.log('[SplashComponent] ✅ Complete guest flow took', totalTime, 'ms');

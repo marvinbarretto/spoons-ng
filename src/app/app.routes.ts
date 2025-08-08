@@ -39,15 +39,6 @@ export const appRoutes: Routes = [
     data: { shell: 'fullscreen' },
   },
   {
-    path: 'location-permission',
-    title: 'Enable Location Access',
-    loadComponent: () =>
-      import('./auth/feature/location-permission/location-permission.component').then(
-        m => m.LocationPermissionComponent
-      ),
-    data: { shell: 'fullscreen' },
-  },
-  {
     path: 'home',
     canActivate: [authGuard, onboardingGuard],
     loadComponent: () => import('./home/feature/home/home.component').then(m => m.HomeComponent),
