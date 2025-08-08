@@ -50,7 +50,8 @@ export default defineConfig({
       '@landlord': resolve(__dirname, 'src/app/landlord'),
       '@feedback': resolve(__dirname, 'src/app/feedback'),
       '@widgets': resolve(__dirname, 'src/app/widgets'),
-      '@leaderboard': resolve(__dirname, 'src/app/leaderboard')
+      '@leaderboard': resolve(__dirname, 'src/app/leaderboard'),
+      '@environments': resolve(__dirname, 'src/environments')
     }
   }
 });

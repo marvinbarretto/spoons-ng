@@ -18,7 +18,7 @@ import {
   TelegramNotificationService,
 } from '@fourfold/angular-foundation';
 import { Timestamp } from 'firebase/firestore';
-import { environment } from '../../../environments/environment';
+import { environment } from '@environments/environment';
 import type { EarnedBadgeWithDetails } from '../../badges/utils/badge.model';
 import type { Pub } from '../../pubs/utils/pub.models';
 import { BaseStore } from '../../shared/base/base.store';
@@ -53,9 +53,6 @@ export class CheckInStore extends BaseStore<CheckIn> {
   private readonly _checkinSuccess = signal<CheckIn | null>(null);
   private readonly _landlordMessage = signal<string | null>(null);
   private readonly _checkinResults = signal<any | null>(null);
-
-  // Auth-reactive state
-  private lastLoadedUserId: string | null = null;
 
   // Public readonly signals
   readonly isProcessing = this._isProcessing.asReadonly();
@@ -97,38 +94,6 @@ export class CheckInStore extends BaseStore<CheckIn> {
   constructor() {
     super();
     console.log('[CheckInStore] ✅ Initialized');
-
-    // Auth-Reactive Pattern: Auto-load when user changes
-    effect(() => {
-      const user = this.authStore.user();
-      const currentUserSlice = user?.uid?.slice(0, 8) || 'none';
-      const lastUserSlice = this.lastLoadedUserId?.slice(0, 8) || 'none';
-
-      console.log(`🔄 [CheckInStore] Auth state change: ${lastUserSlice} → ${currentUserSlice}`);
-
-      // Handle logout
-      if (!user) {
-        console.log('🔄 [CheckInStore] User logged out, clearing all cached check-ins');
-        this.reset();
-        this.lastLoadedUserId = null;
-        return;
-      }
-
-      // 🔍 Cache check for existing user
-      if (user.uid === this.lastLoadedUserId) {
-        console.log(
-          `✅ [CheckInStore] Cache HIT - Using cached check-ins (${this.totalCheckins()} items) for user: ${currentUserSlice}`
-        );
-        return;
-      }
-
-      // 📡 Cache miss: New authenticated user detected
-      console.log(
-        `📡 [CheckInStore] Cache MISS - Fetching check-ins from Firebase for new user: ${currentUserSlice}`
-      );
-      this.lastLoadedUserId = user.uid;
-      this.load();
-    });
   }
 
   protected async fetchData(): Promise<CheckIn[]> {

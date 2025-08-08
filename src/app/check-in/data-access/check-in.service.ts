@@ -6,7 +6,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { FirestoreService } from '@fourfold/angular-foundation';
 import { Timestamp, where } from 'firebase/firestore';
-import { environment } from '../../../environments/environment';
+import { environment } from '@environments/environment';
 import { AuthStore } from '../../auth/data-access/auth.store';
 import { NearbyPubStore } from '../../pubs/data-access/nearby-pub.store';
 import { AnalyticsService } from '@shared/data-access/analytics.service';

@@ -9,6 +9,8 @@ import { CheckInService } from '../../check-in/data-access/check-in.service';
 import { CacheCoherenceService } from '../../shared/data-access/cache-coherence.service';
 import { ErrorLoggingService } from '../../shared/data-access/error-logging.service';
 import { createTestUser, createTestCheckIn } from '../../shared/testing/test-data';
+import { PubStore } from '@pubs/data-access/pub.store';
+import { Firestore } from '@angular/fire/firestore';
 
 describe('LeaderboardStore - Consistency with UserStore Architecture', () => {
   let store: LeaderboardStore;
@@ -18,6 +20,7 @@ describe('LeaderboardStore - Consistency with UserStore Architecture', () => {
   let mockCheckInService: any;
   let mockCacheCoherence: any;
   let mockErrorLoggingService: any;
+  let mockPubStore: any;
 
   // Test data representing the same scenario as our UserStore tests
   const testAuthUser = {
@@ -169,6 +172,11 @@ describe('LeaderboardStore - Consistency with UserStore Architecture', () => {
       logError: vi.fn().mockResolvedValue(undefined),
     };
 
+    mockPubStore = {
+      pubs: signal([]),
+      loadOnce: vi.fn().mockResolvedValue(undefined),
+    };
+
     await TestBed.configureTestingModule({
       providers: [
         LeaderboardStore,
@@ -178,6 +186,8 @@ describe('LeaderboardStore - Consistency with UserStore Architecture', () => {
         { provide: CheckInService, useValue: mockCheckInService },
         { provide: CacheCoherenceService, useValue: mockCacheCoherence },
         { provide: ErrorLoggingService, useValue: mockErrorLoggingService },
+        { provide: PubStore, useValue: mockPubStore },
+        { provide: Firestore, useValue: {} },
       ]
     }).compileComponents();
 
