@@ -61,6 +61,7 @@
     "@capacitor/ios": "7.4.2",
     "@fourfold/angular-foundation": "0.1.11",
     "@google/generative-ai": "0.24.1",
+    "@vitest/coverage-v8": "^3.2.4",
     "compression": "1.8.0",
     "cookie-parser": "1.4.7",
     "cors": "2.8.5",
