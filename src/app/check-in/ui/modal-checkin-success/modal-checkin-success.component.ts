@@ -4,8 +4,9 @@ import { Component, computed, effect, inject, input, OnDestroy, output } from '@
 import { AuthStore } from '@auth/data-access/auth.store';
 import { ButtonComponent } from '@shared/ui/button/button.component';
 import { ButtonSize } from '@shared/ui/button/button.params';
-import { CheckInStore } from '../../../check-in/data-access/check-in.store';
-import { CheckInResultData } from '../../utils/check-in.models';
+import { CheckInStore } from '@check-in/data-access/check-in.store';
+import { CheckInResultData } from '@check-in/utils/check-in.models';
+import { UserExperienceLevel } from '@shared/utils/user-progression.models';
 
 type PointsBreakdownItem = {
   type: string;
@@ -591,7 +592,7 @@ export class ModalCheckinPointsComponent implements OnDestroy {
 
   // Inputs
   readonly data = input.required<CheckInResultData>();
-  readonly UserExperienceLevel = input<string>('');
+  readonly UserExperienceLevel = input<UserExperienceLevel>('guest');
 
   // Outputs
   readonly continue = output<void>();

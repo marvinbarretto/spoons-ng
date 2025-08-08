@@ -22,14 +22,10 @@ import { CapacitorLocationService } from './shared/data-access/capacitor-locatio
 import { PlatformServiceFactory } from './shared/data-access/platform-service-factory';
 import { ThemeStore } from './shared/data-access/theme.store';
 import { WebLocationService } from './shared/data-access/web-location.service';
-import { AbstractCameraService } from './shared/data-access/abstract-camera.service';
-import { WebCameraService } from './shared/data-access/web-camera.service';
-import { CapacitorCameraService } from './check-in/data-access/capacitor-camera.service';
 import { DevCacheBuster } from './shared/utils/dev-cache-buster';
 import { TemplatePageTitleStrategy } from './TemplatePageTitleStrategy';
 import { MobileInitializationService } from './shared/data-access/mobile/mobile-initialization.service';
 import { MobileLocationOptimizer } from './shared/data-access/mobile/mobile-location-optimizer.service';
-import { MobileCameraOptimizer } from './shared/data-access/mobile/mobile-camera-optimizer.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -39,26 +35,15 @@ export const appConfig: ApplicationConfig = {
     PlatformServiceFactory,
     WebLocationService,
     CapacitorLocationService,
-    WebCameraService,
-    CapacitorCameraService,
     
     // Mobile Optimization Services
     MobileInitializationService,
     MobileLocationOptimizer,
-    MobileCameraOptimizer,
     {
       provide: AbstractLocationService,
       useFactory: (factory: PlatformServiceFactory) => {
         console.log('[AppConfig] 🏭 Creating AbstractLocationService via factory...');
         return factory.getLocationService();
-      },
-      deps: [PlatformServiceFactory]
-    },
-    {
-      provide: AbstractCameraService,
-      useFactory: (factory: PlatformServiceFactory) => {
-        console.log('[AppConfig] 🏭 Creating AbstractCameraService via factory...');
-        return factory.getCameraService();
       },
       deps: [PlatformServiceFactory]
     },

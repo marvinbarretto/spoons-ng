@@ -2,14 +2,15 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, input, output } from '@angular/core';
 import { environment } from '../../../../environments/environment';
-import { AuthStore } from '../../../auth/data-access/auth.store';
-import { LandlordStore } from '../../../landlord/data-access/landlord.store';
-import { formatLandlordClaim } from '../../../landlord/utils/landlord.utils';
-import { UserProgressionService } from '../../../shared/data-access/user-progression.service';
-import { ButtonComponent } from '../../../shared/ui/button/button.component';
-import { ButtonVariant } from '../../../shared/ui/button/button.params';
-import { toDate } from '../../../shared/utils/timestamp.utils';
-import { UserStore } from '../../../users/data-access/user.store';
+import { AuthStore } from '@auth/data-access/auth.store';
+import { LandlordStore } from '@landlord/data-access/landlord.store';
+import { formatLandlordClaim } from '@landlord/utils/landlord.utils';
+import { UserProgressionService } from '@shared/data-access/user-progression.service';
+import { UserExperienceLevel } from '@shared/utils/user-progression.models';
+import { ButtonComponent } from '@shared/ui/button/button.component';
+import { ButtonVariant } from '@shared/ui/button/button.params';
+import { toDate } from '@shared/utils/timestamp.utils';
+import { UserStore } from '@users/data-access/user.store';
 
 type LandlordModalData = {
   isNewLandlord: boolean;
@@ -469,7 +470,7 @@ export class ModalCheckinLandlordComponent {
 
   // Inputs
   readonly data = input.required<LandlordModalData>();
-  readonly UserExperienceLevel = input<string>('');
+  readonly UserExperienceLevel = input<UserExperienceLevel>('guest');
 
   // Outputs
   readonly navigate = output<void>();

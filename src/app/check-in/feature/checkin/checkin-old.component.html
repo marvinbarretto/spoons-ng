@@ -1,6 +1,11 @@
 <!-- src/app/check-in/feature/checkin/checkin.component.html -->
 
 <div class="checkin-container">
+  <!-- Camera Loading State -->
+  @if (orchestrator.showCameraLoading()) {
+    <ng-container [ngTemplateOutlet]="cameraLoading"></ng-container>
+  }
+
   <!-- Web Camera Section -->
   @if (orchestrator.showCameraPreview()) {
     <ng-container [ngTemplateOutlet]="webCameraPreview"></ng-container>
@@ -190,4 +195,34 @@
 <!-- Exit Button -->
 <ng-template #exitButton>
   <button class="exit-btn" (click)="onExitClick()">✕</button>
+</ng-template>
+
+<!-- ======================================= -->
+<!-- CAMERA LOADING STATE -->
+<!-- ======================================= -->
+
+<ng-template #cameraLoading>
+  <div class="camera-loading-state">
+    <div class="loading-container">
+      <div class="loading-icon">📸</div>
+      <h2>Preparing Camera</h2>
+      <p>Please wait while we initialize your camera...</p>
+      
+      <!-- Loading spinner -->
+      <div class="camera-loading-spinner"></div>
+      
+      <!-- Stage-specific messages -->
+      @if (orchestrator.stage() === 'INITIALIZING') {
+        <div class="stage-message">Setting up camera...</div>
+      }
+      
+      @if (orchestrator.stage() === 'CHECKING_PERMISSIONS') {
+        <div class="stage-message">Checking camera permissions...</div>
+      }
+      
+      @if (orchestrator.stage() === 'CAMERA_STARTING') {
+        <div class="stage-message">Starting camera feed...</div>
+      }
+    </div>
+  </div>
 </ng-template>

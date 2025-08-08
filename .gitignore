@@ -112,3 +112,6 @@ public/assets/carpets/bangor.jpg
 public/assets/carpets/bangor-bg.jpg
 pglite-debug.log
 KEYSTORE_BACKUP.md
+
+# Temporary files (but keep docs/issues/ tracked for Claude access)
+temp/

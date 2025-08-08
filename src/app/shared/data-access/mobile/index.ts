@@ -15,7 +15,7 @@
 
 // Core mobile optimization services
 export { MobileLocationOptimizer } from './mobile-location-optimizer.service';
-export { MobileCameraOptimizer } from './mobile-camera-optimizer.service';
+// MobileCameraOptimizer removed - using direct platform conditionals in components
 export { MobileInitializationService } from './mobile-initialization.service';
 
 // Feature flags and utilities (future)

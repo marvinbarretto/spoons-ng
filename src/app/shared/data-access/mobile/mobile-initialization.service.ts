@@ -1,7 +1,7 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { PlatformDetectionService } from '../platform-detection.service';
 import { MobileLocationOptimizer } from './mobile-location-optimizer.service';
-import { MobileCameraOptimizer } from './mobile-camera-optimizer.service';
+// MobileCameraOptimizer removed - using direct platform conditionals in components
 
 /**
  * Mobile Initialization Service
@@ -27,7 +27,7 @@ export class MobileInitializationService {
   // Dependencies
   private readonly platformService = inject(PlatformDetectionService);
   private readonly locationOptimizer = inject(MobileLocationOptimizer);
-  private readonly cameraOptimizer = inject(MobileCameraOptimizer);
+  // Camera optimizer removed - using direct platform conditionals
   
   // Service identification
   private readonly SERVICE_NAME = 'MobileInitializationService';
@@ -41,7 +41,7 @@ export class MobileInitializationService {
   // Feature availability flags
   readonly mobileOptimizationsEnabled = signal(false);
   readonly locationOptimizationEnabled = signal(false);
-  readonly cameraOptimizationEnabled = signal(false);
+  // Camera optimization removed - using direct platform conditionals
   
   // Platform detection results
   readonly platformInfo = signal<{
@@ -111,29 +111,14 @@ export class MobileInitializationService {
         console.log(`[${this.SERVICE_NAME}] 📍 Device has no location capability - skipping`);
       }
 
-      // Step 3: Initialize camera optimizations  
-      let cameraSuccess = false;
-      if (platformInfo.hasCamera) {
-        console.log(`[${this.SERVICE_NAME}] 📷 Initializing camera optimizations...`);
-        try {
-          cameraSuccess = await this.cameraOptimizer.initializeMobileCamera();
-          this.cameraOptimizationEnabled.set(cameraSuccess);
-          console.log(`[${this.SERVICE_NAME}] ${cameraSuccess ? '✅' : '⚠️'} Camera optimizations initialized:`, cameraSuccess);
-        } catch (error) {
-          console.warn(`[${this.SERVICE_NAME}] ⚠️ Camera optimization failed:`, error);
-          this.addError(`Camera initialization failed: ${error}`);
-        }
-      } else {
-        console.log(`[${this.SERVICE_NAME}] 📷 Device has no camera capability - skipping`);
-      }
+      // Camera optimization removed - components handle camera directly
 
-      // Step 4: Determine overall success
-      const overallSuccess = locationSuccess || cameraSuccess;
+      // Step 3: Determine overall success
+      const overallSuccess = locationSuccess;
       this.mobileOptimizationsEnabled.set(overallSuccess);
       
       console.log(`[${this.SERVICE_NAME}] 📊 Mobile optimizations summary:`, {
         location: locationSuccess,
-        camera: cameraSuccess,
         overall: overallSuccess,
         errors: this.initializationErrors().length
       });
@@ -183,7 +168,7 @@ export class MobileInitializationService {
       duration: `${duration}ms`,
       errors: this.initializationErrors().length,
       locationEnabled: this.locationOptimizationEnabled(),
-      cameraEnabled: this.cameraOptimizationEnabled()
+      // Camera optimization removed
     });
   }
 
@@ -206,12 +191,7 @@ export class MobileInitializationService {
     return this.locationOptimizationEnabled() && this.isInitialized();
   }
 
-  /**
-   * Check if camera optimizations are available
-   */
-  isCameraOptimizationAvailable(): boolean {
-    return this.cameraOptimizationEnabled() && this.isInitialized();
-  }
+  // Camera optimization removed - components handle camera directly
 
   /**
    * Get comprehensive mobile status for debugging
@@ -229,13 +209,13 @@ export class MobileInitializationService {
       },
       features: {
         mobileOptimizationsEnabled: this.mobileOptimizationsEnabled(),
-        locationOptimizationEnabled: this.locationOptimizationEnabled(),
-        cameraOptimizationEnabled: this.cameraOptimizationEnabled()
+        locationOptimizationEnabled: this.locationOptimizationEnabled()
+        // Camera optimization removed
       },
       platform: this.platformInfo(),
       services: {
-        location: this.locationOptimizer.getOptimizationStatus(),
-        camera: this.cameraOptimizer.getOptimizationStatus()
+        location: this.locationOptimizer.getOptimizationStatus()
+        // Camera optimizer removed
       }
     };
   }
@@ -255,12 +235,12 @@ export class MobileInitializationService {
     this.initializationDuration.set(null);
     this.mobileOptimizationsEnabled.set(false);
     this.locationOptimizationEnabled.set(false);
-    this.cameraOptimizationEnabled.set(false);
+    // Camera optimization removed
     this.clearErrors();
     
     // Reset optimizers
     this.locationOptimizer.reset();
-    this.cameraOptimizer.reset();
+    // Camera optimizer removed
     
     console.log(`[${this.SERVICE_NAME}] 🔄 Mobile optimizations reset complete`);
   }
@@ -296,7 +276,7 @@ export class MobileInitializationService {
         },
         camera: () => {
           console.log('Getting camera optimizer status...');
-          return this.cameraOptimizer.getOptimizationStatus();
+          return 'Camera optimizer removed';
         },
         test: () => {
           console.log('Mobile debug commands are working!');
@@ -306,7 +286,7 @@ export class MobileInitializationService {
       
       // Also add direct references for easier access
       (window as any).mobileLocationOptimizer = this.locationOptimizer;
-      (window as any).mobileCameraOptimizer = this.cameraOptimizer;
+      // (window as any).mobileCameraOptimizer = removed;
       (window as any).mobileInitService = this;
       
       console.log(`[${this.SERVICE_NAME}] ✅ Mobile debug commands enabled successfully!`);
