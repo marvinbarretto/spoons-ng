@@ -13,12 +13,7 @@ import { type LeaderboardEntry } from '../../utils/leaderboard.models';
 
 @Component({
   selector: 'app-friends-leaderboard',
-  imports: [
-    LoadingStateComponent,
-    ErrorStateComponent,
-    EmptyStateComponent,
-    ChipUserComponent,
-  ],
+  imports: [LoadingStateComponent, ErrorStateComponent, EmptyStateComponent, ChipUserComponent],
   template: `
     <div class="friends-leaderboard">
       @if (store.loading()) {
@@ -56,7 +51,7 @@ import { type LeaderboardEntry } from '../../utils/leaderboard.models';
         <!-- Friends Grid -->
         <div class="friends-grid">
           @for (entry of friendsEntries(); track entry.userId) {
-            <div 
+            <div
               class="friend-card"
               [class.current-user]="entry.isCurrentUser"
               (click)="navigateToProfile(entry)"
@@ -71,15 +66,13 @@ import { type LeaderboardEntry } from '../../utils/leaderboard.models';
                 <app-chip-user
                   [user]="{
                     displayName: entry.displayName,
-                    photoURL: entry.photoURL || undefined
+                    photoURL: entry.photoURL || undefined,
                   }"
                   [size]="'lg'"
                   [showName]="false"
                 />
                 @if (entry.currentStreak && entry.currentStreak > 1) {
-                  <div class="streak-indicator">
-                    🔥{{ entry.currentStreak }}
-                  </div>
+                  <div class="streak-indicator">🔥{{ entry.currentStreak }}</div>
                 }
               </div>
 
@@ -87,9 +80,7 @@ import { type LeaderboardEntry } from '../../utils/leaderboard.models';
               <div class="user-info">
                 <h3 class="user-name">{{ entry.displayName }}</h3>
                 @if (entry.lastActive) {
-                  <p class="last-active">
-                    Last active: {{ formatLastActive(entry.lastActive) }}
-                  </p>
+                  <p class="last-active">Last active: {{ formatLastActive(entry.lastActive) }}</p>
                 }
               </div>
 
@@ -107,7 +98,10 @@ import { type LeaderboardEntry } from '../../utils/leaderboard.models';
 
               <!-- Action Button -->
               <div class="card-actions">
-                <button class="view-profile-btn" (click)="navigateToProfile(entry); $event.stopPropagation()">
+                <button
+                  class="view-profile-btn"
+                  (click)="navigateToProfile(entry); $event.stopPropagation()"
+                >
                   View Profile
                 </button>
               </div>

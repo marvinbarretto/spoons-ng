@@ -1,15 +1,19 @@
 /**
  * @fileoverview Quality Gates and Performance Monitoring
- * 
+ *
  * Automated quality assurance system that validates code quality, performance,
  * and reliability metrics. Integrates with all testing infrastructure to provide
  * comprehensive quality gates for CI/CD pipelines and development workflows.
  */
 
-import { executeWorkflowSuite, validateWorkflowResults, type IntegrationTestResult } from './integration-testing-patterns';
-import { TestScenarios, generateIntegrationTestData } from './enhanced-test-data';
-import { createSignalTestHarness, type SignalTestHarness } from './signal-test-harness';
+import { TestScenarios } from './enhanced-test-data';
+import {
+  executeWorkflowSuite,
+  validateWorkflowResults,
+  type IntegrationTestResult,
+} from './integration-testing-patterns';
 import { MockRegistry } from './mock-registry';
+import { createSignalTestHarness, type SignalTestHarness } from './signal-test-harness';
 
 // ===================================
 // QUALITY GATE TYPES
@@ -24,7 +28,7 @@ export interface QualityMetrics {
     successRate: number;
     criticalTestsPassing: boolean;
   };
-  
+
   // Performance Metrics
   performance: {
     averageExecutionTime: number;
@@ -33,7 +37,7 @@ export interface QualityMetrics {
     signalReactivityLatency: number;
     dataConsistencyTime: number;
   };
-  
+
   // Code Quality
   codeQuality: {
     signalReactivityScore: number;
@@ -41,7 +45,7 @@ export interface QualityMetrics {
     errorHandlingScore: number;
     testMaintainabilityScore: number;
   };
-  
+
   // System Health
   systemHealth: {
     storeConsistency: boolean;
@@ -127,31 +131,32 @@ export class QualityGatesEngine {
       violations: [],
       recommendations: [],
       overallScore: 0,
-      executionDuration: 0
+      executionDuration: 0,
     };
 
     try {
       // Validate against thresholds
       result.violations = this.validateThresholds(result.metrics, config.thresholds);
-      
+
       // Generate recommendations
       result.recommendations = this.generateRecommendations(result.metrics, result.violations);
-      
+
       // Calculate overall score
       result.overallScore = this.calculateOverallScore(result.metrics, result.violations);
-      
+
       // Determine if gate passes
       result.passed = this.determineGateStatus(result.violations, config);
-      
+
       // Store in history
       this.qualityHistory.push(result);
-      
-      result.executionDuration = Date.now() - startTime;
-      
-      console.log(`${result.passed ? '✅' : '❌'} Quality Gate ${result.passed ? 'PASSED' : 'FAILED'} - Score: ${result.overallScore.toFixed(1)}/100`);
-      
-      return result;
 
+      result.executionDuration = Date.now() - startTime;
+
+      console.log(
+        `${result.passed ? '✅' : '❌'} Quality Gate ${result.passed ? 'PASSED' : 'FAILED'} - Score: ${result.overallScore.toFixed(1)}/100`
+      );
+
+      return result;
     } catch (error) {
       console.error(`❌ Quality Gate execution failed: ${error}`);
       result.passed = false;
@@ -168,13 +173,13 @@ export class QualityGatesEngine {
 
     // Execute workflow tests
     const workflowResults = await this.executeWorkflowTests(config.requiredWorkflows);
-    
+
     // Execute performance tests
     const performanceResults = await this.executePerformanceTests(config.performanceTests);
-    
+
     // Execute signal reactivity tests
     const signalResults = await this.executeSignalTests();
-    
+
     // Execute system health checks
     const healthResults = await this.executeHealthChecks();
 
@@ -182,23 +187,29 @@ export class QualityGatesEngine {
       testCoverage: this.calculateTestCoverage(workflowResults),
       performance: this.calculatePerformanceMetrics(performanceResults, signalResults),
       codeQuality: this.calculateCodeQualityMetrics(workflowResults, signalResults),
-      systemHealth: healthResults
+      systemHealth: healthResults,
     };
 
-    console.log(`📈 Metrics gathered: ${metrics.testCoverage.successRate * 100}% success rate, ${metrics.performance.averageExecutionTime}ms avg execution`);
-    
+    console.log(
+      `📈 Metrics gathered: ${metrics.testCoverage.successRate * 100}% success rate, ${metrics.performance.averageExecutionTime}ms avg execution`
+    );
+
     return metrics;
   }
 
   /**
    * Execute workflow integration tests
    */
-  private async executeWorkflowTests(requiredWorkflows: string[]): Promise<IntegrationTestResult[]> {
+  private async executeWorkflowTests(
+    requiredWorkflows: string[]
+  ): Promise<IntegrationTestResult[]> {
     if (requiredWorkflows.length === 0) {
       requiredWorkflows = ['userOnboarding', 'socialCheckin', 'errorRecovery', 'performanceTest'];
     }
 
-    const workflowPatterns = requiredWorkflows as any[];
+    const workflowPatterns = requiredWorkflows as Array<
+      keyof typeof import('./integration-testing-patterns').WorkflowPatterns
+    >;
     return await executeWorkflowSuite(workflowPatterns);
   }
 
@@ -210,11 +221,11 @@ export class QualityGatesEngine {
 
     // High-volume data scenarios
     const scenarios = ['powerUserEcosystem', 'activeCommunity', 'edgeCases'];
-    
+
     for (const scenario of scenarios) {
       const startTime = Date.now();
       const startMemory = this.getMemoryUsage();
-      
+
       try {
         // Generate test data and measure performance
         const testData = TestScenarios[scenario as keyof typeof TestScenarios]();
@@ -229,10 +240,10 @@ export class QualityGatesEngine {
             memoryPeak,
             signalUpdates: 0,
             storeOperations: testData.checkIns.length + testData.users.length,
-            reactiveLatency: 0
+            reactiveLatency: 0,
           },
           bottlenecks: [],
-          optimizationSuggestions: []
+          optimizationSuggestions: [],
         };
 
         // Identify bottlenecks
@@ -241,14 +252,17 @@ export class QualityGatesEngine {
           profile.optimizationSuggestions.push('Consider data generation caching or lazy loading');
         }
 
-        if (memoryPeak > 50 * 1024 * 1024) { // 50MB
+        if (memoryPeak > 50 * 1024 * 1024) {
+          // 50MB
           profile.bottlenecks.push(`High memory usage: ${(memoryPeak / 1024 / 1024).toFixed(1)}MB`);
           profile.optimizationSuggestions.push('Implement memory pooling or data streaming');
         }
 
         profiles.push(profile);
-        this.performanceProfiles.set(scenario, [...(this.performanceProfiles.get(scenario) || []), profile]);
-
+        this.performanceProfiles.set(scenario, [
+          ...(this.performanceProfiles.get(scenario) || []),
+          profile,
+        ]);
       } catch (error) {
         console.warn(`Performance test failed for scenario ${scenario}: ${error}`);
       }
@@ -260,13 +274,16 @@ export class QualityGatesEngine {
   /**
    * Execute signal reactivity tests
    */
-  private async executeSignalTests(): Promise<{ reactivityLatency: number; signalUpdates: number }> {
+  private async executeSignalTests(): Promise<{
+    reactivityLatency: number;
+    signalUpdates: number;
+  }> {
     this.signalHarness = createSignalTestHarness();
-    
+
     try {
       const testSignal = this.signalHarness.createTestSignal('performanceTest', 0);
       const tracker = this.signalHarness.getTracker('performanceTest')!;
-      
+
       // Measure signal update performance
       const startTime = Date.now();
       for (let i = 1; i <= 100; i++) {
@@ -276,11 +293,10 @@ export class QualityGatesEngine {
         await new Promise(resolve => setTimeout(resolve, 1)); // Allow reactivity
       }
       const reactivityLatency = Date.now() - startTime;
-      
+
       const signalUpdates = tracker.getChangeCount();
-      
+
       return { reactivityLatency, signalUpdates };
-      
     } finally {
       this.signalHarness.destroy();
     }
@@ -291,27 +307,26 @@ export class QualityGatesEngine {
    */
   private async executeHealthChecks(): Promise<QualityMetrics['systemHealth']> {
     const mockSuite = MockRegistry.createFullSuite();
-    
+
     try {
       // Test store consistency
       const storeConsistency = await this.checkStoreConsistency(mockSuite);
-      
+
       // Test signal propagation
       const signalPropagation = await this.checkSignalPropagation();
-      
+
       // Test error recovery
       const errorRecovery = await this.checkErrorRecovery(mockSuite);
-      
+
       // Check for memory leaks
       const memoryLeaks = await this.checkMemoryLeaks();
-      
+
       return {
         storeConsistency,
         signalPropagation,
         errorRecovery,
-        memoryLeaks
+        memoryLeaks,
       };
-      
     } finally {
       mockSuite.cleanup();
     }
@@ -322,13 +337,13 @@ export class QualityGatesEngine {
    */
   private calculateTestCoverage(results: IntegrationTestResult[]): QualityMetrics['testCoverage'] {
     const validation = validateWorkflowResults(results);
-    
+
     return {
       totalTests: validation.totalTests,
       passingTests: validation.passed,
       failingTests: validation.failed,
       successRate: validation.successRate,
-      criticalTestsPassing: validation.successRate > 0.8 // 80% threshold for critical tests
+      criticalTestsPassing: validation.successRate > 0.8, // 80% threshold for critical tests
     };
   }
 
@@ -341,13 +356,16 @@ export class QualityGatesEngine {
   ): QualityMetrics['performance'] {
     const executionTimes = performanceProfiles.map(p => p.metrics.executionTime);
     const memoryUsages = performanceProfiles.map(p => p.metrics.memoryPeak);
-    
+
     return {
-      averageExecutionTime: executionTimes.length > 0 ? executionTimes.reduce((a, b) => a + b, 0) / executionTimes.length : 0,
+      averageExecutionTime:
+        executionTimes.length > 0
+          ? executionTimes.reduce((a, b) => a + b, 0) / executionTimes.length
+          : 0,
       maxExecutionTime: executionTimes.length > 0 ? Math.max(...executionTimes) : 0,
       memoryUsage: memoryUsages.length > 0 ? Math.max(...memoryUsages) : 0,
       signalReactivityLatency: signalResults.reactivityLatency,
-      dataConsistencyTime: 50 // Mock value - would measure actual consistency checks
+      dataConsistencyTime: 50, // Mock value - would measure actual consistency checks
     };
   }
 
@@ -359,34 +377,43 @@ export class QualityGatesEngine {
     signalResults: { reactivityLatency: number; signalUpdates: number }
   ): QualityMetrics['codeQuality'] {
     const validation = validateWorkflowResults(workflowResults);
-    
+
     // Signal reactivity score (lower latency = higher score)
-    const signalReactivityScore = Math.max(0, 100 - (signalResults.reactivityLatency / 10));
-    
+    const signalReactivityScore = Math.max(0, 100 - signalResults.reactivityLatency / 10);
+
     // Data integrity score based on consistency checks
-    const dataIntegrityScore = workflowResults.reduce((acc, result) => 
-      acc + (result.dataConsistency ? 100 : 0), 0) / workflowResults.length;
-    
+    const dataIntegrityScore =
+      workflowResults.reduce((acc, result) => acc + (result.dataConsistency ? 100 : 0), 0) /
+      workflowResults.length;
+
     // Error handling score based on error recovery tests
-    const errorHandlingTests = workflowResults.filter(r => r.scenario.includes('Error') || r.scenario.includes('Recovery'));
-    const errorHandlingScore = errorHandlingTests.length > 0 ? 
-      errorHandlingTests.reduce((acc, result) => acc + (result.success ? 100 : 0), 0) / errorHandlingTests.length : 50;
-    
+    const errorHandlingTests = workflowResults.filter(
+      r => r.scenario.includes('Error') || r.scenario.includes('Recovery')
+    );
+    const errorHandlingScore =
+      errorHandlingTests.length > 0
+        ? errorHandlingTests.reduce((acc, result) => acc + (result.success ? 100 : 0), 0) /
+          errorHandlingTests.length
+        : 50;
+
     // Test maintainability score based on test structure and success rate
     const testMaintainabilityScore = validation.successRate * 100;
-    
+
     return {
       signalReactivityScore,
       dataIntegrityScore,
       errorHandlingScore,
-      testMaintainabilityScore
+      testMaintainabilityScore,
     };
   }
 
   /**
    * Validate metrics against thresholds
    */
-  private validateThresholds(metrics: QualityMetrics, thresholds: QualityGateConfig['thresholds']): QualityViolation[] {
+  private validateThresholds(
+    metrics: QualityMetrics,
+    thresholds: QualityGateConfig['thresholds']
+  ): QualityViolation[] {
     const violations: QualityViolation[] = [];
 
     // Success rate threshold
@@ -398,7 +425,7 @@ export class QualityGatesEngine {
         actualValue: metrics.testCoverage.successRate,
         expectedValue: thresholds.minSuccessRate,
         impact: 'High risk of production failures',
-        suggestedFix: 'Fix failing tests and improve test reliability'
+        suggestedFix: 'Fix failing tests and improve test reliability',
       });
     }
 
@@ -411,7 +438,7 @@ export class QualityGatesEngine {
         actualValue: metrics.performance.maxExecutionTime,
         expectedValue: thresholds.maxExecutionTime,
         impact: 'Slow test execution impacts development velocity',
-        suggestedFix: 'Optimize slow tests and improve performance'
+        suggestedFix: 'Optimize slow tests and improve performance',
       });
     }
 
@@ -424,7 +451,7 @@ export class QualityGatesEngine {
         actualValue: metrics.performance.memoryUsage,
         expectedValue: thresholds.maxMemoryUsage,
         impact: 'High memory usage may cause performance issues',
-        suggestedFix: 'Optimize memory usage and implement proper cleanup'
+        suggestedFix: 'Optimize memory usage and implement proper cleanup',
       });
     }
 
@@ -437,7 +464,7 @@ export class QualityGatesEngine {
         actualValue: metrics.codeQuality.signalReactivityScore,
         expectedValue: thresholds.minSignalReactivityScore,
         impact: 'Poor signal performance affects user experience',
-        suggestedFix: 'Optimize signal computations and reduce update frequency'
+        suggestedFix: 'Optimize signal computations and reduce update frequency',
       });
     }
 
@@ -450,7 +477,7 @@ export class QualityGatesEngine {
         actualValue: metrics.codeQuality.dataIntegrityScore,
         expectedValue: thresholds.minDataIntegrityScore,
         impact: 'Data consistency issues can cause application errors',
-        suggestedFix: 'Improve store synchronization and data validation'
+        suggestedFix: 'Improve store synchronization and data validation',
       });
     }
 
@@ -460,7 +487,10 @@ export class QualityGatesEngine {
   /**
    * Generate actionable recommendations
    */
-  private generateRecommendations(metrics: QualityMetrics, violations: QualityViolation[]): string[] {
+  private generateRecommendations(
+    metrics: QualityMetrics,
+    violations: QualityViolation[]
+  ): string[] {
     const recommendations: string[] = [];
 
     // Performance recommendations
@@ -469,7 +499,9 @@ export class QualityGatesEngine {
     }
 
     if (metrics.performance.signalReactivityLatency > 100) {
-      recommendations.push('Optimize signal computations and consider memoization for expensive operations');
+      recommendations.push(
+        'Optimize signal computations and consider memoization for expensive operations'
+      );
     }
 
     // Quality recommendations
@@ -478,7 +510,9 @@ export class QualityGatesEngine {
     }
 
     if (!metrics.systemHealth.storeConsistency) {
-      recommendations.push('Implement store consistency checks and improve synchronization patterns');
+      recommendations.push(
+        'Implement store consistency checks and improve synchronization patterns'
+      );
     }
 
     // Add specific recommendations from violations
@@ -505,10 +539,18 @@ export class QualityGatesEngine {
     // Deduct points for violations
     violations.forEach(violation => {
       switch (violation.severity) {
-        case 'critical': baseScore -= 25; break;
-        case 'high': baseScore -= 15; break;
-        case 'medium': baseScore -= 10; break;
-        case 'low': baseScore -= 5; break;
+        case 'critical':
+          baseScore -= 25;
+          break;
+        case 'high':
+          baseScore -= 15;
+          break;
+        case 'medium':
+          baseScore -= 10;
+          break;
+        case 'low':
+          baseScore -= 5;
+          break;
       }
     });
 
@@ -517,7 +559,7 @@ export class QualityGatesEngine {
       metrics.testCoverage.successRate,
       metrics.codeQuality.signalReactivityScore / 100,
       metrics.codeQuality.dataIntegrityScore / 100,
-      metrics.codeQuality.errorHandlingScore / 100
+      metrics.codeQuality.errorHandlingScore / 100,
     ];
 
     const avgPositiveFactor = positiveFactors.reduce((a, b) => a + b, 0) / positiveFactors.length;
@@ -566,10 +608,10 @@ export class QualityGatesEngine {
       const harness = createSignalTestHarness();
       const testSignal = harness.createTestSignal('test', 0);
       const tracker = harness.getTracker('test')!;
-      
+
       testSignal.set(1);
       tracker.recordChange('propagation-test'); // Manual tracking for tests
-      
+
       const result = tracker.getChangeCount() > 1;
       harness.destroy();
       return result;
@@ -583,7 +625,7 @@ export class QualityGatesEngine {
       // Simulate error and recovery
       const checkInStore = mockSuite.mocks['checkin-store'];
       if (!checkInStore) return false;
-      
+
       checkInStore._setError('Test error');
       checkInStore._setError(null);
       return checkInStore.error() === null;
@@ -595,22 +637,22 @@ export class QualityGatesEngine {
   private async checkMemoryLeaks(): Promise<boolean> {
     // Simple memory leak detection
     const initialMemory = this.getMemoryUsage();
-    
+
     // Create and destroy some test objects
     for (let i = 0; i < 100; i++) {
       const harness = createSignalTestHarness();
       harness.createTestSignal(`test-${i}`, i);
       harness.destroy();
     }
-    
+
     // Force garbage collection if available
     if (typeof global !== 'undefined' && global.gc) {
       global.gc();
     }
-    
+
     const finalMemory = this.getMemoryUsage();
     const memoryIncrease = finalMemory - initialMemory;
-    
+
     // Consider it a leak if memory increased by more than 10MB
     return memoryIncrease < 10 * 1024 * 1024;
   }
@@ -661,15 +703,15 @@ export const QualityGateConfigs = {
     name: 'Development Quality Gate',
     description: 'Standard quality checks for development workflow',
     thresholds: {
-      minSuccessRate: 0.80,           // 80% tests must pass
-      maxExecutionTime: 2000,         // 2 seconds max execution
+      minSuccessRate: 0.8, // 80% tests must pass
+      maxExecutionTime: 2000, // 2 seconds max execution
       maxMemoryUsage: 100 * 1024 * 1024, // 100MB max memory
-      minSignalReactivityScore: 70,   // 70/100 signal performance
-      minDataIntegrityScore: 80       // 80/100 data consistency
+      minSignalReactivityScore: 70, // 70/100 signal performance
+      minDataIntegrityScore: 80, // 80/100 data consistency
     },
     criticalTests: ['userOnboarding', 'errorRecovery'],
     performanceTests: ['performanceTest'],
-    requiredWorkflows: ['userOnboarding', 'socialCheckin', 'errorRecovery']
+    requiredWorkflows: ['userOnboarding', 'socialCheckin', 'errorRecovery'],
   }),
 
   /**
@@ -679,15 +721,15 @@ export const QualityGateConfigs = {
     name: 'Production Quality Gate',
     description: 'Strict quality checks for production deployment',
     thresholds: {
-      minSuccessRate: 0.95,           // 95% tests must pass
-      maxExecutionTime: 1500,         // 1.5 seconds max execution
-      maxMemoryUsage: 75 * 1024 * 1024,  // 75MB max memory
-      minSignalReactivityScore: 85,   // 85/100 signal performance
-      minDataIntegrityScore: 90       // 90/100 data consistency
+      minSuccessRate: 0.95, // 95% tests must pass
+      maxExecutionTime: 1500, // 1.5 seconds max execution
+      maxMemoryUsage: 75 * 1024 * 1024, // 75MB max memory
+      minSignalReactivityScore: 85, // 85/100 signal performance
+      minDataIntegrityScore: 90, // 90/100 data consistency
     },
     criticalTests: ['userOnboarding', 'socialCheckin', 'errorRecovery', 'performanceTest'],
     performanceTests: ['performanceTest'],
-    requiredWorkflows: ['userOnboarding', 'socialCheckin', 'errorRecovery', 'performanceTest']
+    requiredWorkflows: ['userOnboarding', 'socialCheckin', 'errorRecovery', 'performanceTest'],
   }),
 
   /**
@@ -697,16 +739,16 @@ export const QualityGateConfigs = {
     name: 'CI Quality Gate',
     description: 'Balanced quality checks for continuous integration',
     thresholds: {
-      minSuccessRate: 0.75,           // 75% tests must pass
-      maxExecutionTime: 3000,         // 3 seconds max execution
+      minSuccessRate: 0.75, // 75% tests must pass
+      maxExecutionTime: 3000, // 3 seconds max execution
       maxMemoryUsage: 150 * 1024 * 1024, // 150MB max memory
-      minSignalReactivityScore: 60,   // 60/100 signal performance
-      minDataIntegrityScore: 75       // 75/100 data consistency
+      minSignalReactivityScore: 60, // 60/100 signal performance
+      minDataIntegrityScore: 75, // 75/100 data consistency
     },
     criticalTests: ['userOnboarding', 'errorRecovery'],
     performanceTests: [],
-    requiredWorkflows: ['userOnboarding', 'errorRecovery']
-  })
+    requiredWorkflows: ['userOnboarding', 'errorRecovery'],
+  }),
 };
 
 // ===================================
@@ -739,21 +781,29 @@ export async function executeCustomQualityGate(
  */
 export function generateQualityReport(result: QualityGateResult): string {
   const lines: string[] = [];
-  
+
   lines.push(`# Quality Gate Report: ${result.gateName}`);
   lines.push(`**Status**: ${result.passed ? '✅ PASSED' : '❌ FAILED'}`);
   lines.push(`**Score**: ${result.overallScore.toFixed(1)}/100`);
   lines.push(`**Execution Time**: ${result.executionDuration}ms`);
   lines.push('');
-  
+
   // Metrics Summary
   lines.push('## Metrics Summary');
-  lines.push(`- **Test Success Rate**: ${(result.metrics.testCoverage.successRate * 100).toFixed(1)}%`);
-  lines.push(`- **Average Execution Time**: ${result.metrics.performance.averageExecutionTime.toFixed(0)}ms`);
-  lines.push(`- **Signal Reactivity Score**: ${result.metrics.codeQuality.signalReactivityScore.toFixed(1)}/100`);
-  lines.push(`- **Data Integrity Score**: ${result.metrics.codeQuality.dataIntegrityScore.toFixed(1)}/100`);
+  lines.push(
+    `- **Test Success Rate**: ${(result.metrics.testCoverage.successRate * 100).toFixed(1)}%`
+  );
+  lines.push(
+    `- **Average Execution Time**: ${result.metrics.performance.averageExecutionTime.toFixed(0)}ms`
+  );
+  lines.push(
+    `- **Signal Reactivity Score**: ${result.metrics.codeQuality.signalReactivityScore.toFixed(1)}/100`
+  );
+  lines.push(
+    `- **Data Integrity Score**: ${result.metrics.codeQuality.dataIntegrityScore.toFixed(1)}/100`
+  );
   lines.push('');
-  
+
   // Violations
   if (result.violations.length > 0) {
     lines.push('## Quality Violations');
@@ -765,7 +815,7 @@ export function generateQualityReport(result: QualityGateResult): string {
     });
     lines.push('');
   }
-  
+
   // Recommendations
   if (result.recommendations.length > 0) {
     lines.push('## Recommendations');
@@ -773,6 +823,6 @@ export function generateQualityReport(result: QualityGateResult): string {
       lines.push(`- ${rec}`);
     });
   }
-  
+
   return lines.join('\n');
 }

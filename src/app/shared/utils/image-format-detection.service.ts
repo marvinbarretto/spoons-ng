@@ -1,6 +1,6 @@
 /**
  * @fileoverview Image Format Detection Service
- * 
+ *
  * Detects browser support for modern image formats (AVIF, WebP, JPEG) with caching.
  * Provides format selection strategy and optimal quality settings.
  */
@@ -25,7 +25,7 @@ export interface FormatConfig {
 @Injectable({ providedIn: 'root' })
 export class ImageFormatDetectionService {
   private readonly debug = inject(DebugService);
-  
+
   private supportCache: FormatSupport | null = null;
   private detectionPromise: Promise<FormatSupport> | null = null;
 
@@ -46,7 +46,7 @@ export class ImageFormatDetectionService {
     // Start detection process
     this.detectionPromise = this.detectFormats();
     this.supportCache = await this.detectionPromise;
-    
+
     return this.supportCache;
   }
 
@@ -55,7 +55,7 @@ export class ImageFormatDetectionService {
    */
   async getBestFormat(): Promise<FormatConfig> {
     const support = await this.getSupportedFormats();
-    
+
     this.debug.extreme('[ImageFormat] Selecting best format from:', support);
 
     // Priority: AVIF > WebP > JPEG
@@ -100,7 +100,7 @@ export class ImageFormatDetectionService {
     const support: FormatSupport = {
       avif: false,
       webp: false,
-      jpeg: true // Always supported
+      jpeg: true, // Always supported
     };
 
     // Test AVIF support
@@ -123,7 +123,7 @@ export class ImageFormatDetectionService {
       avif: support.avif,
       webp: support.webp,
       jpeg: support.jpeg,
-      bestFormat: support.avif ? 'AVIF' : support.webp ? 'WebP' : 'JPEG'
+      bestFormat: support.avif ? 'AVIF' : support.webp ? 'WebP' : 'JPEG',
     });
 
     return support;
@@ -138,7 +138,7 @@ export class ImageFormatDetectionService {
       const canvas = document.createElement('canvas');
       canvas.width = canvas.height = 10;
       const ctx = canvas.getContext('2d');
-      
+
       if (!ctx) {
         resolve(false);
         return;
@@ -179,7 +179,7 @@ export class ImageFormatDetectionService {
     return {
       support,
       bestFormat,
-      detectionTime: this.supportCache ? 0 : detectionTime // 0 if cached
+      detectionTime: this.supportCache ? 0 : detectionTime, // 0 if cached
     };
   }
 }

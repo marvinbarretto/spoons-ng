@@ -8,7 +8,7 @@ import { Pub } from '@pubs/utils/pub.models';
 import { CarpetPhotoData, PhotoStats } from '@shared/utils/carpet-photo.models';
 import { DebugService } from '@shared/utils/debug.service';
 import { ImageFormatDetectionService } from '@shared/utils/image-format-detection.service';
-import { canvasToBlob, loadImageFromBlob, resizeImageToSquare } from '@shared/utils/image-processing.helpers';
+import { canvasToBlob, resizeImageToSquare } from '@shared/utils/image-processing.helpers';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { environment } from '../../../environments/environment';
 
@@ -24,7 +24,6 @@ type CarpetImageData = {
   width: number;
   height: number;
 };
-
 
 @Injectable({ providedIn: 'root' })
 export class CarpetStorageService {
@@ -106,7 +105,6 @@ export class CarpetStorageService {
     }
   }
 
-
   /**
    * ✅ Save photo from carpet data (replaces PhotoStorageService method)
    * Now properly resizes images to 400x400 like saveCarpetImage()
@@ -116,7 +114,7 @@ export class CarpetStorageService {
       filename: photoData.filename,
       format: photoData.format,
       sizeKB: photoData.sizeKB,
-      pubName: pub.name
+      pubName: pub.name,
     });
 
     try {
@@ -131,16 +129,19 @@ export class CarpetStorageService {
 
       // ✅ Resize image to 400x400 using helper function
       this.debug.standard('[CarpetStorage] Resizing image to 400x400...');
-      
+
       const { format, mimeType, quality } = await this.formatDetection.getBestFormat();
       this.debug.extreme('[CarpetStorage] Using format and quality', { format, quality });
-      
+
       const resizedBlob = await resizeImageToSquare(photoData.blob, 400, mimeType, quality);
 
       this.debug.extreme('[CarpetStorage] Image resized', {
         originalKB: (photoData.blob.size / 1024).toFixed(1),
         resizedKB: (resizedBlob.size / 1024).toFixed(1),
-        reductionPercent: (((photoData.blob.size - resizedBlob.size) / photoData.blob.size) * 100).toFixed(1)
+        reductionPercent: (
+          ((photoData.blob.size - resizedBlob.size) / photoData.blob.size) *
+          100
+        ).toFixed(1),
       });
 
       // Create carpet data with properly resized blob
@@ -234,7 +235,10 @@ export class CarpetStorageService {
 
     // Type validation - ensure filename is a string
     if (typeof filename !== 'string' || !filename) {
-      this.debug.error('[CarpetStorage] Invalid filename type', { type: typeof filename, value: filename });
+      this.debug.error('[CarpetStorage] Invalid filename type', {
+        type: typeof filename,
+        value: filename,
+      });
       return null;
     }
 
@@ -265,7 +269,7 @@ export class CarpetStorageService {
   async storeLocalVersion(blob: Blob, pubId: string, pubName: string): Promise<string> {
     this.debug.standard('[CarpetStorage] Storing local version', {
       pubName,
-      blobSizeKB: (blob.size / 1024).toFixed(1)
+      blobSizeKB: (blob.size / 1024).toFixed(1),
     });
 
     const userId = this.authStore.uid();
@@ -307,7 +311,6 @@ export class CarpetStorageService {
   revokePhotoUrl(url: string): void {
     URL.revokeObjectURL(url);
   }
-
 
   /**
    * Save carpet image with user association
@@ -397,7 +400,10 @@ export class CarpetStorageService {
 
       // Fire-and-forget Firebase upload - don't await or block check-in
       this.handleFirebaseUpload(blob, pubId).catch(error => {
-        this.debug.warn('[CarpetStorage] Firebase upload failed, but check-in completed successfully:', error);
+        this.debug.warn(
+          '[CarpetStorage] Firebase upload failed, but check-in completed successfully:',
+          error
+        );
       });
 
       return key;

@@ -1,14 +1,14 @@
 // src/app/pubs/data-access/pub.store.spec.ts
-import { TestBed } from '@angular/core/testing';
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { signal } from '@angular/core';
-import { PubStore } from './pub.store';
-import { PubService } from './pub.service';
-import { CacheService, LocationService } from '@fourfold/angular-foundation';
+import { TestBed } from '@angular/core/testing';
 import { AuthStore } from '@auth/data-access/auth.store';
+import { CacheService, LocationService } from '@fourfold/angular-foundation';
 import { createTestPub, createTestUser } from '@shared/testing/test-data';
 import { calculateDistance } from '@shared/utils/location.utils';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { Pub } from '../utils/pub.models';
+import { PubService } from './pub.service';
+import { PubStore } from './pub.store';
 
 // Mock the location utils to have predictable distances
 vi.mock('@shared/utils/location.utils', () => ({
@@ -37,6 +37,7 @@ describe('PubStore - Global Pub Data Management', () => {
   const userLocation = { lat: 51.5, lng: -0.1 };
 
   beforeEach(async () => {
+    // ARRANGE - Common test setup
     mockPubService = {
       getAllPubs: vi.fn().mockResolvedValue([...testPubs]),
       updatePubStats: vi.fn().mockResolvedValue(undefined),
@@ -47,7 +48,6 @@ describe('PubStore - Global Pub Data Management', () => {
 
     mockCacheService = {
       load: vi.fn(async ({ key, loadFresh }) => {
-        // Simulate cache miss by always calling loadFresh
         return await loadFresh();
       }),
       clear: vi.fn(),
@@ -82,22 +82,37 @@ describe('PubStore - Global Pub Data Management', () => {
     vi.clearAllMocks();
   });
 
-  describe('🏗️ Store Initialization & Caching', () => {
-    it('should initialize with default state from BaseStore', () => {
+  describe('Store Initialization & Caching', () => {
+    it('should initialize with default state', () => {
+      // ARRANGE - Store created in beforeEach
+
+      // ACT - No action needed for initial state test
+
+      // ASSERT
       expect(store.data()).toEqual([]);
       expect(store.loading()).toBe(false);
       expect(store.error()).toBe(null);
     });
 
-    it('should load pubs on initialization via the `load` method', async () => {
+    it('should load pubs via the load method', async () => {
+      // ARRANGE - Mock service configured in beforeEach
+
+      // ACT
       await store.load();
+
+      // ASSERT
       expect(mockPubService.getAllPubs).toHaveBeenCalled();
       expect(store.data().length).toBe(3);
       expect(store.loading()).toBe(false);
     });
 
-    it('should use CacheService to load data', async () => {
+    it('should use global cache with correct configuration', async () => {
+      // ARRANGE - Cache service mocked in beforeEach
+
+      // ACT
       await store.load();
+
+      // ASSERT
       expect(mockCacheService.load).toHaveBeenCalledWith(
         expect.objectContaining({
           key: 'pubs-global',
@@ -106,133 +121,217 @@ describe('PubStore - Global Pub Data Management', () => {
       );
     });
 
-    it('should NOT clear pub data on user reset, preserving global cache', () => {
+    it('should preserve global cache on user changes', async () => {
+      // ARRANGE
+      await store.load();
+      const initialDataLength = store.data().length;
       const consoleSpy = vi.spyOn(console, 'log');
-      // This is a protected method, so we test it via its public alias if it exists,
-      // or by casting to `any` to access it for testing purposes.
-      (store as any).onUserReset('new-user-id');
-      expect(consoleSpy).toHaveBeenCalledWith('[PubStore] User reset for new-user-id - keeping global pub cache');
-      // We can't directly test that the cache wasn't cleared without loading data first,
-      // but we can assert the log was made.
+      
+      // ACT - Test the behavior we can verify: global cache preservation
+      // The store preserves pub data regardless of user changes
+      const newUser = createTestUser({ uid: 'new-user-456' });
+      mockAuthStore.user.set(newUser);
+      
+      // ASSERT - Pub data should still be available (global cache preserved)
+      expect(store.data().length).toBe(initialDataLength);
+      
+      // Since this is global data, it should remain unchanged
+      expect(store.pubs()).toEqual(testPubs);
     });
   });
 
-  describe('📈 Computed Signals', () => {
+  describe('Computed Signals', () => {
     beforeEach(async () => {
       await store.load();
     });
 
-    it('should compute `totalCount` correctly', () => {
+    it('should compute total count correctly', () => {
+      // ARRANGE - Pubs loaded in beforeEach
+
+      // ACT - No action needed for computed signal
+
+      // ASSERT
       expect(store.totalCount()).toBe(3);
     });
 
-    it('should sort pubs by name when location is not available (`sortedPubsByDistance`)', () => {
+    it('should sort pubs by name when location unavailable', () => {
+      // ARRANGE
       mockLocationService._setLocation(null);
+
+      // ACT
       const sorted = store.sortedPubsByDistance();
-      expect(sorted.map(p => p.name)).toEqual(['The Anchor', 'The Crown (Far)', 'The Red Lion (Near)']);
+
+      // ASSERT
+      expect(sorted.map(p => p.name)).toEqual([
+        'The Anchor',
+        'The Crown (Far)',
+        'The Red Lion (Near)',
+      ]);
     });
 
-    it('should sort pubs by distance when location IS available (`sortedPubsByDistance`)', () => {
+    it('should sort pubs by distance when location available', () => {
+      // ARRANGE
       mockLocationService._setLocation(userLocation);
+
+      // ACT
       const sorted = store.sortedPubsByDistance();
+
+      // ASSERT
       expect(calculateDistance).toHaveBeenCalled();
-      expect(sorted.map(p => p.name)).toEqual(['The Red Lion (Near)', 'The Anchor', 'The Crown (Far)']);
+      expect(sorted.map(p => p.name)).toEqual([
+        'The Red Lion (Near)',
+        'The Anchor',
+        'The Crown (Far)',
+      ]);
     });
 
-    it('should compute `pubsWithDistance` with Infinity when location is null', () => {
+    it('should compute pubs with Infinity distance when location null', () => {
+      // ARRANGE
       mockLocationService._setLocation(null);
+
+      // ACT
       const pubs = store.pubsWithDistance();
+
+      // ASSERT
       expect(pubs.every(p => p.distance === Infinity)).toBe(true);
     });
 
-    it('should compute `pubsWithDistance` with calculated distances when location is available', () => {
+    it('should compute pubs with calculated distances when location available', () => {
+      // ARRANGE
       mockLocationService._setLocation(userLocation);
+
+      // ACT
       const pubs = store.pubsWithDistance();
+
+      // ASSERT
       expect(pubs.every(p => typeof p.distance === 'number' && p.distance !== Infinity)).toBe(true);
       expect(pubs.find(p => p.name.includes('Near'))?.distance).toBe(100);
       expect(pubs.find(p => p.name.includes('Far'))?.distance).toBe(1000);
     });
   });
 
-  describe('🔍 Query Methods', () => {
+  describe('Query Methods', () => {
     beforeEach(async () => {
       await store.load();
     });
 
-    it('should `findByName` (case-insensitive)', () => {
+    it('should find pub by name case-insensitively', () => {
+      // ARRANGE - Pubs loaded in beforeEach
+
+      // ACT
       const found = store.findByName('red lion');
+
+      // ASSERT
       expect(found).toBeDefined();
       expect(found?.id).toBe('pub-1');
     });
 
-    it('should return `findByLocation` within a given radius', () => {
-      // Since our mock is simple, we rely on the names
+    it('should find pubs within location radius', () => {
+      // ARRANGE - Pubs loaded and distance mocked
+
+      // ACT
       const found = store.findByLocation(userLocation.lat, userLocation.lng, 1);
-      // This test is tricky with the mocked distance function, but we can verify the logic
+
+      // ASSERT
       expect(found.length).toBeGreaterThan(0);
     });
   });
 
-  describe('🔄 Data Refresh & Cache Management', () => {
-    it('should `refreshPubData` by clearing cache and reloading', async () => {
+  describe('Data Refresh & Cache Management', () => {
+    it('should refresh pub data by clearing cache and reloading', async () => {
+      // ARRANGE - Store ready with mocked dependencies
+
+      // ACT
       await store.refreshPubData();
+
+      // ASSERT
       expect(mockCacheService.clear).toHaveBeenCalledWith('pubs-global');
-      expect(mockPubService.getAllPubs).toHaveBeenCalledTimes(1); // Called again on reload
+      expect(mockPubService.getAllPubs).toHaveBeenCalledTimes(1);
     });
 
-    it('should `clearGlobalPubCache` by calling cacheService.clear', () => {
+    it('should clear global pub cache', () => {
+      // ARRANGE - Cache service mocked
+
+      // ACT
       store.clearGlobalPubCache();
+
+      // ASSERT
       expect(mockCacheService.clear).toHaveBeenCalledWith('pubs-global');
     });
   });
 
-  describe('📊 Pub Statistics & Carpet URL Updates', () => {
+  describe('Pub Statistics & Updates', () => {
     beforeEach(async () => {
       await store.load();
     });
 
-    it('should delegate `updatePubStats` to PubService', async () => {
+    it('should delegate pub stats updates to service', async () => {
+      // ARRANGE
       const checkinData = { userId: 'user-1', pubId: 'pub-1', timestamp: new Date() };
+
+      // ACT
       await store.updatePubStats('pub-1', checkinData as any, 'checkin-1');
+
+      // ASSERT
       expect(mockPubService.updatePubStats).toHaveBeenCalled();
     });
 
-    it('should delegate `incrementCheckinCount` to PubService', async () => {
+    it('should delegate checkin count increment to service', async () => {
+      // ARRANGE - Store loaded with test data
+
+      // ACT
       await store.incrementCheckinCount('pub-1');
+
+      // ASSERT
       expect(mockPubService.incrementCheckinCount).toHaveBeenCalledWith('pub-1');
     });
 
-    it('should delegate `updatePubHistory` to PubService', async () => {
-      await store.updatePubHistory('pub-1', 'user-1', new Date() as any);
+    it('should delegate pub history updates to service', async () => {
+      // ARRANGE
+      const timestamp = new Date();
+
+      // ACT
+      await store.updatePubHistory('pub-1', 'user-1', timestamp as any);
+
+      // ASSERT
       expect(mockPubService.updatePubHistory).toHaveBeenCalled();
     });
 
-    describe('🎯 CRITICAL: `updatePubCarpetUrl` Performance Optimization', () => {
-      it('should delegate to PubService to update Firestore', async () => {
+    describe('Carpet URL Performance Optimization', () => {
+      it('should update Firestore via PubService', async () => {
+        // ARRANGE - Store loaded with test data
+
+        // ACT
         await store.updatePubCarpetUrl('pub-1', 'new-url.jpg');
+
+        // ASSERT
         expect(mockPubService.updatePubCarpetUrl).toHaveBeenCalledWith('pub-1', 'new-url.jpg');
       });
 
-      it('should update the pub signal IN-MEMORY for instant UI reactivity', async () => {
+      it('should update pub signal in-memory for instant reactivity', async () => {
+        // ARRANGE
         const originalPub = store.data().find(p => p.id === 'pub-1');
-        expect(originalPub?.carpetUrl).toBeUndefined();
+        expect(originalPub?.carpetUrl).toBeUndefined(); // Setup verification
 
+        // ACT
         await store.updatePubCarpetUrl('pub-1', 'new-url.jpg');
 
+        // ASSERT
         const updatedPub = store.data().find(p => p.id === 'pub-1');
         expect(updatedPub?.carpetUrl).toBe('new-url.jpg');
         expect(updatedPub?.hasCarpet).toBe(true);
         expect(updatedPub?.carpetUpdatedAt).toBeDefined();
       });
 
-      it('should NOT trigger a full cache reload (`getAllPubs`)', async () => {
-        // `getAllPubs` is called once in `beforeEach`
-        expect(mockPubService.getAllPubs).toHaveBeenCalledTimes(1);
+      it('should not trigger full cache reload for performance', async () => {
+        // ARRANGE
+        const initialCallCount = mockPubService.getAllPubs.mock.calls.length;
 
+        // ACT
         await store.updatePubCarpetUrl('pub-1', 'new-url.jpg');
 
-        // Should still only be 1 call, proving no reload happened
-        expect(mockPubService.getAllPubs).toHaveBeenCalledTimes(1);
+        // ASSERT - No additional calls to getAllPubs
+        expect(mockPubService.getAllPubs).toHaveBeenCalledTimes(initialCallCount);
       });
     });
   });

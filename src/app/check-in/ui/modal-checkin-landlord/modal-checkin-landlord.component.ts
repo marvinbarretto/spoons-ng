@@ -1,16 +1,16 @@
 // src/app/check-in/ui/modal-checkin-landlord/modal-checkin-landlord.component.ts
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, input, output } from '@angular/core';
-import { environment } from '../../../../environments/environment';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { LandlordStore } from '@landlord/data-access/landlord.store';
 import { formatLandlordClaim } from '@landlord/utils/landlord.utils';
 import { UserProgressionService } from '@shared/data-access/user-progression.service';
-import { UserExperienceLevel } from '@shared/utils/user-progression.models';
 import { ButtonComponent } from '@shared/ui/button/button.component';
 import { ButtonVariant } from '@shared/ui/button/button.params';
 import { toDate } from '@shared/utils/timestamp.utils';
+import { UserExperienceLevel } from '@shared/utils/user-progression.models';
 import { UserStore } from '@users/data-access/user.store';
+import { environment } from '../../../../environments/environment';
 
 type LandlordModalData = {
   isNewLandlord: boolean;

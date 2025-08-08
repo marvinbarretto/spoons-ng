@@ -1,9 +1,9 @@
 // src/app/check-in/data-access/global-check-in.store.ts
 
-import { Injectable, computed, inject, effect } from '@angular/core';
+import { Injectable, computed, effect, inject } from '@angular/core';
+import { CacheCoherenceService } from '../../shared/data-access/cache-coherence.service';
 import type { CheckIn } from '../utils/check-in.models';
 import { GlobalCheckInService } from './global-check-in.service';
-import { CacheCoherenceService } from '../../shared/data-access/cache-coherence.service';
 
 /**
  * GlobalCheckInStore - Reactive store for app-wide check-in data
@@ -57,11 +57,16 @@ export class GlobalCheckInStore {
       if (invalidation && invalidation.collection === 'checkins') {
         console.log('[GlobalCheckInStore] 🔄 Cache invalidated, refreshing global check-in data');
         console.log('[GlobalCheckInStore] 🔄 Invalidation reason:', invalidation.reason);
-        console.log('[GlobalCheckInStore] 🔄 This ensures scoreboard shows fresh data after new check-ins');
-        
+        console.log(
+          '[GlobalCheckInStore] 🔄 This ensures scoreboard shows fresh data after new check-ins'
+        );
+
         // Refresh global data to include the new check-in
         this.loadFreshGlobalData().catch(error => {
-          console.error('[GlobalCheckInStore] ❌ Failed to refresh global data after invalidation:', error);
+          console.error(
+            '[GlobalCheckInStore] ❌ Failed to refresh global data after invalidation:',
+            error
+          );
         });
       }
     });

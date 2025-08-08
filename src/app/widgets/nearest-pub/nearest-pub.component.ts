@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { CheckInStore } from '../../check-in/data-access/check-in.store';
-import { AbstractLocationService } from '../../shared/data-access/abstract-location.service';
 import { NearbyPubStore } from '../../pubs/data-access/nearby-pub.store';
+import { AbstractLocationService } from '../../shared/data-access/abstract-location.service';
 import { DataAggregatorService } from '../../shared/data-access/data-aggregator.service';
 import { UserStore } from '../../users/data-access/user.store';
 import { BaseWidgetComponent } from '../base/base-widget.component';

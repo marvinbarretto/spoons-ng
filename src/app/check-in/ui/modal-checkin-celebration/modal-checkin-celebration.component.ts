@@ -3,8 +3,8 @@ import { Component, computed, inject, input, OnDestroy, output, signal } from '@
 
 import { AuthStore } from '@auth/data-access/auth.store';
 import { BadgeIconComponent } from '@badges/ui/badge-icon/badge-icon.component';
-import { UserStore } from '@users/data-access/user.store';
 import { ButtonComponent } from '@shared/ui/button/button.component';
+import { UserStore } from '@users/data-access/user.store';
 import { CheckInStore } from '../../../check-in/data-access/check-in.store';
 // TODO: Re-enable LeaderboardStore when available
 // import { LeaderboardStore } from '../../../leaderboard/data-access/leaderboard.store';

@@ -12,7 +12,7 @@
   --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
   --safe-area-inset-left: env(safe-area-inset-left, 0px);
   --safe-area-inset-right: env(safe-area-inset-right, 0px);
-  
+
   // Header height including safe area - COMPRESSED
   --header-height-base: 40px; /* Reduced from 60px */
   --header-height-total: calc(var(--header-height-base) + var(--safe-area-inset-top));
@@ -25,22 +25,22 @@
   top: 0;
   z-index: 100;
   width: 100%;
-  
+
   // Default styling for web/Android
   background-color: var(--background-darkest);
   border-bottom: 1px solid var(--border);
-  
+
   // Smooth transitions
   transition:
     background-color 0.3s ease,
     border-color 0.3s ease;
-    
+
   // Platform-specific data attributes for debugging
-  &[data-platform="web"] {
+  &[data-platform='web'] {
     /* Web-specific styles if needed */
   }
-  
-  &[data-platform="android"] {
+
+  &[data-platform='android'] {
     /* Android-specific styles if needed */
   }
 }
@@ -49,31 +49,31 @@
 .site-header--ios {
   // Extend from base site-header
   @extend .site-header;
-  
+
   // Ensure header content doesn't get cut off by Dynamic Island/notch
   .header-safe-area {
     padding-top: var(--safe-area-inset-top);
     padding-left: var(--safe-area-inset-left);
     padding-right: var(--safe-area-inset-right);
     min-height: var(--header-height-total);
-    
+
     // Prevent content from jumping when safe areas change
     transition: padding 0.3s ease;
-    
+
     // Make it obvious this is the iOS safe area
     background: rgba(255, 255, 255, 0.1);
     border-radius: 0 0 8px 8px;
   }
-  
+
   // Adjust title positioning for iOS
   .header__title {
     // Account for safe area in title positioning
     margin-top: 0;
-    
+
     // Ensure clickable area doesn't interfere with iOS gestures
     touch-action: manipulation;
   }
-  
+
   // iOS-specific navigation adjustments
 }
 
@@ -84,7 +84,7 @@
     padding: 0.5rem 1rem; /* Reduced from default padding */
     min-height: var(--header-height-base);
   }
-  
+
   .header__title {
     &--compact {
       h1 {
@@ -92,13 +92,13 @@
         margin: 0;
         line-height: 1.2;
       }
-      
+
       small {
         display: none; /* Hide version info */
       }
     }
   }
-  
+
   .main-nav {
     /* Compact navigation styling */
   }

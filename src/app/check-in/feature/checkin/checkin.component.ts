@@ -1,14 +1,23 @@
-import { Component, ElementRef, OnDestroy, ViewChild, AfterViewInit, computed, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import {
+  AfterViewInit,
+  Component,
+  computed,
+  ElementRef,
+  inject,
+  OnDestroy,
+  signal,
+  ViewChild,
+} from '@angular/core';
+import { Router } from '@angular/router';
 import { CapacitorPlatformService } from '@shared/data-access/capacitor-platform.service';
 import { LLMService } from '@shared/data-access/llm.service';
-import { CheckInStore } from '../../data-access/check-in.store';
-import { CheckInModalService } from '../../data-access/check-in-modal.service';
-import { NearbyPubStore } from '../../../pubs/data-access/nearby-pub.store';
-import { CarpetStrategyService } from '../../../carpets/data-access/carpet-strategy.service';
-import { PubStore } from '../../../pubs/data-access/pub.store';
 import { environment } from '../../../../environments/environment';
+import { CarpetStrategyService } from '../../../carpets/data-access/carpet-strategy.service';
+import { NearbyPubStore } from '../../../pubs/data-access/nearby-pub.store';
+import { PubStore } from '../../../pubs/data-access/pub.store';
+import { CheckInModalService } from '../../data-access/check-in-modal.service';
+import { CheckInStore } from '../../data-access/check-in.store';
 
 // Simple state interface - no complex orchestration needed
 interface CheckinState {
@@ -24,7 +33,6 @@ interface CheckinState {
   imports: [CommonModule],
   template: `
     <div class="checkin-container">
-      
       <!-- Camera State -->
       @if (state().stage === 'camera') {
         <!-- Web Camera View -->
@@ -74,7 +82,7 @@ interface CheckinState {
       @if (state().stage === 'processing') {
         <div class="processing-state">
           @if (state().photoDataUrl) {
-            <img [src]="state().photoDataUrl" class="captured-photo" alt="Captured image">
+            <img [src]="state().photoDataUrl" class="captured-photo" alt="Captured image" />
           }
           <div class="processing-overlay">
             <div class="processing-content">
@@ -106,7 +114,7 @@ interface CheckinState {
       <button class="exit-button" (click)="exit()">✕</button>
     </div>
   `,
-  styleUrl: './checkin.component.scss'
+  styleUrl: './checkin.component.scss',
 })
 export class CheckinComponent implements AfterViewInit, OnDestroy {
   @ViewChild('cameraVideo', { static: false }) cameraVideo?: ElementRef<HTMLVideoElement>;
@@ -121,7 +129,7 @@ export class CheckinComponent implements AfterViewInit, OnDestroy {
   private readonly carpetStrategy = inject(CarpetStrategyService);
   private readonly pubStore = inject(PubStore);
 
-  // Simple state management - single source of truth  
+  // Simple state management - single source of truth
   protected readonly state = signal<CheckinState>({ stage: 'camera' });
   protected readonly isCapturing = signal(false);
 
@@ -129,7 +137,7 @@ export class CheckinComponent implements AfterViewInit, OnDestroy {
   protected readonly pubName = computed(() => {
     const pubId = this.state().pubId;
     if (!pubId) return 'Unknown Pub';
-    
+
     const nearbyPubs = this.nearbyPubStore.nearbyPubs();
     const pub = nearbyPubs.find(p => p.id === pubId);
     return pub?.name || 'Unknown Pub';
@@ -146,10 +154,10 @@ export class CheckinComponent implements AfterViewInit, OnDestroy {
       const closestPub = nearbyPubs[0];
       this.state.update(s => ({ ...s, pubId: closestPub.id, stage: 'camera' }));
     } else {
-      this.state.update(s => ({ 
-        ...s, 
-        stage: 'error', 
-        error: 'No nearby pubs found. Please ensure location services are enabled.'
+      this.state.update(s => ({
+        ...s,
+        stage: 'error',
+        error: 'No nearby pubs found. Please ensure location services are enabled.',
       }));
     }
   }
@@ -170,7 +178,7 @@ export class CheckinComponent implements AfterViewInit, OnDestroy {
   private async initializeCameraAfterView(): Promise<void> {
     try {
       console.log('[CheckinComponent] 🎬 Initializing camera after view init');
-      
+
       // Initialize camera based on platform
       if (this.platform.isWeb()) {
         await this.initializeWebCamera();
@@ -179,40 +187,39 @@ export class CheckinComponent implements AfterViewInit, OnDestroy {
       }
 
       console.log('[CheckinComponent] ✅ Camera ready');
-
     } catch (error: any) {
       console.error('[CheckinComponent] ❌ Camera initialization failed:', error);
-      this.state.update(s => ({ 
-        ...s, 
-        stage: 'error', 
-        error: error.message || 'Failed to initialize camera'
+      this.state.update(s => ({
+        ...s,
+        stage: 'error',
+        error: error.message || 'Failed to initialize camera',
       }));
     }
   }
 
   private async initializeWebCamera(): Promise<void> {
     console.log('[CheckinComponent] 🌐 Initializing web camera');
-    
+
     // Video element should be available since we're in AfterViewInit
     if (!this.cameraVideo?.nativeElement) {
       throw new Error('Video element not available');
     }
 
     const video = this.cameraVideo.nativeElement;
-    
+
     // Request camera stream
     this.cameraStream = await navigator.mediaDevices.getUserMedia({
-      video: { 
+      video: {
         facingMode: 'environment',
         width: { ideal: 1280 },
-        height: { ideal: 720 }
+        height: { ideal: 720 },
       },
-      audio: false
+      audio: false,
     });
 
     // Attach to video element
     video.srcObject = this.cameraStream;
-    
+
     // Wait for video to be ready
     await new Promise<void>((resolve, reject) => {
       video.onloadedmetadata = () => resolve();
@@ -225,7 +232,7 @@ export class CheckinComponent implements AfterViewInit, OnDestroy {
 
   private async initializeNativeCamera(): Promise<void> {
     console.log('[CheckinComponent] 📱 Initializing native camera');
-    
+
     // For native, we don't need to initialize anything - just check availability
     if (!this.platform.hasCamera()) {
       throw new Error('Camera not available on this device');
@@ -236,7 +243,7 @@ export class CheckinComponent implements AfterViewInit, OnDestroy {
 
   async capturePhoto(): Promise<void> {
     console.log('[CheckinComponent] 📸 Capturing photo...');
-    
+
     this.isCapturing.set(true);
 
     try {
@@ -254,24 +261,23 @@ export class CheckinComponent implements AfterViewInit, OnDestroy {
       }
 
       // Update state with captured photo
-      this.state.update(s => ({ 
-        ...s, 
+      this.state.update(s => ({
+        ...s,
         stage: 'processing',
         photo: photoBlob,
-        photoDataUrl: photoDataUrl
+        photoDataUrl: photoDataUrl,
       }));
 
       console.log('[CheckinComponent] ✅ Photo captured, processing...');
 
       // Process the check-in
       await this.processCheckIn(photoBlob, photoDataUrl);
-
     } catch (error: any) {
       console.error('[CheckinComponent] ❌ Photo capture failed:', error);
-      this.state.update(s => ({ 
-        ...s, 
+      this.state.update(s => ({
+        ...s,
         stage: 'error',
-        error: error.message || 'Failed to capture photo'
+        error: error.message || 'Failed to capture photo',
       }));
     } finally {
       this.isCapturing.set(false);
@@ -280,21 +286,21 @@ export class CheckinComponent implements AfterViewInit, OnDestroy {
 
   private async captureWebPhoto(): Promise<{ blob: Blob; dataUrl: string }> {
     const video = this.cameraVideo!.nativeElement;
-    
+
     // Create canvas to capture frame
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d')!;
-    
+
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
-    
+
     // Draw current video frame to canvas
     ctx.drawImage(video, 0, 0);
-    
+
     // Convert to blob and data URL
     const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
-    const blob = await new Promise<Blob>((resolve) => {
-      canvas.toBlob((blob) => resolve(blob!), 'image/jpeg', 0.8);
+    const blob = await new Promise<Blob>(resolve => {
+      canvas.toBlob(blob => resolve(blob!), 'image/jpeg', 0.8);
     });
 
     return { blob, dataUrl };
@@ -302,12 +308,12 @@ export class CheckinComponent implements AfterViewInit, OnDestroy {
 
   private async captureNativePhoto(): Promise<{ blob: Blob; dataUrl: string }> {
     const { Camera, CameraResultType, CameraSource } = await import('@capacitor/camera');
-    
+
     const image = await Camera.getPhoto({
       quality: 80,
       allowEditing: false,
       resultType: CameraResultType.DataUrl,
-      source: CameraSource.Camera
+      source: CameraSource.Camera,
     });
 
     if (!image.dataUrl) {
@@ -338,7 +344,7 @@ export class CheckinComponent implements AfterViewInit, OnDestroy {
       const canvas = await this.blobToCanvas(photoBlob);
       const pubName = this.getPubName(pubId);
       const carpetResult = await this.carpetStrategy.processCarpetCapture(canvas, pubId, pubName);
-      
+
       console.log('[CheckinComponent] 🎯 Carpet processing complete:', carpetResult);
 
       // Step 3: Execute check-in with carpet result
@@ -357,7 +363,6 @@ export class CheckinComponent implements AfterViewInit, OnDestroy {
 
       // Update state to complete
       this.state.update(s => ({ ...s, stage: 'complete' }));
-
     } catch (error: any) {
       console.error('[CheckinComponent] ❌ Check-in processing failed:', error);
       throw error; // Let the capture method handle the error display
@@ -386,16 +391,16 @@ export class CheckinComponent implements AfterViewInit, OnDestroy {
 
   protected retry(): void {
     console.log('[CheckinComponent] 🔄 Retrying check-in');
-    
+
     // Reset state and restart
-    this.state.update(s => ({ 
-      ...s, 
-      stage: 'camera', 
-      photo: undefined, 
-      photoDataUrl: undefined, 
-      error: undefined 
+    this.state.update(s => ({
+      ...s,
+      stage: 'camera',
+      photo: undefined,
+      photoDataUrl: undefined,
+      error: undefined,
     }));
-    
+
     this.initializeCameraAfterView();
   }
 

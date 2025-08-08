@@ -43,13 +43,13 @@
  * 💡 USAGE EXAMPLES:
  * ```typescript
  * // UserStore - Reactive computed signals
- * readonly totalPoints = computed(() => 
+ * readonly totalPoints = computed(() =>
  *   this.dataAggregator.calculateUserPointsFromCheckins(this.authStore.user()?.uid)
  * );
  *
  * // LeaderboardStore - Pure computation with parameters
  * const totalPoints = this.dataAggregator.calculateUserPointsFromCheckins(user.uid);
- * 
+ *
  * // Scoreboard - Complete data aggregation
  * const scoreboardData = this.dataAggregator.getScoreboardDataForUser(
  *   userId, userData, userCheckins, isLoading
@@ -59,7 +59,7 @@
  * 📊 DEBUGGING & MONITORING:
  * Extensive console logging throughout all methods provides detailed insights into:
  * - Data flow and calculation steps
- * - Input validation and edge cases  
+ * - Input validation and edge cases
  * - Performance monitoring and bottleneck identification
  * - Consistency verification across different data sources
  */
@@ -67,7 +67,6 @@
 import { Injectable, computed, inject } from '@angular/core';
 // CheckInStore removed to prevent circular dependency - check-in data will be passed as parameters
 import { GlobalCheckInStore } from '@check-in/data-access/global-check-in.store'; // Global
-import type { CheckIn } from '@check-in/utils/check-in.models';
 import { AuthStore } from '../../auth/data-access/auth.store';
 // PointsStore removed to prevent circular dependency - points will be computed from check-ins
 import { PubStore } from '../../pubs/data-access/pub.store';
@@ -152,8 +151,8 @@ export class DataAggregatorService {
    * @description Pure computation - takes all data as parameters to avoid circular dependencies
    */
   getScoreboardDataForUser(
-    userId: string, 
-    userData: { manuallyAddedPubIds?: string[], badgeCount?: number, landlordCount?: number } = {},
+    userId: string,
+    userData: { manuallyAddedPubIds?: string[]; badgeCount?: number; landlordCount?: number } = {},
     userCheckins: any[] = [],
     isLoading: boolean = false
   ): any {
@@ -198,18 +197,18 @@ export class DataAggregatorService {
     console.log('📊 [DataAggregator] === CHECKIN DATA ANALYSIS ===');
     const globalCheckins = this.globalCheckInStore.allCheckIns();
     const userGlobalCheckins = userId ? globalCheckins.filter(c => c.userId === userId) : [];
-    
+
     console.log('📊 [DataAggregator] Provided user check-ins:', {
       totalCheckins: userCheckins.length,
       checkinSample: userCheckins.slice(0, 3).map(c => ({
         id: c.id?.slice(0, 8),
         pubId: c.pubId?.slice(0, 8),
         userId: c.userId?.slice(0, 8),
-        timestamp: c.timestamp?.toDate?.()?.toISOString?.()?.slice(0, 16) || 'no-timestamp'
+        timestamp: c.timestamp?.toDate?.()?.toISOString?.()?.slice(0, 16) || 'no-timestamp',
       })),
       uniquePubIds: new Set(userCheckins.filter(c => c.pubId).map(c => c.pubId)).size,
     });
-    
+
     console.log('📊 [DataAggregator] GlobalCheckInStore (all users):', {
       totalGlobalCheckins: globalCheckins.length,
       userSpecificCheckins: userGlobalCheckins.length,
@@ -217,22 +216,25 @@ export class DataAggregatorService {
         id: c.id?.slice(0, 8),
         pubId: c.pubId?.slice(0, 8),
         userId: c.userId?.slice(0, 8),
-        timestamp: c.timestamp?.toDate?.()?.toISOString?.()?.slice(0, 16) || 'no-timestamp'
+        timestamp: c.timestamp?.toDate?.()?.toISOString?.()?.slice(0, 16) || 'no-timestamp',
       })),
       userUniquePubIds: new Set(userGlobalCheckins.filter(c => c.pubId).map(c => c.pubId)).size,
     });
 
     // DETAILED PUB COUNT CALCULATION ANALYSIS
     console.log('📊 [DataAggregator] === PUB COUNT CALCULATION ANALYSIS ===');
-    const pubsVisitedResult = this.getPubsVisitedForUser(userId, userData.manuallyAddedPubIds || []);
+    const pubsVisitedResult = this.getPubsVisitedForUser(
+      userId,
+      userData.manuallyAddedPubIds || []
+    );
     console.log('📊 [DataAggregator] Final pubsVisited result:', pubsVisitedResult);
 
     // Calculate today's points from provided check-ins
     const today = new Date().toDateString();
-    const todaysCheckins = userCheckins.filter(c => 
-      c.timestamp?.toDate?.()?.toDateString?.() === today
+    const todaysCheckins = userCheckins.filter(
+      c => c.timestamp?.toDate?.()?.toDateString?.() === today
     );
-    
+
     const todaysPoints = todaysCheckins.reduce((sum, checkin) => {
       const points = checkin.pointsEarned ?? checkin.pointsBreakdown?.total ?? 0;
       return sum + points;
@@ -302,21 +304,23 @@ export class DataAggregatorService {
     console.log('⚙️ [DataAggregator] Input parameters:', {
       userId: userId.slice(0, 8),
       hasUserData: !!userData,
-      userDataPreview: userData ? {
-        uid: userData.uid?.slice(0, 8),
-        displayName: userData.displayName,
-        manuallyAddedPubIds: userData.manuallyAddedPubIds?.length || 0,
-        verifiedPubCount: userData.verifiedPubCount,
-        unverifiedPubCount: userData.unverifiedPubCount,
-        totalPubCount: userData.totalPubCount,
-      } : null,
+      userDataPreview: userData
+        ? {
+            uid: userData.uid?.slice(0, 8),
+            displayName: userData.displayName,
+            manuallyAddedPubIds: userData.manuallyAddedPubIds?.length || 0,
+            verifiedPubCount: userData.verifiedPubCount,
+            unverifiedPubCount: userData.unverifiedPubCount,
+            totalPubCount: userData.totalPubCount,
+          }
+        : null,
     });
 
     // Get verified check-ins from GlobalCheckInStore for cross-user calculations
     console.log('⚙️ [DataAggregator] Fetching check-ins from GlobalCheckInStore...');
     const checkins = this.globalCheckInStore.allCheckIns();
     const userCheckins = checkins.filter(checkin => checkin.userId === userId);
-    
+
     console.log('⚙️ [DataAggregator] Check-in data analysis:', {
       totalGlobalCheckins: checkins.length,
       userSpecificCheckins: userCheckins.length,
@@ -328,7 +332,7 @@ export class DataAggregatorService {
         hasPubId: !!c.pubId,
       })),
     });
-    
+
     const verifiedPubIds = new Set(
       userCheckins
         .filter(checkin => checkin.pubId) // Filter out null/undefined pubIds
@@ -380,12 +384,11 @@ export class DataAggregatorService {
       totalBeforeDeduplication: result.verified + result.manual,
       duplicatesDetected: result.duplicates,
       finalUniqueTotal: result.total,
-      calculationValid: result.total === (result.verified + result.manual - result.duplicates),
+      calculationValid: result.total === result.verified + result.manual - result.duplicates,
     });
 
     return result;
   }
-
 
   /**
    * Check if user has visited a specific pub (verified OR manual)
@@ -469,7 +472,9 @@ export class DataAggregatorService {
    * @description Use UserStore.displayName() instead - maintaining for backward compatibility only
    */
   readonly displayName = computed(() => {
-    this.debug.standard('[DataAggregator] Computing displayName - DEPRECATED, use UserStore instead');
+    this.debug.standard(
+      '[DataAggregator] Computing displayName - DEPRECATED, use UserStore instead'
+    );
 
     const authUser = this.authStore.user();
 
@@ -495,7 +500,9 @@ export class DataAggregatorService {
    * @description Use UserStore.user() instead - maintaining for backward compatibility only
    */
   readonly user = computed(() => {
-    this.debug.standard('[DataAggregator] Computing aggregated user - DEPRECATED, use UserStore instead');
+    this.debug.standard(
+      '[DataAggregator] Computing aggregated user - DEPRECATED, use UserStore instead'
+    );
 
     const authUser = this.authStore.user();
 
@@ -518,7 +525,9 @@ export class DataAggregatorService {
    * @description Use UserStore reactive patterns instead - maintaining for backward compatibility only
    */
   readonly userSummary = computed(() => {
-    this.debug.standard('[DataAggregator] Computing userSummary - DEPRECATED, use UserStore instead');
+    this.debug.standard(
+      '[DataAggregator] Computing userSummary - DEPRECATED, use UserStore instead'
+    );
 
     const currentUser = this.authStore.user();
 
@@ -539,7 +548,9 @@ export class DataAggregatorService {
       stats: {
         totalPoints: this.calculateUserPointsFromCheckins(currentUser.uid),
         pubsVisited: this.getPubsVisitedForUser(currentUser.uid, []),
-        totalCheckins: this.globalCheckInStore.allCheckIns().filter(c => c.userId === currentUser.uid).length,
+        totalCheckins: this.globalCheckInStore
+          .allCheckIns()
+          .filter(c => c.userId === currentUser.uid).length,
         badgeCount: 0, // Cannot determine without UserStore
         landlordCount: 0, // Cannot determine without UserStore
       },
@@ -596,21 +607,21 @@ export class DataAggregatorService {
    * @returns Number of points earned today
    */
   getTodaysPointsForUser(userId: string): number {
-    this.debug.extreme('[DataAggregator] Getting today\'s points for user', { userId });
+    this.debug.extreme("[DataAggregator] Getting today's points for user", { userId });
 
     const today = new Date().toDateString();
     const checkins = this.globalCheckInStore.allCheckIns();
     const userCheckins = checkins.filter(checkin => checkin.userId === userId);
-    const todaysCheckins = userCheckins.filter(checkin => 
-      checkin.timestamp?.toDate?.()?.toDateString?.() === today
+    const todaysCheckins = userCheckins.filter(
+      checkin => checkin.timestamp?.toDate?.()?.toDateString?.() === today
     );
-    
+
     const todaysPoints = todaysCheckins.reduce((sum, checkin) => {
       const points = checkin.pointsEarned ?? checkin.pointsBreakdown?.total ?? 0;
       return sum + points;
     }, 0);
 
-    this.debug.extreme('[DataAggregator] Today\'s points calculated', {
+    this.debug.extreme("[DataAggregator] Today's points calculated", {
       userId,
       todaysCheckins: todaysCheckins.length,
       todaysPoints,
@@ -652,20 +663,20 @@ export class DataAggregatorService {
    */
   calculateUserPointsFromCheckins(userId?: string): number {
     const targetUserId = userId || this.authStore.user()?.uid;
-    
+
     if (!targetUserId) {
       this.debug.extreme('[DataAggregator] No user ID for points calculation');
       return 0;
     }
 
-    this.debug.extreme('[DataAggregator] Calculating points from check-ins', { 
-      userId: targetUserId.slice(0, 8) 
+    this.debug.extreme('[DataAggregator] Calculating points from check-ins', {
+      userId: targetUserId.slice(0, 8),
     });
 
     // Get all check-ins for this user
     const checkins = this.globalCheckInStore.allCheckIns();
     const userCheckins = checkins.filter(checkin => checkin.userId === targetUserId);
-    
+
     // Sum points from all check-ins
     const totalPoints = userCheckins.reduce((sum, checkin) => {
       // Use pointsEarned if available, otherwise use pointsBreakdown.total, fallback to 0
@@ -707,5 +718,335 @@ export class DataAggregatorService {
     });
 
     return pubName;
+  }
+
+  // =====================================================
+  // ADMIN DASHBOARD METRICS - SINGLE SOURCE OF TRUTH
+  // =====================================================
+
+  /**
+   * Comprehensive dashboard metrics calculation - Single Source of Truth
+   * @description Eliminates data inconsistencies by using only GlobalCheckInStore and derived calculations
+   */
+  calculateDashboardMetrics(timePeriod: 'today' | 'week' | 'month' | 'all-time' = 'month'): {
+    // Business KPIs
+    userGrowth: { total: number; monthlyGrowth: number; confidence: 'high' | 'medium' | 'low' };
+    engagement: { activeUsers: number; checkInsPerUser: number; trend: 'up' | 'down' | 'stable' };
+    marketPenetration: { pubsConquered: number; totalPubs: number; percentage: number };
+    platformValue: { totalPoints: number; avgPointsPerUser: number };
+
+    // System Health
+    dataConsistencyScore: number;
+    systemHealth: { errors: number; status: 'healthy' | 'warning' | 'critical' };
+
+    // Raw Data for Validation
+    rawMetrics: {
+      totalCheckIns: number;
+      totalUsers: number;
+      monthlyCheckIns: number;
+      monthlyActiveUsers: number;
+      totalSystemPoints: number;
+    };
+  } {
+    console.log('🎯 [DataAggregator] === CALCULATING COMPREHENSIVE DASHBOARD METRICS ===');
+    console.log('🎯 [DataAggregator] Using GlobalCheckInStore as single source of truth');
+    console.log('🎯 [DataAggregator] Time period:', timePeriod);
+
+    // Get all data from single sources
+    const allCheckIns = this.globalCheckInStore.allCheckIns();
+    const allUsers = this.userService.allUsers(); // Will be replaced by user calculations from check-ins
+    const allPubs = this.pubStore.pubs();
+
+    // Calculate time period boundaries
+    const now = new Date();
+    let periodStart: Date;
+    let periodLabel: string;
+
+    switch (timePeriod) {
+      case 'today':
+        periodStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        periodLabel = 'Today';
+        break;
+      case 'week':
+        periodStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        periodLabel = 'This Week';
+        break;
+      case 'month':
+        periodStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        periodLabel = 'This Month';
+        break;
+      case 'all-time':
+      default:
+        periodStart = new Date(0); // Beginning of time
+        periodLabel = 'All Time';
+        break;
+    }
+
+    // Filter check-ins for the selected time period
+    const periodCheckIns = allCheckIns.filter(c => c.timestamp.toDate() >= periodStart);
+    const periodActiveUserIds = new Set(periodCheckIns.map(c => c.userId));
+    const periodActiveUsers = periodActiveUserIds.size;
+
+    console.log('🎯 [DataAggregator] Raw data loaded:', {
+      totalCheckIns: allCheckIns.length,
+      totalUsers: allUsers.length,
+      totalPubs: allPubs.length,
+      timePeriod,
+      periodLabel,
+      periodStart: periodStart.toISOString(),
+      periodCheckIns: periodCheckIns.length,
+      periodActiveUsers,
+      dataTimestamp: new Date().toISOString(),
+    });
+
+    console.log('🎯 [DataAggregator] Period calculations:', {
+      periodLabel,
+      periodStart: periodStart.toISOString(),
+      periodCheckIns: periodCheckIns.length,
+      periodActiveUsers,
+      periodUserIds: Array.from(periodActiveUserIds)
+        .slice(0, 5)
+        .map(id => id.slice(0, 8)),
+    });
+
+    // Calculate total system points from period check-ins
+    const periodSystemPoints = periodCheckIns.reduce((sum, checkin) => {
+      const points = checkin.pointsEarned ?? checkin.pointsBreakdown?.total ?? 0;
+      return sum + points;
+    }, 0);
+
+    // For all-time metrics, we need total counts regardless of period
+    const totalSystemPoints = allCheckIns.reduce((sum, checkin) => {
+      const points = checkin.pointsEarned ?? checkin.pointsBreakdown?.total ?? 0;
+      return sum + points;
+    }, 0);
+
+    // Calculate unique users and pubs based on time period
+    const uniqueUserIds =
+      timePeriod === 'all-time'
+        ? new Set(allCheckIns.map(c => c.userId))
+        : new Set(periodCheckIns.map(c => c.userId));
+    const actualActiveUsers = uniqueUserIds.size;
+
+    // Calculate unique pubs visited in the time period
+    const uniquePubIds =
+      timePeriod === 'all-time'
+        ? new Set(allCheckIns.filter(c => c.pubId).map(c => c.pubId))
+        : new Set(periodCheckIns.filter(c => c.pubId).map(c => c.pubId));
+    const pubsConquered = uniquePubIds.size;
+
+    console.log('🎯 [DataAggregator] Core calculations:', {
+      totalSystemPoints,
+      periodSystemPoints,
+      actualActiveUsers,
+      pubsConquered,
+      totalCheckIns: allCheckIns.length,
+      periodCheckIns: periodCheckIns.length,
+      avgPointsPerUser:
+        actualActiveUsers > 0
+          ? Math.round(
+              (timePeriod === 'all-time' ? totalSystemPoints : periodSystemPoints) /
+                actualActiveUsers
+            )
+          : 0,
+      avgCheckInsPerUser:
+        actualActiveUsers > 0
+          ? Math.round(
+              (timePeriod === 'all-time' ? allCheckIns.length : periodCheckIns.length) /
+                actualActiveUsers
+            )
+          : 0,
+    });
+
+    // Calculate data consistency score (always use all-time for consistency)
+    const consistencyScore = this.calculateDataConsistencyScore({
+      checkInsFromStore: allCheckIns.length,
+      pointsFromCheckIns: totalSystemPoints,
+      usersFromCheckIns: new Set(allCheckIns.map(c => c.userId)).size,
+      usersFromUserService: allUsers.length,
+    });
+
+    // Use monthly data for growth calculations (regardless of selected period)
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthlyCheckIns = allCheckIns.filter(c => c.timestamp.toDate() >= monthStart);
+    const monthlyActiveUsers = new Set(monthlyCheckIns.map(c => c.userId)).size;
+
+    // Build comprehensive metrics
+    const metrics = {
+      userGrowth: {
+        total: actualActiveUsers, // Use time period filtered count
+        monthlyGrowth: this.calculateMonthlyGrowthRate(allUsers, monthStart),
+        confidence: this.assessDataConfidence(periodCheckIns.length, actualActiveUsers) as
+          | 'high'
+          | 'medium'
+          | 'low',
+      },
+      engagement: {
+        activeUsers: actualActiveUsers, // Show period-based active users
+        checkInsPerUser:
+          actualActiveUsers > 0
+            ? Math.round((periodCheckIns.length / actualActiveUsers) * 10) / 10
+            : 0,
+        trend: this.calculateEngagementTrend(periodCheckIns.length, actualActiveUsers) as
+          | 'up'
+          | 'down'
+          | 'stable',
+      },
+      marketPenetration: {
+        pubsConquered,
+        totalPubs: allPubs.length,
+        percentage:
+          allPubs.length > 0 ? Math.round((pubsConquered / allPubs.length) * 100 * 10) / 10 : 0,
+      },
+      platformValue: {
+        totalPoints: timePeriod === 'all-time' ? totalSystemPoints : periodSystemPoints,
+        avgPointsPerUser:
+          actualActiveUsers > 0
+            ? Math.round(
+                (timePeriod === 'all-time' ? totalSystemPoints : periodSystemPoints) /
+                  actualActiveUsers
+              )
+            : 0,
+      },
+      dataConsistencyScore: consistencyScore,
+      systemHealth: {
+        errors: 0, // Will be enhanced with actual error tracking
+        status:
+          consistencyScore > 90
+            ? 'healthy'
+            : consistencyScore > 70
+              ? 'warning'
+              : ('critical' as 'healthy' | 'warning' | 'critical'),
+      },
+      rawMetrics: {
+        totalCheckIns: periodCheckIns.length, // Show period-specific data
+        totalUsers: actualActiveUsers,
+        monthlyCheckIns: monthlyCheckIns.length, // Always show monthly for comparison
+        monthlyActiveUsers,
+        totalSystemPoints: timePeriod === 'all-time' ? totalSystemPoints : periodSystemPoints,
+      },
+    };
+
+    console.log('🎯 [DataAggregator] === FINAL DASHBOARD METRICS ===');
+    console.log('🎯 [DataAggregator] Business KPIs:', {
+      userGrowth: `${metrics.userGrowth.total} total (${metrics.userGrowth.monthlyGrowth}% monthly growth)`,
+      engagement: `${metrics.engagement.activeUsers} active users, ${metrics.engagement.checkInsPerUser} check-ins/user`,
+      marketPenetration: `${metrics.marketPenetration.pubsConquered}/${metrics.marketPenetration.totalPubs} pubs (${metrics.marketPenetration.percentage}%)`,
+      platformValue: `${metrics.platformValue.totalPoints} total points, ${metrics.platformValue.avgPointsPerUser} avg/user`,
+    });
+    console.log('🎯 [DataAggregator] System Health:', {
+      dataConsistencyScore: `${metrics.dataConsistencyScore}%`,
+      systemStatus: metrics.systemHealth.status,
+      confidence: metrics.userGrowth.confidence,
+    });
+    console.log('🎯 [DataAggregator] Raw Data Validation:', metrics.rawMetrics);
+
+    return metrics;
+  }
+
+  /**
+   * Calculate data consistency score between different sources
+   */
+  private calculateDataConsistencyScore(data: {
+    checkInsFromStore: number;
+    pointsFromCheckIns: number;
+    usersFromCheckIns: number;
+    usersFromUserService: number;
+  }): number {
+    let consistencyPoints = 0;
+    let totalChecks = 0;
+
+    // Check 1: Do we have check-ins and points that make sense together?
+    if (data.checkInsFromStore > 0 && data.pointsFromCheckIns > 0) {
+      consistencyPoints += 25; // Good - check-ins and points both exist
+    } else if (data.checkInsFromStore === 0 && data.pointsFromCheckIns === 0) {
+      consistencyPoints += 25; // Consistent - both are zero
+    }
+    // If check-ins > 0 but points = 0, or vice versa, no points awarded
+    totalChecks += 25;
+
+    // Check 2: User count consistency between sources
+    const userCountDifference = Math.abs(data.usersFromCheckIns - data.usersFromUserService);
+    const userCountDifferencePercent =
+      data.usersFromUserService > 0 ? (userCountDifference / data.usersFromUserService) * 100 : 0;
+
+    if (userCountDifferencePercent < 10) {
+      consistencyPoints += 25; // Within 10% tolerance
+    } else if (userCountDifferencePercent < 25) {
+      consistencyPoints += 15; // Within 25% tolerance
+    }
+    totalChecks += 25;
+
+    // Check 3: Reasonable points-to-check-ins ratio
+    if (data.checkInsFromStore > 0) {
+      const pointsPerCheckIn = data.pointsFromCheckIns / data.checkInsFromStore;
+      if (pointsPerCheckIn >= 1 && pointsPerCheckIn <= 50) {
+        consistencyPoints += 25; // Reasonable ratio (1-50 points per check-in)
+      } else if (pointsPerCheckIn > 0) {
+        consistencyPoints += 15; // At least some points per check-in
+      }
+    } else if (data.checkInsFromStore === 0 && data.pointsFromCheckIns === 0) {
+      consistencyPoints += 25; // Consistent zero state
+    }
+    totalChecks += 25;
+
+    // Check 4: Users and activity correlation
+    if (data.usersFromCheckIns > 0 && data.checkInsFromStore > 0) {
+      consistencyPoints += 25; // Good - users and activity correlate
+    } else if (data.usersFromCheckIns === 0 && data.checkInsFromStore === 0) {
+      consistencyPoints += 25; // Consistent empty state
+    }
+    totalChecks += 25;
+
+    const score = Math.round((consistencyPoints / totalChecks) * 100);
+
+    console.log('🎯 [DataAggregator] Data consistency analysis:', {
+      checkInsFromStore: data.checkInsFromStore,
+      pointsFromCheckIns: data.pointsFromCheckIns,
+      usersFromCheckIns: data.usersFromCheckIns,
+      usersFromUserService: data.usersFromUserService,
+      consistencyPoints,
+      totalChecks,
+      finalScore: score,
+    });
+
+    return score;
+  }
+
+  /**
+   * Calculate monthly growth rate
+   */
+  private calculateMonthlyGrowthRate(allUsers: any[], monthStart: Date): number {
+    const newUsersThisMonth = allUsers.filter(
+      u => u.joinedAt && new Date(u.joinedAt) >= monthStart
+    ).length;
+
+    const totalUsers = allUsers.length;
+    const previousMonthUsers = totalUsers - newUsersThisMonth;
+
+    if (previousMonthUsers === 0) return newUsersThisMonth > 0 ? 100 : 0;
+
+    return Math.round((newUsersThisMonth / previousMonthUsers) * 100);
+  }
+
+  /**
+   * Assess data confidence based on activity levels
+   */
+  private assessDataConfidence(checkIns: number, users: number): string {
+    if (checkIns > 100 && users > 10) return 'high';
+    if (checkIns > 20 && users > 3) return 'medium';
+    return 'low';
+  }
+
+  /**
+   * Calculate engagement trend
+   */
+  private calculateEngagementTrend(monthlyCheckIns: number, monthlyActiveUsers: number): string {
+    // Simple trend analysis - could be enhanced with historical data
+    const checkInsPerUser = monthlyActiveUsers > 0 ? monthlyCheckIns / monthlyActiveUsers : 0;
+
+    if (checkInsPerUser >= 5) return 'up';
+    if (checkInsPerUser >= 2) return 'stable';
+    return 'down';
   }
 }

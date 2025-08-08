@@ -1,9 +1,9 @@
 /**
  * @fileoverview Auto-Mocks - Automatic Dependency Resolution System
- * 
+ *
  * This module provides automatic dependency resolution for complex services,
  * analyzing constructor dependencies and creating appropriate mocks automatically.
- * 
+ *
  * Features:
  * - Reflection-based dependency analysis
  * - Automatic mock instantiation for dependencies
@@ -11,9 +11,8 @@
  * - Type-safe dependency injection mocking
  */
 
-import { vi } from 'vitest';
-import { Injectable, Type } from '@angular/core';
-import { mockRegistry, MockType, MockConfig } from './mock-registry';
+import { Type } from '@angular/core';
+import { MockConfig, mockRegistry, MockType } from './mock-registry';
 
 // ===================================
 // DEPENDENCY ANALYSIS TYPES
@@ -42,55 +41,49 @@ export interface ServiceMetadata {
  */
 const SERVICE_DEPENDENCIES: Record<string, DependencyInfo[]> = {
   // Core Services
-  'UserService': [
-    { token: 'Firestore', type: 'Firestore', optional: false, index: 0 }
-  ],
-  
-  'CheckInService': [
-    { token: 'Firestore', type: 'Firestore', optional: false, index: 0 }
-  ],
-  
-  'PointsService': [
-    { token: 'Firestore', type: 'Firestore', optional: false, index: 0 }
-  ],
+  UserService: [{ token: 'Firestore', type: 'Firestore', optional: false, index: 0 }],
 
-  // Complex Services with Multiple Dependencies  
-  'CheckinOrchestrator': [
+  CheckInService: [{ token: 'Firestore', type: 'Firestore', optional: false, index: 0 }],
+
+  PointsService: [{ token: 'Firestore', type: 'Firestore', optional: false, index: 0 }],
+
+  // Complex Services with Multiple Dependencies
+  CheckinOrchestrator: [
     { token: 'PointsService', type: 'PointsService', optional: false, index: 0 },
     { token: 'BadgeEvaluator', type: 'BadgeEvaluator', optional: false, index: 1 },
     { token: 'UserService', type: 'UserService', optional: false, index: 2 },
-    { token: 'CheckInService', type: 'CheckInService', optional: false, index: 3 }
+    { token: 'CheckInService', type: 'CheckInService', optional: false, index: 3 },
   ],
 
-  'DataAggregatorService': [
+  DataAggregatorService: [
     { token: 'UserStore', type: 'UserStore', optional: false, index: 0 },
     { token: 'CheckInStore', type: 'CheckInStore', optional: false, index: 1 },
-    { token: 'GlobalCheckInStore', type: 'CheckInStore', optional: false, index: 2 }
+    { token: 'GlobalCheckInStore', type: 'CheckInStore', optional: false, index: 2 },
   ],
 
-  'BadgeEvaluator': [
+  BadgeEvaluator: [
     { token: 'UserService', type: 'UserService', optional: false, index: 0 },
-    { token: 'CheckInService', type: 'CheckInService', optional: false, index: 1 }
+    { token: 'CheckInService', type: 'CheckInService', optional: false, index: 1 },
   ],
 
   // Stores with Dependencies
-  'UserStore': [
+  UserStore: [
     { token: 'UserService', type: 'UserService', optional: false, index: 0 },
     { token: 'AuthStore', type: 'AuthStore', optional: false, index: 1 },
-    { token: 'DataAggregatorService', type: 'DataAggregatorService', optional: false, index: 2 }
+    { token: 'DataAggregatorService', type: 'DataAggregatorService', optional: false, index: 2 },
   ],
 
-  'CheckInStore': [
+  CheckInStore: [
     { token: 'CheckInService', type: 'CheckInService', optional: false, index: 0 },
-    { token: 'AuthStore', type: 'AuthStore', optional: false, index: 1 }
+    { token: 'AuthStore', type: 'AuthStore', optional: false, index: 1 },
   ],
 
   // External Dependencies
-  'SessionService': [
+  SessionService: [
     { token: 'UserService', type: 'UserService', optional: false, index: 0 },
     { token: 'CheckInService', type: 'CheckInService', optional: false, index: 1 },
-    { token: 'AuthStore', type: 'AuthStore', optional: false, index: 2 }
-  ]
+    { token: 'AuthStore', type: 'AuthStore', optional: false, index: 2 },
+  ],
 };
 
 // ===================================
@@ -115,7 +108,7 @@ export class AutoMockGenerator {
    */
   analyzeDependencies(serviceClass: Type<any> | string): DependencyInfo[] {
     const serviceName = typeof serviceClass === 'string' ? serviceClass : serviceClass.name;
-    
+
     // Check cache first
     if (this.dependencyCache.has(serviceName)) {
       return this.dependencyCache.get(serviceName)!;
@@ -123,7 +116,7 @@ export class AutoMockGenerator {
 
     // Try reflection-based analysis first
     let dependencies = this.analyzeViaReflection(serviceClass);
-    
+
     // Fallback to manual mappings
     if (!dependencies.length && SERVICE_DEPENDENCIES[serviceName]) {
       dependencies = SERVICE_DEPENDENCIES[serviceName];
@@ -137,15 +130,14 @@ export class AutoMockGenerator {
   /**
    * Create a service mock with all its dependencies automatically resolved
    */
-  createServiceWithDependencies<T>(
-    serviceClass: Type<T> | string, 
-    config: MockConfig = {}
-  ): T {
+  createServiceWithDependencies<T>(serviceClass: Type<T> | string, config: MockConfig = {}): T {
     const serviceName = typeof serviceClass === 'string' ? serviceClass : serviceClass.name;
-    
+
     // Detect circular dependencies
     if (this.resolutionStack.includes(serviceName)) {
-      console.warn(`[AutoMock] Circular dependency detected: ${this.resolutionStack.join(' → ')} → ${serviceName}`);
+      console.warn(
+        `[AutoMock] Circular dependency detected: ${this.resolutionStack.join(' → ')} → ${serviceName}`
+      );
       return this.createBasicServiceMock(serviceName, config);
     }
 
@@ -164,8 +156,8 @@ export class AutoMockGenerator {
 
       // Create the service mock with resolved dependencies
       const serviceMock = this.createMockWithResolvedDependencies(
-        serviceName, 
-        mockDependencies, 
+        serviceName,
+        mockDependencies,
         config
       );
 
@@ -192,14 +184,14 @@ export class AutoMockGenerator {
   private analyzeViaReflection(serviceClass: Type<any> | string): DependencyInfo[] {
     // In a full implementation, this would use Angular's reflection capabilities
     // or TypeScript metadata to analyze constructor parameters
-    
+
     // For now, return empty array to fallback to manual mappings
     return [];
   }
 
   private createMockWithResolvedDependencies(
-    serviceName: string, 
-    dependencies: any[], 
+    serviceName: string,
+    dependencies: any[],
     config: MockConfig
   ): any {
     // This creates a comprehensive mock that includes the dependency behavior
@@ -209,9 +201,9 @@ export class AutoMockGenerator {
 
   private createBasicServiceMock(serviceName: string, config: MockConfig): any {
     // Creates a basic mock without resolving dependencies (to break circular refs)
-    return mockRegistry.createMock(serviceName as MockType, { 
-      ...config, 
-      realistic: false // Use simpler mocks for circular dependency breaking
+    return mockRegistry.createMock(serviceName as MockType, {
+      ...config,
+      realistic: false, // Use simpler mocks for circular dependency breaking
     });
   }
 }
@@ -223,10 +215,7 @@ export class AutoMockGenerator {
 /**
  * Create a service mock with automatic dependency resolution
  */
-export function createAutoMock<T>(
-  serviceClass: Type<T> | string, 
-  config: MockConfig = {}
-): T {
+export function createAutoMock<T>(serviceClass: Type<T> | string, config: MockConfig = {}): T {
   return AutoMockGenerator.getInstance().createServiceWithDependencies(serviceClass, config);
 }
 

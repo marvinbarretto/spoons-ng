@@ -1,8 +1,8 @@
 import { Injectable, inject } from '@angular/core';
 import { Analytics, logEvent } from '@angular/fire/analytics';
+import { environment } from '@environments/environment';
 import { SsrPlatformService } from '@fourfold/angular-foundation';
 import { DebugService } from '@shared/utils/debug.service';
-import { environment } from '@environments/environment';
 
 export interface UserBehaviorMetrics {
   sessionDuration: number;
@@ -38,7 +38,7 @@ export interface UsageInsights {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AnalyticsService {
   private readonly platform = inject(SsrPlatformService);
@@ -52,9 +52,9 @@ export class AnalyticsService {
     this.debug.standard('[AnalyticsService] Initialized', {
       analyticsEnabled: !!this.analytics,
       isBrowser: this.platform.isBrowser,
-      production: environment.production
+      production: environment.production,
     });
-    
+
     this.platform.onlyOnBrowser(() => {
       this.initializeSessionTracking();
     });
@@ -62,7 +62,7 @@ export class AnalyticsService {
 
   private logEventSafely(eventName: string, parameters?: Record<string, any>) {
     if (!this.platform.isBrowser) return;
-    
+
     this.platform.onlyOnBrowser(() => {
       // Double-check analytics is available and properly initialized
       if (!this.analytics || !this.analytics.app) {
@@ -82,9 +82,9 @@ export class AnalyticsService {
   private initializeSessionTracking() {
     const window = this.platform.getWindow();
     const document = this.platform.getDocument();
-    
+
     if (!window || !document) return;
-    
+
     // Track page visibility changes for session analysis
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
@@ -108,14 +108,16 @@ export class AnalyticsService {
       time_spent_seconds: timeSpent || 0,
       hour_of_day: new Date().getHours(),
       day_of_week: new Date().getDay(),
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
-  trackUserJourney(step: 'app_open' | 'first_checkin' | 'second_checkin' | 'regular_user' | 'power_user') {
+  trackUserJourney(
+    step: 'app_open' | 'first_checkin' | 'second_checkin' | 'regular_user' | 'power_user'
+  ) {
     this.logEventSafely('user_journey', {
       step,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
@@ -125,7 +127,7 @@ export class AnalyticsService {
       feature_name: feature,
       context: context || 'unknown',
       time_spent_seconds: timeSpent || 0,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
@@ -135,68 +137,80 @@ export class AnalyticsService {
       from_screen: from,
       to_screen: to,
       navigation_method: method,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
   // Discovery behavior insights
-  trackPubDiscovery(pubId: string, discoveryMethod: 'search' | 'nearby' | 'map' | 'random' | 'friend_share') {
+  trackPubDiscovery(
+    pubId: string,
+    discoveryMethod: 'search' | 'nearby' | 'map' | 'random' | 'friend_share'
+  ) {
     this.logEventSafely('pub_discovery', {
       pub_id: pubId,
       discovery_method: discoveryMethod,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
   // Session tracking for engagement analysis
   trackSessionStart() {
     this.logEventSafely('session_start', {
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
   trackSessionEnd(duration: number) {
     this.logEventSafely('session_end', {
       duration_seconds: duration,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
   // Social and sharing behavior
-  trackSocialAction(action: 'share_checkin' | 'share_badge' | 'view_leaderboard' | 'compare_stats', context?: string) {
+  trackSocialAction(
+    action: 'share_checkin' | 'share_badge' | 'view_leaderboard' | 'compare_stats',
+    context?: string
+  ) {
     this.logEventSafely('social_action', {
       action,
       context: context || 'unknown',
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
   // Habit formation tracking
-  trackUsagePattern(pattern: 'daily_streak' | 'weekend_warrior' | 'lunch_checker' | 'evening_crawler', streak?: number) {
+  trackUsagePattern(
+    pattern: 'daily_streak' | 'weekend_warrior' | 'lunch_checker' | 'evening_crawler',
+    streak?: number
+  ) {
     this.logEventSafely('usage_pattern', {
       pattern,
       streak_count: streak || 0,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
   // Time-based behavior analysis
-  trackSessionType(type: 'quick_checkin' | 'exploration' | 'social_browsing' | 'data_analysis', duration: number) {
+  trackSessionType(
+    type: 'quick_checkin' | 'exploration' | 'social_browsing' | 'data_analysis',
+    duration: number
+  ) {
     this.logEventSafely('session_type', {
       session_type: type,
       duration_seconds: duration,
       hour_of_day: new Date().getHours(),
       day_of_week: new Date().getDay(),
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
   // Error and friction tracking
   trackUserFriction(
-    frictionType: 
-      | 'location_denied' 
-      | 'camera_failed' 
-      | 'slow_loading' 
+    frictionType:
+      | 'location_denied'
+      | 'camera_failed'
+      | 'slow_loading'
       | 'network_error'
       | 'check_in_modal_error'
       | 'daily_limit_exceeded'
@@ -205,52 +219,60 @@ export class AnalyticsService {
       | 'check_in_failed'
       | 'location_not_native'
       | 'location_permission_denied'
-      | 'location_permission_error', 
+      | 'location_permission_error',
     screen: string
   ) {
     this.logEventSafely('user_friction', {
       friction_type: frictionType,
       screen,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
   // LOCATION & MOVEMENT TRACKING - Key for "on the move" insights
-  trackLocationContext(context: 'stationary' | 'walking' | 'transport' | 'unknown', accuracy?: number) {
+  trackLocationContext(
+    context: 'stationary' | 'walking' | 'transport' | 'unknown',
+    accuracy?: number
+  ) {
     this.isUserMoving = context !== 'stationary';
-    
+
     this.logEventSafely('location_context', {
       movement_type: context,
       location_accuracy: accuracy || 0,
       session_duration: this.getSessionDuration(),
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
   trackLocationUpdate(latitude: number, longitude: number, accuracy?: number, speed?: number) {
     const timeSinceLastUpdate = Date.now() - this.lastLocationUpdate;
     this.lastLocationUpdate = Date.now();
-    
+
     // Determine movement context from speed/time
     let movementContext: 'stationary' | 'walking' | 'transport' | 'unknown' = 'unknown';
     if (speed !== undefined) {
       if (speed < 0.5) movementContext = 'stationary';
-      else if (speed < 5) movementContext = 'walking';  
+      else if (speed < 5) movementContext = 'walking';
       else movementContext = 'transport';
     }
-    
+
     this.logEventSafely('location_update', {
       accuracy,
       speed: speed || 0,
       movement_context: movementContext,
       time_since_last: timeSinceLastUpdate,
       is_moving: this.isUserMoving,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
   // TAP & INTERACTION HEATMAP
-  trackTapEvent(elementId: string, elementType: 'button' | 'link' | 'card' | 'input' | 'icon', screen: string, coordinates?: {x: number, y: number}) {
+  trackTapEvent(
+    elementId: string,
+    elementType: 'button' | 'link' | 'card' | 'input' | 'icon',
+    screen: string,
+    coordinates?: { x: number; y: number }
+  ) {
     this.logEventSafely('tap_interaction', {
       element_id: elementId,
       element_type: elementType,
@@ -259,7 +281,7 @@ export class AnalyticsService {
       tap_y: coordinates?.y || 0,
       session_duration: this.getSessionDuration(),
       is_moving: this.isUserMoving,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
@@ -268,7 +290,7 @@ export class AnalyticsService {
     this.logEventSafely('session_pause', {
       session_duration: this.getSessionDuration(),
       hour_of_day: new Date().getHours(),
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
@@ -276,7 +298,7 @@ export class AnalyticsService {
     this.logEventSafely('session_resume', {
       session_duration: this.getSessionDuration(),
       hour_of_day: new Date().getHours(),
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
@@ -289,7 +311,7 @@ export class AnalyticsService {
       scroll_depth_percent: scrollDepth || 0,
       engagement_rate: interactions / Math.max(timeSpent / 60, 1), // interactions per minute
       is_moving: this.isUserMoving,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
@@ -301,29 +323,37 @@ export class AnalyticsService {
       step_duration: stepDuration,
       flow_success: success,
       is_moving: this.isUserMoving,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
   // FEATURE INTEREST TRACKING (what users explore vs ignore)
-  trackFeatureInterest(feature: string, interestLevel: 'high' | 'medium' | 'low', timeToEngage?: number) {
+  trackFeatureInterest(
+    feature: string,
+    interestLevel: 'high' | 'medium' | 'low',
+    timeToEngage?: number
+  ) {
     this.logEventSafely('feature_interest', {
       feature,
       interest_level: interestLevel,
       time_to_engage: timeToEngage || 0,
       session_duration: this.getSessionDuration(),
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 
   // PERFORMANCE & FRUSTRATION TRACKING
-  trackPerformanceIssue(issueType: 'slow_load' | 'app_crash' | 'ui_lag' | 'data_sync', screen: string, severity: 'low' | 'medium' | 'high') {
+  trackPerformanceIssue(
+    issueType: 'slow_load' | 'app_crash' | 'ui_lag' | 'data_sync',
+    screen: string,
+    severity: 'low' | 'medium' | 'high'
+  ) {
     this.logEventSafely('performance_issue', {
       issue_type: issueType,
       screen,
       severity,
       session_duration: this.getSessionDuration(),
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   }
 

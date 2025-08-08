@@ -1,9 +1,9 @@
 /**
  * @fileoverview Scenario Builders - Fluent API for Test Data Creation
- * 
+ *
  * This module provides fluent builder patterns for creating realistic test scenarios.
  * It replaces the placeholder classes in mock-registry.ts with full implementations.
- * 
+ *
  * Features:
  * - Fluent API for readable test setup
  * - Realistic test data generation
@@ -11,16 +11,21 @@
  * - Integration with mock registry
  */
 
-import { signal } from '@angular/core';
-import { vi } from 'vitest';
-import type { User } from '@users/utils/user.model';
 import type { CheckIn } from '@check-in/utils/check-in.model';
 import type { Pub } from '@pubs/utils/pub.model';
+import type { User } from '@users/utils/user.model';
 import { MockRegistry, TestScenario } from './mock-registry';
 
 // ===================================
 // SCENARIO BUILDER TYPES
 // ===================================
+
+export interface MockStore<T = unknown> {
+  _setData?: (data: T) => void;
+  _setLoading?: (loading: boolean) => void;
+  _setError?: (error: string | null) => void;
+  _reset?: () => void;
+}
 
 export interface ScenarioConfig {
   realistic?: boolean;
@@ -47,7 +52,10 @@ export class UserScenarioBuilder {
   private uniquePubs = false;
   private config: ScenarioConfig = { realistic: true };
 
-  constructor(private type: string, private registry: MockRegistry) {}
+  constructor(
+    private type: string,
+    private registry: MockRegistry
+  ) {}
 
   /**
    * Configure the user with check-ins
@@ -95,13 +103,13 @@ export class UserScenarioBuilder {
   async build(): Promise<TestScenario> {
     const scenarioData = this.generateScenarioData();
     const mocks = this.createMocksForScenario(scenarioData);
-    
+
     return {
       user: scenarioData.user,
       checkIns: scenarioData.checkIns,
       pubs: await this.generatePubsForScenario(scenarioData.pubsVisited),
       mocks,
-      cleanup: () => this.cleanup(mocks)
+      cleanup: () => this.cleanup(mocks),
     };
   }
 
@@ -111,7 +119,7 @@ export class UserScenarioBuilder {
 
   private generateScenarioData(): UserScenarioData {
     const userId = this.userData.uid || `user-${this.type}-${Date.now()}`;
-    
+
     // Generate realistic user
     const user: User = {
       uid: userId,
@@ -122,7 +130,7 @@ export class UserScenarioBuilder {
       landlordCount: this.userData.landlordCount || 0,
       manuallyAddedPubIds: this.userData.manuallyAddedPubIds || [],
       totalPoints: 0, // Will be calculated from check-ins
-      ...this.userData
+      ...this.userData,
     };
 
     // Generate check-ins
@@ -137,7 +145,7 @@ export class UserScenarioBuilder {
       checkIns,
       badgeIds: this.badgeList,
       totalPoints,
-      pubsVisited
+      pubsVisited,
     };
   }
 
@@ -147,13 +155,11 @@ export class UserScenarioBuilder {
 
     for (let i = 0; i < this.checkInCount; i++) {
       let pubId: string;
-      
+
       if (this.uniquePubs) {
         pubId = `pub-${this.type}-${i + 1}`;
       } else {
-        pubId = this.config.realistic ? 
-          this.generateRealisticPubId(usedPubIds) : 
-          `pub-${i + 1}`;
+        pubId = this.config.realistic ? this.generateRealisticPubId(usedPubIds) : `pub-${i + 1}`;
       }
 
       if (this.uniquePubs) {
@@ -167,7 +173,7 @@ export class UserScenarioBuilder {
         pointsEarned: this.generatePointsForCheckIn(i),
         timestamp: this.generateTimestamp(i),
         carpetImagePath: this.config.realistic ? `/assets/carpets/${pubId}.jpg` : undefined,
-        isVerified: this.config.realistic ? Math.random() > 0.1 : true // 90% verified if realistic
+        isVerified: this.config.realistic ? Math.random() > 0.1 : true, // 90% verified if realistic
       };
 
       checkIns.push(checkIn);
@@ -178,16 +184,22 @@ export class UserScenarioBuilder {
 
   private generateRealisticPubId(usedPubIds: Set<string>): string {
     const realPubNames = [
-      'red-lion', 'crown-anchor', 'kings-head', 'white-horse', 
-      'railway-tavern', 'george-dragon', 'swan-rushes', 'royal-oak'
+      'red-lion',
+      'crown-anchor',
+      'kings-head',
+      'white-horse',
+      'railway-tavern',
+      'george-dragon',
+      'swan-rushes',
+      'royal-oak',
     ];
-    
+
     const availablePubs = realPubNames.filter(pub => !usedPubIds.has(pub));
-    
+
     if (availablePubs.length === 0) {
       return `pub-${Math.random().toString(36).substr(2, 9)}`;
     }
-    
+
     return availablePubs[Math.floor(Math.random() * availablePubs.length)];
   }
 
@@ -195,7 +207,7 @@ export class UserScenarioBuilder {
     const basePoints = 25;
     const discoveryBonus = Math.random() > 0.7 ? 25 : 0; // 30% chance
     const timeBonus = Math.random() > 0.8 ? 10 : 0; // 20% chance
-    
+
     return basePoints + discoveryBonus + timeBonus;
   }
 
@@ -203,13 +215,13 @@ export class UserScenarioBuilder {
     const now = new Date();
     const daysAgo = Math.floor(Math.random() * 30); // Random day in last 30 days
     const hoursAgo = Math.floor(Math.random() * 24);
-    
+
     const date = new Date(now.getTime() - (daysAgo * 24 + hoursAgo) * 60 * 60 * 1000);
-    
+
     return {
       toDate: () => date,
       toMillis: () => date.getTime(),
-      seconds: Math.floor(date.getTime() / 1000)
+      seconds: Math.floor(date.getTime() / 1000),
     };
   }
 
@@ -220,21 +232,22 @@ export class UserScenarioBuilder {
       isVerified: Math.random() > 0.1, // 90% verified
       latitude: 51.5074 + (Math.random() - 0.5) * 0.1, // London area
       longitude: -0.1278 + (Math.random() - 0.5) * 0.1,
-      carpetImagePath: `/assets/carpets/${pubId}.jpg`
+      carpetImagePath: `/assets/carpets/${pubId}.jpg`,
     }));
   }
 
   private formatPubName(pubId: string): string {
-    return pubId.split('-').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ');
+    return pubId
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
   }
 
   private createMocksForScenario(scenarioData: UserScenarioData) {
     return {
       userStore: this.registry.createMock('UserStore', this.config),
       checkInStore: this.registry.createMock('CheckInStore', this.config),
-      authStore: this.registry.createMock('AuthStore', this.config)
+      authStore: this.registry.createMock('AuthStore', this.config),
     };
   }
 
@@ -251,16 +264,19 @@ export class UserScenarioBuilder {
 // SERVICE SCENARIO BUILDER
 // ===================================
 
-export class ServiceScenarioBuilder {
-  private serviceDeps: Record<string, any> = {};
+export class ServiceScenarioBuilder<T = unknown> {
+  private serviceDeps: Record<string, unknown> = {};
   private config: ScenarioConfig = { realistic: true };
 
-  constructor(private serviceName: string, private registry: MockRegistry) {}
+  constructor(
+    private serviceName: string,
+    private registry: MockRegistry
+  ) {}
 
   /**
    * Configure service dependencies
    */
-  withDependency(depName: string, mock: any): this {
+  withDependency(depName: string, mock: unknown): this {
     this.serviceDeps[depName] = mock;
     return this;
   }
@@ -268,7 +284,10 @@ export class ServiceScenarioBuilder {
   /**
    * Configure the service to return specific values
    */
-  withBehavior(methodName: string, returnValue: any): this {
+  withBehavior<K extends keyof T>(
+    methodName: K,
+    returnValue: T[K] extends (...args: unknown[]) => infer R ? R : never
+  ): this {
     // This would configure the service mock behavior
     return this;
   }
@@ -276,8 +295,8 @@ export class ServiceScenarioBuilder {
   /**
    * Build the service with configured dependencies
    */
-  build(): any {
-    return this.registry.createMock(this.serviceName as any, this.config);
+  build(): T {
+    return this.registry.createMock(this.serviceName, this.config) as T;
   }
 }
 
@@ -285,18 +304,21 @@ export class ServiceScenarioBuilder {
 // STORE SCENARIO BUILDER
 // ===================================
 
-export class StoreScenarioBuilder {
-  private initialData: any = null;
+export class StoreScenarioBuilder<T = unknown> {
+  private initialData: T | null = null;
   private loadingState = false;
   private errorState: string | null = null;
   private config: ScenarioConfig = { realistic: true };
 
-  constructor(private storeName: string, private registry: MockRegistry) {}
+  constructor(
+    private storeName: string,
+    private registry: MockRegistry
+  ) {}
 
   /**
    * Configure initial store data
    */
-  withData(data: any): this {
+  withData(data: T): this {
     this.initialData = data;
     return this;
   }
@@ -320,17 +342,17 @@ export class StoreScenarioBuilder {
   /**
    * Build the store with configured state
    */
-  build(): any {
-    const store = this.registry.createMock(this.storeName as any, this.config);
-    
+  build(): MockStore<T> {
+    const store = this.registry.createMock(this.storeName, this.config) as MockStore<T>;
+
     // Configure the store with specified state
-    if (store._setData && this.initialData) {
+    if ('_setData' in store && typeof store._setData === 'function' && this.initialData) {
       store._setData(this.initialData);
     }
-    if (store._setLoading) {
+    if ('_setLoading' in store && typeof store._setLoading === 'function') {
       store._setLoading(this.loadingState);
     }
-    if (store._setError && this.errorState) {
+    if ('_setError' in store && typeof store._setError === 'function' && this.errorState) {
       store._setError(this.errorState);
     }
 
@@ -343,7 +365,7 @@ export class StoreScenarioBuilder {
 // ===================================
 
 export class UserVerificationBuilder {
-  constructor(private userData: any) {}
+  constructor(private userData: User) {}
 
   /**
    * Verify user has correct points calculation
@@ -358,7 +380,10 @@ export class UserVerificationBuilder {
    */
   hasCorrectPubCount(expectedCount: number): this {
     // For demo purposes, just check if we have a reasonable value
-    const actualCount = this.userData.pubsVisited || this.userData.checkIns?.length || 0;
+    const actualCount =
+      (this.userData as unknown as { pubsVisited?: number; checkIns?: CheckIn[] }).pubsVisited ||
+      (this.userData as unknown as { checkIns?: CheckIn[] }).checkIns?.length ||
+      0;
     expect(actualCount).toBe(expectedCount);
     return this;
   }
@@ -367,15 +392,22 @@ export class UserVerificationBuilder {
    * Verify user has specific badges
    */
   hasBadges(expectedBadges: string[]): this {
-    expect(this.userData.badges).toEqual(expect.arrayContaining(expectedBadges));
+    expect((this.userData as unknown as { badges?: string[] }).badges).toEqual(
+      expect.arrayContaining(expectedBadges)
+    );
     return this;
   }
 }
 
-export class DataConsistencyVerifier {
-  private stores: Record<string, any> = {};
+export interface ConsistencyStores {
+  userStore?: { totalPoints: () => number };
+  checkInStore?: { allCheckIns: () => CheckIn[] };
+}
 
-  withStores(stores: Record<string, any>): this {
+export class DataConsistencyVerifier {
+  private stores: ConsistencyStores = {};
+
+  withStores(stores: ConsistencyStores): this {
     this.stores = stores;
     return this;
   }
@@ -387,18 +419,25 @@ export class DataConsistencyVerifier {
     // Example consistency check: UserStore totalPoints should match calculated points
     if (this.stores.userStore && this.stores.checkInStore) {
       const userPoints = this.stores.userStore.totalPoints();
-      const calculatedPoints = this.stores.checkInStore.allCheckIns()
-        .reduce((sum: number, checkIn: any) => sum + checkIn.pointsEarned, 0);
-      
+      const calculatedPoints = this.stores.checkInStore
+        .allCheckIns()
+        .reduce((sum: number, checkIn: CheckIn) => sum + (checkIn.pointsEarned || 0), 0);
+
       expect(userPoints).toBe(calculatedPoints);
     }
   }
 }
 
-export class PerformanceVerifier {
-  private metrics: any = {};
+export interface PerformanceMetrics {
+  avgCreationTime?: number;
+  totalMocks?: number;
+  memoryUsage?: number;
+}
 
-  withMetrics(metrics: any): this {
+export class PerformanceVerifier {
+  private metrics: PerformanceMetrics = {};
+
+  withMetrics(metrics: PerformanceMetrics): this {
     this.metrics = metrics;
     return this;
   }

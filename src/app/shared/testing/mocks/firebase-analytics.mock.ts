@@ -1,12 +1,12 @@
-import { vi } from 'vitest';
 import { signal } from '@angular/core';
+import { vi } from 'vitest';
 
 /**
  * Centralized Firebase Analytics Mock
- * 
+ *
  * This mock provides complete Firebase Analytics functionality for testing,
  * including the missing Analytics interface that was causing test failures.
- * 
+ *
  * Features:
  * - Complete Analytics interface mock
  * - Signal-based event tracking for modern Angular patterns
@@ -25,34 +25,36 @@ export interface MockAnalyticsEvent {
  */
 export function createFirebaseAnalyticsMock() {
   const events = signal<MockAnalyticsEvent[]>([]);
-  
+
   // Mock Analytics interface - this was missing and causing the test failures
   const mockAnalytics = {
     app: {
       name: 'test-app',
-      options: {}
+      options: {},
     },
     _delegate: {},
     _app: {
-      name: 'test-app'
-    }
+      name: 'test-app',
+    },
   };
 
   // Mock logEvent function with realistic behavior
-  const logEvent = vi.fn().mockImplementation((analytics: any, eventName: string, parameters?: Record<string, any>) => {
-    const event: MockAnalyticsEvent = {
-      name: eventName,
-      parameters: parameters || {},
-      timestamp: Date.now()
-    };
-    
-    events.update(current => [...current, event]);
-    
-    // Simulate network delay in realistic mode
-    if (parameters?._realistic) {
-      return new Promise(resolve => setTimeout(resolve, 10));
-    }
-  });
+  const logEvent = vi
+    .fn()
+    .mockImplementation((analytics: any, eventName: string, parameters?: Record<string, any>) => {
+      const event: MockAnalyticsEvent = {
+        name: eventName,
+        parameters: parameters || {},
+        timestamp: Date.now(),
+      };
+
+      events.update(current => [...current, event]);
+
+      // Simulate network delay in realistic mode
+      if (parameters?._realistic) {
+        return new Promise(resolve => setTimeout(resolve, 10));
+      }
+    });
 
   // Mock getAnalytics function
   const getAnalytics = vi.fn().mockImplementation((app?: any) => {
@@ -73,12 +75,12 @@ export function createFirebaseAnalyticsMock() {
     logEvent,
     getAnalytics,
     isSupported,
-    
+
     // Additional common exports
     setUserId: vi.fn(),
     setUserProperties: vi.fn(),
     setAnalyticsCollectionEnabled: vi.fn(),
-    
+
     // Test utilities for verification
     _getMockAnalytics: () => mockAnalytics,
     _getEvents: () => events(),
@@ -93,9 +95,9 @@ export function createFirebaseAnalyticsMock() {
       events.set([]);
       vi.clearAllMocks();
     },
-    
+
     // Signal-based access for reactive testing
-    events: events.asReadonly()
+    events: events.asReadonly(),
   };
 }
 
@@ -114,5 +116,5 @@ export default {
   isSupported: firebaseAnalyticsMock.isSupported,
   setUserId: firebaseAnalyticsMock.setUserId,
   setUserProperties: firebaseAnalyticsMock.setUserProperties,
-  setAnalyticsCollectionEnabled: firebaseAnalyticsMock.setAnalyticsCollectionEnabled
+  setAnalyticsCollectionEnabled: firebaseAnalyticsMock.setAnalyticsCollectionEnabled,
 };

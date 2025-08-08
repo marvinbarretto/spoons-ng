@@ -119,7 +119,7 @@ export class UserStore extends BaseStore<User> {
   readonly pubsVisited = computed(() => {
     const user = this.currentUser();
     const authUser = this.authStore.user();
-    
+
     if (!user || !authUser) {
       return 0;
     }
@@ -135,7 +135,7 @@ export class UserStore extends BaseStore<User> {
   readonly scoreboardData = computed(() => {
     const user = this.currentUser();
     const authUser = this.authStore.user();
-    
+
     if (!user || !authUser) {
       return {
         totalPoints: 0,
@@ -153,13 +153,18 @@ export class UserStore extends BaseStore<User> {
     const allCheckIns = this.globalCheckInStore.allCheckIns();
     const userCheckIns = allCheckIns.filter(c => c.userId === authUser.uid);
     const isLoading = this.globalCheckInStore.loading();
-    
+
     // Use DataAggregatorService pure method with all required parameters
-    return this.dataAggregator.getScoreboardDataForUser(authUser.uid, {
-      manuallyAddedPubIds: user.manuallyAddedPubIds || [],
-      badgeCount: user.badgeCount || 0,
-      landlordCount: user.landlordCount || 0,
-    }, userCheckIns, isLoading);
+    return this.dataAggregator.getScoreboardDataForUser(
+      authUser.uid,
+      {
+        manuallyAddedPubIds: user.manuallyAddedPubIds || [],
+        badgeCount: user.badgeCount || 0,
+        landlordCount: user.landlordCount || 0,
+      },
+      userCheckIns,
+      isLoading
+    );
   });
 
   // 🔄 Track auth user changes
@@ -200,9 +205,11 @@ export class UserStore extends BaseStore<User> {
 
         // Clear potentially stale cached data from previous user
         if (this.lastLoadedUserId && authUid) {
-          console.log('🗋 [UserStore] User account switched - triggering comprehensive cache invalidation');
+          console.log(
+            '🗋 [UserStore] User account switched - triggering comprehensive cache invalidation'
+          );
           this.cacheCoherence.invalidateMultiple(
-            ['users', 'checkins', 'points', 'user-profiles'], 
+            ['users', 'checkins', 'points', 'user-profiles'],
             'auth-user-switched'
           );
         } else if (!this.lastLoadedUserId && authUid) {
@@ -211,7 +218,7 @@ export class UserStore extends BaseStore<User> {
         } else if (this.lastLoadedUserId && !authUid) {
           console.log('🚪 [UserStore] User logged out - clearing all cached data');
           this.cacheCoherence.invalidateMultiple(
-            ['users', 'checkins', 'points', 'user-profiles', 'leaderboards'], 
+            ['users', 'checkins', 'points', 'user-profiles', 'leaderboards'],
             'auth-user-logout'
           );
           // Clear local state immediately on logout

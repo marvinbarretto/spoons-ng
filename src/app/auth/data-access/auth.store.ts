@@ -85,29 +85,38 @@ export class AuthStore {
       const checkAuthServiceUser = () => {
         const currentAuthServiceUser = this.authService.user$$();
         const currentAuthStoreUser = this._user();
-        
+
         // Only act if AuthService has a user but AuthStore doesn't, and it's different from last check
-        if (currentAuthServiceUser && !currentAuthStoreUser && currentAuthServiceUser !== lastAuthServiceUser) {
-          console.log('[AuthStore] 🍎 iOS backup: AuthService has user but AuthStore does not, syncing...', {
-            authServiceUid: currentAuthServiceUser.uid?.slice(0, 8),
-            authStoreUid: 'none'
-          });
-          
+        if (
+          currentAuthServiceUser &&
+          !currentAuthStoreUser &&
+          currentAuthServiceUser !== lastAuthServiceUser
+        ) {
+          console.log(
+            '[AuthStore] 🍎 iOS backup: AuthService has user but AuthStore does not, syncing...',
+            {
+              authServiceUid: currentAuthServiceUser.uid?.slice(0, 8),
+              authStoreUid: 'none',
+            }
+          );
+
           // Handle iOS native auth sync directly (get real Firebase token)
-          this.handleiOSNativeAuth(currentAuthServiceUser).then(() => {
-            this._ready.set(true);
-          }).catch(error => {
-            console.error('[AuthStore] 🍎 iOS native auth sync failed:', error);
-            this._ready.set(true);
-          });
+          this.handleiOSNativeAuth(currentAuthServiceUser)
+            .then(() => {
+              this._ready.set(true);
+            })
+            .catch(error => {
+              console.error('[AuthStore] 🍎 iOS native auth sync failed:', error);
+              this._ready.set(true);
+            });
         }
-        
+
         lastAuthServiceUser = currentAuthServiceUser;
       };
-      
+
       // Check periodically for iOS native auth sync issues
       setInterval(checkAuthServiceUser, 1000); // Check every second
-      
+
       // Also check immediately after a short delay
       setTimeout(checkAuthServiceUser, 500);
     });
@@ -125,7 +134,7 @@ export class AuthStore {
       console.log('[AuthStore] 🍎 handleiOSNativeAuth called:', {
         uid: authServiceUser.uid?.slice(0, 8),
         email: authServiceUser.email,
-        displayName: authServiceUser.displayName
+        displayName: authServiceUser.displayName,
       });
 
       // CRITICAL: Get the real Firebase ID token from the Capacitor plugin
@@ -133,7 +142,7 @@ export class AuthStore {
       const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
       const idTokenResult = await FirebaseAuthentication.getIdToken();
       const realToken = idTokenResult.token;
-      
+
       console.log('[AuthStore] 🍎 Got real Firebase ID token:', !!realToken);
 
       // Create basic user object from AuthService data
@@ -177,10 +186,12 @@ export class AuthStore {
           localStorage.setItem('token', realToken);
           console.log('[AuthStore] 💾 Saved iOS native auth data with real token to localStorage');
         } catch (error) {
-          console.warn('[AuthStore] ⚠️ Failed to save iOS native auth data to localStorage:', error);
+          console.warn(
+            '[AuthStore] ⚠️ Failed to save iOS native auth data to localStorage:',
+            error
+          );
         }
       });
-
     } catch (error) {
       console.error('[AuthStore] ❌ iOS native auth sync failed:', error);
       this.handleUserSignOut();
@@ -439,6 +450,8 @@ export class AuthStore {
 
   openAvatarSelector(): void {
     // TODO: Replace with proper avatar selection modal using avatar-selection-widget
-    console.warn('[AuthStore] Avatar selector removed - use ProfileCustomisationModalComponent instead');
+    console.warn(
+      '[AuthStore] Avatar selector removed - use ProfileCustomisationModalComponent instead'
+    );
   }
 }

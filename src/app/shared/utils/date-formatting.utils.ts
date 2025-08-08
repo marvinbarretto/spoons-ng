@@ -14,7 +14,7 @@ export function formatRelativeTime(dateString: string): string {
   if (diffInDays < 7) return `${diffInDays} days ago`;
   if (diffInDays < 30) return `${Math.floor(diffInDays / 7)} weeks ago`;
   if (diffInDays < 365) return `${Math.floor(diffInDays / 30)} months ago`;
-  
+
   return date.toLocaleDateString();
 }
 

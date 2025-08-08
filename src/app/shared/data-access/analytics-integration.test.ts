@@ -1,19 +1,18 @@
 /**
  * Analytics Integration Test
- * 
+ *
  * This test verifies that our comprehensive Firebase Analytics integration
  * is working correctly across all services and components.
  */
 import { TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
 import { Analytics } from '@angular/fire/analytics';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { Router } from '@angular/router';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { AnalyticsService } from './analytics.service';
-import { AnalyticsInterceptorService } from './analytics-interceptor.service';
 import { CheckInService } from '@check-in/data-access/check-in.service';
+import { AnalyticsInterceptorService } from './analytics-interceptor.service';
+import { AnalyticsService } from './analytics.service';
 import { CapacitorLocationService } from './capacitor-location.service';
-import { environment } from '../../../environments/environment';
 
 // Mock Firebase Analytics - just the bare minimum exports needed
 vi.mock('@angular/fire/analytics', () => ({
@@ -27,7 +26,7 @@ vi.mock('@angular/fire/analytics', () => ({
 vi.mock('../../../environments/environment', () => ({
   environment: {
     production: true, // Enable analytics for testing
-  }
+  },
 }));
 
 describe('Analytics Integration', () => {
@@ -65,7 +64,7 @@ describe('Analytics Integration', () => {
 
     analyticsService = TestBed.inject(AnalyticsService);
     analyticsInterceptor = TestBed.inject(AnalyticsInterceptorService);
-    
+
     // Clear mock calls for clean test isolation
     vi.clearAllMocks();
   });
@@ -162,24 +161,24 @@ describe('Analytics Integration', () => {
       // Stationary
       analyticsService.trackLocationUpdate(51.5074, -0.1278, 10, 0.3);
       expect(mockLogEvent).toHaveBeenLastCalledWith(
-        mockAnalytics, 
-        'location_update', 
+        mockAnalytics,
+        'location_update',
         expect.objectContaining({ movement_context: 'stationary' })
       );
 
       // Walking
       analyticsService.trackLocationUpdate(51.5074, -0.1278, 10, 3.0);
       expect(mockLogEvent).toHaveBeenLastCalledWith(
-        mockAnalytics, 
-        'location_update', 
+        mockAnalytics,
+        'location_update',
         expect.objectContaining({ movement_context: 'walking' })
       );
 
       // Transport
       analyticsService.trackLocationUpdate(51.5074, -0.1278, 10, 15.0);
       expect(mockLogEvent).toHaveBeenLastCalledWith(
-        mockAnalytics, 
-        'location_update', 
+        mockAnalytics,
+        'location_update',
         expect.objectContaining({ movement_context: 'transport' })
       );
     });
@@ -247,19 +246,19 @@ describe('Analytics Integration', () => {
       mockLogEvent.mockClear();
       // 1. User requests location permission
       analyticsInterceptor.trackLocationPermissionRequest();
-      
+
       // 2. Permission granted
       analyticsInterceptor.trackLocationPermissionResult(true);
-      
+
       // 3. Location acquired
       analyticsService.trackLocationUpdate(51.5074, -0.1278, 5, 1.0);
-      
+
       // 4. Check-in flow starts
       analyticsInterceptor.trackCheckInFlowStart('pub123');
-      
+
       // 5. Check-in completed successfully
       analyticsService.trackCheckIn('pub123', true, true, 30);
-      
+
       // 6. Check-in flow completes
       analyticsInterceptor.trackCheckInFlowComplete('pub123', true, 2000);
 
@@ -272,15 +271,19 @@ describe('Analytics Integration', () => {
     it('should track user friction during check-in failure', () => {
       // 1. Location permission denied
       analyticsInterceptor.trackLocationPermissionResult(false);
-      
+
       // 2. Check-in flow fails
       analyticsInterceptor.trackCheckInFlowComplete('pub123', false, 1000);
 
       // Verify friction tracking
       expect(mockLogEvent).toHaveBeenCalledWith(mockAnalytics, 'user_friction', expect.any(Object));
-      expect(mockLogEvent).toHaveBeenCalledWith(mockAnalytics, 'user_flow', expect.objectContaining({
-        flow_success: false
-      }));
+      expect(mockLogEvent).toHaveBeenCalledWith(
+        mockAnalytics,
+        'user_flow',
+        expect.objectContaining({
+          flow_success: false,
+        })
+      );
     });
 
     it('should track user engagement patterns', () => {
@@ -288,7 +291,7 @@ describe('Analytics Integration', () => {
       analyticsService.trackFeatureUsage('leaderboard_view', 'home', 45);
       analyticsService.trackSocialAction('share_checkin', 'profile');
       analyticsService.trackUsagePattern('daily_streak', 5);
-      
+
       expect(mockLogEvent).toHaveBeenCalledTimes(3);
     });
   });
@@ -296,10 +299,10 @@ describe('Analytics Integration', () => {
   describe('Analytics Data Quality', () => {
     it('should include required timestamp in all events', () => {
       analyticsService.trackSessionStart();
-      
+
       const lastCall = mockLogEvent.mock.calls[mockLogEvent.mock.calls.length - 1];
       const eventData = lastCall[2];
-      
+
       expect(eventData).toHaveProperty('timestamp');
       expect(typeof eventData.timestamp).toBe('number');
       expect(eventData.timestamp).toBeGreaterThan(Date.now() - 1000); // Recent timestamp
@@ -307,10 +310,10 @@ describe('Analytics Integration', () => {
 
     it('should track contextual information consistently', () => {
       analyticsService.trackTapEvent('button1', 'button', 'home');
-      
+
       const lastCall = mockLogEvent.mock.calls[mockLogEvent.mock.calls.length - 1];
       const eventData = lastCall[2];
-      
+
       expect(eventData).toHaveProperty('screen', 'home');
       expect(eventData).toHaveProperty('session_duration');
       expect(eventData).toHaveProperty('is_moving');

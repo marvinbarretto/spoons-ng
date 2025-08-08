@@ -141,11 +141,16 @@ export class LeaderboardStore {
 
         // Use DataAggregatorService for consistent pub count calculation (with deduplication)
         // Pass user data to include manually added pubs
-        const totalUniquePubs = this.dataAggregator.getPubsVisitedForUser(user.uid, user.manuallyAddedPubIds || []);
+        const totalUniquePubs = this.dataAggregator.getPubsVisitedForUser(
+          user.uid,
+          user.manuallyAddedPubIds || []
+        );
 
         // ✅ FIXED: Use reactive points calculation from check-ins (like scoreboard)
-        const totalPointsFromCheckins = this.dataAggregator.calculateUserPointsFromCheckins(user.uid);
-        
+        const totalPointsFromCheckins = this.dataAggregator.calculateUserPointsFromCheckins(
+          user.uid
+        );
+
         // 🔍 DEBUGGING: Log users with potential data issues
         if (totalPointsFromCheckins > 0 && totalUniquePubs === 0) {
           console.warn(`[Leaderboard] 🚨 USER WITH POINTS BUT NO PUBS:`, {
@@ -239,8 +244,8 @@ export class LeaderboardStore {
         return allEntries.filter(entry => entry.isFriend === true);
       case 'regional':
         if (selectedRegion) {
-          return allEntries.filter(entry => 
-            entry.region === selectedRegion || entry.country === selectedRegion
+          return allEntries.filter(
+            entry => entry.region === selectedRegion || entry.country === selectedRegion
           );
         }
         return allEntries.filter(entry => entry.region || entry.country);
@@ -254,7 +259,7 @@ export class LeaderboardStore {
   readonly topEntries = computed(() => this.scopedEntries().slice(0, 100));
 
   // Friends-specific entries
-  readonly friendsEntries = computed(() => 
+  readonly friendsEntries = computed(() =>
     this.leaderboardEntries().filter(entry => entry.isFriend === true)
   );
 
@@ -262,8 +267,8 @@ export class LeaderboardStore {
   readonly regionalEntries = computed(() => {
     const selectedRegion = this.selectedRegion();
     if (selectedRegion) {
-      return this.leaderboardEntries().filter(entry => 
-        entry.region === selectedRegion || entry.country === selectedRegion
+      return this.leaderboardEntries().filter(
+        entry => entry.region === selectedRegion || entry.country === selectedRegion
       );
     }
     return this.leaderboardEntries().filter(entry => entry.region || entry.country);
@@ -361,13 +366,20 @@ export class LeaderboardStore {
     }, 0);
 
     const totalPubsVisited = new Set(allCheckIns.filter(c => c.pubId).map(c => c.pubId)).size;
-    
-    const averagePointsPerUser = allUsers.length > 0 ? Math.round(totalSystemPoints / allUsers.length) : 0;
-    const averagePubsPerUser = allUsers.length > 0 ? Math.round(
-      allUsers.reduce((sum, user) => {
-        return sum + this.dataAggregator.getPubsVisitedForUser(user.uid, user.manuallyAddedPubIds || []);
-      }, 0) / allUsers.length
-    ) : 0;
+
+    const averagePointsPerUser =
+      allUsers.length > 0 ? Math.round(totalSystemPoints / allUsers.length) : 0;
+    const averagePubsPerUser =
+      allUsers.length > 0
+        ? Math.round(
+            allUsers.reduce((sum, user) => {
+              return (
+                sum +
+                this.dataAggregator.getPubsVisitedForUser(user.uid, user.manuallyAddedPubIds || [])
+              );
+            }, 0) / allUsers.length
+          )
+        : 0;
 
     const globalStats = {
       totalUsers: allUsers.length,
@@ -616,8 +628,12 @@ export class LeaderboardStore {
     }, 0);
 
     // Fallback: estimate if direct calculation returns 0 but we have check-ins
-    const estimatedMonthlyPoints = monthlyPoints > 0 ? monthlyPoints : 
-      userCheckins.length > 0 ? Math.round((monthlyCheckins.length / userCheckins.length) * totalReactivePoints) : 0;
+    const estimatedMonthlyPoints =
+      monthlyPoints > 0
+        ? monthlyPoints
+        : userCheckins.length > 0
+          ? Math.round((monthlyCheckins.length / userCheckins.length) * totalReactivePoints)
+          : 0;
 
     return {
       points: estimatedMonthlyPoints,

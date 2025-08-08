@@ -1,12 +1,12 @@
-import { TestBed } from '@angular/core/testing';
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { signal } from '@angular/core';
-import { SessionService } from './session.service';
+import { TestBed } from '@angular/core/testing';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthStore } from '../../auth/data-access/auth.store';
-import { UserService } from '../../users/data-access/user.service';
 import { GlobalCheckInService } from '../../check-in/data-access/global-check-in.service';
+import { UserService } from '../../users/data-access/user.service';
+import { createTestCheckIn, createTestUser } from '../testing/test-data';
 import { DebugService } from '../utils/debug.service';
-import { createTestUser, createTestCheckIn } from '../testing/test-data';
+import { SessionService } from './session.service';
 
 describe('SessionService', () => {
   let service: SessionService;
@@ -19,13 +19,13 @@ describe('SessionService', () => {
   const testUsers = [
     createTestUser({ uid: 'user-1', displayName: 'User One', totalPoints: 100 }),
     createTestUser({ uid: 'user-2', displayName: 'User Two', totalPoints: 50, isAnonymous: true }),
-    createTestUser({ uid: 'user-3', displayName: 'User Three', totalPoints: 0 })
+    createTestUser({ uid: 'user-3', displayName: 'User Three', totalPoints: 0 }),
   ];
 
   const testCheckIns = [
     createTestCheckIn({ userId: 'user-1', pubId: 'pub-1', pointsEarned: 10 }),
     createTestCheckIn({ userId: 'user-1', pubId: 'pub-2', pointsEarned: 15 }),
-    createTestCheckIn({ userId: 'user-2', pubId: 'pub-1', pointsEarned: 20 })
+    createTestCheckIn({ userId: 'user-2', pubId: 'pub-1', pointsEarned: 20 }),
   ];
 
   beforeEach(async () => {
@@ -33,8 +33,12 @@ describe('SessionService', () => {
     mockAuthStore = {
       user: signal(null),
       isAuthenticated: signal(false),
-      _setUser: function(user: any) { this.user.set(user); },
-      _setAuthenticated: function(auth: boolean) { this.isAuthenticated.set(auth); }
+      _setUser: function (user: any) {
+        this.user.set(user);
+      },
+      _setAuthenticated: function (auth: boolean) {
+        this.isAuthenticated.set(auth);
+      },
     };
 
     mockUserService = {
@@ -43,7 +47,7 @@ describe('SessionService', () => {
         // Simulate async loading
         await new Promise(resolve => setTimeout(resolve, 10));
         mockUserService.allUsers.set(testUsers);
-      })
+      }),
     };
 
     mockGlobalCheckInService = {
@@ -51,11 +55,11 @@ describe('SessionService', () => {
       loadAllCheckIns: vi.fn().mockImplementation(async () => {
         await new Promise(resolve => setTimeout(resolve, 10));
         mockGlobalCheckInService.allCheckIns.set(testCheckIns);
-      })
+      }),
     };
 
     mockDebugService = {
-      standard: vi.fn()
+      standard: vi.fn(),
     };
 
     await TestBed.configureTestingModule({
@@ -64,8 +68,8 @@ describe('SessionService', () => {
         { provide: AuthStore, useValue: mockAuthStore },
         { provide: UserService, useValue: mockUserService },
         { provide: GlobalCheckInService, useValue: mockGlobalCheckInService },
-        { provide: DebugService, useValue: mockDebugService }
-      ]
+        { provide: DebugService, useValue: mockDebugService },
+      ],
     }).compileComponents();
 
     service = TestBed.inject(SessionService);
@@ -91,7 +95,7 @@ describe('SessionService', () => {
   describe('Auth State Monitoring', () => {
     it('should initialize session data when user becomes authenticated', async () => {
       const testUser = createTestUser();
-      
+
       // Mock the services to track calls
       const loadAllUsersSpy = vi.spyOn(mockUserService, 'loadAllUsers');
       const loadAllCheckInsSpy = vi.spyOn(mockGlobalCheckInService, 'loadAllCheckIns');
@@ -121,7 +125,7 @@ describe('SessionService', () => {
       // First authenticate
       mockAuthStore._setUser(createTestUser());
       mockAuthStore._setAuthenticated(true);
-      
+
       await new Promise(resolve => setTimeout(resolve, 50));
 
       // Then sign out
@@ -145,19 +149,21 @@ describe('SessionService', () => {
 
       expect(loadUsersSpy).toHaveBeenCalled();
       expect(loadCheckInsSpy).toHaveBeenCalled();
-      
+
       // Verify order of calls (users first, then check-ins)
       const callOrder = vi.mocked(mockDebugService.standard).mock.calls.map(call => call[0]);
       const usersIndex = callOrder.findIndex(msg => msg.includes('Loading users from server'));
-      const checkinsIndex = callOrder.findIndex(msg => msg.includes('Loading check-ins from server'));
-      
+      const checkinsIndex = callOrder.findIndex(msg =>
+        msg.includes('Loading check-ins from server')
+      );
+
       expect(usersIndex).toBeLessThan(checkinsIndex);
     });
 
     it('should prevent duplicate loading when already in progress', async () => {
       // Start first load
       const firstLoad = service.initializeSessionData();
-      
+
       // Try to start second load immediately
       const secondLoad = service.initializeSessionData();
 
@@ -170,10 +176,10 @@ describe('SessionService', () => {
 
     it('should reset loading flag after completion', async () => {
       expect(service.isSessionDataLoading()).toBe(false);
-      
+
       const loadPromise = service.initializeSessionData();
       expect(service.isSessionDataLoading()).toBe(true);
-      
+
       await loadPromise;
       expect(service.isSessionDataLoading()).toBe(false);
     });
@@ -195,7 +201,7 @@ describe('SessionService', () => {
           totalUsers: testUsers.length,
           realUsers: testUsers.filter(u => !u.isAnonymous).length,
           usersWithPoints: testUsers.filter(u => u.totalPoints && u.totalPoints > 0).length,
-          userSample: expect.any(Array)
+          userSample: expect.any(Array),
         })
       );
     });
@@ -209,7 +215,7 @@ describe('SessionService', () => {
           totalCheckIns: testCheckIns.length,
           uniqueUsers: expect.any(Number),
           checkinsWithPubs: testCheckIns.filter(c => c.pubId).length,
-          checkinSample: expect.any(Array)
+          checkinSample: expect.any(Array),
         })
       );
     });
@@ -227,30 +233,31 @@ describe('SessionService', () => {
               displayName: expect.any(String),
               totalPoints: expect.any(Number),
               checkinCount: expect.any(Number),
-              uniquePubsFromCheckins: expect.any(Number)
-            })
-          ])
+              uniquePubsFromCheckins: expect.any(Number),
+            }),
+          ]),
         })
       );
     });
 
     it('should identify potential data issues', async () => {
       // Add a user with points but no check-ins to test data
-      const problematicUser = createTestUser({ 
-        uid: 'problematic-user', 
-        totalPoints: 100, 
-        unverifiedPubCount: 0 
+      const problematicUser = createTestUser({
+        uid: 'problematic-user',
+        totalPoints: 100,
+        unverifiedPubCount: 0,
       });
       mockUserService.allUsers.set([...testUsers, problematicUser]);
 
       await service.initializeSessionData();
 
-      const finalLogCall = vi.mocked(mockDebugService.standard).mock.calls
-        .find(call => call[0].includes('Session data initialization completed'));
-      
+      const finalLogCall = vi
+        .mocked(mockDebugService.standard)
+        .mock.calls.find(call => call[0].includes('Session data initialization completed'));
+
       expect(finalLogCall).toBeTruthy();
       expect(finalLogCall[1]).toMatchObject({
-        potentialDataIssues: expect.any(Number)
+        potentialDataIssues: expect.any(Number),
       });
     });
 
@@ -263,7 +270,7 @@ describe('SessionService', () => {
           durationMs: expect.any(Number),
           usersLoaded: testUsers.length,
           checkinsLoaded: testCheckIns.length,
-          potentialDataIssues: expect.any(Number)
+          potentialDataIssues: expect.any(Number),
         })
       );
     });
@@ -361,7 +368,7 @@ describe('SessionService', () => {
         '[SessionService] 🔍 Verifying service data after loading...',
         expect.objectContaining({
           userServiceUsers: expect.any(Number),
-          globalCheckInServiceData: expect.any(Number)
+          globalCheckInServiceData: expect.any(Number),
         })
       );
     });
@@ -388,9 +395,10 @@ describe('SessionService', () => {
     it('should log performance metrics', async () => {
       await service.initializeSessionData();
 
-      const completionCall = vi.mocked(mockDebugService.standard).mock.calls
-        .find(call => call[0].includes('Session data initialization completed'));
-      
+      const completionCall = vi
+        .mocked(mockDebugService.standard)
+        .mock.calls.find(call => call[0].includes('Session data initialization completed'));
+
       expect(completionCall[1].durationMs).toBeGreaterThan(0);
     });
   });

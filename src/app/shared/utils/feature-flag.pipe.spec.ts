@@ -1,6 +1,6 @@
+import { vi } from 'vitest';
 import { FeatureFlagService } from '../data-access/feature-flag.service';
 import { FeatureFlagPipe } from './feature-flag.pipe';
-import { vi } from 'vitest';
 
 describe('FeatureFlagPipe', () => {
   let pipe: FeatureFlagPipe;

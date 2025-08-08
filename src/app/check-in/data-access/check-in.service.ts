@@ -4,12 +4,12 @@
 
 // src/app/checkin/data-access/checkin.service.ts
 import { Injectable, inject, signal } from '@angular/core';
-import { FirestoreService } from '@fourfold/angular-foundation';
-import { Timestamp, where } from 'firebase/firestore';
 import { environment } from '@environments/environment';
+import { FirestoreService } from '@fourfold/angular-foundation';
+import { AnalyticsService } from '@shared/data-access/analytics.service';
+import { Timestamp, where } from 'firebase/firestore';
 import { AuthStore } from '../../auth/data-access/auth.store';
 import { NearbyPubStore } from '../../pubs/data-access/nearby-pub.store';
-import { AnalyticsService } from '@shared/data-access/analytics.service';
 import type { CheckIn } from '../utils/check-in.models';
 
 @Injectable({ providedIn: 'root' })
@@ -39,7 +39,7 @@ export class CheckInService extends FirestoreService {
    */
   async canCheckIn(pubId: string): Promise<{ allowed: boolean; reason?: string }> {
     console.log('[CheckInService] 🔍 Running check-in validations for pub:', pubId);
-    
+
     // Track validation attempt
     this.analytics.trackFeatureUsage('check_in_validation_start', 'check_in_flow');
 
@@ -258,7 +258,7 @@ export class CheckInService extends FirestoreService {
 
     const docRef = await this.addDocToCollection('checkins', completeCheckinData);
     const docId = docRef.id;
-    
+
     // Track successful check-in creation with detailed analytics
     const isFirstTime = await this.isFirstEverCheckIn(userId, pubId);
     this.analytics.trackCheckIn(
@@ -277,14 +277,14 @@ export class CheckInService extends FirestoreService {
       '[CheckInService] ✅ Made landlord:',
       completeCheckinData.madeUserLandlord || false
     );
-    
+
     // Track check-in success metrics
     this.analytics.trackFeatureUsage('check_in_create_success', 'check_in_flow');
-    
+
     if (completeCheckinData.badgeName) {
       this.analytics.trackFeatureUsage('badge_earned', 'badges', 0);
     }
-    
+
     if (completeCheckinData.madeUserLandlord) {
       this.analytics.trackFeatureUsage('became_landlord', 'landlord', 0);
     }
@@ -506,7 +506,7 @@ export class CheckInService extends FirestoreService {
   async loadAllCheckIns(): Promise<void> {
     this._loadingAllCheckIns.set(true);
     const startTime = Date.now();
-    
+
     try {
       console.log(
         '[CheckInService] 🏆 Loading all check-ins for leaderboard (fresh server data)...'
@@ -515,11 +515,11 @@ export class CheckInService extends FirestoreService {
       const checkIns = await this.getAllCheckInsFromServer();
       console.log(`[CheckInService] ✅ Loaded ${checkIns.length} fresh check-ins for leaderboard`);
       this._allCheckIns.set(checkIns);
-      
+
       // Track data loading performance
       const loadTime = Date.now() - startTime;
       this.analytics.trackFeatureUsage('leaderboard_data_load', 'leaderboard', loadTime);
-      
+
       if (loadTime > 3000) {
         this.analytics.trackPerformanceIssue('slow_load', 'leaderboard', 'high');
       }

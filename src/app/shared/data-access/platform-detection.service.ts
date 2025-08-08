@@ -3,30 +3,30 @@ import { SsrPlatformService } from '@fourfold/angular-foundation';
 
 /**
  * Platform Detection Service
- * 
+ *
  * PURPOSE: Reliable, synchronous platform detection for web/Android/iOS
  * Replaces complex async platform detection with simple, immediate results
- * 
+ *
  * KEY FEATURES:
  * - Synchronous detection (no async delays)
  * - SSR-safe (works during server-side rendering)
  * - User agent based (reliable, immediate)
  * - Capacitor integration for native app detection
- * 
+ *
  * DESIGN DECISION: Uses user agent + window.location for immediate detection
  * rather than async Capacitor imports that can fail or be delayed
  */
 @Injectable({ providedIn: 'root' })
 export class PlatformDetectionService {
   private readonly ssrPlatform = inject(SsrPlatformService);
-  
+
   // Cached detection results
   private _platformInfo: PlatformInfo | null = null;
-  
+
   constructor() {
     // Detect platform immediately on service creation
     this._platformInfo = this.detectPlatform();
-    
+
     console.log('[PlatformDetectionService] 🔍 Platform detected:', this._platformInfo);
   }
 
@@ -38,16 +38,19 @@ export class PlatformDetectionService {
     const window = this.ssrPlatform.getWindow();
     const userAgent = window?.navigator?.userAgent || '';
     const location = window?.location?.protocol || 'https:';
-    
+
     // Native app detection
-    const isCapacitorApp = location === 'capacitor:' || location === 'file:' || window?.location?.hostname === 'localhost';
+    const isCapacitorApp =
+      location === 'capacitor:' ||
+      location === 'file:' ||
+      window?.location?.hostname === 'localhost';
     const isIOSUserAgent = /iPad|iPhone|iPod/.test(userAgent);
     const isAndroidUserAgent = /Android/.test(userAgent);
-    
+
     // Platform determination
     let platform: 'web' | 'ios' | 'android';
     let isNative: boolean;
-    
+
     if (isCapacitorApp) {
       // We're in a Capacitor app
       isNative = true;
@@ -64,12 +67,12 @@ export class PlatformDetectionService {
       isNative = false;
       platform = 'web';
     }
-    
+
     // Device capabilities (conservative detection)
-    const hasCamera = isNative || !!(window?.navigator?.mediaDevices?.getUserMedia);
-    const hasGeolocation = !!(window?.navigator?.geolocation);
+    const hasCamera = isNative || !!window?.navigator?.mediaDevices?.getUserMedia;
+    const hasGeolocation = !!window?.navigator?.geolocation;
     const hasPushNotifications = isNative || 'serviceWorker' in (window?.navigator || {});
-    
+
     return {
       platform,
       isNative,
@@ -91,35 +94,35 @@ export class PlatformDetectionService {
   }
 
   // Public getters (synchronous, always available)
-  
+
   get platform(): 'web' | 'ios' | 'android' {
     return this._platformInfo!.platform;
   }
-  
+
   get isNative(): boolean {
     return this._platformInfo!.isNative;
   }
-  
+
   get isWeb(): boolean {
     return this._platformInfo!.isWeb;
   }
-  
+
   get isIOS(): boolean {
     return this._platformInfo!.isIOS;
   }
-  
+
   get isAndroid(): boolean {
     return this._platformInfo!.isAndroid;
   }
-  
+
   get hasCamera(): boolean {
     return this._platformInfo!.capabilities.hasCamera;
   }
-  
+
   get hasGeolocation(): boolean {
     return this._platformInfo!.capabilities.hasGeolocation;
   }
-  
+
   get hasPushNotifications(): boolean {
     return this._platformInfo!.capabilities.hasPushNotifications;
   }
@@ -162,21 +165,14 @@ export class PlatformDetectionService {
   /**
    * Platform-specific execution with fallback
    */
-  withPlatformFallback<T>(
-    nativeCallback: () => T,
-    webCallback: () => T
-  ): T {
+  withPlatformFallback<T>(nativeCallback: () => T, webCallback: () => T): T {
     return this.isNative ? nativeCallback() : webCallback();
   }
 
   /**
    * Mobile-specific execution (iOS/Android) with web fallback
    */
-  withMobileFallback<T>(
-    iosCallback: () => T,
-    androidCallback: () => T,
-    webCallback: () => T
-  ): T {
+  withMobileFallback<T>(iosCallback: () => T, androidCallback: () => T, webCallback: () => T): T {
     if (this.isIOS) return iosCallback();
     if (this.isAndroid) return androidCallback();
     return webCallback();

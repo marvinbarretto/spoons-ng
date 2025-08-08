@@ -6,8 +6,8 @@ import { RouterModule } from '@angular/router';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { OverlayService } from '@fourfold/angular-foundation';
 import { NearbyPubStore } from '@pubs/data-access/nearby-pub.store';
-import { AbstractLocationService } from '@shared/data-access/abstract-location.service';
 import { BaseComponent } from '@shared/base/base.component';
+import { AbstractLocationService } from '@shared/data-access/abstract-location.service';
 import { ViewportService } from '@shared/data-access/viewport.service';
 import { IconComponent } from '@shared/ui/icon/icon.component';
 import {

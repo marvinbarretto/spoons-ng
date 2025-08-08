@@ -375,7 +375,7 @@
   .error-actions {
     display: flex;
     gap: 1rem;
-    
+
     button {
       padding: 0.75rem 1.5rem;
       border-radius: 8px;
@@ -457,7 +457,11 @@
 // ===================================
 
 @keyframes bounce {
-  0%, 20%, 50%, 80%, 100% {
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
     transform: translateY(0);
   }
   40% {

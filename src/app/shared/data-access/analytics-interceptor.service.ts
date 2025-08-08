@@ -1,7 +1,7 @@
-import { Injectable, inject, Renderer2, RendererFactory2 } from '@angular/core';
-import { Router, NavigationEnd } from '@angular/router';
-import { filter } from 'rxjs';
+import { inject, Injectable, RendererFactory2 } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
 import { DebugService } from '@shared/utils/debug.service';
+import { filter } from 'rxjs';
 import { AnalyticsService } from './analytics.service';
 
 /**
@@ -9,7 +9,7 @@ import { AnalyticsService } from './analytics.service';
  * Automatically tracks user interactions, navigation, and engagement patterns
  */
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AnalyticsInterceptorService {
   private analytics = inject(AnalyticsService);
@@ -17,7 +17,7 @@ export class AnalyticsInterceptorService {
   private rendererFactory = inject(RendererFactory2);
   private renderer = this.rendererFactory.createRenderer(null, null);
   private debug = inject(DebugService);
-  
+
   private currentScreen = '';
   private screenStartTime = Date.now();
   private screenInteractions = 0;
@@ -30,15 +30,15 @@ export class AnalyticsInterceptorService {
     this.debug.standard('[AnalyticsInterceptor] 📊 Initializing global user behavior tracking');
 
     // Track navigation between screens
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe((event: NavigationEnd) => {
-      this.trackScreenChange(event.url);
-    });
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        this.trackScreenChange(event.url);
+      });
 
     // Set up global click/tap tracking
     this.setupGlobalTapTracking();
-    
+
     // Track session start
     this.analytics.trackSessionStart();
   }
@@ -48,7 +48,8 @@ export class AnalyticsInterceptorService {
     const timeOnPreviousScreen = Date.now() - this.screenStartTime;
 
     // Track time spent on previous screen
-    if (previousScreen && timeOnPreviousScreen > 1000) { // Only track if > 1 second
+    if (previousScreen && timeOnPreviousScreen > 1000) {
+      // Only track if > 1 second
       this.analytics.trackScreenTime(
         previousScreen,
         Math.floor(timeOnPreviousScreen / 1000),
@@ -66,7 +67,9 @@ export class AnalyticsInterceptorService {
       this.analytics.trackNavigation(previousScreen, this.currentScreen, 'tap');
     }
 
-    this.debug.standard(`[AnalyticsInterceptor] 📱 Screen change: ${previousScreen} → ${this.currentScreen}`);
+    this.debug.standard(
+      `[AnalyticsInterceptor] 📱 Screen change: ${previousScreen} → ${this.currentScreen}`
+    );
   }
 
   private getScreenName(url: string): string {
@@ -79,7 +82,7 @@ export class AnalyticsInterceptorService {
     if (url.includes('/admin')) return 'admin';
     if (url.includes('/auth')) return 'auth';
     if (url.includes('/settings')) return 'settings';
-    
+
     // Extract main section for unknown URLs
     const segments = url.split('/').filter(s => s.length > 0);
     return segments[0] || 'unknown';
@@ -105,17 +108,15 @@ export class AnalyticsInterceptorService {
   private handleTapEvent(event: MouseEvent) {
     const target = event.target as Element;
     const elementInfo = this.getElementInfo(target);
-    
+
     this.debug.extreme(`[AnalyticsInterceptor] 👆 Tap detected:`, elementInfo);
-    
+
     this.screenInteractions++;
-    
-    this.analytics.trackTapEvent(
-      elementInfo.id,
-      elementInfo.type,
-      this.currentScreen,
-      { x: event.clientX, y: event.clientY }
-    );
+
+    this.analytics.trackTapEvent(elementInfo.id, elementInfo.type, this.currentScreen, {
+      x: event.clientX,
+      y: event.clientY,
+    });
 
     // Track specific feature interest based on what was tapped
     this.trackFeatureInteractionIntent(target);
@@ -123,34 +124,36 @@ export class AnalyticsInterceptorService {
 
   private handleTouchEvent(touch: Touch, target: Element) {
     const elementInfo = this.getElementInfo(target);
-    
+
     this.screenInteractions++;
-    
-    this.analytics.trackTapEvent(
-      elementInfo.id,
-      elementInfo.type,
-      this.currentScreen,
-      { x: touch.clientX, y: touch.clientY }
-    );
+
+    this.analytics.trackTapEvent(elementInfo.id, elementInfo.type, this.currentScreen, {
+      x: touch.clientX,
+      y: touch.clientY,
+    });
 
     this.trackFeatureInteractionIntent(target);
   }
 
-  private getElementInfo(element: Element): { id: string, type: 'button' | 'link' | 'card' | 'input' | 'icon' } {
+  private getElementInfo(element: Element): {
+    id: string;
+    type: 'button' | 'link' | 'card' | 'input' | 'icon';
+  } {
     // Get meaningful element identifier
-    const id = element.id || 
-              element.getAttribute('data-testid') || 
-              element.className.split(' ')[0] ||
-              element.tagName.toLowerCase();
+    const id =
+      element.id ||
+      element.getAttribute('data-testid') ||
+      element.className.split(' ')[0] ||
+      element.tagName.toLowerCase();
 
     // Determine element type
     let type: 'button' | 'link' | 'card' | 'input' | 'icon' = 'button';
-    
+
     if (element.tagName === 'A' || element.closest('a')) type = 'link';
     else if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') type = 'input';
     else if (element.classList.contains('card') || element.closest('.card')) type = 'card';
     else if (element.classList.contains('icon') || element.tagName === 'I') type = 'icon';
-    
+
     return { id: id.substring(0, 50), type }; // Limit ID length for analytics
   }
 
@@ -167,7 +170,7 @@ export class AnalyticsInterceptorService {
     if (target.closest('.leaderboard')) {
       this.analytics.trackSocialAction('view_leaderboard', this.currentScreen);
     }
-    
+
     if (target.closest('.check-in-button')) {
       this.analytics.trackFeatureUsage('check_in_attempt', this.currentScreen);
     }
@@ -198,7 +201,7 @@ export class AnalyticsInterceptorService {
 
   trackCheckInFlowComplete(pubId: string, success: boolean, duration: number) {
     this.analytics.trackUserFlow('check_in_complete', 'pub_checkin', duration, success);
-    
+
     if (success) {
       this.analytics.trackFeatureUsage('check_in_success', this.currentScreen, duration);
     } else {
@@ -208,7 +211,8 @@ export class AnalyticsInterceptorService {
 
   // Performance tracking helpers
   trackLoadingTime(screen: string, loadTime: number) {
-    if (loadTime > 3000) { // > 3 seconds is slow
+    if (loadTime > 3000) {
+      // > 3 seconds is slow
       this.analytics.trackPerformanceIssue('slow_load', screen, 'high');
     } else if (loadTime > 1500) {
       this.analytics.trackPerformanceIssue('slow_load', screen, 'medium');

@@ -252,7 +252,10 @@ export class PointsStore {
    * @throws Error if user not authenticated or points award already in progress
    * @sideEffects UserStore automatically updates via reactive computed signals
    */
-  async awardCheckInPoints(pointsData: CheckInPointsData, userHomePubId?: string): Promise<PointsBreakdown> {
+  async awardCheckInPoints(
+    pointsData: CheckInPointsData,
+    userHomePubId?: string
+  ): Promise<PointsBreakdown> {
     const callId = Date.now();
     console.log(`[PointsStore] 🎯 === AWARD CHECK-IN POINTS STARTED (${callId}) ===`);
 
@@ -279,9 +282,7 @@ export class PointsStore {
       // 1. Get pub data from stores for points calculation
       console.log(`[PointsStore] 🎯 Getting pub data from stores (${callId})`);
       const checkInPub = this.pubStore.data().find(p => p.id === pointsData.pubId);
-      const homePub = userHomePubId
-        ? this.pubStore.data().find(p => p.id === userHomePubId)
-        : null;
+      const homePub = userHomePubId ? this.pubStore.data().find(p => p.id === userHomePubId) : null;
 
       console.log(`[PointsStore] 🎯 Pub data retrieved (${callId}):`, {
         checkInPub: checkInPub?.name || 'Not found',
@@ -317,7 +318,9 @@ export class PointsStore {
       this._totalPoints.set(newTotal);
 
       // 4. ✅ UserStore.totalPoints computed reactively from check-ins (no sync needed)
-      console.log(`[PointsStore] 🎯 UserStore will update automatically via reactive signals (${callId})`);
+      console.log(
+        `[PointsStore] 🎯 UserStore will update automatically via reactive signals (${callId})`
+      );
 
       console.log(`[PointsStore] 📈 Points updated in PointsStore (${callId}):`, {
         from: currentTotal,
@@ -406,7 +409,9 @@ export class PointsStore {
       // Update local state - UserStore updates automatically via reactive computed
       const newTotal = this.totalPoints() + breakdown.total;
       this._totalPoints.set(newTotal);
-      console.log('[PointsStore] UserStore will update automatically via reactive computed signals');
+      console.log(
+        '[PointsStore] UserStore will update automatically via reactive computed signals'
+      );
       await this.pointsService.updateUserTotalPoints(user.uid, newTotal);
 
       // ✅ CRITICAL: Invalidate cache to trigger leaderboard refresh

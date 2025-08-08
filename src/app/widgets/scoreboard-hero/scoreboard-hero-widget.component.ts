@@ -34,9 +34,9 @@ import {
 import { BadgeStore } from '../../badges/data-access/badge.store';
 import { CheckInStore } from '../../check-in/data-access/check-in.store';
 import { LeaderboardStore } from '../../leaderboard/data-access/leaderboard.store';
-import { UserStore } from '../../users/data-access/user.store';
 import { BadgeCrestComponent } from '../../shared/ui/badge-crest/badge-crest.component';
 import { DebugService } from '../../shared/utils/debug.service';
+import { UserStore } from '../../users/data-access/user.store';
 import { BaseWidgetComponent } from '../base/base-widget.component';
 
 export type ScoreboardData = {
@@ -501,10 +501,10 @@ export class ScoreboardHeroWidgetComponent extends BaseWidgetComponent implement
   readonly data = computed((): ScoreboardData => {
     console.log('📈 [ScoreboardHeroWidget] === COMPUTING WIDGET DATA ===');
     console.log('📈 [ScoreboardHeroWidget] Timestamp:', new Date().toISOString());
-    
+
     // Use beautiful reactive UserStore computed signal - no circular dependencies!
     const scoreboardData = this.userStore.scoreboardData();
-    
+
     console.log('📈 [ScoreboardHeroWidget] Data received from UserStore reactive computed:', {
       totalPoints: scoreboardData.totalPoints,
       todaysPoints: scoreboardData.todaysPoints,
@@ -515,14 +515,14 @@ export class ScoreboardHeroWidgetComponent extends BaseWidgetComponent implement
       totalCheckins: scoreboardData.totalCheckins,
       isLoading: scoreboardData.isLoading,
     });
-    
+
     console.log('📈 [ScoreboardHeroWidget] Widget will display:', {
       pointsDisplay: scoreboardData.totalPoints,
       pubsDisplay: scoreboardData.pubsVisited,
       checkinsDisplay: scoreboardData.totalCheckins,
       dataSource: 'UserStore.scoreboardData() - Beautiful Reactive Pattern!',
     });
-    
+
     this.debug.extreme('[ScoreboardHeroWidget] Data computed:', scoreboardData);
     return scoreboardData;
   });

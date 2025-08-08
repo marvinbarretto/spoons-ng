@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';
 import {
   AfterViewInit,
   Component,
@@ -7,7 +8,6 @@ import {
   computed,
   inject,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
 
 import { BaseComponent } from '@shared/base/base.component';
 import { environment } from '../../../../environments/environment';
@@ -99,7 +99,7 @@ export class CheckinComponent extends BaseComponent implements AfterViewInit, On
           this.orchestrator.startCheckin(pubId);
         }
       })
-      .catch((error) => {
+      .catch(error => {
         console.error('[CheckinComponent] ❌ Video element readiness failed:', error);
         this.orchestrator.cleanup();
       });
@@ -113,13 +113,13 @@ export class CheckinComponent extends BaseComponent implements AfterViewInit, On
 
       const checkVideoElement = () => {
         const videoElement = this.cameraVideo?.nativeElement;
-        
+
         if (videoElement && this.isVideoElementReady(videoElement)) {
           console.log('[CheckinComponent] ✅ Video element is ready:', {
             width: videoElement.clientWidth,
             height: videoElement.clientHeight,
             offsetParent: !!videoElement.offsetParent,
-            isConnected: videoElement.isConnected
+            isConnected: videoElement.isConnected,
           });
 
           // Set video element in orchestrator
@@ -130,12 +130,18 @@ export class CheckinComponent extends BaseComponent implements AfterViewInit, On
 
         retries++;
         if (retries >= maxRetries) {
-          console.error('[CheckinComponent] ❌ Video element not ready after', maxRetries, 'attempts');
+          console.error(
+            '[CheckinComponent] ❌ Video element not ready after',
+            maxRetries,
+            'attempts'
+          );
           reject(new Error('Video element not ready after maximum retries'));
           return;
         }
 
-        console.log(`[CheckinComponent] 🔄 Video element not ready yet, retry ${retries}/${maxRetries}`);
+        console.log(
+          `[CheckinComponent] 🔄 Video element not ready yet, retry ${retries}/${maxRetries}`
+        );
         setTimeout(checkVideoElement, 100); // Check every 100ms
       };
 

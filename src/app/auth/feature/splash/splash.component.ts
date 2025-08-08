@@ -12,8 +12,8 @@ import { AuthStore } from '@auth/data-access/auth.store';
 import { BaseComponent } from '@shared/base/base.component';
 import { ThemeStore } from '@shared/data-access/theme.store';
 import { ButtonComponent } from '@shared/ui/button/button.component';
-import { UserStore } from '@users/data-access/user.store';
 import type { ThemeType } from '@shared/utils/theme.tokens';
+import { UserStore } from '@users/data-access/user.store';
 
 @Component({
   selector: 'app-splash',
@@ -27,59 +27,75 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
         <div class="hero-section">
           <!-- Animated Pub Glass -->
           <div class="glass-container">
-            <svg 
-              class="pub-glass" 
-              viewBox="0 0 200 300" 
+            <svg
+              class="pub-glass"
+              viewBox="0 0 200 300"
               xmlns="http://www.w3.org/2000/svg"
               role="img"
               aria-label="Animated pub glass filling with beer"
             >
               <!-- Glass outline -->
-              <path 
+              <path
                 class="glass-outline"
                 d="M50 50 Q50 45 55 45 L145 45 Q150 45 150 50 L160 280 Q160 290 150 290 L50 290 Q40 290 40 280 Z"
                 fill="none"
                 stroke="var(--glass-border, rgba(255,255,255,0.3))"
                 stroke-width="3"
               />
-              
+
               <!-- Beer fill -->
               <clipPath id="glassClip">
-                <path d="M50 50 Q50 45 55 45 L145 45 Q150 45 150 50 L160 280 Q160 290 150 290 L50 290 Q40 290 40 280 Z"/>
+                <path
+                  d="M50 50 Q50 45 55 45 L145 45 Q150 45 150 50 L160 280 Q160 290 150 290 L50 290 Q40 290 40 280 Z"
+                />
               </clipPath>
-              
-              <rect 
+
+              <rect
                 class="beer-fill"
-                x="40" 
-                y="290" 
-                width="120" 
+                x="40"
+                y="290"
+                width="120"
                 height="240"
                 clip-path="url(#glassClip)"
                 fill="url(#beerGradient)"
               />
-              
+
               <!-- Foam/bubbles -->
               <g class="foam-bubbles" clip-path="url(#glassClip)">
-                <circle cx="80" cy="60" r="8" fill="var(--foam-color, rgba(255,248,220,0.9))" class="bubble bubble-1"/>
-                <circle cx="120" cy="70" r="6" fill="var(--foam-color, rgba(255,248,220,0.8))" class="bubble bubble-2"/>
-                <circle cx="95" cy="65" r="4" fill="var(--foam-color, rgba(255,248,220,0.7))" class="bubble bubble-3"/>
+                <circle
+                  cx="80"
+                  cy="60"
+                  r="8"
+                  fill="var(--foam-color, rgba(255,248,220,0.9))"
+                  class="bubble bubble-1"
+                />
+                <circle
+                  cx="120"
+                  cy="70"
+                  r="6"
+                  fill="var(--foam-color, rgba(255,248,220,0.8))"
+                  class="bubble bubble-2"
+                />
+                <circle
+                  cx="95"
+                  cy="65"
+                  r="4"
+                  fill="var(--foam-color, rgba(255,248,220,0.7))"
+                  class="bubble bubble-3"
+                />
               </g>
-              
+
               <!-- Glass highlight -->
-              <ellipse 
-                cx="80" 
-                cy="120" 
-                rx="15" 
-                ry="40" 
-                fill="url(#glassHighlight)" 
-                opacity="0.6"
-              />
-              
+              <ellipse cx="80" cy="120" rx="15" ry="40" fill="url(#glassHighlight)" opacity="0.6" />
+
               <!-- Gradient definitions -->
               <defs>
                 <linearGradient id="beerGradient" x1="0%" y1="100%" x2="0%" y2="0%">
                   <stop offset="0%" style="stop-color:var(--beer-dark, #D2691E);stop-opacity:1" />
-                  <stop offset="100%" style="stop-color:var(--beer-light, #F4A460);stop-opacity:1" />
+                  <stop
+                    offset="100%"
+                    style="stop-color:var(--beer-light, #F4A460);stop-opacity:1"
+                  />
                 </linearGradient>
                 <linearGradient id="glassHighlight" x1="0%" y1="0%" x2="100%" y2="100%">
                   <stop offset="0%" style="stop-color:rgba(255,255,255,0.4);stop-opacity:1" />
@@ -94,16 +110,14 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
             @if (isFirstTimeUser()) {
               <h1 class="hero-title">Welcome to Spoonscount</h1>
               <p class="hero-subtitle">
-                Track your Wetherspoons pub visits, collect badges, and discover new locations in your area. 
-                Join thousands of pub enthusiasts on their Spoons journey!
+                Track your Wetherspoons pub visits, collect badges, and discover new locations in
+                your area. Join thousands of pub enthusiasts on their Spoons journey!
               </p>
             } @else {
               <h1 class="hero-title">Welcome Back</h1>
-              <p class="hero-subtitle">
-                Continue your pub journey where you left off
-              </p>
+              <p class="hero-subtitle">Continue your pub journey where you left off</p>
             }
-            
+
             <!-- Trust indicators -->
             <div class="trust-indicators">
               <span class="trust-indicator">🔒 Privacy First</span>
@@ -145,8 +159,8 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
           <!-- More options - Only show for returning users -->
           @if (!isFirstTimeUser()) {
             <div class="more-options">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 class="expand-options-btn"
                 (click)="toggleMoreOptions()"
                 [attr.aria-expanded]="showMoreOptions()"
@@ -156,8 +170,8 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
                 More sign-in options
                 <span class="expand-icon" [class.expanded]="showMoreOptions()">▼</span>
               </button>
-              
-              <div 
+
+              <div
                 id="additional-auth-options"
                 class="additional-options"
                 [class.visible]="showMoreOptions()"
@@ -172,7 +186,7 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
                 >
                   📧 Sign in with Email
                 </button>
-                
+
                 <button
                   type="button"
                   class="auth-option-btn existing-user-btn"
@@ -186,7 +200,6 @@ import type { ThemeType } from '@shared/utils/theme.tokens';
             </div>
           }
         </div>
-
       </div>
     </div>
   `,
@@ -202,7 +215,7 @@ export class SplashComponent extends BaseComponent implements OnInit, OnDestroy 
   readonly guestLoading = signal(false);
   readonly googleLoading = signal(false);
   readonly showMoreOptions = signal(false);
-  
+
   // Detect if this is a first-time user (no previous session)
   readonly isFirstTimeUser = computed(() => {
     // Check if there's any stored auth data or previous usage
@@ -268,26 +281,30 @@ export class SplashComponent extends BaseComponent implements OnInit, OnDestroy 
 
     try {
       await this.authStore.loginWithGoogle();
-      
+
       // Check if user already has completed onboarding
       const user = this.authStore.user();
       console.log('[SplashComponent] 🔍 Google sign-in completed, checking user status');
-      
+
       if (user?.uid) {
         try {
           // Check if user document exists in Firestore and has completed onboarding
           const existingUserDoc = await this.userStore.checkUserExists(user.uid);
-          
+
           if (existingUserDoc && existingUserDoc.onboardingCompleted) {
-            console.log('[SplashComponent] ✅ Existing user with completed onboarding, redirecting to home');
+            console.log(
+              '[SplashComponent] ✅ Existing user with completed onboarding, redirecting to home'
+            );
             await this.router.navigate(['/home']);
             return;
           }
         } catch (error) {
-          console.log('[SplashComponent] 🆕 New user or error checking user status, proceeding to onboarding');
+          console.log(
+            '[SplashComponent] 🆕 New user or error checking user status, proceeding to onboarding'
+          );
         }
       }
-      
+
       // New user or incomplete onboarding - redirect to onboarding flow
       console.log('[SplashComponent] 📝 Redirecting to onboarding for setup');
       await this.router.navigate(['/onboarding']);

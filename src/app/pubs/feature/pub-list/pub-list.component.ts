@@ -216,11 +216,11 @@ export class PubListComponent extends BaseComponent implements OnInit {
   hasVisitedPub(pubId: string): boolean {
     // Check verified visits (check-ins)
     const hasVerifiedVisit = this.userCheckedInPubIds().includes(pubId);
-    
+
     // Check manual visits
     const user = this.userStore.user();
     const hasManualVisit = user?.manuallyAddedPubIds?.includes(pubId) || false;
-    
+
     return hasVerifiedVisit || hasManualVisit;
   }
 
@@ -232,14 +232,15 @@ export class PubListComponent extends BaseComponent implements OnInit {
     const checkins = this.checkinStore.checkins();
     const user = this.user();
     if (!user) return 0;
-    
-    return checkins.filter(checkin => checkin.userId === user.uid && checkin.pubId === pubId).length;
+
+    return checkins.filter(checkin => checkin.userId === user.uid && checkin.pubId === pubId)
+      .length;
   }
 
   isLocalPub(pubId: string): boolean {
     const user = this.userStore.user();
     if (!user) return false;
-    
+
     return user.homePubId === pubId;
   }
 

@@ -10,10 +10,10 @@ import { PubStore } from './pubs/data-access/pub.store';
 import { AnalyticsInterceptorService } from './shared/data-access/analytics-interceptor.service';
 import { PageTitleService } from './shared/data-access/page-title.service';
 import { SessionService } from './shared/data-access/session.service';
-import { CacheDebugService } from './shared/utils/cache-debug.service';
 import { DashboardShell } from './shared/feature/shells/dashboard.shell';
 import { FeatureShell } from './shared/feature/shells/feature.shell';
 import { FullScreenShell } from './shared/feature/shells/full-screen.shell';
+import { CacheDebugService } from './shared/utils/cache-debug.service';
 
 @Component({
   selector: 'app-root',
@@ -51,10 +51,10 @@ export class AppComponent {
 
   // Initialize SessionService to handle app-wide session data management
   private readonly sessionService = inject(SessionService);
-  
+
   // Initialize global analytics tracking
   private readonly analyticsInterceptor = inject(AnalyticsInterceptorService);
-  
+
   // Initialize CacheDebugService for console access
   private readonly cacheDebugService = inject(CacheDebugService);
 
@@ -95,7 +95,7 @@ export class AppComponent {
   constructor() {
     console.log('[AppComponent] 🚀 Booted at', new Date().toISOString());
     console.time('[SSR] AppComponent init');
-    
+
     // Initialize global analytics tracking (browser only)
     this.platform.onlyOnBrowser(() => {
       console.log('[AppComponent] 📊 Initializing global analytics tracking...');

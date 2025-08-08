@@ -83,7 +83,7 @@ export class HeaderComponent extends BaseComponent {
     console.log('  isAndroid():', this.capacitorPlatform.isAndroid());
     console.log('  User agent:', navigator.userAgent);
     console.log('  Window location:', window.location.href);
-    
+
     // Force template re-evaluation
     console.log('  Template condition isIOS():', this.isIOS());
   }
@@ -93,16 +93,16 @@ export class HeaderComponent extends BaseComponent {
 
   constructor() {
     super();
-    
+
     // CRITICAL: Basic component instantiation check
     console.log('[HeaderComponent] 🚀 CONSTRUCTOR CALLED - Component is being created');
     console.log('[HeaderComponent] 🔍 Platform service available:', !!this.capacitorPlatform);
     console.log('[HeaderComponent] 🔍 Immediate platform check:', {
       isIOS: this.capacitorPlatform?.isIOS(),
       platformName: this.capacitorPlatform?.platformName(),
-      initialized: this.capacitorPlatform?.initialized()
+      initialized: this.capacitorPlatform?.initialized(),
     });
-    
+
     // Enhanced logging for route info
     effect(() => {
       console.log('[HeaderComponent] Current route:', this.currentRoute());
@@ -152,9 +152,9 @@ export class HeaderComponent extends BaseComponent {
       isIOS: this.isIOS(),
       isNative: this.isNative(),
       platformName: this.platformName(),
-      initialized: this.capacitorPlatform.initialized()
+      initialized: this.capacitorPlatform.initialized(),
     });
-    
+
     // Force template condition check
     const templateCondition = this.isIOS();
     console.log('[HeaderComponent] 🎨 Template condition isIOS():', templateCondition);

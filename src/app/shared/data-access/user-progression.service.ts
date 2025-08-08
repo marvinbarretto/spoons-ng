@@ -103,7 +103,8 @@ export class UserProgressionService {
       return { target: 1, type: 'first-checkin', description: 'your first check-in' };
     if (checkins < 3) return { target: 3, type: 'early-user', description: 'early adopter status' };
     if (checkins < 10) return { target: 10, type: 'regular', description: 'regular user badge' };
-    if (checkins < 25) return { target: 25, type: 'power-user', description: 'power user achievement' };
+    if (checkins < 25)
+      return { target: 25, type: 'power-user', description: 'power user achievement' };
 
     // For power users, focus on next milestone (50, 75, 100, etc.)
     const nextRoundNumber = Math.ceil(checkins / 25) * 25;

@@ -1,5 +1,5 @@
+import { computed, signal, type Signal } from '@angular/core';
 import { vi } from 'vitest';
-import { signal, computed, type Signal } from '@angular/core';
 
 /**
  * Generic Store Mock Factory
@@ -8,18 +8,18 @@ export function createMockStore<T>(initialData: T[] = []) {
   const data = signal<T[]>(initialData);
   const loading = signal(false);
   const error = signal<string | null>(null);
-  
+
   return {
     // Core signals
     data: data.asReadonly(),
     loading: loading.asReadonly(),
     error: error.asReadonly(),
-    
+
     // Computed signals
     hasData: computed(() => data().length > 0),
     isEmpty: computed(() => data().length === 0),
     count: computed(() => data().length),
-    
+
     // Actions
     load: vi.fn(async () => {
       loading.set(true);
@@ -28,12 +28,12 @@ export function createMockStore<T>(initialData: T[] = []) {
       await new Promise(resolve => setTimeout(resolve, 10));
       loading.set(false);
     }),
-    
+
     add: vi.fn((item: T) => {
       const current = data();
       data.set([...current, item]);
     }),
-    
+
     update: vi.fn((id: string, updates: Partial<T>) => {
       const current = data();
       const index = current.findIndex((item: any) => item.id === id);
@@ -43,14 +43,14 @@ export function createMockStore<T>(initialData: T[] = []) {
         data.set(updated);
       }
     }),
-    
+
     remove: vi.fn((id: string) => {
       const current = data();
       data.set(current.filter((item: any) => item.id !== id));
     }),
-    
+
     clear: vi.fn(() => data.set([])),
-    
+
     // Test helpers
     _setLoading: (isLoading: boolean) => loading.set(isLoading),
     _setError: (errorMessage: string | null) => error.set(errorMessage),
@@ -60,7 +60,7 @@ export function createMockStore<T>(initialData: T[] = []) {
       loading.set(false);
       error.set(null);
       vi.clearAllMocks();
-    }
+    },
   };
 }
 
@@ -71,16 +71,16 @@ export function createMockEntityStore<T>(initialData: T | null = null) {
   const entity = signal<T | null>(initialData);
   const loading = signal(false);
   const error = signal<string | null>(null);
-  
+
   return {
     // Core signals
     entity: entity.asReadonly(),
     loading: loading.asReadonly(),
     error: error.asReadonly(),
-    
+
     // Computed signals
     hasEntity: computed(() => entity() !== null),
-    
+
     // Actions
     load: vi.fn(async () => {
       loading.set(true);
@@ -88,7 +88,7 @@ export function createMockEntityStore<T>(initialData: T | null = null) {
       await new Promise(resolve => setTimeout(resolve, 10));
       loading.set(false);
     }),
-    
+
     set: vi.fn((data: T) => entity.set(data)),
     update: vi.fn((updates: Partial<T>) => {
       const current = entity();
@@ -97,7 +97,7 @@ export function createMockEntityStore<T>(initialData: T | null = null) {
       }
     }),
     clear: vi.fn(() => entity.set(null)),
-    
+
     // Test helpers
     _setLoading: (isLoading: boolean) => loading.set(isLoading),
     _setError: (errorMessage: string | null) => error.set(errorMessage),
@@ -107,7 +107,7 @@ export function createMockEntityStore<T>(initialData: T | null = null) {
       loading.set(false);
       error.set(null);
       vi.clearAllMocks();
-    }
+    },
   };
 }
 
@@ -124,7 +124,7 @@ export function testStoreLifecycle<T>(
   }
 ) {
   const { storeName, hasAsyncLoad = true, hasCrud = true } = options;
-  
+
   return {
     [`${storeName} - Initialization`]: {
       'should initialize with empty state': () => {
@@ -133,15 +133,15 @@ export function testStoreLifecycle<T>(
         expect(store.loading()).toBe(false);
         expect(store.error()).toBe(null);
       },
-      
+
       'should have correct computed values on init': () => {
         const store = createStore();
         expect(store.hasData()).toBe(false);
         expect(store.isEmpty()).toBe(true);
         expect(store.count()).toBe(0);
-      }
+      },
     },
-    
+
     ...(hasAsyncLoad && {
       [`${storeName} - Loading`]: {
         'should handle loading state': async () => {
@@ -151,16 +151,16 @@ export function testStoreLifecycle<T>(
           await loadPromise;
           expect(store.loading()).toBe(false);
         },
-        
+
         'should clear error on new load': async () => {
           const store = createStore();
           store._setError('Previous error');
           await store.load();
           expect(store.error()).toBe(null);
-        }
-      }
+        },
+      },
     }),
-    
+
     ...(hasCrud && {
       [`${storeName} - CRUD Operations`]: {
         'should add items correctly': () => {
@@ -170,15 +170,15 @@ export function testStoreLifecycle<T>(
           expect(store.data()).toContain(item);
           expect(store.count()).toBe(1);
         },
-        
+
         'should update items correctly': () => {
           const store = createStore();
           const item = { ...mockData[0], id: '1' };
           store.add(item);
-          store.update('1', { name: 'Updated' } as any);
+          store.update('1', { name: 'Updated' } as Partial<T>);
           expect(store.data()[0]).toMatchObject({ name: 'Updated' });
         },
-        
+
         'should remove items correctly': () => {
           const store = createStore();
           const item = { ...mockData[0], id: '1' };
@@ -186,9 +186,9 @@ export function testStoreLifecycle<T>(
           store.remove('1');
           expect(store.data()).not.toContain(item);
           expect(store.count()).toBe(0);
-        }
-      }
-    })
+        },
+      },
+    }),
   };
 }
 
@@ -199,14 +199,20 @@ export const signalTestUtils = {
   /**
    * Wait for a signal to change to a specific value
    */
-  waitForSignalValue: async <T>(signal: Signal<T>, expectedValue: T, timeout = 1000): Promise<void> => {
+  waitForSignalValue: async <T>(
+    signal: Signal<T>,
+    expectedValue: T,
+    timeout = 1000
+  ): Promise<void> => {
     return new Promise((resolve, reject) => {
       const startTime = Date.now();
       const checkValue = () => {
         if (signal() === expectedValue) {
           resolve();
         } else if (Date.now() - startTime > timeout) {
-          reject(new Error(`Signal did not reach expected value ${expectedValue} within ${timeout}ms`));
+          reject(
+            new Error(`Signal did not reach expected value ${expectedValue} within ${timeout}ms`)
+          );
         } else {
           setTimeout(checkValue, 10);
         }
@@ -214,7 +220,7 @@ export const signalTestUtils = {
       checkValue();
     });
   },
-  
+
   /**
    * Track signal changes for testing
    */
@@ -222,16 +228,16 @@ export const signalTestUtils = {
     const changes: T[] = [];
     const initial = signal();
     changes.push(initial);
-    
+
     // In a real implementation, this would use effect() to track changes
     // For testing, we'll provide a mock tracking mechanism
     return {
       changes: () => changes,
       addChange: (value: T) => changes.push(value),
       getLastChange: () => changes[changes.length - 1],
-      getChangeCount: () => changes.length
+      getChangeCount: () => changes.length,
     };
-  }
+  },
 };
 
 /**
@@ -242,14 +248,14 @@ export const asyncTestUtils = {
    * Wait for all pending promises/timers
    */
   flushPromises: () => new Promise(resolve => setTimeout(resolve, 0)),
-  
+
   /**
    * Advance timers for testing
    */
   advanceTimers: (ms: number) => {
     vi.advanceTimersByTime(ms);
   },
-  
+
   /**
    * Test async error handling
    */
@@ -262,5 +268,5 @@ export const asyncTestUtils = {
         expect(error.message).toContain(expectedError);
       }
     }
-  }
+  },
 };

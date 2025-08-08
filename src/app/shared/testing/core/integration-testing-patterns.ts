@@ -1,15 +1,15 @@
 /**
  * @fileoverview Integration Testing Patterns for Complex Workflows
- * 
+ *
  * Provides high-level patterns for testing complete application workflows
  * by combining Store Integration Suite, Signal Test Harness, and Enhanced Test Data.
  * Focuses on real-world user scenarios and end-to-end business logic validation.
  */
 
-import { StoreIntegrationSuite } from './store-integration-suite';
-import { SignalTestHarness, ReactiveChainSimulator } from './signal-test-harness';
-import { TestScenarios, simulateUserJourney, type RelatedDataSet, type UserJourneyStep } from './enhanced-test-data';
+import { TestScenarios, type RelatedDataSet } from './enhanced-test-data';
 import { MockRegistry } from './mock-registry';
+import { ReactiveChainSimulator, SignalTestHarness } from './signal-test-harness';
+import { StoreIntegrationSuite } from './store-integration-suite';
 
 // ===================================
 // WORKFLOW TESTING TYPES
@@ -79,7 +79,9 @@ export class WorkflowTestOrchestrator {
     // Set up test data
     if (scenario.testData) {
       this.testData = TestScenarios[scenario.testData]();
-      console.log(`   📊 Test data: ${this.testData.users.length} users, ${this.testData.checkIns.length} check-ins`);
+      console.log(
+        `   📊 Test data: ${this.testData.users.length} users, ${this.testData.checkIns.length} check-ins`
+      );
     }
 
     // Set up mocks
@@ -104,7 +106,7 @@ export class WorkflowTestOrchestrator {
       duration: 0,
       stepResults: [],
       dataConsistency: false,
-      signalReactivity: false
+      signalReactivity: false,
     };
 
     try {
@@ -113,9 +115,13 @@ export class WorkflowTestOrchestrator {
       // Execute workflow steps
       for (const step of scenario.steps) {
         console.log(`🔄 Executing step: ${step.name}`);
-        
-        const stepResult = { step: step.name, success: true, error: undefined as string | undefined };
-        
+
+        const stepResult = {
+          step: step.name,
+          success: true,
+          error: undefined as string | undefined,
+        };
+
         try {
           // Execute step action
           await step.action();
@@ -142,7 +148,6 @@ export class WorkflowTestOrchestrator {
           if (step.cleanup) {
             await step.cleanup();
           }
-
         } catch (error) {
           stepResult.success = false;
           stepResult.error = stepResult.error || `Step execution failed: ${error}`;
@@ -154,7 +159,7 @@ export class WorkflowTestOrchestrator {
 
       // Verify overall data consistency
       result.dataConsistency = await this.verifyDataConsistency();
-      
+
       // Verify signal reactivity
       result.signalReactivity = await this.verifySignalReactivity();
 
@@ -162,7 +167,6 @@ export class WorkflowTestOrchestrator {
       if (scenario.teardown) {
         await scenario.teardown();
       }
-
     } catch (error) {
       result.success = false;
       console.error(`❌ Workflow execution failed: ${error}`);
@@ -199,7 +203,7 @@ export class WorkflowTestOrchestrator {
         // Check that signals are responding to changes
         const snapshot = this.reactiveChain.getChainSnapshot();
         const hasActivity = Object.values(snapshot).some(count => count > 1);
-        
+
         if (!hasActivity) {
           console.log('⚠️  No signal activity detected');
           return false;
@@ -242,7 +246,7 @@ export const WorkflowPatterns = {
     description: 'Complete user registration, first check-in, and initial badge earning',
     stores: ['UserStore', 'CheckInStore', 'PointsStore', 'BadgeStore', 'DataAggregator'],
     testData: 'newUserFirstWeek',
-    
+
     setup: async () => {
       // Initialize app state as if user just opened the app
     },
@@ -262,16 +266,16 @@ export const WorkflowPatterns = {
             assertion: () => {
               const authStore = MockRegistry.get('user-store');
               expect(authStore.hasEntity()).toBe(true);
-            }
+            },
           },
           {
             description: 'User should have initial state',
             assertion: () => {
               const userStore = MockRegistry.get('user-store');
               expect(userStore.entity().totalPoints).toBe(0);
-            }
-          }
-        ]
+            },
+          },
+        ],
       },
 
       {
@@ -284,7 +288,7 @@ export const WorkflowPatterns = {
             userId: 'test-user-123',
             pubId: 'pub-1',
             timestamp: new Date().toISOString(),
-            points: 50 // First timer bonus
+            points: 50, // First timer bonus
           };
           checkInStore.add(newCheckIn);
         },
@@ -294,16 +298,16 @@ export const WorkflowPatterns = {
             assertion: () => {
               const checkInStore = MockRegistry.get('checkin-store');
               expect(checkInStore.count()).toBe(1);
-            }
+            },
           },
           {
             description: 'Points should be awarded',
             assertion: () => {
               const pointsStore = MockRegistry.get('points-store');
               expect(pointsStore.totalPoints()).toBeGreaterThan(0);
-            }
-          }
-        ]
+            },
+          },
+        ],
       },
 
       {
@@ -316,7 +320,7 @@ export const WorkflowPatterns = {
             id: 'first-timer',
             userId: 'test-user-123',
             badgeId: 'badge-first-timer',
-            earnedAt: new Date().toISOString()
+            earnedAt: new Date().toISOString(),
           };
           badgeStore.add(firstTimerBadge);
         },
@@ -326,7 +330,7 @@ export const WorkflowPatterns = {
             assertion: () => {
               const userStore = MockRegistry.get('user-store');
               expect(userStore.entity().badgeCount).toBeGreaterThan(0);
-            }
+            },
           },
           {
             description: 'DataAggregator should reflect changes',
@@ -335,16 +339,16 @@ export const WorkflowPatterns = {
               const data = aggregator.scoreboardData();
               expect(data.badgeCount).toBeGreaterThan(0);
               expect(data.totalCheckins).toBe(1);
-            }
-          }
-        ]
-      }
+            },
+          },
+        ],
+      },
     ],
 
     teardown: async () => {
       // Clean up any remaining test state
       MockRegistry.resetAll();
-    }
+    },
   }),
 
   /**
@@ -371,7 +375,7 @@ export const WorkflowPatterns = {
             userId: 'user-1',
             pubId: 'social-pub',
             timestamp: new Date().toISOString(),
-            points: 10
+            points: 10,
           });
         },
         expectations: [
@@ -381,9 +385,9 @@ export const WorkflowPatterns = {
               const checkInStore = MockRegistry.get('checkin-store');
               const pubCheckIns = checkInStore.data().filter((c: any) => c.pubId === 'social-pub');
               expect(pubCheckIns.length).toBe(1);
-            }
-          }
-        ]
+            },
+          },
+        ],
       },
 
       {
@@ -391,7 +395,7 @@ export const WorkflowPatterns = {
         description: 'Additional users check into same pub',
         action: async () => {
           const checkInStore = MockRegistry.get('checkin-store');
-          
+
           // Simulate multiple users checking in within short time window
           for (let i = 2; i <= 4; i++) {
             checkInStore.add({
@@ -399,7 +403,7 @@ export const WorkflowPatterns = {
               userId: `user-${i}`,
               pubId: 'social-pub',
               timestamp: new Date(Date.now() + i * 1000).toISOString(),
-              points: 10 + (i * 2) // Social bonus
+              points: 10 + i * 2, // Social bonus
             });
           }
         },
@@ -410,7 +414,7 @@ export const WorkflowPatterns = {
               const checkInStore = MockRegistry.get('checkin-store');
               const pubCheckIns = checkInStore.data().filter((c: any) => c.pubId === 'social-pub');
               expect(pubCheckIns.length).toBe(4);
-            }
+            },
           },
           {
             description: 'DataAggregator should show social activity',
@@ -418,9 +422,9 @@ export const WorkflowPatterns = {
               const aggregator = MockRegistry.get('data-aggregator');
               const data = aggregator.scoreboardData();
               expect(data.totalCheckins).toBeGreaterThanOrEqual(4);
-            }
-          }
-        ]
+            },
+          },
+        ],
       },
 
       {
@@ -438,11 +442,11 @@ export const WorkflowPatterns = {
             assertion: () => {
               const pointsStore = MockRegistry.get('points-store');
               expect(pointsStore.totalPoints()).toBeGreaterThan(40); // Base + social bonus
-            }
-          }
-        ]
-      }
-    ]
+            },
+          },
+        ],
+      },
+    ],
   }),
 
   /**
@@ -463,7 +467,7 @@ export const WorkflowPatterns = {
         description: 'Check-in fails due to network error',
         action: async () => {
           const checkInStore = MockRegistry.get('checkin-store');
-          
+
           // Simulate network failure
           checkInStore._setError('Network connection failed');
           checkInStore._setLoading(false);
@@ -474,16 +478,16 @@ export const WorkflowPatterns = {
             assertion: () => {
               const checkInStore = MockRegistry.get('checkin-store');
               expect(checkInStore.error()).toBeTruthy();
-            }
+            },
           },
           {
             description: 'Loading state should be resolved',
             assertion: () => {
               const checkInStore = MockRegistry.get('checkin-store');
               expect(checkInStore.loading()).toBe(false);
-            }
-          }
-        ]
+            },
+          },
+        ],
       },
 
       {
@@ -491,11 +495,11 @@ export const WorkflowPatterns = {
         description: 'User retries the failed operation',
         action: async () => {
           const checkInStore = MockRegistry.get('checkin-store');
-          
+
           // Clear error and retry
           checkInStore._setError(null);
           checkInStore._setLoading(true);
-          
+
           // Simulate successful retry
           await new Promise(resolve => setTimeout(resolve, 50));
           checkInStore.add({
@@ -503,7 +507,7 @@ export const WorkflowPatterns = {
             userId: 'test-user',
             pubId: 'test-pub',
             timestamp: new Date().toISOString(),
-            points: 10
+            points: 10,
           });
           checkInStore._setLoading(false);
         },
@@ -513,16 +517,16 @@ export const WorkflowPatterns = {
             assertion: () => {
               const checkInStore = MockRegistry.get('checkin-store');
               expect(checkInStore.error()).toBeNull();
-            }
+            },
           },
           {
             description: 'Operation should succeed',
             assertion: () => {
               const checkInStore = MockRegistry.get('checkin-store');
               expect(checkInStore.count()).toBe(1);
-            }
-          }
-        ]
+            },
+          },
+        ],
       },
 
       {
@@ -539,15 +543,15 @@ export const WorkflowPatterns = {
               const checkInStore = MockRegistry.get('checkin-store');
               const pointsStore = MockRegistry.get('points-store');
               const aggregator = MockRegistry.get('data-aggregator');
-              
+
               expect(checkInStore.error()).toBeNull();
               expect(pointsStore.error()).toBeNull();
               expect(aggregator.scoreboardData().isLoading).toBe(false);
-            }
-          }
-        ]
-      }
-    ]
+            },
+          },
+        ],
+      },
+    ],
   }),
 
   /**
@@ -570,18 +574,18 @@ export const WorkflowPatterns = {
         action: async () => {
           const checkInStore = MockRegistry.get('checkin-store');
           const startTime = Date.now();
-          
+
           // Rapid check-ins
           for (let i = 0; i < 50; i++) {
             checkInStore.add({
               id: `perf-checkin-${i}`,
               userId: `user-${i % 5}`, // 5 users
-              pubId: `pub-${i % 10}`,  // 10 pubs
+              pubId: `pub-${i % 10}`, // 10 pubs
               timestamp: new Date(Date.now() + i * 10).toISOString(),
-              points: 10
+              points: 10,
             });
           }
-          
+
           const duration = Date.now() - startTime;
           console.log(`Rapid check-ins completed in ${duration}ms`);
         },
@@ -591,16 +595,16 @@ export const WorkflowPatterns = {
             assertion: () => {
               const checkInStore = MockRegistry.get('checkin-store');
               expect(checkInStore.count()).toBe(50);
-            }
+            },
           },
           {
             description: 'System should remain responsive',
             assertion: () => {
               const aggregator = MockRegistry.get('data-aggregator');
               expect(aggregator.scoreboardData().isLoading).toBe(false);
-            }
-          }
-        ]
+            },
+          },
+        ],
       },
 
       {
@@ -608,12 +612,12 @@ export const WorkflowPatterns = {
         description: 'Test aggregation performance with large datasets',
         action: async () => {
           const aggregator = MockRegistry.get('data-aggregator');
-          
+
           // Trigger recalculation
           const startTime = Date.now();
           aggregator.recalculate();
           const duration = Date.now() - startTime;
-          
+
           console.log(`Data aggregation completed in ${duration}ms`);
         },
         expectations: [
@@ -624,12 +628,12 @@ export const WorkflowPatterns = {
               const data = aggregator.scoreboardData();
               expect(data.totalCheckins).toBe(50);
               expect(data.totalPoints).toBeGreaterThan(0);
-            }
-          }
-        ]
-      }
-    ]
-  })
+            },
+          },
+        ],
+      },
+    ],
+  }),
 };
 
 // ===================================
@@ -658,7 +662,7 @@ export function createWorkflowScenario(
     name,
     description,
     steps: [],
-    stores: []
+    stores: [],
   };
 }
 
@@ -669,19 +673,19 @@ export async function executeWorkflowSuite(
   patterns: Array<keyof typeof WorkflowPatterns>
 ): Promise<IntegrationTestResult[]> {
   const results: IntegrationTestResult[] = [];
-  
+
   for (const pattern of patterns) {
     console.log(`\n🎯 Executing workflow pattern: ${pattern}`);
     const result = await executeWorkflowPattern(pattern);
     results.push(result);
-    
+
     if (result.success) {
       console.log(`✅ ${pattern} completed successfully in ${result.duration}ms`);
     } else {
       console.log(`❌ ${pattern} failed after ${result.duration}ms`);
     }
   }
-  
+
   return results;
 }
 
@@ -700,12 +704,12 @@ export function validateWorkflowResults(results: IntegrationTestResult[]): {
   const failed = totalTests - passed;
   const averageDuration = results.reduce((sum, r) => sum + r.duration, 0) / totalTests;
   const successRate = passed / totalTests;
-  
+
   return {
     totalTests,
     passed,
     failed,
     averageDuration,
-    successRate
+    successRate,
   };
 }

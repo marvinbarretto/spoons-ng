@@ -2,10 +2,11 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { FeedbackStore } from '../../../feedback/data-access/feedback.store';
 import { LeaderboardStore } from '../../../leaderboard/data-access/leaderboard.store';
-import { UserStore } from '../../../users/data-access/user.store';
+import { AnalyticsService } from '../../../shared/data-access/analytics.service';
 import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
 import { ErrorLoggingService } from '../../../shared/data-access/error-logging.service';
-import { AnalyticsService } from '../../../shared/data-access/analytics.service';
+import { TabGroupComponent, type Tab } from '../../../shared/ui/tabs/tab-group.component';
+import { UserStore } from '../../../users/data-access/user.store';
 
 type AdminSection = {
   id: string;
@@ -30,7 +31,7 @@ type StatData = {
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [RouterModule],
+  imports: [RouterModule, TabGroupComponent],
   template: `
     <div class="admin-dashboard">
       <header class="dashboard-header">
@@ -38,28 +39,98 @@ type StatData = {
         <p class="dashboard-subtitle">Monitor and manage your Spoonscount application</p>
       </header>
 
-      <!-- Quick Stats Overview -->
-      <section class="stats-overview">
+      <!-- Time Period Selector -->
+      <section class="time-period-section">
+        <ff-tab-group
+          [tabs]="timePeriodTabs"
+          [selectedTab]="selectedTimePeriod()"
+          (tabChange)="onTimePeriodChange($event)"
+        />
+      </section>
+
+      <!-- Executive Summary - Dense 2x2 Grid -->
+      <section class="executive-summary-dense">
         <div class="section-header">
-          <h2>Key Metrics</h2>
+          <h2>📋 Executive Summary</h2>
+          <div class="system-health-inline">
+            {{ systemHealth().dataFreshness.icon }} Live Data
+            <span class="data-quality"
+              >{{ systemHealth().dataConsistency.icon }}
+              {{ systemHealth().dataConsistency.score }}%</span
+            >
+          </div>
         </div>
-        <div class="stats-grid">
-          @for (stat of dashboardStats(); track stat.label) {
-            <div class="stat-card">
-              <div class="stat-value">{{ stat.value }}</div>
-              <div class="stat-label">{{ stat.label }}</div>
+
+        <div class="metrics-grid-2x2">
+          @for (kpi of executiveKPIs(); track kpi.id) {
+            <div class="metric-card-dense" [class]="kpi.status">
+              <div class="metric-header">
+                <span class="metric-icon">{{ kpi.icon }}</span>
+                <span class="metric-trend">{{ kpi.trend }}</span>
+              </div>
+              <div class="metric-values">
+                <div class="primary-metric">{{ kpi.primaryValue }}</div>
+                <div class="primary-label">{{ kpi.primaryLabel }}</div>
+                <div class="secondary-metric">{{ kpi.secondaryValue }}</div>
+                <div class="secondary-label">{{ kpi.secondaryLabel }}</div>
+              </div>
             </div>
           }
-          <!-- Error Stats -->
-          <div class="stat-card error-stats">
-            <div class="stat-value">{{ errorStats().unresolvedErrors }}</div>
-            <div class="stat-label">Unresolved Errors</div>
-          </div>
-          <div class="stat-card error-stats critical">
-            <div class="stat-value">{{ errorStats().criticalErrors }}</div>
-            <div class="stat-label">Critical Errors</div>
+        </div>
+      </section>
+
+      <!-- Firebase Analytics Integration -->
+      <section class="firebase-analytics">
+        <div class="section-header">
+          <h2>📊 Firebase Analytics</h2>
+          <div class="analytics-actions">
+            <a
+              href="https://console.firebase.google.com/project/spoonscount/analytics"
+              target="_blank"
+              class="analytics-link"
+            >
+              📈 View Console
+            </a>
           </div>
         </div>
+        <div class="analytics-grid">
+          <div class="analytics-card">
+            <div class="analytics-title">User Engagement</div>
+            <div class="analytics-subtitle">
+              Check Firebase Console for real-time user activity metrics
+            </div>
+          </div>
+          <div class="analytics-card">
+            <div class="analytics-title">App Performance</div>
+            <div class="analytics-subtitle">Monitor crash reports and performance issues</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Compact Data Validation -->
+      <section class="debug-metrics-compact">
+        <details>
+          <summary>
+            🔍 Data Validation ({{ systemHealth().dataConsistency.score }}% Quality)
+          </summary>
+          <div class="debug-inline-grid">
+            <span class="debug-compact"
+              >Users: <strong>{{ debugMetrics().totalUsers }}</strong></span
+            >
+            <span class="debug-compact"
+              >Check-ins: <strong>{{ debugMetrics().totalCheckIns }}</strong></span
+            >
+            <span class="debug-compact"
+              >Points: <strong>{{ debugMetrics().totalSystemPoints }}</strong></span
+            >
+            <span class="debug-compact"
+              >Monthly Active: <strong>{{ debugMetrics().monthlyActiveUsers }}</strong></span
+            >
+            <span class="debug-compact"
+              >Monthly Check-ins: <strong>{{ debugMetrics().monthlyCheckIns }}</strong></span
+            >
+          </div>
+        </details>
       </section>
 
       <!-- Data Analysis & Investigation Tools (Priority) -->
@@ -127,9 +198,7 @@ type StatData = {
       <!-- Business Intelligence Tools -->
       <section class="admin-sections priority-section">
         <h2>💰 Business Intelligence & Monetization</h2>
-        <p class="section-subtitle">
-          Track user behavior and identify revenue opportunities
-        </p>
+        <p class="section-subtitle">Track user behavior and identify revenue opportunities</p>
         <div class="sections-grid">
           @for (section of businessIntelligence; track section.id) {
             <div class="admin-card active priority">
@@ -171,116 +240,146 @@ export class AdminDashboardComponent {
   private readonly errorLoggingService = inject(ErrorLoggingService);
   private readonly analyticsService = inject(AnalyticsService);
 
+  // Time period state
+  private readonly _selectedTimePeriod = signal<'today' | 'week' | 'month' | 'all-time'>('month');
+  readonly selectedTimePeriod = this._selectedTimePeriod.asReadonly();
+
+  // Time period tabs configuration
+  readonly timePeriodTabs: Tab[] = [
+    { id: 'today', label: 'Today', icon: '📅' },
+    { id: 'week', label: 'This Week', icon: '📊' },
+    { id: 'month', label: 'This Month', icon: '📈' },
+    { id: 'all-time', label: 'All Time', icon: '🌍' },
+  ];
+
   // Database metrics removed - focus on core business metrics instead
 
-  // Real business data from stores
-  readonly siteStats = this.leaderboardStore.siteStats;
-  readonly globalDataStats = this.leaderboardStore.globalDataStats;
+  // Single Source of Truth - DataAggregatorService for all dashboard metrics
+  readonly comprehensiveDashboardMetrics = computed(() =>
+    this.dataAggregator.calculateDashboardMetrics(this.selectedTimePeriod())
+  );
   readonly pendingFeedback = this.feedbackStore.pendingFeedback;
-  readonly scoreboardData = this.userStore.scoreboardData;
-
-  // Error stats for dashboard
   readonly errorStats = computed(() => this.errorLoggingService.getErrorStats());
 
   // Database metrics computeds removed - focus on real business metrics instead
 
-  readonly dashboardStats = computed((): StatData[] => {
-    const siteData = this.siteStats();
-    const globalData = this.globalDataStats();
-    const pendingCount = this.pendingFeedback().length;
-    const scoreboardData = this.scoreboardData();
+  // Executive Dashboard - Primary KPIs (Clean & Simple)
+  readonly executiveKPIs = computed(() => {
+    const metrics = this.comprehensiveDashboardMetrics();
 
     return [
-      // Core Business Metrics
       {
-        value: siteData.allTime.users,
-        label: 'Total Users',
-        sourceType: siteData.allTime.users > 0 ? 'real' : 'placeholder',
-        sourceDetail: `Active user base`,
+        id: 'user-growth',
+        title: 'User Growth',
+        primaryValue: metrics.userGrowth.total,
+        primaryLabel: 'Total Users',
+        secondaryValue: `${metrics.userGrowth.monthlyGrowth > 0 ? '+' : ''}${metrics.userGrowth.monthlyGrowth}%`,
+        secondaryLabel: 'Monthly Growth',
+        status: metrics.userGrowth.total > 0 ? 'healthy' : 'needs-attention',
+        trend:
+          metrics.userGrowth.monthlyGrowth > 0
+            ? '📈'
+            : metrics.userGrowth.monthlyGrowth < 0
+              ? '📉'
+              : '➡️',
         icon: '👥',
       },
       {
-        value: siteData.allTime.checkins,
-        label: 'Total Check-ins',
-        sourceType: siteData.allTime.checkins > 0 ? 'real' : 'placeholder',
-        sourceDetail: `User engagement events`,
-        icon: '🍺',
-      },
-      {
-        value: siteData.thisMonth.activeUsers,
-        label: 'Monthly Active Users',
-        sourceType: siteData.thisMonth.activeUsers > 0 ? 'real' : 'placeholder',
-        sourceDetail: `Users active in current month`,
-        icon: '📈',
-      },
-      {
-        value: siteData.thisMonth.checkins,
-        label: 'Monthly Check-ins',
-        sourceType: siteData.thisMonth.checkins > 0 ? 'real' : 'placeholder',
-        sourceDetail: `Check-ins this month`,
-        icon: '📊',
-      },
-      // Enhanced Business Health Indicators
-      {
-        value: this.getEngagementRate(),
-        label: 'Engagement Rate',
-        sourceType: 'calculated',
-        sourceDetail: `Check-ins per active user (enhanced calculation)`,
+        id: 'engagement-health',
+        title: 'Engagement Health',
+        primaryValue: metrics.engagement.activeUsers,
+        primaryLabel: 'Active Users',
+        secondaryValue: metrics.engagement.checkInsPerUser,
+        secondaryLabel: 'Check-ins/User',
+        status:
+          metrics.engagement.trend === 'up'
+            ? 'healthy'
+            : metrics.engagement.trend === 'stable'
+              ? 'stable'
+              : 'needs-attention',
+        trend:
+          metrics.engagement.trend === 'up'
+            ? '📈'
+            : metrics.engagement.trend === 'down'
+              ? '📉'
+              : '➡️',
         icon: '🎯',
       },
       {
-        value: this.getGrowthRate(),
-        label: 'Monthly Growth',
-        sourceType: 'calculated',
-        sourceDetail: `New users this month vs estimated previous`,
-        icon: '📈',
-      },
-      {
-        value: pendingCount,
-        label: 'Pending Feedback',
-        sourceType: 'real',
-        sourceDetail: `User feedback requiring attention`,
-        icon: '💬',
-      },
-      {
-        value: globalData.totalPubsInSystem || siteData.allTime.totalPubsInSystem || 0,
-        label: 'Total Pubs',
-        sourceType: (globalData.totalPubsInSystem || siteData.allTime.totalPubsInSystem || 0) > 0 ? 'real' : 'placeholder',
-        sourceDetail: `Available pub locations (now accurate)`,
+        id: 'market-penetration',
+        title: 'Market Penetration',
+        primaryValue: `${metrics.marketPenetration.percentage}%`,
+        primaryLabel: 'Coverage',
+        secondaryValue: `${metrics.marketPenetration.pubsConquered}/${metrics.marketPenetration.totalPubs}`,
+        secondaryLabel: 'Pubs Conquered',
+        status:
+          metrics.marketPenetration.percentage > 10
+            ? 'healthy'
+            : metrics.marketPenetration.percentage > 5
+              ? 'stable'
+              : 'needs-attention',
+        trend: metrics.marketPenetration.percentage > 5 ? '🏆' : '🎯',
         icon: '🏛️',
       },
-      // New Enhanced Metrics
       {
-        value: globalData.totalSystemPoints || 0,
-        label: 'Total System Points',
-        sourceType: 'calculated',
-        sourceDetail: `All points from check-ins (single source of truth)`,
-        icon: '⭐',
-      },
-      {
-        value: globalData.averagePointsPerUser || 0,
-        label: 'Avg Points/User',
-        sourceType: 'calculated',
-        sourceDetail: `Average points per user`,
-        icon: '📊',
-      },
-      {
-        value: globalData.averagePubsPerUser || 0,
-        label: 'Avg Pubs/User',
-        sourceType: 'calculated',
-        sourceDetail: `Average unique pubs visited per user`,
-        icon: '🍺',
-      },
-      {
-        value: globalData.totalPubsVisited || 0,
-        label: 'Pubs Conquered',
-        sourceType: 'calculated',
-        sourceDetail: `Unique pubs with at least one check-in`,
-        icon: '🏆',
+        id: 'platform-value',
+        title: 'Platform Value',
+        primaryValue: metrics.platformValue.totalPoints,
+        primaryLabel: 'Total Points',
+        secondaryValue: metrics.platformValue.avgPointsPerUser,
+        secondaryLabel: 'Avg/User',
+        status: metrics.platformValue.totalPoints > 0 ? 'healthy' : 'needs-attention',
+        trend: metrics.platformValue.totalPoints > 300 ? '⭐' : '📊',
+        icon: '💰',
       },
     ];
   });
 
+  // System Health Dashboard
+  readonly systemHealth = computed(() => {
+    const metrics = this.comprehensiveDashboardMetrics();
+    const errors = this.errorStats();
+    const pendingCount = this.pendingFeedback().length;
+
+    return {
+      dataConsistency: {
+        score: metrics.dataConsistencyScore,
+        status: metrics.systemHealth.status,
+        description: `${metrics.dataConsistencyScore}% data consistency`,
+        icon:
+          metrics.dataConsistencyScore > 90
+            ? '🟢'
+            : metrics.dataConsistencyScore > 70
+              ? '🟡'
+              : '🔴',
+      },
+      operationalHealth: {
+        errors: errors.unresolvedErrors,
+        criticalErrors: errors.criticalErrors,
+        pendingFeedback: pendingCount,
+        description: `${errors.unresolvedErrors} unresolved errors`,
+        status:
+          errors.criticalErrors > 0
+            ? 'critical'
+            : errors.unresolvedErrors > 5
+              ? 'warning'
+              : 'healthy',
+        icon: errors.criticalErrors > 0 ? '🔴' : errors.unresolvedErrors > 0 ? '🟡' : '🟢',
+      },
+      dataFreshness: {
+        lastUpdate: new Date().toISOString(),
+        status: 'live',
+        description: 'Real-time data',
+        icon: '🟢',
+      },
+    };
+  });
+
+  // Raw metrics for debugging/validation
+  readonly debugMetrics = computed(() => {
+    const metrics = this.comprehensiveDashboardMetrics();
+    return metrics.rawMetrics;
+  });
 
   // Data Analysis & Investigation Tools (Priority section)
   readonly dataAnalysisTools: AdminSection[] = [
@@ -318,7 +417,7 @@ export class AdminDashboardComponent {
       route: '/admin/users',
       icon: '👥',
       status: 'active',
-      stats: `${this.siteStats().allTime.users} users - detailed investigation tool (${this.getDataQualityIndicator()})`,
+      stats: `Investigation tool (${this.getOverallHealthStatus()})`,
     },
   ];
 
@@ -410,53 +509,71 @@ export class AdminDashboardComponent {
       description: 'Conversion rates from install → first check-in → regular user',
       route: '/admin/funnel',
       icon: '🎯',
-      status: 'active', 
+      status: 'active',
       stats: 'Key monetization metric',
     },
   ];
 
-  // Enhanced business calculations using DataAggregatorService for accuracy
-  getEngagementRate(): string {
-    const siteData = this.siteStats();
-    const globalData = this.globalDataStats();
-    const activeUsers = siteData.thisMonth.activeUsers;
-    const checkIns = siteData.thisMonth.checkins;
-    
-    if (activeUsers === 0) return '0';
-    
-    // Enhanced calculation with more precision
-    const rate = (checkIns / activeUsers).toFixed(1);
-    const qualityIndicator = activeUsers > 10 ? '✓' : '⚠️';
-    return `${rate}/user ${qualityIndicator}`;
+  // Time period handling
+  onTimePeriodChange(timePeriod: string): void {
+    this._selectedTimePeriod.set(timePeriod as 'today' | 'week' | 'month' | 'all-time');
   }
 
-  getGrowthRate(): string {
-    const siteData = this.siteStats();
-    const globalData = this.globalDataStats();
-    const newUsers = siteData.thisMonth.newUsers;
-    const totalUsers = siteData.allTime.users;
-    
-    if (totalUsers === 0) return '0%';
-    
-    // More accurate calculation using enhanced data
-    const estimatedPrevious = totalUsers - newUsers;
-    if (estimatedPrevious === 0) return '∞%';
-    
-    const growthRate = Math.round((newUsers / estimatedPrevious) * 100);
-    const trendIndicator = growthRate > 0 ? '📈' : growthRate < 0 ? '📉' : '➡️';
-    return `${growthRate}% ${trendIndicator}`;
+  // Business intelligence helper methods
+  getOverallHealthStatus(): 'excellent' | 'good' | 'needs-attention' | 'critical' {
+    const metrics = this.comprehensiveDashboardMetrics();
+    const health = this.systemHealth();
+
+    if (health.operationalHealth.status === 'critical' || metrics.dataConsistencyScore < 50) {
+      return 'critical';
+    }
+    if (
+      metrics.dataConsistencyScore >= 90 &&
+      metrics.userGrowth.total > 10 &&
+      metrics.engagement.activeUsers > 5
+    ) {
+      return 'excellent';
+    }
+    if (metrics.dataConsistencyScore >= 70 && metrics.userGrowth.total > 3) {
+      return 'good';
+    }
+    return 'needs-attention';
   }
 
-  // New helper method for data quality assessment
-  getDataQualityIndicator(): string {
-    const globalData = this.globalDataStats();
-    const siteData = this.siteStats();
-    
-    const hasAccuratePubCount = (globalData.totalPubsInSystem || 0) > 0;
-    const hasSystemPoints = (globalData.totalSystemPoints || 0) > 0;
-    const hasActiveUsers = siteData.thisMonth.activeUsers > 0;
-    
-    const quality = [hasAccuratePubCount, hasSystemPoints, hasActiveUsers].filter(Boolean).length;
-    return quality === 3 ? '🟢 Excellent' : quality === 2 ? '🟡 Good' : '🔴 Needs Attention';
+  getBusinessInsights(): string[] {
+    const metrics = this.comprehensiveDashboardMetrics();
+    const insights: string[] = [];
+
+    // Data Quality Insights
+    if (metrics.dataConsistencyScore < 70) {
+      insights.push('⚠️ Data inconsistencies detected - investigate check-in/points relationship');
+    } else if (metrics.dataConsistencyScore >= 95) {
+      insights.push('✓ Excellent data quality - all metrics are consistent');
+    }
+
+    // Business Performance Insights
+    if (metrics.engagement.activeUsers === 0) {
+      insights.push('📉 No active users this month - focus on user acquisition and retention');
+    } else if (metrics.engagement.checkInsPerUser < 2) {
+      insights.push('🎯 Low engagement - consider gamification improvements');
+    } else if (metrics.engagement.checkInsPerUser >= 5) {
+      insights.push('📈 High user engagement - users are actively using the platform');
+    }
+
+    // Market Penetration Insights
+    if (metrics.marketPenetration.percentage < 1) {
+      insights.push('🏛️ Very low market penetration - opportunity for pub expansion');
+    } else if (metrics.marketPenetration.percentage >= 10) {
+      insights.push('🏆 Strong market penetration - good pub coverage achieved');
+    }
+
+    // Growth Insights
+    if (metrics.userGrowth.monthlyGrowth > 50) {
+      insights.push('🚀 Rapid user growth - ensure infrastructure can scale');
+    } else if (metrics.userGrowth.monthlyGrowth < 0) {
+      insights.push('📉 User decline - investigate retention issues');
+    }
+
+    return insights;
   }
 }

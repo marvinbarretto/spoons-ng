@@ -11,13 +11,13 @@
  * ```javascript
  * // Access the service
  * const cacheDebug = window.ng.getContext(document.body).injector.get(CacheDebugService);
- * 
+ *
  * // Inspect current cache state
  * cacheDebug.inspectCacheState();
- * 
+ *
  * // Clear all caches manually
  * cacheDebug.clearAllCaches();
- * 
+ *
  * // Validate data consistency
  * cacheDebug.validateDataConsistency();
  * ```
@@ -93,8 +93,8 @@ export class CacheDebugService {
     // Check-in Store State
     const userCheckins = this.checkinStore.checkins();
     const globalCheckins = this.globalCheckinStore.allCheckIns();
-    const userGlobalCheckins = authUser 
-      ? globalCheckins.filter(c => c.userId === authUser.uid) 
+    const userGlobalCheckins = authUser
+      ? globalCheckins.filter(c => c.userId === authUser.uid)
       : [];
 
     console.log('🔍 [CacheDebug] === CHECK-IN STORE STATE ===');
@@ -153,8 +153,8 @@ export class CacheDebugService {
     const scoreboardData = this.userStore.scoreboardData(); // Beautiful reactive pattern!
     const userCheckins = this.checkinStore.checkins();
     const globalCheckins = this.globalCheckinStore.allCheckIns();
-    const userGlobalCheckins = authUser 
-      ? globalCheckins.filter(c => c.userId === authUser.uid) 
+    const userGlobalCheckins = authUser
+      ? globalCheckins.filter(c => c.userId === authUser.uid)
       : [];
 
     const inconsistencies = [];
@@ -212,15 +212,15 @@ export class CacheDebugService {
    */
   async clearAllCaches(): Promise<void> {
     console.log('🧹 [CacheDebug] === CLEARING ALL CACHES ===');
-    
+
     try {
       // Reset all stores
       console.log('🧹 [CacheDebug] Resetting UserStore...');
       this.userStore.reset();
-      
+
       console.log('🧹 [CacheDebug] Resetting CheckInStore...');
       this.checkinStore.reset();
-      
+
       console.log('🧹 [CacheDebug] Note: GlobalCheckInStore may not have reset method');
       // this.globalCheckinStore.reset(); // May not be available
 
@@ -234,7 +234,6 @@ export class CacheDebugService {
 
       console.log('✅ [CacheDebug] All caches cleared successfully');
       console.log('💡 [CacheDebug] Refresh the page to reload fresh data');
-
     } catch (error) {
       console.error('❌ [CacheDebug] Failed to clear caches:', error);
     }
@@ -247,29 +246,26 @@ export class CacheDebugService {
     try {
       // Clear localStorage
       const localStorageKeys = Object.keys(localStorage);
-      const appKeys = localStorageKeys.filter(key => 
-        key.includes('firebase') || 
-        key.includes('spoonscount') || 
-        key.includes('cache')
+      const appKeys = localStorageKeys.filter(
+        key => key.includes('firebase') || key.includes('spoonscount') || key.includes('cache')
       );
-      
+
       console.log('🧹 [CacheDebug] Clearing localStorage keys:', appKeys);
       appKeys.forEach(key => localStorage.removeItem(key));
 
       // Clear sessionStorage
       const sessionStorageKeys = Object.keys(sessionStorage);
-      const appSessionKeys = sessionStorageKeys.filter(key => 
-        key.includes('firebase') || 
-        key.includes('spoonscount') || 
-        key.includes('cache')
+      const appSessionKeys = sessionStorageKeys.filter(
+        key => key.includes('firebase') || key.includes('spoonscount') || key.includes('cache')
       );
-      
+
       console.log('🧹 [CacheDebug] Clearing sessionStorage keys:', appSessionKeys);
       appSessionKeys.forEach(key => sessionStorage.removeItem(key));
 
       // Note: IndexedDB clearing would require more specific Firebase cache clearing
-      console.log('💡 [CacheDebug] For complete cache clearing, consider hard refresh (Ctrl+Shift+R)');
-
+      console.log(
+        '💡 [CacheDebug] For complete cache clearing, consider hard refresh (Ctrl+Shift+R)'
+      );
     } catch (error) {
       console.error('❌ [CacheDebug] Failed to clear browser storage:', error);
     }
@@ -280,7 +276,7 @@ export class CacheDebugService {
    */
   async forceReloadAllData(): Promise<void> {
     console.log('🔄 [CacheDebug] === FORCE RELOADING ALL DATA ===');
-    
+
     try {
       // Clear caches first
       await this.clearAllCaches();
@@ -291,20 +287,19 @@ export class CacheDebugService {
       // Force reload each store
       console.log('🔄 [CacheDebug] Reloading UserStore...');
       await this.userStore.refresh();
-      
+
       console.log('🔄 [CacheDebug] Reloading CheckInStore...');
       await this.checkinStore.loadOnce();
-      
+
       console.log('🔄 [CacheDebug] Note: GlobalCheckInStore may not have refresh method');
       // await this.globalCheckinStore.refresh(); // May not be available
 
       console.log('✅ [CacheDebug] All data reloaded successfully');
-      
+
       // Run consistency check
       setTimeout(() => {
         this.analyzeDataConsistency();
       }, 1000);
-
     } catch (error) {
       console.error('❌ [CacheDebug] Failed to reload data:', error);
     }
@@ -348,7 +343,8 @@ export class CacheDebugService {
         points: t.points,
         type: t.type,
         action: t.action,
-        createdAt: t.createdAt instanceof Date ? t.createdAt.toISOString().slice(0, 16) : t.createdAt,
+        createdAt:
+          t.createdAt instanceof Date ? t.createdAt.toISOString().slice(0, 16) : t.createdAt,
       })),
     });
 
@@ -400,17 +396,22 @@ export class CacheDebugService {
       actualFromUserStore: currentUser?.totalPoints || 0,
       actualFromPointsStore: pointsDebugInfo.totalPoints,
       DISCREPANCIES: {
-        checkinVsTransaction: expectedFromUserCheckins !== recentTransactions.reduce((sum, t) => sum + t.points, 0),
+        checkinVsTransaction:
+          expectedFromUserCheckins !== recentTransactions.reduce((sum, t) => sum + t.points, 0),
         globalVsUserCheckins: expectedFromGlobalCheckins !== expectedFromUserCheckins,
-        transactionVsUserStore: recentTransactions.reduce((sum, t) => sum + t.points, 0) !== (currentUser?.totalPoints || 0),
-      }
+        transactionVsUserStore:
+          recentTransactions.reduce((sum, t) => sum + t.points, 0) !==
+          (currentUser?.totalPoints || 0),
+      },
     });
 
     console.log('🔍 [CacheDebug] === POTENTIAL ISSUES ===');
-    
+
     // Check if PointsStore is only loading limited transactions
     if (recentTransactions.length === 20) {
-      console.warn('🔍 [CacheDebug] ⚠️ PointsStore may be limiting to 20 recent transactions - older transactions might exist');
+      console.warn(
+        '🔍 [CacheDebug] ⚠️ PointsStore may be limiting to 20 recent transactions - older transactions might exist'
+      );
     }
 
     // Check for missing transactions
@@ -421,7 +422,7 @@ export class CacheDebugService {
     console.log('🔍 [CacheDebug] Data coverage analysis:', {
       uniqueCheckinPubs: checkinPubIds.size,
       uniqueTransactionPubs: transactionPubIds.size,
-      transactionsCoverAllCheckins: userCheckins.every(checkin => 
+      transactionsCoverAllCheckins: userCheckins.every(checkin =>
         recentTransactions.some(t => t.pubId === checkin.pubId)
       ),
     });
@@ -448,7 +449,7 @@ export class CacheDebugService {
       // Get user's current state
       const currentUser = this.userStore.user();
       const currentTotalPoints = currentUser?.totalPoints || 0;
-      
+
       console.log('🔧 [CacheDebug] Current user totalPoints in database:', currentTotalPoints);
 
       // Get points transactions to calculate correct total
@@ -469,8 +470,11 @@ export class CacheDebugService {
       });
 
       // Calculate correct total from transactions
-      const calculatedTotal = transactions.reduce((sum, transaction) => sum + transaction.points, 0);
-      
+      const calculatedTotal = transactions.reduce(
+        (sum, transaction) => sum + transaction.points,
+        0
+      );
+
       console.log('🔧 [CacheDebug] Points calculation:', {
         currentDatabaseTotal: currentTotalPoints,
         calculatedFromTransactions: calculatedTotal,
@@ -484,8 +488,10 @@ export class CacheDebugService {
       }
 
       // Update the user's totalPoints field
-      console.log(`🔧 [CacheDebug] Updating user totalPoints: ${currentTotalPoints} → ${calculatedTotal}`);
-      
+      console.log(
+        `🔧 [CacheDebug] Updating user totalPoints: ${currentTotalPoints} → ${calculatedTotal}`
+      );
+
       // Use UserStore to patch the user's totalPoints
       await this.userStore.patchUser({ totalPoints: calculatedTotal });
       console.log('✅ [CacheDebug] User totalPoints updated in UserStore');
@@ -512,7 +518,6 @@ export class CacheDebugService {
         console.log('🔧 [CacheDebug] Running post-fix consistency check...');
         this.analyzeDataConsistency();
       }, 1000);
-
     } catch (error) {
       console.error('❌ [CacheDebug] Failed to recalculate user points:', error);
       console.error('❌ [CacheDebug] Error details:', {
@@ -539,7 +544,7 @@ export class CacheDebugService {
     // Get check-ins for current user from GlobalCheckInStore (consistent with DataAggregatorService)
     const allCheckins = this.globalCheckinStore.allCheckIns();
     const userCheckins = allCheckins.filter(c => c.userId === authUser.uid);
-    
+
     console.log('🧪 [CacheDebug] User check-ins analysis:', {
       totalCheckins: userCheckins.length,
       checkinDetails: userCheckins.map(checkin => ({
@@ -570,20 +575,21 @@ export class CacheDebugService {
       userStoreTotalPoints: userStoreTotal,
       scoreboardTotalPoints: scoreboardData.totalPoints,
       scoreboardTodaysPoints: scoreboardData.todaysPoints,
-      allValuesMatch: manualTotal === userStoreTotal && userStoreTotal === scoreboardData.totalPoints,
+      allValuesMatch:
+        manualTotal === userStoreTotal && userStoreTotal === scoreboardData.totalPoints,
     });
 
     // Test today's points calculation
     const today = new Date().toDateString();
-    const todaysCheckins = userCheckins.filter(checkin => 
-      checkin.timestamp?.toDate?.()?.toDateString?.() === today
+    const todaysCheckins = userCheckins.filter(
+      checkin => checkin.timestamp?.toDate?.()?.toDateString?.() === today
     );
     const manualTodaysPoints = todaysCheckins.reduce((sum, checkin) => {
       const points = checkin.pointsEarned ?? checkin.pointsBreakdown?.total ?? 0;
       return sum + points;
     }, 0);
 
-    console.log('🧪 [CacheDebug] Today\'s points validation:', {
+    console.log("🧪 [CacheDebug] Today's points validation:", {
       todaysCheckins: todaysCheckins.length,
       manualTodaysCalculation: manualTodaysPoints,
       scoreboardTodaysPoints: scoreboardData.todaysPoints,
@@ -591,10 +597,11 @@ export class CacheDebugService {
     });
 
     console.log('🧪 [CacheDebug] === ARCHITECTURE VALIDATION RESULT ===');
-    const isSuccess = manualTotal === userStoreTotal && 
-                     userStoreTotal === scoreboardData.totalPoints &&
-                     manualTodaysPoints === scoreboardData.todaysPoints;
-    
+    const isSuccess =
+      manualTotal === userStoreTotal &&
+      userStoreTotal === scoreboardData.totalPoints &&
+      manualTodaysPoints === scoreboardData.todaysPoints;
+
     if (isSuccess) {
       console.log('✅ [CacheDebug] SIMPLIFIED POINTS ARCHITECTURE WORKING CORRECTLY');
       console.log('✅ [CacheDebug] All points calculations are consistent and based on check-ins');
@@ -618,20 +625,24 @@ export class CacheDebugService {
    */
   showcaseReactiveArchitecture(): void {
     console.log('✨ [CacheDebug] === BEAUTIFUL REACTIVE ARCHITECTURE SHOWCASE ===');
-    console.log('✨ [CacheDebug] Demonstrating elegant Angular signal patterns with no circular dependencies!');
-    
+    console.log(
+      '✨ [CacheDebug] Demonstrating elegant Angular signal patterns with no circular dependencies!'
+    );
+
     const authUser = this.authStore.user();
     if (!authUser) {
-      console.log('✨ [CacheDebug] No user authenticated - reactive patterns still work gracefully');
+      console.log(
+        '✨ [CacheDebug] No user authenticated - reactive patterns still work gracefully'
+      );
       return;
     }
 
     console.log('✨ [CacheDebug] === REACTIVE SIGNAL FLOW ===');
-    
+
     // Showcase individual reactive computeds
     console.log('✨ [CacheDebug] Individual computed signals:');
     console.log('  📊 totalPoints:', this.userStore.totalPoints());
-    console.log('  🏠 pubsVisited:', this.userStore.pubsVisited()); 
+    console.log('  🏠 pubsVisited:', this.userStore.pubsVisited());
     console.log('  👤 displayName:', this.userStore.displayName());
     console.log('  🏆 badgeCount:', this.userStore.badgeCount());
     console.log('  👑 landlordCount:', this.userStore.landlordCount());
@@ -647,11 +658,17 @@ export class CacheDebugService {
     console.log('✨ [CacheDebug] ✅ Beautiful reactive patterns using computed()');
     console.log('✨ [CacheDebug] ✅ Single source of truth for all user data');
     console.log('✨ [CacheDebug] ✅ Automatic reactivity - data flows beautifully!');
-    
+
     console.log('✨ [CacheDebug] === DATA FLOW PATTERN ===');
-    console.log('✨ [CacheDebug] 🔄 Auth changes → UserStore.user() updates → All computeds re-evaluate');
-    console.log('✨ [CacheDebug] 🔄 Check-ins change → DataAggregator pure methods → totalPoints() updates');
-    console.log('✨ [CacheDebug] 🔄 Components use: this.userStore.scoreboardData() → Automatic reactivity!');
+    console.log(
+      '✨ [CacheDebug] 🔄 Auth changes → UserStore.user() updates → All computeds re-evaluate'
+    );
+    console.log(
+      '✨ [CacheDebug] 🔄 Check-ins change → DataAggregator pure methods → totalPoints() updates'
+    );
+    console.log(
+      '✨ [CacheDebug] 🔄 Components use: this.userStore.scoreboardData() → Automatic reactivity!'
+    );
   }
 
   /**

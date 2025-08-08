@@ -9,16 +9,16 @@ import {
 
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthStore } from '@auth/data-access/auth.store';
+import { ButtonComponent } from '@fourfold/angular-foundation';
 import { AvatarSelectionWidgetComponent } from '@home/ui/profile-customisation-modal/widgets/avatar-selection-widget/avatar-selection-widget.component';
 import { BaseComponent } from '@shared/base/base.component';
 import { AvatarService } from '@shared/data-access/avatar.service';
 import { ThemeStore } from '@shared/data-access/theme.store';
-import { ButtonComponent } from '@fourfold/angular-foundation';
 import { FormInputComponent } from '@shared/ui/form-input/form-input.component';
+import { PubSingleSelectorComponent } from '@shared/ui/pub-single-selector/pub-single-selector.component';
 import { StepperComponent, type StepConfig } from '@shared/ui/stepper/stepper.component';
 import type { ThemeType } from '@shared/utils/theme.tokens';
 import { UserStore } from '@users/data-access/user.store';
-import { PubSingleSelectorComponent } from '@shared/ui/pub-single-selector/pub-single-selector.component';
 import { LocationService } from './location.service';
 import { RegistrationFlowService } from './registration-flow.service';
 
@@ -243,8 +243,10 @@ import { RegistrationFlowService } from './registration-flow.service';
               <div class="step-header">
                 <h1 class="step-title">Discover Your Local</h1>
                 <p class="step-subtitle">
-                  Find nearby pubs for bonus points and personalized recommendations. 
-                  <span class="value-highlight">This helps you earn 2x points at your favorite spots!</span>
+                  Find nearby pubs for bonus points and personalized recommendations.
+                  <span class="value-highlight"
+                    >This helps you earn 2x points at your favorite spots!</span
+                  >
                 </p>
               </div>
 
@@ -265,7 +267,7 @@ import { RegistrationFlowService } from './registration-flow.service';
                         <span class="benefit-text">Track your local pub journey</span>
                       </div>
                     </div>
-                    
+
                     <div class="location-actions">
                       <ff-button
                         size="lg"
@@ -283,7 +285,7 @@ import { RegistrationFlowService } from './registration-flow.service';
                           Find My Local Pubs
                         }
                       </ff-button>
-                      
+
                       <button
                         type="button"
                         class="skip-location-btn"

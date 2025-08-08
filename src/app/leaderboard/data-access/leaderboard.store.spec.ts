@@ -1,16 +1,16 @@
-import { TestBed } from '@angular/core/testing';
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { signal } from '@angular/core';
-import { LeaderboardStore } from './leaderboard.store';
+import { TestBed } from '@angular/core/testing';
+import { Firestore } from '@angular/fire/firestore';
+import { PubStore } from '@pubs/data-access/pub.store';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuthStore } from '../../auth/data-access/auth.store';
-import { DataAggregatorService } from '../../shared/data-access/data-aggregator.service';
-import { UserService } from '../../users/data-access/user.service';
 import { CheckInService } from '../../check-in/data-access/check-in.service';
 import { CacheCoherenceService } from '../../shared/data-access/cache-coherence.service';
+import { DataAggregatorService } from '../../shared/data-access/data-aggregator.service';
 import { ErrorLoggingService } from '../../shared/data-access/error-logging.service';
-import { createTestUser, createTestCheckIn } from '../../shared/testing/test-data';
-import { PubStore } from '@pubs/data-access/pub.store';
-import { Firestore } from '@angular/fire/firestore';
+import { createTestCheckIn, createTestUser } from '../../shared/testing/test-data';
+import { UserService } from '../../users/data-access/user.service';
+import { LeaderboardStore } from './leaderboard.store';
 
 describe('LeaderboardStore - Consistency with UserStore Architecture', () => {
   let store: LeaderboardStore;
@@ -75,8 +75,8 @@ describe('LeaderboardStore - Consistency with UserStore Architecture', () => {
       pointsEarned: 35,
       timestamp: {
         toMillis: () => Date.now() - 86400000,
-        toDate: () => new Date(Date.now() - 86400000)
-      }
+        toDate: () => new Date(Date.now() - 86400000),
+      },
     }),
     createTestCheckIn({
       id: 'checkin-2',
@@ -85,8 +85,8 @@ describe('LeaderboardStore - Consistency with UserStore Architecture', () => {
       pointsEarned: 25,
       timestamp: {
         toMillis: () => Date.now() - 86400000,
-        toDate: () => new Date(Date.now() - 86400000)
-      }
+        toDate: () => new Date(Date.now() - 86400000),
+      },
     }),
     // Other user check-ins: 20 + 30 = 50 points (NOT 30 from user doc!)
     createTestCheckIn({
@@ -96,8 +96,8 @@ describe('LeaderboardStore - Consistency with UserStore Architecture', () => {
       pointsEarned: 20,
       timestamp: {
         toMillis: () => Date.now() - 86400000,
-        toDate: () => new Date(Date.now() - 86400000)
-      }
+        toDate: () => new Date(Date.now() - 86400000),
+      },
     }),
     createTestCheckIn({
       id: 'checkin-4',
@@ -106,8 +106,8 @@ describe('LeaderboardStore - Consistency with UserStore Architecture', () => {
       pointsEarned: 30,
       timestamp: {
         toMillis: () => Date.now() - 86400000,
-        toDate: () => new Date(Date.now() - 86400000)
-      }
+        toDate: () => new Date(Date.now() - 86400000),
+      },
     }),
     // Guest user check-ins: 40 points (NOT 15 from user doc!)
     createTestCheckIn({
@@ -117,8 +117,8 @@ describe('LeaderboardStore - Consistency with UserStore Architecture', () => {
       pointsEarned: 40,
       timestamp: {
         toMillis: () => Date.now() - 86400000,
-        toDate: () => new Date(Date.now() - 86400000)
-      }
+        toDate: () => new Date(Date.now() - 86400000),
+      },
     }),
   ];
 
@@ -140,26 +140,26 @@ describe('LeaderboardStore - Consistency with UserStore Architecture', () => {
     mockAuthStore = {
       user: signal(testAuthUser),
       uid: signal(testAuthUser.uid),
-      _setUser: function(user: any) {
+      _setUser: function (user: any) {
         this.user.set(user);
         this.uid.set(user?.uid || null);
-      }
+      },
     };
 
     mockUserService = {
       allUsers: signal(testUsers),
       loadAllUsers: vi.fn().mockResolvedValue(testUsers),
-      _setUsers: function(users: any[]) {
+      _setUsers: function (users: any[]) {
         this.allUsers.set(users);
-      }
+      },
     };
 
     mockCheckInService = {
       allCheckIns: signal(testCheckIns),
       loadAllCheckIns: vi.fn().mockResolvedValue(testCheckIns),
-      _setCheckIns: function(checkins: any[]) {
+      _setCheckIns: function (checkins: any[]) {
         this.allCheckIns.set(checkins);
-      }
+      },
     };
 
     mockCacheCoherence = {
@@ -188,7 +188,7 @@ describe('LeaderboardStore - Consistency with UserStore Architecture', () => {
         { provide: ErrorLoggingService, useValue: mockErrorLoggingService },
         { provide: PubStore, useValue: mockPubStore },
         { provide: Firestore, useValue: {} },
-      ]
+      ],
     }).compileComponents();
 
     store = TestBed.inject(LeaderboardStore);
@@ -227,17 +227,23 @@ describe('LeaderboardStore - Consistency with UserStore Architecture', () => {
   describe('🎯 CRITICAL: Points Consistency with UserStore/DataAggregatorService', () => {
     it('should calculate points using DataAggregatorService IGNORING user document totalPoints', () => {
       const entries = store.leaderboardEntries();
-      
+
       // Find our test user
       const authUserEntry = entries.find(e => e.userId === 'auth-user-123');
       const otherUserEntry = entries.find(e => e.userId === 'other-user-456');
       const guestUserEntry = entries.find(e => e.userId === 'guest-user-789');
-      
+
       // Verify DataAggregatorService was called for each user
-      expect(mockDataAggregator.calculateUserPointsFromCheckins).toHaveBeenCalledWith('auth-user-123');
-      expect(mockDataAggregator.calculateUserPointsFromCheckins).toHaveBeenCalledWith('other-user-456');
-      expect(mockDataAggregator.calculateUserPointsFromCheckins).toHaveBeenCalledWith('guest-user-789');
-      
+      expect(mockDataAggregator.calculateUserPointsFromCheckins).toHaveBeenCalledWith(
+        'auth-user-123'
+      );
+      expect(mockDataAggregator.calculateUserPointsFromCheckins).toHaveBeenCalledWith(
+        'other-user-456'
+      );
+      expect(mockDataAggregator.calculateUserPointsFromCheckins).toHaveBeenCalledWith(
+        'guest-user-789'
+      );
+
       // CRITICAL: Points should come from check-ins, NOT user documents
       expect(authUserEntry?.totalPoints).toBe(60); // From check-ins: 35 + 25, NOT user doc 60
       expect(otherUserEntry?.totalPoints).toBe(50); // From check-ins: 20 + 30, NOT user doc 30
@@ -246,31 +252,31 @@ describe('LeaderboardStore - Consistency with UserStore Architecture', () => {
 
     it('should calculate pubs using DataAggregatorService with deduplication', () => {
       const entries = store.leaderboardEntries();
-      
+
       const authUserEntry = entries.find(e => e.userId === 'auth-user-123');
-      
+
       // Verify DataAggregatorService was called with manual pub IDs for deduplication
-      expect(mockDataAggregator.getPubsVisitedForUser).toHaveBeenCalledWith(
-        'auth-user-123',
-        ['manual-pub-1', 'manual-pub-2']
-      );
-      
+      expect(mockDataAggregator.getPubsVisitedForUser).toHaveBeenCalledWith('auth-user-123', [
+        'manual-pub-1',
+        'manual-pub-2',
+      ]);
+
       // Should return deduplicated count: 2 verified + 2 manual = 4 unique
       expect(authUserEntry?.uniquePubs).toBe(4);
     });
 
     it('should sort entries by reactive points calculation, not user document points', () => {
       const entries = store.leaderboardEntries();
-      
+
       // Should be sorted by reactive points: auth-user (60), other-user (50), guest-user (40)
       expect(entries[0].userId).toBe('auth-user-123');
       expect(entries[0].totalPoints).toBe(60);
       expect(entries[0].rank).toBe(1);
-      
+
       expect(entries[1].userId).toBe('other-user-456');
       expect(entries[1].totalPoints).toBe(50);
       expect(entries[1].rank).toBe(2);
-      
+
       expect(entries[2].userId).toBe('guest-user-789');
       expect(entries[2].totalPoints).toBe(40);
       expect(entries[2].rank).toBe(3);
@@ -281,9 +287,9 @@ describe('LeaderboardStore - Consistency with UserStore Architecture', () => {
       mockCheckInService._setCheckIns([]);
       mockDataAggregator.calculateUserPointsFromCheckins.mockReturnValue(0);
       mockDataAggregator.getPubsVisitedForUser.mockReturnValue(0);
-      
+
       const entries = store.leaderboardEntries();
-      
+
       entries.forEach(entry => {
         expect(entry.totalPoints).toBe(0); // Should all have 0 points
         expect(entry.uniquePubs).toBe(0); // Should all have 0 pubs from check-ins
@@ -296,7 +302,7 @@ describe('LeaderboardStore - Consistency with UserStore Architecture', () => {
     it('SMOKE: Should prevent leaderboard showing different points than scoreboard', () => {
       const entries = store.leaderboardEntries();
       const authUserEntry = entries.find(e => e.userId === 'auth-user-123');
-      
+
       // CRITICAL: Leaderboard must show same points as UserStore/scoreboard
       // This test prevents the original "2 pubs, 2 check-ins, but 0 points" bug from happening in leaderboard
       expect(authUserEntry?.totalPoints).toBe(60); // Same as UserStore tests
@@ -306,11 +312,11 @@ describe('LeaderboardStore - Consistency with UserStore Architecture', () => {
 
     it('SMOKE: Should use same DataAggregatorService methods as UserStore', () => {
       store.leaderboardEntries();
-      
+
       // Should call the same methods that UserStore uses
       expect(mockDataAggregator.calculateUserPointsFromCheckins).toHaveBeenCalled();
       expect(mockDataAggregator.getPubsVisitedForUser).toHaveBeenCalled();
-      
+
       // Should be called once per user
       expect(mockDataAggregator.calculateUserPointsFromCheckins).toHaveBeenCalledTimes(3);
       expect(mockDataAggregator.getPubsVisitedForUser).toHaveBeenCalledTimes(3);
@@ -319,7 +325,7 @@ describe('LeaderboardStore - Consistency with UserStore Architecture', () => {
     it('SMOKE: Should handle the exact same data scenario as UserStore', () => {
       const entries = store.leaderboardEntries();
       const authUserEntry = entries.find(e => e.userId === 'auth-user-123');
-      
+
       // This should match exactly with UserStore reactive calculations
       expect(authUserEntry).toMatchObject({
         userId: 'auth-user-123',
@@ -338,7 +344,7 @@ describe('LeaderboardStore - Consistency with UserStore Architecture', () => {
         displayName: 'Fake Points User',
         totalPoints: 999999, // Ridiculously high fake points in user doc
       });
-      
+
       // User has no check-ins, so reactive calculation should return 0
       mockUserService._setUsers([...testUsers, userWithFakePoints]);
       mockDataAggregator.calculateUserPointsFromCheckins.mockImplementation((userId: string) => {
@@ -346,10 +352,10 @@ describe('LeaderboardStore - Consistency with UserStore Architecture', () => {
         const userCheckins = testCheckIns.filter(c => c.userId === userId);
         return userCheckins.reduce((sum, c) => sum + (c.pointsEarned || 0), 0);
       });
-      
+
       const entries = store.leaderboardEntries();
       const fakePointsUserEntry = entries.find(e => e.userId === 'fake-points-user');
-      
+
       // CRITICAL: Should show 0 points (from reactive calculation), NOT 999999 from user doc
       expect(fakePointsUserEntry?.totalPoints).toBe(0);
     });
@@ -358,20 +364,20 @@ describe('LeaderboardStore - Consistency with UserStore Architecture', () => {
   describe('👥 User Filtering & Scope Management', () => {
     it('should include guest users by default (showRealUsersOnly: false)', () => {
       expect(store.showRealUsersOnly()).toBe(false);
-      
+
       const entries = store.leaderboardEntries();
       const guestEntry = entries.find(e => e.userId === 'guest-user-789');
-      
+
       expect(guestEntry).toBeDefined();
       expect(guestEntry?.totalPoints).toBe(40); // Guest user has points from check-ins
     });
 
     it('should filter out guest users when showRealUsersOnly is true', () => {
       store.setShowRealUsersOnly(true);
-      
+
       const entries = store.leaderboardEntries();
       const guestEntry = entries.find(e => e.userId === 'guest-user-789');
-      
+
       expect(guestEntry).toBeUndefined(); // Guest user should be filtered out
       expect(entries.length).toBe(2); // Only real users remain
     });
@@ -380,11 +386,11 @@ describe('LeaderboardStore - Consistency with UserStore Architecture', () => {
       // Global scope (default)
       store.setScope('global');
       expect(store.scopedEntries().length).toBe(3);
-      
+
       // Friends scope (empty for this test)
       store.setScope('friends');
       expect(store.scopedEntries().length).toBe(0); // No friends in test data
-      
+
       // Regional scope (empty for this test)
       store.setScope('regional');
       expect(store.scopedEntries().length).toBe(0); // No regional data in test
@@ -394,14 +400,14 @@ describe('LeaderboardStore - Consistency with UserStore Architecture', () => {
   describe('📊 Leaderboard Computed Properties', () => {
     it('should compute current user position correctly', () => {
       const position = store.currentUserPosition();
-      
+
       // Auth user should be #1 with 60 points
       expect(position).toBe(1);
     });
 
     it('should get current user entry correctly', () => {
       const userEntry = store.currentUserEntry();
-      
+
       expect(userEntry).toBeDefined();
       expect(userEntry?.userId).toBe('auth-user-123');
       expect(userEntry?.totalPoints).toBe(60);
@@ -410,7 +416,7 @@ describe('LeaderboardStore - Consistency with UserStore Architecture', () => {
 
     it('should compute leaderboard stats correctly', () => {
       const stats = store.stats();
-      
+
       expect(stats).toEqual({
         totalUsers: 3,
         totalPoints: 150, // 60 + 50 + 40
@@ -421,7 +427,7 @@ describe('LeaderboardStore - Consistency with UserStore Architecture', () => {
 
     it('should support top 100 entries', () => {
       const topEntries = store.topEntries();
-      
+
       expect(topEntries.length).toBe(3); // Less than 100 in test
       expect(topEntries[0].rank).toBe(1);
       expect(topEntries[0].userId).toBe('auth-user-123');
@@ -431,16 +437,16 @@ describe('LeaderboardStore - Consistency with UserStore Architecture', () => {
   describe('🔧 Data Loading & Error Handling', () => {
     it('should load data using UserService and CheckInService', async () => {
       await store.refresh();
-      
+
       expect(mockUserService.loadAllUsers).toHaveBeenCalled();
       expect(mockCheckInService.loadAllCheckIns).toHaveBeenCalled();
     });
 
     it('should handle loading errors gracefully', async () => {
       mockUserService.loadAllUsers.mockRejectedValue(new Error('Service error'));
-      
+
       await store.refresh();
-      
+
       expect(store.error()).toBe('Service error');
       expect(store.loading()).toBe(false);
     });
@@ -451,17 +457,17 @@ describe('LeaderboardStore - Consistency with UserStore Architecture', () => {
         uid: 'problem-user',
         totalPoints: 0, // User doc says 0 points
       });
-      
+
       const problematicCheckIn = createTestCheckIn({
         userId: 'problem-user',
         pointsEarned: 50, // But user has check-ins worth 50 points
       });
-      
+
       mockUserService._setUsers([...testUsers, problematicUser]);
       mockCheckInService._setCheckIns([...testCheckIns, problematicCheckIn]);
-      
+
       await store.refresh();
-      
+
       // Should log error for data inconsistency
       expect(mockErrorLoggingService.logError).toHaveBeenCalledWith(
         'points',
@@ -480,7 +486,7 @@ describe('LeaderboardStore - Consistency with UserStore Architecture', () => {
   describe('🔄 Sorting & Ranking', () => {
     it('should sort by points correctly (default)', () => {
       const entries = store.leaderboardEntries();
-      
+
       // Should be sorted by points descending: 60, 50, 40
       expect(entries.map(e => e.totalPoints)).toEqual([60, 50, 40]);
       expect(entries.map(e => e.rank)).toEqual([1, 2, 3]);
@@ -489,10 +495,10 @@ describe('LeaderboardStore - Consistency with UserStore Architecture', () => {
     it('should sort by pubs when sortBy is changed', () => {
       store.setSortBy('pubs');
       const entries = store.leaderboardEntries();
-      
+
       // Verify DataAggregator was called for pub calculations
       expect(mockDataAggregator.getPubsVisitedForUser).toHaveBeenCalled();
-      
+
       // Should still have proper ranking
       expect(entries.every(e => e.rank > 0)).toBe(true);
     });
@@ -500,7 +506,7 @@ describe('LeaderboardStore - Consistency with UserStore Architecture', () => {
     it('should sort by check-ins when sortBy is changed', () => {
       store.setSortBy('checkins');
       const entries = store.leaderboardEntries();
-      
+
       // Should be sorted by check-ins count
       expect(entries.every(e => e.rank > 0)).toBe(true);
       expect(entries[0].totalCheckins).toBeGreaterThanOrEqual(entries[1].totalCheckins);

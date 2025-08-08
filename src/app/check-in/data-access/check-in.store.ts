@@ -3,7 +3,7 @@
 // =====================================
 
 // src/app/check-in/data-access/check-in.store.ts
-import { Injectable, computed, effect, inject, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
 import { BadgeAwardService } from '../../badges/data-access/badge-award.service';
 import { CarpetStrategyService } from '../../carpets/data-access/carpet-strategy.service';
 import { LandlordStore } from '../../landlord/data-access/landlord.store';
@@ -12,13 +12,13 @@ import { PubStore } from '../../pubs/data-access/pub.store';
 import { UserStore } from '../../users/data-access/user.store';
 import { CheckInService } from './check-in.service';
 // Remove CheckInModalService import to break circular dependency
+import { environment } from '@environments/environment';
 import {
   CameraService,
   OverlayService,
   TelegramNotificationService,
 } from '@fourfold/angular-foundation';
 import { Timestamp } from 'firebase/firestore';
-import { environment } from '@environments/environment';
 import type { EarnedBadgeWithDetails } from '../../badges/utils/badge.model';
 import type { Pub } from '../../pubs/utils/pub.models';
 import { BaseStore } from '../../shared/base/base.store';
@@ -796,7 +796,9 @@ export class CheckInStore extends BaseStore<CheckIn> {
       console.log(`[CheckInStore] 🎯 Calling PointsStore.awardCheckInPoints (${callId})`);
       const currentUser = this.userStore.user();
       const userHomePubId = currentUser?.homePubId;
-      console.log(`[CheckInStore] 🎯 Passing user home pub ID: ${userHomePubId || 'None'} (${callId})`);
+      console.log(
+        `[CheckInStore] 🎯 Passing user home pub ID: ${userHomePubId || 'None'} (${callId})`
+      );
       const pointsBreakdown = await this.pointsStore.awardCheckInPoints(pointsData, userHomePubId);
 
       console.log(`[CheckInStore] 🎯 PointsStore returned breakdown (${callId}):`, pointsBreakdown);

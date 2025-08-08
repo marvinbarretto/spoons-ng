@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { AuthStore } from './auth.store';
 import { UserStore } from '@users/data-access/user.store';
+import { AuthStore } from './auth.store';
 
 /**
  * Guard to ensure users have completed onboarding before accessing main app
@@ -26,7 +26,7 @@ export const onboardingGuard: CanActivateFn = async (route, state) => {
   }
 
   const authUser = authStore.user();
-  
+
   // Anonymous users skip onboarding completely
   if (authUser?.isAnonymous) {
     console.log('[OnboardingGuard] Anonymous user detected, skipping onboarding requirement');
@@ -43,7 +43,7 @@ export const onboardingGuard: CanActivateFn = async (route, state) => {
     // Give user store a moment to load
     await new Promise(resolve => setTimeout(resolve, 1000));
     const retryUser = userStore.currentUser();
-    
+
     if (!retryUser) {
       console.log('[OnboardingGuard] User data still not available, redirecting to onboarding');
       router.navigate(['/onboarding']);
@@ -52,10 +52,12 @@ export const onboardingGuard: CanActivateFn = async (route, state) => {
   }
 
   const currentUser = userStore.currentUser();
-  
+
   // Check if onboarding is completed
   if (!currentUser?.onboardingCompleted) {
-    console.log('[OnboardingGuard] Authenticated user has not completed onboarding, redirecting to /onboarding');
+    console.log(
+      '[OnboardingGuard] Authenticated user has not completed onboarding, redirecting to /onboarding'
+    );
     router.navigate(['/onboarding']);
     return false;
   }

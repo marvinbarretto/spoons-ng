@@ -211,12 +211,14 @@ export class HomeComponent extends BaseComponent {
     console.log('[Home] Requesting location permission...');
     // Foundation LocationService.getCurrentLocation() returns void and updates the signal
     this.locationService.getCurrentLocation();
-    
+
     // Check if location becomes available after a short delay
     setTimeout(() => {
       if (!this.locationService.location()) {
         console.error('[Home] Location permission may have been denied');
-        this.showError('Location access is needed to find nearby pubs. Please check your browser settings.');
+        this.showError(
+          'Location access is needed to find nearby pubs. Please check your browser settings.'
+        );
       }
     }, 2000);
   }

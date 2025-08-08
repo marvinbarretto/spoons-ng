@@ -8,9 +8,9 @@ import {
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthStore } from '@auth/data-access/auth.store';
+import { ButtonComponent } from '@fourfold/angular-foundation';
 import { BaseComponent } from '@shared/base/base.component';
 import { ThemeStore } from '@shared/data-access/theme.store';
-import { ButtonComponent } from '@fourfold/angular-foundation';
 import { FormInputComponent } from '@shared/ui/form-input/form-input.component';
 import { IconComponent } from '@shared/ui/icon/icon.component';
 import { FormValidators } from '@shared/utils/form-validators';
@@ -251,7 +251,8 @@ export class LoginComponent extends BaseComponent implements OnInit, OnDestroy {
     if (error?.code) {
       switch (error.code) {
         case 'auth/user-not-found':
-          errorMessage = 'No account found with this email address. Try creating a new account or check your email.';
+          errorMessage =
+            'No account found with this email address. Try creating a new account or check your email.';
           showAlternativeAuth = true;
           break;
         case 'auth/wrong-password':
@@ -270,7 +271,8 @@ export class LoginComponent extends BaseComponent implements OnInit, OnDestroy {
           errorMessage = 'This account has been disabled. Contact support for help.';
           break;
         case 'auth/too-many-requests':
-          errorMessage = 'Too many failed attempts. Please wait a few minutes or reset your password.';
+          errorMessage =
+            'Too many failed attempts. Please wait a few minutes or reset your password.';
           showForgotPassword = true;
           break;
         case 'auth/popup-closed-by-user':
@@ -278,7 +280,8 @@ export class LoginComponent extends BaseComponent implements OnInit, OnDestroy {
           showAlternativeAuth = true;
           break;
         case 'auth/popup-blocked':
-          errorMessage = 'Popup was blocked. Please allow popups and try again, or use email sign-in.';
+          errorMessage =
+            'Popup was blocked. Please allow popups and try again, or use email sign-in.';
           showAlternativeAuth = true;
           break;
         case 'auth/invalid-credential':
@@ -298,7 +301,7 @@ export class LoginComponent extends BaseComponent implements OnInit, OnDestroy {
 
     // Enhanced error display with contextual help
     this.error.set(errorMessage);
-    
+
     // Show contextual toast with action if helpful
     if (showForgotPassword) {
       this.toastService.centerError(`${errorMessage}\n\nTap "Forgot password?" below for help.`);

@@ -307,13 +307,13 @@ export class StoreIntegrationSuite {
       'user has existing activity': () => {
         // Mock user with existing check-ins, points, and badges
         if (this.stores['UserStore']?._setUserActivity) {
-          this.stores['UserStore']._setUserActivity({ 
-            checkins: 5, 
+          this.stores['UserStore']._setUserActivity({
+            checkins: 5,
             points: 250,
-            badges: 3 
+            badges: 3,
           });
         }
-        
+
         // Set up existing check-ins
         if (this.stores['CheckInStore']?.addMultiple) {
           this.stores['CheckInStore'].addMultiple([
@@ -321,7 +321,7 @@ export class StoreIntegrationSuite {
             { id: 'activity-2', userId: 'test-user-123', pubId: 'pub-2', points: 50 },
             { id: 'activity-3', userId: 'test-user-123', pubId: 'pub-3', points: 50 },
             { id: 'activity-4', userId: 'test-user-123', pubId: 'pub-4', points: 50 },
-            { id: 'activity-5', userId: 'test-user-123', pubId: 'pub-5', points: 50 }
+            { id: 'activity-5', userId: 'test-user-123', pubId: 'pub-5', points: 50 },
           ]);
         }
 
@@ -335,7 +335,7 @@ export class StoreIntegrationSuite {
           this.stores['BadgeStore'].addMultiple([
             { id: 'badge-1', userId: 'test-user-123', type: 'first-checkin' },
             { id: 'badge-2', userId: 'test-user-123', type: 'regular' },
-            { id: 'badge-3', userId: 'test-user-123', type: 'explorer' }
+            { id: 'badge-3', userId: 'test-user-123', type: 'explorer' },
           ]);
         }
       },

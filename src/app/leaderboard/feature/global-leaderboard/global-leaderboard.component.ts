@@ -14,12 +14,7 @@ import { type LeaderboardEntry } from '../../utils/leaderboard.models';
 
 @Component({
   selector: 'app-global-leaderboard',
-  imports: [
-    LoadingStateComponent,
-    ErrorStateComponent,
-    EmptyStateComponent,
-    DataTableComponent,
-  ],
+  imports: [LoadingStateComponent, ErrorStateComponent, EmptyStateComponent, DataTableComponent],
   template: `
     <div class="global-leaderboard">
       @if (store.loading()) {
@@ -32,10 +27,10 @@ import { type LeaderboardEntry } from '../../utils/leaderboard.models';
           (retry)="handleRetry()"
         />
       } @else if (globalEntries().length === 0) {
-        <ff-empty-state 
-          icon="🏆" 
-          title="No users found" 
-          subtitle="Check back later as users start checking in" 
+        <ff-empty-state
+          icon="🏆"
+          title="No users found"
+          subtitle="Check back later as users start checking in"
         />
       } @else {
         <!-- Current User Position Banner -->
@@ -63,9 +58,7 @@ import { type LeaderboardEntry } from '../../utils/leaderboard.models';
             <p class="total-users">
               Showing top {{ topEntries().length }} of {{ globalEntries().length }} users
             </p>
-            <button class="show-more-btn" (click)="loadMore()">
-              Show More Users
-            </button>
+            <button class="show-more-btn" (click)="loadMore()">Show More Users</button>
           </div>
         }
       }
@@ -225,7 +218,7 @@ export class GlobalLeaderboardComponent extends BaseComponent {
       className: 'last-active',
       width: '140px',
       hideOnMobile: true,
-      formatter: (lastActive: string) => lastActive ? formatLastActive(lastActive) : 'Never',
+      formatter: (lastActive: string) => (lastActive ? formatLastActive(lastActive) : 'Never'),
       sortable: false,
     },
   ];

@@ -60,7 +60,7 @@
   color: rgba(255, 255, 255, 0.8);
   font-size: 1rem;
   line-height: 1.5;
-  
+
   .value-highlight {
     color: var(--accent);
     font-weight: 600;
@@ -352,7 +352,7 @@ label {
   border-radius: 12px;
   background: var(--background-lighter);
   backdrop-filter: blur(12px);
-  
+
   @include slide-up($duration: var(--animation-duration-normal), $delay: 0.2s);
 }
 
@@ -374,7 +374,7 @@ label {
   border: 1px solid var(--border);
   border-radius: 0.75rem;
   transition: all 0.2s ease;
-  
+
   &:hover {
     background: var(--background-lightest);
     border-color: var(--primary);
@@ -406,7 +406,7 @@ label {
   border: none !important;
   color: white !important;
   font-weight: 600;
-  
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
@@ -423,13 +423,13 @@ label {
   border-radius: 0.5rem;
   transition: all 0.2s ease;
   min-height: 44px; // Accessibility
-  
+
   &:hover:not(:disabled) {
     background: var(--background-lightest);
     color: var(--text);
     text-decoration: underline;
   }
-  
+
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -522,7 +522,7 @@ label {
   border: none !important;
   color: white !important;
   font-weight: 600;
-  
+
   &:hover {
     transform: translateY(-1px);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
@@ -539,14 +539,14 @@ label {
   padding: 0.75rem 1rem;
   transition: all 0.2s ease;
   min-height: 44px; // Accessibility
-  
+
   &:hover:not(:disabled) {
     background: var(--background-lightest);
     border-color: var(--primary);
     color: var(--text);
     transform: translateY(-1px);
   }
-  
+
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;

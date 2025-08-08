@@ -2,10 +2,10 @@
 import { Component, computed, effect, inject, input, OnDestroy, output } from '@angular/core';
 
 import { AuthStore } from '@auth/data-access/auth.store';
-import { ButtonComponent } from '@shared/ui/button/button.component';
-import { ButtonSize } from '@shared/ui/button/button.params';
 import { CheckInStore } from '@check-in/data-access/check-in.store';
 import { CheckInResultData } from '@check-in/utils/check-in.models';
+import { ButtonComponent } from '@shared/ui/button/button.component';
+import { ButtonSize } from '@shared/ui/button/button.params';
 import { UserExperienceLevel } from '@shared/utils/user-progression.models';
 
 type PointsBreakdownItem = {

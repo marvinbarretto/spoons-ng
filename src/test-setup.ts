@@ -1,16 +1,13 @@
-import 'zone.js';
-import 'zone.js/testing';
 import { getTestBed } from '@angular/core/testing';
 import {
   BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting
+  platformBrowserDynamicTesting,
 } from '@angular/platform-browser-dynamic/testing';
+import 'zone.js';
+import 'zone.js/testing';
 
 // Initialize the Angular testing environment
-getTestBed().initTestEnvironment(
-  BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting()
-);
+getTestBed().initTestEnvironment(BrowserDynamicTestingModule, platformBrowserDynamicTesting());
 
 // Configure test environment for better Angular compatibility
 // Note: Component resource loading issues with Vitest+Angular will be addressed
@@ -27,24 +24,36 @@ Object.defineProperty(window, 'matchMedia', {
     removeListener: () => {},
     addEventListener: () => {},
     removeEventListener: () => {},
-    dispatchEvent: () => {}
-  })
+    dispatchEvent: () => {},
+  }),
 });
 
 // Mock IntersectionObserver
 global.IntersectionObserver = class IntersectionObserver {
   constructor() {}
-  observe() { return null; }
-  disconnect() { return null; }
-  unobserve() { return null; }
+  observe() {
+    return null;
+  }
+  disconnect() {
+    return null;
+  }
+  unobserve() {
+    return null;
+  }
 };
 
 // Mock ResizeObserver
 global.ResizeObserver = class ResizeObserver {
   constructor() {}
-  observe() { return null; }
-  disconnect() { return null; }
-  unobserve() { return null; }
+  observe() {
+    return null;
+  }
+  disconnect() {
+    return null;
+  }
+  unobserve() {
+    return null;
+  }
 };
 
 // Mock HTMLCanvasElement and Canvas 2D Context for image format detection tests
@@ -57,7 +66,7 @@ const createMockCanvas = () => {
       const data = new Uint8ClampedArray(sw * sh * 4);
       // Fill with test data (red pixels)
       for (let i = 0; i < data.length; i += 4) {
-        data[i] = 255;   // Red
+        data[i] = 255; // Red
         data[i + 1] = 0; // Green
         data[i + 2] = 0; // Blue
         data[i + 3] = 255; // Alpha
@@ -66,9 +75,9 @@ const createMockCanvas = () => {
         data,
         width: sw,
         height: sh,
-        colorSpace: 'srgb'
+        colorSpace: 'srgb',
       };
-    }
+    },
   };
 
   const mockCanvas = {
@@ -97,7 +106,7 @@ const createMockCanvas = () => {
       // Mock blob creation
       const blob = new Blob(['mock-image-data'], { type: type || 'image/png' });
       callback(blob);
-    }
+    },
   };
 
   return mockCanvas;
@@ -105,7 +114,7 @@ const createMockCanvas = () => {
 
 // Mock document.createElement for canvas elements
 const originalCreateElement = document.createElement.bind(document);
-document.createElement = function(tagName: string, options?: any): any {
+document.createElement = function (tagName: string, options?: any): any {
   if (tagName.toLowerCase() === 'canvas') {
     return createMockCanvas() as any;
   }
@@ -115,8 +124,7 @@ document.createElement = function(tagName: string, options?: any): any {
 // Also mock HTMLCanvasElement constructor for cases where it's accessed directly
 Object.defineProperty(global, 'HTMLCanvasElement', {
   writable: true,
-  value: function() {
+  value: function () {
     return createMockCanvas();
-  }
+  },
 });
-

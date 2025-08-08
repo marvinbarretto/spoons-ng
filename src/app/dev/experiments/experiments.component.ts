@@ -9,11 +9,7 @@ import { WaveSquaresDomComponent } from './wave-squares-dom/wave-squares-dom.com
 @Component({
   selector: 'app-experiments',
   standalone: true,
-  imports: [
-    RouterModule,
-    WaveSquaresDomComponent,
-    WaveSquaresCanvasComponent,
-  ],
+  imports: [RouterModule, WaveSquaresDomComponent, WaveSquaresCanvasComponent],
   template: `
     <div class="experiments-container">
       <header class="experiments-header">

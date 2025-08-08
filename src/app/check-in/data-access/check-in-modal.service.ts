@@ -4,8 +4,8 @@ import { Router } from '@angular/router';
 import { RegistrationPromptService } from '@auth/data-access/registration-prompt.service';
 import { CheckInStore } from '@check-in/data-access/check-in.store';
 import { OverlayService } from '@fourfold/angular-foundation';
-import { UserProgressionService } from '@shared/data-access/user-progression.service';
 import { AnalyticsService } from '@shared/data-access/analytics.service';
+import { UserProgressionService } from '@shared/data-access/user-progression.service';
 import { environment } from '../../../environments/environment';
 import { ModalCheckinCelebrationComponent } from '../ui/modal-checkin-celebration/modal-checkin-celebration.component';
 import { ModalCheckinLandlordComponent } from '../ui/modal-checkin-landlord/modal-checkin-landlord.component';
@@ -26,7 +26,7 @@ export class CheckInModalService {
 
   // Track active timeouts for cleanup
   private activeTimeouts: Set<number> = new Set();
-  
+
   // Track modal flow timing for analytics
   private modalFlowStartTime = Date.now();
 
@@ -43,10 +43,10 @@ export class CheckInModalService {
     console.log('[CheckInModalService] Starting modal flow:', data);
     this.onModalFlowDismissed = onDismissed;
     this.modalFlowStartTime = Date.now();
-    
+
     // Track modal flow start
     this.analytics.trackUserFlow('modal_flow_start', 'check_in_celebration', 0, true);
-    
+
     // Track check-in success/failure
     if (data.success) {
       this.analytics.trackFeatureUsage('check_in_modal_success', 'check_in_flow');
@@ -98,10 +98,15 @@ export class CheckInModalService {
       console.log('[CheckInModalService] Continue to points modal requested');
       clearFallbackTimeout();
       close();
-      
+
       // Track modal progression
       const timeInModal = Date.now() - this.modalFlowStartTime;
-      this.analytics.trackUserFlow('celebration_continue', 'check_in_celebration', timeInModal, true);
+      this.analytics.trackUserFlow(
+        'celebration_continue',
+        'check_in_celebration',
+        timeInModal,
+        true
+      );
 
       // Brief delay for smooth transition
       this.safeSetTimeout(() => {
@@ -113,7 +118,7 @@ export class CheckInModalService {
       console.log('[CheckInModalService] Celebration skipped - going to points modal');
       clearFallbackTimeout();
       close();
-      
+
       // Track modal skip behavior
       const timeInModal = Date.now() - this.modalFlowStartTime;
       this.analytics.trackUserFlow('celebration_skip', 'check_in_celebration', timeInModal, true);
@@ -180,7 +185,7 @@ export class CheckInModalService {
       console.log('[CheckInModalService] Continue from points modal');
       clearFallbackTimeout();
       close();
-      
+
       // Track points modal completion
       const totalFlowTime = Date.now() - this.modalFlowStartTime;
       this.analytics.trackUserFlow('points_continue', 'check_in_celebration', totalFlowTime, true);
@@ -242,12 +247,12 @@ export class CheckInModalService {
       console.log('[CheckInModalService] Points modal dismissed - navigating to homepage');
       clearFallbackTimeout();
       close();
-      
+
       // Track early dismissal
       const totalFlowTime = Date.now() - this.modalFlowStartTime;
       this.analytics.trackUserFlow('points_dismiss', 'check_in_celebration', totalFlowTime, false);
       this.analytics.trackFeatureInterest('points_modal', 'low', totalFlowTime);
-      
+
       this.forceNavigationToHomepage();
     });
 

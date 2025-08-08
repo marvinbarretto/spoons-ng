@@ -40,7 +40,7 @@ export class NavComponent {
 
   // Admin check using UserStore (not AuthStore)
   readonly isAdmin = computed(() => this.userStore.currentUser()?.isAdmin === true);
-  
+
   // User menu state
   readonly showUserMenu = signal(false);
 
@@ -96,7 +96,7 @@ export class NavComponent {
       userId: this.authStore.user()?.uid?.slice(0, 8),
       isAuthenticated: this.authStore.isAuthenticated(),
     });
-    
+
     // Close user menu
     this.showUserMenu.set(false);
 

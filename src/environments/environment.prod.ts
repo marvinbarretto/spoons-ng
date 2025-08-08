@@ -21,20 +21,20 @@ export const environment: Environment = {
   nearbyPubsRadiusMeters: 50000, // 50km for nearby pub discovery
 
   firebaseConfig: {
-    apiKey: process.env['FIREBASE_API_KEY'] || '',
-    authDomain: process.env['FIREBASE_AUTH_DOMAIN'] || '',
-    projectId: process.env['FIREBASE_PROJECT_ID'] || '',
-    storageBucket: process.env['FIREBASE_STORAGE_BUCKET'] || '',
-    messagingSenderId: process.env['FIREBASE_MESSAGING_SENDER_ID'] || '',
-    appId: process.env['FIREBASE_APP_ID'] || '',
-    measurementId: process.env['FIREBASE_MEASUREMENT_ID'] || '',
+    apiKey: 'AIzaSyBdKYAgR7eg7AsDWvZZTzKcq0xn5Su465E',
+    authDomain: 'spoons-15e03.firebaseapp.com',
+    projectId: 'spoons-15e03',
+    storageBucket: 'spoons-15e03.firebasestorage.app',
+    messagingSenderId: '650443293688',
+    appId: '1:650443293688:web:3b017d299ffe7efe458c0d',
+    measurementId: 'G-XTM7RJ233M',
   },
   llm: {
-    gemini: process.env['GEMINI_API_KEY'] || '',
+    gemini: 'AIzaSyA6rrPGUYoM-70DXJrGVcBbqSdwNZAduRE',
   },
   telegram: {
-    botToken: process.env['TELEGRAM_BOT_TOKEN'] || '',
-    chatId: process.env['TELEGRAM_CHAT_ID'] || '',
+    botToken: '7999180647:AAG6t-vz560uu-Kv3iCJ94YsOYhiAM_7LI4',
+    chatId: '7483956469',
   },
   database: {
     name: 'Spoonscount',

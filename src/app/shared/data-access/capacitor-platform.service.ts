@@ -1,4 +1,4 @@
-import { computed, Injectable, signal, inject, effect } from '@angular/core';
+import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import { SsrPlatformService } from '@fourfold/angular-foundation';
 
 interface PluginCache {
@@ -8,47 +8,33 @@ interface PluginCache {
 @Injectable({ providedIn: 'root' })
 export class CapacitorPlatformService {
   private readonly ssrPlatform = inject(SsrPlatformService);
-  
+
   // Core state signals
   private readonly _capacitor = signal<any>(null);
   private readonly _initialized = signal(false);
   private readonly _pluginCache = signal<PluginCache>({});
-  
+
   // Computed properties following Angular 20 patterns
   readonly initialized = computed(() => this._initialized());
-  readonly isNative = computed(() => 
-    this._capacitor()?.isNativePlatform() ?? false
-  );
-  readonly isIOS = computed(() => 
-    this._capacitor()?.getPlatform() === 'ios'
-  );
-  readonly isAndroid = computed(() => 
-    this._capacitor()?.getPlatform() === 'android'
-  );
+  readonly isNative = computed(() => this._capacitor()?.isNativePlatform() ?? false);
+  readonly isIOS = computed(() => this._capacitor()?.getPlatform() === 'ios');
+  readonly isAndroid = computed(() => this._capacitor()?.getPlatform() === 'android');
   readonly isWeb = computed(() => !this.isNative());
-  readonly platformName = computed(() => 
-    this._capacitor()?.getPlatform() ?? 'web'
-  );
-  
+  readonly platformName = computed(() => this._capacitor()?.getPlatform() ?? 'web');
+
   // Capability detection signals
   readonly hasCamera = computed(() => this.isPluginAvailable('Camera'));
   readonly hasGeolocation = signal(true); // Available on both web and native
-  readonly hasPushNotifications = computed(() => 
-    this.isNative() && this.isPluginAvailable('PushNotifications')
+  readonly hasPushNotifications = computed(
+    () => this.isNative() && this.isPluginAvailable('PushNotifications')
   );
-  readonly hasAppBadge = computed(() => 
-    this.isNative() && this.isPluginAvailable('App')
-  );
-  readonly hasStatusBar = computed(() => 
-    this.isNative() && this.isPluginAvailable('StatusBar')
-  );
-  readonly hasHaptics = computed(() => 
-    this.isNative() && this.isPluginAvailable('Haptics')
-  );
+  readonly hasAppBadge = computed(() => this.isNative() && this.isPluginAvailable('App'));
+  readonly hasStatusBar = computed(() => this.isNative() && this.isPluginAvailable('StatusBar'));
+  readonly hasHaptics = computed(() => this.isNative() && this.isPluginAvailable('Haptics'));
 
   constructor() {
     this.initialize();
-    
+
     // Debug logging in development
     effect(() => {
       if (this.initialized()) {
@@ -63,7 +49,7 @@ export class CapacitorPlatformService {
             hasAppBadge: this.hasAppBadge(),
             hasStatusBar: this.hasStatusBar(),
             hasHaptics: this.hasHaptics(),
-          }
+          },
         });
       }
     });
@@ -138,7 +124,7 @@ export class CapacitorPlatformService {
   private cachePlugin(pluginName: string, plugin: any): void {
     this._pluginCache.update(cache => ({
       ...cache,
-      [pluginName]: plugin
+      [pluginName]: plugin,
     }));
   }
 

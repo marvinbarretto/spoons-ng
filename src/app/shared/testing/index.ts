@@ -1,6 +1,6 @@
 /**
  * Modern Vitest Testing Utilities
- * 
+ *
  * Clean, modern testing utilities for Angular + Vitest
  * No legacy compatibility - fresh start with best practices
  */
@@ -8,41 +8,41 @@
 // Firebase mocking utilities
 export {
   createFirebaseAuthMock,
-  createFirestoreMock,
   createFirebaseMetricsMock,
-  createFirebaseTestSuite
+  createFirebaseTestSuite,
+  createFirestoreMock,
 } from './firebase.mocks';
 
 // Foundation library mocking utilities
 export {
-  createSsrPlatformMock,
   createCacheServiceMock,
-  createToastServiceMock,
+  createFoundationTestSuite,
   createHttpServiceMock,
+  createSsrPlatformMock,
+  createToastServiceMock,
   createViewportServiceMock,
-  createFoundationTestSuite
 } from './foundation.mocks';
 
 // Store testing utilities
 export {
-  createMockStore,
+  asyncTestUtils,
   createMockEntityStore,
-  testStoreLifecycle,
+  createMockStore,
   signalTestUtils,
-  asyncTestUtils
+  testStoreLifecycle,
 } from './store-test-utils';
 
 // Test setup utilities
 export {
   setupAngularTest,
+  setupComponentTest,
+  setupIntegrationTest,
   setupServiceTest,
   setupStoreTest,
-  setupComponentTest,
-  setupIntegrationTest
 } from './vitest-setup';
 
 // Common test data and factories
 export * from './test-data';
 
 // Re-export vitest for convenience
-export { vi, expect, describe, it, beforeEach, afterEach, beforeAll, afterAll } from 'vitest';
+export { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
