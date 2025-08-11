@@ -231,44 +231,80 @@ describe('CheckInStore - Business Critical Tests', () => {
   });
 
   describe('🔐 CRITICAL: Auth-Reactive Pattern - Data Security', () => {
-    it('should clear data when user logs out', () => {
-      // Given: Store has user data
-      expect(store.totalCheckins()).toBe(2);
-      
-      // When: User logs out
-      mockAuthStore._setUser(null);
-      
-      // Then: Data should be cleared
-      expect(store.totalCheckins()).toBe(0);
-      expect(store.data()).toEqual([]);
+    // Set up a consistent, logged-in state before each auth-related test
+    beforeEach(() => {
+      mockAuthStore._setUser(testUser1);
+      store['_data'].set(testCheckIns); // Pre-load data for user-1
+      store['hasLoaded'] = true;
+      mockCheckInService.loadUserCheckins.mockClear(); // Clear mocks for accurate call counting
+      TestBed.flushEffects(); // Ensure initial state is stable
     });
 
-    it('should prevent data leaks when switching between users', async () => {
-      // Given: User 1 has check-ins
+    it('should load data automatically on first-time login', () => {
+      // GIVEN: A logged-out initial state
+      store['_data'].set([]);
+      store['hasLoaded'] = false;
+      mockAuthStore._setUser(null);
+      TestBed.flushEffects();
+
+      // WHEN: A user logs in
+      mockAuthStore._setUser(testUser1);
+      TestBed.flushEffects();
+
+      // THEN: Data should be loaded for that user
+      expect(mockCheckInService.loadUserCheckins).toHaveBeenCalledWith('user-1');
+    });
+
+    it('should clear data when user logs out', () => {
+      // GIVEN: The store has data for the logged-in user
       expect(store.totalCheckins()).toBe(2);
-      const user1Data = store.data();
-      
-      // When: Switch to User 2
-      mockAuthStore._setUser(testUser2);
-      mockUserStore._setCurrentUser(testUser2);
-      
-      // Then: Should clear previous user's data and load new user's data
-      expect(mockCheckInService.loadUserCheckins).toHaveBeenCalledWith('user-2');
-      // Store should be reset for security
+
+      // WHEN: The user logs out
+      mockAuthStore._setUser(null);
+      TestBed.flushEffects();
+
+      // THEN: The store should be reset
+      expect(store.totalCheckins()).toBe(0);
+      expect(store.data()).toEqual([]);
       expect(store.hasLoaded).toBe(false);
     });
 
-    it('should maintain cache for same user re-authentication', async () => {
-      // Given: User is authenticated with data
-      const initialDataCount = store.totalCheckins();
-      expect(initialDataCount).toBeGreaterThan(0);
-      
-      // When: Same user re-authenticates (e.g., page refresh)
-      mockAuthStore._setUser(null);
-      mockAuthStore._setUser(testUser1);
-      
-      // Then: Should reload data for user
-      expect(mockCheckInService.loadUserCheckins).toHaveBeenCalledWith('user-1');
+    it('should reset and reload data when switching between users', async () => {
+      // GIVEN: The store is loaded with user-1's data and a mock for user-2's data is prepared
+      const user2Checkins = [
+        createTestCheckIn({
+          id: 'user2-checkin',
+          userId: 'user-2',
+          timestamp: Timestamp.fromDate(new Date()), // Ensure a valid Firestore Timestamp
+        }),
+      ];
+      mockCheckInService.loadUserCheckins.mockResolvedValue(user2Checkins);
+      expect(store.data()).toEqual(testCheckIns);
+
+      // WHEN: The authenticated user switches to user-2
+      mockAuthStore._setUser(testUser2);
+      TestBed.flushEffects();
+
+      // THEN: The store should have loaded user-2's data
+      // The effect runs async, so we wait for microtasks to complete
+      await Promise.resolve();
+      await Promise.resolve(); // Second resolve to be safe
+
+      expect(mockCheckInService.loadUserCheckins).toHaveBeenCalledWith('user-2');
+      expect(store.data()).toEqual(user2Checkins);
+      expect(store.hasLoaded).toBe(true);
+    });
+
+    it('should NOT reload data if user object changes but UID is the same', () => {
+      // GIVEN: Data is loaded and no calls have been made yet
+      expect(mockCheckInService.loadUserCheckins).not.toHaveBeenCalled();
+
+      // WHEN: The user object is updated, but the UID remains the same
+      mockAuthStore._setUser({ ...testUser1, displayName: 'A New Name' });
+      TestBed.flushEffects();
+
+      // THEN: The BaseStore effect should see the UID is unchanged and not trigger a reload
+      expect(mockCheckInService.loadUserCheckins).not.toHaveBeenCalled();
     });
   });
 
