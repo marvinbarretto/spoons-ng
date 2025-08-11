@@ -44,5 +44,8 @@ export {
 // Common test data and factories
 export * from './test-data';
 
+// Generic testing helpers
+export * from './test-helpers';
+
 // Re-export vitest for convenience
 export { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
