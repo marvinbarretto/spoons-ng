@@ -61,6 +61,7 @@ export class AdminNavComponent extends BaseComponent {
     { label: 'Users', route: '/admin/users' },
     { label: 'Missions', route: '/admin/missions' },
     { label: 'Badges', route: '/admin/badges' },
+    { label: 'Pubs', route: '/admin/pubs' },
     { label: 'Check-ins', route: '/admin/checkins' },
     { label: 'Feedback', route: '/admin/feedback' },
     { label: 'Carpets', route: '/admin/carpets' },

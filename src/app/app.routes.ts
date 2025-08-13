@@ -145,6 +145,16 @@ export const appRoutes: Routes = [
       ),
     data: { shell: 'feature' },
   },
+  {
+    path: 'admin/pubs',
+    title: 'Pub Management',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./pubs/feature/pub-admin/pub-admin.component').then(
+        m => m.PubAdminComponent
+      ),
+    data: { shell: 'feature' },
+  },
   // Database metrics dashboard removed - was over-engineered
   {
     path: 'admin/feedback',

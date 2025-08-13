@@ -442,6 +442,15 @@ export class AdminDashboardComponent {
       stats: 'Real CRUD via BadgeStore',
     },
     {
+      id: 'pubs',
+      title: 'Pub Management',
+      description: 'View and manage all pubs with check-in analytics and location data',
+      route: '/admin/pubs',
+      icon: '🏛️',
+      status: 'active',
+      stats: 'Full CRUD with check-in analytics',
+    },
+    {
       id: 'checkins',
       title: 'Check-ins Management',
       description: 'View and manage all user check-ins',
