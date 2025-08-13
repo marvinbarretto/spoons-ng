@@ -8,6 +8,12 @@ export const PUBS_ROUTES: Routes = [
       import('../feature/pub-list/pub-list.component').then(m => m.PubListComponent),
   },
   {
+    path: 'improved',
+    title: 'Improved Pubs',
+    loadComponent: () =>
+      import('../feature/improved-pub-list/improved-pub-list.component').then(m => m.ImprovedPubListComponent),
+  },
+  {
     path: ':pubId',
     loadComponent: () =>
       import('../feature/pub-detail/pub-detail.component').then(m => m.PubDetailComponent),

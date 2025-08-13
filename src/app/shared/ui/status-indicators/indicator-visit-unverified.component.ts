@@ -18,26 +18,18 @@ import { IconComponent } from '../icon/icon.component';
     }
 
     .unverified-icon {
-      color: #333; // var(--info);
-      opacity: 0.8;
-      filter: drop-shadow(0 1px 2px rgba(59, 130, 246, 0.2));
-      animation: unverified-fade-in 0.4s ease-in-out;
+      color: var(--success);
+      opacity: 0.65;
+      transition: opacity 0.15s ease;
     }
 
-    @keyframes unverified-fade-in {
-      0% {
-        opacity: 0;
-        transform: scale(0.9);
-      }
-      100% {
-        opacity: 0.8;
-        transform: scale(1);
-      }
+    .unverified-indicator:hover .unverified-icon {
+      opacity: 0.85;
     }
 
     @media (prefers-reduced-motion: reduce) {
       .unverified-icon {
-        animation: none;
+        transition: none;
       }
     }
   `,

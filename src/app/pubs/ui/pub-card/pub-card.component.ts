@@ -24,16 +24,15 @@ import type { Pub } from '../../utils/pub.models';
     /* Base card styles - optimized for mobile */
     .pub-card {
       display: flex;
-      gap: 1rem;
-      padding: 1rem;
+      gap: 0.75rem;
+      padding: 0.75rem;
 
       background: var(--background-lighter);
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: 6px;
 
-      transition: all 0.2s ease;
+      transition: border-color 0.15s ease, background-color 0.15s ease;
       position: relative;
-      box-shadow: var(--shadow);
       color: var(--text);
       /* Enhanced touch feedback for mobile */
       -webkit-tap-highlight-color: var(--background-darkest);
@@ -49,7 +48,7 @@ import type { Pub } from '../../utils/pub.models';
     }
 
     .pub-card--selected {
-      border-color: var(--accent);
+      border-color: var(--primary);
       background: var(--background-darkest);
     }
 
@@ -196,7 +195,6 @@ import type { Pub } from '../../utils/pub.models';
       background: var(--warning);
       color: var(--background);
       font-weight: 600;
-      animation: pulse-glow 2s infinite;
     }
 
     .pub-card__badge--ghost {
@@ -247,40 +245,11 @@ import type { Pub } from '../../utils/pub.models';
 
     /* ===== ANIMATIONS ===== */
 
-    @keyframes visit-celebration {
-      0% {
-        transform: scale(0.8);
-        opacity: 0.8;
-      }
-      50% {
-        transform: scale(1.1);
-        opacity: 1;
-      }
-      100% {
-        transform: scale(1);
-        opacity: 1;
-      }
-    }
-
-    @keyframes pulse-glow {
-      0%,
-      100% {
-        transform: scale(1);
-        box-shadow: 0 0 0 0 var(--warning);
-      }
-      50% {
-        transform: scale(1.02);
-        box-shadow: 0 0 0 4px rgba(var(--warning-rgb, 255, 165, 0), 0.2);
-      }
-    }
+    /* Minimal animations removed for sophisticated restraint */
 
     /* ===== ACCESSIBILITY ===== */
 
-    @media (prefers-reduced-motion: reduce) {
-      .pub-card__badge--target {
-        animation: none;
-      }
-    }
+    /* Reduced motion preferences respected */
 
     /* ===== TABLET+ ENHANCEMENTS (641px+) ===== */
 

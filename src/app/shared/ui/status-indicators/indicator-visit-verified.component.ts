@@ -19,28 +19,17 @@ import { IconComponent } from '../icon/icon.component';
 
     .verified-icon {
       color: var(--success);
-      filter: drop-shadow(0 2px 4px rgba(72, 187, 120, 0.3));
-      animation: verified-celebration 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      opacity: 0.85;
+      transition: opacity 0.15s ease;
     }
 
-    @keyframes verified-celebration {
-      0% {
-        transform: scale(0.8);
-        opacity: 0.8;
-      }
-      50% {
-        transform: scale(1.1);
-        opacity: 1;
-      }
-      100% {
-        transform: scale(1);
-        opacity: 1;
-      }
+    .verified-indicator:hover .verified-icon {
+      opacity: 1;
     }
 
     @media (prefers-reduced-motion: reduce) {
       .verified-icon {
-        animation: none;
+        transition: none;
       }
     }
   `,

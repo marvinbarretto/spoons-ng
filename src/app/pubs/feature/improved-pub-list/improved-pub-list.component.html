@@ -1,0 +1,187 @@
+<main class="improved-pub-list" role="main" aria-label="Pub listing">
+  <!-- ✅ Progress Header - Elegant and Motivating -->
+  <header class="progress-header" role="banner">
+    <div class="progress-content">
+      <h1 class="page-title">Discover Pubs</h1>
+      <div class="progress-stats">
+        <div class="progress-bar-container" role="progressbar" 
+             [attr.aria-valuenow]="progressStats().percentage"
+             [attr.aria-valuemax]="100"
+             [attr.aria-valuetext]="progressStats().visited + ' of ' + progressStats().total + ' pubs visited'">
+          <div class="progress-bar" 
+               [style.width.%]="progressStats().percentage"></div>
+        </div>
+        <div class="progress-text">
+          <span class="visited-count">{{ progressStats().visited }}</span> of 
+          <span class="total-count">{{ progressStats().total }}</span> pubs visited
+          <span class="percentage">({{ progressStats().percentage }}%)</span>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Celebration overlay removed to reduce bloat -->
+  </header>
+
+  <!-- ✅ Premium Search Interface -->
+  <section class="search-section" role="search">
+    <div class="search-container">
+      <div class="search-primary">
+        <app-icon name="search" size="md" class="search-icon" aria-hidden="true" />
+        <input
+          type="search"
+          class="search-input"
+          placeholder="Search by name, location, or area..."
+          [value]="searchTerm()"
+          (input)="setSearchTerm($event)"
+          autocomplete="off"
+          aria-label="Search pubs"
+          spellcheck="false"
+        />
+        @if (searchTerm()) {
+          <button
+            class="clear-search-btn"
+            (click)="clearSearch()"
+            type="button"
+            aria-label="Clear search"
+          >
+            <app-icon name="close" size="sm" aria-hidden="true" />
+          </button>
+        }
+      </div>
+
+      <!-- Search Results Count -->
+      @if (searchTerm()) {
+        <div class="search-results-count" aria-live="polite">
+          {{ filterCounts().all }} pub{{ filterCounts().all === 1 ? '' : 's' }} found
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- ✅ Refined Filter Controls -->
+  <section class="filter-section" role="group" aria-label="Filter pubs">
+    <div class="filter-container">
+      <!-- Filter Pills -->
+      <div class="filter-pills" role="tablist" aria-label="Filter pubs by status">
+        @for (option of filterOptions; track option.value) {
+          <button
+            class="filter-pill"
+            [class.active]="filterMode() === option.value"
+            (click)="setFilter(option.value)"
+            type="button"
+            role="tab"
+            [attr.aria-selected]="filterMode() === option.value"
+            [attr.aria-controls]="'pub-list-' + option.value"
+            [id]="'filter-' + option.value"
+          >
+            <app-icon [name]="option.icon" size="sm" aria-hidden="true" />
+            <span class="filter-label">{{ option.label }}</span>
+            <span class="filter-count">({{ filterCounts()[option.value] }})</span>
+          </button>
+        }
+      </div>
+
+      <!-- View Mode Toggle -->
+      <div class="view-mode-toggle" role="group" aria-label="Change view mode">
+        <button
+          class="view-mode-btn"
+          [class.active]="viewMode() === 'exploration'"
+          (click)="setViewMode('exploration')"
+          type="button"
+          aria-label="Exploration mode - discover new pubs"
+        >
+          <app-icon name="explore" size="sm" aria-hidden="true" />
+          <span class="sr-only">Exploration</span>
+        </button>
+        <button
+          class="view-mode-btn"
+          [class.active]="viewMode() === 'completion'"
+          (click)="setViewMode('completion')"
+          type="button"
+          aria-label="Completion mode - track visited pubs"
+        >
+          <app-icon name="checklist" size="sm" aria-hidden="true" />
+          <span class="sr-only">Completion</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ✅ Main Content Area -->
+  <section class="content-section" [attr.aria-labelledby]="'filter-' + filterMode()">
+    @if (pubStore.loading()) {
+      <div class="loading-container">
+        <ff-loading-state text="Discovering amazing pubs..." />
+      </div>
+    } @else if (pubStore.error()) {
+      <div class="error-container">
+        <ff-error-state
+          [message]="pubStore.error()!"
+          [showRetry]="true"
+          retryText="Try Again"
+          (retry)="retryLoad()"
+        />
+      </div>
+    } @else if (sortedPubs().length === 0) {
+      <div class="empty-container">
+        <ff-empty-state
+          icon="🍺"
+          title="No pubs found"
+          subtitle="Try adjusting your search or filters to discover more pubs."
+          [showAction]="true"
+          actionText="Reset Filters"
+          (action)="resetFilters()"
+        />
+      </div>
+    } @else {
+      <!-- ✅ Simple Pub List without Grouping -->
+      <div class="pub-list">
+        @for (pub of sortedPubs(); track pub.id) {
+          <div class="pub-card-container">
+            <app-improved-pub-card
+              [pub]="pub"
+              [hasCheckedIn]="hasAnyVisit(pub.id)"
+              [hasVerifiedVisit]="hasVerifiedCheckIn(pub.id)"
+              [hasUnverifiedVisit]="hasUnverifiedVisit(pub.id)"
+              [checkinCount]="getVisitCountForPub(pub.id)"
+              [showCheckinCount]="hasAnyVisit(pub.id)"
+              [isLocalPub]="isLocalPub(pub.id)"
+              [checkInDistanceThreshold]="checkInDistanceThreshold"
+              [viewMode]="viewMode()"
+              (pubVisited)="handlePubVisited($event)"
+              (pubVisitToggled)="handlePubVisitToggle($event)"
+            />
+          </div>
+        }
+      </div>
+
+      <!-- ✅ Load More Section -->
+      @if (sortedPubs().length > 0) {
+        <footer class="load-more-section" role="contentinfo">
+          <div class="load-more-stats">
+            Showing {{ totalPubCount() }} pubs
+            @if (searchTerm() || filterMode() !== 'all') {
+              <button 
+                class="reset-filters-link"
+                (click)="resetFilters()"
+                type="button"
+                aria-label="Clear all filters and search">
+                Clear filters
+              </button>
+            }
+          </div>
+        </footer>
+      }
+    }
+  </section>
+</main>
+
+<!-- ✅ Accessibility Enhancement: Skip Link for Keyboard Navigation -->
+<a class="skip-link" href="#main-content" tabindex="1">
+  Skip to main content
+</a>
+
+<!-- ✅ Screen Reader Announcements -->
+<div class="sr-announcements" aria-live="polite" aria-atomic="true">
+  <!-- Dynamic announcements will be inserted here by the component -->
+</div>
