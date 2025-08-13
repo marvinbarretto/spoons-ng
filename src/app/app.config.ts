@@ -6,7 +6,7 @@ import {
   provideAppInitializer,
   provideZoneChangeDetection,
 } from '@angular/core';
-import { provideRouter, TitleStrategy, withPreloading } from '@angular/router';
+import { provideRouter, TitleStrategy, withPreloading, withInMemoryScrolling } from '@angular/router';
 import { TELEGRAM_CONFIG } from '@fourfold/angular-foundation';
 import { OnboardingAwarePreloadingStrategy } from './shared/strategies/onboarding-aware-preloading.strategy';
 
@@ -121,7 +121,13 @@ export const appConfig: ApplicationConfig = {
       }
     }),
     provideZoneChangeDetection({ eventCoalescing: true }),
-    provideRouter(appRoutes, withPreloading(OnboardingAwarePreloadingStrategy)),
+    provideRouter(
+      appRoutes, 
+      withPreloading(OnboardingAwarePreloadingStrategy),
+      withInMemoryScrolling({ 
+        scrollPositionRestoration: 'top' // Always scroll to top on route change
+      })
+    ),
     provideHttpClient(withFetch()),
     { provide: 'environment', useValue: environment },
     { provide: TitleStrategy, useClass: TemplatePageTitleStrategy },
