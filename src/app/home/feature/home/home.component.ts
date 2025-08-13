@@ -224,15 +224,14 @@ export class HomeComponent extends BaseComponent {
   }
 
   managePubCount(): void {
-    console.log('[Home] Navigating to pub list in management mode');
-    this.router.navigate(['/pubs'], { queryParams: { manage: 'true' } });
+    console.log('[Home] Navigating to pub list');
+    this.router.navigate(['/pubs']);
   }
 
   handleAddPreviousVisits(): void {
-    console.log('[Home] Starting Add Previous Visits flow');
-    // Navigate to a dedicated flow for adding previous pub visits
-    // This could be a modal or a separate page
-    this.router.navigate(['/pubs'], { queryParams: { mode: 'add-history' } });
+    console.log('[Home] Navigating to pub list to add previous visits');
+    // Navigate to pub list - users can now toggle visit status directly on each card
+    this.router.navigate(['/pubs']);
   }
 
   getRecentActivityText(): string {

@@ -1,38 +1,34 @@
 // src/app/pubs/feature/pub-detail/pub-detail.component.ts
 import { CheckInStore } from '@/app/check-in/data-access/check-in.store';
-import { Component, computed, inject } from '@angular/core';
+import { GlobalCheckInStore } from '@/app/check-in/data-access/global-check-in.store';
+import { Component, computed, inject, effect } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import type { CheckIn } from '@app/check-in/utils/check-in.models';
 import type { Landlord } from '@app/landlord/utils/landlord.model';
 import { AuthStore } from '@auth/data-access/auth.store';
 import { LocationService } from '@fourfold/angular-foundation';
 import { BaseComponent } from '@shared/base/base.component';
+import { DataAggregatorService } from '@shared/data-access/data-aggregator.service';
+import { CacheCoherenceService } from '@shared/data-access/cache-coherence.service';
 import { ButtonComponent } from '@shared/ui/button/button.component';
 import { ButtonSize } from '@shared/ui/button/button.params';
 import { generateRandomName } from '@shared/utils/anonymous-names';
 import { calculateDistance } from '@shared/utils/location.utils';
 import { UserStore } from '@users/data-access/user.store';
+import { MissionStore } from '@missions/data-access/mission.store';
 import { PubStore } from '../../data-access/pub.store';
 
 @Component({
   selector: 'app-pub-detail',
   imports: [ButtonComponent], // JsonPipe removed - not used
   template: `
-    <section class="pub-detail-page" [class.has-carpet]="pub()?.carpetUrl">
-      @if (pub()?.carpetUrl) {
-        <div class="page-background">
-          <div class="carpet-bg">
-            <img [src]="pub()!.carpetUrl" [alt]="pub()!.name + ' background'" />
-          </div>
-          <div class="bg-overlay"></div>
-        </div>
-      }
+    <main class="pub-detail-page" role="main">
       @if (isDataLoading()) {
         <div class="loading-state">
           <div class="loading-skeleton">
             <div class="skeleton-header"></div>
+            <div class="skeleton-metrics"></div>
             <div class="skeleton-content"></div>
-            <div class="skeleton-actions"></div>
           </div>
         </div>
       } @else if (dataError()) {
@@ -46,239 +42,117 @@ import { PubStore } from '../../data-access/pub.store';
           <app-button variant="secondary" (onClick)="goBack()">← Back to Pubs</app-button>
         </div>
       } @else {
-        <!-- Header with Back Button -->
-        <header class="pub-header">
-          <app-button variant="ghost" [size]="ButtonSize.SMALL" (onClick)="goBack()"
-            >← Back</app-button
-          >
-
-          <!-- Pub Hero Section -->
-          <div class="pub-hero">
-            @if (pub()!.carpetUrl) {
-              <div class="carpet-image">
-                <img [src]="pub()!.carpetUrl" [alt]="pub()!.name + ' carpet'" />
-              </div>
-            }
-            <div class="pub-info">
-              <h1>{{ pub()!.name }}</h1>
-              <p class="pub-address">{{ pub()!.address }}</p>
-              <div class="pub-location">
-                <span class="location-icon">📍</span>
-                <span>{{ pub()!.city }}, {{ pub()!.region }}</span>
-              </div>
+        <!-- Refined Carpet Display - Pure Visual Focus -->
+        @if (simplifiedCarpetDisplay()) {
+          <section class="refined-carpet-section">
+            <div class="carpet-container">
+              <img 
+                [src]="simplifiedCarpetDisplay()!.carpetUrl" 
+                [alt]="simplifiedCarpetDisplay()!.altText"
+                class="carpet-image"
+                loading="eager"
+              />
             </div>
+          </section>
+        }
+
+        <!-- Centered Header -->
+        <header class="pub-header">
+          <div class="pub-title-section">
+            <h1 class="pub-name">{{ pub()!.name }}</h1>
+            <p class="pub-location">{{ pub()!.city }}, {{ pub()!.region }}</p>
           </div>
         </header>
 
-        <!-- Quick Actions -->
-        <div class="quick-actions">
-          @if (canCheckIn()) {
-            <app-button variant="primary" [size]="ButtonSize.LARGE" (onClick)="initiateCheckIn()">
-              📸 Check In Here
-            </app-button>
-          } @else if (hasCheckedIn()) {
-            <div class="status-badge status-badge--success">
-              ✅ You've been here {{ userCheckins().length }} time{{
-                userCheckins().length === 1 ? '' : 's'
-              }}
-            </div>
-          } @else if (isNearby()) {
-            <div class="status-badge status-badge--info" [class.distance-pulsing]="isMoving()">
-              🚶 You're nearby ({{ distanceText() }})
-            </div>
-          } @else {
-            <div class="status-badge status-badge--neutral" [class.distance-pulsing]="isMoving()">
-              📍 {{ distanceText() }}
-            </div>
-          }
-        </div>
 
-        <!-- Main Content Sections -->
-        <div class="content-sections">
-          <!-- About Section -->
-          <section class="content-section">
-            <h2>About This Pub</h2>
-            <div class="pub-details">
-              <div class="detail-item">
-                <span class="detail-label">Address</span>
-                <span class="detail-value">{{ pub()!.address }}</span>
+        <!-- Global Stats Section -->
+        @if (pubAnalytics()) {
+          <section class="section global-stats">
+            <h2>Global Statistics</h2>
+            
+            <div class="analytics-grid">
+              <div class="analytics-metric">
+                <span class="analytics-number">{{ pubAnalytics()!.totalCheckins }}</span>
+                <span class="analytics-label">TOTAL VISITS</span>
               </div>
-              <div class="detail-item">
-                <span class="detail-label">Location</span>
-                <span class="detail-value"
-                  >{{ pub()!.city }}, {{ pub()!.region }}, {{ pub()!.country }}</span
-                >
+              <div class="analytics-metric">
+                <span class="analytics-number">{{ pubAnalytics()!.uniqueVisitors }}</span>
+                <span class="analytics-label">UNIQUE VISITORS</span>
               </div>
-              @if (checkinStats()?.totalCheckins) {
-                <div class="detail-item">
-                  <span class="detail-label">Total Check-ins</span>
-                  <span class="detail-value">{{ checkinStats()!.totalCheckins }}</span>
+              <div class="analytics-metric">
+                <span class="analytics-number">{{ pubAnalytics()!.totalPointsGenerated }}</span>
+                <span class="analytics-label">POINTS GENERATED</span>
+              </div>
+            </div>
+
+            <!-- Active Missions -->
+            @if (associatedMissions().length > 0) {
+              <div class="missions-section">
+                <h3>Active Missions</h3>
+                <div class="missions-list">
+                  @for (mission of associatedMissions(); track mission.id) {
+                    <div class="mission-row">
+                      <span class="mission-name">{{ mission.name }}</span>
+                      @if (mission.pointsReward) {
+                        <span class="mission-points">{{ mission.pointsReward }} pts</span>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </section>
+        }
+
+        <!-- User Stats Section -->
+        @if (user() && userPubStats()) {
+          <section class="section user-stats">
+            <h2>Your Statistics</h2>
+            
+            <div class="analytics-grid">
+              <div class="analytics-metric">
+                <span class="analytics-number">{{ userPubStats()!.totalVisits }}</span>
+                <span class="analytics-label">YOUR VISITS</span>
+              </div>
+              <div class="analytics-metric">
+                <span class="analytics-number">{{ userPubStats()!.totalPointsEarned }}</span>
+                <span class="analytics-label">POINTS EARNED</span>
+              </div>
+              @if (userPubStats()!.rankAmongVisitors) {
+                <div class="analytics-metric" [class.highlight]="userPubStats()!.isTopVisitor">
+                  <span class="analytics-number">#{{ userPubStats()!.rankAmongVisitors }}</span>
+                  <span class="analytics-label">YOUR RANK</span>
                 </div>
               }
             </div>
+
+            @if (userPubStats()!.lastVisitDate) {
+              <p class="last-visit-text">Last visit: {{ formatDate(userPubStats()!.lastVisitDate) }}</p>
+            }
           </section>
-
-          <!-- Your Activity Section -->
-          @if (user()) {
-            <section class="content-section">
-              <h2>Your Activity</h2>
-              <div class="activity-summary">
-                @if (hasCheckedIn()) {
-                  <div class="activity-stat">
-                    <span class="stat-number">{{ userCheckins().length }}</span>
-                    <span class="stat-label"
-                      >Check-in{{ userCheckins().length === 1 ? '' : 's' }}</span
-                    >
-                  </div>
-                  @if (userCheckins().length > 0) {
-                    <div class="last-visit">
-                      <span class="visit-label">Last visit:</span>
-                      <span class="visit-date">{{ formatDate(userCheckins()[0].timestamp) }}</span>
-                    </div>
-                  }
-                } @else {
-                  <div class="no-activity">
-                    <p>You haven't checked in here yet!</p>
-                    @if (canCheckIn()) {
-                      <p class="encourage-checkin">You're close enough to check in now 📸</p>
-                    }
-                  </div>
-                }
-              </div>
-            </section>
-          }
-
-          <!-- Landlord Section -->
-          @if (pub()!.currentLandlord || pub()!.todayLandlord) {
-            <section class="content-section">
-              <h2>👑 Landlord</h2>
-              <div class="landlord-info">
-                @if (pub()!.currentLandlord) {
-                  <div class="current-landlord">
-                    <span class="landlord-label">Current Landlord:</span>
-                    <span class="landlord-name">{{
-                      getLandlordDisplayName(pub()!.currentLandlord!)
-                    }}</span>
-                  </div>
-                }
-                @if (pub()!.todayLandlord && pub()!.todayLandlord !== pub()!.currentLandlord) {
-                  <div class="today-landlord">
-                    <span class="landlord-label">Today's Landlord:</span>
-                    <span class="landlord-name">{{
-                      getLandlordDisplayName(pub()!.todayLandlord!)
-                    }}</span>
-                  </div>
-                }
-              </div>
-            </section>
-          }
-
-          <!-- Recent Activity Section -->
-          @if (recentCheckins().length > 0) {
-            <section class="content-section">
-              <h2>Recent Check-ins</h2>
-              <div class="recent-checkins">
-                @for (checkin of recentCheckins().slice(0, 5); track checkin.id) {
-                  <div class="checkin-item">
-                    <div class="checkin-user">
-                      <span class="user-name">{{ getCheckinUserDisplayName(checkin) }}</span>
-                    </div>
-                    <div class="checkin-time">
-                      {{ formatDate(checkin.timestamp) }}
-                    </div>
-                  </div>
-                }
-              </div>
-            </section>
-          }
-
-          <!-- Statistics Section -->
-          @if (checkinStats()) {
-            <section class="content-section">
-              <h2>📊 Statistics</h2>
-              <div class="stats-grid">
-                @if (checkinStats()!.totalCheckins) {
-                  <div class="stat-card">
-                    <span class="stat-number">{{ checkinStats()!.totalCheckins }}</span>
-                    <span class="stat-label">Total Check-ins</span>
-                  </div>
-                }
-                @if (checkinStats()!.longestStreak) {
-                  <div class="stat-card">
-                    <span class="stat-number">{{ checkinStats()!.longestStreak }}</span>
-                    <span class="stat-label">Longest Streak</span>
-                  </div>
-                }
-              </div>
-            </section>
-          }
-        </div>
+        }
       }
-    </section>
+    </main>
   `,
   styles: `
+    /* ===== MOBILE-FIRST BASE STYLES ===== */
+    
     .pub-detail-page {
-      max-width: 800px;
+      max-width: 640px;
       margin: 0 auto;
-      padding: 0;
       background: var(--background);
-      color: var(--text);
       min-height: 100vh;
-      position: relative;
-      overflow: hidden;
+      
+      /* Mobile-first approach - clean and simple */
+      color: var(--text);
     }
 
-    .pub-detail-page.has-carpet {
-      background: transparent;
-    }
+    /* Complex backgrounds removed for performance */
 
-    /* Page Background with Carpet */
-    .page-background {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: -1;
-      overflow: hidden;
-    }
-
-    .carpet-bg {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      opacity: 0.15;
-      filter: blur(2px) saturate(0.7);
-    }
-
-    .carpet-bg img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transform: scale(1.1);
-    }
-
-    .bg-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(
-        180deg,
-        var(--background) 0%,
-        rgba(var(--background-rgb), 0.95) 10%,
-        rgba(var(--background-rgb), 0.85) 50%,
-        rgba(var(--background-rgb), 0.95) 90%,
-        var(--background) 100%
-      );
-    }
-
-    /* Loading States */
+    /* ===== LOADING STATES ===== */
+    
     .loading-state {
-      padding: 2rem 1rem;
+      padding: 1.5rem 1rem;
     }
 
     .loading-skeleton {
@@ -288,325 +162,205 @@ import { PubStore } from '../../data-access/pub.store';
     }
 
     .skeleton-header,
-    .skeleton-content,
-    .skeleton-actions {
-      background: var(--background-darkest);
+    .skeleton-metrics,
+    .skeleton-content {
+      background: var(--background-darker);
       border-radius: 8px;
       animation: skeleton-pulse 1.5s ease-in-out infinite;
     }
 
     .skeleton-header {
-      height: 200px;
+      height: 80px;
+    }
+
+    .skeleton-metrics {
+      height: 120px;
     }
 
     .skeleton-content {
-      height: 100px;
-    }
-
-    .skeleton-actions {
-      height: 50px;
+      height: 200px;
     }
 
     @keyframes skeleton-pulse {
-      0%,
-      100% {
-        opacity: 1;
-      }
-      50% {
-        opacity: 0.6;
-      }
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
     }
 
     .error-state,
     .not-found-state {
       text-align: center;
-      padding: 3rem 1rem;
+      padding: 2rem 1rem;
       color: var(--text-secondary);
     }
 
     .error-state {
-      color: var(--color-error);
+      color: var(--error);
     }
 
-    /* Header */
+    /* ===== REFINED CARPET SECTION - ELEGANT SIMPLICITY ===== */
+    
+    .refined-carpet-section {
+      padding: 2rem 1rem 0;
+    }
+    
+    .carpet-container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    .carpet-image {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      object-position: center;
+      border-radius: 6px;
+      background: var(--background-darker);
+    }
+
+
+    /* ===== MOBILE-FIRST HEADER ===== */
+    
     .pub-header {
-      position: relative;
+      background: var(--background);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem;
+    }
+
+    .header-controls {
       margin-bottom: 1rem;
     }
 
-    .back-btn,
-    .retry-btn {
-      position: absolute;
-      top: 1rem;
-      left: 1rem;
-      z-index: 10;
-      padding: 0.5rem 1rem;
-      border: 1px solid var(--border);
-      background: var(--background-darkest);
+    .pub-title-section {
+      text-align: center;
+    }
+
+    .pub-name {
+      font-size: 1.75rem;
+      font-weight: 600;
       color: var(--text);
-      border-radius: 20px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: 0.875rem;
-      font-family: inherit;
-      backdrop-filter: blur(10px);
-    }
-
-    .back-btn:hover,
-    .retry-btn:hover {
-      background: var(--background-darkestElevated);
-      border-color: var(--primary);
-      color: var(--primary);
-    }
-
-    .pub-hero {
-      position: relative;
-      border-radius: 0 0 20px 20px;
-      overflow: hidden;
-      background: var(--background-darkest);
-      min-height: 400px;
-      margin-bottom: 2rem;
-    }
-
-    .has-carpet .pub-hero {
-      min-height: 500px;
-      background: transparent;
-      backdrop-filter: blur(1px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    }
-
-    .carpet-image {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      z-index: 1;
-    }
-
-    .carpet-image img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      filter: saturate(1.2) contrast(1.1);
-    }
-
-    .pub-info {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      z-index: 2;
-      padding: 3rem 1.5rem 2rem;
-      background: linear-gradient(
-        transparent 0%,
-        rgba(0, 0, 0, 0.4) 30%,
-        rgba(0, 0, 0, 0.8) 70%,
-        rgba(0, 0, 0, 0.95) 100%
-      );
-      color: white;
-    }
-
-    .has-carpet .pub-info {
-      background: linear-gradient(
-        transparent 0%,
-        rgba(0, 0, 0, 0.3) 20%,
-        rgba(0, 0, 0, 0.7) 60%,
-        rgba(0, 0, 0, 0.9) 100%
-      );
-      backdrop-filter: blur(8px);
-    }
-
-    .pub-info h1 {
-      font-size: 2rem;
-      font-weight: 700;
-      margin: 0 0 0.5rem;
-      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
-      color: white;
-    }
-
-    .has-carpet .pub-info h1 {
-      font-size: 2.5rem;
-      text-shadow:
-        0 2px 4px rgba(0, 0, 0, 0.9),
-        0 4px 16px rgba(0, 0, 0, 0.6);
-    }
-
-    .pub-address {
-      font-size: 1rem;
-      margin: 0 0 0.5rem;
-      opacity: 0.9;
-      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
-      color: rgba(255, 255, 255, 0.95);
+      margin: 0 0 0.25rem;
+      line-height: 1.2;
     }
 
     .pub-location {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
       font-size: 0.875rem;
-      opacity: 0.8;
-      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
-      color: rgba(255, 255, 255, 0.9);
+      color: var(--text-secondary);
+      margin: 0;
     }
 
-    .location-icon {
-      font-size: 1rem;
+    /* Complex hero section removed for simplification */
+
+    /* ===== PRIMARY ACTION ===== */
+    
+    .primary-action {
+      padding: 1rem;
+      text-align: center;
     }
 
-    /* Actions */
-    .quick-actions {
-      margin: 1.5rem 1rem;
-      display: flex;
-      gap: 1rem;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .action-btn {
-      padding: 0.875rem 1.5rem;
-      border: none;
-      border-radius: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-family: inherit;
-      font-size: 1rem;
-    }
-
-    .action-btn--primary {
-      background: var(--primary);
-      color: var(--primaryText);
-      box-shadow: 0 2px 8px var(--shadow);
-    }
-
-    .action-btn--primary:hover {
-      background: var(--primaryHover);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 16px var(--shadow);
-    }
-
-    .status-badge {
-      padding: 0.75rem 1.25rem;
-      border-radius: 25px;
+    .status-indicator {
+      padding: 0.75rem 1.5rem;
+      border-radius: 20px;
       font-size: 0.875rem;
       font-weight: 500;
       display: inline-flex;
       align-items: center;
+      justify-content: center;
       gap: 0.5rem;
-      border: 1px solid var(--border);
-      transition: all 0.2s ease;
     }
 
-    .status-badge--success {
-      background: var(--color-success);
-      color: var(--color-successText);
-      border-color: var(--color-success);
+    .status-indicator.success {
+      background: var(--success);
+      color: var(--on-primary);
     }
 
-    .status-badge--info {
-      background: var(--color-info);
-      color: var(--color-infoText);
-      border-color: var(--color-info);
-    }
-
-    .status-badge--neutral {
-      background: var(--background-darkestElevated);
+    .status-indicator.neutral {
+      background: var(--background-lighter);
       color: var(--text-secondary);
-      border-color: var(--borderSecondary);
-    }
-
-    .distance-pulsing {
-      animation: pulse 2s ease-in-out infinite;
-    }
-
-    /* Content Sections */
-    .content-sections {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      padding: 0 1rem 2rem;
-      position: relative;
-      z-index: 1;
-    }
-
-    .content-section {
-      background: var(--background-darkest);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 1.5rem;
-      box-shadow: 0 2px 8px var(--shadow);
-      transition: all 0.2s ease;
     }
 
-    .has-carpet .content-section {
-      background: rgba(var(--background-darkest-rgb, 18, 20, 23), 0.85);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-    }
-
-    .content-section:hover {
-      box-shadow: 0 4px 16px var(--shadow);
-    }
-
-    .has-carpet .content-section:hover {
-      background: rgba(var(--background-darkest-rgb, 18, 20, 23), 0.9);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-      transform: translateY(-2px);
-    }
-
-    .content-section h2 {
-      margin: 0 0 1rem;
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: var(--text);
-    }
-
-    /* Pub Details */
-    .pub-details {
+    /* ===== REFINED STATS - SOPHISTICATED RESTRAINT ===== */
+    
+    .refined-stats-container {
       display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .detail-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.75rem 0;
+      justify-content: center;
+      gap: 3rem;
+      padding: 3rem 1rem 2rem;
       border-bottom: 1px solid var(--border);
     }
 
-    .detail-item:last-child {
-      border-bottom: none;
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      min-width: 80px;
     }
 
-    .detail-label {
-      font-weight: 500;
+    .stat-number {
+      font-size: 2rem;
+      font-weight: 300;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
       color: var(--text-secondary);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    /* Mobile adjustments */
+    @media (max-width: 480px) {
+      .refined-stats-container {
+        gap: 2rem;
+        padding: 2rem 1rem 1.5rem;
+      }
+      
+      .stat-number {
+        font-size: 1.75rem;
+      }
     }
 
-    .detail-value {
+    /* ===== CONTENT CONTAINER ===== */
+    
+    .content-container {
+      padding: 0 1rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .section {
+      background: var(--background-lighter);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+    }
+
+    .section h2,
+    .section h3 {
+      margin: 0 0 1rem;
+      font-size: 1.125rem;
       font-weight: 600;
       color: var(--text);
-      text-align: right;
     }
 
-    /* Activity */
+    .section h3 {
+      font-size: 1rem;
+    }
+
+
+
+    /* ===== YOUR ACTIVITY ===== */
+    
     .activity-summary {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: 0.75rem;
     }
 
     .activity-stat {
@@ -616,207 +370,229 @@ import { PubStore } from '../../data-access/pub.store';
     }
 
     .stat-number {
-      font-size: 2rem;
+      font-size: 1.5rem;
       font-weight: 700;
       color: var(--primary);
     }
 
     .stat-label {
-      font-size: 1rem;
-      color: var(--text-secondary);
-    }
-
-    .last-visit {
-      padding: 1rem;
-      background: var(--background-darkestElevated);
-      border-radius: 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .visit-label {
-      color: var(--text-secondary);
-    }
-
-    .visit-date {
-      font-weight: 600;
-      color: var(--text);
-    }
-
-    .no-activity {
-      text-align: center;
-      padding: 1rem;
-      color: var(--text-secondary);
-    }
-
-    .encourage-checkin {
-      color: var(--primary);
-      font-weight: 500;
-      margin-top: 0.5rem;
-    }
-
-    /* Landlord */
-    .landlord-info {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .current-landlord,
-    .today-landlord {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem;
-      background: var(--background-darkestElevated);
-      border-radius: 12px;
-    }
-
-    .landlord-label {
-      color: var(--text-secondary);
-    }
-
-    .landlord-name {
-      font-weight: 600;
-      color: var(--text);
-    }
-
-    /* Recent Check-ins */
-    .recent-checkins {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-
-    .checkin-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem;
-      background: var(--background-darkestElevated);
-      border-radius: 12px;
-      transition: all 0.2s ease;
-    }
-
-    .checkin-item:hover {
-      background: var(--background-darkest);
-    }
-
-    .user-name {
-      font-weight: 500;
-      color: var(--text);
-    }
-
-    .checkin-time {
       font-size: 0.875rem;
       color: var(--text-secondary);
     }
 
-    /* Statistics */
-    .stats-grid {
+    .last-visit-text {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    /* ===== REFINED SECTIONS ===== */
+    
+    /* ===== SOPHISTICATED ANALYTICS GRID ===== */
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3rem;
+      margin-top: 2rem;
+    }
+    
+    .analytics-metric {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    
+    .analytics-number {
+      font-size: 2.5rem;
+      font-weight: 300; /* Light weight for sophisticated appearance */
+      color: var(--text);
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+    
+    .analytics-label {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em; /* Refined spacing */
+    }
+    
+    /* Mobile responsive for analytics grid */
+    @media (max-width: 480px) {
+      .analytics-grid {
+        gap: 2rem; /* Tighter spacing on mobile */
+      }
+      
+      .analytics-number {
+        font-size: 2rem; /* Smaller numbers on mobile */
+      }
+      
+      .analytics-label {
+        font-size: 0.7rem;
+      }
+    }
+    
+    /* ===== MISSIONS SECTION ===== */
+    .missions-section {
+      margin-top: 3rem;
+    }
+    
+    .missions-section h3 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--text);
+      margin: 0 0 1.5rem;
+    }
+    
+    .missions-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .mission-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .mission-row:last-child {
+      border-bottom: none;
+    }
+    
+    .mission-name {
+      font-size: 0.875rem;
+      color: var(--text);
+      font-weight: 500;
+    }
+    
+    .mission-points {
+      font-size: 0.75rem;
+      color: var(--primary);
+      font-weight: 600;
+    }
+    
+    
+    
+    
+    /* Enhanced Your Activity */
+    .activity-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
       gap: 1rem;
+      margin-bottom: 1rem;
     }
-
-    .stat-card {
+    
+    .activity-stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       text-align: center;
-      padding: 1.5rem 1rem;
-      background: var(--background-darkestElevated);
-      border-radius: 12px;
+      padding: 1rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
       transition: all 0.2s ease;
     }
-
-    .stat-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px var(--shadow);
+    
+    .activity-stat.highlight {
+      border-color: var(--accent);
+      background: linear-gradient(135deg, var(--background-lighter), var(--background-lightest));
     }
-
-    .stat-card .stat-number {
-      display: block;
-      font-size: 1.75rem;
+    
+    .stat-number {
+      font-size: 1.5rem;
       font-weight: 700;
       color: var(--primary);
       margin-bottom: 0.25rem;
     }
-
-    .stat-card .stat-label {
-      font-size: 0.875rem;
+    
+    .stat-label {
+      font-size: 0.75rem;
       color: var(--text-secondary);
+      font-weight: 500;
     }
+    
 
-    /* Mobile Optimizations */
-    @media (max-width: 768px) {
+    /* ===== TABLET+ ENHANCEMENTS (768px+) ===== */
+    
+    @media (min-width: 768px) {
       .pub-detail-page {
-        padding: 0;
+        max-width: 800px;
       }
-
-      .pub-hero {
-        min-height: 250px;
+      
+      .pub-header {
+        padding: 1.5rem;
       }
-
-      .has-carpet .pub-hero {
-        min-height: 350px;
-      }
-
-      .pub-info {
-        padding: 1.5rem 1rem 1rem;
-      }
-
-      .pub-info h1 {
-        font-size: 1.75rem;
-      }
-
-      .has-carpet .pub-info h1 {
+      
+      .pub-name {
         font-size: 2rem;
       }
-
-      .quick-actions {
-        flex-direction: column;
-        align-items: stretch;
+      
+      .refined-stats-container {
+        gap: 4rem;
+        padding: 4rem 2rem 3rem;
       }
-
-      .action-btn,
-      .status-badge {
-        text-align: center;
-        justify-content: center;
+      
+      .stat-number {
+        font-size: 2.25rem;
       }
-
-      .content-sections {
-        padding: 0 0.75rem 1.5rem;
+      
+      .content-container {
+        padding: 0 1.5rem 2rem;
       }
-
-      .content-section {
-        padding: 1.25rem;
+      
+      .section {
+        padding: 1.5rem;
       }
-
-      .detail-item {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.25rem;
+      
+      
+      .activity-grid {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 1.5rem;
       }
-
-      .detail-value {
-        text-align: left;
+      
+      .activity-stat {
+        padding: 1.25rem 1rem;
       }
+      
+      /* Sophisticated Analytics Grid - Tablet+ */
+      .analytics-grid {
+        gap: 4rem; /* More generous spacing on larger screens */
+      }
+      
+      .analytics-number {
+        font-size: 3rem; /* Larger numbers on tablet+ */
+      }
+      
+      /* Refined Carpet Section - Tablet+ */
+      .refined-carpet-section {
+        padding: 3rem 2rem 0;
+      }
+      
+      .carpet-container {
+        max-width: 700px;
+      }
+      
     }
 
-    /* Focus states for accessibility */
-    .back-btn:focus,
-    .retry-btn:focus,
-    .action-btn:focus {
-      outline: 2px solid var(--primary);
-      outline-offset: 2px;
-    }
-
-    @keyframes pulse {
-      0%,
-      100% {
-        opacity: 1;
+    /* ===== ACCESSIBILITY ===== */
+    
+    @media (prefers-reduced-motion: reduce) {
+      .live-indicator,
+      .metric-card {
+        animation: none;
+        transition: none;
       }
-      50% {
-        opacity: 0.6;
+    }
+    
+    @media (prefers-contrast: high) {
+      .section,
+      .metric-card {
+        border-width: 2px;
       }
     }
   `,
@@ -825,14 +601,34 @@ export class PubDetailComponent extends BaseComponent {
   // ✅ Store dependencies
   protected readonly pubStore = inject(PubStore);
   protected readonly checkinStore = inject(CheckInStore);
+  protected readonly globalCheckInStore = inject(GlobalCheckInStore);
   protected readonly userStore = inject(UserStore);
   protected readonly authStore = inject(AuthStore);
   protected readonly locationService = inject(LocationService);
+  protected readonly dataAggregator = inject(DataAggregatorService);
+  protected readonly missionStore = inject(MissionStore);
+  protected readonly cacheCoherence = inject(CacheCoherenceService);
   protected override readonly router = inject(Router);
   protected readonly route = inject(ActivatedRoute);
 
   // ✅ Expose ButtonSize for template
   readonly ButtonSize = ButtonSize;
+
+  constructor() {
+    super();
+    
+    // ✅ Listen for cache invalidation to refresh global statistics
+    effect(() => {
+      const invalidation = this.cacheCoherence.invalidations();
+      if (invalidation && invalidation.collection === 'checkins') {
+        console.log('[PubDetail] 🔄 Cache invalidated, global statistics will update automatically');
+        console.log('[PubDetail] 🔄 Invalidation reason:', invalidation.reason);
+        
+        // The computed signals will automatically update when GlobalCheckInStore refreshes
+        // No manual refresh needed - reactive patterns handle this automatically
+      }
+    });
+  }
 
   // ✅ Route parameter from ActivatedRoute
   protected readonly pubId = computed(() => this.route.snapshot.paramMap.get('pubId') || '');
@@ -845,7 +641,7 @@ export class PubDetailComponent extends BaseComponent {
   });
 
   protected readonly isDataLoading = computed(
-    () => this.pubStore.loading() || this.checkinStore.loading()
+    () => this.pubStore.loading() || this.checkinStore.loading() || this.globalCheckInStore.loading()
   );
 
   protected readonly dataError = computed(() => this.pubStore.error() || this.checkinStore.error());
@@ -895,8 +691,8 @@ export class PubDetailComponent extends BaseComponent {
 
     if (!user) return [];
 
-    return this.checkinStore
-      .checkins()
+    return this.globalCheckInStore
+      .allCheckIns()
       .filter((checkin: any) => checkin.userId === user.uid && checkin.pubId === pubId);
   });
 
@@ -904,8 +700,8 @@ export class PubDetailComponent extends BaseComponent {
 
   protected readonly recentCheckins = computed(() => {
     const pubId = this.pubId();
-    return this.checkinStore
-      .checkins()
+    return this.globalCheckInStore
+      .allCheckIns()
       .filter((checkin: any) => checkin.pubId === pubId)
       .sort((a: any, b: any) => b.timestamp.seconds - a.timestamp.seconds)
       .slice(0, 10); // Latest 10 check-ins
@@ -963,6 +759,143 @@ export class PubDetailComponent extends BaseComponent {
     };
   });
 
+  // ✅ REFINED STATS - Essential metrics only
+  protected readonly refinedPubStats = computed(() => {
+    const analytics = this.pubAnalytics();
+    if (!analytics) return null;
+    
+    return {
+      uniqueVisitors: analytics.uniqueVisitors,
+      totalVisits: analytics.totalCheckins,
+      activeMissions: this.activeMissionsCount()
+    };
+  });
+  
+  // ✅ Supporting metric calculations
+  protected readonly totalUniqueUsers = computed(() => {
+    const pubId = this.pubId();
+    if (!pubId) return 0;
+    
+    const checkins = this.globalCheckInStore.getCheckInsForPub(pubId);
+    
+    const uniqueUserIds = new Set(
+      checkins.map((checkin: any) => checkin.userId)
+    );
+    return uniqueUserIds.size;
+  });
+
+  protected readonly activeMissionsCount = computed(() => {
+    const pubId = this.pubId();
+    if (!pubId) return 0;
+    
+    // Get real missions from MissionStore that include this pub
+    const missions = this.missionStore.missions();
+    const relevantMissions = missions.filter(mission => 
+      mission.pubIds.includes(pubId)
+    );
+    
+    return relevantMissions.length;
+  });
+
+  protected readonly topVisitorCount = computed(() => {
+    const visitors = this.topVisitors();
+    return visitors.length > 0 ? visitors[0].visitCount : 0;
+  });
+
+  protected readonly topVisitors = computed(() => {
+    const pubId = this.pubId();
+    if (!pubId) return [];
+    
+    const checkins = this.globalCheckInStore.getCheckInsForPub(pubId);
+    
+    // Group by userId and count visits with enhanced data
+    const visitorMap = new Map<string, { 
+      userId: string; 
+      visitCount: number; 
+      lastVisit: any; 
+      totalPointsEarned: number;
+      firstVisit: any;
+    }>();
+    
+    checkins.forEach((checkin: any) => {
+      const existing = visitorMap.get(checkin.userId);
+      const points = checkin.pointsEarned ?? checkin.pointsBreakdown?.total ?? 0;
+      
+      if (existing) {
+        existing.visitCount++;
+        existing.totalPointsEarned += points;
+        if (checkin.timestamp.seconds > existing.lastVisit.seconds) {
+          existing.lastVisit = checkin.timestamp;
+        }
+        if (checkin.timestamp.seconds < existing.firstVisit.seconds) {
+          existing.firstVisit = checkin.timestamp;
+        }
+      } else {
+        visitorMap.set(checkin.userId, {
+          userId: checkin.userId,
+          visitCount: 1,
+          lastVisit: checkin.timestamp,
+          firstVisit: checkin.timestamp,
+          totalPointsEarned: points
+        });
+      }
+    });
+    
+    // Convert to array and sort by visit count
+    return Array.from(visitorMap.values())
+      .sort((a, b) => {
+        // Primary sort: visit count
+        if (b.visitCount !== a.visitCount) return b.visitCount - a.visitCount;
+        // Secondary sort: total points earned
+        return b.totalPointsEarned - a.totalPointsEarned;
+      })
+      .map(visitor => ({
+        id: visitor.userId,
+        displayName: generateRandomName(visitor.userId),
+        visitCount: visitor.visitCount,
+        lastVisit: visitor.lastVisit,
+        firstVisit: visitor.firstVisit,
+        totalPointsEarned: visitor.totalPointsEarned,
+        isRegular: visitor.visitCount >= 3
+      }));
+  });
+
+  protected readonly associatedMissions = computed(() => {
+    const pubId = this.pubId();
+    if (!pubId) return [];
+    
+    // Get real missions from MissionStore that include this pub
+    const missions = this.missionStore.missions();
+    const relevantMissions = missions.filter(mission => 
+      mission.pubIds.includes(pubId)
+    );
+    
+    // Return missions with additional display properties
+    return relevantMissions.map(mission => ({
+      id: mission.id,
+      name: mission.name,
+      description: mission.description,
+      difficulty: mission.difficulty,
+      emoji: mission.emoji,
+      category: mission.category,
+      totalPubs: mission.pubIds.length,
+      pointsReward: mission.pointsReward
+    }));
+  });
+
+  protected readonly hasRecentActivity = computed(() => {
+    const recentCheckins = this.recentCheckins();
+    if (recentCheckins.length === 0) return false;
+    
+    const now = Date.now();
+    const fiveMinutesAgo = now - (5 * 60 * 1000);
+    
+    return recentCheckins.some((checkin: any) => {
+      const checkinTime = checkin.timestamp.seconds * 1000;
+      return checkinTime > fiveMinutesAgo;
+    });
+  });
+
   protected readonly checkinStats = computed(() => {
     const pub = this.pub();
     if (!pub) return null;
@@ -1015,6 +948,11 @@ export class PubDetailComponent extends BaseComponent {
       totalCheckins: this.checkinStore.checkins().length,
       dataLoaded: this.checkinStore.checkins().length > 0,
     },
+    globalCheckInStore: {
+      loading: this.globalCheckInStore.loading(),
+      totalGlobalCheckins: this.globalCheckInStore.allCheckIns().length,
+      dataLoaded: this.globalCheckInStore.allCheckIns().length > 0,
+    },
     userStore: {
       loading: this.userStore.loading(),
       error: this.userStore.error(),
@@ -1028,16 +966,104 @@ export class PubDetailComponent extends BaseComponent {
     },
   }));
 
+  // ✅ SIMPLIFIED CARPET DISPLAY - Pure visual focus
+  protected readonly simplifiedCarpetDisplay = computed(() => {
+    const pub = this.pub();
+    if (!pub?.hasCarpet || !pub?.carpetUrl) return null;
+    
+    return {
+      carpetUrl: pub.carpetUrl,
+      altText: `${pub.name} carpet`
+    };
+  });
+
+
+  // ✅ New analytics sections using DataAggregatorService
+  protected readonly pubAnalytics = computed(() => {
+    const pubId = this.pubId();
+    const pub = this.pub();
+    if (!pubId || !pub) return null;
+    
+    const checkins = this.globalCheckInStore.getCheckInsForPub(pubId);
+    
+    // Calculate visit patterns
+    const visitsByDay = new Map<string, number>();
+    const visitsByHour = new Map<number, number>();
+    let totalPointsEarned = 0;
+    
+    checkins.forEach((checkin: any) => {
+      const date = checkin.timestamp.toDate();
+      const dayKey = date.toDateString();
+      const hour = date.getHours();
+      
+      visitsByDay.set(dayKey, (visitsByDay.get(dayKey) || 0) + 1);
+      visitsByHour.set(hour, (visitsByHour.get(hour) || 0) + 1);
+      
+      const points = checkin.pointsEarned ?? checkin.pointsBreakdown?.total ?? 0;
+      totalPointsEarned += points;
+    });
+    
+    // Find peak hour
+    let peakHour = 0;
+    let maxVisits = 0;
+    visitsByHour.forEach((visits, hour) => {
+      if (visits > maxVisits) {
+        maxVisits = visits;
+        peakHour = hour;
+      }
+    });
+    
+    // ✅ Refined to essential 3 metrics for sophisticated display
+    return {
+      totalCheckins: checkins.length,
+      uniqueVisitors: this.totalUniqueUsers(),
+      totalPointsGenerated: totalPointsEarned
+    };
+  });
+
+  protected readonly userPubStats = computed(() => {
+    const user = this.user();
+    const pubId = this.pubId();
+    if (!user || !pubId) return null;
+    
+    const userCheckins = this.userCheckins();
+    const totalPoints = userCheckins.reduce((sum, checkin: any) => {
+      const points = checkin.pointsEarned ?? checkin.pointsBreakdown?.total ?? 0;
+      return sum + points;
+    }, 0);
+    
+    // Calculate user's rank among all visitors
+    const allVisitors = this.topVisitors();
+    const userRank = allVisitors.findIndex(visitor => visitor.id === user.uid) + 1;
+    
+    return {
+      totalVisits: userCheckins.length,
+      totalPointsEarned: totalPoints,
+      averagePointsPerVisit: userCheckins.length > 0 ? Math.round(totalPoints / userCheckins.length) : 0,
+      rankAmongVisitors: userRank || null,
+      isTopVisitor: userRank <= 5 && userRank > 0,
+      firstVisitDate: userCheckins.length > 0 ? userCheckins[userCheckins.length - 1].timestamp : null,
+      lastVisitDate: userCheckins.length > 0 ? userCheckins[0].timestamp : null,
+      isRegular: userCheckins.length >= 3
+    };
+  });
+
+
+
   // ✅ Data loading
   protected override onInit(): void {
     this.pubStore.loadOnce();
-    this.checkinStore.loadOnce();
+    this.checkinStore.loadOnce(); // Load user-scoped check-in data for user features
+    this.globalCheckInStore.loadFreshGlobalData(); // Load global check-in data for accurate statistics
+    this.missionStore.loadOnce(); // Load mission data
   }
 
   // ✅ Actions
   retryLoad(): void {
     this.pubStore.loadOnce();
     this.checkinStore.loadOnce();
+    this.globalCheckInStore.loadFreshGlobalData();
+    this.missionStore.loadOnce();
   }
 
   goBack(): void {
@@ -1091,4 +1117,6 @@ export class PubDetailComponent extends BaseComponent {
       return date.toLocaleDateString();
     }
   }
+
+
 }

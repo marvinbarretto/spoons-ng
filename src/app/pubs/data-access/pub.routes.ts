@@ -5,12 +5,6 @@ export const PUBS_ROUTES: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('../feature/pub-list/pub-list.component').then(m => m.PubListComponent),
-  },
-  {
-    path: 'improved',
-    title: 'Improved Pubs',
-    loadComponent: () =>
       import('../feature/improved-pub-list/improved-pub-list.component').then(m => m.ImprovedPubListComponent),
   },
   {
