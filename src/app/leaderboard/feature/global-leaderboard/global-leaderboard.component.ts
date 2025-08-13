@@ -126,12 +126,12 @@ import { type LeaderboardEntry } from '../../utils/leaderboard.models';
     }
 
     :host ::ng-deep .points-primary {
-      color: var(--primary);
+      color: var(--text);
       font-weight: 600;
     }
 
     :host ::ng-deep .pubs-primary {
-      color: var(--secondary);
+      color: var(--text-secondary);
       font-weight: 600;
     }
 
