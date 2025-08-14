@@ -117,11 +117,11 @@ export type EnhancedScoreboardData = ScoreboardData & {
               </div>
             }
 
-            @if (enhancedData().badgeCount > 0) {
+            @if (enhancedData().recentBadges.length > 0) {
               <div class="metric-card badges">
                 <div class="metric-icon">🏆</div>
                 <div class="metric-content">
-                  <div class="metric-value">{{ enhancedData().badgeCount }}</div>
+                  <div class="metric-value">{{ enhancedData().recentBadges.length }}</div>
                   <div class="metric-label">Badges</div>
                   @if (enhancedData().recentBadges.length > 0) {
                     <div class="badge-crests">
@@ -134,13 +134,6 @@ export type EnhancedScoreboardData = ScoreboardData & {
                           [showBanner]="false"
                           [compact]="true"
                         />
-                      }
-                      @if (enhancedData().badgeCount > enhancedData().recentBadges.length) {
-                        <span class="more-badges"
-                          >+{{
-                            enhancedData().badgeCount - enhancedData().recentBadges.length
-                          }}</span
-                        >
                       }
                     </div>
                   }
@@ -367,26 +360,6 @@ export type EnhancedScoreboardData = ScoreboardData & {
         align-items: flex-end;
       }
 
-      .more-badges {
-        font-size: 0.625rem;
-        font-weight: bold;
-        color: var(--text-secondary);
-        background: var(--background-darkestElevated);
-        border: 1px solid var(--borderLight);
-        border-radius: 50%;
-        width: 1.5rem;
-        height: 1.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-left: 0.125rem;
-      }
-
-      .metric-card:hover .more-badges {
-        background: var(--onPrimary);
-        border-color: var(--onPrimary);
-        color: var(--primary);
-      }
 
       /* Specific metric card colors */
       .metric-card.streak {
@@ -479,12 +452,6 @@ export type EnhancedScoreboardData = ScoreboardData & {
           gap: 0.1875rem;
           margin-top: 0.375rem;
         }
-
-        .more-badges {
-          font-size: 0.5rem;
-          width: 1.25rem;
-          height: 1.25rem;
-        }
       }
     `,
   ],
@@ -537,7 +504,6 @@ export class ScoreboardHeroWidgetComponent extends BaseWidgetComponent implement
     // Get badge collection data
     const earnedBadgesWithDefinitions = this.badgeStore.earnedBadgesWithDefinitions?.() || [];
     const recentBadges: BadgeWithEarnedStatus[] = earnedBadgesWithDefinitions
-      .slice(0, 4) // Limit to first 4 badges for scoreboard display
       .filter(item => item.badge) // Only include badges with valid definitions
       .map(item => ({
         badge: item.badge!,
