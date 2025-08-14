@@ -239,8 +239,17 @@ export class CheckInStore extends BaseStore<CheckIn> {
       // TODO: Add mission update logic here if needed
       const missionUpdated = false; // Placeholder
 
-      // Prepare carpet image key
-      carpetImageKey = carpetResult?.llmConfirmed ? carpetResult.localKey : undefined;
+      // Prepare carpet image key - GRACEFUL DEGRADATION: always associate image if stored locally
+      // This ensures gallery shows all captured images regardless of LLM carpet detection
+      carpetImageKey = carpetResult?.localStored ? carpetResult.localKey : undefined;
+      
+      console.log('[CheckInStore] 🎨 === CARPET IMAGE ASSOCIATION DEBUG ===');
+      console.log('[CheckInStore] 🎨 Carpet result available:', !!carpetResult);
+      console.log('[CheckInStore] 🎨 Local image stored:', carpetResult?.localStored);
+      console.log('[CheckInStore] 🎨 LLM confirmed carpet:', carpetResult?.llmConfirmed);
+      console.log('[CheckInStore] 🎨 Final carpet image key:', carpetImageKey);
+      console.log('[CheckInStore] 🎨 Decision: Associate image if locally stored (graceful degradation)');
+      console.log('[CheckInStore] 🎨 ========================================');
 
       // Prepare complete check-in data to save
       const completeCheckinData: Partial<CheckIn> = {

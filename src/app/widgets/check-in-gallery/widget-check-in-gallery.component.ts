@@ -20,6 +20,9 @@ import { PubStore } from '@pubs/data-access/pub.store';
 import { OrdinalPipe } from '@shared/pipes/ordinal.pipe';
 import { BaseWidgetComponent } from '../base/base-widget.component';
 
+// Default placeholder image for check-ins without stored carpet images
+const DEFAULT_CARPET_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgdmlld0JveD0iMCAwIDQwMCA0MDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI0MDAiIGhlaWdodD0iNDAwIiBmaWxsPSIjRjNGNEY2Ii8+CjxwYXRoIGQ9Ik0yMDAgMTAwQzE5Mi4yNiAxMDAgMTg2IDEwNi4yNiAxODYgMTE0VjI4NkMxODYgMjkzLjc0IDE5Mi4yNiAzMDAgMjAwIDMwMEMyMDcuNzQgMzAwIDIxNCAyOTMuNzQgMjE0IDI4NlYxMTRDMjE0IDEwNi4yNiAyMDcuNzQgMTAwIDIwMCAxMDBaIiBmaWxsPSIjOUNBM0FGIi8+CjxwYXRoIGQ9Ik0xNDAgMTYwQzEzMi4yNiAxNjAgMTI2IDE2Ni4yNiAxMjYgMTc0VjIyNkMxMjYgMjMzLjc0IDEzMi4yNiAyNDAgMTQwIDI0MEMxNDcuNzQgMjQwIDE1NCAyMzMuNzQgMTU0IDIyNlYxNzRDMTU0IDE2Ni4yNiAxNDcuNzQgMTYwIDE0MCAxNjBaIiBmaWxsPSIjOUNBM0FGIi8+CjxwYXRoIGQ9Ik0yNjAgMTYwQzI1Mi4yNiAxNjAgMjQ2IDE2Ni4yNiAyNDYgMTc0VjIyNkMyNDYgMjMzLjc0IDI1Mi4yNiAyNDAgMjYwIDI0MEMyNjcuNzQgMjQwIDI3NCAyMzMuNzQgMjc0IDIyNlYxNzRDMjc0IDE2Ni4yNiAyNjcuNzQgMTYwIDI2MCAxNjBaIiBmaWxsPSIjOUNBM0FGIi8+Cjx0ZXh0IHg9IjIwMCIgeT0iMzMwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjOUNBM0FGIiBmb250LWZhbWlseT0ic2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZm9udC13ZWlnaHQ9IjUwMCI+Tm8gSW1hZ2U8L3RleHQ+Cjwvc3ZnPgo=';
+
 type CheckInImageDisplay = {
   key: string;
   pubName: string;
@@ -29,6 +32,7 @@ type CheckInImageDisplay = {
   pubVisitNumber: number;
   badgeName?: string;
   missionUpdated?: boolean;
+  isPlaceholder?: boolean; // True if using fallback image, false/undefined if real image
 };
 
 @Component({
@@ -57,18 +61,27 @@ type CheckInImageDisplay = {
 
         <div class="image-grid">
           @for (image of images(); track image.key) {
-            <div class="image-item">
+            <div class="image-item" [class.placeholder]="image.isPlaceholder">
               <img
                 [src]="image.imageUrl"
                 [alt]="'Carpet photo from ' + image.pubName"
                 loading="lazy"
                 (error)="onImageError($event)"
               />
+              @if (image.isPlaceholder) {
+                <div class="placeholder-overlay">
+                  <div class="placeholder-icon">📷</div>
+                  <div class="placeholder-text">No Image</div>
+                </div>
+              }
               <div class="image-info">
                 <div class="pub-name">{{ image.pubName }}</div>
                 <div class="metadata">
                   <span class="date">{{ formatDate(image.date) }}</span>
                   <span class="visit-number">{{ image.pubVisitNumber | ordinal }} pub</span>
+                  @if (image.isPlaceholder) {
+                    <span class="placeholder-indicator">📋 Check-in only</span>
+                  }
                   @if (image.badgeName) {
                     <span class="badge-earned">🏆 {{ image.badgeName }}</span>
                   }
@@ -197,6 +210,40 @@ type CheckInImageDisplay = {
         background: var(--info) !important;
         color: var(--background-lighter) !important;
         font-weight: 600;
+      }
+
+      /* Placeholder image styles */
+      .image-item.placeholder {
+        border: 2px dashed var(--border);
+        opacity: 0.8;
+      }
+
+      .placeholder-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        color: var(--text-secondary);
+        pointer-events: none;
+      }
+
+      .placeholder-icon {
+        font-size: 2rem;
+        margin-bottom: 0.25rem;
+        opacity: 0.6;
+      }
+
+      .placeholder-text {
+        font-size: 0.75rem;
+        font-weight: 500;
+        opacity: 0.8;
+      }
+
+      .placeholder-indicator {
+        background: var(--text-secondary) !important;
+        color: var(--background) !important;
+        font-weight: 500;
       }
 
       @media (max-width: 768px) {
@@ -380,7 +427,7 @@ export class WidgetCheckInGalleryComponent extends BaseWidgetComponent implement
       const allCheckins = this.checkinStore.checkins();
       console.log('[CheckInGallery] 📋 Available check-ins:', allCheckins.length);
 
-      // Log all check-ins in detail
+      // Log all check-ins in detail with carpet image association info
       allCheckins.forEach((checkin, index) => {
         console.log(`[CheckInGallery] ✅ Check-in ${index + 1}:`, {
           id: checkin.id,
@@ -388,39 +435,59 @@ export class WidgetCheckInGalleryComponent extends BaseWidgetComponent implement
           userId: checkin.userId,
           timestamp: checkin.timestamp.toDate(),
           dateKey: checkin.dateKey,
+          carpetImageKey: checkin.carpetImageKey, // Key field for image association!
+          hasCarpetImageKey: !!checkin.carpetImageKey,
           badgeName: checkin.badgeName,
           missionUpdated: checkin.missionUpdated,
         });
       });
 
-      // Convert to display format with object URLs and correlate with check-in data
-      const displayData: CheckInImageDisplay[] = imageData.map((image, index) => {
-        console.log(`[CheckInGallery] 🔄 Processing image ${index + 1} for display`);
-
-        const imageUrl = URL.createObjectURL(image.blob);
-        this.objectUrls.push(imageUrl); // Track for cleanup
-
-        console.log('[CheckInGallery] 🔍 Looking for matching check-in for image:', {
-          pubId: image.pubId,
-          userId: image.userId,
-          imageDate: image.date,
-          imageDateParsed: new Date(image.date),
+      // ✨ ENHANCED DEBUGGING: Check carpet image key associations
+      console.log('[CheckInGallery] 🔍 === CARPET IMAGE ASSOCIATION ANALYSIS ===');
+      const checkinsWithImages = allCheckins.filter(c => !!c.carpetImageKey);
+      const checkinsWithoutImages = allCheckins.filter(c => !c.carpetImageKey);
+      console.log(
+        `[CheckInGallery] 📊 Check-ins WITH carpet image keys: ${checkinsWithImages.length}`
+      );
+      console.log(
+        `[CheckInGallery] 📊 Check-ins WITHOUT carpet image keys: ${checkinsWithoutImages.length}`
+      );
+      console.log(
+        "[CheckInGallery] 🎯 Root cause: Check-ins missing carpetImageKey won't show in gallery"
+      );
+      if (checkinsWithoutImages.length > 0) {
+        console.log(
+          '[CheckInGallery] 💡 These check-ins have no associated images (graceful degradation needed):'
+        );
+        checkinsWithoutImages.forEach((checkin, index) => {
+          console.log(
+            `[CheckInGallery]   ${index + 1}. ${checkin.pubId} (${checkin.timestamp.toDate().toISOString()})`
+          );
         });
+      }
+      console.log('[CheckInGallery] 🔍 ==============================================');
 
-        // Find matching check-in data
-        const matchingCheckin = allCheckins.find(c => {
+      // 🆕 NEW APPROACH: Process check-ins first, then find corresponding images (with fallbacks)
+      console.log('[CheckInGallery] 🔄 Processing check-ins with fallback image logic...');
+      
+      const displayData: CheckInImageDisplay[] = allCheckins.map((checkin, index) => {
+        console.log(`[CheckInGallery] 🔄 Processing check-in ${index + 1} for display`);
+
+        // Try to find matching stored image for this check-in
+        const matchingImage = imageData.find(image => {
           const timeDiff = Math.abs(
-            c.timestamp.toDate().getTime() - new Date(image.date).getTime()
+            checkin.timestamp.toDate().getTime() - new Date(image.date).getTime()
           );
           const isMatch =
-            c.pubId === image.pubId && c.userId === image.userId && timeDiff < 24 * 60 * 60 * 1000; // Within 24 hours
+            checkin.pubId === image.pubId && 
+            checkin.userId === image.userId && 
+            timeDiff < 24 * 60 * 60 * 1000; // Within 24 hours
 
-          console.log('[CheckInGallery] 🔍 Checking checkin match:', {
-            checkinId: c.id,
-            checkinPubId: c.pubId,
-            checkinUserId: c.userId,
-            checkinTimestamp: c.timestamp.toDate(),
-            timeDiff: timeDiff,
+          console.log(`[CheckInGallery] 🔍 Checking image match for check-in ${checkin.id}:`, {
+            imageDate: image.date,
+            checkinDate: checkin.timestamp.toDate(),
+            pubMatch: checkin.pubId === image.pubId,
+            userMatch: checkin.userId === image.userId,
             timeDiffHours: timeDiff / (1000 * 60 * 60),
             isMatch,
           });
@@ -428,50 +495,46 @@ export class WidgetCheckInGalleryComponent extends BaseWidgetComponent implement
           return isMatch;
         });
 
-        console.log(
-          '[CheckInGallery] ✅ Found matching check-in:',
-          matchingCheckin
-            ? {
-                id: matchingCheckin.id,
-                badgeName: matchingCheckin.badgeName,
-                missionUpdated: matchingCheckin.missionUpdated,
-              }
-            : 'No match found'
-        );
+        // Determine image URL and type
+        let imageUrl: string;
+        let isPlaceholder: boolean;
+        
+        if (matchingImage) {
+          // Real image found - create object URL
+          imageUrl = URL.createObjectURL(matchingImage.blob);
+          this.objectUrls.push(imageUrl); // Track for cleanup
+          isPlaceholder = false;
+          console.log(`[CheckInGallery] ✅ Found real image for check-in ${checkin.id}`);
+        } else {
+          // No image found - use placeholder
+          imageUrl = DEFAULT_CARPET_IMAGE;
+          isPlaceholder = true;
+          console.log(`[CheckInGallery] 📷 Using placeholder image for check-in ${checkin.id}`);
+        }
 
-        // Calculate pub visit number
-        console.log(
-          '[CheckInGallery] 🔢 Calculating pub visit number for:',
-          image.pubId,
-          image.date
-        );
-        const pubVisitNumber = this.calculatePubVisitNumber(image.pubId, image.date);
-        console.log('[CheckInGallery] 🎯 Calculated visit number:', pubVisitNumber);
+        // Calculate pub visit number based on check-in date
+        const pubVisitNumber = this.calculatePubVisitNumber(checkin.pubId, checkin.timestamp.toDate().toISOString());
+        
+        // Get pub name from store
+        const pubName = this.pubStore.get(checkin.pubId)?.name || 'Unknown Pub';
 
-        // Override stored pub name with actual pub name if it's "Carpet Image"
-        const actualPubName =
-          image.pubName === 'Carpet Image'
-            ? this.pubStore.get(image.pubId)?.name || 'Unknown Pub'
-            : image.pubName || 'Unknown Pub';
-
-        console.log('[CheckInGallery] 🏛️ Pub name resolution:', {
-          storedName: image.pubName,
-          actualName: actualPubName,
-          wasOverridden: image.pubName === 'Carpet Image',
-        });
-
-        const result = {
-          key: `${image.userId}_${image.pubId}_${Date.parse(image.date)}`,
-          pubName: actualPubName,
-          pubId: image.pubId,
-          date: image.date,
+        const result: CheckInImageDisplay = {
+          key: `${checkin.userId}_${checkin.pubId}_${checkin.timestamp.toMillis()}`,
+          pubName,
+          pubId: checkin.pubId,
+          date: checkin.timestamp.toDate().toISOString(),
           imageUrl,
           pubVisitNumber,
-          badgeName: matchingCheckin?.badgeName,
-          missionUpdated: matchingCheckin?.missionUpdated,
+          badgeName: checkin.badgeName,
+          missionUpdated: checkin.missionUpdated,
+          isPlaceholder,
         };
 
-        console.log(`[CheckInGallery] 📝 Final display data for image ${index + 1}:`, result);
+        console.log(`[CheckInGallery] 📝 Final display data for check-in ${index + 1}:`, {
+          ...result,
+          imageType: isPlaceholder ? 'PLACEHOLDER' : 'REAL IMAGE',
+        });
+        
         return result;
       });
 
@@ -492,6 +555,28 @@ export class WidgetCheckInGalleryComponent extends BaseWidgetComponent implement
       });
 
       console.log('[CheckInGallery] ✅ Setting images signal with', displayData.length, 'items');
+
+      // ✨ ENHANCED DEBUGGING: Final image count analysis with fallback logic
+      const realImages = displayData.filter(item => !item.isPlaceholder);
+      const placeholderImages = displayData.filter(item => item.isPlaceholder);
+      
+      console.log('[CheckInGallery] 🎯 === FINAL GALLERY STATE ANALYSIS (WITH FALLBACKS) ===');
+      console.log(`[CheckInGallery] 🖼️  Total items to display: ${displayData.length}`);
+      console.log(`[CheckInGallery] ✅ Real images: ${realImages.length}`);
+      console.log(`[CheckInGallery] 📷 Placeholder images: ${placeholderImages.length}`);
+      console.log(`[CheckInGallery] 💾 Total images stored locally: ${imageData.length}`);
+      console.log(`[CheckInGallery] 📋 Total check-ins available: ${allCheckins.length}`);
+      
+      if (displayData.length > 0) {
+        console.log('[CheckInGallery] ✅ SUCCESS: Gallery will show check-ins with fallback images');
+        if (placeholderImages.length > 0) {
+          console.log('[CheckInGallery] 💡 NEXT STEP: Investigate why storage has 0 images');
+        }
+      } else {
+        console.log('[CheckInGallery] ❌ ERROR: No check-ins to display');
+      }
+      console.log('[CheckInGallery] 🎯 ================================================================');
+
       this._images.set(displayData);
     } catch (err: any) {
       this.error.set(err?.message || 'Failed to load images');

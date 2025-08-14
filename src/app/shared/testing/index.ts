@@ -23,6 +23,17 @@ export {
   createViewportServiceMock,
 } from './foundation.mocks';
 
+// Browser API mocking utilities
+export {
+  assertBlobUrlCleanup,
+  createBrowserMocks,
+  createMockBlob,
+  createMockBlobSet,
+  setupBrowserMocks,
+  type BrowserMockConfig,
+  type BrowserMocks,
+} from './browser.mocks';
+
 // Store testing utilities
 export {
   asyncTestUtils,

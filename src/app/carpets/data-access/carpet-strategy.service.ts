@@ -66,11 +66,16 @@ export class CarpetStrategyService {
       });
 
       if (!llmResult.isCarpet) {
-        console.log('[CarpetStrategy] ❌ LLM rejected - not a carpet');
-        console.log(
-          '[CarpetStrategy] 📊 But preserving photo quality data:',
-          llmResult.photoQuality
-        );
+        console.log('[CarpetStrategy] ❌ LLM REJECTION ANALYSIS ❌');
+        console.log('='.repeat(60));
+        console.log('[CarpetStrategy] 🤖 LLM Detection Result: NOT A CARPET');
+        console.log(`[CarpetStrategy] 🎯 Confidence Level: ${llmResult.confidence}%`);
+        console.log('[CarpetStrategy] 📊 Photo Quality Metrics:', llmResult.photoQuality);
+        console.log('[CarpetStrategy] 🚨 CRITICAL: Image stored locally but will NOT be associated with check-in!');
+        console.log('[CarpetStrategy] 🔧 Local Key Generated:', localKey);
+        console.log('[CarpetStrategy] 💡 Recommendation: Review LLM analysis criteria or implement graceful degradation');
+        console.log('='.repeat(60));
+        
         return {
           localStored: true,
           llmConfirmed: false,
