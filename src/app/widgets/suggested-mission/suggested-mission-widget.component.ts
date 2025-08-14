@@ -7,7 +7,7 @@ import {
   LocationService,
 } from '@fourfold/angular-foundation';
 import { CheckInStore } from '../../check-in/data-access/check-in.store';
-import { MissionCardLightComponent } from '../../home/ui/mission-card-light/mission-card-light.component';
+import { MissionCardComponent } from '../../missions/ui/mission-card/mission-card.component';
 import { MissionStore } from '../../missions/data-access/mission.store';
 import { UserMissionsStore } from '../../missions/data-access/user-missions.store';
 import { Mission } from '../../missions/utils/mission.model';
@@ -22,7 +22,7 @@ import { BaseWidgetComponent } from '../base/base-widget.component';
     LoadingStateComponent,
     ErrorStateComponent,
     EmptyStateComponent,
-    MissionCardLightComponent,
+    MissionCardComponent,
   ],
   template: `
     <div class="suggested-mission-widget">
@@ -77,9 +77,11 @@ import { BaseWidgetComponent } from '../base/base-widget.component';
               <div class="mission-slide">
                 <div class="mission-suggestion">
                   <div class="mission-subtitle">{{ suggestion.reason }}</div>
-                  <app-mission-card-light
+                  <app-mission-card
                     [mission]="suggestion.mission"
                     [isJoined]="suggestion.isCurrentUserEnrolled"
+                    [variant]="'widget'"
+                    [clickable]="false"
                     [showPubDetails]="true"
                   />
                   <div class="mission-actions">

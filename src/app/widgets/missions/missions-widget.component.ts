@@ -5,7 +5,7 @@ import {
   ErrorStateComponent,
   LoadingStateComponent,
 } from '@fourfold/angular-foundation';
-import { MissionCardLightComponent } from '../../home/ui/mission-card-light/mission-card-light.component';
+import { MissionCardComponent } from '../../missions/ui/mission-card/mission-card.component';
 import { UserMissionsStore } from '../../missions/data-access/user-missions.store';
 import { Mission } from '../../missions/utils/mission.model';
 import { BaseWidgetComponent } from '../base/base-widget.component';
@@ -13,7 +13,7 @@ import { BaseWidgetComponent } from '../base/base-widget.component';
 @Component({
   selector: 'app-missions-widget',
   imports: [
-    MissionCardLightComponent,
+    MissionCardComponent,
     LoadingStateComponent,
     ErrorStateComponent,
     EmptyStateComponent,
@@ -41,10 +41,13 @@ import { BaseWidgetComponent } from '../base/base-widget.component';
       } @else {
         <div class="missions-grid">
           @for (missionData of activeMissions(); track missionData.mission.id) {
-            <app-mission-card-light
+            <app-mission-card
               [mission]="missionData.mission"
               [isJoined]="missionData.isActive"
               [progress]="missionData.completedCount"
+              [variant]="'widget'"
+              [clickable]="true"
+              [showPubDetails]="false"
               (missionClick)="onMissionCardClicked($event)"
             />
           }

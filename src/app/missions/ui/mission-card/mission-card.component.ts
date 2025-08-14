@@ -1,5 +1,5 @@
 // src/app/missions/ui/mission-card/mission-card.component.ts
-import { Component, computed, inject, input } from '@angular/core';
+import { Component, computed, inject, input, output } from '@angular/core';
 
 import { PubStore } from '../../../pubs/data-access/pub.store';
 import { DataAggregatorService } from '../../../shared/data-access/data-aggregator.service';
@@ -10,517 +10,611 @@ import { PubChipComponent } from '../pub-chip/pub-chip.component';
   selector: 'app-mission-card',
   imports: [PubChipComponent],
   template: `
-    <article class="mission-card" [class.mission-card--joined]="isJoined()">
-      <header class="mission-card__header">
-        <div class="mission-card__title-section">
-          <h3 class="mission-card__title">
-            @if (mission().emoji) {
-              <span class="mission-card__emoji">{{ mission().emoji }}</span>
-            }
-            {{ mission().name }}
-          </h3>
-          <div class="mission-card__meta">
-            @if (mission().category) {
-              <span class="meta-badge meta-badge--category">{{ mission().category }}</span>
-            }
-            @if (mission().subcategory) {
-              <span class="meta-badge meta-badge--subcategory">{{ mission().subcategory }}</span>
-            }
-            @if (mission().difficulty) {
-              <span
-                class="meta-badge meta-badge--difficulty meta-badge--{{ mission().difficulty }}"
-                >{{ mission().difficulty }}</span
-              >
-            }
-            @if (mission().featured) {
-              <span class="meta-badge meta-badge--featured">⭐ Featured</span>
-            }
-          </div>
-        </div>
-        @if (isJoined()) {
-          <div class="mission-card__status">
-            <span class="status-badge status-badge--joined">
-              <span class="status-badge__icon">🎯</span>
-              <span class="status-badge__text">In Progress</span>
-            </span>
-          </div>
-        }
-      </header>
-
-      <div class="mission-card__content">
-        <p class="mission-card__description">{{ mission().description }}</p>
-
-        <div class="mission-card__stats">
-          <div class="stat">
-            <span class="stat__label">Pubs to visit:</span>
-            <span class="stat__value">{{ mission().pubIds.length }}</span>
-          </div>
-
-          @if (mission().pointsReward) {
-            <div class="stat stat--highlighted">
-              <span class="stat__label">💰 Points:</span>
-              <span class="stat__value stat__value--points">{{ mission().pointsReward }}</span>
+    <article
+      class="refined-mission-card"
+      [class.joined]="isJoined()"
+      [class.featured]="mission().featured"
+      [class.clickable]="clickable()"
+      [class.compact]="variant() === 'compact' || variant() === 'widget'"
+      [class.widget]="variant() === 'widget'"
+      [attr.aria-labelledby]="'mission-title-' + mission().id"
+      role="article"
+      (click)="onClick()"
+    >
+      <!-- Status Indicator Zone -->
+      <div class="mission-status-zone">
+        <div class="status-indicator">
+          @if (isJoined()) {
+            <div class="status-content" aria-hidden="true">
+              <span class="status-icon">🎯</span>
+              <span class="status-label">Active</span>
             </div>
-          }
-
-          @if (mission().badgeRewardId) {
-            <div class="stat">
-              <span class="stat__label">🏆 Reward:</span>
-              <span class="stat__value">Epic Badge</span>
-            </div>
-          }
-
-          @if (isJoined() && progress() !== null) {
-            <div class="stat">
-              <span class="stat__label">Progress:</span>
-              <span class="stat__value">{{ progress() }}/{{ mission().pubIds.length }}</span>
-            </div>
-          }
-
-          @if (
-            mission().requiredPubs &&
-            mission().totalPubs &&
-            mission().requiredPubs !== mission().totalPubs
-          ) {
-            <div class="stat">
-              <span class="stat__label">Required:</span>
-              <span class="stat__value"
-                >{{ mission().requiredPubs }}/{{ mission().totalPubs }}</span
-              >
+          } @else {
+            <div class="status-content" aria-hidden="true">
+              <span class="status-icon">⭐</span>
+              <span class="status-label">Join</span>
             </div>
           }
         </div>
+      </div>
 
-        @if (missionPubs().pubs.length > 0) {
-          <div class="mission-card__pubs">
-            <details class="pub-list-details">
-              <summary class="pub-list-summary">
-                <span class="pub-list-count"
-                  >{{ missionPubs().pubs.length }} Pubs in this mission</span
+      <!-- Mission Details Zone -->
+      <div class="mission-details-zone">
+        <!-- Header Section -->
+        <header class="card-header">
+          <div class="title-section">
+            <h3 class="mission-title" [id]="'mission-title-' + mission().id">
+              @if (mission().emoji) {
+                <span class="mission-emoji" aria-hidden="true">{{ mission().emoji }}</span>
+              }
+              {{ mission().name }}
+              @if (mission().featured) {
+                <span
+                  class="featured-indicator"
+                  aria-label="Featured mission"
+                  title="Featured mission"
                 >
-                <span class="pub-list-toggle-icon">▼</span>
-              </summary>
-              <div class="pub-chips">
-                @for (pubDetail of missionPubs().pubs; track pubDetail.id) {
-                  @if (pubDetail.pub) {
-                    <app-pub-chip
-                      [pub]="pubDetail.pub"
-                      [hasVisited]="pubDetail.hasVisited"
-                      [visitCount]="pubDetail.visitCount"
-                      [showLocation]="true"
-                      [showCarpet]="false"
-                    />
-                  }
-                }
+                  ⭐
+                </span>
+              }
+            </h3>
+
+            <!-- Refined meta badges -->
+            <div class="mission-meta">
+              @if (mission().difficulty) {
+                <span class="meta-tag difficulty-{{ mission().difficulty }}">{{
+                  mission().difficulty
+                }}</span>
+              }
+              @if (mission().category) {
+                <span class="meta-tag category-tag">{{ mission().category }}</span>
+              }
+            </div>
+          </div>
+
+          <!-- Progress indicator for joined missions -->
+          @if (isJoined() && progress() !== null) {
+            <div class="progress-badge">
+              <span class="progress-percentage">{{ progressPercentage() }}%</span>
+            </div>
+          }
+        </header>
+
+        <!-- Content Section -->
+        <div class="card-content">
+          <p class="mission-description">{{ mission().description }}</p>
+
+          <!-- Essential stats only -->
+          <div class="mission-stats">
+            <div class="stat-item">
+              <span class="stat-label">Pubs</span>
+              <span class="stat-value">{{ mission().pubIds.length }}</span>
+            </div>
+
+            @if (mission().pointsReward) {
+              <div class="stat-item stat-item--reward">
+                <span class="stat-label">Points</span>
+                <span class="stat-value stat-value--points">{{ mission().pointsReward }}</span>
               </div>
-            </details>
+            }
+
+            @if (isJoined() && progress() !== null) {
+              <div class="stat-item">
+                <span class="stat-label">Progress</span>
+                <span class="stat-value">{{ progress() }}/{{ mission().pubIds.length }}</span>
+              </div>
+            }
+          </div>
+
+          <!-- Refined pub list -->
+          @if (showPubDetails() && missionPubs().pubs.length > 0) {
+            <div class="mission-pubs">
+              <details class="pub-list">
+                <summary class="pub-list-toggle">
+                  <span class="pub-count">{{ missionPubs().pubs.length }} pubs</span>
+                  <span class="toggle-icon" aria-hidden="true">▼</span>
+                </summary>
+                <div class="pub-list-content">
+                  @for (pubDetail of missionPubs().pubs; track pubDetail.id) {
+                    @if (pubDetail.pub) {
+                      <app-pub-chip
+                        [pub]="pubDetail.pub"
+                        [hasVisited]="pubDetail.hasVisited"
+                        [visitCount]="pubDetail.visitCount"
+                        [showLocation]="true"
+                        [showCarpet]="false"
+                      />
+                    }
+                  }
+                </div>
+              </details>
+            </div>
+          }
+        </div>
+
+        <!-- Progress bar for active missions -->
+        @if (isJoined() && progress() !== null && progressPercentage() > 0) {
+          <div class="mission-progress">
+            <div class="progress-track">
+              <div class="progress-fill" [style.width.%]="progressPercentage()"></div>
+            </div>
           </div>
         }
       </div>
 
-      @if (isJoined() && progress() !== null) {
-        <div class="mission-card__progress">
-          <div class="progress-bar">
-            <div class="progress-bar__fill" [style.width.%]="progressPercentage()"></div>
-          </div>
-          <span class="progress-text">
-            <span class="progress-text__percentage">{{ progressPercentage() }}%</span>
-            <span class="progress-text__label">Complete</span>
-          </span>
-        </div>
-      }
-
-      <!-- Actions slot for parent components to inject buttons -->
-      <div class="mission-card__actions">
+      <!-- Actions -->
+      <div class="mission-actions">
         <ng-content select="[slot=actions]"></ng-content>
       </div>
     </article>
   `,
   styles: `
-    .mission-card {
-      background: var(--background-lighter);
-      border: 2px solid var(--border);
-      border-radius: 8px;
-      padding: 1.5rem;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: var(--shadow);
+    /* ===== REFINED MISSION CARD - MOBILE FIRST ===== */
+
+    .refined-mission-card {
       position: relative;
+      display: flex;
+      gap: 0;
+      padding: 0;
+
+      /* Sophisticated styling inspired by pub card */
+      background: var(--background-lighter);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 1px 2px var(--shadow);
+
+      /* Elegant proportions */
+      min-height: 88px;
       overflow: hidden;
+
+      /* Accessibility */
+      &:focus-within {
+        outline: 2px solid var(--primary);
+        outline-offset: 1px;
+      }
+
+      /* Clickable state */
+      &.clickable {
+        cursor: pointer;
+        transition: all 0.2s ease;
+
+        &:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 2px 8px var(--shadow);
+          border-color: var(--primary);
+        }
+
+        &:active {
+          transform: translateY(0);
+        }
+      }
+
+      /* Widget variant - compact styling */
+      &.widget {
+        background: linear-gradient(
+          135deg,
+          var(--background-lighter) 0%,
+          var(--background-lightest) 100%
+        );
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        border-width: 2px;
+        border-color: var(--border-strong);
+        min-height: 80px;
+
+        &:hover {
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        }
+      }
+
+      /* Compact variant */
+      &.compact {
+        min-height: 72px;
+        border-radius: 6px;
+      }
     }
 
-    .mission-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: var(--primary);
-      opacity: 0;
-      transition: opacity 0.3s ease;
-      pointer-events: none;
+    /* ===== REFINED SPLIT ZONES (LIKE PUB CARD) ===== */
+
+    .mission-status-zone {
+      flex-shrink: 0;
+      width: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      /* Refined styling */
+      background: var(--background-darker);
+      border-right: 1px solid var(--border);
+      border-radius: 6px 0 0 6px;
+
+      /* Mobile padding */
+      padding: 1rem 0;
+
+      /* Default unjoined state */
+      color: var(--text-muted);
     }
 
-    /* Hover effects removed - parent components can add their own hover styles */
+    .mission-details-zone {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding: 0.875rem;
 
-    .mission-card--joined {
+      text-decoration: none;
+      color: inherit;
+      min-width: 0; /* Prevent overflow */
+    }
+
+    /* ===== STATUS INDICATOR (REFINED) ===== */
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+
+      .status-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.25rem;
+
+        .status-icon {
+          font-size: 1.125rem;
+        }
+
+        .status-label {
+          font-size: 0.625rem;
+          font-weight: 500;
+          line-height: 1;
+          text-align: center;
+          white-space: nowrap;
+          letter-spacing: 0.02em;
+        }
+      }
+    }
+
+    /* ===== SOPHISTICATED STATE TREATMENTS ===== */
+
+    .refined-mission-card.joined {
       background: var(--background-lightest);
       border-color: var(--success);
+
+      .mission-status-zone {
+        background: var(--success);
+        color: white;
+        border-right-color: var(--success);
+
+        .status-content .status-label {
+          color: white;
+          font-weight: 500;
+        }
+      }
+
+      .mission-title {
+        font-weight: 500;
+        color: var(--text);
+      }
     }
 
-    .mission-card--joined::before {
-      background: var(--success);
+    .refined-mission-card.featured {
+      border-color: var(--warning);
+
+      .mission-status-zone {
+        background: var(--warning);
+        color: white;
+        border-right-color: var(--warning);
+
+        .status-content .status-label {
+          color: white;
+          font-weight: 500;
+        }
+      }
     }
 
-    .mission-card__header {
+    /* ===== REFINED HEADER LAYOUT ===== */
+
+    .card-header {
       display: flex;
-      justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: 0.75rem;
-      gap: 1rem;
+      justify-content: space-between;
+      gap: 0.75rem;
     }
 
-    .mission-card__title-section {
+    .title-section {
       flex: 1;
       min-width: 0;
     }
 
-    .mission-card__title {
-      font-size: 1.375rem;
-      font-weight: 700;
-      margin: 0 0 0.5rem 0;
+    .mission-title {
+      margin: 0;
+      font-size: 1.125rem;
+      font-weight: 500;
+      line-height: 1.3;
       color: var(--text);
-      line-height: 1.2;
+      font-family: 'Fredoka', sans-serif;
+
       display: flex;
       align-items: center;
       gap: 0.5rem;
+
+      /* Prevent overflow */
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
-    .mission-card__emoji {
-      font-size: 1.5rem;
+    .mission-emoji {
+      font-size: 1.25rem;
       flex-shrink: 0;
     }
 
-    .mission-card__meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.375rem;
-      margin-bottom: 0.25rem;
-    }
-
-    .meta-badge {
-      font-size: 0.625rem;
-      padding: 0.25rem 0.5rem;
-      border-radius: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.025em;
-      border: 1px solid transparent;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.25rem;
-    }
-
-    .meta-badge--category {
-      background: var(--backgroundLighter);
-      color: var(--primary);
-      border-color: var(--primary);
-    }
-
-    .meta-badge--subcategory {
-      background: var(--backgroundLighter);
-      color: var(--accent);
-      border-color: var(--accent);
-    }
-
-    .meta-badge--difficulty {
-      border-color: var(--border);
-    }
-
-    .meta-badge--easy {
-      background: var(--backgroundLighter);
-      color: var(--success);
-      border-color: var(--success);
-    }
-
-    .meta-badge--medium {
-      background: var(--backgroundLighter);
+    .featured-indicator {
       color: var(--warning);
-      border-color: var(--warning);
-    }
-
-    .meta-badge--hard {
-      background: var(--backgroundLighter);
-      color: var(--error);
-      border-color: var(--error);
-    }
-
-    .meta-badge--extreme {
-      background: var(--backgroundDarker);
-      color: var(--text);
-      border-color: var(--borderStrong);
-    }
-
-    .meta-badge--featured {
-      background: var(--accent);
-      color: var(--onAccent);
-      text-shadow: 0 1px 2px var(--overlay);
-      border-color: var(--accent);
-    }
-
-    .mission-card__status {
       flex-shrink: 0;
-    }
-
-    .status-badge {
-      font-size: 0.75rem;
-      padding: 0.5rem 0.75rem;
-      border-radius: 20px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 0.375rem;
-      text-transform: uppercase;
-      letter-spacing: 0.025em;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      transition: all 0.2s ease;
-    }
-
-    .status-badge__icon {
       font-size: 0.875rem;
+    }
+
+    /* ===== REFINED META TAGS (LESS IS MORE) ===== */
+
+    .mission-meta {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.375rem;
+    }
+
+    .meta-tag {
+      font-size: 0.6875rem;
+      padding: 0.1875rem 0.375rem;
+      border-radius: 4px;
+      font-weight: 500;
+      background: var(--background-darker);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+
+      /* Refined difficulty colors */
+      &.difficulty-easy {
+        color: var(--success);
+        border-color: var(--success);
+      }
+
+      &.difficulty-medium {
+        color: var(--warning);
+        border-color: var(--warning);
+      }
+
+      &.difficulty-hard {
+        color: var(--error);
+        border-color: var(--error);
+      }
+
+      &.category-tag {
+        color: var(--primary);
+        border-color: var(--primary);
+      }
+    }
+
+    /* ===== PROGRESS BADGE ===== */
+
+    .progress-badge {
       display: flex;
       align-items: center;
-    }
-
-    .status-badge__text {
-      font-weight: 700;
-    }
-
-    .status-badge--available {
-      background: var(--warning);
-      color: var(--onPrimary);
-      text-shadow: 0 1px 2px var(--overlay);
-    }
-
-    .status-badge--available:hover {
-      transform: scale(1.05);
-      box-shadow: var(--shadow);
-    }
-
-    .status-badge--joined {
+      padding: 0.25rem 0.5rem;
       background: var(--success);
-      color: var(--onPrimary);
-      text-shadow: 0 1px 2px var(--overlay);
+      color: white;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      white-space: nowrap;
     }
 
-    .status-badge--joined:hover {
-      transform: scale(1.05);
-      box-shadow: var(--shadow);
-    }
+    /* ===== REFINED CONTENT SECTION ===== */
 
-    .mission-card__description {
-      color: var(--textSecondary);
-      margin: 0 0 1.5rem;
-      line-height: 1.6;
-      font-size: 0.95rem;
-      font-weight: 400;
-    }
-
-    .mission-card__stats {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1rem;
-      margin-bottom: 1rem;
-    }
-
-    .stat {
+    .card-content {
+      flex: 1;
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: 0.75rem;
     }
 
-    .stat__label {
-      font-size: 0.75rem;
-      color: var(--textSecondary);
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.025em;
-    }
-
-    .stat__value {
-      font-size: 0.95rem;
-      color: var(--text);
-      font-weight: 700;
-    }
-
-    .stat--highlighted {
-      padding: 0.5rem;
-      background: var(--backgroundLighter);
-      border: 1px solid var(--primary);
-      border-radius: 6px;
-    }
-
-    .stat__value--points {
-      color: var(--primary);
-      font-size: 1.1rem;
-      font-weight: 800;
-    }
-
-    .mission-card__progress {
-      margin-top: 1rem;
-      padding-top: 0.75rem;
-      border-top: 1px solid var(--border);
-    }
-
-    .progress-bar {
-      height: 10px;
-      background: var(--backgroundDarker);
-      border-radius: 8px;
-      overflow: hidden;
-      margin-bottom: 0.75rem;
-      box-shadow: inset 0 2px 4px var(--overlay);
-      position: relative;
-    }
-
-    .progress-bar__fill {
-      height: 100%;
-      background: var(--success);
-      transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-      border-radius: 8px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .progress-bar__fill::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(
-        90deg,
-        transparent 0%,
-        var(--backgroundLightest) 50%,
-        transparent 100%
-      );
-      animation: shimmer 2s infinite;
-    }
-
-    @keyframes shimmer {
-      0% {
-        transform: translateX(-100%);
-      }
-      100% {
-        transform: translateX(100%);
-      }
-    }
-
-    .progress-text {
+    .mission-description {
+      margin: 0;
       font-size: 0.875rem;
-      color: var(--textSecondary);
+      color: var(--text-secondary);
+      line-height: 1.4;
+
+      /* Elegant text overflow */
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* ===== REFINED STATS (HORIZONTAL LAYOUT) ===== */
+
+    .mission-stats {
       display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-weight: 600;
+      gap: 1rem;
+      align-items: flex-end;
     }
 
-    .progress-text__percentage {
-      font-size: 1rem;
-      font-weight: 700;
-      color: var(--success);
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.125rem;
+
+      .stat-label {
+        font-size: 0.6875rem;
+        color: var(--text-muted);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+      }
+
+      .stat-value {
+        font-size: 0.875rem;
+        color: var(--text);
+        font-weight: 600;
+      }
     }
 
-    .progress-text__label {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.025em;
+    .stat-item--reward {
+      .stat-value--points {
+        color: var(--primary);
+        font-weight: 700;
+      }
     }
 
-    /* Pub list display with details/summary */
-    .mission-card__pubs {
-      margin-top: 1rem;
-      padding-top: 1rem;
-      border-top: 1px solid var(--border);
+    /* ===== REFINED PUB LIST ===== */
+
+    .mission-pubs {
+      margin-top: 0.5rem;
     }
 
-    .pub-list-details {
+    .pub-list {
       border: none;
       margin: 0;
       padding: 0;
     }
 
-    .pub-list-summary {
+    .pub-list-toggle {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0.75rem;
+      padding: 0.5rem 0.75rem;
       background: var(--background-darker);
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: 6px;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all 0.15s ease;
       list-style: none;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 0.75rem;
+
+      &::-webkit-details-marker {
+        display: none;
+      }
+
+      &:hover {
+        background: var(--background-darkest);
+      }
     }
 
-    .pub-list-summary:hover {
-      background: var(--background-darkest);
-      border-color: var(--border-strong);
+    .pub-count {
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--text-secondary);
     }
 
-    .pub-list-summary::-webkit-details-marker {
-      display: none;
+    .toggle-icon {
+      font-size: 0.6875rem;
+      color: var(--text-muted);
+      transition: transform 0.15s ease;
     }
 
-    .pub-list-count {
-      font-size: 0.875rem;
-      text-transform: uppercase;
-      letter-spacing: 0.025em;
-    }
-
-    .pub-list-toggle-icon {
-      font-size: 0.75rem;
-      transition: transform 0.2s ease;
-    }
-
-    .pub-list-details[open] .pub-list-toggle-icon {
+    .pub-list[open] .toggle-icon {
       transform: rotate(180deg);
     }
 
-    .pub-chips {
+    .pub-list-content {
+      padding-top: 0.75rem;
       display: flex;
       flex-direction: column;
       gap: 0.5rem;
     }
 
-    /* Responsive design */
-    @media (max-width: 640px) {
-      .mission-card__header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.5rem;
-      }
+    /* ===== REFINED PROGRESS INDICATOR ===== */
 
-      .mission-card__stats {
-        flex-direction: column;
-        gap: 0.5rem;
-      }
+    .mission-progress {
+      margin-top: 0.5rem;
     }
 
-    .mission-card__actions {
-      margin-top: 1rem;
-      padding-top: 1rem;
-      border-top: 1px solid var(--border);
+    .progress-track {
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--success);
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 2px;
+    }
+
+    /* ===== ACTIONS SECTION ===== */
+
+    .mission-actions {
       display: flex;
-      gap: 0.75rem;
-      flex-wrap: wrap;
+      gap: 0.5rem;
+      padding: 0.75rem;
+      border-top: 1px solid var(--border);
+
+      &:empty {
+        display: none;
+      }
     }
 
-    .mission-card__actions:empty {
-      display: none;
+    /* ===== TABLET+ ENHANCEMENTS (768px+) ===== */
+
+    @media (min-width: 768px) {
+      .refined-mission-card {
+        border-radius: 12px;
+        box-shadow: 0 1px 3px var(--shadow);
+        min-height: 96px;
+      }
+
+      .mission-status-zone {
+        width: 80px;
+        padding: 1.125rem 0;
+        border-radius: 8px 0 0 8px;
+      }
+
+      .mission-details-zone {
+        gap: 0.625rem;
+        padding: 1rem;
+      }
+
+      .mission-title {
+        font-size: 1.25rem;
+      }
+
+      .status-indicator .status-content {
+        gap: 0.3125rem;
+
+        .status-icon {
+          font-size: 1.25rem;
+        }
+
+        .status-label {
+          font-size: 0.6875rem;
+        }
+      }
+    }
+
+    /* ===== ACCESSIBILITY & MOTION ===== */
+
+    @media (prefers-reduced-motion: reduce) {
+      .refined-mission-card,
+      .refined-mission-card.clickable,
+      .progress-fill,
+      .toggle-icon {
+        transition: none;
+        animation: none;
+      }
+
+      .refined-mission-card.clickable:hover,
+      .refined-mission-card.clickable:active {
+        transform: none;
+      }
+    }
+
+    @media (prefers-contrast: high) {
+      .refined-mission-card {
+        border-width: 2px;
+      }
     }
   `,
 })
@@ -535,8 +629,12 @@ export class MissionCardComponent {
   // ✅ Optional inputs with defaults
   readonly isJoined = input<boolean>(false);
   readonly progress = input<number | null>(null);
+  readonly variant = input<'default' | 'compact' | 'widget'>('default');
+  readonly clickable = input<boolean>(false);
+  readonly showPubDetails = input<boolean>(true);
 
-  // ✅ No outputs - parent components handle their own interactions
+  // ✅ Optional outputs for widget/clickable variants
+  readonly missionClick = output<Mission>();
 
   // ✅ Computed properties
   readonly progressPercentage = computed(() => {
@@ -573,5 +671,10 @@ export class MissionCardComponent {
     };
   });
 
-  // ✅ No event handlers - purely presentational component
+  // ✅ Event handlers for clickable variants
+  protected onClick(): void {
+    if (this.clickable()) {
+      this.missionClick.emit(this.mission());
+    }
+  }
 }
