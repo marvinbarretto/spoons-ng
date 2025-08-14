@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.0.121](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.120...v0.0.121) (2025-08-14)
+
+
+### Features
+
+* [Admin] Pub CRUD ([2e6db2c](https://github.com/marvinbarretto/spoons-ng/commit/2e6db2c29e0f46adb837e3eb92dd1281615e6a18))
+* [CarpetWidget] ensure we always render even if carpet bug ([0ee859b](https://github.com/marvinbarretto/spoons-ng/commit/0ee859be5568dfcab2524b0481e34b9f84387831))
+* [MissionCard] no need to have multiple ([461eaac](https://github.com/marvinbarretto/spoons-ng/commit/461eaacde4ff61e3a88a038dea4bf796e7b99d9b))
+* [PubList] trying out new version, improving the UX flow ([446edd3](https://github.com/marvinbarretto/spoons-ng/commit/446edd3e8f4994961c1885fe19ce31bfcf601da4))
+* [PubList] updated pub list ([a2abde5](https://github.com/marvinbarretto/spoons-ng/commit/a2abde5ea93af01ab0c5204f3f377d02859e553a))
+* [Scoreboard] show all badges ([be00870](https://github.com/marvinbarretto/spoons-ng/commit/be008705c8234bb139929f2f159449d47ddb2867))
+* **core:** add comprehensive tests for ThemeStore ([4cc83cd](https://github.com/marvinbarretto/spoons-ng/commit/4cc83cd23acbd9a43f6b0171e9775a79ebaba035))
+* **testing:** add unit tests for BadgeStore and PointsStore ([e6ae0bf](https://github.com/marvinbarretto/spoons-ng/commit/e6ae0bf5b26a28f7ebb1bfbe8ca9b6439e0ee718)), closes [#10](https://github.com/marvinbarretto/spoons-ng/issues/10) [#11](https://github.com/marvinbarretto/spoons-ng/issues/11)
+
+
+### Bug Fixes
+
+* [Leaderboard] ensure second col is readable ([a647f42](https://github.com/marvinbarretto/spoons-ng/commit/a647f42e515b897c3ed1121f4222925711e95a95))
+* [Pub] remove properties that had dodgy data ([d01d275](https://github.com/marvinbarretto/spoons-ng/commit/d01d27505d804840e19bd04536d602aa27d4307f))
+
 ### [0.0.120](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.119...v0.0.120) (2025-08-08)
 
 ### [0.0.119](https://github.com/marvinbarretto/spoons-ng/compare/v0.0.118...v0.0.119) (2025-08-08)
