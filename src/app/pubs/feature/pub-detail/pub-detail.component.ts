@@ -901,11 +901,11 @@ export class PubDetailComponent extends BaseComponent {
     if (!pub) return null;
 
     return {
-      totalCheckins: pub.checkinCount || 0,
+      totalCheckins: 0, // TODO: Use GlobalCheckInStore.getPubVisitCount(pubId) when implemented
       lastCheckinAt: pub.lastCheckinAt,
-      recordEarlyCheckinAt: pub.recordEarlyCheckinAt,
-      recordLatestCheckinAt: pub.recordLatestCheckinAt,
-      longestStreak: pub.longestStreak,
+      recordEarlyCheckinAt: undefined, // TODO: Calculate from check-in history
+      recordLatestCheckinAt: undefined, // TODO: Calculate from check-in history
+      longestStreak: 0, // TODO: Calculate from check-in history
     };
   });
 

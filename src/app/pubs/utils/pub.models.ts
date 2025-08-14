@@ -16,18 +16,21 @@ export type Pub = {
   hasCarpet?: boolean; // 🆕 Flag indicating if pub has carpet stored
   carpetUpdatedAt?: Timestamp; // 🆕 When carpet status was last updated
 
+  // ✅ Keep lastCheckinAt - can be updated via simple Cloud Function if needed
   lastCheckinAt?: Timestamp;
-  checkinCount?: number;
 
-  recordEarlyCheckinAt?: Timestamp;
-  recordLatestCheckinAt?: Timestamp;
-  longestStreak?: number;
+  // ❌ REMOVED: These fields are unreliable and not properly maintained
+  // Use GlobalCheckInStore.getPubVisitCount(pubId) instead of checkinCount
+  // Use GlobalCheckInStore.getCheckInsForPub(pubId) for real statistics
+  // checkinCount?: number;
+  // recordEarlyCheckinAt?: Timestamp;
+  // recordLatestCheckinAt?: Timestamp;
+  // longestStreak?: number;
+  // checkinHistory?: CheckIn[];
 
   currentLandlord?: Landlord;
   todayLandlord?: Landlord;
-
   landlordHistory?: Landlord[];
-  checkinHistory?: CheckIn[];
 };
 
 // ✅ CLEAN TYPE: distance is always number

@@ -8,6 +8,7 @@ import {
   ErrorStateComponent, 
   EmptyStateComponent 
 } from '@fourfold/angular-foundation';
+import { GlobalCheckInStore } from '@check-in/data-access/global-check-in.store';
 import { getRelativeTime } from '@shared/utils/timestamp.utils';
 import { BaseComponent } from '../../../shared/base/base.component';
 import { PubStore } from '../../data-access/pub.store';
@@ -117,12 +118,12 @@ import type { Pub } from '../../utils/pub.models';
                   </td>
                   <td class="checkin-count">
                     <div class="count-badge">
-                      {{ pub.checkinCount || 0 }}
+                      {{ getRealCheckInCount(pub.id) }}
                     </div>
                   </td>
                   <td class="last-activity">
-                    @if (pub.lastCheckinAt) {
-                      <span class="activity-date">{{ getRelativeTime(pub.lastCheckinAt) }}</span>
+                    @if (getRealLastCheckInDate(pub.id)) {
+                      <span class="activity-date">{{ getRelativeTime(getRealLastCheckInDate(pub.id)) }}</span>
                     } @else {
                       <span class="no-activity">No activity</span>
                     }
@@ -446,6 +447,7 @@ import type { Pub } from '../../utils/pub.models';
 export class PubAdminComponent extends BaseComponent {
   // ✅ Dependencies
   protected readonly pubStore = inject(PubStore);
+  protected readonly globalCheckInStore = inject(GlobalCheckInStore);
 
   // ✅ Expose utility functions for template
   readonly getRelativeTime = getRelativeTime;
@@ -469,17 +471,17 @@ export class PubAdminComponent extends BaseComponent {
     );
   });
 
-  // ✅ Computed statistics (using DB fields)
+  // ✅ Computed statistics (using REAL data from GlobalCheckInStore)
   protected readonly pubsWithCheckinsCount = computed(() => {
     const pubs = this.pubStore.pubs();
-    return pubs.filter(pub => (pub.checkinCount || 0) > 0).length;
+    return pubs.filter(pub => this.getRealCheckInCount(pub.id) > 0).length;
   });
 
   protected readonly averageCheckinsPerPub = computed(() => {
     const pubs = this.pubStore.pubs();
     if (pubs.length === 0) return 0;
 
-    const totalCheckIns = pubs.reduce((sum, pub) => sum + (pub.checkinCount || 0), 0);
+    const totalCheckIns = pubs.reduce((sum, pub) => sum + this.getRealCheckInCount(pub.id), 0);
     return Math.round(totalCheckIns / pubs.length);
   });
 
@@ -494,6 +496,13 @@ export class PubAdminComponent extends BaseComponent {
       pubCount: this.pubStore.pubs().length,
       hasData: this.pubStore.pubs().length > 0,
     },
+    globalCheckInStore: {
+      loading: this.globalCheckInStore.loading(),
+      totalCheckIns: this.globalCheckInStore.totalCheckInCount(),
+      uniqueUsers: this.globalCheckInStore.uniqueUserCount(),
+      uniquePubs: this.globalCheckInStore.uniquePubCount(),
+      hasData: this.globalCheckInStore.totalCheckInCount() > 0,
+    },
   }));
 
   protected readonly debugPubSummary = computed(() => {
@@ -507,15 +516,36 @@ export class PubAdminComponent extends BaseComponent {
       averageCheckIns: this.averageCheckinsPerPub(),
       searchQuery: this.searchQuery(),
       checkInDataRange: pubs.length > 0 ? {
-        min: Math.min(...pubs.map(p => p.checkinCount || 0)),
-        max: Math.max(...pubs.map(p => p.checkinCount || 0)),
+        min: Math.min(...pubs.map(p => this.getRealCheckInCount(p.id))),
+        max: Math.max(...pubs.map(p => this.getRealCheckInCount(p.id))),
       } : null,
     };
   });
 
+  // ✅ Real statistics methods using GlobalCheckInStore
+  getRealCheckInCount(pubId: string): number {
+    return this.globalCheckInStore.getPubVisitCount(pubId);
+  }
+
+  getRealLastCheckInDate(pubId: string): any {
+    const checkIns = this.globalCheckInStore.getCheckInsForPub(pubId);
+    if (checkIns.length === 0) return null;
+    
+    // Sort by timestamp and get the most recent
+    const sortedCheckIns = checkIns.sort((a, b) => b.timestamp.seconds - a.timestamp.seconds);
+    return sortedCheckIns[0].timestamp;
+  }
+
+  getRealUniqueVisitors(pubId: string): number {
+    const checkIns = this.globalCheckInStore.getCheckInsForPub(pubId);
+    const uniqueUserIds = new Set(checkIns.map(checkIn => checkIn.userId));
+    return uniqueUserIds.size;
+  }
+
   // ✅ Data loading
   protected override onInit(): void {
     this.pubStore.loadOnce();
+    this.globalCheckInStore.loadFreshGlobalData(); // Load real check-in data
   }
 
   // ✅ Search handling
@@ -543,11 +573,12 @@ export class PubAdminComponent extends BaseComponent {
   handleRetry(): void {
     console.log('[PubAdmin] Retrying pub load');
     this.pubStore.loadOnce();
+    this.globalCheckInStore.loadFreshGlobalData();
   }
 
   // ✅ Delete with confirmation
   async handleDelete(pub: Pub): Promise<void> {
-    const checkInCount = pub.checkinCount || 0;
+    const checkInCount = this.getRealCheckInCount(pub.id);
     
     const confirmed = confirm(
       `Are you sure you want to delete "${pub.name}"?\n\n` +

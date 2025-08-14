@@ -949,8 +949,8 @@ export class ComponentShowcaseComponent extends BaseComponent {
       country: 'United Kingdom',
       location: { lat: 51.5074, lng: -0.1278 },
       hasCarpet: true,
-      checkinCount: 42,
-      longestStreak: 7,
+      // checkinCount: 42, // Removed - deprecated property
+      // longestStreak: 7, // Removed - deprecated property
     };
   });
 

@@ -94,84 +94,31 @@ export class PubStore extends BaseStore<Pub> {
     console.log('[PubStore] Global pub cache cleared');
   }
 
-  // ✅ Pub Statistics Update Methods
+  // ✅ Essential Pub Update Methods
+  // Note: Use GlobalCheckInStore for real-time statistics instead of maintaining
+  // aggregated data in pub documents (avoids scalability and consistency issues)
 
   /**
-   * Update pub statistics after a check-in
-   * - Increments check-in count
-   * - Updates last check-in timestamp
-   * - Updates earliest/latest check-in records
-   * - Adds entry to check-in history
+   * Update the last check-in timestamp for a pub
+   * 
+   * This is a lightweight update that only sets lastCheckinAt to server timestamp.
+   * Used for quick sorting/filtering of pubs by recent activity.
+   * 
+   * For real statistics (count, unique visitors, etc.), use GlobalCheckInStore methods:
+   * - GlobalCheckInStore.getPubVisitCount(pubId) for total visits
+   * - GlobalCheckInStore.getCheckInsForPub(pubId) for detailed check-in data
+   * 
    * @param pubId - ID of the pub to update
-   * @param checkin - The check-in data
-   * @param checkinId - ID of the created check-in document
+   * @throws Error if update fails or pub service is unavailable
    */
-  async updatePubStats(
-    pubId: string,
-    checkin: Omit<CheckIn, 'id'>,
-    checkinId: string
-  ): Promise<void> {
-    console.log('[PubStore] Updating pub stats for:', pubId);
+  async updateLastCheckinTime(pubId: string): Promise<void> {
+    console.log('[PubStore] Updating last check-in time for:', pubId);
 
     try {
-      const pub = this.pubs().find(p => p.id === pubId);
-      if (!pub) {
-        console.warn('[PubStore] Pub not found for stats update:', pubId);
-        return;
-      }
-
-      const userId = this.authStore.user()?.uid;
-      if (!userId) {
-        throw new Error('[PubStore] Cannot update pub stats without a valid user ID');
-      }
-
-      // Delegate to PubService
-      await this.pubService.updatePubStats(pubId, checkin, checkinId, pub, userId);
-
-      console.log('[PubStore] Pub stats updated successfully via PubService:', pubId);
-
-      // Optionally refresh pub data to get updated stats
-      // await this.refreshPubData();
+      await this.pubService.updateLastCheckinTime(pubId);
+      console.log('[PubStore] ✅ Last check-in time updated successfully:', pubId);
     } catch (error) {
-      console.error('[PubStore] Failed to update pub stats:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Increment check-in count for a pub (simpler method)
-   * @param pubId - ID of the pub to update
-   */
-  async incrementCheckinCount(pubId: string): Promise<void> {
-    console.log('[PubStore] Incrementing check-in count for:', pubId);
-
-    try {
-      // Delegate to PubService
-      await this.pubService.incrementCheckinCount(pubId);
-
-      console.log('[PubStore] Check-in count incremented successfully via PubService:', pubId);
-    } catch (error) {
-      console.error('[PubStore] Failed to increment check-in count:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Update pub check-in history
-   * @param pubId - ID of the pub to update
-   * @param userId - User ID who checked in
-   * @param timestamp - Check-in timestamp
-   */
-  async updatePubHistory(pubId: string, userId: string, timestamp: Timestamp): Promise<void> {
-    console.log('[PubStore] Adding to pub check-in history:', { pubId, userId });
-
-    try {
-      // Delegate to PubService
-      await this.pubService.updatePubHistory(pubId, userId, timestamp);
-
-      console.log('[PubStore] Pub history updated successfully via PubService:', pubId);
-    } catch (error) {
-      console.error('[PubStore] Failed to update pub history:', error);
+      console.error('[PubStore] ❌ Failed to update last check-in time:', error);
       throw error;
     }
   }
